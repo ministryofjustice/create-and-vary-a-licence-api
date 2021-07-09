@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "hmpps-template-kotlin"
+    "name": "create-and-vary-a-licence-api"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
