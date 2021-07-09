@@ -1,10 +1,10 @@
 info.app:
-  name: HMPPS Template Kotlin
+  name: Create And Vary A Licence Api
   version: 1.0
 
 spring:
   application:
-    name: hmpps-template-kotlin
+    name: create-and-vary-a-licence-api
   codec:
     max-in-memory-size: 10MB
 
