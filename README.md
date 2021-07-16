@@ -1,40 +1,64 @@
-# hmpps-template-kotlin
+# create-and-vary-a-licence-api
 
-This is a skeleton project from which to create new kotlin projects from.
+This service provices access to data stored in the licences database via API endpoints.
+The main client is the create-and-vary-a-licence (UI) service.
+It is built as  docker image and deployed to the MOJ Cloud Platform.
 
-# Instructions
+# Dependencies
 
-If this is a HMPPS project then the project will be created as part of bootstrapping - 
-see https://github.com/ministryofjustice/dps-project-bootstrap.
+This service requires a postgresql database.
 
-## Creating a CloudPlatform namespace
+# Building the project
 
-When deploying to a new namespace, you may wish to use this template kotlin project namespace as the basis for your new namespace:
+Tools required:
 
-<https://github.com/ministryofjustice/cloud-platform-environments/tree/main/namespaces/live-1.cloud-platform.service.justice.gov.uk/hmpps-template-kotlin>
+* JDK v16+
+* Kotlin
+* docker
+* docker-compose
 
-Copy this folder, update all the existing namespace references, and submit a PR to the CloudPlatform team. Further instructions from the CloudPlatform team can be found here: <https://user-guide.cloud-platform.service.justice.gov.uk/#cloud-platform-user-guide>
+## Install gradle
 
-## Renaming from HMPPS Template Kotlin - github Actions
+`$ ./gradlew`
 
-Once the new repository is deployed. Navigate to the repository in github, and select the `Actions` tab.
-Click the link to `Enable Actions on this repository`.
+`$ ./gradlew clean build`
 
-Find the Action workflow named: `rename-project-create-pr` and click `Run workflow`.  This workflow will will
-execute the `rename-project.bash` and create Pull Request for you to review.  Review the PR and merge.
+# Running the service
 
-Note: ideally this workflow would run automatically however due to a recent change github Actions are not
-enabled by default on newly created repos. There is no way to enable Actions other then to click the button in the UI.
-If this situation changes we will update this project so that the workflow is triggered during the bootstrap project.
-Further reading: <https://github.community/t/workflow-isnt-enabled-in-repos-generated-from-template/136421>
+Start up the docker dependencies using the docker-compose file in the `create-and-vary-a-licence` service
 
-## Manually renaming from HMPPS Template Kotlin
+There is a script to help, which sets local profiles, port and DB connection properties to the 
+values required.
 
-Run the `rename-project.bash` and create a PR.
+`$ ./run-full.sh`
 
-The `rename-project.bash` script takes a single argument - the name of the project and calculates from it:
-* The main class name (project name converted to pascal case) 
-* The project description (class name with spaces between the words)
-* The main package name (project name with hyphens removed)
+Or, to run with default properties set in the docker-compose file
 
-It then performs a search and replace and directory renames so the project is ready to be used.
+`$ docker-compose pull && docker-compose up`
+
+Or, to use default port and properties
+
+`$ SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun`
+
+
+# Running the unit tests
+
+Unit tests mock all external dependencies and can be run with no dependent containers.
+
+`$ ./gradlew test`
+
+# Running the integration tests
+
+Integration tests use Wiremock to stub any API calls required, and use a local H2 database 
+that is seeded with data specific to each test suite.
+
+`$ ./gradlew integrationTest`
+
+# Linting
+
+`$ ./gradlew ktlintcheck`
+
+# OWASP vulnerability scanning
+
+`$ ./gradlew dependencyCheckAnalyze`
+
