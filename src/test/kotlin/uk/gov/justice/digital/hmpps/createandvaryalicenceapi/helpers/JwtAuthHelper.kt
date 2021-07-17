@@ -6,8 +6,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
 import java.security.KeyPair
 import java.time.Duration
-import java.util.UUID
 import java.util.Date
+import java.util.UUID
 
 @Component
 class JwtAuthHelper(private val keyPair: KeyPair) {
