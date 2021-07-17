@@ -10,6 +10,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.auth.url}") private val oauthApiUrl: String,
   private val webClientBuilder: WebClient.Builder
 ) {
+
   @Bean
   fun oauthApiHealthWebClient(): WebClient {
     return webClientBuilder.baseUrl(oauthApiUrl).build()

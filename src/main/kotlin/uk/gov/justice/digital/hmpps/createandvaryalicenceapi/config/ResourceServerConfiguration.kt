@@ -10,9 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
-class ResourceServerConfiguration(
-  private val authAwareTokenConverter: AuthAwareTokenConverter
-) : WebSecurityConfigurerAdapter() {
+class ResourceServerConfiguration : WebSecurityConfigurerAdapter() {
   override fun configure(http: HttpSecurity) {
     http
       .sessionManagement()
@@ -30,10 +28,7 @@ class ResourceServerConfiguration(
           "/swagger-ui/**",
           "/swagger-ui.html",
           "/h2-console/**"
-        )
-          .permitAll()
-          .anyRequest()
-          .authenticated()
-      }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(authAwareTokenConverter)
+        ).permitAll().anyRequest().authenticated()
+      }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
   }
 }

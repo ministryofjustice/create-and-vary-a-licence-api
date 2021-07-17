@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,12 +17,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestService
 @RequestMapping("/test", produces = [MediaType.APPLICATION_JSON_VALUE])
 class TestController(private val testService: TestService) {
 
-  @GetMapping(value = ["/"])
+  @GetMapping(value = ["/data"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get a list of test data",
-    description = "Just a test API to verify that the full stack of components are working together"
+    description = "Just a test API to verify that the full stack of components are working together",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
