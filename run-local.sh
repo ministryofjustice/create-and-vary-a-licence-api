@@ -19,11 +19,11 @@ export SYSTEM_CLIENT_ID=create-and-vary-a-licence-admin
 export SYSTEM_CLIENT_SECRET=client_secret
 
 # Provide the DB connection details to local container-hosted Postgresql DB
-# Match with the credentials set in docker-compose.yml
+# Match with the credentials set in create-and-vary-a-licence/docker-compose.yml
 export DB_SERVER=localhost
-export DB_NAME=licences
-export DB_USER=licences
-export DB_PASS=password
+export DB_NAME=create-and-vary-a-licence-db
+export DB_USER=create-and-vary-a-licence
+export DB_PASS=create-and-vary-a-licence
 
 # Provide URLs to other local container-based dependent services
 # Match with ports defined in docker-compose.yml
