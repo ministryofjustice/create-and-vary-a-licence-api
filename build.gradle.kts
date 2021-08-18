@@ -26,7 +26,6 @@ tasks.named<Test>("test") {
   }
 }
 
-
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
