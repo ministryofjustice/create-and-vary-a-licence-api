@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.5"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.6"
   kotlin("plugin.spring") version "1.5.21"
   kotlin("plugin.jpa") version "1.5.21"
 }
@@ -7,7 +7,6 @@ plugins {
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
-
 val integrationTest = task<Test>("integrationTest") {
   description = "Integration tests"
   group = "verification"
