@@ -31,12 +31,17 @@ echo $AUTH_TOKEN
 echo "---------------------------------------------------------------"
 
 # curl -X GET --location "$API_HOST/api/offenders/A5170DY" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
+# curl -X GET --location "$API_HOST/api/offenders/G9786GC" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
+# curl -X GET --location "$API_HOST/api/offenders/G1086GO" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
 # curl -X GET --location  "$COMMUNITY_HOST/secure/offenders/crn/X356288/all" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
 
 
 # curl -X GET --location  "$COMMUNITY_HOST/secure/offenders/crn/X344165/allOffenderManagers" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
-curl -X GET --location  "$COMMUNITY_HOST/secure/staff/staffIdentifier/2500012436/managedOffenders?current=true" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
+# curl -X GET --location  "$COMMUNITY_HOST/secure/staff/staffIdentifier/2500012436/managedOffenders?current=true" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
+# curl -X GET --location  "$COMMUNITY_HOST/secure/staff/staffIdentifier/2500012436" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
 
+
+curl -X GET --location  "$COMMUNITY_HOST/secure/staff/username/lucybennett" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
 
 # curl -X GET --location  "$COMMUNITY_HOST/secure/offenders/crn/X356288/allOffenderManagers" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
 # curl -X GET --location  "$COMMUNITY_HOST/secure/offenders/crn/X356288/contact-summary" -H "Authorization: $AUTH_TOKEN" -H "Accept: application/json" | jq .
