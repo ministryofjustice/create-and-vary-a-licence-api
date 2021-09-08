@@ -45,34 +45,31 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql:42.2.20")
 
-  implementation("com.google.code.gson:gson:2.8.7")
+  implementation("com.google.code.gson:gson:2.8.8")
   implementation("io.arrow-kt:arrow-core:0.10.5")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.4.6")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.4.6")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.4.6")
+  implementation("org.springdoc:springdoc-openapi-ui:1.5.10")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.5.10")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.10")
 
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.18.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.26")
-  testImplementation("org.mockito:mockito-inline:3.11.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.27")
+  testImplementation("org.mockito:mockito-inline:3.12.4")
   testImplementation("io.projectreactor:reactor-test")
 }
 
+java {
+  toolchain.languageVersion.set(JavaLanguageVersion.of(16))
+}
+
 tasks {
-  compileKotlin {
-    kotlinOptions {
-      jvmTarget = "16"
-    }
-  }
-  compileTestKotlin {
-    kotlinOptions {
-      jvmTarget = "16"
-    }
+  withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "16"
   }
 }
