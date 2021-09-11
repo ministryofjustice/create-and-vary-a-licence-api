@@ -1,8 +1,15 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.Entity
+import javax.persistence.Enumerated
+import javax.persistence.EnumType.STRING
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -20,15 +27,15 @@ data class Licence(
   @NotNull
   val id: Long = -1,
 
-  // Enumerated - AP
   @NotNull
-  val typeCode: String = "",
+  @Enumerated(STRING)
+  val typeCode: LicenceType = AP,
 
   val version: String? = null,
 
-  // Enumerated CREATED
   @NotNull
-  val statusCode: String = "",
+  @Enumerated(STRING)
+  val statusCode: LicenceStatus = IN_PROGRESS,
 
   val nomsId: String? = null,
   val bookingNo: String? = null,
@@ -42,7 +49,7 @@ data class Licence(
   val forename: String? = null,
   val middleNames: String? = null,
   val surname: String? = null,
-  val dateOfBirth: LocalDateTime? = null,
+  val dateOfBirth: LocalDate? = null,
   val conditionalReleaseDate: LocalDate? = null,
   val actualReleaseDate: LocalDate? = null,
   val sentenceStartDate: LocalDate? = null,
