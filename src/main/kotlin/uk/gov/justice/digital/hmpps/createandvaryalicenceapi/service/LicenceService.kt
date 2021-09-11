@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceStandardTermsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -12,12 +14,19 @@ import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
 @Service
-class LicenceService(private val licenceRepository: LicenceRepository) {
+class LicenceService(
+  private val licenceRepository: LicenceRepository,
+  private val standardTermsRepository: LicenceStandardTermsRepository,
+) {
 
+  @Transactional
   fun createLicence(request: CreateLicenceRequest): CreateLicenceResponse {
     if (getLicencesInFlight(request.nomsId!!) > 0) {
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
     }
+    val entityStandardTerms = request.standardConditions.transformToEntityStandard()
+    standardTermsRepository.saveAllAndFlush(entityStandardTerms)
+
     return transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
   }
 

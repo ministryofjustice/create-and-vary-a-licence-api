@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-
 import javax.validation.constraints.NotNull
 
 @Schema(description = "Request object for creating a new licence")
@@ -119,7 +118,7 @@ data class CreateLicenceRequest(
   @NotNull
   val probationLduCode: String? = null,
 
-  @Schema(description = "The list of standard conditions which apply to all licences, from service configuration", example = "List of conditions")
+  @Schema(description = "The list of standard conditions from service configuration")
   @NotNull
-  val standardConditions: List<String>
+  val standardConditions: List<StandardCondition>
 )

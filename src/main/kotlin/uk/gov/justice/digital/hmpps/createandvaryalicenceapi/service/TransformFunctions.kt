@@ -7,16 +7,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardTerm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TestData as EntityTestData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
-
 import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TestData as EntityTestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
@@ -71,11 +70,11 @@ fun transform(createRequest: CreateLicenceRequest): EntityLicence {
   )
 }
 
-fun transform(licence: EntityLicence) : ModelLicence {
-  return ModelLicence (
+fun transform(licence: EntityLicence): ModelLicence {
+  return ModelLicence(
     id = licence.id,
     typeCode = licence.typeCode,
-    version = licence.version ,
+    version = licence.version,
     statusCode = licence.statusCode,
     nomsId = licence.nomsId,
     bookingNo = licence.bookingNo,
@@ -115,13 +114,25 @@ fun transform(licence: EntityLicence) : ModelLicence {
     createByUsername = licence.createByUsername,
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
-    standardConditions = licence.standardTerms.transformStandard(),
-    additionalConditions = licence.additionalTerms.transformAdditional(),
-    bespokeConditions = licence.bespokeTerms.transformBespoke(),
+    standardConditions = licence.standardTerms.transformToModelStandard(),
+    additionalConditions = licence.additionalTerms.transformToModelAdditional(),
+    bespokeConditions = licence.bespokeTerms.transformToModelBespoke(),
   )
 }
 
-fun List<StandardTerm>.transformStandard(): List<StandardCondition> = map(::transform)
+// Take a list of model standard conditions and transform to a list of StandardTerm entities
+fun List<StandardCondition>.transformToEntityStandard(): List<StandardTerm> = map(::transform)
+
+fun transform(model: StandardCondition): StandardTerm {
+  return StandardTerm(
+    termCode = model.code,
+    termSequence = model.sequence,
+    termText = model.text,
+  )
+}
+
+// Take list of entity standard terms and transform to model standard terms
+fun List<StandardTerm>.transformToModelStandard(): List<StandardCondition> = map(::transform)
 
 fun transform(entity: StandardTerm): StandardCondition {
   return StandardCondition(
@@ -132,29 +143,21 @@ fun transform(entity: StandardTerm): StandardCondition {
   )
 }
 
-fun List<BespokeTerm>.transformBespoke(): List<BespokeCondition> = map(::transform)
+// Take list of entity additional terms and transform to model additional terms
+fun List<AdditionalTerm>.transformToModelAdditional(): List<AdditionalCondition> = map(::transform)
 
-fun transform(entity: BespokeTerm): BespokeCondition {
-  return BespokeCondition(
+fun transform(entity: AdditionalTerm): AdditionalCondition {
+  return AdditionalCondition(
     id = entity.id,
+    code = entity.termCode,
     sequence = entity.termSequence,
     text = entity.termText,
+    data = entity.additionalTermData.transformToModelAdditionalData(),
   )
 }
 
-fun List<AdditionalTerm>.transformAdditional(): List<AdditionalCondition> = map(::transform)
-
-fun transform(entity: AdditionalTerm): AdditionalCondition {
- return AdditionalCondition(
-   id =  entity.id,
-   code = entity.termCode,
-   sequence = entity.termSequence,
-   text = entity.termText,
-   data = entity.additionalTermData.transformAdditionalData(),
- )
-}
-
-fun List<AdditionalTermData>.transformAdditionalData(): List<AdditionalConditionData> = map(::transform)
+// Take list of entity additional term data and transform to model additional term data
+fun List<AdditionalTermData>.transformToModelAdditionalData(): List<AdditionalConditionData> = map(::transform)
 
 fun transform(entity: AdditionalTermData): AdditionalConditionData {
   return AdditionalConditionData(
@@ -163,5 +166,16 @@ fun transform(entity: AdditionalTermData): AdditionalConditionData {
     description = entity.dataDescription,
     format = entity.dataFormat,
     value = entity.dataValue,
+  )
+}
+
+// Take list of entity bespoke terms and transform to model bespoke terms
+fun List<BespokeTerm>.transformToModelBespoke(): List<BespokeCondition> = map(::transform)
+
+fun transform(entity: BespokeTerm): BespokeCondition {
+  return BespokeCondition(
+    id = entity.id,
+    sequence = entity.termSequence,
+    text = entity.termText,
   )
 }

@@ -228,7 +228,7 @@ class LicenceControllerTest {
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
-      standardConditions = someStandardConditions.map { it.text!! }
+      standardConditions = someStandardConditions,
     )
 
     val aCreateLicenceResponse = CreateLicenceResponse(
@@ -238,7 +238,8 @@ class LicenceControllerTest {
     )
   }
 
-  // Other tests possible
+  // Other test candidates:
+  // - supply incomplete required data e.g. no com or prisoner identifiers
   // - create a licence with an invalid type
   // - create a PSS licence type
 }
