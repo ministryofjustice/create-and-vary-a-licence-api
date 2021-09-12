@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardTerm
 
 @Repository
-interface LicenceStandardTermsRepository: JpaRepository<StandardTerm, Long>
+interface LicenceStandardTermsRepository : JpaRepository<StandardTerm, Long>

@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull
 
 @Entity
 @Table(name = "licence_type")
-data class LicenceType (
+data class LicenceType(
   @Id
   @NotNull
   val typeCode: String = "",

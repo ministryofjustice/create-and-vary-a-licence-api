@@ -7,9 +7,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceStandardTermsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
@@ -24,6 +24,7 @@ class LicenceService(
     if (getLicencesInFlight(request.nomsId!!) > 0) {
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
     }
+
     val entityStandardTerms = request.standardConditions.transformToEntityStandard()
     standardTermsRepository.saveAllAndFlush(entityStandardTerms)
 
