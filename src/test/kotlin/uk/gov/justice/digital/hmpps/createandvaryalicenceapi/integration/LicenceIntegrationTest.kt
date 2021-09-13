@@ -107,6 +107,38 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(3)
   }
 
+  @Test
+  @Sql("classpath:test_data/clear-all-licences.sql")
+  fun `Unauthorized (401) for create when no token is supplied`() {
+    webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(aCreateLicenceRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+
+    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  @Test
+  @Sql("classpath:test_data/clear-all-licences.sql")
+  fun `Get forbidden (403) for create when incorrect roles are supplied`() {
+    val result = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(aCreateLicenceRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+      .expectBody(ErrorResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.userMessage).contains("Access is denied")
+    assertThat(licenceRepository.count()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
