@@ -1,5 +1,5 @@
 DELETE from standard_condition;
-DELETE from additional_term_data;
-DELETE from additional_term;
-DELETE from bespoke_term;
+DELETE from additional_condition_data;
+DELETE from additional_condition;
+DELETE from bespoke_condition;
 DELETE from licence;

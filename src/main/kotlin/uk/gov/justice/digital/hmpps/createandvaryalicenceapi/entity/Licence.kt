@@ -89,14 +89,14 @@ data class Licence(
   @JoinColumn(name = "licenceId")
   @Fetch(value = FetchMode.SUBSELECT)
   @LazyCollection(LazyCollectionOption.FALSE)
-  @OrderBy("termSequence")
+  @OrderBy("conditionSequence")
   @OneToMany
-  val additionalTerms: List<AdditionalTerm> = emptyList(),
+  val additionalConditions: List<AdditionalCondition> = emptyList(),
 
   @JoinColumn(name = "licenceId")
   @Fetch(value = FetchMode.SUBSELECT)
   @LazyCollection(LazyCollectionOption.FALSE)
-  @OrderBy("termSequence")
+  @OrderBy("conditionSequence")
   @OneToMany
-  val bespokeTerms: List<BespokeTerm> = emptyList(),
+  val bespokeConditions: List<BespokeCondition> = emptyList(),
 )

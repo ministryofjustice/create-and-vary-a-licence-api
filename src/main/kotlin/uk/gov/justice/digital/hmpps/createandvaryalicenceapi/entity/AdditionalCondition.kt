@@ -15,8 +15,8 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "additional_term")
-data class AdditionalTerm(
+@Table(name = "additional_condition")
+data class AdditionalCondition(
   @Id
   @GeneratedValue(strategy = IDENTITY)
   @NotNull
@@ -25,14 +25,14 @@ data class AdditionalTerm(
   @NotNull
   val licenceId: Long = -1,
 
-  val termCode: String? = null,
-  val termSequence: Int? = null,
-  val termText: String? = null,
+  val conditionCode: String? = null,
+  val conditionSequence: Int? = null,
+  val conditionText: String? = null,
 
   @JoinColumn(name = "additionalTermId")
   @Fetch(FetchMode.SUBSELECT)
   @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("dataSequence")
   @OneToMany
-  val additionalTermData: List<AdditionalTermData> = emptyList(),
+  val additionalConditionData: List<AdditionalConditionData> = emptyList(),
 )

@@ -67,36 +67,36 @@ CREATE TABLE standard_condition (
 
 CREATE INDEX idx_standard_condition_licence_id ON standard_condition(licence_id);
 
-CREATE TABLE additional_term (
-  id serial NOT NULL constraint additional_term_pk PRIMARY KEY,
+CREATE TABLE additional_condition (
+  id serial NOT NULL constraint additional_condition_pk PRIMARY KEY,
   licence_id integer references licence(id),
-  term_code varchar(20) NOT NULL,  -- copied from the current licence configuration for additional terms
-  term_sequence integer, -- copied from the current configuration for additional terms
-  term_text text NOT NULL -- copied from the current configuration for additional terms
+  condition_code varchar(20) NOT NULL,  -- copied from the current licence configuration for additional conditions
+  condition_sequence integer, -- copied from the current configuration for additional conditions
+  condition_text text NOT NULL -- copied from the current configuration for additional conditions
 );
 
-CREATE INDEX idx_additional_term_licence_id ON additional_term(licence_id);
+CREATE INDEX idx_additional_condition_licence_id ON additional_condition(licence_id);
 
 -- There can be more than one data item for a single additional term
-CREATE TABLE additional_term_data (
-  id serial NOT NULL constraint additional_term_data_pk PRIMARY KEY,
-  additional_term_id integer references additional_term(id),
-  data_sequence integer,  -- the sequence of the data for this additional term - starting at 1
-  data_description varchar(60), -- copied from configuration for this additional term data
-  data_format varchar(20),   -- copied from configuration for this additional term data value
+CREATE TABLE additional_condition_data (
+  id serial NOT NULL constraint additional_condition_data_pk PRIMARY KEY,
+  additional_condition_id integer references additional_condition(id),
+  data_sequence integer,  -- the sequence of the data for this additional condition - starting at 1
+  data_description varchar(60), -- copied from configuration for this additional condition data
+  data_format varchar(20),   -- copied from configuration for this additional condition data value
   data_value varchar(60) -- the value collected from the user
 );
 
-CREATE INDEX idx_additional_term_data_id ON additional_term_data(additional_term_id);
+CREATE INDEX idx_additional_condition_data_id ON additional_condition_data(additional_condition_id);
 
-CREATE TABLE bespoke_term (
-  id serial NOT NULL constraint bespoke_terms_pk PRIMARY KEY,
+CREATE TABLE bespoke_condition (
+  id serial NOT NULL constraint bespoke_condition_pk PRIMARY KEY,
   licence_id integer references licence(id),
-  term_sequence integer,
-  term_text text NOT NULL
+  condition_sequence integer,
+  condition_text text NOT NULL
 );
 
-CREATE INDEX idx_bespoke_term_licence_id ON bespoke_term(licence_id);
+CREATE INDEX idx_bespoke_condition_licence_id ON bespoke_condition(licence_id);
 
 CREATE TABLE licence_history (
   id serial NOT NULL constraint licence_history_pk PRIMARY KEY,

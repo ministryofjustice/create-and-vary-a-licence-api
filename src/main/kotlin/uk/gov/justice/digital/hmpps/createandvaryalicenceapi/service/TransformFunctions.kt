@@ -1,18 +1,18 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalTerm
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalTermData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeTerm
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TestData as EntityTestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
@@ -115,8 +115,8 @@ fun transform(licence: EntityLicence): ModelLicence {
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
     standardConditions = licence.standardConditions.transformToModelStandard(),
-    additionalConditions = licence.additionalTerms.transformToModelAdditional(),
-    bespokeConditions = licence.bespokeTerms.transformToModelBespoke(),
+    additionalConditions = licence.additionalConditions.transformToModelAdditional(),
+    bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   )
 }
 
@@ -132,7 +132,7 @@ fun transform(model: ModelStandardCondition, id: Long): EntityStandardCondition 
   )
 }
 
-// Take list of entity standard terms and transform to model standard terms
+// Transform a list of entity standard conditions to model standard conditions
 fun List<EntityStandardCondition>.transformToModelStandard(): List<ModelStandardCondition> = map(::transform)
 
 fun transform(entity: EntityStandardCondition): ModelStandardCondition {
@@ -144,24 +144,24 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
   )
 }
 
-// Take list of entity additional terms and transform to model additional terms
-fun List<AdditionalTerm>.transformToModelAdditional(): List<AdditionalCondition> = map(::transform)
+// Transform a list of entity additional conditions to model additional conditions
+fun List<EntityAdditionalCondition>.transformToModelAdditional(): List<ModelAdditionalCondition> = map(::transform)
 
-fun transform(entity: AdditionalTerm): AdditionalCondition {
-  return AdditionalCondition(
+fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
+  return ModelAdditionalCondition(
     id = entity.id,
-    code = entity.termCode,
-    sequence = entity.termSequence,
-    text = entity.termText,
-    data = entity.additionalTermData.transformToModelAdditionalData(),
+    code = entity.conditionCode,
+    sequence = entity.conditionSequence,
+    text = entity.conditionText,
+    data = entity.additionalConditionData.transformToModelAdditionalData(),
   )
 }
 
-// Take list of entity additional term data and transform to model additional term data
-fun List<AdditionalTermData>.transformToModelAdditionalData(): List<AdditionalConditionData> = map(::transform)
+// Transform a list of entity additional condition data to model additional condition data
+fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> = map(::transform)
 
-fun transform(entity: AdditionalTermData): AdditionalConditionData {
-  return AdditionalConditionData(
+fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionData {
+  return ModelAdditionalConditionData(
     id = entity.id,
     sequence = entity.dataSequence,
     description = entity.dataDescription,
@@ -170,13 +170,13 @@ fun transform(entity: AdditionalTermData): AdditionalConditionData {
   )
 }
 
-// Take list of entity bespoke terms and transform to model bespoke terms
-fun List<BespokeTerm>.transformToModelBespoke(): List<BespokeCondition> = map(::transform)
+// Transform a list of entity bespoke conditions to model bespoke conditions
+fun List<EntityBespokeCondition>.transformToModelBespoke(): List<ModelBespokeCondition> = map(::transform)
 
-fun transform(entity: BespokeTerm): BespokeCondition {
-  return BespokeCondition(
+fun transform(entity: EntityBespokeCondition): ModelBespokeCondition {
+  return ModelBespokeCondition(
     id = entity.id,
-    sequence = entity.termSequence,
-    text = entity.termText,
+    sequence = entity.conditionSequence,
+    text = entity.conditionText,
   )
 }

@@ -8,15 +8,15 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "additional_term_data")
-data class AdditionalTermData(
+@Table(name = "additional_condition_data")
+data class AdditionalConditionData(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
   val id: Long = -1,
 
   @NotNull
-  val additionalTermId: Long = -1,
+  val additionalConditionId: Long = -1,
 
   @NotNull
   val dataSequence: Int = -1,

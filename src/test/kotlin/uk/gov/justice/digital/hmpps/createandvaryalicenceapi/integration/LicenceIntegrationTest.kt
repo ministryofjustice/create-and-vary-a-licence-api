@@ -43,8 +43,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
 
-    assertThat(result.standardConditions.size).isEqualTo(3)
-    assertThat(result.standardConditions)
+    assertThat(result?.standardConditions?.size).isEqualTo(3)
+    assertThat(result?.standardConditions)
       .extracting("code")
       .containsAll(listOf("goodBehaviour", "notBreakLaw", "attendMeetings"))
   }
@@ -99,9 +99,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
 
-    assertThat(result.licenceId).isGreaterThan(0L)
-    assertThat(result.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(result.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(result?.licenceId).isGreaterThan(0L)
+    assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
+    assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(1)
     assertThat(standardConditionRepository.count()).isEqualTo(3)

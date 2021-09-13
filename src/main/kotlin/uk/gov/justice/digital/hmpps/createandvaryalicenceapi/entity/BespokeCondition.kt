@@ -8,8 +8,8 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "bespoke_term")
-data class BespokeTerm(
+@Table(name = "bespoke_condition")
+data class BespokeCondition(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
@@ -18,6 +18,6 @@ data class BespokeTerm(
   @NotNull
   val licenceId: Long = -1,
 
-  val termSequence: Int? = null,
-  val termText: String? = null,
+  val conditionSequence: Int? = null,
+  val conditionText: String? = null,
 )
