@@ -11,11 +11,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyList
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardTerm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceStandardTermsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -24,16 +22,18 @@ import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 class LicenceServiceTest {
-  private val standardTermsRepository = mock<LicenceStandardTermsRepository>()
+  private val standardConditionRepository = mock<StandardConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
-  private val service = LicenceService(licenceRepository, standardTermsRepository)
+  private val service = LicenceService(licenceRepository, standardConditionRepository)
 
   @BeforeEach
   fun reset() {
-    reset(licenceRepository, standardTermsRepository)
+    reset(licenceRepository, standardConditionRepository)
   }
 
   @Test
@@ -76,7 +76,7 @@ class LicenceServiceTest {
 
   @Test
   fun `service creates a licence with standard conditions`() {
-    whenever(standardTermsRepository.saveAllAndFlush(anyList())).thenReturn(someEntityStandardTerms)
+    whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(someEntityStandardConditions)
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
 
     val createResponse = service.createLicence(aCreateLicenceRequest)
@@ -84,7 +84,7 @@ class LicenceServiceTest {
     assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
 
-    verify(standardTermsRepository, times(1)).saveAllAndFlush(anyList())
+    verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
     verify(licenceRepository, times(1)).saveAndFlush(any())
   }
 
@@ -107,20 +107,20 @@ class LicenceServiceTest {
       .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
 
     verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardTermsRepository, times(0)).saveAllAndFlush(anyList())
+    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
   }
 
   private companion object {
     val someStandardConditions = listOf(
-      StandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      StandardCondition(id = 2, code = "notBreakLaw", sequence = 1, text = "Do not break any law"),
-      StandardCondition(id = 3, code = "attendMeetings", sequence = 1, text = "Attend meetings"),
+      ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+      ModelStandardCondition(id = 2, code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
+      ModelStandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
     )
 
-    val someEntityStandardTerms = listOf(
-      StandardTerm(id = 1, termCode = "goodBehaviour", termSequence = 1, termText = "Be of good behaviour"),
-      StandardTerm(id = 2, termCode = "notBreakLaw", termSequence = 1, termText = "Do not break any law"),
-      StandardTerm(id = 3, termCode = "attendMeetings", termSequence = 1, termText = "Attend meetings"),
+    val someEntityStandardConditions = listOf(
+      EntityStandardCondition(id = 1, conditionCode = "goodBehaviour", conditionSequence = 1, conditionText = "Be of good behaviour"),
+      EntityStandardCondition(id = 2, conditionCode = "notBreakLaw", conditionSequence = 2, conditionText = "Do not break any law"),
+      EntityStandardCondition(id = 3, conditionCode = "attendMeetings", conditionSequence = 3, conditionText = "Attend meetings"),
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
@@ -186,7 +186,7 @@ class LicenceServiceTest {
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
       createdByUsername = "X12345",
-      standardTerms = someEntityStandardTerms,
+      standardConditions = someEntityStandardConditions,
     )
   }
 }

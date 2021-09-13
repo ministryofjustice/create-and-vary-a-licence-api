@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceStandardTermsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -23,7 +23,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   lateinit var licenceRepository: LicenceRepository
 
   @Autowired
-  lateinit var standardTermsRepository: LicenceStandardTermsRepository
+  lateinit var standardConditionRepository: StandardConditionRepository
 
   @Test
   @Sql(
@@ -84,7 +84,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql("classpath:test_data/clear-all-licences.sql")
   fun `Create a licence`() {
     assertThat(licenceRepository.count()).isEqualTo(0)
-    assertThat(standardTermsRepository.count()).isEqualTo(0)
+    assertThat(standardConditionRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -104,15 +104,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(1)
-    assertThat(standardTermsRepository.count()).isEqualTo(3)
+    assertThat(standardConditionRepository.count()).isEqualTo(3)
   }
 
   private companion object {
 
     val someStandardConditions = listOf(
-      StandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      StandardCondition(id = 2, code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
-      StandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
+      StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+      StandardCondition(code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
+      StandardCondition(code = "attendMeetings", sequence = 3, text = "Attend meetings"),
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(

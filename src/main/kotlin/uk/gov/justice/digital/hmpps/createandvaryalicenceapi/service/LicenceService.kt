@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceStandardTermsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -16,7 +16,7 @@ import javax.validation.ValidationException
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
-  private val standardTermsRepository: LicenceStandardTermsRepository,
+  private val standardConditionRepository: StandardConditionRepository,
 ) {
 
   @Transactional
@@ -25,8 +25,8 @@ class LicenceService(
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
     }
     val createLicenceResponse = transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
-    var entityStandardTerms = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
-    standardTermsRepository.saveAllAndFlush(entityStandardTerms)
+    var entityStandardConditions = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
+    standardConditionRepository.saveAllAndFlush(entityStandardConditions)
     return createLicenceResponse
   }
 

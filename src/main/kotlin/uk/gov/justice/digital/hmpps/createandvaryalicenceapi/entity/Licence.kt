@@ -82,9 +82,9 @@ data class Licence(
   @JoinColumn(name = "licenceId")
   @Fetch(value = FetchMode.SUBSELECT)
   @LazyCollection(LazyCollectionOption.FALSE)
-  @OrderBy("termSequence")
+  @OrderBy("conditionSequence")
   @OneToMany
-  val standardTerms: List<StandardTerm> = emptyList(),
+  val standardConditions: List<StandardCondition> = emptyList(),
 
   @JoinColumn(name = "licenceId")
   @Fetch(value = FetchMode.SUBSELECT)

@@ -3,18 +3,18 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalTerm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalTermData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeTerm
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardTerm
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TestData as EntityTestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
 
 /*
@@ -114,33 +114,33 @@ fun transform(licence: EntityLicence): ModelLicence {
     createdByUsername = licence.createdByUsername,
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
-    standardConditions = licence.standardTerms.transformToModelStandard(),
+    standardConditions = licence.standardConditions.transformToModelStandard(),
     additionalConditions = licence.additionalTerms.transformToModelAdditional(),
     bespokeConditions = licence.bespokeTerms.transformToModelBespoke(),
   )
 }
 
-// Transform a list of model standard conditions to a list of entity StandardTerm, and set the referential licenceId
-fun List<StandardCondition>.transformToEntityStandard(id: Long): List<StandardTerm> = map { term -> transform(term, id) }
+// Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
+fun List<ModelStandardCondition>.transformToEntityStandard(id: Long): List<EntityStandardCondition> = map { term -> transform(term, id) }
 
-fun transform(model: StandardCondition, id: Long): StandardTerm {
-  return StandardTerm(
+fun transform(model: ModelStandardCondition, id: Long): EntityStandardCondition {
+  return EntityStandardCondition(
     licenceId = id,
-    termCode = model.code,
-    termSequence = model.sequence,
-    termText = model.text,
+    conditionCode = model.code,
+    conditionSequence = model.sequence,
+    conditionText = model.text,
   )
 }
 
 // Take list of entity standard terms and transform to model standard terms
-fun List<StandardTerm>.transformToModelStandard(): List<StandardCondition> = map(::transform)
+fun List<EntityStandardCondition>.transformToModelStandard(): List<ModelStandardCondition> = map(::transform)
 
-fun transform(entity: StandardTerm): StandardCondition {
-  return StandardCondition(
+fun transform(entity: EntityStandardCondition): ModelStandardCondition {
+  return ModelStandardCondition(
     id = entity.id,
-    code = entity.termCode,
-    sequence = entity.termSequence,
-    text = entity.termText
+    code = entity.conditionCode,
+    sequence = entity.conditionSequence,
+    text = entity.conditionText
   )
 }
 

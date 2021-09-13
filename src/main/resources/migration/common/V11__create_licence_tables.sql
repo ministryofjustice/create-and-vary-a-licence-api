@@ -55,16 +55,17 @@ CREATE TABLE licence (
 
 CREATE INDEX idx_licence_noms_id ON licence(noms_id);
 CREATE INDEX idx_licence_crn ON licence(crn);
+CREATE INDEX idx_licence_com_staff_id ON licence(com_staff_id);
 
-CREATE TABLE standard_term (
-  id serial NOT NULL constraint standard_term_pk PRIMARY KEY,
+CREATE TABLE standard_condition (
+  id serial NOT NULL constraint standard_condition_pk PRIMARY KEY,
   licence_id integer NOT NULL references licence(id),
-  term_code varchar(20) NOT NULL,  -- this matches the current licence configuration for standard terms
-  term_sequence integer NOT NULL,
-  term_text text NOT NULL
+  condition_code varchar(20) NOT NULL,  -- this matches the current licence configuration for standard conditions
+  condition_sequence integer NOT NULL,
+  condition_text text NOT NULL
 );
 
-CREATE INDEX idx_standard_term_licence_id ON standard_term(licence_id);
+CREATE INDEX idx_standard_condition_licence_id ON standard_condition(licence_id);
 
 CREATE TABLE additional_term (
   id serial NOT NULL constraint additional_term_pk PRIMARY KEY,
