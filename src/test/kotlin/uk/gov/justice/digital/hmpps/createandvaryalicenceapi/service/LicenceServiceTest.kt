@@ -39,29 +39,38 @@ class LicenceServiceTest {
   @Test
   fun `service returns a licence by ID`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
     val licence = service.getLicenceById(1L)
+
     assertThat(licence).isExactlyInstanceOf(ModelLicence::class.java)
+
     verify(licenceRepository, times(1)).findById(1L)
   }
 
   @Test
   fun `service transforms key fields of a licence object correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
     val licence = service.getLicenceById(1L)
+
     assertThat(licence.cro).isEqualTo(aLicenceEntity.cro)
     assertThat(licence.nomsId).isEqualTo(aLicenceEntity.nomsId)
     assertThat(licence.bookingId).isEqualTo(aLicenceEntity.bookingId)
     assertThat(licence.pnc).isEqualTo(aLicenceEntity.pnc)
+
     verify(licenceRepository, times(1)).findById(1L)
   }
 
   @Test
   fun `service throws a not found exception for unknown ID`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
     val exception = assertThrows<EntityNotFoundException> {
       service.getLicenceById(1L)
     }
+
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
     verify(licenceRepository, times(1)).findById(1L)
   }
 
@@ -69,9 +78,12 @@ class LicenceServiceTest {
   fun `service creates a licence with standard conditions`() {
     whenever(standardTermsRepository.saveAllAndFlush(anyList())).thenReturn(someEntityStandardTerms)
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
+
     val createResponse = service.createLicence(aCreateLicenceRequest)
+
     assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
+
     verify(standardTermsRepository, times(1)).saveAllAndFlush(anyList())
     verify(licenceRepository, times(1)).saveAndFlush(any())
   }
@@ -173,7 +185,7 @@ class LicenceServiceTest {
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
-      createByUsername = "X12345",
+      createdByUsername = "X12345",
       standardTerms = someEntityStandardTerms,
     )
   }

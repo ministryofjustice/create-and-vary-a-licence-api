@@ -24,11 +24,10 @@ class LicenceService(
     if (getLicencesInFlight(request.nomsId!!) > 0) {
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
     }
-
-    val entityStandardTerms = request.standardConditions.transformToEntityStandard()
+    val createLicenceResponse = transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
+    var entityStandardTerms = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
     standardTermsRepository.saveAllAndFlush(entityStandardTerms)
-
-    return transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
+    return createLicenceResponse
   }
 
   fun getLicenceById(licenceId: Long): Licence {

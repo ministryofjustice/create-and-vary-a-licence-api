@@ -1,8 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import org.hibernate.annotations.Fetch
+import org.hibernate.annotations.FetchMode
+import org.hibernate.annotations.LazyCollection
+import org.hibernate.annotations.LazyCollectionOption
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
+import javax.persistence.GenerationType.IDENTITY
 import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
@@ -14,7 +18,7 @@ import javax.validation.constraints.NotNull
 @Table(name = "additional_term")
 data class AdditionalTerm(
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = IDENTITY)
   @NotNull
   val id: Long = -1,
 
@@ -26,7 +30,9 @@ data class AdditionalTerm(
   val termText: String? = null,
 
   @JoinColumn(name = "additionalTermId")
+  @Fetch(FetchMode.SUBSELECT)
+  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("dataSequence")
   @OneToMany
-  val additionalTermData: List<AdditionalTermData> = ArrayList(),
+  val additionalTermData: List<AdditionalTermData> = emptyList(),
 )

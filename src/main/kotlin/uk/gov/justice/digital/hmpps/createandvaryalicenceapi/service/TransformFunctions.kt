@@ -66,7 +66,7 @@ fun transform(createRequest: CreateLicenceRequest): EntityLicence {
     probationAreaCode = createRequest.probationAreaCode,
     probationLduCode = createRequest.probationLduCode,
     dateCreated = LocalDateTime.now(),
-    createByUsername = createRequest.comUsername,
+    createdByUsername = createRequest.comUsername,
   )
 }
 
@@ -111,7 +111,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     approvedByUsername = licence.approvedByUsername,
     supersededDate = licence.supersededDate,
     dateCreated = licence.dateCreated,
-    createByUsername = licence.createByUsername,
+    createdByUsername = licence.createdByUsername,
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
     standardConditions = licence.standardTerms.transformToModelStandard(),
@@ -120,11 +120,12 @@ fun transform(licence: EntityLicence): ModelLicence {
   )
 }
 
-// Take a list of model standard conditions and transform to a list of StandardTerm entities
-fun List<StandardCondition>.transformToEntityStandard(): List<StandardTerm> = map(::transform)
+// Transform a list of model standard conditions to a list of entity StandardTerm, and set the referential licenceId
+fun List<StandardCondition>.transformToEntityStandard(id: Long): List<StandardTerm> = map { term -> transform(term, id) }
 
-fun transform(model: StandardCondition): StandardTerm {
+fun transform(model: StandardCondition, id: Long): StandardTerm {
   return StandardTerm(
+    licenceId = id,
     termCode = model.code,
     termSequence = model.sequence,
     termText = model.text,

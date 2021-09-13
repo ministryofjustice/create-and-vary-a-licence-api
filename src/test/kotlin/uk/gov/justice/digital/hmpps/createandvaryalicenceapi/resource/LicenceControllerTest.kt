@@ -194,7 +194,7 @@ class LicenceControllerTest {
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
-      createByUsername = "X12345",
+      createdByUsername = "X12345",
       standardConditions = someStandardConditions,
       additionalConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,

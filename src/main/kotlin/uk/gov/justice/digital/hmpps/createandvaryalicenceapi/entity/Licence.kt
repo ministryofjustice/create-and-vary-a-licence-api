@@ -1,5 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import org.hibernate.annotations.Fetch
+import org.hibernate.annotations.FetchMode
+import org.hibernate.annotations.LazyCollection
+import org.hibernate.annotations.LazyCollectionOption
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -71,22 +75,28 @@ data class Licence(
   val approvedByUsername: String? = null,
   val supersededDate: LocalDateTime? = null,
   val dateCreated: LocalDateTime? = null,
-  val createByUsername: String? = null,
+  val createdByUsername: String? = null,
   val dateLastUpdated: LocalDateTime? = null,
   val updatedByUsername: String? = null,
 
   @JoinColumn(name = "licenceId")
+  @Fetch(value = FetchMode.SUBSELECT)
+  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("termSequence")
   @OneToMany
-  val standardTerms: List<StandardTerm> = ArrayList(),
+  val standardTerms: List<StandardTerm> = emptyList(),
 
   @JoinColumn(name = "licenceId")
+  @Fetch(value = FetchMode.SUBSELECT)
+  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("termSequence")
   @OneToMany
-  val additionalTerms: List<AdditionalTerm> = ArrayList(),
+  val additionalTerms: List<AdditionalTerm> = emptyList(),
 
   @JoinColumn(name = "licenceId")
+  @Fetch(value = FetchMode.SUBSELECT)
+  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("termSequence")
   @OneToMany
-  val bespokeTerms: List<BespokeTerm> = ArrayList(),
+  val bespokeTerms: List<BespokeTerm> = emptyList(),
 )
