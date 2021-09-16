@@ -30,7 +30,7 @@ Start up the docker dependencies using the docker-compose file in the `create-an
 There is a script to help, which sets local profiles, port and DB connection properties to the 
 values required.
 
-`$ ./run-full.sh`
+`$ ./run-local.sh`
 
 Or, to run with default properties set in the docker-compose file
 
