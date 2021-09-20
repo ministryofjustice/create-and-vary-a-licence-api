@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -18,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import javax.validation.constraints.NotEmpty
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -28,13 +31,28 @@ class LicenceController(private val licenceService: LicenceService) {
   @ResponseBody
   @Operation(
     summary = "Create a licence",
-    description = "Creates a licence with the default status IN_PROGRESS and populates it with the details provided.",
+    description = "Creates a licence with the default status IN_PROGRESS and populates with the details provided.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
-      ApiResponse(responseCode = "401", description = "Unauthorised, requires a valid Oauth2 token"),
-      ApiResponse(responseCode = "403", description = "Forbidden, requires an appropriate role")
+      ApiResponse(
+        responseCode = "200",
+        description = "Licence created",
+        content = [
+          Content(mediaType = "application/json", schema = Schema(implementation = CreateLicenceResponse::class))
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
     ]
   )
   fun createLicence(@RequestBody @NotEmpty request: CreateLicenceRequest): CreateLicenceResponse {
@@ -51,9 +69,26 @@ class LicenceController(private val licenceService: LicenceService) {
   )
   @ApiResponses(
     value = [
-      ApiResponse(responseCode = "401", description = "Unauthorised, requires a valid Oauth2 token"),
-      ApiResponse(responseCode = "403", description = "Forbidden, requires an appropriate role"),
-      ApiResponse(responseCode = "404", description = "The licence for this ID was not found.")
+      ApiResponse(
+        responseCode = "200",
+        description = "Licence found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = Licence::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
     ]
   )
   fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence {
