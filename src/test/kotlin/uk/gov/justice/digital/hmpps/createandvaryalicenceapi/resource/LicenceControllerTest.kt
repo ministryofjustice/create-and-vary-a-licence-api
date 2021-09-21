@@ -21,12 +21,14 @@ import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
@@ -126,13 +128,38 @@ class LicenceControllerTest {
         .contentType(APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(aCreateLicenceRequest))
     )
-      .andExpect(status().is4xxClientError)
+      .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
     verify(licenceService, times(1)).createLicence(aCreateLicenceRequest)
+  }
+
+  @Test
+  fun `update initial appointment person`() {
+    mvc.perform(
+      put("/licence/id/4/appointmentPerson")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anUpdateAppointmentPersonRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAppointmentPerson(4, anUpdateAppointmentPersonRequest)
+  }
+
+  @Test
+  fun `update initial appointment person - invalid request body`() {
+    mvc.perform(
+      put("/licence/id/4/appointmentPerson")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes({ }))
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
   }
 
   private companion object {
@@ -235,6 +262,10 @@ class LicenceControllerTest {
       licenceId = 99,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
+    )
+
+    val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
+      appointmentPerson = "John Smith",
     )
   }
 
