@@ -5,5 +5,6 @@ enum class LicenceStatus {
   SUBMITTED,
   ACTIVE,
   REJECTED,
-  SUPERSEDED,
+  INACTIVE,
+  RECALLED,
 }

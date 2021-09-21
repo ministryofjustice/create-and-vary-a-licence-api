@@ -31,7 +31,8 @@ class LicenceController(private val licenceService: LicenceService) {
   @ResponseBody
   @Operation(
     summary = "Create a licence",
-    description = "Creates a licence with the default status IN_PROGRESS and populates with the details provided.",
+    description = "Creates a licence with the default status IN_PROGRESS and populates with the details provided." +
+      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
@@ -64,7 +65,8 @@ class LicenceController(private val licenceService: LicenceService) {
   @ResponseBody
   @Operation(
     summary = "Get a licence by its licence id",
-    description = "Returns a single licence detail by its unique identifier.",
+    description = "Returns a single licence detail by its unique identifier. " +
+      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
