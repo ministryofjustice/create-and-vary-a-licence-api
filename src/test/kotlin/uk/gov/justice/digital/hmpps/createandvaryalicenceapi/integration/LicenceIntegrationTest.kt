@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -139,6 +140,33 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(0)
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update person to meet at initial appointment`() {
+    webTestClient.put()
+      .uri("/licence/id/1/appointmentPerson")
+      .bodyValue(anUpdateAppointmentPersonRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -176,6 +204,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardConditions = someStandardConditions,
+    )
+
+    val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
+      appointmentPerson = "John Smith",
     )
   }
 }
