@@ -123,12 +123,9 @@ data class Licence(
   @Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   val appointmentPerson: String? = null,
 
-  @Schema(description = "The date of the initial appointment", example = "23/08/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val appointmentDate: LocalDate? = null,
-
-  @Schema(description = "The time of the initial appointment", example = "11:30 am")
-  val appointmentTime: String? = null,
+  @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
+  @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+  val appointmentTime: LocalDateTime? = null,
 
   @Schema(
     description = "The address of initial appointment",

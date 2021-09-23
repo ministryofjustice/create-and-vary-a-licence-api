@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -135,7 +136,33 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).findById(1L)
   }
 
+  @Test
+  fun `update initial appointment time persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateAppointmentTime(1L, AppointmentTimeRequest(appointmentTime = tenDaysFromNow))
+
+    val expectedUpdatedEntity = aLicenceEntity.copy(appointmentTime = tenDaysFromNow)
+
+    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+  }
+
+  @Test
+  fun `update initial appointment time throws not found exception if licence not found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.updateAppointmentTime(1L, AppointmentTimeRequest(appointmentTime = tenDaysFromNow))
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+  }
+
   private companion object {
+    val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
+
     val someStandardConditions = listOf(
       ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       ModelStandardCondition(id = 2, code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
