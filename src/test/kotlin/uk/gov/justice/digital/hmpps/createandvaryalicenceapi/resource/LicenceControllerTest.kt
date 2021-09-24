@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
@@ -39,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
@@ -162,6 +164,44 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
   }
 
+  @Test
+  fun `update initial appointment time`() {
+    mvc.perform(
+      put("/licence/id/4/appointmentTime")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAppointmentTimeRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequest)
+  }
+
+  @Test
+  fun `update appointment time - no date specified`() {
+    mvc.perform(
+      put("/licence/id/4/appointmentTime")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes({}))
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+  }
+
+  @Test
+  fun `update initial appointment time - lower precision datetime`() {
+    mvc.perform(
+      put("/licence/id/4/appointmentTime")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAppointmentTimeRequestDateOnly))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequestDateOnly)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -266,6 +306,14 @@ class LicenceControllerTest {
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
       appointmentPerson = "John Smith",
+    )
+
+    val anAppointmentTimeRequest = AppointmentTimeRequest(
+      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES),
+    )
+
+    val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
+      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
     )
   }
 

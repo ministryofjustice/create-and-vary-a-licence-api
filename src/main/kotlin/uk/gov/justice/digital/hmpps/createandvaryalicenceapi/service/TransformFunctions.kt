@@ -104,7 +104,6 @@ fun transform(licence: EntityLicence): ModelLicence {
     probationAreaCode = licence.probationAreaCode,
     probationLduCode = licence.probationLduCode,
     appointmentPerson = licence.appointmentPerson,
-    appointmentDate = licence.appointmentDate,
     appointmentTime = licence.appointmentTime,
     appointmentAddress = licence.appointmentAddress,
     approvedDate = licence.approvedDate,
