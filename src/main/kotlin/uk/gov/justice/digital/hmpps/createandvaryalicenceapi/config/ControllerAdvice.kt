@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.access.AuthorizationServiceException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -84,6 +85,20 @@ class ControllerAdvice {
         ErrorResponse(
           status = HttpStatus.NOT_FOUND.value(),
           userMessage = "Not found: ${e.message}",
+          developerMessage = e.message
+        )
+      )
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException::class)
+  fun handleRequestUnreadableException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+    log.info("Message not readable exception: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.BAD_REQUEST.value(),
+          userMessage = "Bad request: ${e.message}",
           developerMessage = e.message
         )
       )
