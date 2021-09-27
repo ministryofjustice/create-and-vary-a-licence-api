@@ -13,6 +13,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -153,6 +154,30 @@ class LicenceServiceTest {
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateAppointmentTime(1L, AppointmentTimeRequest(appointmentTime = tenDaysFromNow))
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+  }
+
+  @Test
+  fun `update contact number persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateContactNumber(1L, ContactNumberRequest(comTelephone = "0114 2565555"))
+
+    val expectedUpdatedEntity = aLicenceEntity.copy(comTelephone = "0114 2565555")
+
+    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+  }
+
+  @Test
+  fun `update contact number throws not found exception if licence not found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.updateContactNumber(1L, ContactNumberRequest(comTelephone = "0114 2565555"))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)

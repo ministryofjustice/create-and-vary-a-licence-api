@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -52,6 +53,14 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     val updatedLicence = licenceEntity.copy(appointmentTime = request.appointmentTime)
+    licenceRepository.saveAndFlush(updatedLicence)
+  }
+
+  fun updateContactNumber(licenceId: Long, request: ContactNumberRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val updatedLicence = licenceEntity.copy(comTelephone = request.comTelephone)
     licenceRepository.saveAndFlush(updatedLicence)
   }
 

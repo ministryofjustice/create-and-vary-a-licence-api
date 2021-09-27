@@ -9,6 +9,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -198,8 +199,34 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .isEqualTo(anAppointmentTimeRequest.appointmentTime.truncatedTo(ChronoUnit.MINUTES))
   }
 
-  private companion object {
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update the contact number for the officer on a licence`() {
+    webTestClient.put()
+      .uri("/licence/id/1/contact-number")
+      .bodyValue(aContactNumberRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
 
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.comTelephone).isEqualTo(aContactNumberRequest.comTelephone)
+  }
+
+  private companion object {
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       StandardCondition(code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
@@ -243,6 +270,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(10),
+    )
+
+    val aContactNumberRequest = ContactNumberRequest(
+      comTelephone = "0114 2565555",
     )
   }
 }
