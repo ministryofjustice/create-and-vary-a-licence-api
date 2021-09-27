@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -202,6 +203,31 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequestDateOnly)
   }
 
+  @Test
+  fun `update officer contact number`() {
+    mvc.perform(
+      put("/licence/id/4/contact-number")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aContactNumberRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateContactNumber(4, aContactNumberRequest)
+  }
+
+  @Test
+  fun `update officer contact number - invalid request body`() {
+    mvc.perform(
+      put("/licence/id/4/contact-number")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes({ }))
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -314,6 +340,10 @@ class LicenceControllerTest {
 
     val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
+    )
+
+    val aContactNumberRequest = ContactNumberRequest(
+      comTelephone = "0114 2566555",
     )
   }
 
