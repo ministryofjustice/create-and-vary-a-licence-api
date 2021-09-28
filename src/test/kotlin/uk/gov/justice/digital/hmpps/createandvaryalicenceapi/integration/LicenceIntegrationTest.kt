@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
@@ -226,6 +227,33 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.comTelephone).isEqualTo(aContactNumberRequest.comTelephone)
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update the address where the initial appointment will take place`() {
+    webTestClient.put()
+      .uri("/licence/id/1/appointment-address")
+      .bodyValue(anAppointmentAddressRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.appointmentAddress).isEqualTo(anAppointmentAddressRequest.appointmentAddress)
+  }
+
   private companion object {
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -274,6 +302,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val aContactNumberRequest = ContactNumberRequest(
       comTelephone = "0114 2565555",
+    )
+
+    val anAppointmentAddressRequest = AppointmentAddressRequest(
+      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
     )
   }
 }
