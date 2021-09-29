@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
@@ -228,6 +229,31 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
   }
 
+  @Test
+  fun `update appointment address`() {
+    mvc.perform(
+      put("/licence/id/4/appointment-address")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAppointmentAddressRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAppointmentAddress(4, anAppointmentAddressRequest)
+  }
+
+  @Test
+  fun `update appointment address - invalid request body`() {
+    mvc.perform(
+      put("/licence/id/4/appointment-address")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes({ }))
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -344,6 +370,10 @@ class LicenceControllerTest {
 
     val aContactNumberRequest = ContactNumberRequest(
       comTelephone = "0114 2566555",
+    )
+
+    val anAppointmentAddressRequest = AppointmentAddressRequest(
+      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
     )
   }
 

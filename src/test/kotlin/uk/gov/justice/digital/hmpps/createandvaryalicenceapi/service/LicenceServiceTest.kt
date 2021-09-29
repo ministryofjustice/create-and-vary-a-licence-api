@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyList
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
@@ -178,6 +179,37 @@ class LicenceServiceTest {
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateContactNumber(1L, ContactNumberRequest(comTelephone = "0114 2565555"))
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+  }
+
+  @Test
+  fun `update appointment address persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateAppointmentAddress(
+      1L,
+      AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE")
+    )
+
+    val expectedUpdatedEntity =
+      aLicenceEntity.copy(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE")
+
+    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+  }
+
+  @Test
+  fun `update appointment address throws not found exception if licence not found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.updateAppointmentAddress(
+        1L,
+        AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE")
+      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)

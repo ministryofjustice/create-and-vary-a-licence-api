@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
@@ -61,6 +62,15 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     val updatedLicence = licenceEntity.copy(comTelephone = request.comTelephone)
+    licenceRepository.saveAndFlush(updatedLicence)
+  }
+
+  fun updateAppointmentAddress(licenceId: Long, request: AppointmentAddressRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val updatedLicence = licenceEntity.copy(appointmentAddress = request.appointmentAddress)
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
