@@ -5,10 +5,12 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -16,11 +18,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
   private val standardConditionRepository: StandardConditionRepository,
+  private val bespokeConditionRepository: BespokeConditionRepository,
 ) {
 
   @Transactional
@@ -72,6 +76,21 @@ class LicenceService(
 
     val updatedLicence = licenceEntity.copy(appointmentAddress = request.appointmentAddress)
     licenceRepository.saveAndFlush(updatedLicence)
+  }
+
+  @Transactional
+  fun updateBespokeConditions(licenceId: Long, request: BespokeConditionRequest) {
+    licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    bespokeConditionRepository.deleteByLicenceId(licenceId)
+
+    request.conditions.forEachIndexed { index, condition ->
+      bespokeConditionRepository.saveAndFlush(
+        EntityBespokeCondition(licenceId = licenceId, conditionSequence = index, conditionText = condition)
+      )
+    }
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {

@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
@@ -254,6 +255,32 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
   }
 
+  @Test
+  fun `update bespoke conditions`() {
+    mvc.perform(
+      put("/licence/id/4/bespoke-conditions")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aBespokeConditionsRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
+  }
+
+  @Test
+  fun `update bespoke conditions with an empty request removes previous bespoke conditions`() {
+    mvc.perform(
+      put("/licence/id/4/bespoke-conditions")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(BespokeConditionRequest()))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -375,6 +402,8 @@ class LicenceControllerTest {
     val anAppointmentAddressRequest = AppointmentAddressRequest(
       appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
     )
+
+    val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
   }
 
   // Other test candidates:

@@ -14,8 +14,10 @@ import org.mockito.ArgumentMatchers.anyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -25,6 +27,7 @@ import java.time.LocalDateTime
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
@@ -32,12 +35,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
+  private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
-  private val service = LicenceService(licenceRepository, standardConditionRepository)
+  private val service = LicenceService(licenceRepository, standardConditionRepository, bespokeConditionRepository)
 
   @BeforeEach
   fun reset() {
-    reset(licenceRepository, standardConditionRepository)
+    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository)
   }
 
   @Test
@@ -217,8 +221,57 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).findById(1L)
   }
 
+  @Test
+  fun `update bespoke conditions persists multiple entities`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(bespokeConditionRepository.deleteByLicenceId(1L)).thenReturn(0)
+    val bespokeEntities = listOf(
+      // -1 on the id as this is a generated value in the database
+      EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 0, conditionText = "Condition 1"),
+      EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 1, conditionText = "Condition 2"),
+      EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 2, conditionText = "Condition 3"),
+    )
+    bespokeEntities.forEach { bespoke ->
+      whenever(bespokeConditionRepository.saveAndFlush(bespoke)).thenReturn(bespoke)
+    }
+
+    service.updateBespokeConditions(1L, someBespokeConditions)
+
+    verify(bespokeConditionRepository, times(1)).deleteByLicenceId(1L)
+    bespokeEntities.forEach { bespoke ->
+      verify(bespokeConditionRepository, times(1)).saveAndFlush(bespoke)
+    }
+  }
+
+  @Test
+  fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(bespokeConditionRepository.deleteByLicenceId(1L)).thenReturn(0)
+
+    service.updateBespokeConditions(1L, BespokeConditionRequest())
+
+    verify(bespokeConditionRepository, times(1)).deleteByLicenceId(1L)
+    verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `update bespoke conditions throws not found exception if licence not found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.updateBespokeConditions(1L, someBespokeConditions)
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(bespokeConditionRepository, times(0)).deleteByLicenceId(1L)
+    verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+  }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
+
+    val someBespokeConditions = BespokeConditionRequest(conditions = listOf("Condition 1", "Condition 2", "Condition 3"))
 
     val someStandardConditions = listOf(
       ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
