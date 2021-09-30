@@ -80,10 +80,12 @@ class LicenceService(
 
   @Transactional
   fun updateBespokeConditions(licenceId: Long, request: BespokeConditionRequest) {
-    val licenceEntity = licenceRepository
+    licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
+
     bespokeConditionRepository.deleteByLicenceId(licenceId)
+
     request.conditions.forEachIndexed { index, condition ->
       bespokeConditionRepository.saveAndFlush(
         EntityBespokeCondition(licenceId = licenceId, conditionSequence = index, conditionText = condition)
