@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
@@ -254,6 +255,35 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.appointmentAddress).isEqualTo(anAppointmentAddressRequest.appointmentAddress)
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update the bespoke conditions`() {
+    webTestClient.put()
+      .uri("/licence/id/1/bespoke-conditions")
+      .bodyValue(aBespokeConditionRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    var result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.bespokeConditions)
+      .extracting("text")
+      .containsAll(listOf("Condition 1", "Condition 2", "Condition 3"))
+  }
+
   private companion object {
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -306,6 +336,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(
       appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
+    )
+
+    val aBespokeConditionRequest = BespokeConditionRequest(
+      conditions = listOf("Condition 1", "Condition 2", "Condition 3")
     )
   }
 }
