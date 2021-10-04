@@ -2,14 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -29,11 +30,11 @@ class LicenceService(
 ) {
 
   @Transactional
-  fun createLicence(request: CreateLicenceRequest): CreateLicenceResponse {
+  fun createLicence(request: CreateLicenceRequest): LicenceSummary {
     if (offenderHasLicenceInFlight(request.nomsId!!)) {
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
-    val createLicenceResponse = transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
+    val createLicenceResponse = transformToLicenceSummary(licenceRepository.saveAndFlush(transform(request)))
     val entityStandardConditions = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
     standardConditionRepository.saveAllAndFlush(entityStandardConditions)
     return createLicenceResponse
@@ -92,6 +93,15 @@ class LicenceService(
         EntityBespokeCondition(licenceId = licenceId, conditionSequence = index, conditionText = condition)
       )
     }
+  }
+
+  fun findLicencesByStaffIdAndStatuses(staffId: Long, statuses: List<LicenceStatus>?): List<LicenceSummary> {
+    val licences: List<LicenceEntity> = if (statuses != null) {
+      licenceRepository.findAllByComStaffIdAndStatusCodeIn(staffId, statuses)
+    } else {
+      licenceRepository.findAllByComStaffId(staffId)
+    }
+    return transformToListOfSummaries(licences)
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {

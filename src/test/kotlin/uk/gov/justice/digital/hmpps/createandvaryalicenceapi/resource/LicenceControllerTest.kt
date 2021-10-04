@@ -35,8 +35,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -105,7 +105,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a licence`() {
-    whenever(licenceService.createLicence(aCreateLicenceRequest)).thenReturn(aCreateLicenceResponse)
+    whenever(licenceService.createLicence(aCreateLicenceRequest)).thenReturn(aLicenceSummary)
 
     val result = mvc.perform(
       post("/licence/create")
@@ -117,7 +117,7 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aCreateLicenceResponse))
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
 
     verify(licenceService, times(1)).createLicence(aCreateLicenceRequest)
   }
@@ -377,7 +377,7 @@ class LicenceControllerTest {
       standardConditions = someStandardConditions,
     )
 
-    val aCreateLicenceResponse = CreateLicenceResponse(
+    val aLicenceSummary = LicenceSummary(
       licenceId = 99,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
