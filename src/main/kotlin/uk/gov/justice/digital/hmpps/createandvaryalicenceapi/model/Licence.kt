@@ -21,7 +21,7 @@ data class Licence(
 
   @Schema(
     description = "The current status code for this licence",
-    allowableValues = ["IN_PROGRESS", "SUBMITTED", "REJECTED", "ACTIVE", "INACTIVE", "RECALLED"],
+    allowableValues = ["IN_PROGRESS", "SUBMITTED", "APPROVED", "REJECTED", "ACTIVE", "INACTIVE", "RECALLED"],
     example = "IN_PROGRESS",
   )
   val statusCode: LicenceStatus?,

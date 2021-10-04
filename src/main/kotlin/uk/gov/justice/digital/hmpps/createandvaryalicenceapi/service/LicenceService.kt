@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -30,7 +31,7 @@ class LicenceService(
   @Transactional
   fun createLicence(request: CreateLicenceRequest): CreateLicenceResponse {
     if (offenderHasLicenceInFlight(request.nomsId!!)) {
-      throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
+      throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
     val createLicenceResponse = transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
     val entityStandardConditions = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
@@ -94,7 +95,8 @@ class LicenceService(
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
-    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, REJECTED))
+    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED,
+      LicenceStatus.APPROVED, REJECTED))
     return inFlight.isNotEmpty()
   }
 }
