@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -21,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 
 @Service
 class LicenceService(
@@ -105,8 +105,13 @@ class LicenceService(
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
-    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED,
-      LicenceStatus.APPROVED, REJECTED))
+    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(
+      nomsId,
+      listOf(
+        IN_PROGRESS, SUBMITTED,
+        LicenceStatus.APPROVED, REJECTED
+      )
+    )
     return inFlight.isNotEmpty()
   }
 }
