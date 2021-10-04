@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -304,23 +306,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.size).isEqualTo(3)
     assertThat(result)
-      .extracting("licenceId")
-      .contains(1L)
-    assertThat(result)
-      .extracting("licenceStatus")
-      .contains(LicenceStatus.IN_PROGRESS)
-    assertThat(result)
-      .extracting("licenceId")
-      .contains(2L)
-    assertThat(result)
-      .extracting("licenceStatus")
-      .contains(LicenceStatus.APPROVED)
-    assertThat(result)
-      .extracting("licenceId")
-      .contains(3L)
-    assertThat(result)
-      .extracting("licenceStatus")
-      .contains(LicenceStatus.REJECTED)
+      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
+      .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED), tuple(3L, LicenceStatus.REJECTED))
   }
 
   @Test
@@ -343,17 +330,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.size).isEqualTo(2)
     assertThat(result)
-      .extracting("licenceId")
-      .contains(1L)
-    assertThat(result)
-      .extracting("licenceStatus")
-      .contains(LicenceStatus.IN_PROGRESS)
-    assertThat(result)
-      .extracting("licenceId")
-      .contains(2L)
-    assertThat(result)
-      .extracting("licenceStatus")
-      .contains(LicenceStatus.APPROVED)
+      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
+      .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED))
   }
 
   private companion object {

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -328,7 +329,8 @@ class LicenceController(private val licenceService: LicenceService) {
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licence details returned"
+        description = "Licence details returned",
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
       ),
       ApiResponse(
         responseCode = "401",
