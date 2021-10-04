@@ -284,6 +284,78 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .containsAll(listOf("Condition 1", "Condition 2", "Condition 3"))
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-summaries.sql"
+  )
+  fun `Get licence summaries by staffId`() {
+    val result = webTestClient.get()
+      .uri("/licence/staffId/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.size).isEqualTo(3)
+    assertThat(result)
+      .extracting("licenceId")
+      .contains(1L)
+    assertThat(result)
+      .extracting("licenceStatus")
+      .contains(LicenceStatus.IN_PROGRESS)
+    assertThat(result)
+      .extracting("licenceId")
+      .contains(2L)
+    assertThat(result)
+      .extracting("licenceStatus")
+      .contains(LicenceStatus.APPROVED)
+    assertThat(result)
+      .extracting("licenceId")
+      .contains(3L)
+    assertThat(result)
+      .extracting("licenceStatus")
+      .contains(LicenceStatus.REJECTED)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-summaries.sql"
+  )
+  fun `Get licence summaries by staffId and status`() {
+    val result = webTestClient.get()
+      .uri("/licence/staffId/1?status=IN_PROGRESS&status=APPROVED")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.size).isEqualTo(2)
+    assertThat(result)
+      .extracting("licenceId")
+      .contains(1L)
+    assertThat(result)
+      .extracting("licenceStatus")
+      .contains(LicenceStatus.IN_PROGRESS)
+    assertThat(result)
+      .extracting("licenceId")
+      .contains(2L)
+    assertThat(result)
+      .extracting("licenceStatus")
+      .contains(LicenceStatus.APPROVED)
+  }
+
   private companion object {
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),

@@ -281,6 +281,36 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
   }
 
+  @Test
+  fun `get a list of licence summaries by staffId`() {
+    whenever(licenceService.findLicencesByStaffIdAndStatuses(1, null)).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/staffId/1").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, null)
+  }
+
+  @Test
+  fun `get a list of licence summaries by staffId and filter by status`() {
+    whenever(licenceService.findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/staffId/1?status=IN_PROGRESS&status=APPROVED").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -378,7 +408,7 @@ class LicenceControllerTest {
     )
 
     val aLicenceSummary = LicenceSummary(
-      licenceId = 99,
+      licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
     )
