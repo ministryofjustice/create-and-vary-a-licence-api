@@ -411,6 +411,10 @@ class LicenceControllerTest {
       licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
+      nomisId = "A1234AA",
+      surname = "Mortimer",
+      crn = "X12345",
+      dateOfBirth = LocalDate.of(1985, 12, 28)
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
