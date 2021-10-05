@@ -8,17 +8,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 
 @Service
 class LicenceService(
@@ -28,11 +31,11 @@ class LicenceService(
 ) {
 
   @Transactional
-  fun createLicence(request: CreateLicenceRequest): CreateLicenceResponse {
+  fun createLicence(request: CreateLicenceRequest): LicenceSummary {
     if (offenderHasLicenceInFlight(request.nomsId!!)) {
-      throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
+      throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
-    val createLicenceResponse = transformToCreateResponse(licenceRepository.saveAndFlush(transform(request)))
+    val createLicenceResponse = transformToLicenceSummary(licenceRepository.saveAndFlush(transform(request)))
     val entityStandardConditions = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
     standardConditionRepository.saveAllAndFlush(entityStandardConditions)
     return createLicenceResponse
@@ -93,8 +96,17 @@ class LicenceService(
     }
   }
 
+  fun findLicencesByStaffIdAndStatuses(staffId: Long, statuses: List<LicenceStatus>?): List<LicenceSummary> {
+    val licences: List<LicenceEntity> = if (statuses != null) {
+      licenceRepository.findAllByComStaffIdAndStatusCodeIn(staffId, statuses)
+    } else {
+      licenceRepository.findAllByComStaffId(staffId)
+    }
+    return transformToListOfSummaries(licences)
+  }
+
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
-    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, REJECTED))
+    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
     return inFlight.isNotEmpty()
   }
 }

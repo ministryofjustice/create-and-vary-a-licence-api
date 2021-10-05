@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -13,8 +15,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -101,7 +103,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(CreateLicenceResponse::class.java)
+      .expectBody(LicenceSummary::class.java)
       .returnResult().responseBody
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
@@ -282,6 +284,54 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.bespokeConditions)
       .extracting("text")
       .containsAll(listOf("Condition 1", "Condition 2", "Condition 3"))
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-summaries.sql"
+  )
+  fun `Get licence summaries by staffId`() {
+    val result = webTestClient.get()
+      .uri("/licence/staffId/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.size).isEqualTo(3)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
+      .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED), tuple(3L, LicenceStatus.REJECTED))
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-summaries.sql"
+  )
+  fun `Get licence summaries by staffId and status`() {
+    val result = webTestClient.get()
+      .uri("/licence/staffId/1?status=IN_PROGRESS&status=APPROVED")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.size).isEqualTo(2)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
+      .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED))
   }
 
   private companion object {

@@ -8,4 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 @Repository
 interface LicenceRepository : JpaRepository<Licence, Long> {
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
+  fun findAllByComStaffIdAndStatusCodeIn(staffId: Long, status: List<LicenceStatus>): List<Licence>
+  fun findAllByComStaffId(staffId: Long): List<Licence>
 }

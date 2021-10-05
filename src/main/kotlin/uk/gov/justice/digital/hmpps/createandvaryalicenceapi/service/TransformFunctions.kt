@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -29,8 +29,12 @@ fun transform(testData: EntityTestData): ModelTestData {
   )
 }
 
-fun transformToCreateResponse(licence: EntityLicence): CreateLicenceResponse {
-  return CreateLicenceResponse(licence.id, licence.typeCode, licence.statusCode)
+fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
+  return LicenceSummary(licence.id, licence.typeCode, licence.statusCode)
+}
+
+fun transformToListOfSummaries(licences: List<EntityLicence>): List<LicenceSummary> {
+  return licences.map { licence -> transformToLicenceSummary(licence) }
 }
 
 fun transform(createRequest: CreateLicenceRequest): EntityLicence {

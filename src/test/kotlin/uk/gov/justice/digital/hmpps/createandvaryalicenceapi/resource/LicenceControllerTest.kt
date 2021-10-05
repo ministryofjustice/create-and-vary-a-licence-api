@@ -35,8 +35,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -105,7 +105,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a licence`() {
-    whenever(licenceService.createLicence(aCreateLicenceRequest)).thenReturn(aCreateLicenceResponse)
+    whenever(licenceService.createLicence(aCreateLicenceRequest)).thenReturn(aLicenceSummary)
 
     val result = mvc.perform(
       post("/licence/create")
@@ -117,7 +117,7 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aCreateLicenceResponse))
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
 
     verify(licenceService, times(1)).createLicence(aCreateLicenceRequest)
   }
@@ -281,6 +281,36 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
   }
 
+  @Test
+  fun `get a list of licence summaries by staffId`() {
+    whenever(licenceService.findLicencesByStaffIdAndStatuses(1, null)).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/staffId/1").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, null)
+  }
+
+  @Test
+  fun `get a list of licence summaries by staffId and filter by status`() {
+    whenever(licenceService.findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/staffId/1?status=IN_PROGRESS&status=APPROVED").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -377,8 +407,8 @@ class LicenceControllerTest {
       standardConditions = someStandardConditions,
     )
 
-    val aCreateLicenceResponse = CreateLicenceResponse(
-      licenceId = 99,
+    val aLicenceSummary = LicenceSummary(
+      licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
     )

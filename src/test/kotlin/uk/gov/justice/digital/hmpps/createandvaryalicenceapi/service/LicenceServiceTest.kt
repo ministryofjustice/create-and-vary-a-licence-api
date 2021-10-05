@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -102,7 +103,7 @@ class LicenceServiceTest {
       licenceRepository
         .findAllByNomsIdAndStatusCodeIn(
           aCreateLicenceRequest.nomsId!!,
-          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.REJECTED)
+          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED)
         )
     ).thenReturn(listOf(aLicenceEntity))
 
@@ -112,7 +113,7 @@ class LicenceServiceTest {
 
     assertThat(exception)
       .isInstanceOf(ValidationException::class.java)
-      .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED or REJECTED)")
+      .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
 
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -268,6 +269,37 @@ class LicenceServiceTest {
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
   }
 
+  @Test
+  fun `find licences by staff ID - empty result`() {
+    whenever(licenceRepository.findAllByComStaffId(1L)).thenReturn(emptyList())
+
+    val licenceSummaries = service.findLicencesByStaffIdAndStatuses(1L, null)
+    val expectedEmptyList: List<LicenceSummary> = emptyList()
+
+    assertThat(licenceSummaries).isEqualTo(expectedEmptyList)
+    verify(licenceRepository, times(1)).findAllByComStaffId(1L)
+  }
+
+  @Test
+  fun `find licences by staff ID`() {
+    whenever(licenceRepository.findAllByComStaffId(1L)).thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesByStaffIdAndStatuses(1L, null)
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAllByComStaffId(1L)
+  }
+
+  @Test
+  fun `find licences by staff ID and status`() {
+    whenever(licenceRepository.findAllByComStaffIdAndStatusCodeIn(1L, listOf(LicenceStatus.IN_PROGRESS))).thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesByStaffIdAndStatuses(1L, listOf(LicenceStatus.IN_PROGRESS))
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAllByComStaffIdAndStatusCodeIn(1L, listOf(LicenceStatus.IN_PROGRESS))
+  }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
 
@@ -349,6 +381,12 @@ class LicenceServiceTest {
       dateCreated = LocalDateTime.now(),
       createdByUsername = "X12345",
       standardConditions = someEntityStandardConditions,
+    )
+
+    val aLicenceSummary = LicenceSummary(
+      licenceId = 1,
+      licenceType = LicenceType.AP,
+      licenceStatus = LicenceStatus.IN_PROGRESS,
     )
   }
 }
