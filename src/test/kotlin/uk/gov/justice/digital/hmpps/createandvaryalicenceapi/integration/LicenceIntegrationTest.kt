@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -235,6 +236,35 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
+  fun `Update the status of a licence to approved`() {
+    webTestClient.put()
+      .uri("/licence/id/1/status")
+      .bodyValue(aStatusUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(aStatusUpdateRequest.status)
+    assertThat(result?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
+    assertThat(result?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
   fun `Update the address where the initial appointment will take place`() {
     webTestClient.put()
       .uri("/licence/id/1/appointment-address")
@@ -334,6 +364,30 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED))
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-approval-candidates.sql"
+  )
+  fun `Get approval candidates for a list of prisons`() {
+    val result = webTestClient.get()
+      .uri("/licence/approval-candidates?prison=MDI&prison=LEI")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
+
+    assertThat(result?.size).isEqualTo(2)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus, it.nomisId) }
+      .contains(tuple(1L, LicenceStatus.SUBMITTED, "A1234AA"), tuple(2L, LicenceStatus.SUBMITTED, "B1234BB"))
+  }
+
   private companion object {
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -391,5 +445,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val aBespokeConditionRequest = BespokeConditionRequest(
       conditions = listOf("Condition 1", "Condition 2", "Condition 3")
     )
+
+    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
   }
 }
