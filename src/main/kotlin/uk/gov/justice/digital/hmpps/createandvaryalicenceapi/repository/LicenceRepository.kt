@@ -10,4 +10,6 @@ interface LicenceRepository : JpaRepository<Licence, Long> {
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByComStaffIdAndStatusCodeIn(staffId: Long, status: List<LicenceStatus>): List<Licence>
   fun findAllByComStaffId(staffId: Long): List<Licence>
+  fun findAllByStatusCodeAndPrisonCodeIn(statusCode: LicenceStatus, prisonCaseload: List<String>): List<Licence>
+  fun findAllByStatusCode(statusCode: LicenceStatus): List<Licence>
 }

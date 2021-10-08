@@ -10,7 +10,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -18,16 +20,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
 
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
   private val standardConditionRepository: StandardConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
+  private val licenceHistoryRepository: LicenceHistoryRepository,
 ) {
 
   @Transactional
@@ -96,11 +100,46 @@ class LicenceService(
     }
   }
 
+  @Transactional
+  fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val updatedLicence = licenceEntity.copy(
+      statusCode = request.status,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = request.username,
+      approvedByUsername = request.username.takeIf { request.status == APPROVED } ?: licenceEntity.approvedByUsername,
+      approvedDate = LocalDateTime.now().takeIf { request.status == APPROVED } ?: licenceEntity.approvedDate,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicence)
+    licenceHistoryRepository.saveAndFlush(
+      EntityLicenceHistory(
+        licenceId = licenceId,
+        statusCode = request.status.name,
+        actionTime = LocalDateTime.now(),
+        actionDescription = "Status changed to ${request.status.name}",
+        actionUsername = request.username,
+      )
+    )
+  }
+
   fun findLicencesByStaffIdAndStatuses(staffId: Long, statuses: List<LicenceStatus>?): List<LicenceSummary> {
-    val licences: List<LicenceEntity> = if (statuses != null) {
+    val licences = if (!statuses.isNullOrEmpty()) {
       licenceRepository.findAllByComStaffIdAndStatusCodeIn(staffId, statuses)
     } else {
       licenceRepository.findAllByComStaffId(staffId)
+    }
+    return transformToListOfSummaries(licences)
+  }
+
+  fun findLicencesForApprovalByPrisonCaseload(prisonCaseload: List<String>?): List<LicenceSummary> {
+    val licences = if (!prisonCaseload.isNullOrEmpty()) {
+      licenceRepository.findAllByStatusCodeAndPrisonCodeIn(SUBMITTED, prisonCaseload)
+    } else {
+      licenceRepository.findAllByStatusCode(SUBMITTED)
     }
     return transformToListOfSummaries(licences)
   }
