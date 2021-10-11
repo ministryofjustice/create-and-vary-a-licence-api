@@ -23,6 +23,23 @@ data class LicenceSummary(
   @Schema(description = "The offender surname", example = "Smith")
   val surname: String?,
 
+  @Schema(description = "The offender forename", example = "Brian")
+  val forename: String?,
+
+  @Schema(description = "The prison code where this offender resides or was released from", example = "MDI")
+  val prisonCode: String?,
+
+  @Schema(description = "The prison where this offender resides or was released from", example = "Moorland (HMP)")
+  val prisonDescription: String?,
+
+  @Schema(description = "The conditional release date on the licence", example = "12/12/2022")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val conditionalReleaseDate: LocalDate?,
+
+  @Schema(description = "The actual release date on the licence", example = "12/12/2022")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val actualReleaseDate: LocalDate?,
+
   @Schema(description = "The case reference number (CRN) of this person, from either prison or probation service", example = "X12344")
   val crn: String?,
 
