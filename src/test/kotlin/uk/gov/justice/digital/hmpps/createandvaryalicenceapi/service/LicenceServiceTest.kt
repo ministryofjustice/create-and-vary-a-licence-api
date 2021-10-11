@@ -391,6 +391,27 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `update an APPROVED licence back to IN_PROGRESS clears the approval fields`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("X")
+    assertThat(licenceCaptor.value.approvedDate).isNull()
+
+    assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS.name)
+    assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to ${LicenceStatus.IN_PROGRESS.name}")
+  }
+
+  @Test
   fun `update licence status throws not found exception`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 

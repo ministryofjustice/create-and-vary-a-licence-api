@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
@@ -106,12 +107,36 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
+    var approvedByUser = licenceEntity.approvedByUsername
+    var approvedDate = licenceEntity.approvedDate
+    var supersededDate: LocalDateTime?
+
+    when (request.status) {
+      APPROVED -> {
+        approvedByUser = request.username
+        approvedDate = LocalDateTime.now()
+        supersededDate = null
+      }
+      IN_PROGRESS -> {
+        approvedByUser = null
+        approvedDate = null
+        supersededDate = null
+      }
+      INACTIVE -> {
+        supersededDate = LocalDateTime.now()
+      }
+      else -> {
+        supersededDate = null
+      }
+    }
+
     val updatedLicence = licenceEntity.copy(
       statusCode = request.status,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = request.username,
-      approvedByUsername = request.username.takeIf { request.status == APPROVED } ?: licenceEntity.approvedByUsername,
-      approvedDate = LocalDateTime.now().takeIf { request.status == APPROVED } ?: licenceEntity.approvedDate,
+      approvedByUsername = approvedByUser,
+      approvedDate = approvedDate,
+      supersededDate = supersededDate,
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
