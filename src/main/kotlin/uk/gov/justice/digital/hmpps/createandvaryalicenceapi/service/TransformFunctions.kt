@@ -30,7 +30,20 @@ fun transform(testData: EntityTestData): ModelTestData {
 }
 
 fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
-  return LicenceSummary(licence.id, licence.typeCode, licence.statusCode, licence.nomsId, licence.surname, licence.crn, licence.dateOfBirth)
+  return LicenceSummary(
+    licenceId = licence.id,
+    licenceType = licence.typeCode,
+    licenceStatus = licence.statusCode,
+    nomisId = licence.nomsId,
+    surname = licence.surname,
+    forename = licence.forename,
+    crn = licence.crn,
+    dateOfBirth = licence.dateOfBirth,
+    prisonCode = licence.prisonCode,
+    prisonDescription = licence.prisonDescription,
+    conditionalReleaseDate = licence.conditionalReleaseDate,
+    actualReleaseDate = licence.actualReleaseDate
+  )
 }
 
 fun transformToListOfSummaries(licences: List<EntityLicence>): List<LicenceSummary> {

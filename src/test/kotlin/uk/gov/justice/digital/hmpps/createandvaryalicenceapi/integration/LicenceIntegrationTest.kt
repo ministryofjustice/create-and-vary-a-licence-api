@@ -384,8 +384,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.size).isEqualTo(2)
     assertThat(result)
-      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus, it.nomisId) }
-      .contains(tuple(1L, LicenceStatus.SUBMITTED, "A1234AA"), tuple(2L, LicenceStatus.SUBMITTED, "B1234BB"))
+      .extracting<Tuple> {
+        tuple(it.licenceId, it.licenceStatus, it.nomisId, it.surname, it.forename, it.prisonCode, it.prisonDescription)
+      }
+      .contains(
+        tuple(1L, LicenceStatus.SUBMITTED, "A1234AA", "Alda", "Alan", "MDI", "Moorland HMP"),
+        tuple(2L, LicenceStatus.SUBMITTED, "B1234BB", "Bobson", "Bob", "MDI", "Moorland HMP"),
+      )
   }
 
   private companion object {

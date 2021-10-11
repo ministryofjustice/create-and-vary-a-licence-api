@@ -514,9 +514,14 @@ class LicenceServiceTest {
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
       nomisId = "A1234AA",
+      forename = "Bob",
       surname = "Mortimer",
       crn = "X12345",
-      dateOfBirth = LocalDate.of(1985, 12, 28)
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      prisonCode = "MDI",
+      prisonDescription = "Moorland (HMP)",
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      actualReleaseDate = LocalDate.of(2021, 10, 22)
     )
   }
 }
