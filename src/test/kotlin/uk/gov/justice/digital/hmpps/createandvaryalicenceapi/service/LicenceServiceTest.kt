@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -18,7 +19,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -30,6 +33,7 @@ import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
@@ -38,11 +42,18 @@ class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
-  private val service = LicenceService(licenceRepository, standardConditionRepository, bespokeConditionRepository)
+  private val licenceHistoryRepository = mock<LicenceHistoryRepository>()
+
+  private val service = LicenceService(
+    licenceRepository,
+    standardConditionRepository,
+    bespokeConditionRepository,
+    licenceHistoryRepository,
+  )
 
   @BeforeEach
   fun reset() {
-    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository)
+    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository, licenceHistoryRepository)
   }
 
   @Test
@@ -298,6 +309,121 @@ class LicenceServiceTest {
 
     assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
     verify(licenceRepository, times(1)).findAllByComStaffIdAndStatusCodeIn(1L, listOf(LicenceStatus.IN_PROGRESS))
+  }
+
+  @Test
+  fun `find approval candidates - single prison and empty result list`() {
+    whenever(licenceRepository.findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI")))
+      .thenReturn(emptyList())
+
+    val licenceSummaries = service.findLicencesForApprovalByPrisonCaseload(listOf("MDI"))
+
+    assertThat(licenceSummaries).isEmpty()
+    verify(licenceRepository, times(1))
+      .findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI"))
+    verify(licenceRepository, times(0)).findAllByStatusCode(any())
+  }
+
+  @Test
+  fun `find approval candidates - list of prisons`() {
+    whenever(licenceRepository.findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI", "LEI")))
+      .thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1))
+      .findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI", "LEI"))
+    verify(licenceRepository, times(0)).findAllByStatusCode(any())
+  }
+
+  @Test
+  fun `find approval candidates - no prisons specified returns all`() {
+    whenever(licenceRepository.findAllByStatusCode(LicenceStatus.SUBMITTED))
+      .thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesForApprovalByPrisonCaseload(null)
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAllByStatusCode(LicenceStatus.SUBMITTED)
+    verify(licenceRepository, times(0)).findAllByStatusCodeAndPrisonCodeIn(any(), any())
+  }
+
+  @Test
+  fun `update licence status persists the licence and history correctly`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.REJECTED, username = "X"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(1L, LicenceStatus.REJECTED, "X"))
+
+    assertThat(historyCaptor.value)
+      .extracting("licenceId", "statusCode", "actionUsername", "actionDescription")
+      .isEqualTo(listOf(1L, LicenceStatus.REJECTED.name, "X", "Status changed to ${LicenceStatus.REJECTED.name}"))
+  }
+
+  @Test
+  fun `update licence status to APPROVED sets additional values`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(licenceCaptor.value.approvedByUsername).isEqualTo("X")
+    assertThat(licenceCaptor.value.approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
+
+    assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.APPROVED.name)
+    assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to ${LicenceStatus.APPROVED.name}")
+  }
+
+  @Test
+  fun `update an APPROVED licence back to IN_PROGRESS clears the approval fields`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("X")
+    assertThat(licenceCaptor.value.approvedDate).isNull()
+
+    assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS.name)
+    assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to ${LicenceStatus.IN_PROGRESS.name}")
+  }
+
+  @Test
+  fun `update licence status throws not found exception`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.REJECTED, username = "X"))
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceHistoryRepository, times(0)).saveAndFlush(any())
   }
 
   private companion object {

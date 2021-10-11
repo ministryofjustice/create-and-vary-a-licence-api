@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -311,6 +312,49 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))
   }
 
+  @Test
+  fun `update licence status`() {
+    mvc.perform(
+      put("/licence/id/4/status")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aStatusUpdateRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateLicenceStatus(4, aStatusUpdateRequest)
+  }
+
+  @Test
+  fun `get a list of approval candidates by prisons`() {
+    whenever(licenceService.findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/approval-candidates?prison=MDI&prison=LEI").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))
+  }
+
+  @Test
+  fun `get a list of approval candidates - no prisons supplied`() {
+    whenever(licenceService.findLicencesForApprovalByPrisonCaseload(null)).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/approval-candidates").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesForApprovalByPrisonCaseload(null)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -438,6 +482,8 @@ class LicenceControllerTest {
     )
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
+
+    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
   }
 
   // Other test candidates:
