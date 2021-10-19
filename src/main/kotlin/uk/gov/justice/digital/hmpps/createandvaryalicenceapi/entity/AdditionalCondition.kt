@@ -21,11 +21,11 @@ data class AdditionalCondition(
   @Id
   @GeneratedValue(strategy = IDENTITY)
   @NotNull
-  val id: Long? = null,
+  val id: Long = -1,
 
   @ManyToOne
   @JoinColumn(name = "licence_id", nullable = false)
-  var licence: Licence? = null,
+  var licence: Licence,
 
   val conditionCode: String? = null,
   var conditionSequence: Int? = null,

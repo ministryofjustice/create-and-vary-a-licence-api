@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
+import arrow.core.extensions.list.monad.map
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
@@ -160,11 +161,12 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
   )
 }
 
-fun transform(model: ModelAdditionalCondition): EntityAdditionalCondition {
+fun transform(model: ModelAdditionalCondition, licence: EntityLicence): EntityAdditionalCondition {
   return EntityAdditionalCondition(
     conditionCode = model.code,
     conditionSequence = model.sequence,
-    conditionText = model.text
+    conditionText = model.text,
+    licence = licence,
   )
 }
 
@@ -172,7 +174,7 @@ fun transform(model: ModelAdditionalCondition): EntityAdditionalCondition {
 fun List<EntityAdditionalCondition>.transformToModelAdditional(): List<ModelAdditionalCondition> = map(::transform)
 
 // Transform a list of model additional conditions to entity additional conditions
-fun List<ModelAdditionalCondition>.transformToEntityAdditional(): List<EntityAdditionalCondition> = map(::transform)
+fun List<ModelAdditionalCondition>.transformToEntityAdditional(licence: EntityLicence): List<EntityAdditionalCondition> = map { transform(it, licence) }
 
 fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
   return ModelAdditionalCondition(

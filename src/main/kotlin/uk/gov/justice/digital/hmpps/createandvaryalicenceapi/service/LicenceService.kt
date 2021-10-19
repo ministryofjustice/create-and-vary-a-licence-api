@@ -108,7 +108,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
-    val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional()
+    val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity)
 
     // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
     newAdditionalConditions.forEach {
