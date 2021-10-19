@@ -70,7 +70,7 @@ CREATE TABLE additional_condition (
   id serial NOT NULL constraint additional_condition_pk PRIMARY KEY,
   licence_id integer references licence(id),
   condition_category text NOT NULL,
-  condition_code varchar(20) NOT NULL,  -- copied from the current licence configuration for additional conditions
+  condition_code varchar(50) NOT NULL,  -- copied from the current licence configuration for additional conditions
   condition_sequence integer, -- copied from the current configuration for additional conditions
   condition_text text NOT NULL -- copied from the current configuration for additional conditions
 );

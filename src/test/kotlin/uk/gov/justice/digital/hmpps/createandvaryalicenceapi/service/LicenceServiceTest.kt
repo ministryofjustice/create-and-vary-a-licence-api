@@ -475,7 +475,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       EntityAdditionalCondition(
-        id = 1, conditionCode = "code", conditionCategory = "category",conditionSequence = 0, conditionText = "text",
+        id = 1, conditionCode = "code", conditionCategory = "category", conditionSequence = 0, conditionText = "text",
         additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
         licence = aLicenceEntity
       )
