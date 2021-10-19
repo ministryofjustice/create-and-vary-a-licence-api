@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Describes an additional condition")
 data class AdditionalCondition(
   @Schema(description = "The internal ID for this additional condition for this licence", example = "98989")
-  val id: Long = -1,
+  val id: Long? = -1,
 
   @Schema(description = "Coded value for the additional condition", example = "meetingAddress")
   val code: String? = null,
