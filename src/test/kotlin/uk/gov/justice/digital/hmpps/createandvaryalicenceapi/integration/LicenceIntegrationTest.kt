@@ -344,12 +344,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.additionalConditions)
       .extracting<Tuple> { tuple(it.code, it.text, it.sequence) }
-      .containsAll(listOf(
-        tuple("code1", "text", 0),
-        tuple("code2", "text", 1),
-        tuple("code3", "text", 2),
-        tuple("code4", "text", 3)
-      ))
+      .containsAll(
+        listOf(
+          tuple("code1", "text", 0),
+          tuple("code2", "text", 1),
+          tuple("code3", "text", 2),
+          tuple("code4", "text", 3)
+        )
+      )
   }
 
   @Test
