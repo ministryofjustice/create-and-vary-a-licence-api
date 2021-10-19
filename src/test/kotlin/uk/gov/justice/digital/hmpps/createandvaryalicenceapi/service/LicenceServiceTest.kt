@@ -452,8 +452,12 @@ class LicenceServiceTest {
           aLicenceEntity.copy(
             additionalConditions = listOf(
               EntityAdditionalCondition(
-                id = 1, conditionCode = "code", conditionSequence = 5, conditionText = "oldText",
-                additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription"))
+                id = 1,
+                conditionCode = "code",
+                conditionSequence = 5,
+                conditionText = "oldText",
+                additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
+                licence = aLicenceEntity
               )
             )
           )
@@ -471,7 +475,8 @@ class LicenceServiceTest {
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       EntityAdditionalCondition(
         id = 1, conditionCode = "code", conditionSequence = 0, conditionText = "text",
-        additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription"))
+        additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
+        licence = aLicenceEntity
       )
     )
   }
