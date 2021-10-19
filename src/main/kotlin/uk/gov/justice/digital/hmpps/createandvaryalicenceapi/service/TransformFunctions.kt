@@ -160,8 +160,20 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
   )
 }
 
+fun transform(model: ModelAdditionalCondition, licence: EntityLicence): EntityAdditionalCondition {
+  return EntityAdditionalCondition(
+    conditionCode = model.code,
+    conditionSequence = model.sequence,
+    conditionText = model.text,
+    licence = licence,
+  )
+}
+
 // Transform a list of entity additional conditions to model additional conditions
 fun List<EntityAdditionalCondition>.transformToModelAdditional(): List<ModelAdditionalCondition> = map(::transform)
+
+// Transform a list of model additional conditions to entity additional conditions
+fun List<ModelAdditionalCondition>.transformToEntityAdditional(licence: EntityLicence): List<EntityAdditionalCondition> = map { transform(it, licence) }
 
 fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
   return ModelAdditionalCondition(

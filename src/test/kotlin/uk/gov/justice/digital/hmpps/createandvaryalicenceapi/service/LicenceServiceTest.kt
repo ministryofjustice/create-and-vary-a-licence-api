@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -31,6 +34,7 @@ import java.time.LocalDateTime
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
@@ -424,6 +428,57 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceHistoryRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `update additional conditions throws not found exception`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.updateAdditionalConditions(1L, AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", text = "text", sequence = 0))))
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(0)).save(any())
+  }
+
+  @Test
+  fun `update additional conditions`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            additionalConditions = listOf(
+              EntityAdditionalCondition(
+                id = 1,
+                conditionCode = "code",
+                conditionSequence = 5,
+                conditionText = "oldText",
+                additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
+                licence = aLicenceEntity
+              )
+            )
+          )
+        )
+      )
+
+    val request = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", text = "text", sequence = 0)))
+
+    service.updateAdditionalConditions(1L, request)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+      EntityAdditionalCondition(
+        id = 1, conditionCode = "code", conditionSequence = 0, conditionText = "text",
+        additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
+        licence = aLicenceEntity
+      )
+    )
   }
 
   private companion object {

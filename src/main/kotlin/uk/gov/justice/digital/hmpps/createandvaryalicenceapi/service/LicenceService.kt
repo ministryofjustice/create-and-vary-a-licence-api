@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -99,6 +100,35 @@ class LicenceService(
         EntityBespokeCondition(licenceId = licenceId, conditionSequence = index, conditionText = condition)
       )
     }
+  }
+
+  fun updateAdditionalConditions(licenceId: Long, request: AdditionalConditionsRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
+    val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity)
+
+    // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
+    newAdditionalConditions.forEach {
+      if (additionalConditions[it.conditionCode] != null) {
+        additionalConditions[it.conditionCode]?.conditionText = it.conditionText
+        additionalConditions[it.conditionCode]?.conditionSequence = it.conditionSequence
+      } else {
+        it.licence = licenceEntity
+        additionalConditions[it.conditionCode] = it
+      }
+    }
+
+    // Remove any additional conditions which exist on the licence, but were not specified in the request
+    val resultAdditionalConditionsList = additionalConditions.values.filter { condition ->
+      newAdditionalConditions.find { newAdditionalCondition -> newAdditionalCondition.conditionCode == condition.conditionCode } != null
+    }
+
+    val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
+
+    licenceRepository.save(updatedLicence)
   }
 
   @Transactional

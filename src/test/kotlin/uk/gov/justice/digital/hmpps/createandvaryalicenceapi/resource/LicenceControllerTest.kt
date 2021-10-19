@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -326,6 +327,19 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `update the list of additional conditions`() {
+    mvc.perform(
+      put("/licence/id/4/additional-conditions")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsListRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
+  }
+
+  @Test
   fun `get a list of approval candidates by prisons`() {
     whenever(licenceService.findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))).thenReturn(listOf(aLicenceSummary))
 
@@ -489,6 +503,8 @@ class LicenceControllerTest {
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
+
+    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", sequence = 0, text = "text")))
   }
 
   // Other test candidates:

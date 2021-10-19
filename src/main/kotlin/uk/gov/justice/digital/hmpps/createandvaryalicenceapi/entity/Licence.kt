@@ -10,9 +10,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import java.time.LocalDateTime
+import javax.persistence.CascadeType
 import javax.persistence.Entity
 import javax.persistence.EnumType.STRING
 import javax.persistence.Enumerated
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -85,11 +87,9 @@ data class Licence(
   @OneToMany
   val standardConditions: List<StandardCondition> = emptyList(),
 
-  @JoinColumn(name = "licenceId")
+  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
-  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("conditionSequence")
-  @OneToMany
   val additionalConditions: List<AdditionalCondition> = emptyList(),
 
   @JoinColumn(name = "licenceId")
