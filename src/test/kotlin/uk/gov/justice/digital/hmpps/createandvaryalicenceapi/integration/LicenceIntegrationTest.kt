@@ -344,7 +344,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.additionalConditions)
       .extracting<Tuple> { tuple(it.code, it.text, it.sequence) }
-      .containsAll(listOf(tuple("code", "text", 0)))
+      .containsAll(listOf(
+        tuple("code1", "text", 0),
+        tuple("code2", "text", 1),
+        tuple("code3", "text", 2),
+        tuple("code4", "text", 3)
+      ))
   }
 
   @Test
@@ -484,7 +489,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(
-        AdditionalCondition(code = "code", sequence = 0, text = "text")
+        AdditionalCondition(code = "code1", sequence = 0, text = "text"),
+        AdditionalCondition(code = "code2", sequence = 1, text = "text"),
+        AdditionalCondition(code = "code3", sequence = 2, text = "text"),
+        AdditionalCondition(code = "code4", sequence = 3, text = "text")
       )
     )
 
