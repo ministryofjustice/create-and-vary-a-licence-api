@@ -343,13 +343,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.additionalConditions)
-      .extracting<Tuple> { tuple(it.code, it.text, it.sequence) }
+      .extracting<Tuple> { tuple(it.code, it.category, it.text, it.sequence) }
       .containsAll(
         listOf(
-          tuple("code1", "text", 0),
-          tuple("code2", "text", 1),
-          tuple("code3", "text", 2),
-          tuple("code4", "text", 3)
+          tuple("code1", "category", "text", 0),
+          tuple("code2", "category", "text", 1),
+          tuple("code3", "category", "text", 2),
+          tuple("code4", "category", "text", 3)
         )
       )
   }
@@ -491,10 +491,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(
-        AdditionalCondition(code = "code1", sequence = 0, text = "text"),
-        AdditionalCondition(code = "code2", sequence = 1, text = "text"),
-        AdditionalCondition(code = "code3", sequence = 2, text = "text"),
-        AdditionalCondition(code = "code4", sequence = 3, text = "text")
+        AdditionalCondition(code = "code1", category = "category", sequence = 0, text = "text"),
+        AdditionalCondition(code = "code2", category = "category", sequence = 1, text = "text"),
+        AdditionalCondition(code = "code3", category = "category", sequence = 2, text = "text"),
+        AdditionalCondition(code = "code4", category = "category", sequence = 3, text = "text")
       )
     )
 

@@ -28,6 +28,7 @@ data class AdditionalCondition(
   var licence: Licence,
 
   val conditionCode: String? = null,
+  var conditionCategory: String? = null,
   var conditionSequence: Int? = null,
   var conditionText: String? = null,
 

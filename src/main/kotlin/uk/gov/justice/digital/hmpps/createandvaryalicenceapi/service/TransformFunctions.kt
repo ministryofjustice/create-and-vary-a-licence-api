@@ -163,6 +163,7 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
 fun transform(model: ModelAdditionalCondition, licence: EntityLicence): EntityAdditionalCondition {
   return EntityAdditionalCondition(
     conditionCode = model.code,
+    conditionCategory = model.category,
     conditionSequence = model.sequence,
     conditionText = model.text,
     licence = licence,
@@ -179,6 +180,7 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
   return ModelAdditionalCondition(
     id = entity.id,
     code = entity.conditionCode,
+    category = entity.conditionCategory,
     sequence = entity.conditionSequence,
     text = entity.conditionText,
     data = entity.additionalConditionData.transformToModelAdditionalData(),
