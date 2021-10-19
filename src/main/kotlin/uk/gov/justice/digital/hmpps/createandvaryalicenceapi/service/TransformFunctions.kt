@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
-import arrow.core.extensions.list.monad.map
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
