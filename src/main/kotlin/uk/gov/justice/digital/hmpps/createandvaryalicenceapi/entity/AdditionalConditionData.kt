@@ -19,7 +19,7 @@ data class AdditionalConditionData(
 
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
-  val additionalCondition: AdditionalCondition,
+  val additionalCondition: AdditionalCondition? = null,
 
   @NotNull
   val dataSequence: Int = -1,

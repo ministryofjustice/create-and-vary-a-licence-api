@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -319,6 +321,35 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update the list of additional conditions`() {
+    webTestClient.put()
+      .uri("/licence/id/1/additional-conditions")
+      .bodyValue(anAdditionalConditionsRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    var result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.additionalConditions)
+      .extracting<Tuple> { tuple(it.code, it.text, it.sequence) }
+      .containsAll(listOf(tuple("code", "text", 0)))
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-summaries.sql"
   )
   fun `Get licence summaries by staffId`() {
@@ -449,6 +480,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val aBespokeConditionRequest = BespokeConditionRequest(
       conditions = listOf("Condition 1", "Condition 2", "Condition 3")
+    )
+
+    val anAdditionalConditionsRequest = AdditionalConditionsRequest(
+      additionalConditions = listOf(
+        AdditionalCondition(code = "code", sequence = 0, text = "text")
+      )
     )
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
