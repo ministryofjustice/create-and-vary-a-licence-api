@@ -435,7 +435,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditions(1L, AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", text = "text", sequence = 0))))
+      service.updateAdditionalConditions(1L, AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0))))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -455,6 +455,7 @@ class LicenceServiceTest {
                 id = 1,
                 conditionCode = "code",
                 conditionSequence = 5,
+                conditionCategory = "oldCategory",
                 conditionText = "oldText",
                 additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
                 licence = aLicenceEntity
@@ -464,7 +465,7 @@ class LicenceServiceTest {
         )
       )
 
-    val request = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", text = "text", sequence = 0)))
+    val request = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0)))
 
     service.updateAdditionalConditions(1L, request)
 
@@ -474,7 +475,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       EntityAdditionalCondition(
-        id = 1, conditionCode = "code", conditionSequence = 0, conditionText = "text",
+        id = 1, conditionCode = "code", conditionCategory = "category", conditionSequence = 0, conditionText = "text",
         additionalConditionData = listOf(AdditionalConditionData(dataDescription = "dataDescription", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity))),
         licence = aLicenceEntity
       )

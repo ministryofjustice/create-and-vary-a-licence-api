@@ -113,6 +113,7 @@ class LicenceService(
     // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
     newAdditionalConditions.forEach {
       if (additionalConditions[it.conditionCode] != null) {
+        additionalConditions[it.conditionCode]?.conditionCategory = it.conditionCategory
         additionalConditions[it.conditionCode]?.conditionText = it.conditionText
         additionalConditions[it.conditionCode]?.conditionSequence = it.conditionSequence
       } else {
