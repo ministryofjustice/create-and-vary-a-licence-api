@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  hmpps: ministryofjustice/hmpps@3.10
+  hmpps: ministryofjustice/hmpps@3.11
+  codecov: codecov/codecov@3.2.0
 
 parameters:
   alerts-slack-channel:
@@ -24,6 +25,8 @@ jobs:
             - gradle-
       - run:
           command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" check
+      - codecov/upload:
+          file: build/reports/jacoco/test/jacocoTestReport.xml
       - save_cache:
           paths:
             - ~/.gradle
@@ -32,6 +35,8 @@ jobs:
           path: build/test-results
       - store_artifacts:
           path: build/reports/tests
+      - store_artifacts:
+          path: build/reports/jacoco
 
   integration-test:
     executor:
