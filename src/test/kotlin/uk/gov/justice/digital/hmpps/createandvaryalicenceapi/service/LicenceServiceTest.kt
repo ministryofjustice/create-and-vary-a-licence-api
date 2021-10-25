@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -351,6 +353,28 @@ class LicenceServiceTest {
     assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
     verify(licenceRepository, times(1)).findAllByStatusCode(LicenceStatus.SUBMITTED)
     verify(licenceRepository, times(0)).findAllByStatusCodeAndPrisonCodeIn(any(), any())
+  }
+
+  @Test
+  fun `find licences matching criteria - no parameters matches all`() {
+    val licenceQueryObject = LicenceQueryObject(null, null, null, null)
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>())).thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>())
+  }
+
+  @Test
+  fun `find licences matching criteria - multiple parameters`() {
+    val licenceQueryObject = LicenceQueryObject(listOf("MDI"), listOf(LicenceStatus.APPROVED), listOf(1, 2, 3), listOf("A1234AA"))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>())).thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>())
   }
 
   @Test

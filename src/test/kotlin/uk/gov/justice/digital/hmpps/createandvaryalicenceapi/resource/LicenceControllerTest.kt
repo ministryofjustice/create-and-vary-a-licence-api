@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -311,6 +312,45 @@ class LicenceControllerTest {
       .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
 
     verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))
+  }
+
+  @Test
+  fun `match licences by prison code and status`() {
+    val licenceQueryObject = LicenceQueryObject(prisonCodes = listOf("LEI"), statusCodes = listOf(LicenceStatus.APPROVED))
+    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/match?prison=LEI&status=APPROVED").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
+  }
+
+  @Test
+  fun `match licences by staffId and status`() {
+    val licenceQueryObject = LicenceQueryObject(
+      staffIds = listOf(1, 2, 3),
+      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+    )
+
+    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(
+      get("/licence/match?staffId=1&staffId=2&staffId=3&status=APPROVED&status=ACTIVE")
+        .accept(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
   }
 
   @Test

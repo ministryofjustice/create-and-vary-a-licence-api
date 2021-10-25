@@ -62,3 +62,16 @@ that is seeded with data specific to each test suite.
 
 `$ ./gradlew dependencyCheckAnalyze`
 
+
+# Kotlin JPA specification dependency
+
+This project makes use of `https://github.com/consoleau/kotlin-jpa-specification-dsl` to wrap the JPA specification
+in fluent style Kotlin, to give much greater readability to the JPA Specifications used in selecting licences
+by various criteria.
+
+As this repository is not available in the Maven central repository, only in JCenter, and this may be deprecated soon,
+it is possible to copy the single source file from this project and us it stand-alone, retaining the copyright notices and use it stand-alone. 
+To do this, remove the dependency and Jcenter repo from build.gradle.kts. That project is open-source and freely distributable and derivable 
+under the Apache2 licence, so should be no problem.
+
+
