@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/ministryofjustice/create-and-vary-a-licence-api/branch/main/graph/badge.svg?token=G7EZ0S2D92)](https://codecov.io/gh/ministryofjustice/create-and-vary-a-licence-api)
+
 # create-and-vary-a-licence-api
 
 This service provices access to data stored in the licences database via API endpoints.
