@@ -13,4 +13,4 @@ comment:
   require_base: no
   require_changes: false
   layout: "reach,diff,files"
-  behavior: new
+  behavior: default
