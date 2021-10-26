@@ -14,8 +14,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -140,7 +142,7 @@ class LicenceService(
 
     var approvedByUser = licenceEntity.approvedByUsername
     var approvedDate = licenceEntity.approvedDate
-    var supersededDate: LocalDateTime?
+    val supersededDate: LocalDateTime?
 
     when (request.status) {
       APPROVED -> {
@@ -198,6 +200,11 @@ class LicenceService(
       licenceRepository.findAllByStatusCode(SUBMITTED)
     }
     return transformToListOfSummaries(licences)
+  }
+
+  fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
+    val matchingLicences = licenceRepository.findAll(licenceQueryObject.toSpecification())
+    return transformToListOfSummaries(matchingLicences)
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {

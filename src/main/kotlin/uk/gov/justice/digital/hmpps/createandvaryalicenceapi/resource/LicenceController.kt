@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import javax.validation.Valid
@@ -385,11 +386,48 @@ class LicenceController(private val licenceService: LicenceService) {
     return licenceService.findLicencesForApprovalByPrisonCaseload(prisonCaseload)
   }
 
+  @GetMapping(value = ["/match"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Get a list of licence summaries matching the supplied criteria.",
+    description = "Get the licences matching the supplied lists of status, prison, staffId and nomsId. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returned matching licence summary details - empty if no matches.",
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
+  fun getLicencesMatchingCriteria(
+    @RequestParam(name = "prison", required = false) prison: List<String>?,
+    @RequestParam(name = "status", required = false) status: List<LicenceStatus>?,
+    @RequestParam(name = "staffId", required = false) staffId: List<Int>?,
+    @RequestParam(name = "nomsId", required = false) nomsId: List<String>?
+  ): List<LicenceSummary> {
+    return licenceService.findLicencesMatchingCriteria(
+      LicenceQueryObject(prisonCodes = prison, statusCodes = status, staffIds = staffId, nomsIds = nomsId)
+    )
+  }
+
   @PutMapping(value = ["/id/{licenceId}/additional-conditions"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Update the set of additional conditons on the licence.",
-    description = "Update the set of additional conditons on the licence. " +
+    summary = "Update the set of additional conditions on the licence.",
+    description = "Update the set of additional conditions on the licence. " +
       "This does not include accompanying data per condition. Existing conditions which appear on " +
       "the licence but which are not supplied to this endpoint will be deleted. " +
       "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
