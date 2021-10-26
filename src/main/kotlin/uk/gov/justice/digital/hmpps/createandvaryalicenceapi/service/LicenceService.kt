@@ -29,6 +29,7 @@ import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 
 @Service
 class LicenceService(
@@ -132,6 +133,14 @@ class LicenceService(
     val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
 
     licenceRepository.save(updatedLicence)
+  }
+
+  fun updateAdditionalConditions(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    //TODO: persist new data
   }
 
   @Transactional

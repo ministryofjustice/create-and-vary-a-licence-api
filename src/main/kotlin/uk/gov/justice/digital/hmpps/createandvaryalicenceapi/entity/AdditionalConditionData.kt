@@ -24,7 +24,6 @@ data class AdditionalConditionData(
   @NotNull
   val dataSequence: Int = -1,
 
-  val dataDescription: String? = null,
-  val dataFormat: String? = null,
+  val dataField: String? = null,
   val dataValue: String? = null,
 )

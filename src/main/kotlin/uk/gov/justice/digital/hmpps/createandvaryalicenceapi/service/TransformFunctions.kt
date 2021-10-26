@@ -194,8 +194,7 @@ fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionDa
   return ModelAdditionalConditionData(
     id = entity.id,
     sequence = entity.dataSequence,
-    description = entity.dataDescription,
-    format = entity.dataFormat,
+    field = entity.dataField,
     value = entity.dataValue,
   )
 }
