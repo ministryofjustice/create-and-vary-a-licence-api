@@ -1,9 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
@@ -16,6 +12,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TestData as ModelTestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDateTime
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
@@ -196,6 +196,18 @@ fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionDa
     sequence = entity.dataSequence,
     field = entity.dataField,
     value = entity.dataValue,
+  )
+}
+
+// Transform a list of entity additional condition data to model additional condition data
+fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> = map { transform(it, additionalCondition) }
+
+fun transform(model: ModelAdditionalConditionData, additionalCondition: EntityAdditionalCondition): EntityAdditionalConditionData {
+  return EntityAdditionalConditionData(
+    dataSequence = model.sequence,
+    dataField = model.field,
+    dataValue = model.value,
+    additionalCondition = additionalCondition
   )
 }
 

@@ -7,5 +7,5 @@ import javax.validation.constraints.NotNull
 data class UpdateAdditionalConditionDataRequest(
   @Schema(description = "The list of data inputs associated with this additional condition")
   @field:NotNull
-  val data: List<AdditionalCondition>,
+  val data: List<AdditionalConditionData>,
 )

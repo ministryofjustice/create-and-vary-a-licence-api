@@ -29,12 +29,15 @@ import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
+import arrow.core.const
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
   private val standardConditionRepository: StandardConditionRepository,
+  private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
   private val licenceHistoryRepository: LicenceHistoryRepository,
 ) {
@@ -132,15 +135,21 @@ class LicenceService(
 
     val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
 
-    licenceRepository.save(updatedLicence)
+    licenceRepository.saveAndFlush(updatedLicence)
   }
 
   fun updateAdditionalConditions(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
-    val licenceEntity = licenceRepository
+    licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    //TODO: persist new data
+    val additionalCondition = additionalConditionRepository
+      .findById(additionalConditionId)
+      .orElseThrow { EntityNotFoundException("$additionalConditionId") }
+
+    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition))
+
+    additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
   @Transactional
