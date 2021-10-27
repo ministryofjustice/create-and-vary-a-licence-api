@@ -138,7 +138,7 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
-  fun updateAdditionalConditions(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
+  fun updateAdditionalConditionData(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
     licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }

@@ -511,7 +511,7 @@ class LicenceController(private val licenceService: LicenceService) {
     @PathVariable("additionalConditionId") conditionId: Long,
     @Valid @RequestBody request: UpdateAdditionalConditionDataRequest
   ) {
-    return licenceService.updateAdditionalConditions(licenceId, conditionId, request)
+    return licenceService.updateAdditionalConditionData(licenceId, conditionId, request)
   }
 
   @PutMapping(value = ["/id/{licenceId}/status"])
