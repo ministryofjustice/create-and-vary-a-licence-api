@@ -10,6 +10,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -21,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -357,6 +359,49 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update the data associated with an additional condition`() {
+    webTestClient.put()
+      .uri("/licence/id/1/additional-conditions")
+      .bodyValue(anAdditionalConditionsRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient.put()
+      .uri("/licence/id/1/additional-conditions/condition/1")
+      .bodyValue(anAdditionalConditionDataRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    var result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.additionalConditions?.get(0)?.data)
+      .extracting<Tuple> { tuple(it.field, it.value, it.sequence) }
+      .containsAll(
+        listOf(
+          tuple("field1", "value1", 0),
+          tuple("field2", "value2", 1),
+          tuple("field3", "value3", 2),
+        )
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-summaries.sql"
   )
   fun `Get licence summaries by staffId`() {
@@ -495,6 +540,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         AdditionalCondition(code = "code2", category = "category", sequence = 1, text = "text"),
         AdditionalCondition(code = "code3", category = "category", sequence = 2, text = "text"),
         AdditionalCondition(code = "code4", category = "category", sequence = 3, text = "text")
+      )
+    )
+
+    val anAdditionalConditionDataRequest = UpdateAdditionalConditionDataRequest(
+      data = listOf(
+        AdditionalConditionData(field = "field1", value = "value1", sequence = 0),
+        AdditionalConditionData(field = "field2", value = "value2", sequence = 1),
+        AdditionalConditionData(field = "field3", value = "value3", sequence = 2),
       )
     )
 

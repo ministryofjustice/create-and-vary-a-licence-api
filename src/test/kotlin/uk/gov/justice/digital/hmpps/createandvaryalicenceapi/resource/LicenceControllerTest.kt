@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -380,6 +381,19 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `update the data associated with an additional condition`() {
+    mvc.perform(
+      put("/licence/id/4/additional-conditions/condition/1")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsDataRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
+  }
+
+  @Test
   fun `get a list of approval candidates by prisons`() {
     whenever(licenceService.findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))).thenReturn(listOf(aLicenceSummary))
 
@@ -418,8 +432,8 @@ class LicenceControllerTest {
     )
 
     val someAssociationData = listOf(
-      AdditionalConditionData(id = 1, sequence = 1, description = "association", "TEXT", "Peter Smith"),
-      AdditionalConditionData(id = 2, sequence = 2, description = "howLong", "TEXT", "6 months"),
+      AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 1),
+      AdditionalConditionData(id = 2, field = "field2", value = "value2", sequence = 2),
     )
 
     val someAdditionalConditions = listOf(
@@ -545,6 +559,8 @@ class LicenceControllerTest {
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
 
     val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")))
+
+    val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)))
   }
 
   // Other test candidates:

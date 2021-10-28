@@ -12,6 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -34,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHisto
 class LicenceService(
   private val licenceRepository: LicenceRepository,
   private val standardConditionRepository: StandardConditionRepository,
+  private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
   private val licenceHistoryRepository: LicenceHistoryRepository,
 ) {
@@ -131,7 +134,21 @@ class LicenceService(
 
     val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
 
-    licenceRepository.save(updatedLicence)
+    licenceRepository.saveAndFlush(updatedLicence)
+  }
+
+  fun updateAdditionalConditionData(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
+    licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val additionalCondition = additionalConditionRepository
+      .findById(additionalConditionId)
+      .orElseThrow { EntityNotFoundException("$additionalConditionId") }
+
+    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition))
+
+    additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
   @Transactional

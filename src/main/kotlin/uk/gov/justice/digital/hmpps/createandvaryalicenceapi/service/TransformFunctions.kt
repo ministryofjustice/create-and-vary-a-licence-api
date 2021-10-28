@@ -194,9 +194,20 @@ fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionDa
   return ModelAdditionalConditionData(
     id = entity.id,
     sequence = entity.dataSequence,
-    description = entity.dataDescription,
-    format = entity.dataFormat,
+    field = entity.dataField,
     value = entity.dataValue,
+  )
+}
+
+// Transform a list of entity additional condition data to model additional condition data
+fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> = map { transform(it, additionalCondition) }
+
+fun transform(model: ModelAdditionalConditionData, additionalCondition: EntityAdditionalCondition): EntityAdditionalConditionData {
+  return EntityAdditionalConditionData(
+    dataSequence = model.sequence,
+    dataField = model.field,
+    dataValue = model.value,
+    additionalCondition = additionalCondition
   )
 }
 
