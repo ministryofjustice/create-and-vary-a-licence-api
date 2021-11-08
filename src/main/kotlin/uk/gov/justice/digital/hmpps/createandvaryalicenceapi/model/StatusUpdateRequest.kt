@@ -14,4 +14,7 @@ data class StatusUpdateRequest(
   @Schema(description = "The username of the person who is updating this status", example = "X12333")
   @field:NotBlank
   val username: String,
+
+  @Schema(description = "The full name of the person who is updating this status", example = "John Smythe")
+  val fullName: String? = null,
 )

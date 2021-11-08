@@ -262,6 +262,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.statusCode).isEqualTo(aStatusUpdateRequest.status)
     assertThat(result?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
     assertThat(result?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
+    assertThat(result?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
   }
 
   @Test
@@ -551,6 +552,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       )
     )
 
-    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
+    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
   }
 }

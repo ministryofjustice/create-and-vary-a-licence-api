@@ -556,7 +556,7 @@ class LicenceControllerTest {
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
 
-    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X")
+    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
     val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")))
 

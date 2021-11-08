@@ -44,12 +44,13 @@ CREATE TABLE licence (
   appointment_time timestamp with time zone,
   appointment_address varchar(240),
   approved_date timestamp with time zone,
-  approved_by_username varchar(60),
+  approved_by_username varchar(100),
+  approved_by_name varchar(100),
   superseded_date timestamp with time zone,
   date_created timestamp with time zone default CURRENT_TIMESTAMP,
-  created_by_username varchar(60),
+  created_by_username varchar(100),
   date_last_updated timestamp with time zone default CURRENT_TIMESTAMP,
-  updated_by_username varchar(60)
+  updated_by_username varchar(100)
 );
 
 CREATE INDEX idx_licence_noms_id ON licence(noms_id);
@@ -59,7 +60,7 @@ CREATE INDEX idx_licence_com_staff_id ON licence(com_staff_id);
 CREATE TABLE standard_condition (
   id serial NOT NULL constraint standard_condition_pk PRIMARY KEY,
   licence_id integer NOT NULL references licence(id),
-  condition_code varchar(20) NOT NULL,  -- this matches the current licence configuration for standard conditions
+  condition_code varchar(50) NOT NULL,
   condition_sequence integer NOT NULL,
   condition_text text NOT NULL
 );
@@ -103,7 +104,7 @@ CREATE TABLE licence_history (
   status_code varchar(20) references licence_status(status_code),
   action_time timestamp with time zone default CURRENT_TIMESTAMP,
   action_description varchar(80) NOT NULL,
-  action_username varchar(20)
+  action_username varchar(100)
 );
 
 CREATE INDEX idx_licence_history_id ON licence_history(licence_id);
