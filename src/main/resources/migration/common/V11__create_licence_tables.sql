@@ -84,7 +84,7 @@ CREATE TABLE additional_condition_data (
   additional_condition_id integer references additional_condition(id),
   data_sequence integer,  -- the sequence of the data for this additional condition - starting at 1
   data_field varchar(60), -- copied from configuration for this additional condition data
-  data_value varchar(60) -- the value collected from the user
+  data_value text -- the value collected from the user
 );
 
 CREATE INDEX idx_additional_condition_data_id ON additional_condition_data(additional_condition_id);
