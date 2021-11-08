@@ -407,7 +407,7 @@ class LicenceServiceTest {
   fun `update licence status to APPROVED sets additional values`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X"))
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y"))
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
@@ -417,6 +417,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.APPROVED)
     assertThat(licenceCaptor.value.approvedByUsername).isEqualTo("X")
+    assertThat(licenceCaptor.value.approvedByName).isEqualTo("Y")
     assertThat(licenceCaptor.value.approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
 
     assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.APPROVED.name)
@@ -426,7 +427,10 @@ class LicenceServiceTest {
   @Test
   fun `update an APPROVED licence back to IN_PROGRESS clears the approval fields`() {
     whenever(licenceRepository.findById(1L))
-      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+      .thenReturn(Optional.of(
+        aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")
+      )
+    )
 
     service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X"))
 
@@ -438,6 +442,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("X")
+    assertThat(licenceCaptor.value.approvedByName).isNull()
     assertThat(licenceCaptor.value.approvedDate).isNull()
 
     assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS.name)

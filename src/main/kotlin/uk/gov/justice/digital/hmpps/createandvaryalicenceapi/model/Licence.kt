@@ -140,6 +140,9 @@ data class Licence(
   @Schema(description = "The username who approved the licence on behalf of the prison governor", example = "X33221")
   val approvedByUsername: String? = null,
 
+  @Schema(description = "The full name of the person who approved the licence on behalf of the prison governor", example = "John Smith")
+  val approvedByName: String? = null,
+
   @Schema(
     description = "The date and time that this licence was superseded by a new variant",
     example = "24/08/2022 11:30:33",

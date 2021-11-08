@@ -158,17 +158,20 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     var approvedByUser = licenceEntity.approvedByUsername
+    var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
     val supersededDate: LocalDateTime?
 
     when (request.status) {
       APPROVED -> {
         approvedByUser = request.username
+        approvedByName = request.fullName
         approvedDate = LocalDateTime.now()
         supersededDate = null
       }
       IN_PROGRESS -> {
         approvedByUser = null
+        approvedByName = null
         approvedDate = null
         supersededDate = null
       }
@@ -185,6 +188,7 @@ class LicenceService(
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = request.username,
       approvedByUsername = approvedByUser,
+      approvedByName = approvedByName,
       approvedDate = approvedDate,
       supersededDate = supersededDate,
     )

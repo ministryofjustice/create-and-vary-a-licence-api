@@ -125,6 +125,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     appointmentAddress = licence.appointmentAddress,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
+    approvedByName = licence.approvedByName,
     supersededDate = licence.supersededDate,
     dateCreated = licence.dateCreated,
     createdByUsername = licence.createdByUsername,
