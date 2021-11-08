@@ -427,10 +427,7 @@ class LicenceServiceTest {
   @Test
   fun `update an APPROVED licence back to IN_PROGRESS clears the approval fields`() {
     whenever(licenceRepository.findById(1L))
-      .thenReturn(Optional.of(
-        aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")
-      )
-    )
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
 
     service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X"))
 
