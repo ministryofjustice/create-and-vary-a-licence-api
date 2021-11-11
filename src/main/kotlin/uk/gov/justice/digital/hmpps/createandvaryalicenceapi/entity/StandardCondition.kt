@@ -21,4 +21,5 @@ data class StandardCondition(
   val conditionCode: String? = null,
   val conditionSequence: Int? = null,
   val conditionText: String? = null,
+  val conditionType: String? = null,
 )

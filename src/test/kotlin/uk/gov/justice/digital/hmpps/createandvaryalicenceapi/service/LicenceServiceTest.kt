@@ -466,7 +466,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditions(1L, AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0))))
+      service.updateAdditionalConditions(1L, AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0)), conditionType = "AP"))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -496,7 +496,7 @@ class LicenceServiceTest {
         )
       )
 
-    val request = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0)))
+    val request = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0)), conditionType = "AP")
 
     service.updateAdditionalConditions(1L, request)
 
@@ -648,7 +648,8 @@ class LicenceServiceTest {
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
-      standardConditions = someStandardConditions,
+      standardLicenceConditions = someStandardConditions,
+      standardPssConditions = someStandardConditions,
     )
 
     val aLicenceEntity = EntityLicence(

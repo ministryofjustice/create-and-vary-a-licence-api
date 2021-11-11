@@ -61,11 +61,11 @@ values (
   'LDU1'
 );
 
-insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text)
-values (1, 'goodBehaviour', 1, 'Be of generally good behaviour');
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
 
-insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text)
-values (1, 'notBreakLaw', 2, 'Do not break the law');
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
-insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text)
-values (1, 'attendMeetings', 3, 'Attend meetings');
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');

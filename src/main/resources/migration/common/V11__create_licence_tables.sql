@@ -10,7 +10,7 @@ CREATE TABLE licence_status (
 
 CREATE TABLE licence (
   id serial NOT NULL constraint licence_pk PRIMARY KEY,
-  type_code varchar(2) references licence_type(type_code),
+  type_code varchar(20) references licence_type(type_code),
   version varchar(10),  -- records the version number held in configuration at the time of creation
   status_code varchar(20) references licence_status(status_code),
   noms_id varchar(7),
@@ -62,7 +62,8 @@ CREATE TABLE standard_condition (
   licence_id integer NOT NULL references licence(id),
   condition_code varchar(50) NOT NULL,
   condition_sequence integer NOT NULL,
-  condition_text text NOT NULL
+  condition_text text NOT NULL,
+  condition_type varchar(20) NOT NULL
 );
 
 CREATE INDEX idx_standard_condition_licence_id ON standard_condition(licence_id);
@@ -73,7 +74,8 @@ CREATE TABLE additional_condition (
   condition_category text NOT NULL,
   condition_code varchar(50) NOT NULL,  -- copied from the current licence configuration for additional conditions
   condition_sequence integer, -- copied from the current configuration for additional conditions
-  condition_text text NOT NULL -- copied from the current configuration for additional conditions
+  condition_text text NOT NULL, -- copied from the current configuration for additional conditions
+  condition_type varchar(20) NOT NULL
 );
 
 CREATE INDEX idx_additional_condition_licence_id ON additional_condition(licence_id);

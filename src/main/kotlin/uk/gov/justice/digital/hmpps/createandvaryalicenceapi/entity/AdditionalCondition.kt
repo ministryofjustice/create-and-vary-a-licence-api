@@ -31,6 +31,7 @@ data class AdditionalCondition(
   var conditionCategory: String? = null,
   var conditionSequence: Int? = null,
   var conditionText: String? = null,
+  var conditionType: String? = null,
 
   @OneToMany(mappedBy = "additionalCondition", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(FetchMode.SUBSELECT)

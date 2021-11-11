@@ -47,8 +47,9 @@ class LicenceService(
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
     val createLicenceResponse = transformToLicenceSummary(licenceRepository.saveAndFlush(transform(request)))
-    val entityStandardConditions = request.standardConditions.transformToEntityStandard(createLicenceResponse.licenceId)
-    standardConditionRepository.saveAllAndFlush(entityStandardConditions)
+    val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(createLicenceResponse.licenceId, "AP")
+    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(createLicenceResponse.licenceId, "PSS")
+    standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
     return createLicenceResponse
   }
 
@@ -113,7 +114,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
-    val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity)
+    val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
     // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
     newAdditionalConditions.forEach {
@@ -121,6 +122,7 @@ class LicenceService(
         additionalConditions[it.conditionCode]?.conditionCategory = it.conditionCategory
         additionalConditions[it.conditionCode]?.conditionText = it.conditionText
         additionalConditions[it.conditionCode]?.conditionSequence = it.conditionSequence
+        additionalConditions[it.conditionCode]?.conditionType = it.conditionType
       } else {
         it.licence = licenceEntity
         additionalConditions[it.conditionCode] = it
@@ -129,7 +131,8 @@ class LicenceService(
 
     // Remove any additional conditions which exist on the licence, but were not specified in the request
     val resultAdditionalConditionsList = additionalConditions.values.filter { condition ->
-      newAdditionalConditions.find { newAdditionalCondition -> newAdditionalCondition.conditionCode == condition.conditionCode } != null
+      newAdditionalConditions.find { newAdditionalCondition -> newAdditionalCondition.conditionCode == condition.conditionCode } != null ||
+        condition.conditionType != request.conditionType
     }
 
     val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)

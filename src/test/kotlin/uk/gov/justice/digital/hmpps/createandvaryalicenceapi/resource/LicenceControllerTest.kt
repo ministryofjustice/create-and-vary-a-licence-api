@@ -483,8 +483,10 @@ class LicenceControllerTest {
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
       createdByUsername = "X12345",
-      standardConditions = someStandardConditions,
-      additionalConditions = someAdditionalConditions,
+      standardLicenceConditions = someStandardConditions,
+      standardPssConditions = someStandardConditions,
+      additionalLicenceConditions = someAdditionalConditions,
+      additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
     )
 
@@ -516,7 +518,8 @@ class LicenceControllerTest {
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
-      standardConditions = someStandardConditions,
+      standardLicenceConditions = someStandardConditions,
+      standardPssConditions = someStandardConditions
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -558,7 +561,7 @@ class LicenceControllerTest {
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
-    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")))
+    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)))
   }

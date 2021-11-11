@@ -118,7 +118,9 @@ data class CreateLicenceRequest(
   @NotNull
   val probationLduCode: String? = null,
 
-  @Schema(description = "The list of standard conditions from service configuration")
-  @NotNull
-  val standardConditions: List<StandardCondition>
+  @Schema(description = "The list of standard licence conditions from service configuration")
+  val standardLicenceConditions: List<StandardCondition> = emptyList(),
+
+  @Schema(description = "The list of standard post sentence supervision conditions from service configuration")
+  val standardPssConditions: List<StandardCondition> = emptyList(),
 )

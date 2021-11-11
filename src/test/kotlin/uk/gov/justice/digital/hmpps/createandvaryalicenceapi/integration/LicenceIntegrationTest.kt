@@ -57,10 +57,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
 
-    assertThat(result?.standardConditions?.size).isEqualTo(3)
-    assertThat(result?.standardConditions)
+    assertThat(result?.standardLicenceConditions?.size).isEqualTo(2)
+    assertThat(result?.standardLicenceConditions)
       .extracting("code")
-      .containsAll(listOf("goodBehaviour", "notBreakLaw", "attendMeetings"))
+      .containsAll(listOf("goodBehaviour", "notBreakLaw"))
+    assertThat(result?.standardPssConditions?.size).isEqualTo(1)
+    assertThat(result?.standardPssConditions)
+      .extracting("code")
+      .containsAll(listOf("attendMeetings"))
   }
 
   @Test
@@ -118,7 +122,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(1)
-    assertThat(standardConditionRepository.count()).isEqualTo(3)
+    assertThat(standardConditionRepository.count()).isEqualTo(6)
   }
 
   @Test
@@ -345,7 +349,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.additionalConditions)
+    assertThat(result?.additionalLicenceConditions)
       .extracting<Tuple> { tuple(it.code, it.category, it.text, it.sequence) }
       .containsAll(
         listOf(
@@ -389,7 +393,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.additionalConditions?.get(0)?.data)
+    assertThat(result?.additionalLicenceConditions?.get(0)?.data)
       .extracting<Tuple> { tuple(it.field, it.value, it.sequence) }
       .containsAll(
         listOf(
@@ -512,7 +516,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
-      standardConditions = someStandardConditions,
+      standardLicenceConditions = someStandardConditions,
+      standardPssConditions = someStandardConditions,
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
@@ -541,7 +546,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         AdditionalCondition(code = "code2", category = "category", sequence = 1, text = "text"),
         AdditionalCondition(code = "code3", category = "category", sequence = 2, text = "text"),
         AdditionalCondition(code = "code4", category = "category", sequence = 3, text = "text")
-      )
+      ),
+      conditionType = "AP"
     )
 
     val anAdditionalConditionDataRequest = UpdateAdditionalConditionDataRequest(
