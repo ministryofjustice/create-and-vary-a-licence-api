@@ -8,4 +8,8 @@ data class AdditionalConditionsRequest(
   @Schema(description = "The list of additional conditions")
   @field:NotNull
   val additionalConditions: List<AdditionalCondition>,
+
+  @Schema(description = "The type of additional condition, either licence or post sentence supervision", allowableValues = ["AP", "PSS"])
+  @field:NotNull
+  val conditionType: String
 )

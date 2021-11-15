@@ -131,26 +131,29 @@ fun transform(licence: EntityLicence): ModelLicence {
     createdByUsername = licence.createdByUsername,
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
-    standardConditions = licence.standardConditions.transformToModelStandard(),
-    additionalConditions = licence.additionalConditions.transformToModelAdditional(),
+    standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
+    standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
+    additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP"),
+    additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS"),
     bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   )
 }
 
 // Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
-fun List<ModelStandardCondition>.transformToEntityStandard(id: Long): List<EntityStandardCondition> = map { term -> transform(term, id) }
+fun List<ModelStandardCondition>.transformToEntityStandard(id: Long, conditionType: String): List<EntityStandardCondition> = map { term -> transform(term, id, conditionType) }
 
-fun transform(model: ModelStandardCondition, id: Long): EntityStandardCondition {
+fun transform(model: ModelStandardCondition, id: Long, conditionType: String): EntityStandardCondition {
   return EntityStandardCondition(
     licenceId = id,
     conditionCode = model.code,
     conditionSequence = model.sequence,
     conditionText = model.text,
+    conditionType = conditionType,
   )
 }
 
 // Transform a list of entity standard conditions to model standard conditions
-fun List<EntityStandardCondition>.transformToModelStandard(): List<ModelStandardCondition> = map(::transform)
+fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> = filter { condition -> condition.conditionType == conditionType }.map(::transform)
 
 fun transform(entity: EntityStandardCondition): ModelStandardCondition {
   return ModelStandardCondition(
@@ -161,21 +164,22 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
   )
 }
 
-fun transform(model: ModelAdditionalCondition, licence: EntityLicence): EntityAdditionalCondition {
+fun transform(model: ModelAdditionalCondition, licence: EntityLicence, conditionType: String): EntityAdditionalCondition {
   return EntityAdditionalCondition(
     conditionCode = model.code,
     conditionCategory = model.category,
     conditionSequence = model.sequence,
     conditionText = model.text,
+    conditionType = conditionType,
     licence = licence,
   )
 }
 
 // Transform a list of entity additional conditions to model additional conditions
-fun List<EntityAdditionalCondition>.transformToModelAdditional(): List<ModelAdditionalCondition> = map(::transform)
+fun List<EntityAdditionalCondition>.transformToModelAdditional(conditionType: String): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map(::transform)
 
 // Transform a list of model additional conditions to entity additional conditions
-fun List<ModelAdditionalCondition>.transformToEntityAdditional(licence: EntityLicence): List<EntityAdditionalCondition> = map { transform(it, licence) }
+fun List<ModelAdditionalCondition>.transformToEntityAdditional(licence: EntityLicence, conditionType: String): List<EntityAdditionalCondition> = map { transform(it, licence, conditionType) }
 
 fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
   return ModelAdditionalCondition(

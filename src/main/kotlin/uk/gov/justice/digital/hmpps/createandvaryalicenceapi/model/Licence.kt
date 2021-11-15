@@ -164,11 +164,17 @@ data class Licence(
   @Schema(description = "The username of the person who last updated this licence", example = "X34433")
   val updatedByUsername: String? = null,
 
-  @Schema(description = "The list of standard conditions on this licence")
-  val standardConditions: List<StandardCondition> = emptyList(),
+  @Schema(description = "The list of standard licence conditions on this licence")
+  val standardLicenceConditions: List<StandardCondition>? = emptyList(),
 
-  @Schema(description = "The list of additional conditions on this licence")
-  val additionalConditions: List<AdditionalCondition> = emptyList(),
+  @Schema(description = "The list of standard post sentence supervision conditions on this licence")
+  val standardPssConditions: List<StandardCondition>? = emptyList(),
+
+  @Schema(description = "The list of additional licence conditions on this licence")
+  val additionalLicenceConditions: List<AdditionalCondition> = emptyList(),
+
+  @Schema(description = "The list of additional post sentence supervision conditions on this licence")
+  val additionalPssConditions: List<AdditionalCondition> = emptyList(),
 
   @Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<BespokeCondition> = emptyList(),
