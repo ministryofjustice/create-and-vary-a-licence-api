@@ -61,6 +61,8 @@ data class Licence(
   val sentenceEndDate: LocalDate? = null,
   val licenceStartDate: LocalDate? = null,
   val licenceExpiryDate: LocalDate? = null,
+  val topupSupervisionStartDate: LocalDate? = null,
+  val topupSupervisionExpiryDate: LocalDate? = null,
   val comFirstName: String? = null,
   val comLastName: String? = null,
   val comUsername: String? = null,
