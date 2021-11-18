@@ -32,6 +32,8 @@ CREATE TABLE licence (
   sentence_end_date date,
   licence_start_date date,
   licence_expiry_date date,
+  topup_supervision_start_date date,
+  topup_supervision_expiry_date date,
   com_first_name varchar(60),
   com_last_name varchar(60),
   com_username varchar(40),
