@@ -481,6 +481,39 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       )
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-summaries.sql"
+  )
+  fun `Activate licences in bulk`() {
+    webTestClient.post()
+      .uri("/licence/activate-licences")
+      .bodyValue(listOf(1, 2, 3))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/staffId/1?status=ACTIVE")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.size).isEqualTo(3)
+    assertThat(result)
+      .extracting<Tuple> {
+        tuple(it.licenceId, it.licenceStatus)
+      }
+      .contains(
+        tuple(1L, LicenceStatus.ACTIVE),
+        tuple(2L, LicenceStatus.ACTIVE),
+      )
+  }
+
   private companion object {
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
