@@ -8,9 +8,4 @@ coverage:
     patch:
       default:
         informational: true
-comment:
-  require_head: no
-  require_base: no
-  require_changes: false
-  layout: "reach,diff,files"
-  behavior: default
+comment: false
