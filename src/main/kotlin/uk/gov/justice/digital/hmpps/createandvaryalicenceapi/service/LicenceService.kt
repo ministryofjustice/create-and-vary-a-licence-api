@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -229,6 +230,12 @@ class LicenceService(
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     val matchingLicences = licenceRepository.findAll(licenceQueryObject.toSpecification())
     return transformToListOfSummaries(matchingLicences)
+  }
+
+  fun activateLicences(licenceIds: List<Long>) {
+    val matchingLicences = licenceRepository.findAllById(licenceIds)
+    val activatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = ACTIVE) }
+    licenceRepository.saveAllAndFlush(activatedLicences)
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {

@@ -561,6 +561,16 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `activate licences sets licence statuses to ACTIVE`() {
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy()))
+
+    service.activateLicences(listOf(1L))
+
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+  }
+
+  @Test
   fun `update additional condition data`() {
     whenever(licenceRepository.findById(1L))
       .thenReturn(
