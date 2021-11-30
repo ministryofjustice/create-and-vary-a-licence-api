@@ -562,12 +562,22 @@ class LicenceServiceTest {
 
   @Test
   fun `activate licences sets licence statuses to ACTIVE`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy()))
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
     service.activateLicences(listOf(1L))
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+  }
+
+  @Test
+  fun `activate licences does not activate if status is not approved`() {
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
+
+    service.activateLicences(listOf(1L))
+
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
   }
 
   @Test

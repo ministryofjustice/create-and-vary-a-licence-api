@@ -484,7 +484,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/clear-all-licences.sql",
-    "classpath:test_data/seed-licence-summaries.sql"
+    "classpath:test_data/seed-approved-licences.sql"
   )
   fun `Activate licences in bulk`() {
     webTestClient.post()
@@ -511,6 +511,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .contains(
         tuple(1L, LicenceStatus.ACTIVE),
         tuple(2L, LicenceStatus.ACTIVE),
+        tuple(3L, LicenceStatus.ACTIVE),
       )
   }
 
