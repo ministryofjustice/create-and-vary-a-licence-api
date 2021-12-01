@@ -233,9 +233,11 @@ class LicenceService(
   }
 
   fun activateLicences(licenceIds: List<Long>) {
-    val matchingLicences = licenceRepository.findAllById(licenceIds)
+    val matchingLicences = licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
     val activatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = ACTIVE) }
-    licenceRepository.saveAllAndFlush(activatedLicences)
+    if (activatedLicences.isNotEmpty()) {
+      licenceRepository.saveAllAndFlush(activatedLicences)
+    }
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
