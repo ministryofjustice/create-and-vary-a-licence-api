@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceH
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -228,8 +230,12 @@ class LicenceService(
   }
 
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
-    val matchingLicences = licenceRepository.findAll(licenceQueryObject.toSpecification())
-    return transformToListOfSummaries(matchingLicences)
+    try {
+      val matchingLicences = licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
+      return transformToListOfSummaries(matchingLicences)
+    } catch (e: PropertyReferenceException) {
+      throw ValidationException(e.message)
+    }
   }
 
   fun activateLicences(licenceIds: List<Long>) {
