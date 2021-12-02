@@ -12,7 +12,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import org.mockito.ArgumentMatchers.eq
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.mapping.PropertyReferenceException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -363,23 +366,54 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - no parameters matches all`() {
     val licenceQueryObject = LicenceQueryObject(null, null, null, null)
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
     assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>())
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.unsorted()))
   }
 
   @Test
   fun `find licences matching criteria - multiple parameters`() {
     val licenceQueryObject = LicenceQueryObject(listOf("MDI"), listOf(LicenceStatus.APPROVED), listOf(1, 2, 3), listOf("A1234AA"))
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
     assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>())
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.unsorted()))
+  }
+
+  @Test
+  fun `find licences matching criteria - sorted`() {
+    val licenceQueryObject = LicenceQueryObject(sortBy = "conditionalReleaseDate", sortOrder = "DESC")
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.by(Sort.Direction.DESC, "conditionalReleaseDate")))
+  }
+
+  @Test
+  fun `find licences matching criteria - unknown property`() {
+    val licenceQueryObject = LicenceQueryObject(sortBy = "unknown", sortOrder = "DESC")
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenThrow(mock<PropertyReferenceException>())
+
+    assertThrows<ValidationException> {
+      service.findLicencesMatchingCriteria(licenceQueryObject)
+    }
+  }
+
+  @Test
+  fun `find licences matching criteria - unknown sort order`() {
+    val licenceQueryObject = LicenceQueryObject(sortBy = "conditionalReleaseDate", sortOrder = "unknown")
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+
+    assertThrows<ValidationException> {
+      service.findLicencesMatchingCriteria(licenceQueryObject)
+    }
   }
 
   @Test

@@ -417,10 +417,12 @@ class LicenceController(private val licenceService: LicenceService) {
     @RequestParam(name = "prison", required = false) prison: List<String>?,
     @RequestParam(name = "status", required = false) status: List<LicenceStatus>?,
     @RequestParam(name = "staffId", required = false) staffId: List<Int>?,
-    @RequestParam(name = "nomsId", required = false) nomsId: List<String>?
+    @RequestParam(name = "nomsId", required = false) nomsId: List<String>?,
+    @RequestParam(name = "sortBy", required = false) sortBy: String?,
+    @RequestParam(name = "sortOrder", required = false) sortOrder: String?
   ): List<LicenceSummary> {
     return licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(prisonCodes = prison, statusCodes = status, staffIds = staffId, nomsIds = nomsId)
+      LicenceQueryObject(prisonCodes = prison, statusCodes = status, staffIds = staffId, nomsIds = nomsId, sortBy = sortBy, sortOrder = sortOrder)
     )
   }
 

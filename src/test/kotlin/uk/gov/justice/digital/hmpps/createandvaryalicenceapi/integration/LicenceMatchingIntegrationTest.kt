@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 
 class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
@@ -139,5 +140,36 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result).isEmpty()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-matching-candidates.sql"
+  )
+  fun `Get licence matches - sort by conditional release date`() {
+    val result = webTestClient.get()
+      .uri("/licence/match?sortBy=conditionalReleaseDate&sortOrder=DESC")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.size).isEqualTo(6)
+    assertThat(result)
+      .extracting<Tuple> {
+        tuple(it.licenceId, it.conditionalReleaseDate)
+      }
+      .containsExactly(
+        tuple(6L, LocalDate.parse("2036-04-28")),
+        tuple(5L, LocalDate.parse("2035-04-28")),
+        tuple(4L, LocalDate.parse("2034-04-28")),
+        tuple(3L, LocalDate.parse("2033-04-28")),
+        tuple(2L, LocalDate.parse("2032-04-28")),
+        tuple(1L, LocalDate.parse("2031-04-28")),
+      )
   }
 }

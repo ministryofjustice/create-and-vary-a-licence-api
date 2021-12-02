@@ -2,15 +2,19 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
 import au.com.console.jpaspecificationdsl.and
 import au.com.console.jpaspecificationdsl.`in`
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import javax.validation.ValidationException
 
 data class LicenceQueryObject(
   val prisonCodes: List<String>? = null,
   val statusCodes: List<LicenceStatus>? = null,
   val staffIds: List<Int>? = null,
   val nomsIds: List<String>? = null,
+  val sortBy: String? = null,
+  val sortOrder: String? = null
 )
 
 fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
@@ -19,6 +23,22 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasNomsIdIn(nomsIds),
   hasStaffIdIn(staffIds)
 )
+
+fun LicenceQueryObject.getSort(): Sort {
+  if (sortBy == null) {
+    return Sort.unsorted()
+  }
+
+  if (sortOrder == null) {
+    return Sort.by(Sort.Direction.ASC, sortBy)
+  }
+
+  try {
+    return Sort.by(Sort.Direction.fromString(sortOrder), sortBy)
+  } catch (e: IllegalArgumentException) {
+    throw ValidationException(e.message)
+  }
+}
 
 fun hasPrisonCodeIn(prisonCodes: List<String>?): Specification<Licence>? = prisonCodes?.let {
   Licence::prisonCode.`in`(prisonCodes)
