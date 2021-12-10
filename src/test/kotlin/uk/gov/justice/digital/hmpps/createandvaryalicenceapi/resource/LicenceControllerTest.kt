@@ -393,36 +393,6 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
   }
 
-  @Test
-  fun `get a list of approval candidates by prisons`() {
-    whenever(licenceService.findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))).thenReturn(listOf(aLicenceSummary))
-
-    val result = mvc.perform(get("/licence/approval-candidates?prison=MDI&prison=LEI").accept(APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
-
-    verify(licenceService, times(1)).findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))
-  }
-
-  @Test
-  fun `get a list of approval candidates - no prisons supplied`() {
-    whenever(licenceService.findLicencesForApprovalByPrisonCaseload(null)).thenReturn(listOf(aLicenceSummary))
-
-    val result = mvc.perform(get("/licence/approval-candidates").accept(APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
-
-    verify(licenceService, times(1)).findLicencesForApprovalByPrisonCaseload(null)
-  }
-
   private companion object {
 
     val someStandardConditions = listOf(
