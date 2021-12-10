@@ -355,38 +355,6 @@ class LicenceController(private val licenceService: LicenceService) {
     return licenceService.findLicencesByStaffIdAndStatuses(staffId, statuses)
   }
 
-  @GetMapping(value = ["/approval-candidates"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Get a list of licences awaiting approval.",
-    description = "Get the licences awaiting approval within a specified (or all) prison caseloads. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Licence summary details returned - could be empty.",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun getLicencesForApprovalByPrisonCaseload(
-    @RequestParam(name = "prison", required = false) prisonCaseload: List<String>?
-  ): List<LicenceSummary> {
-    return licenceService.findLicencesForApprovalByPrisonCaseload(prisonCaseload)
-  }
-
   @GetMapping(value = ["/match"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(

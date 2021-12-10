@@ -326,44 +326,6 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `find approval candidates - single prison and empty result list`() {
-    whenever(licenceRepository.findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI")))
-      .thenReturn(emptyList())
-
-    val licenceSummaries = service.findLicencesForApprovalByPrisonCaseload(listOf("MDI"))
-
-    assertThat(licenceSummaries).isEmpty()
-    verify(licenceRepository, times(1))
-      .findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI"))
-    verify(licenceRepository, times(0)).findAllByStatusCode(any())
-  }
-
-  @Test
-  fun `find approval candidates - list of prisons`() {
-    whenever(licenceRepository.findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI", "LEI")))
-      .thenReturn(listOf(aLicenceEntity))
-
-    val licenceSummaries = service.findLicencesForApprovalByPrisonCaseload(listOf("MDI", "LEI"))
-
-    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1))
-      .findAllByStatusCodeAndPrisonCodeIn(LicenceStatus.SUBMITTED, listOf("MDI", "LEI"))
-    verify(licenceRepository, times(0)).findAllByStatusCode(any())
-  }
-
-  @Test
-  fun `find approval candidates - no prisons specified returns all`() {
-    whenever(licenceRepository.findAllByStatusCode(LicenceStatus.SUBMITTED))
-      .thenReturn(listOf(aLicenceEntity))
-
-    val licenceSummaries = service.findLicencesForApprovalByPrisonCaseload(null)
-
-    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAllByStatusCode(LicenceStatus.SUBMITTED)
-    verify(licenceRepository, times(0)).findAllByStatusCodeAndPrisonCodeIn(any(), any())
-  }
-
-  @Test
   fun `find licences matching criteria - no parameters matches all`() {
     val licenceQueryObject = LicenceQueryObject(null, null, null, null)
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))

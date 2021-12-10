@@ -455,35 +455,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/clear-all-licences.sql",
-    "classpath:test_data/seed-approval-candidates.sql"
-  )
-  fun `Get approval candidates for a list of prisons`() {
-    val result = webTestClient.get()
-      .uri("/licence/approval-candidates?prison=MDI&prison=LEI")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
-
-    assertThat(result?.size).isEqualTo(2)
-    assertThat(result)
-      .extracting<Tuple> {
-        tuple(it.licenceId, it.licenceStatus, it.nomisId, it.surname, it.forename, it.prisonCode, it.prisonDescription)
-      }
-      .contains(
-        tuple(1L, LicenceStatus.SUBMITTED, "A1234AA", "Alda", "Alan", "MDI", "Moorland HMP"),
-        tuple(2L, LicenceStatus.SUBMITTED, "B1234BB", "Bobson", "Bob", "MDI", "Moorland HMP"),
-      )
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-approved-licences.sql"
   )
   fun `Activate licences in bulk`() {

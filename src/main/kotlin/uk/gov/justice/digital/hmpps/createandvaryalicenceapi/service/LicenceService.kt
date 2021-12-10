@@ -220,15 +220,6 @@ class LicenceService(
     return transformToListOfSummaries(licences)
   }
 
-  fun findLicencesForApprovalByPrisonCaseload(prisonCaseload: List<String>?): List<LicenceSummary> {
-    val licences = if (!prisonCaseload.isNullOrEmpty()) {
-      licenceRepository.findAllByStatusCodeAndPrisonCodeIn(SUBMITTED, prisonCaseload)
-    } else {
-      licenceRepository.findAllByStatusCode(SUBMITTED)
-    }
-    return transformToListOfSummaries(licences)
-  }
-
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     try {
       val matchingLicences = licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
