@@ -6,9 +6,9 @@ import javax.validation.constraints.NotBlank
 @Schema(description = "Request object for updating the contact number of the officer on a licence")
 data class ContactNumberRequest(
   @Schema(
-    description = "The UK telephone number to contact the responsible officer for a licence",
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
     example = "0114 2557665",
   )
   @field:NotBlank
-  val comTelephone: String?,
+  val telephone: String?,
 )

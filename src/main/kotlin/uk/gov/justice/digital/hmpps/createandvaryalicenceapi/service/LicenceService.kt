@@ -83,7 +83,7 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    val updatedLicence = licenceEntity.copy(comTelephone = request.comTelephone)
+    val updatedLicence = licenceEntity.copy(appointmentContact = request.telephone)
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
