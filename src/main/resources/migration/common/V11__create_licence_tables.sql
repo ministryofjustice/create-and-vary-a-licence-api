@@ -45,6 +45,7 @@ CREATE TABLE licence (
   appointment_person varchar(60),
   appointment_time timestamp with time zone,
   appointment_address varchar(240),
+  appointment_contact varchar(20),
   approved_date timestamp with time zone,
   approved_by_username varchar(100),
   approved_by_name varchar(100),

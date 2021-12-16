@@ -196,9 +196,9 @@ class LicenceServiceTest {
   fun `update contact number persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateContactNumber(1L, ContactNumberRequest(comTelephone = "0114 2565555"))
+    service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
 
-    val expectedUpdatedEntity = aLicenceEntity.copy(comTelephone = "0114 2565555")
+    val expectedUpdatedEntity = aLicenceEntity.copy(appointmentContact = "0114 2565555")
 
     verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
   }
@@ -208,7 +208,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateContactNumber(1L, ContactNumberRequest(comTelephone = "0114 2565555"))
+      service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
