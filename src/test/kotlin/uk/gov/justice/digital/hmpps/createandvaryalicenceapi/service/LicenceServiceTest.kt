@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -295,37 +296,6 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `find licences by staff ID - empty result`() {
-    whenever(licenceRepository.findAllByComStaffId(1L)).thenReturn(emptyList())
-
-    val licenceSummaries = service.findLicencesByStaffIdAndStatuses(1L, null)
-    val expectedEmptyList: List<LicenceSummary> = emptyList()
-
-    assertThat(licenceSummaries).isEqualTo(expectedEmptyList)
-    verify(licenceRepository, times(1)).findAllByComStaffId(1L)
-  }
-
-  @Test
-  fun `find licences by staff ID`() {
-    whenever(licenceRepository.findAllByComStaffId(1L)).thenReturn(listOf(aLicenceEntity))
-
-    val licenceSummaries = service.findLicencesByStaffIdAndStatuses(1L, null)
-
-    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAllByComStaffId(1L)
-  }
-
-  @Test
-  fun `find licences by staff ID and status`() {
-    whenever(licenceRepository.findAllByComStaffIdAndStatusCodeIn(1L, listOf(LicenceStatus.IN_PROGRESS))).thenReturn(listOf(aLicenceEntity))
-
-    val licenceSummaries = service.findLicencesByStaffIdAndStatuses(1L, listOf(LicenceStatus.IN_PROGRESS))
-
-    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAllByComStaffIdAndStatusCodeIn(1L, listOf(LicenceStatus.IN_PROGRESS))
-  }
-
-  @Test
   fun `find licences matching criteria - no parameters matches all`() {
     val licenceQueryObject = LicenceQueryObject(null, null, null, null)
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
@@ -455,6 +425,46 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceHistoryRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `submit licence throws not found exception`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+    val exception = assertThrows<EntityNotFoundException> {
+      service.submitLicence(1L, SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smith", email = "jsmith@probation.gov.uk"))
+    }
+
+    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceHistoryRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `submit a licence saves new fields to the licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.submitLicence(1L, SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smythe", email = "jsmythe@probation.gov.uk"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licenceCaptor.value.comFirstName).isEqualTo("Jon")
+    assertThat(licenceCaptor.value.comLastName).isEqualTo("Smythe")
+    assertThat(licenceCaptor.value.comUsername).isEqualTo("jsmythe")
+    assertThat(licenceCaptor.value.comEmail).isEqualTo("jsmythe@probation.gov.uk")
+    assertThat(licenceCaptor.value.comStaffId).isEqualTo(2000)
+    assertThat(licenceCaptor.value.dateLastUpdated).isAfter(LocalDateTime.now().minusMinutes(5L))
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("jsmythe")
+
+    assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.SUBMITTED.name)
+    assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to SUBMITTED")
   }
 
   @Test
@@ -658,16 +668,12 @@ class LicenceServiceTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills",
-      comUsername = "X12345",
-      comStaffId = 12345,
-      comEmail = "stephen.mills@nps.gov.uk",
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
+      username = "joebloggs"
     )
 
     val aLicenceEntity = EntityLicence(
@@ -731,7 +737,9 @@ class LicenceServiceTest {
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22)
+      actualReleaseDate = LocalDate.of(2021, 10, 22),
+      comFirstName = "Stephen",
+      comLastName = "Mills"
     )
   }
 }

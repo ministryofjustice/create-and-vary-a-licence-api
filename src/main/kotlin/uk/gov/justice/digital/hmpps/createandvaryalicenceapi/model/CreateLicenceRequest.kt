@@ -4,10 +4,15 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 @Schema(description = "Request object for creating a new licence")
 data class CreateLicenceRequest(
+
+  @Schema(description = "The username of the person who is creating the licence", example = "joebloggs")
+  @field:NotBlank
+  val username: String,
 
   @Schema(description = "Type of licence requested - one of AP, PSS or AP_PSS", example = "AP")
   @NotNull
@@ -97,23 +102,6 @@ data class CreateLicenceRequest(
   @Schema(description = "The date when the post sentence supervision period ends, from prison services", example = "06/06/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val topupSupervisionExpiryDate: LocalDate? = null,
-
-  @Schema(description = "The forename of the offender manager, from probation services", example = "Paula")
-  val comFirstName: String? = null,
-
-  @Schema(description = "The surname of the offender manager, from probation services", example = "Wells")
-  val comLastName: String? = null,
-
-  @Schema(description = "The username used in login for the person creating this licence", example = "X1233")
-  @NotNull
-  val comUsername: String? = null,
-
-  @Schema(description = "The staff identifier of the offender manager, from probation services", example = "44553343")
-  @NotNull
-  val comStaffId: Long? = null,
-
-  @Schema(description = "The email address of the offender manager, from probation services", example = "paula.wells@northeast.probation.gov.uk")
-  val comEmail: String? = null,
 
   @Schema(description = "The telephone contact number for the offender manager, from probation services", example = "07876 443554")
   val comTelephone: String? = null,
