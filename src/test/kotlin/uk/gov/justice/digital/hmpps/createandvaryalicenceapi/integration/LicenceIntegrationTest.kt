@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -407,54 +408,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/clear-all-licences.sql",
-    "classpath:test_data/seed-licence-summaries.sql"
-  )
-  fun `Get licence summaries by staffId`() {
-    val result = webTestClient.get()
-      .uri("/licence/staffId/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
-
-    assertThat(result?.size).isEqualTo(3)
-    assertThat(result)
-      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
-      .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED), tuple(3L, LicenceStatus.REJECTED))
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/clear-all-licences.sql",
-    "classpath:test_data/seed-licence-summaries.sql"
-  )
-  fun `Get licence summaries by staffId and status`() {
-    val result = webTestClient.get()
-      .uri("/licence/staffId/1?status=IN_PROGRESS&status=APPROVED")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    log.info("Expect OK: Licence is ${mapper.writeValueAsString(result)}")
-
-    assertThat(result?.size).isEqualTo(2)
-    assertThat(result)
-      .extracting<Tuple> { tuple(it.licenceId, it.licenceStatus) }
-      .contains(tuple(1L, LicenceStatus.IN_PROGRESS), tuple(2L, LicenceStatus.APPROVED))
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-approved-licences.sql"
   )
   fun `Activate licences in bulk`() {
@@ -467,7 +420,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     val result = webTestClient.get()
-      .uri("/licence/staffId/1?status=ACTIVE")
+      .uri("/licence/match?status=ACTIVE")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -484,6 +437,39 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         tuple(2L, LicenceStatus.ACTIVE),
         tuple(3L, LicenceStatus.ACTIVE),
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-licences.sql",
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Submit licence`() {
+    webTestClient.put()
+      .uri("/licence/id/1/submit")
+      .bodyValue(aSubmitLicenceRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(result?.comFirstName).isEqualTo("Jon")
+    assertThat(result?.comLastName).isEqualTo("Smythe")
+    assertThat(result?.comUsername).isEqualTo("jsmythe")
+    assertThat(result?.comEmail).isEqualTo("jsmythe@probation.gov.uk")
+    assertThat(result?.comStaffId).isEqualTo(2000)
+    assertThat(result?.updatedByUsername).isEqualTo("jsmythe")
   }
 
   private companion object {
@@ -515,16 +501,12 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills",
-      comUsername = "X12345",
-      comStaffId = 12345,
-      comEmail = "stephen.mills@nps.gov.uk",
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
+      username = "joebloggs"
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
@@ -566,5 +548,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
+    val aSubmitLicenceRequest = SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smythe", email = "jsmythe@probation.gov.uk")
   }
 }

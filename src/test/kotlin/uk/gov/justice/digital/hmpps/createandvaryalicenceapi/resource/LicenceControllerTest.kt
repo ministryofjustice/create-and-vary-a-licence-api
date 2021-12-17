@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -290,36 +291,6 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `get a list of licence summaries by staffId`() {
-    whenever(licenceService.findLicencesByStaffIdAndStatuses(1, null)).thenReturn(listOf(aLicenceSummary))
-
-    val result = mvc.perform(get("/licence/staffId/1").accept(APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
-
-    verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, null)
-  }
-
-  @Test
-  fun `get a list of licence summaries by staffId and filter by status`() {
-    whenever(licenceService.findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))).thenReturn(listOf(aLicenceSummary))
-
-    val result = mvc.perform(get("/licence/staffId/1?status=IN_PROGRESS&status=APPROVED").accept(APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
-
-    verify(licenceService, times(1)).findLicencesByStaffIdAndStatuses(1, listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.APPROVED))
-  }
-
-  @Test
   fun `match licences by prison code and status`() {
     val licenceQueryObject = LicenceQueryObject(prisonCodes = listOf("LEI"), statusCodes = listOf(LicenceStatus.APPROVED))
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
@@ -407,12 +378,25 @@ class LicenceControllerTest {
       fileResource.filename,
       MediaType.MULTIPART_FORM_DATA_VALUE,
       fileResource.file.inputStream(),
-    );
+    )
     assertThat(fileToUpload).isNotNull
 
     mvc.perform(multipart("/licence/id/4/condition/id/1/file-upload").file(fileToUpload)).andExpect(status().isOk)
 
     verify(licenceService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
+  }
+
+  @Test
+  fun `submit a licence`() {
+    mvc.perform(
+      put("/licence/id/4/submit")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aSubmitLicenceRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).submitLicence(4, aSubmitLicenceRequest)
   }
 
   private companion object {
@@ -506,16 +490,12 @@ class LicenceControllerTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills",
-      comUsername = "X12345",
-      comStaffId = 12345,
-      comEmail = "stephen.mills@nps.gov.uk",
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardLicenceConditions = someStandardConditions,
-      standardPssConditions = someStandardConditions
+      standardPssConditions = someStandardConditions,
+      username = "jeobloggs"
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -530,7 +510,9 @@ class LicenceControllerTest {
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
       conditionalReleaseDate = LocalDate.of(2022, 12, 28),
-      actualReleaseDate = LocalDate.of(2022, 12, 30)
+      actualReleaseDate = LocalDate.of(2022, 12, 30),
+      comFirstName = "John",
+      comLastName = "Smythe",
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
@@ -557,13 +539,10 @@ class LicenceControllerTest {
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
+    val aSubmitLicenceRequest = SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smyth", email = "jsmith@probation.gov.uk")
+
     val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)))
   }
-
-  // Other test candidates:
-  // - supply incomplete required data e.g. no com or prisoner identifiers
-  // - create a licence with an invalid type
-  // - create a PSS licence type
 }
