@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -29,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import java.io.InputStream
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -235,6 +237,17 @@ class LicenceService(
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
     }
+  }
+
+  @Transactional
+  fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
+    // Validate the licenceId exists
+    // If the additionalConditionCode exists on this licence
+    // If the additionalConditionCode does not exist for this licence - create it with the description text
+    // Get the inputStream from the MultiPart file
+    // If the Blob column exists for licenceId and conditionId replace it with the file
+    // If the Blob column does not exist for licenceId and conditionId create it from the file
+    // We should end up with the description in additional_condition_data and the image referencing its ID in additional_condition_files
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
