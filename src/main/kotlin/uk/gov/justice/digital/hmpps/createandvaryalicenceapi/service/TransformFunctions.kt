@@ -42,7 +42,9 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     prisonCode = licence.prisonCode,
     prisonDescription = licence.prisonDescription,
     conditionalReleaseDate = licence.conditionalReleaseDate,
-    actualReleaseDate = licence.actualReleaseDate
+    actualReleaseDate = licence.actualReleaseDate,
+    comFirstName = licence.comFirstName,
+    comLastName = licence.comLastName,
   )
 }
 
@@ -76,16 +78,11 @@ fun transform(createRequest: CreateLicenceRequest): EntityLicence {
     licenceExpiryDate = createRequest.licenceExpiryDate,
     topupSupervisionStartDate = createRequest.topupSupervisionStartDate,
     topupSupervisionExpiryDate = createRequest.topupSupervisionExpiryDate,
-    comFirstName = createRequest.comFirstName,
-    comLastName = createRequest.comLastName,
-    comUsername = createRequest.comUsername,
-    comStaffId = createRequest.comStaffId,
-    comEmail = createRequest.comEmail,
     comTelephone = createRequest.comTelephone,
     probationAreaCode = createRequest.probationAreaCode,
     probationLduCode = createRequest.probationLduCode,
     dateCreated = LocalDateTime.now(),
-    createdByUsername = createRequest.comUsername,
+    createdByUsername = createRequest.username,
   )
 }
 

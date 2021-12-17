@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -22,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -211,13 +211,32 @@ class LicenceService(
     )
   }
 
-  fun findLicencesByStaffIdAndStatuses(staffId: Long, statuses: List<LicenceStatus>?): List<LicenceSummary> {
-    val licences = if (!statuses.isNullOrEmpty()) {
-      licenceRepository.findAllByComStaffIdAndStatusCodeIn(staffId, statuses)
-    } else {
-      licenceRepository.findAllByComStaffId(staffId)
-    }
-    return transformToListOfSummaries(licences)
+  fun submitLicence(licenceId: Long, request: SubmitLicenceRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val updatedLicence = licenceEntity.copy(
+      statusCode = SUBMITTED,
+      comFirstName = request.firstName,
+      comLastName = request.surname,
+      comUsername = request.username,
+      comEmail = request.email,
+      comStaffId = request.staffIdentifier,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = request.username,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicence)
+    licenceHistoryRepository.saveAndFlush(
+      EntityLicenceHistory(
+        licenceId = licenceId,
+        statusCode = SUBMITTED.name,
+        actionTime = LocalDateTime.now(),
+        actionDescription = "Status changed to SUBMITTED",
+        actionUsername = request.username,
+      )
+    )
   }
 
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {

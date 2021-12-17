@@ -45,5 +45,11 @@ data class LicenceSummary(
 
   @Schema(description = "The offender's date of birth, from either prison or probation services", example = "12/12/2001")
   @JsonFormat(pattern = "dd/MM/yyyy")
-  val dateOfBirth: LocalDate?
+  val dateOfBirth: LocalDate?,
+
+  @Schema(description = "The first name of the responsible probation officer", example = "John")
+  val comFirstName: String?,
+
+  @Schema(description = "The first name of the responsible probation officer", example = "Smythe")
+  val comLastName: String?,
 )
