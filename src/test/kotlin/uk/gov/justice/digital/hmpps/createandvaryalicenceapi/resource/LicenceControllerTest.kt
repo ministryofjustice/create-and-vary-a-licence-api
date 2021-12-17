@@ -400,10 +400,7 @@ class LicenceControllerTest {
   @Test
   fun `upload an exclusion zone PDF file associated with an additional condition`() {
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
-
     assertThat(fileResource).isNotNull
-
-    // TODO: Debug through this to check filename, content, name& multipart request
 
     val fileToUpload = MockMultipartFile(
       "file",
@@ -411,7 +408,6 @@ class LicenceControllerTest {
       MediaType.MULTIPART_FORM_DATA_VALUE,
       fileResource.file.inputStream(),
     );
-
     assertThat(fileToUpload).isNotNull
 
     mvc.perform(multipart("/licence/id/4/condition/id/1/file-upload").file(fileToUpload)).andExpect(status().isOk)

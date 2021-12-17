@@ -573,7 +573,7 @@ class LicenceController(private val licenceService: LicenceService) {
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Upload a multipart/form-data request containing an exclusion zone file (PDF).",
+    summary = "Upload a multipart/form-data request containing a PDF exclusion zone file.",
     description = "Uploads a PDF file containing an exclusion zone map and description. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )

@@ -241,13 +241,27 @@ class LicenceService(
 
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
-    // Validate the licenceId exists
-    // If the additionalConditionCode exists on this licence
-    // If the additionalConditionCode does not exist for this licence - create it with the description text
+    // Does the licence specified exist?
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    // Does the identified conditionId exist on this licence?
+    val matchingCondition = licenceEntity.additionalConditions.map { condition -> condition.id == conditionId }
+    if (matchingCondition.isEmpty()) {
+      throw EntityNotFoundException("$conditionId")
+    }
+
+    // Is there already a file uploaded for this condition? Do we replace it? Shouldn't get here. Error?
+    // val matchingFiles = licenceEntity.uploadedFiles.map
+
     // Get the inputStream from the MultiPart file
-    // If the Blob column exists for licenceId and conditionId replace it with the file
-    // If the Blob column does not exist for licenceId and conditionId create it from the file
-    // We should end up with the description in additional_condition_data and the image referencing its ID in additional_condition_files
+
+    // Get the PDF bytes
+    // Extract the image from page 1
+    // Extract the text from page 2
+    // Create a thumbnail and full-size image
+    // Save the data.
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
