@@ -236,7 +236,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.comTelephone).isEqualTo(aContactNumberRequest.comTelephone)
+    assertThat(result?.appointmentContact).isEqualTo(aContactNumberRequest.telephone)
   }
 
   @Test
@@ -536,7 +536,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
 
     val aContactNumberRequest = ContactNumberRequest(
-      comTelephone = "0114 2565555",
+      telephone = "0114 2565555",
     )
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(

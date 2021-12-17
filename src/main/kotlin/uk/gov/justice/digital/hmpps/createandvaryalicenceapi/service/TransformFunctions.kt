@@ -127,6 +127,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     appointmentPerson = licence.appointmentPerson,
     appointmentTime = licence.appointmentTime,
     appointmentAddress = licence.appointmentAddress,
+    appointmentContact = licence.appointmentContact,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,

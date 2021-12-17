@@ -74,6 +74,7 @@ data class Licence(
   val appointmentPerson: String? = null,
   val appointmentTime: LocalDateTime? = null,
   val appointmentAddress: String? = null,
+  val appointmentContact: String? = null,
   val approvedDate: LocalDateTime? = null,
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,

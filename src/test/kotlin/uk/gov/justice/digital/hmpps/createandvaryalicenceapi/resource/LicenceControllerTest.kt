@@ -550,7 +550,7 @@ class LicenceControllerTest {
     )
 
     val aContactNumberRequest = ContactNumberRequest(
-      comTelephone = "0114 2566555",
+      telephone = "0114 2566555",
     )
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(
