@@ -13,17 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.core.io.ClassPathResource
-import org.springframework.http.MediaType
 import org.springframework.http.MediaType.APPLICATION_JSON
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -366,24 +362,6 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
-  }
-
-  @Test
-  fun `upload an exclusion zone PDF file associated with an additional condition`() {
-    val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
-    assertThat(fileResource).isNotNull
-
-    val fileToUpload = MockMultipartFile(
-      "file",
-      fileResource.filename,
-      MediaType.MULTIPART_FORM_DATA_VALUE,
-      fileResource.file.inputStream(),
-    )
-    assertThat(fileToUpload).isNotNull
-
-    mvc.perform(multipart("/licence/id/4/condition/id/1/file-upload").file(fileToUpload)).andExpect(status().isOk)
-
-    verify(licenceService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
   }
 
   @Test

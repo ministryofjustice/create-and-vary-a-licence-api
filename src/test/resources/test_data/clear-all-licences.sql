@@ -1,5 +1,7 @@
 DELETE from standard_condition;
 DELETE from additional_condition_data;
+DELETE from additional_condition_upload_detail;
+DELETE from additional_condition_upload_summary;
 DELETE from additional_condition;
 DELETE from bespoke_condition;
 DELETE from licence_history;

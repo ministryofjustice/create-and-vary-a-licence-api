@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
@@ -36,9 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.io.IOException
 import javax.validation.Valid
-import javax.validation.ValidationException
 import javax.validation.constraints.NotEmpty
 
 @RestController
@@ -532,52 +528,6 @@ class LicenceController(private val licenceService: LicenceService) {
     @Valid @RequestBody request: List<Long>
   ) {
     licenceService.activateLicences(request)
-  }
-
-  @PostMapping(
-    value = ["/id/{licenceId}/condition/id/{conditionId}/file-upload"],
-    consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
-  )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Upload a multipart/form-data request containing a PDF exclusion zone file.",
-    description = "Uploads a PDF file containing an exclusion zone map and description. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "The exclusion zone file was uploaded",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun uploadExclusionZoneFile(
-    @PathVariable(value = "licenceId") licenceId: Long,
-    @PathVariable(value = "conditionId") conditionId: Long,
-    @RequestPart("file") file: MultipartFile
-  ) {
-    try {
-      licenceService.uploadExclusionZoneFile(licenceId, conditionId, file)
-    } catch (e: IOException) {
-      throw ValidationException("Exclusion zone file could not be processed")
-    }
   }
 
   @PutMapping(value = ["/id/{licenceId}/submit"])

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -30,7 +29,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
-import java.io.InputStream
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -119,6 +117,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
+
     val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
     // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
@@ -133,6 +132,9 @@ class LicenceService(
         additionalConditions[it.conditionCode] = it
       }
     }
+
+    // TODO: If we remove any additional conditions which have an file upload associated, manually remove the upload detail too
+    // They would be orphaned by the removal of the additional condition which referenced it
 
     // Remove any additional conditions which exist on the licence, but were not specified in the request
     val resultAdditionalConditionsList = additionalConditions.values.filter { condition ->
@@ -256,31 +258,6 @@ class LicenceService(
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
     }
-  }
-
-  @Transactional
-  fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
-    // Does the licence specified exist?
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    // Does the identified conditionId exist on this licence?
-    val matchingCondition = licenceEntity.additionalConditions.map { condition -> condition.id == conditionId }
-    if (matchingCondition.isEmpty()) {
-      throw EntityNotFoundException("$conditionId")
-    }
-
-    // Is there already a file uploaded for this condition? Do we replace it? Shouldn't get here. Error?
-    // val matchingFiles = licenceEntity.uploadedFiles.map
-
-    // Get the inputStream from the MultiPart file
-
-    // Get the PDF bytes
-    // Extract the image from page 1
-    // Extract the text from page 2
-    // Create a thumbnail and full-size image
-    // Save the data.
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
