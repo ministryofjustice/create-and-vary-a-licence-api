@@ -54,6 +54,9 @@ dependencies {
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
 
+  // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
+  implementation("org.apache.pdfbox:pdfbox:2.0.25")
+
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql:42.2.20")
