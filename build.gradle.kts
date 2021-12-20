@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.14"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.16"
   kotlin("plugin.spring") version "1.5.31"
   kotlin("plugin.jpa") version "1.5.31"
 
@@ -55,7 +55,6 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
 
   // Database dependencies
-  runtimeOnly("com.h2database:h2")
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql:42.2.20")
 
@@ -79,6 +78,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.27")
   testImplementation("org.mockito:mockito-inline:3.12.4")
   testImplementation("io.projectreactor:reactor-test")
+  testImplementation("com.h2database:h2")
 }
 
 java {
