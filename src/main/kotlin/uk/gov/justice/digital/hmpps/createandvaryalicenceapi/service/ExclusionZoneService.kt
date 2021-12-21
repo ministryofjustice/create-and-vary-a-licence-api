@@ -105,7 +105,7 @@ class ExclusionZoneService(
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
     val uploadIds = additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }
-    if (uploadIds.isNotEmpty()) {
+    if (uploadIds.isEmpty()) {
       throw EntityNotFoundException("$conditionId")
     }
 
@@ -141,7 +141,7 @@ class ExclusionZoneService(
   }
 
   class GetPdfWords : PDFTextStripper() {
-    var words: List<String> = ArrayList()
+    val words: List<String> = ArrayList()
   }
 
   fun extractDescription(fileStream: InputStream): String {
@@ -151,8 +151,8 @@ class ExclusionZoneService(
       pdfDoc = PDDocument.load(fileStream)
       val stripper = GetPdfWords()
       stripper.sortByPosition = true
-      stripper.startPage = 1
-      stripper.endPage = 1
+      stripper.startPage = 2
+      stripper.endPage = 2
       val writer = OutputStreamWriter(ByteArrayOutputStream())
       log.info("ExtractDescription: Writing text to stripper")
       stripper.writeText(pdfDoc, writer)

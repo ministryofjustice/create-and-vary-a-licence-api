@@ -41,4 +41,8 @@ class ExclusionZoneServiceTest {
   @Test
   fun `service removes an upload exclusion zone`() {
   }
+
+  @Test
+  fun `service returns a full-sized exclusion zone image`() {
+  }
 }
