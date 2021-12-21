@@ -722,7 +722,8 @@ class LicenceServiceTest {
       conditionCategory = "category1",
       conditionSequence = 1,
       conditionText = "text",
-      additionalConditionData = someAdditionalConditionData
+      additionalConditionData = someAdditionalConditionData,
+      additionalConditionUploadSummary = emptyList(),
     )
 
     val aLicenceSummary = LicenceSummary(
