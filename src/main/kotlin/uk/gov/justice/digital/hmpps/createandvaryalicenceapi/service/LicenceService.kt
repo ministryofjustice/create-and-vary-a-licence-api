@@ -113,6 +113,7 @@ class LicenceService(
     }
   }
 
+  @Transactional
   fun updateAdditionalConditions(licenceId: Long, request: AdditionalConditionsRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
