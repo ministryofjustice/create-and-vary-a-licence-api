@@ -5,6 +5,7 @@ plugins {
 
   jacoco
 }
+project.extensions.extraProperties["log4j2.version"] = "2.17.0"
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
