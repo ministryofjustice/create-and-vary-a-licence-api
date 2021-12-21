@@ -44,7 +44,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
 
-
   @Test
   @Sql(
     "classpath:test_data/clear-all-licences.sql",
@@ -397,7 +396,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
