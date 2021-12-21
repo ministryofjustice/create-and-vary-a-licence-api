@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -45,6 +46,9 @@ class LicenceService(
   private val licenceHistoryRepository: LicenceHistoryRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
 ) {
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 
   @Transactional
   fun createLicence(request: CreateLicenceRequest): LicenceSummary {
@@ -113,6 +117,7 @@ class LicenceService(
     }
   }
 
+  @Transactional
   fun updateAdditionalConditions(licenceId: Long, request: AdditionalConditionsRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -142,6 +147,18 @@ class LicenceService(
 
     val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
     licenceRepository.saveAndFlush(updatedLicence)
+
+    // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
+    val oldConditionsWithUploads = additionalConditions.values.filter { condition -> condition.additionalConditionUploadSummary.isNotEmpty() }
+    oldConditionsWithUploads.forEach { oldCondition ->
+      if (resultAdditionalConditionsList.find { newCondition -> newCondition.conditionCode == oldCondition.conditionCode } == null) {
+        val uploadId = oldCondition.additionalConditionUploadSummary.first().uploadDetailId
+        log.info("Would delete the upload detail for ID $uploadId")
+        additionalConditionUploadDetailRepository.findById(uploadId).ifPresent {
+          additionalConditionUploadDetailRepository.delete(it)
+        }
+      }
+    }
   }
 
   fun updateAdditionalConditionData(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
