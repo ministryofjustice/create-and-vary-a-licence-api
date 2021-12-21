@@ -153,7 +153,6 @@ class LicenceService(
     oldConditionsWithUploads.forEach { oldCondition ->
       if (resultAdditionalConditionsList.find { newCondition -> newCondition.conditionCode == oldCondition.conditionCode } == null) {
         val uploadId = oldCondition.additionalConditionUploadSummary.first().uploadDetailId
-        log.info("Would delete the upload detail for ID $uploadId")
         additionalConditionUploadDetailRepository.findById(uploadId).ifPresent {
           additionalConditionUploadDetailRepository.delete(it)
         }
