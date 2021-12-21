@@ -113,14 +113,12 @@ class LicenceService(
     }
   }
 
-  @Transactional
   fun updateAdditionalConditions(licenceId: Long, request: AdditionalConditionsRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
-
     val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
     // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
@@ -143,20 +141,7 @@ class LicenceService(
     }
 
     val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
-
     licenceRepository.saveAndFlush(updatedLicence)
-
-    // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
-    val oldConditionsWithUploads = additionalConditions.values.filter { condition -> condition.additionalConditionUploadSummary.isNotEmpty() }
-    oldConditionsWithUploads.forEach { oldCondition ->
-      if (resultAdditionalConditionsList.find { newCondition -> newCondition.conditionCode == oldCondition.conditionCode } == null) {
-        val uploadId = oldCondition.additionalConditionUploadSummary.first().uploadDetailId
-        val uploadDetail = additionalConditionUploadDetailRepository.findById(uploadId)
-        if (uploadDetail.isPresent) {
-          additionalConditionUploadDetailRepository.delete(uploadDetail.get())
-        }
-      }
-    }
   }
 
   fun updateAdditionalConditionData(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
