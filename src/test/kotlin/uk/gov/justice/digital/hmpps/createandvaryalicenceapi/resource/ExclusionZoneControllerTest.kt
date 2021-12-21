@@ -61,10 +61,11 @@ class ExclusionZoneControllerTest {
     )
     AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
 
-    mvc.perform(MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload))
-      .andExpect(
-        MockMvcResultMatchers.status().isOk
+    mvc
+      .perform(
+        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload)
       )
+      .andExpect(MockMvcResultMatchers.status().isOk)
 
     verify(exclusionZoneService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
   }
@@ -72,12 +73,20 @@ class ExclusionZoneControllerTest {
   @Test
   fun `remove an exclusion zone upload associated with an additional condition`() {
     mvc.perform(
-      MockMvcRequestBuilders
-        .put("/exclusion-zone/id/4/condition/id/1/remove-upload")
+      MockMvcRequestBuilders.put("/exclusion-zone/id/4/condition/id/1/remove-upload")
     )
-      .andExpect(
-        MockMvcResultMatchers.status().isOk
-      )
+      .andExpect(MockMvcResultMatchers.status().isOk)
+
     verify(exclusionZoneService, times(1)).removeExclusionZoneFile(4, 1)
+  }
+
+  @Test
+  fun `get a full-size image for an exclusion zone`() {
+    mvc.perform(
+      MockMvcRequestBuilders.get("/exclusion-zone/id/4/condition/id/1/full-size-image")
+    )
+      .andExpect(MockMvcResultMatchers.status().isOk)
+
+    verify(exclusionZoneService, times(1)).getExclusionZoneImage(4, 1)
   }
 }

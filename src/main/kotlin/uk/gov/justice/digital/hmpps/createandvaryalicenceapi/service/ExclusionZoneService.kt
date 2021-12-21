@@ -14,7 +14,6 @@ import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.io.OutputStreamWriter
 import javax.imageio.ImageIO
 import javax.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail as EntityAdditionalConditionUploadDetail
@@ -44,7 +43,7 @@ class ExclusionZoneService(
       }
     }
 
-    // Process the MapMaker PDF file to get the fullSizeImage, thumbnailImage and descriptive text
+    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and a thumbnail
     val fullSizeImage = extractFullSizeImageJpeg(file.inputStream)
     val description = extractDescription(file.inputStream)
     val thumbnailImage = createThumbnailImageJpeg(fullSizeImage)
@@ -83,14 +82,14 @@ class ExclusionZoneService(
       .findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove upload detail rows manually - it is intentionally not linked to the additionalCondition entity
+    // Remove uploadDetail rows manually - it is intentionally not linked to the additionalCondition entity
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
       additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
         additionalConditionUploadDetailRepository.delete(detail)
       }
     }
 
-    // Remove the uploadSummary via the additionalCondition uploadSummary list
+    // Remove the uploadSummary via the additionalCondition
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = emptyList())
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
@@ -119,59 +118,41 @@ class ExclusionZoneService(
   fun extractFullSizeImageJpeg(fileStream: InputStream): ByteArray? {
     var pdfDoc: PDDocument? = null
     try {
-      log.info("Reading PDF document from uploaded file stream")
       pdfDoc = PDDocument.load(fileStream)
       val renderer = PDFRenderer(pdfDoc)
-      log.info("Rendering page 1 as an image")
       val firstImage = renderer.renderImage(0)
       val baos = ByteArrayOutputStream()
-      log.info("Writing the JPG to the output stream")
       ImageIO.write(firstImage, "jpg", baos)
-      log.info("Returning a full size image byte array of length ${baos.size()}")
       return baos.toByteArray()
     } catch (e: Exception) {
-      log.info("Exception extracting full size image file ${e.message}")
+      log.error("Extracting full size image - error ${e.message}")
     } finally {
-      log.info("Closing PDF document")
       pdfDoc?.close()
       fileStream.close()
     }
-    log.info("Returning zero-length ByteArray")
     return ByteArray(0)
   }
 
-  class GetPdfWords : PDFTextStripper() {
-    val words: List<String> = ArrayList()
-  }
-
-  fun extractDescription(fileStream: InputStream): String {
+  fun extractDescription(fileStream: InputStream): String? {
     var pdfDoc: PDDocument? = null
     try {
-      log.info("ExtractDescription: Loading PDF from stream")
       pdfDoc = PDDocument.load(fileStream)
-      val stripper = GetPdfWords()
+      val stripper = PDFTextStripper()
       stripper.sortByPosition = true
       stripper.startPage = 2
-      stripper.endPage = 2
-      val writer = OutputStreamWriter(ByteArrayOutputStream())
-      log.info("ExtractDescription: Writing text to stripper")
-      stripper.writeText(pdfDoc, writer)
-      log.info("Stripper words from page 2 are ${stripper.words}")
-      return stripper.words.joinToString(" ")
+      return stripper.getText(pdfDoc)
     } catch (e: Exception) {
-      log.error("Exception processing words from file ${e.message}")
+      log.error("Extracting exclusion zone description - error ${e.message}")
     } finally {
-      log.info("Closing PDF document")
       fileStream.close()
       pdfDoc?.close()
     }
-    log.error("Return empty description from extractDescription")
-    return ""
+    return null
   }
 
   fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray? {
     if (fullSizeImage?.isEmpty() == true) {
-      log.info("Full size image is empty or undefined")
+      log.error("Creating thumbnail image - full size image was empty.")
       return ByteArray(0)
     }
     try {
@@ -181,6 +162,7 @@ class ExclusionZoneService(
       val outputImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
       val ready = outputImage.graphics.drawImage(scaled, 0, 0, null)
       if (!ready) {
+        // Not seen it get here, but just in case.
         log.info("Initial image response not ready - waiting 500ms")
         Thread.sleep(500)
       }
@@ -188,9 +170,8 @@ class ExclusionZoneService(
       ImageIO.write(outputImage, "jpg", baos)
       return baos.toByteArray()
     } catch (e: Exception) {
-      log.error("Exception creating thumbnail image ${e.message}")
+      log.error("Creating thumbnail image - error ${e.message}")
     }
-    log.info("Returning zero-length ByteArray from createThumbnailImageJpeg")
     return ByteArray(0)
   }
 

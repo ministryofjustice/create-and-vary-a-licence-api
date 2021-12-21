@@ -55,33 +55,18 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     // Read back the single additional condition from the repository
     val conditions = additionalConditionRepository.findById(1).map { condition -> condition.additionalConditionUploadSummary }.orElseThrow()
     assertThat(conditions).hasSize(1)
-    val uploadCondition = conditions.first()
 
-    log.info("AdditionalConditionSummary")
-    log.info("ConditionId - ${uploadCondition.id}")
-    log.info("UploadDetailId - ${uploadCondition.uploadDetailId}")
-    log.info("UploadedTime - ${uploadCondition.uploadedTime}")
-    log.info("FileSize - ${uploadCondition.fileSize}")
-    log.info("FileName - ${uploadCondition.filename}")
-    log.info("FileType - ${uploadCondition.fileType}")
-    log.info("Description - ${uploadCondition.description}")
+    val uploadCondition = conditions.first()
 
     // Check that the upload summary values are present shows against this additional condition
     assertThat(uploadCondition.uploadDetailId).isGreaterThan(0)
     assertThat(uploadCondition.filename).isEqualTo(fileResource.filename)
     assertThat(uploadCondition.fileType).isEqualTo("application/pdf")
     assertThat(uploadCondition.thumbnailImage).isNotEmpty
+    assertThat(uploadCondition.description?.trim()).isEqualTo("Description")
 
     // Check that the upload detail values are also stored and referenced by the ID column in the summary
     val detailRow = additionalConditionUploadDetailRepository.findById(uploadCondition.uploadDetailId).orElseThrow()
-
-    log.info("AdditionalConditionDetail")
-    log.info("Id - ${detailRow.id}")
-    log.info("LicenceId - ${detailRow.licenceId}")
-    log.info("AdditionalConditionId - ${detailRow.additionalConditionId}")
-    log.info("Length original - ${detailRow.originalData?.size}")
-    log.info("Length full size - ${detailRow.fullSizeImage?.size}")
-
     assertThat(detailRow.fullSizeImage).isNotEmpty
     assertThat(detailRow.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
   }

@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -57,6 +58,7 @@ class LicenceServiceTest {
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceHistoryRepository = mock<LicenceHistoryRepository>()
+  private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
 
   private val service = LicenceService(
     licenceRepository,
@@ -64,11 +66,12 @@ class LicenceServiceTest {
     additionalConditionRepository,
     bespokeConditionRepository,
     licenceHistoryRepository,
+    additionalConditionUploadDetailRepository,
   )
 
   @BeforeEach
   fun reset() {
-    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository, licenceHistoryRepository)
+    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository, licenceHistoryRepository, additionalConditionUploadDetailRepository)
   }
 
   @Test

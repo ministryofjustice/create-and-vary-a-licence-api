@@ -311,7 +311,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    var result = webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -340,7 +340,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    var result = webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -384,7 +384,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    var result = webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))

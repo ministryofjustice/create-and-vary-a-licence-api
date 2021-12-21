@@ -170,7 +170,7 @@ class ExclusionZoneServiceTest {
       fileType = "application/pdf",
       description = "Description",
       thumbnailImage = ByteArray(0),
-      additionalCondition = anAdditionalConditionEntityWithoutUpload,  // Any additional condition is Ok here.
+      additionalCondition = anAdditionalConditionEntityWithoutUpload, // Any additional condition is Ok here.
       uploadDetailId = 1,
     )
 
