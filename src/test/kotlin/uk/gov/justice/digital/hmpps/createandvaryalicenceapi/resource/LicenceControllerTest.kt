@@ -523,9 +523,4 @@ class LicenceControllerTest {
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)))
   }
-
-  // Other test candidates:
-  // - supply incomplete required data e.g. no com or prisoner identifiers
-  // - create a licence with an invalid type
-  // - create a PSS licence type
 }

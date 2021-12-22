@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -39,6 +40,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var standardConditionRepository: StandardConditionRepository
+
+  @Autowired
+  lateinit var additionalConditionRepository: AdditionalConditionRepository
 
   @Test
   @Sql(
@@ -311,7 +315,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    var result = webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -340,7 +344,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    var result = webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -376,15 +380,20 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
+    // The condition ids will depend upon the order in which tests run so find these dynamically
+    val conditions = additionalConditionRepository.findAll().toMutableList().filter { condition -> condition.licence.id == 1L }
+    assertThat(conditions).isNotEmpty
+    val conditionId = conditions.first().id
+
     webTestClient.put()
-      .uri("/licence/id/1/additional-conditions/condition/1")
+      .uri("/licence/id/1/additional-conditions/condition/$conditionId")
       .bodyValue(anAdditionalConditionDataRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
-    var result = webTestClient.get()
+    val result = webTestClient.get()
       .uri("/licence/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))

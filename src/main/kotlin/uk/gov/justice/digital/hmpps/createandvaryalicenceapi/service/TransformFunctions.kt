@@ -6,12 +6,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.TestData as EntityTestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
@@ -191,6 +193,7 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
     sequence = entity.conditionSequence,
     text = entity.conditionText,
     data = entity.additionalConditionData.transformToModelAdditionalData(),
+    uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
   )
 }
 
@@ -206,7 +209,7 @@ fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionDa
   )
 }
 
-// Transform a list of entity additional condition data to model additional condition data
+// Transform a list of model additional condition data to entity additional condition data
 fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> = map { transform(it, additionalCondition) }
 
 fun transform(model: ModelAdditionalConditionData, additionalCondition: EntityAdditionalCondition): EntityAdditionalConditionData {
@@ -226,5 +229,21 @@ fun transform(entity: EntityBespokeCondition): ModelBespokeCondition {
     id = entity.id,
     sequence = entity.conditionSequence,
     text = entity.conditionText,
+  )
+}
+
+// Transform a list of entity additional condition uploads to model additional condition uploads
+fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> = map(::transform)
+
+fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary {
+  return ModelAdditionalConditionUploadSummary(
+    id = entity.id,
+    filename = entity.filename,
+    fileType = entity.fileType,
+    fileSize = entity.fileSize,
+    uploadedTime = entity.uploadedTime,
+    description = entity.description,
+    thumbnailImage = entity.thumbnailImage,
+    uploadDetailId = entity.uploadDetailId,
   )
 }

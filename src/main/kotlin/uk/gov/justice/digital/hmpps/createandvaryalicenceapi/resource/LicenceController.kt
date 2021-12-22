@@ -115,7 +115,7 @@ class LicenceController(private val licenceService: LicenceService) {
   @PutMapping(value = ["/id/{licenceId}/appointmentPerson"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Update the person the licencee will meet at the initial appointment",
+    summary = "Update the person to meet at the initial appointment",
     description = "Update the person the person on probation will meet at the initial appointment" +
       " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
@@ -562,7 +562,7 @@ class LicenceController(private val licenceService: LicenceService) {
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
+      ),
     ]
   )
   fun submitLicence(

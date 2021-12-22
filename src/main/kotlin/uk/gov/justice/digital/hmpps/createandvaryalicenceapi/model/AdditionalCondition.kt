@@ -20,5 +20,8 @@ data class AdditionalCondition(
   val text: String? = null,
 
   @Schema(description = "The list of data items entered for this additional condition")
-  val data: List<AdditionalConditionData> = emptyList()
+  val data: List<AdditionalConditionData> = emptyList(),
+
+  @Schema(description = "The list of file upload summary for this additional condition")
+  val uploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
 )
