@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
-import java.io.IOException
-import javax.validation.ValidationException
 
 @RestController
 @RequestMapping("/exclusion-zone", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -65,11 +63,7 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
     @PathVariable(value = "conditionId") conditionId: Long,
     @RequestPart("file") file: MultipartFile
   ) {
-    try {
-      exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
-    } catch (e: IOException) {
-      throw ValidationException("Exclusion zone file could not be processed")
-    }
+    return exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
   }
 
   @PutMapping(

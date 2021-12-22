@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
@@ -13,9 +14,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.io.InputStream
+import java.lang.IllegalArgumentException
 import javax.imageio.ImageIO
 import javax.persistence.EntityNotFoundException
+import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail as EntityAdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 
@@ -48,6 +52,11 @@ class ExclusionZoneService(
     val fullSizeImage = extractFullSizeImageJpeg(file.inputStream)
     val description = extractDescription(file.inputStream)
     val thumbnailImage = createThumbnailImageJpeg(fullSizeImage)
+
+    // Validate that we were able to extract meaningful data from the uploaded file
+    if (fullSizeImage?.isEmpty() == true || thumbnailImage?.isEmpty() == true) {
+      throw ValidationException("Exclusion zone - failed to extract the expected image map")
+    }
 
     val uploadDetail = EntityAdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
@@ -125,9 +134,12 @@ class ExclusionZoneService(
       val baos = ByteArrayOutputStream()
       ImageIO.write(firstImage, "jpg", baos)
       return baos.toByteArray()
-    } catch (e: Exception) {
-      log.error("Extracting full size image - error ${e.message}")
-    } finally {
+    } catch (e: IOException) {
+      log.error("Extracting full size image - IO error ${e.message}")
+    } catch(ipe: InvalidPasswordException) {
+      log.error("Extracting full size image - encrypted error ${ipe.message}")
+    }
+    finally {
       pdfDoc?.close()
       fileStream.close()
     }
@@ -142,11 +154,13 @@ class ExclusionZoneService(
       stripper.sortByPosition = true
       stripper.startPage = 2
       return stripper.getText(pdfDoc)
-    } catch (e: Exception) {
-      log.error("Extracting exclusion zone description - error ${e.message}")
+    } catch (e: IOException) {
+      log.error("Extracting exclusion zone description - IO error ${e.message}")
+    } catch(ipe: InvalidPasswordException) {
+      log.error("Extracting exclusion zone description - encrypted error ${ipe.message}")
     } finally {
-      fileStream.close()
       pdfDoc?.close()
+      fileStream.close()
     }
     return null
   }
@@ -170,8 +184,10 @@ class ExclusionZoneService(
       val baos = ByteArrayOutputStream()
       ImageIO.write(outputImage, "jpg", baos)
       return baos.toByteArray()
-    } catch (e: Exception) {
-      log.error("Creating thumbnail image - error ${e.message}")
+    } catch (io: IOException) {
+      log.error("Creating thumbnail image - IO error ${io.message}")
+    } catch (iae: IllegalArgumentException) {
+      log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
     return ByteArray(0)
   }

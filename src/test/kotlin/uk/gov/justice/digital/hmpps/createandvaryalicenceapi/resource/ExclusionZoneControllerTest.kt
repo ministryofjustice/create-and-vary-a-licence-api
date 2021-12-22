@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
+import javax.validation.ValidationException
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -66,6 +68,31 @@ class ExclusionZoneControllerTest {
         MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload)
       )
       .andExpect(MockMvcResultMatchers.status().isOk)
+
+    verify(exclusionZoneService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
+  }
+
+  @Test
+  fun `upload an invalid exclusion zone file and check validation error is returned`() {
+    val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
+    AssertionsForClassTypes.assertThat(fileResource).isNotNull
+
+    val fileToUpload = MockMultipartFile(
+      "file",
+      fileResource.filename,
+      MediaType.MULTIPART_FORM_DATA_VALUE,
+      fileResource.file.inputStream(),
+    )
+    AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
+
+    whenever(exclusionZoneService.uploadExclusionZoneFile(4L, 1L, fileToUpload))
+      .thenThrow(ValidationException("Exclusion zone - failed to extract the expected image map"))
+
+    mvc
+      .perform(
+        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload)
+      )
+      .andExpect(MockMvcResultMatchers.status().is4xxClientError)
 
     verify(exclusionZoneService, times(1)).uploadExclusionZoneFile(4, 1, fileToUpload)
   }
