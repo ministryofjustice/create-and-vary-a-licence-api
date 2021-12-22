@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
 import java.io.IOException
 import javax.validation.ValidationException
@@ -129,7 +128,7 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
       ApiResponse(
         responseCode = "200",
         description = "Image returned",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = Licence::class))],
+        content = [Content(mediaType = "image/jpeg")],
       ),
       ApiResponse(
         responseCode = "401",

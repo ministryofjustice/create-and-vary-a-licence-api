@@ -37,6 +37,7 @@ class ExclusionZoneService(
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
     // Remove any existing upload detail rows manually - intentionally not linked to the additionalCondition entity
+    // There can only be one uploaded exclusion map on this licence/condition
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
       additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
         additionalConditionUploadDetailRepository.delete(detail)

@@ -96,7 +96,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     val additionalCondition = result?.additionalLicenceConditions?.first()
-    assertThat(additionalCondition?.uploadSummary?.isEmpty())
+    assertThat(additionalCondition?.uploadSummary).isEmpty()
   }
 
   @Test

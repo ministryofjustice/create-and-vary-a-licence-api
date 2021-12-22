@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -46,9 +45,6 @@ class LicenceService(
   private val licenceHistoryRepository: LicenceHistoryRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
 ) {
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
 
   @Transactional
   fun createLicence(request: CreateLicenceRequest): LicenceSummary {
