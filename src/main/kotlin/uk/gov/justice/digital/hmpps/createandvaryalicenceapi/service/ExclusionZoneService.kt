@@ -136,10 +136,9 @@ class ExclusionZoneService(
       return baos.toByteArray()
     } catch (e: IOException) {
       log.error("Extracting full size image - IO error ${e.message}")
-    } catch(ipe: InvalidPasswordException) {
+    } catch (ipe: InvalidPasswordException) {
       log.error("Extracting full size image - encrypted error ${ipe.message}")
-    }
-    finally {
+    } finally {
       pdfDoc?.close()
       fileStream.close()
     }
@@ -156,7 +155,7 @@ class ExclusionZoneService(
       return stripper.getText(pdfDoc)
     } catch (e: IOException) {
       log.error("Extracting exclusion zone description - IO error ${e.message}")
-    } catch(ipe: InvalidPasswordException) {
+    } catch (ipe: InvalidPasswordException) {
       log.error("Extracting exclusion zone description - encrypted error ${ipe.message}")
     } finally {
       pdfDoc?.close()
