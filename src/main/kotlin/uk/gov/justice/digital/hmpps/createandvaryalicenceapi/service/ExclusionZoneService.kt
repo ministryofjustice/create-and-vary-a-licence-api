@@ -30,6 +30,7 @@ class ExclusionZoneService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
 ) {
 
+  @OptIn(ExperimentalUnsignedTypes::class)
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
     val licenceEntity = licenceRepository
@@ -48,20 +49,28 @@ class ExclusionZoneService(
       }
     }
 
-    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and a thumbnail
+    log.info("uploadExclusionZoneFile:  Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
+
+    if (file.isEmpty) {
+      log.error("uploadExclusion:  Empty file uploaded, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
+      throw ValidationException("Exclusion zone - file was empty.")
+    }
+
+    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and generate a thumbnail
     val fullSizeImage = extractFullSizeImageJpeg(file.inputStream)
     val description = extractDescription(file.inputStream)
     val thumbnailImage = createThumbnailImageJpeg(fullSizeImage)
 
     // Validate that we were able to extract meaningful data from the uploaded file
-    if (fullSizeImage?.isEmpty() == true || thumbnailImage?.isEmpty() == true) {
+    if (fullSizeImage == null || thumbnailImage == null) {
+      log.error("uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
 
     val uploadDetail = EntityAdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id,
-      originalData = file.bytes,
+      originalData = file.bytes.toUByteArray().toByteArray(),
       fullSizeImage = fullSizeImage,
     )
 
@@ -142,7 +151,7 @@ class ExclusionZoneService(
       pdfDoc?.close()
       fileStream.close()
     }
-    return ByteArray(0)
+    return null
   }
 
   fun extractDescription(fileStream: InputStream): String? {
@@ -152,7 +161,8 @@ class ExclusionZoneService(
       val stripper = PDFTextStripper()
       stripper.sortByPosition = true
       stripper.startPage = 2
-      return stripper.getText(pdfDoc)
+      val words = stripper.getText(pdfDoc)
+      return words.filter { !it.isISOControl() }
     } catch (e: IOException) {
       log.error("Extracting exclusion zone description - IO error ${e.message}")
     } catch (ipe: InvalidPasswordException) {
@@ -188,7 +198,7 @@ class ExclusionZoneService(
     } catch (iae: IllegalArgumentException) {
       log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
-    return ByteArray(0)
+    return null
   }
 
   companion object {

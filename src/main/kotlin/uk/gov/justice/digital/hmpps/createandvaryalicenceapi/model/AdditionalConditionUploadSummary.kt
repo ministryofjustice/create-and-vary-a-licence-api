@@ -25,8 +25,8 @@ data class AdditionalConditionUploadSummary(
   @Schema(description = "The description provided in this document", example = "A description of the exclusion zone boundaries")
   val description: String? = null,
 
-  @Schema(description = "The thumbnail image for the image map contained in this document", example = "ByteArray")
-  val thumbnailImage: ByteArray? = null,
+  @Schema(description = "The thumbnail for the  exclusion zone map as a base64-encoded JPEG image", example = "Base64 string")
+  val thumbnailImage: String? = null,
 
   @Schema(description = "The id which references the original file data and full size image", example = "9999")
   val uploadDetailId: Long,
