@@ -101,15 +101,24 @@ class ExclusionZoneService(
       .findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove uploadDetail rows manually - it is intentionally not linked to the additionalCondition entity
+    // Remove uploadDetail rows manually - intentionally not linked to the additionalCondition entity
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
       additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
         additionalConditionUploadDetailRepository.delete(detail)
       }
     }
 
-    // Remove the uploadSummary via the additionalCondition
-    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = emptyList())
+    // Remove the additionalConditionData item for 'outOfBoundFilename'
+    val updatedAdditionalConditionData = additionalCondition
+      .additionalConditionData
+      .filter { !it.dataField.equals("outOfBoundFilename") }
+
+    // Update summary and data via the additionalCondition lists
+    val updatedAdditionalCondition = additionalCondition.copy(
+      additionalConditionData = updatedAdditionalConditionData,
+      additionalConditionUploadSummary = emptyList(),
+    )
+
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
@@ -161,8 +170,7 @@ class ExclusionZoneService(
       val stripper = PDFTextStripper()
       stripper.sortByPosition = true
       stripper.startPage = 2
-      val words = stripper.getText(pdfDoc)
-      return words.filter { !it.isISOControl() }
+      return stripper.getText(pdfDoc)
     } catch (e: IOException) {
       log.error("Extracting exclusion zone description - IO error ${e.message}")
     } catch (ipe: InvalidPasswordException) {
