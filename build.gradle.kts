@@ -93,7 +93,6 @@ tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
       jvmTarget = "16"
-      freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
   }
 }

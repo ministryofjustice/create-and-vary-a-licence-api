@@ -30,7 +30,6 @@ class ExclusionZoneService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
 ) {
 
-  @OptIn(ExperimentalUnsignedTypes::class)
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
     val licenceEntity = licenceRepository
@@ -70,7 +69,7 @@ class ExclusionZoneService(
     val uploadDetail = EntityAdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id,
-      originalData = file.bytes.toUByteArray().toByteArray(),
+      originalData = file.bytes,
       fullSizeImage = fullSizeImage,
     )
 
