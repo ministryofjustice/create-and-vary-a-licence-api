@@ -5,7 +5,8 @@ plugins {
 
   jacoco
 }
-project.extensions.extraProperties["log4j2.version"] = "2.17.0"
+
+project.extensions.extraProperties["log4j2.version"] = "2.17.1"
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
@@ -51,6 +52,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+  // Get around CVE in 1.2.6 from spring-boot - might need to remove when spring-boot version is incremented
+  implementation("ch.qos.logback:logback-classic:1.2.9")
+  implementation("ch.qos.logback:logback-core:1.2.9")
 
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
