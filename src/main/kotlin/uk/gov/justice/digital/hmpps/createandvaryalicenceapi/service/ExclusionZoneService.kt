@@ -48,13 +48,21 @@ class ExclusionZoneService(
       }
     }
 
-    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and a thumbnail
+    log.info("uploadExclusionZoneFile:  Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
+
+    if (file.isEmpty) {
+      log.error("uploadExclusion:  Empty file uploaded, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
+      throw ValidationException("Exclusion zone - file was empty.")
+    }
+
+    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and generate a thumbnail
     val fullSizeImage = extractFullSizeImageJpeg(file.inputStream)
     val description = extractDescription(file.inputStream)
     val thumbnailImage = createThumbnailImageJpeg(fullSizeImage)
 
     // Validate that we were able to extract meaningful data from the uploaded file
-    if (fullSizeImage?.isEmpty() == true || thumbnailImage?.isEmpty() == true) {
+    if (fullSizeImage == null || thumbnailImage == null) {
+      log.error("uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
 
@@ -92,15 +100,24 @@ class ExclusionZoneService(
       .findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove uploadDetail rows manually - it is intentionally not linked to the additionalCondition entity
+    // Remove uploadDetail rows manually - intentionally not linked to the additionalCondition entity
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
       additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
         additionalConditionUploadDetailRepository.delete(detail)
       }
     }
 
-    // Remove the uploadSummary via the additionalCondition
-    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = emptyList())
+    // Remove the additionalConditionData item for 'outOfBoundFilename'
+    val updatedAdditionalConditionData = additionalCondition
+      .additionalConditionData
+      .filter { !it.dataField.equals("outOfBoundFilename") }
+
+    // Update summary and data via the additionalCondition lists
+    val updatedAdditionalCondition = additionalCondition.copy(
+      additionalConditionData = updatedAdditionalConditionData,
+      additionalConditionUploadSummary = emptyList(),
+    )
+
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
@@ -142,7 +159,7 @@ class ExclusionZoneService(
       pdfDoc?.close()
       fileStream.close()
     }
-    return ByteArray(0)
+    return null
   }
 
   fun extractDescription(fileStream: InputStream): String? {
@@ -188,7 +205,7 @@ class ExclusionZoneService(
     } catch (iae: IllegalArgumentException) {
       log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
-    return ByteArray(0)
+    return null
   }
 
   companion object {

@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
+import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
@@ -243,7 +244,9 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
     fileSize = entity.fileSize,
     uploadedTime = entity.uploadedTime,
     description = entity.description,
-    thumbnailImage = entity.thumbnailImage,
+    thumbnailImage = entity.thumbnailImage?.toBase64(),
     uploadDetailId = entity.uploadDetailId,
   )
 }
+
+fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
