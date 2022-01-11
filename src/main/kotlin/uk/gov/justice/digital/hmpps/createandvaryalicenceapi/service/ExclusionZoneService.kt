@@ -148,7 +148,7 @@ class ExclusionZoneService(
       pdfDoc = PDDocument.load(fileStream)
       val renderer = PDFRenderer(pdfDoc)
       val firstImage = renderer.renderImage(0)
-      val croppedImage = firstImage.getSubimage(50, 50,firstImage.width - 100, firstImage.height - 100)
+      val croppedImage = firstImage.getSubimage(50, 50, firstImage.width - 100, firstImage.height - 100)
       val baos = ByteArrayOutputStream()
       ImageIO.write(croppedImage, "jpg", baos)
 
