@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -146,15 +146,15 @@ class ExclusionZoneService(
     var pdfDoc: PDDocument? = null
     try {
       pdfDoc = PDDocument.load(fileStream)
-      val page = pdfDoc.pages.first()
-      page.resources.xObjectNames.forEach {
-        val o = page.resources.getXObject(it)
-        if (o is PDImageXObject) {
-          val baos = ByteArrayOutputStream()
-          ImageIO.write(o.image, "jpg", baos)
-          return baos.toByteArray()
-        }
-      }
+      val renderer = PDFRenderer(pdfDoc)
+      val firstImage = renderer.renderImage(0)
+      val croppedImage = firstImage.getSubimage(50, 50,firstImage.width - 100, firstImage.height - 100)
+      val baos = ByteArrayOutputStream()
+      ImageIO.write(croppedImage, "jpg", baos)
+
+      // Scale it back up to original size without the borders ?
+
+      return baos.toByteArray()
     } catch (e: IOException) {
       log.error("Extracting full size image - IO error ${e.message}")
     } catch (ipe: InvalidPasswordException) {
