@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -42,7 +42,7 @@ class ExclusionZoneControllerTest {
 
   @BeforeEach
   fun reset() {
-    Mockito.reset(exclusionZoneService)
+    reset(exclusionZoneService)
 
     mvc = MockMvcBuilders
       .standaloneSetup(ExclusionZoneController(exclusionZoneService))

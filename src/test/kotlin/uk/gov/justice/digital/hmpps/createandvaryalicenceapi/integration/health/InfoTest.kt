@@ -16,7 +16,8 @@ class InfoTest : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("app.name").isEqualTo("Create And Vary A Licence Api")
+      .jsonPath("build.name")
+      .isEqualTo("create-and-vary-a-licence-api")
   }
 
   @Test
@@ -24,7 +25,8 @@ class InfoTest : IntegrationTestBase() {
     webTestClient.get().uri("/info")
       .exchange()
       .expectStatus().isOk
-      .expectBody().jsonPath("build.version").value<String> {
+      .expectBody()
+      .jsonPath("build.version").value<String> {
         assertThat(it).startsWith(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
       }
   }

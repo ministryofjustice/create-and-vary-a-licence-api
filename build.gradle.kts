@@ -1,12 +1,9 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.16"
-  kotlin("plugin.spring") version "1.5.31"
-  kotlin("plugin.jpa") version "1.5.31"
-
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.0.1"
+  kotlin("plugin.spring") version "1.6.10"
+  kotlin("plugin.jpa") version "1.6.10"
   jacoco
 }
-
-project.extensions.extraProperties["log4j2.version"] = "2.17.1"
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
@@ -53,10 +50,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-  // Get around CVE in 1.2.6 from spring-boot - might need to remove when spring-boot version is incremented
-  implementation("ch.qos.logback:logback-classic:1.2.9")
-  implementation("ch.qos.logback:logback-core:1.2.9")
-
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
 
@@ -65,15 +58,15 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.2.20")
+  runtimeOnly("org.postgresql:postgresql:42.3.1")
 
-  implementation("com.google.code.gson:gson:2.8.8")
-  implementation("io.arrow-kt:arrow-core:0.10.5")
+  implementation("com.google.code.gson:gson:2.8.9")
+  implementation("io.arrow-kt:arrow-core:1.0.1")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.5.10")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.5.10")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.10")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.3")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.3")
 
   // JPA Kotlin query DSL
   implementation("au.com.console:kotlin-jpa-specification-dsl:2.0.0")
@@ -81,11 +74,11 @@ dependencies {
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
+  testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.27")
-  testImplementation("org.mockito:mockito-inline:3.12.4")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.29")
+  testImplementation("org.mockito:mockito-inline:4.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
 }
