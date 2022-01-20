@@ -35,10 +35,6 @@ tasks.named<JacocoReport>("jacocoTestReport") {
   }
 }
 
-repositories {
-  jcenter()
-}
-
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -67,9 +63,6 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-ui:1.6.3")
   implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.6.3")
-
-  // JPA Kotlin query DSL
-  implementation("au.com.console:kotlin-jpa-specification-dsl:2.0.0")
 
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")

@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
-import au.com.console.jpaspecificationdsl.and
-import au.com.console.jpaspecificationdsl.`in`
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`in`
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import javax.validation.ValidationException
 
