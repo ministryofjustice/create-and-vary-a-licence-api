@@ -17,12 +17,12 @@ class NotifyService(
 
   private fun sendEmail(templateId: String, emailAddress: String, values: Map<String, String>, reference: String) {
     if (!enabled) {
-      log.info("Notification disabled: Did not send notification to ${emailAddress} for ${templateId} ref ${reference}")
+      log.info("Notification disabled: Did not send notification to $emailAddress for $templateId ref $reference")
       return
     }
 
     if (emailAddress.isNullOrEmpty()) {
-      log.info("Blank email address: Did not send notification for ${templateId} ref ${reference}")
+      log.info("Blank email address: Did not send notification for $templateId ref $reference")
       return
     }
 
