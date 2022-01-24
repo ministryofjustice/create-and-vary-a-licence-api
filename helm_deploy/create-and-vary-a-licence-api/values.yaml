@@ -31,6 +31,7 @@ generic-service:
   namespace_secrets:
     create-and-vary-a-licence-api:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
+      NOTIFY_API_KEY: "NOTIFY_API_KEY"
     rds-instance-output:
       DB_SERVER: "rds_instance_address"
       DB_NAME: "database_name"

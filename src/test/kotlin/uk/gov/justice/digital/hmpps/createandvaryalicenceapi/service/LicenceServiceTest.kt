@@ -59,6 +59,7 @@ class LicenceServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceHistoryRepository = mock<LicenceHistoryRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
+  private val notifyService = mock<NotifyService>()
 
   private val service = LicenceService(
     licenceRepository,
@@ -67,11 +68,12 @@ class LicenceServiceTest {
     bespokeConditionRepository,
     licenceHistoryRepository,
     additionalConditionUploadDetailRepository,
+    notifyService,
   )
 
   @BeforeEach
   fun reset() {
-    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository, licenceHistoryRepository, additionalConditionUploadDetailRepository)
+    reset(licenceRepository, standardConditionRepository, bespokeConditionRepository, licenceHistoryRepository, additionalConditionUploadDetailRepository, notifyService)
   }
 
   @Test
@@ -391,6 +393,15 @@ class LicenceServiceTest {
 
     assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.APPROVED.name)
     assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to ${LicenceStatus.APPROVED.name}")
+
+    verify(notifyService, times(1)).sendLicenceApprovedEmail(
+      aLicenceEntity.comEmail.orEmpty(),
+      mapOf(
+        Pair("fullName", "${aLicenceEntity.forename} ${aLicenceEntity.surname}"),
+        Pair("prisonName", aLicenceEntity.prisonDescription.orEmpty())
+      ),
+      "1",
+    )
   }
 
   @Test
