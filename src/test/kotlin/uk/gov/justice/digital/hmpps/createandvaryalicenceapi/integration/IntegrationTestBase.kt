@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 **     - A WebTestClient.
 **     - An ObjectMapper called mapper.
 **     - A logger.
-**     - SQL reset and load scripts to reset reference data - tests can then load what they need.
 */
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @ExtendWith(OAuthExtension::class)

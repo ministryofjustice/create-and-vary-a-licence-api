@@ -4,11 +4,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.service.notify.NotificationClient
+import uk.gov.service.notify.NotificationClientException
 
 @Service
 class NotifyService(
   @Value("\${notify.enabled}") private val enabled: Boolean,
-  @Value("\${notify.templates.licence-approved-id}") private val licenceApprovedTemplateId: String,
+  @Value("\${notify.templates.licenceApproved}") private val licenceApprovedTemplateId: String,
   private val client: NotificationClient
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
@@ -21,14 +22,14 @@ class NotifyService(
       return
     }
 
-    if (emailAddress.isNullOrEmpty()) {
+    if (emailAddress.isBlank()) {
       log.info("Blank email address: Did not send notification for $templateId ref $reference")
       return
     }
 
     try {
       client.sendEmail(templateId, emailAddress, values, reference)
-    } catch (e: Exception) {
+    } catch (e: NotificationClientException) {
       log.error("Email notification failed", e)
     }
   }
