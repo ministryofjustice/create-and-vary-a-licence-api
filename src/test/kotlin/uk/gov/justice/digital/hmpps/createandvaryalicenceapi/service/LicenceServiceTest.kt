@@ -742,8 +742,7 @@ class LicenceServiceTest {
       prisonDescription = "Moorland (HMP)",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills"
+      comUsername = "jsmith",
     )
   }
 }

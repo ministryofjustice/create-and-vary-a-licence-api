@@ -489,8 +489,7 @@ class LicenceControllerTest {
       prisonDescription = "Moorland (HMP)",
       conditionalReleaseDate = LocalDate.of(2022, 12, 28),
       actualReleaseDate = LocalDate.of(2022, 12, 30),
-      comFirstName = "John",
-      comLastName = "Smythe",
+      comUsername = "jsmith",
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
