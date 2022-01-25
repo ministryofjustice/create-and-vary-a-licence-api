@@ -89,3 +89,8 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+notify:
+  enabled: true
+  templates:
+    licenceApproved: 36c3f270-7393-4595-96f7-db2033cccd91

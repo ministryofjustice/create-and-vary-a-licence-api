@@ -34,6 +34,7 @@ import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
 
 @Service
@@ -44,6 +45,7 @@ class LicenceService(
   private val bespokeConditionRepository: BespokeConditionRepository,
   private val licenceHistoryRepository: LicenceHistoryRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val notifyService: NotifyService,
 ) {
 
   @Transactional
@@ -221,6 +223,21 @@ class LicenceService(
         actionDescription = "Status changed to ${request.status.name}",
         actionUsername = request.username,
       )
+    )
+
+    if (request.status == APPROVED) {
+      notifyApproval(licenceId, updatedLicence)
+    }
+  }
+
+  private fun notifyApproval(licenceId: Long, licenceEntity: EntityLicence) {
+    notifyService.sendLicenceApprovedEmail(
+      licenceEntity.comEmail.orEmpty(),
+      mapOf(
+        Pair("fullName", "${licenceEntity.forename} ${licenceEntity.surname}"),
+        Pair("prisonName", licenceEntity.prisonDescription.orEmpty()),
+      ),
+      licenceId.toString(),
     )
   }
 
