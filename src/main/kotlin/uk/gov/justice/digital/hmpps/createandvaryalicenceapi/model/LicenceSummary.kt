@@ -47,9 +47,6 @@ data class LicenceSummary(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val dateOfBirth: LocalDate?,
 
-  @Schema(description = "The first name of the responsible probation officer", example = "John")
-  val comFirstName: String?,
-
-  @Schema(description = "The first name of the responsible probation officer", example = "Smythe")
-  val comLastName: String?,
+  @Schema(description = "The username of the responsible probation officer", example = "jsmith")
+  val comUsername: String?,
 )
