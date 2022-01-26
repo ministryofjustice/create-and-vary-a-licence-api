@@ -37,8 +37,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     prisonDescription = licence.prisonDescription,
     conditionalReleaseDate = licence.conditionalReleaseDate,
     actualReleaseDate = licence.actualReleaseDate,
-    comFirstName = licence.comFirstName,
-    comLastName = licence.comLastName,
+    comUsername = licence.comUsername,
   )
 }
 

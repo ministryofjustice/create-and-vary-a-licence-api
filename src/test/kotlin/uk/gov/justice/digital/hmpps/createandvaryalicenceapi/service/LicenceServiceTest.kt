@@ -716,14 +716,14 @@ class LicenceServiceTest {
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       comFirstName = "Stephen",
       comLastName = "Mills",
-      comUsername = "X12345",
+      comUsername = "smills",
       comStaffId = 12345,
       comEmail = "stephen.mills@nps.gov.uk",
       comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
-      createdByUsername = "X12345",
+      createdByUsername = "smills",
       standardConditions = someEntityStandardConditions,
     )
 
@@ -753,8 +753,7 @@ class LicenceServiceTest {
       prisonDescription = "Moorland (HMP)",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills"
+      comUsername = "smills",
     )
   }
 }
