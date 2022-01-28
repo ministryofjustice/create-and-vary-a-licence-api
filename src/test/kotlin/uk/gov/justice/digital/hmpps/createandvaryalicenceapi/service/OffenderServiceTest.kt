@@ -40,8 +40,10 @@ class OffenderServiceTest {
     service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
 
     verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn("exampleCrn",
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE))
+      .findAllByCrnAndStatusCodeIn(
+        "exampleCrn",
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+      )
     verify(licenceRepository, times(1))
       .saveAllAndFlush(expectedUpdatedLicences)
   }
