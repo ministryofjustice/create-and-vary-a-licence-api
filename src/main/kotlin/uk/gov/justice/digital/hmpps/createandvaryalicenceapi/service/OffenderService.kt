@@ -21,5 +21,4 @@ class OffenderService(
 
     this.licenceRepository.saveAllAndFlush(offenderLicences)
   }
-
 }
