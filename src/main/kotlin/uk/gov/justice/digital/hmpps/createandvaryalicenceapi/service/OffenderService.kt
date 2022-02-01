@@ -7,9 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
-class OffenderService(
-  private val licenceRepository: LicenceRepository,
-) {
+class OffenderService(private val licenceRepository: LicenceRepository) {
 
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newComDetails: UpdateResponsibleComRequest) {
@@ -21,7 +19,8 @@ class OffenderService(
       it.copy(comStaffId = newComDetails.staffIdentifier, comUsername = newComDetails.staffUsername, comEmail = newComDetails.staffEmail)
     }
 
-    // TODO: Create an audit log that offender managers were updated by the system
+    // TODO: Create an audit log
+
     this.licenceRepository.saveAllAndFlush(offenderLicences)
   }
 }

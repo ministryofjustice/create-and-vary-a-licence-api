@@ -8,12 +8,14 @@ import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
@@ -240,3 +242,30 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
 }
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
+
+fun List<EntityAuditEvent>.transformToModelAuditEvents(): List<ModelAuditEvent> = map(::transform)
+
+fun transform(entity: EntityAuditEvent): ModelAuditEvent {
+  return ModelAuditEvent(
+    id = entity.id,
+    licenceId = entity.licenceId,
+    eventTime = entity.eventTime,
+    username = entity.username,
+    fullName = entity.fullName,
+    eventType = entity.eventType,
+    summary = entity.summary,
+    detail = entity.detail,
+  )
+}
+
+fun transform(model: ModelAuditEvent): EntityAuditEvent {
+  return EntityAuditEvent(
+    licenceId = model.licenceId,
+    eventTime = model.eventTime,
+    username = model.username,
+    fullName = model.fullName,
+    eventType = model.eventType,
+    summary = model.summary,
+    detail = model.detail,
+  )
+}
