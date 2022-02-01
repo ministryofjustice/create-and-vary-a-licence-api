@@ -24,7 +24,7 @@ data class AuditEvent(
   val fullName: String? = null,
 
   @Schema(description = "The event type. One of SYSTEM_EVENT or USER_EVENT", example = "USER_EVENT")
-  val eventType: AuditEventType = AuditEventType.USER_EVENT ,
+  val eventType: AuditEventType = AuditEventType.USER_EVENT,
 
   @Schema(description = "A summary of the action taken", example = "Updated a bespoke condition")
   val summary: String? = null,

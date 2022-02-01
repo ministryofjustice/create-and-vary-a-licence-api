@@ -1,0 +1,1 @@
+DELETE from audit_event;

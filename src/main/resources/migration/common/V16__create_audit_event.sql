@@ -6,7 +6,7 @@ CREATE TABLE audit_event(
    full_name varchar(80),  -- Nullable
    event_type varchar(40) NOT NULL, -- Either SYSTEM_EVENT or USER_EVENT
    summary text, -- shorter summary of event
-   details text -- detailed description of event
+   detail text -- detailed description of event
 );
 
 CREATE INDEX idx_audit_licence_id ON audit_event(licence_id);
