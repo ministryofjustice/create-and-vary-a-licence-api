@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
+import javax.validation.constraints.NotEmpty
 
 @Schema(description = "Describes an audit event request")
 data class AuditEvent(
@@ -18,15 +19,16 @@ data class AuditEvent(
   val eventTime: LocalDateTime = LocalDateTime.now(),
 
   @Schema(description = "Username who initiated the event, if a user event, or SYSTEM if an automated event", example = "X63533")
-  val username: String? = null,
+  val username: String? = "SYSTEM",
 
   @Schema(description = "The full name of the person who performed this auditable event, or SYSTEM if an automated event.", example = "Robert Mortimer")
-  val fullName: String? = null,
+  val fullName: String? = "SYSTEM",
 
   @Schema(description = "The event type. One of SYSTEM_EVENT or USER_EVENT", example = "USER_EVENT")
   val eventType: AuditEventType = AuditEventType.USER_EVENT,
 
   @Schema(description = "A summary of the action taken", example = "Updated a bespoke condition")
+  @NotEmpty
   val summary: String? = null,
 
   @Schema(description = "A detailed description of the action taken", example = "Updated a bespoke condition")
