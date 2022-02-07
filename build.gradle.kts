@@ -54,7 +54,7 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.3.1")
+  runtimeOnly("org.postgresql:postgresql:42.3.2")
 
   implementation("com.google.code.gson:gson:2.8.9")
   implementation("io.arrow-kt:arrow-core:1.0.1")
