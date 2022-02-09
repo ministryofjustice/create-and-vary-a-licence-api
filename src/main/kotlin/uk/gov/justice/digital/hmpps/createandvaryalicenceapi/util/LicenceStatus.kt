@@ -8,4 +8,6 @@ enum class LicenceStatus {
   REJECTED,
   INACTIVE,
   RECALLED,
+  VARIATION_IN_PROGRESS,
+  VARIATION_SUBMITTED,
 }

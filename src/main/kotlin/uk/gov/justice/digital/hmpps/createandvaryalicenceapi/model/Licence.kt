@@ -13,7 +13,7 @@ data class Licence(
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
 
-  @Schema(description = "The licence type code", allowableValues = ["AP", "PSS", "AP_PSS"], example = "AP")
+  @Schema(description = "The licence type code", example = "AP")
   val typeCode: LicenceType,
 
   @Schema(description = "The version number used for standard and additional conditions", example = "1.4")
@@ -21,7 +21,6 @@ data class Licence(
 
   @Schema(
     description = "The current status code for this licence",
-    allowableValues = ["IN_PROGRESS", "SUBMITTED", "APPROVED", "REJECTED", "ACTIVE", "INACTIVE", "RECALLED"],
     example = "IN_PROGRESS",
   )
   val statusCode: LicenceStatus?,
