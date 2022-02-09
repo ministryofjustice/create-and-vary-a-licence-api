@@ -25,17 +25,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import javax.validation.Valid
-import javax.validation.constraints.NotEmpty
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -71,7 +69,7 @@ class LicenceController(private val licenceService: LicenceService) {
       )
     ]
   )
-  fun createLicence(@RequestBody @NotEmpty request: CreateLicenceRequest): LicenceSummary {
+  fun createLicence(@RequestBody @Valid request: CreateLicenceRequest): LicenceSummary {
     return licenceService.createLicence(request)
   }
 
@@ -566,9 +564,8 @@ class LicenceController(private val licenceService: LicenceService) {
     ]
   )
   fun submitLicence(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: SubmitLicenceRequest
+    @PathVariable("licenceId") licenceId: Long
   ) {
-    return licenceService.submitLicence(licenceId, request)
+    return licenceService.submitLicence(licenceId)
   }
 }

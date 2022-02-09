@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -16,27 +15,25 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 
 @RestController
-@RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
-class OffenderController(private val offenderService: OffenderService, private val comService: ComService) {
-
+@RequestMapping("/com", produces = [MediaType.APPLICATION_JSON_VALUE])
+class ComController(private val comService: ComService) {
   @PutMapping(
-    value = ["/crn/{crn}/responsible-com"],
+    value = ["/update"],
     produces = [MediaType.APPLICATION_JSON_VALUE]
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender.",
-    description = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Updates the details of a community offender manager.",
+    description = "Updates the details of a community offender manager (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The responsible COM was updated",
+        description = "The COM was updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -55,11 +52,9 @@ class OffenderController(private val offenderService: OffenderService, private v
       )
     ]
   )
-  fun updateResponsibleCom(
-    @PathVariable crn: String,
+  fun updateComDetails(
     @RequestBody body: UpdateComRequest
   ) {
-    val newCom = this.comService.updateComDetails(body)
-    this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
+    this.comService.updateComDetails(body)
   }
 }

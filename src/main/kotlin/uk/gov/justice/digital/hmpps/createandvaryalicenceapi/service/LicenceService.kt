@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.data.mapping.PropertyReferenceException
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -9,15 +10,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -40,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHisto
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
+  private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
   private val standardConditionRepository: StandardConditionRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
@@ -53,7 +55,23 @@ class LicenceService(
     if (offenderHasLicenceInFlight(request.nomsId!!)) {
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
-    val createLicenceResponse = transformToLicenceSummary(licenceRepository.saveAndFlush(transform(request)))
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val responsibleCom = communityOffenderManagerRepository.findByStaffIdentifier(request.responsibleComStaffId)
+      ?: throw ValidationException("Staff with staffIdentifier ${request.responsibleComStaffId} not found")
+    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+      ?: throw RuntimeException("Staff with username $username not found")
+
+    val licence = transform(request)
+    licence.responsibleCom = responsibleCom
+    licence.createdBy = createdBy
+    licence.mailingList.add(responsibleCom)
+    licence.mailingList.add(createdBy)
+    licence.updatedByUsername = username
+
+    val createLicenceResponse = transformToLicenceSummary(licenceRepository.saveAndFlush(licence))
+
     val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(createLicenceResponse.licenceId, "AP")
     val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(createLicenceResponse.licenceId, "PSS")
     standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
@@ -231,31 +249,29 @@ class LicenceService(
   }
 
   private fun notifyApproval(licenceId: Long, licenceEntity: EntityLicence) {
-    notifyService.sendLicenceApprovedEmail(
-      licenceEntity.comEmail.orEmpty(),
-      mapOf(
-        Pair("fullName", "${licenceEntity.forename} ${licenceEntity.surname}"),
-        Pair("prisonName", licenceEntity.prisonDescription.orEmpty()),
-      ),
-      licenceId.toString(),
-    )
+    licenceEntity.mailingList.forEach {
+      notifyService.sendLicenceApprovedEmail(
+        it.email.orEmpty(),
+        mapOf(
+          Pair("fullName", "${licenceEntity.forename} ${licenceEntity.surname}"),
+          Pair("prisonName", licenceEntity.prisonDescription.orEmpty()),
+        ),
+        licenceId.toString(),
+      )
+    }
   }
 
-  fun submitLicence(licenceId: Long, request: SubmitLicenceRequest) {
+  @Transactional
+  fun submitLicence(licenceId: Long) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val updatedLicence = licenceEntity.copy(
-      statusCode = SUBMITTED,
-      comFirstName = request.firstName,
-      comLastName = request.surname,
-      comUsername = request.username,
-      comEmail = request.email,
-      comStaffId = request.staffIdentifier,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = request.username,
-    )
+    val username = SecurityContextHolder.getContext().authentication.name
+    val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+      ?: throw ValidationException("Staff with username $username not found")
+
+    val updatedLicence = licenceEntity.copy(statusCode = SUBMITTED, submittedBy = submitter, updatedByUsername = username)
 
     licenceRepository.saveAndFlush(updatedLicence)
     licenceHistoryRepository.saveAndFlush(
@@ -264,7 +280,7 @@ class LicenceService(
         statusCode = SUBMITTED.name,
         actionTime = LocalDateTime.now(),
         actionDescription = "Status changed to SUBMITTED",
-        actionUsername = request.username,
+        actionUsername = username,
       )
     )
   }

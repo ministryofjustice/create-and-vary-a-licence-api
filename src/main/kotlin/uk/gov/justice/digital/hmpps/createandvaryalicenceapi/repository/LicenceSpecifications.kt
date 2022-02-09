@@ -52,6 +52,7 @@ fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let 
   Licence::nomsId.`in`(nomsIds)
 }
 
+// TODO: This does not work - how does JPA specification deeply get Licence::responsibleCom.staffIdentifier? Its not currently used
 fun hasStaffIdIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
-  Licence::comStaffId.`in`(staffIds)
+  Licence::responsibleCom.`in`(staffIds)
 }

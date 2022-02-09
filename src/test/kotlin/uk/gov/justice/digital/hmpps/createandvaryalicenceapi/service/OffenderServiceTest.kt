@@ -8,8 +8,8 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateResponsibleComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
@@ -27,15 +27,13 @@ class OffenderServiceTest {
   fun `updates all in-flight licences associated with an offender with COM details`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(Licence()))
 
-    val comDetails = UpdateResponsibleComRequest(
+    val comDetails = CommunityOffenderManager(
       staffIdentifier = 2000,
-      staffUsername = "joebloggs",
-      staffEmail = "jbloggs@probation.gov.uk"
+      username = "joebloggs",
+      email = "jbloggs@probation.gov.uk"
     )
 
-    val expectedUpdatedLicences = listOf(
-      Licence(comStaffId = 2000, comUsername = "joebloggs", comEmail = "jbloggs@probation.gov.uk")
-    )
+    val expectedUpdatedLicences = listOf(Licence(responsibleCom = comDetails))
 
     service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
 

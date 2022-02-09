@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.LocalDateTime
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
@@ -39,7 +38,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     prisonDescription = licence.prisonDescription,
     conditionalReleaseDate = licence.conditionalReleaseDate,
     actualReleaseDate = licence.actualReleaseDate,
-    comUsername = licence.comUsername,
+    comUsername = licence.responsibleCom!!.username
   )
 }
 
@@ -73,11 +72,8 @@ fun transform(createRequest: CreateLicenceRequest): EntityLicence {
     licenceExpiryDate = createRequest.licenceExpiryDate,
     topupSupervisionStartDate = createRequest.topupSupervisionStartDate,
     topupSupervisionExpiryDate = createRequest.topupSupervisionExpiryDate,
-    comTelephone = createRequest.comTelephone,
     probationAreaCode = createRequest.probationAreaCode,
     probationLduCode = createRequest.probationLduCode,
-    dateCreated = LocalDateTime.now(),
-    createdByUsername = createRequest.username,
   )
 }
 
@@ -108,12 +104,9 @@ fun transform(licence: EntityLicence): ModelLicence {
     licenceExpiryDate = licence.licenceExpiryDate,
     topupSupervisionStartDate = licence.topupSupervisionStartDate,
     topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
-    comFirstName = licence.comFirstName,
-    comLastName = licence.comLastName,
-    comUsername = licence.comUsername,
-    comStaffId = licence.comStaffId,
-    comEmail = licence.comEmail,
-    comTelephone = licence.comTelephone,
+    comUsername = licence.responsibleCom!!.username,
+    comStaffId = licence.responsibleCom!!.staffIdentifier,
+    comEmail = licence.responsibleCom!!.email,
     probationAreaCode = licence.probationAreaCode,
     probationLduCode = licence.probationLduCode,
     appointmentPerson = licence.appointmentPerson,
@@ -125,7 +118,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     approvedByName = licence.approvedByName,
     supersededDate = licence.supersededDate,
     dateCreated = licence.dateCreated,
-    createdByUsername = licence.createdByUsername,
+    createdByUsername = licence.createdBy!!.username,
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
     standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),

@@ -43,7 +43,7 @@ spring:
       validationTimeout: 500
 
   flyway:
-    locations: classpath:/migration/postgres,classpath:/migration/common
+    locations: classpath:/migration/common,classpath:/migration/triggers
     url: ${spring.datasource.url}
     user: ${DB_USER}
     password: ${DB_PASS}

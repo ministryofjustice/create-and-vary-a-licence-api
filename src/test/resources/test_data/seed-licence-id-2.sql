@@ -20,14 +20,10 @@ insert into licence (
     sentence_end_date,
     licence_start_date,
     licence_expiry_date,
-    com_first_name,
-    com_last_name,
-    com_username,
-    com_staff_id,
-    com_email,
-    com_telephone,
     probation_area_code,
-    probation_ldu_code
+    probation_ldu_code,
+    responsible_com_id,
+    created_by_com_id
 )
 values (
     2,
@@ -51,14 +47,10 @@ values (
     '2022-02-25',
     '2022-02-25',
     '2023-02-25',
-    'Stephen',
-    'Mills',
-    'X12345',
-    123456,
-    'stephen.mills@nps.gov.uk',
-    '0114 2765666',
     'N01',
-    'LDU1'
+    'LDU1',
+    1,
+    1
  );
 
 insert into standard_condition (id, licence_id, condition_code, condition_sequence, condition_text, condition_type)

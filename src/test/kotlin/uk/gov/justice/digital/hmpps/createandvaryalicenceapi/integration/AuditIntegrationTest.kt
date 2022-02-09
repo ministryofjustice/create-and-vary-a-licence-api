@@ -48,7 +48,6 @@ class AuditIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/clear-audit-events.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
@@ -69,7 +68,6 @@ class AuditIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql",
     "classpath:test_data/clear-audit-events.sql",
     "classpath:test_data/seed-audit-events.sql"

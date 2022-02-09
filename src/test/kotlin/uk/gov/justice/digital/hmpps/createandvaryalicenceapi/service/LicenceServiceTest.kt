@@ -16,7 +16,11 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.mapping.PropertyReferenceException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
@@ -24,14 +28,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceHistoryRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -57,12 +61,14 @@ class LicenceServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
+  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
   private val licenceHistoryRepository = mock<LicenceHistoryRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val notifyService = mock<NotifyService>()
 
   private val service = LicenceService(
     licenceRepository,
+    communityOffenderManagerRepository,
     standardConditionRepository,
     additionalConditionRepository,
     bespokeConditionRepository,
@@ -73,6 +79,13 @@ class LicenceServiceTest {
 
   @BeforeEach
   fun reset() {
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+
+    whenever(authentication.name).thenReturn("smills")
+    whenever(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+
     reset(licenceRepository, standardConditionRepository, bespokeConditionRepository, licenceHistoryRepository, additionalConditionUploadDetailRepository, notifyService)
   }
 
@@ -116,8 +129,12 @@ class LicenceServiceTest {
 
   @Test
   fun `service creates a licence with standard conditions`() {
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk")
+
     whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(someEntityStandardConditions)
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
+    whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val createResponse = service.createLicence(aCreateLicenceRequest)
 
@@ -395,7 +412,7 @@ class LicenceServiceTest {
     assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to ${LicenceStatus.APPROVED.name}")
 
     verify(notifyService, times(1)).sendLicenceApprovedEmail(
-      aLicenceEntity.comEmail.orEmpty(),
+      "testemail@probation.gov.uk",
       mapOf(
         Pair("fullName", "${aLicenceEntity.forename} ${aLicenceEntity.surname}"),
         Pair("prisonName", aLicenceEntity.prisonDescription.orEmpty())
@@ -446,7 +463,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.submitLicence(1L, SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smith", email = "jsmith@probation.gov.uk"))
+      service.submitLicence(1L)
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -458,9 +475,12 @@ class LicenceServiceTest {
 
   @Test
   fun `submit a licence saves new fields to the licence`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk")
 
-    service.submitLicence(1L, SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smythe", email = "jsmythe@probation.gov.uk"))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+
+    service.submitLicence(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
@@ -469,13 +489,8 @@ class LicenceServiceTest {
     verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
 
     assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
-    assertThat(licenceCaptor.value.comFirstName).isEqualTo("Jon")
-    assertThat(licenceCaptor.value.comLastName).isEqualTo("Smythe")
-    assertThat(licenceCaptor.value.comUsername).isEqualTo("jsmythe")
-    assertThat(licenceCaptor.value.comEmail).isEqualTo("jsmythe@probation.gov.uk")
-    assertThat(licenceCaptor.value.comStaffId).isEqualTo(2000)
-    assertThat(licenceCaptor.value.dateLastUpdated).isAfter(LocalDateTime.now().minusMinutes(5L))
-    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("jsmythe")
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    assertThat(licenceCaptor.value.submittedBy?.username).isEqualTo("smills")
 
     assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.SUBMITTED.name)
     assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to SUBMITTED")
@@ -682,12 +697,11 @@ class LicenceServiceTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
-      username = "joebloggs"
+      responsibleComStaffId = 2000
     )
 
     val aLicenceEntity = EntityLicence(
@@ -714,17 +728,13 @@ class LicenceServiceTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills",
-      comUsername = "smills",
-      comStaffId = 12345,
-      comEmail = "stephen.mills@nps.gov.uk",
-      comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
-      createdByUsername = "smills",
       standardConditions = someEntityStandardConditions,
+      mailingList = mutableSetOf(CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk")),
+      responsibleCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk"),
+      createdBy = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk"),
     )
 
     val someAdditionalConditionData = listOf(AdditionalConditionData(id = 1, dataField = "dataField", dataValue = "dataValue", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity)))

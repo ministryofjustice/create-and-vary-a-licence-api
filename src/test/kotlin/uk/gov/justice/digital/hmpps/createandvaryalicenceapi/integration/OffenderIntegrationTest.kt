@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateResponsibleComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 
 class OffenderIntegrationTest : IntegrationTestBase() {
@@ -17,7 +17,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
-    val requestBody = UpdateResponsibleComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
+    val requestBody = UpdateComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
 
     val result = webTestClient.put()
       .uri("/offender/crn/CRN1/responsible-com")
@@ -44,11 +44,10 @@ class OffenderIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update an offender's inflight licences with new COM details`() {
-    val requestBody = UpdateResponsibleComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
+    val requestBody = UpdateComRequest(staffIdentifier = 3000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
 
     webTestClient.put()
       .uri("/offender/crn/CRN1/responsible-com")
@@ -58,8 +57,8 @@ class OffenderIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    assertThat(licenceRepository.findById(1).get().comStaffId).isEqualTo(2000)
-    assertThat(licenceRepository.findById(1).get().comUsername).isEqualTo("joebloggs")
-    assertThat(licenceRepository.findById(1).get().comEmail).isEqualTo("joebloggs@probation.gov.uk")
+    assertThat(licenceRepository.findById(1).get().responsibleCom!!.staffIdentifier).isEqualTo(3000)
+    assertThat(licenceRepository.findById(1).get().responsibleCom!!.username).isEqualTo("joebloggs")
+    assertThat(licenceRepository.findById(1).get().responsibleCom!!.email).isEqualTo("joebloggs@probation.gov.uk")
   }
 }
