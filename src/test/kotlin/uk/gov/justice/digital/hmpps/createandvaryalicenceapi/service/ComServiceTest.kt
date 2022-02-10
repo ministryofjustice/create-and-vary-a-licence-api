@@ -39,7 +39,7 @@ class ComServiceTest {
     service.updateComDetails(comDetails)
 
     verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifier(3000)
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(expectedCom)
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
   }
 
   @Test

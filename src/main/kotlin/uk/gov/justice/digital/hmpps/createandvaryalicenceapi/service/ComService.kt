@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
+import java.time.LocalDateTime
 
 @Service
 class ComService(
@@ -15,7 +16,7 @@ class ComService(
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
     val com = this.communityOffenderManagerRepository.findByStaffIdentifier(comDetails.staffIdentifier)
     val updatedCom = if (com !== null) {
-      com.copy(email = comDetails.staffEmail)
+      com.copy(email = comDetails.staffEmail, lastUpdatedTimestamp = LocalDateTime.now())
     } else {
       CommunityOffenderManager(username = comDetails.staffUsername, staffIdentifier = comDetails.staffIdentifier, email = comDetails.staffEmail)
     }

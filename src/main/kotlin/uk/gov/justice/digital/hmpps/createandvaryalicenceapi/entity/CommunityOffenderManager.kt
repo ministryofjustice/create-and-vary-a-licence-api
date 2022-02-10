@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -37,4 +38,6 @@ data class CommunityOffenderManager(
 
   @ManyToMany(mappedBy = "mailingList")
   val licencesSubscribedTo: List<Licence> = emptyList(),
+
+  val lastUpdatedTimestamp: LocalDateTime? = null,
 )

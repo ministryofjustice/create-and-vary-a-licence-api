@@ -271,7 +271,7 @@ class LicenceService(
     val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val updatedLicence = licenceEntity.copy(statusCode = SUBMITTED, submittedBy = submitter, updatedByUsername = username)
+    val updatedLicence = licenceEntity.copy(statusCode = SUBMITTED, submittedBy = submitter, updatedByUsername = username, dateLastUpdated = LocalDateTime.now())
 
     licenceRepository.saveAndFlush(updatedLicence)
     licenceHistoryRepository.saveAndFlush(

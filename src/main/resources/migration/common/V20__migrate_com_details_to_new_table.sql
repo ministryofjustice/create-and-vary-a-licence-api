@@ -19,8 +19,7 @@ CREATE TABLE community_offender_manager_licence_mailing_list
     id SERIAL NOT NULL PRIMARY KEY,
     community_offender_manager_id INTEGER NOT NULL REFERENCES community_offender_manager(id),
     licence_id INTEGER NOT NULL REFERENCES licence(id),
-    created_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_updated_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 ---------------------------------------------------------------------
