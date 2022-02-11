@@ -10,7 +10,5 @@ CREATE TABLE audit_event(
 );
 
 CREATE INDEX idx_audit_licence_id ON audit_event(licence_id);
-
 CREATE INDEX idx_audit_username ON audit_event(username);
-
 CREATE INDEX idx_audit_event_time ON audit_event(event_time);
