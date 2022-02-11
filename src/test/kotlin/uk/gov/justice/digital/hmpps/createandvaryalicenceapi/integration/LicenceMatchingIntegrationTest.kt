@@ -40,52 +40,52 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       )
   }
 
-// FIXME After staff Id JPA specification has been fixed
-//  @Test
-//  @Sql(
-//    "classpath:test_data/seed-matching-candidates.sql"
-//  )
-//  fun `Get licences matches - by list of staff identifiers`() {
-//    val result = webTestClient.get()
-//      .uri("/licence/match?staffId=125&staffId=126")
-//      .accept(MediaType.APPLICATION_JSON)
-//      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-//      .exchange()
-//      .expectStatus().isOk
-//      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-//      .expectBodyList(LicenceSummary::class.java)
-//      .returnResult().responseBody
-//    assertThat(result?.size).isEqualTo(4)
-//    assertThat(result)
-//      .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus) }
-//      .contains(
-//        tuple(1L, "A1234AA", LicenceStatus.SUBMITTED),
-//        tuple(2L, "B1234BB", LicenceStatus.SUBMITTED),
-//        tuple(3L, "C1234CC", LicenceStatus.ACTIVE),
-//        tuple(4L, "C1234DD", LicenceStatus.APPROVED),
-//      )
-//  }
+  @Test
+  @Sql(
+    "classpath:test_data/seed-matching-candidates.sql"
+  )
+  fun `Get licences matches - by list of staff identifiers`() {
+    val result = webTestClient.get()
+      .uri("/licence/match?staffId=125&staffId=126")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
 
-// FIXME After staff Id JPA specification has been fixed
-//  @Test
-//  @Sql(
-//    "classpath:test_data/seed-matching-candidates.sql"
-//  )
-//  fun `Get licence matches - by list of staff identifiers and statuses`() {
-//    val result = webTestClient.get()
-//      .uri("/licence/match?staffId=125&status=ACTIVE")
-//      .accept(MediaType.APPLICATION_JSON)
-//      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-//      .exchange()
-//      .expectStatus().isOk
-//      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-//      .expectBodyList(LicenceSummary::class.java)
-//      .returnResult().responseBody
-//    assertThat(result?.size).isEqualTo(1)
-//    assertThat(result)
-//      .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus, it.surname) }
-//      .containsExactly(tuple(3L, "C1234CC", LicenceStatus.ACTIVE, "Cookson"))
-//  }
+    assertThat(result?.size).isEqualTo(4)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus) }
+      .contains(
+        tuple(3L, "C1234CC", LicenceStatus.ACTIVE),
+        tuple(4L, "C1234DD", LicenceStatus.APPROVED),
+        tuple(5L, "C1234EE", LicenceStatus.IN_PROGRESS),
+        tuple(6L, "C1234FF", LicenceStatus.REJECTED),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-matching-candidates.sql"
+  )
+  fun `Get licence matches - by list of staff identifiers and statuses`() {
+    val result = webTestClient.get()
+      .uri("/licence/match?staffId=125&status=ACTIVE")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.size).isEqualTo(1)
+    assertThat(result)
+      .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus, it.surname) }
+      .containsExactly(tuple(3L, "C1234CC", LicenceStatus.ACTIVE, "Cookson"))
+  }
 
   @Test
   @Sql(
