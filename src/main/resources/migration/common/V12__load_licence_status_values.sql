@@ -5,3 +5,7 @@ insert into licence_status (status_code, description) values ('REJECTED', 'Rejec
 insert into licence_status (status_code, description) values ('ACTIVE', 'Active');
 insert into licence_status (status_code, description) values ('INACTIVE', 'Inactive');
 insert into licence_status (status_code, description) values ('RECALLED', 'Recalled');
+insert into licence_status (status_code, description) values ('VARIATION_IN_PROGRESS', 'Variation in progress');
+insert into licence_status (status_code, description) values ('VARIATION_SUBMITTED', 'Variation submitted');
+insert into licence_status (status_code, description) values ('VARIATION_REJECTED', 'Variation rejected');
+insert into licence_status (status_code, description) values ('VARIATION_APPROVED', 'Variation approved');
