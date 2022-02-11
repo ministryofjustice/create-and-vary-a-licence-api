@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`in`
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import javax.persistence.criteria.Join
+import javax.persistence.criteria.JoinType
 import javax.validation.ValidationException
 
 data class LicenceQueryObject(
@@ -21,7 +24,7 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
-  hasStaffIdIn(staffIds)
+  hasResponsibleComIn(staffIds)
 )
 
 fun LicenceQueryObject.getSort(): Sort {
@@ -41,18 +44,24 @@ fun LicenceQueryObject.getSort(): Sort {
 }
 
 fun hasPrisonCodeIn(prisonCodes: List<String>?): Specification<Licence>? = prisonCodes?.let {
-  Licence::prisonCode.`in`(prisonCodes)
+  Licence::prisonCode.`in`(it)
 }
 
 fun hasStatusCodeIn(statusCodes: List<LicenceStatus>?): Specification<Licence>? = statusCodes?.let {
-  Licence::statusCode.`in`(statusCodes)
+  Licence::statusCode.`in`(it)
 }
 
 fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let {
-  Licence::nomsId.`in`(nomsIds)
+  Licence::nomsId.`in`(it)
 }
 
-// TODO: This does not work - how does JPA specification deeply get Licence::responsibleCom.staffIdentifier? Its not currently used
-fun hasStaffIdIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
-  Licence::responsibleCom.`in`(staffIds)
+fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
+  return Specification<Licence> { root, _, builder ->
+    if (staffIds.isNullOrEmpty()) {
+      null
+    } else {
+      val joinOffenderManager: Join<Licence, CommunityOffenderManager> = root.join("responsibleCom", JoinType.INNER)
+      builder.and(joinOffenderManager.get<Int>("staffIdentifier").`in`(it))
+    }
+  }
 }
