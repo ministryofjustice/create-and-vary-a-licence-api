@@ -1,19 +1,14 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 @Schema(description = "Request object for creating a new licence")
 data class CreateLicenceRequest(
-
-  @Schema(description = "The username of the person who is creating the licence", example = "joebloggs")
-  @field:NotBlank
-  val username: String,
-
   @Schema(description = "Type of licence requested - one of AP, PSS or AP_PSS", example = "AP")
   @NotNull
   val typeCode: LicenceType,
@@ -103,9 +98,6 @@ data class CreateLicenceRequest(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val topupSupervisionExpiryDate: LocalDate? = null,
 
-  @Schema(description = "The telephone contact number for the offender manager, from probation services", example = "07876 443554")
-  val comTelephone: String? = null,
-
   @Schema(description = "The probation area code where the offender manager is based, from probation services", example = "N01")
   @NotNull
   val probationAreaCode: String? = null,
@@ -119,4 +111,8 @@ data class CreateLicenceRequest(
 
   @Schema(description = "The list of standard post sentence supervision conditions from service configuration")
   val standardPssConditions: List<StandardCondition> = emptyList(),
+
+  @Schema(description = "The community offender manager who is responsible for this case", example = "1231332")
+  @field:NotNull
+  val responsibleComStaffId: Long,
 )

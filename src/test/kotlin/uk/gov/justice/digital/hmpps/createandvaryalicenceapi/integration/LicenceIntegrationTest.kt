@@ -17,13 +17,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -46,7 +45,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Get a licence by ID`() {
@@ -74,7 +72,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Get forbidden (403) when incorrect roles are supplied`() {
@@ -92,7 +89,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Unauthorized (401) when no token is supplied`() {
@@ -104,7 +100,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql("classpath:test_data/clear-all-licences.sql")
   fun `Create a licence`() {
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -131,7 +126,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql("classpath:test_data/clear-all-licences.sql")
   fun `Unauthorized (401) for create when no token is supplied`() {
     webTestClient.post()
       .uri("/licence/create")
@@ -145,7 +139,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql("classpath:test_data/clear-all-licences.sql")
   fun `Get forbidden (403) for create when incorrect roles are supplied`() {
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -164,7 +157,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update person to meet at initial appointment`() {
@@ -191,7 +183,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update time of the initial appointment`() {
@@ -219,7 +210,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update the contact number for the officer on a licence`() {
@@ -246,7 +236,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update the status of a licence to approved`() {
@@ -276,7 +265,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update the address where the initial appointment will take place`() {
@@ -303,7 +291,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update the bespoke conditions`() {
@@ -332,7 +319,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update the list of additional conditions`() {
@@ -368,7 +354,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update the data associated with an additional condition`() {
@@ -416,7 +401,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-approved-licences.sql"
   )
   fun `Activate licences in bulk`() {
@@ -450,13 +434,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Submit licence`() {
     webTestClient.put()
       .uri("/licence/id/1/submit")
-      .bodyValue(aSubmitLicenceRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -473,12 +455,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
-    assertThat(result?.comFirstName).isEqualTo("Jon")
-    assertThat(result?.comLastName).isEqualTo("Smythe")
-    assertThat(result?.comUsername).isEqualTo("jsmythe")
-    assertThat(result?.comEmail).isEqualTo("jsmythe@probation.gov.uk")
+    assertThat(result?.comUsername).isEqualTo("test-client")
+    assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
     assertThat(result?.comStaffId).isEqualTo(2000)
-    assertThat(result?.updatedByUsername).isEqualTo("jsmythe")
+    assertThat(result?.updatedByUsername).isEqualTo("test-client")
   }
 
   private companion object {
@@ -510,12 +490,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
-      username = "joebloggs"
+      responsibleComStaffId = 2000
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
@@ -557,6 +536,5 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
-    val aSubmitLicenceRequest = SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smythe", email = "jsmythe@probation.gov.uk")
   }
 }

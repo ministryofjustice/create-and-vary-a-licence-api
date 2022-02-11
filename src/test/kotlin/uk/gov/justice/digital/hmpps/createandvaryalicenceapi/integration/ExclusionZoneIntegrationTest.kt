@@ -31,7 +31,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-2.sql"
   )
   fun `Upload an exclusion zone file`() {
@@ -73,7 +72,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
@@ -101,7 +99,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-2.sql"
   )
   fun `exclusion zone upload is role-protected`() {
@@ -125,7 +122,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
@@ -143,7 +139,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
@@ -161,7 +156,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-licences.sql",
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )

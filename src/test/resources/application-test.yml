@@ -18,7 +18,7 @@ spring:
     password: dummy
 
   flyway:
-    locations: classpath:/migration/h2,classpath:/migration/common
+    locations: classpath:/migration/common
     url: ${spring.datasource.url}
     user: create_vary
     password: dummy

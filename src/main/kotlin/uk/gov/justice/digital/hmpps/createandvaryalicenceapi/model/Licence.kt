@@ -103,12 +103,6 @@ data class Licence(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val topupSupervisionExpiryDate: LocalDate? = null,
 
-  @Schema(description = "The first name of the supervising probation officer", example = "Jane")
-  val comFirstName: String? = null,
-
-  @Schema(description = "The last name of the supervising probation officer", example = "Jones")
-  val comLastName: String? = null,
-
   @Schema(description = "The nDELIUS user name for the supervising probation officer", example = "X32122")
   val comUsername: String? = null,
 
@@ -117,9 +111,6 @@ data class Licence(
 
   @Schema(description = "The email address for the supervising probation officer", example = "jane.jones@nps.gov.uk")
   val comEmail: String? = null,
-
-  @Schema(description = "The contact telephone number for the supervising probation officer", example = "0161222333")
-  val comTelephone: String? = null,
 
   @Schema(description = "The code for the probation area where the supervising officer is located", example = "N01")
   val probationAreaCode: String? = null,

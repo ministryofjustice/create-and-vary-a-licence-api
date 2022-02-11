@@ -35,13 +35,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.SubmitLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -370,11 +369,10 @@ class LicenceControllerTest {
       put("/licence/id/4/submit")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aSubmitLicenceRequest))
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).submitLicence(4, aSubmitLicenceRequest)
+    verify(licenceService, times(1)).submitLicence(4)
   }
 
   private companion object {
@@ -429,12 +427,9 @@ class LicenceControllerTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comFirstName = "Stephen",
-      comLastName = "Mills",
       comUsername = "X12345",
       comStaffId = 12345,
       comEmail = "stephen.mills@nps.gov.uk",
-      comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       dateCreated = LocalDateTime.now(),
@@ -468,12 +463,11 @@ class LicenceControllerTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      comTelephone = "0116 2788777",
       probationAreaCode = "N01",
       probationLduCode = "LDU1",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
-      username = "jeobloggs"
+      responsibleComStaffId = 2000
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -515,8 +509,6 @@ class LicenceControllerTest {
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
-
-    val aSubmitLicenceRequest = SubmitLicenceRequest(username = "jsmythe", staffIdentifier = 2000, firstName = "Jon", surname = "Smyth", email = "jsmith@probation.gov.uk")
 
     val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
 

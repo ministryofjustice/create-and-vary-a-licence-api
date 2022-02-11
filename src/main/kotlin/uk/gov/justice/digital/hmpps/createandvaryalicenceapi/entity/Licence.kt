@@ -19,6 +19,9 @@ import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.JoinColumn
+import javax.persistence.JoinTable
+import javax.persistence.ManyToMany
+import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.OrderBy
 import javax.persistence.Table
@@ -63,12 +66,6 @@ data class Licence(
   val licenceExpiryDate: LocalDate? = null,
   val topupSupervisionStartDate: LocalDate? = null,
   val topupSupervisionExpiryDate: LocalDate? = null,
-  val comFirstName: String? = null,
-  val comLastName: String? = null,
-  val comUsername: String? = null,
-  val comStaffId: Long? = null,
-  val comEmail: String? = null,
-  val comTelephone: String? = null,
   val probationAreaCode: String? = null,
   val probationLduCode: String? = null,
   val appointmentPerson: String? = null,
@@ -80,9 +77,8 @@ data class Licence(
   val approvedByName: String? = null,
   val supersededDate: LocalDateTime? = null,
   val dateCreated: LocalDateTime? = null,
-  val createdByUsername: String? = null,
   val dateLastUpdated: LocalDateTime? = null,
-  val updatedByUsername: String? = null,
+  var updatedByUsername: String? = null,
 
   @JoinColumn(name = "licenceId")
   @Fetch(value = FetchMode.SUBSELECT)
@@ -102,4 +98,24 @@ data class Licence(
   @OrderBy("conditionSequence")
   @OneToMany
   val bespokeConditions: List<BespokeCondition> = emptyList(),
+
+  @ManyToOne
+  @JoinColumn(name = "responsible_com_id", nullable = false)
+  var responsibleCom: CommunityOffenderManager? = null,
+
+  @ManyToOne
+  @JoinColumn(name = "submitted_by_com_id", nullable = true)
+  var submittedBy: CommunityOffenderManager? = null,
+
+  @ManyToOne
+  @JoinColumn(name = "created_by_com_id", nullable = false)
+  var createdBy: CommunityOffenderManager? = null,
+
+  @ManyToMany
+  @JoinTable(
+    name = "community_offender_manager_licence_mailing_list",
+    joinColumns = [JoinColumn(name = "licence_id")],
+    inverseJoinColumns = [JoinColumn(name = "community_offender_manager_id")]
+  )
+  val mailingList: MutableSet<CommunityOffenderManager> = mutableSetOf()
 )
