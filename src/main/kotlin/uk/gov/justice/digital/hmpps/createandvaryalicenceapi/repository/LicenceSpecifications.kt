@@ -57,11 +57,7 @@ fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let 
 
 fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
   return Specification<Licence> { root, _, builder ->
-    if (staffIds.isNullOrEmpty()) {
-      null
-    } else {
-      val joinOffenderManager: Join<Licence, CommunityOffenderManager> = root.join("responsibleCom", JoinType.INNER)
-      builder.and(joinOffenderManager.get<Int>("staffIdentifier").`in`(it))
-    }
+    val joinOffenderManager: Join<Licence, CommunityOffenderManager> = root.join("responsibleCom", JoinType.INNER)
+    builder.and(joinOffenderManager.get<Int>("staffIdentifier").`in`(it))
   }
 }
