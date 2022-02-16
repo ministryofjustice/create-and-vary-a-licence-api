@@ -173,9 +173,12 @@ class LicenceServiceTest {
 
     service.updateAppointmentPerson(1L, AppointmentPersonRequest(appointmentPerson = "John Smith"))
 
-    val expectedUpdatedEntity = aLicenceEntity.copy(appointmentPerson = "John Smith")
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+    assertThat(licenceCaptor.value)
+      .extracting("appointmentPerson", "updatedByUsername")
+      .isEqualTo(listOf("John Smith", "smills"))
   }
 
   @Test
@@ -197,9 +200,12 @@ class LicenceServiceTest {
 
     service.updateAppointmentTime(1L, AppointmentTimeRequest(appointmentTime = tenDaysFromNow))
 
-    val expectedUpdatedEntity = aLicenceEntity.copy(appointmentTime = tenDaysFromNow)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+    assertThat(licenceCaptor.value)
+      .extracting("appointmentTime", "updatedByUsername")
+      .isEqualTo(listOf(tenDaysFromNow, "smills"))
   }
 
   @Test
@@ -221,9 +227,12 @@ class LicenceServiceTest {
 
     service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
 
-    val expectedUpdatedEntity = aLicenceEntity.copy(appointmentContact = "0114 2565555")
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+    assertThat(licenceCaptor.value)
+      .extracting("appointmentContact", "updatedByUsername")
+      .isEqualTo(listOf("0114 2565555", "smills"))
   }
 
   @Test
@@ -248,10 +257,12 @@ class LicenceServiceTest {
       AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE")
     )
 
-    val expectedUpdatedEntity =
-      aLicenceEntity.copy(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE")
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    verify(licenceRepository, times(1)).saveAndFlush(expectedUpdatedEntity)
+    assertThat(licenceCaptor.value)
+      .extracting("appointmentAddress", "updatedByUsername")
+      .isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", "smills"))
   }
 
   @Test
@@ -274,19 +285,28 @@ class LicenceServiceTest {
   fun `update bespoke conditions persists multiple entities`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(bespokeConditionRepository.deleteByLicenceId(1L)).thenReturn(0)
+
     val bespokeEntities = listOf(
-      // -1 on the id as this is a generated value in the database
       EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 0, conditionText = "Condition 1"),
       EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 1, conditionText = "Condition 2"),
       EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 2, conditionText = "Condition 3"),
     )
+
     bespokeEntities.forEach { bespoke ->
       whenever(bespokeConditionRepository.saveAndFlush(bespoke)).thenReturn(bespoke)
     }
 
     service.updateBespokeConditions(1L, someBespokeConditions)
 
+    // Verify licence entity is updated with last contact info
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
+
+    // Verify old bespoke conditions are removed
     verify(bespokeConditionRepository, times(1)).deleteByLicenceId(1L)
+
+    // Verify new bespoke conditions are added in their place
     bespokeEntities.forEach { bespoke ->
       verify(bespokeConditionRepository, times(1)).saveAndFlush(bespoke)
     }
@@ -301,6 +321,7 @@ class LicenceServiceTest {
 
     verify(bespokeConditionRepository, times(1)).deleteByLicenceId(1L)
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+    verify(licenceRepository, times(1)).saveAndFlush(any())
   }
 
   @Test
@@ -312,6 +333,7 @@ class LicenceServiceTest {
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
     verify(licenceRepository, times(1)).findById(1L)
     verify(bespokeConditionRepository, times(0)).deleteByLicenceId(1L)
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
@@ -546,6 +568,9 @@ class LicenceServiceTest {
         licence = aLicenceEntity
       )
     )
+
+    // Verify last contact info is recorded
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
   }
 
   @Test
@@ -648,6 +673,9 @@ class LicenceServiceTest {
     service.updateAdditionalConditionData(1L, 1L, request)
 
     val conditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
 
@@ -656,6 +684,9 @@ class LicenceServiceTest {
         id = -1, additionalCondition = anAdditionalConditionEntity, dataSequence = 0, dataField = "field1", dataValue = "value1"
       )
     )
+
+    // Verify last contact info is recorded
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
   }
 
   private companion object {
@@ -698,7 +729,13 @@ class LicenceServiceTest {
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       probationAreaCode = "N01",
-      probationLduCode = "LDU1",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
       responsibleComStaffId = 2000
@@ -729,7 +766,13 @@ class LicenceServiceTest {
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       probationAreaCode = "N01",
-      probationLduCode = "LDU1",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
       dateCreated = LocalDateTime.now(),
       standardConditions = someEntityStandardConditions,
       mailingList = mutableSetOf(CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk")),
@@ -761,6 +804,14 @@ class LicenceServiceTest {
       dateOfBirth = LocalDate.of(1985, 12, 28),
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
+      probationAreaCode = "N01",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       comUsername = "smills",

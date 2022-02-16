@@ -112,11 +112,29 @@ data class Licence(
   @Schema(description = "The email address for the supervising probation officer", example = "jane.jones@nps.gov.uk")
   val comEmail: String? = null,
 
-  @Schema(description = "The code for the probation area where the supervising officer is located", example = "N01")
+  @Schema(description = "The probation area code where this licence is supervised from", example = "N01")
   val probationAreaCode: String? = null,
 
-  @Schema(description = "The local delivery unit (LDU) code who supervises this licence", example = "LDU01")
-  val probationLduCode: String? = null,
+  @Schema(description = "The probation area description", example = "Wales")
+  val probationAreaDescription: String? = null,
+
+  @Schema(description = "The Probation Delivery Unit (PDU or borough) supervising this licence", example = "PDU01")
+  val probationPduCode: String? = null,
+
+  @Schema(description = "The description for the PDU", example = "North Wales")
+  val probationPduDescription: String? = null,
+
+  @Schema(description = "The Local Administrative Unit (LAU or district) supervising this licence", example = "LAU01")
+  val probationLauCode: String? = null,
+
+  @Schema(description = "The LAU description", example = "North Wales")
+  val probationLauDescription: String? = null,
+
+  @Schema(description = "The team code that is supervising this licence", example = "Cardiff-A")
+  val probationTeamCode: String? = null,
+
+  @Schema(description = "The team description", example = "Cardiff South")
+  val probationTeamDescription: String? = null,
 
   @Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   val appointmentPerson: String? = null,

@@ -32,6 +32,30 @@ data class LicenceSummary(
   @Schema(description = "The prison where this offender resides or was released from", example = "Moorland (HMP)")
   val prisonDescription: String?,
 
+  @Schema(description = "The probation area code where the licence is supervised", example = "N01")
+  val probationAreaCode: String?,
+
+  @Schema(description = "The probation area description", example = "Wales")
+  val probationAreaDescription: String? = null,
+
+  @Schema(description = "The probation delivery unit (PDU or borough) where the licence is supervised", example = "N01CA")
+  val probationPduCode: String?,
+
+  @Schema(description = "The description for the PDU", example = "North Wales")
+  val probationPduDescription: String? = null,
+
+  @Schema(description = "The local administrative unit (LAU or district) where the licence is supervised", example = "NA01CA-02")
+  val probationLauCode: String?,
+
+  @Schema(description = "The LAU description", example = "North Wales")
+  val probationLauDescription: String? = null,
+
+  @Schema(description = "The probation team code which supervises the licence", example = "NA01CA-02-A")
+  val probationTeamCode: String?,
+
+  @Schema(description = "The team description", example = "Cardiff South")
+  val probationTeamDescription: String? = null,
+
   @Schema(description = "The conditional release date on the licence", example = "12/12/2022")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val conditionalReleaseDate: LocalDate?,
