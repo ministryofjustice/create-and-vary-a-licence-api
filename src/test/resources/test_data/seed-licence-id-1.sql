@@ -21,7 +21,9 @@ insert into licence (
   licence_start_date,
   licence_expiry_date,
   probation_area_code,
-  probation_ldu_code,
+  probation_pdu_code,
+  probation_lau_code,
+  probation_team_code,
   responsible_com_id,
   created_by_com_id
 )
@@ -48,7 +50,9 @@ values (
   '2022-02-25',
   '2023-02-25',
   'N01',
-  'LDU1',
+  'PDU1',
+  'LAU1',
+  'TEAM1',
   1,
   1
 );

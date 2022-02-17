@@ -85,47 +85,82 @@ class LicenceService(
     return transform(entityLicence)
   }
 
+  @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    val updatedLicence = licenceEntity.copy(appointmentPerson = request.appointmentPerson)
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val updatedLicence = licenceEntity.copy(
+      appointmentPerson = request.appointmentPerson,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
+  @Transactional
   fun updateAppointmentTime(licenceId: Long, request: AppointmentTimeRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    val updatedLicence = licenceEntity.copy(appointmentTime = request.appointmentTime)
+
+    // Update appointment time and licence contact
+    val username = SecurityContextHolder.getContext().authentication.name
+    val updatedLicence = licenceEntity.copy(
+      appointmentTime = request.appointmentTime,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
+  @Transactional
   fun updateContactNumber(licenceId: Long, request: ContactNumberRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    val updatedLicence = licenceEntity.copy(appointmentContact = request.telephone)
+
+    // Update telephone and licence contact
+    val username = SecurityContextHolder.getContext().authentication.name
+    val updatedLicence = licenceEntity.copy(
+      appointmentContact = request.telephone,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
+  @Transactional
   fun updateAppointmentAddress(licenceId: Long, request: AppointmentAddressRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val updatedLicence = licenceEntity.copy(appointmentAddress = request.appointmentAddress)
+    // Update address and licence contact
+    val username = SecurityContextHolder.getContext().authentication.name
+    val updatedLicence = licenceEntity.copy(
+      appointmentAddress = request.appointmentAddress,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
   @Transactional
   fun updateBespokeConditions(licenceId: Long, request: BespokeConditionRequest) {
-    licenceRepository
+    val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    bespokeConditionRepository.deleteByLicenceId(licenceId)
+    // Update the licence contact
+    val username = SecurityContextHolder.getContext().authentication.name
+    val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    licenceRepository.saveAndFlush(updatedLicence)
 
+    // Replace bespoke conditions
+    bespokeConditionRepository.deleteByLicenceId(licenceId)
     request.conditions.forEachIndexed { index, condition ->
       bespokeConditionRepository.saveAndFlush(
         EntityBespokeCondition(licenceId = licenceId, conditionSequence = index, conditionText = condition)
@@ -139,6 +174,7 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
+    val username = SecurityContextHolder.getContext().authentication.name
     val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
     val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
@@ -161,7 +197,12 @@ class LicenceService(
         condition.conditionType != request.conditionType
     }
 
-    val updatedLicence = licenceEntity.copy(additionalConditions = resultAdditionalConditionsList)
+    // Update the licence contact
+    val updatedLicence = licenceEntity.copy(
+      additionalConditions = resultAdditionalConditionsList,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
     licenceRepository.saveAndFlush(updatedLicence)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
@@ -176,18 +217,26 @@ class LicenceService(
     }
   }
 
+  @Transactional
   fun updateAdditionalConditionData(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
-    licenceRepository
+    val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
+    // Update the additional condition data entity
     val additionalCondition = additionalConditionRepository
       .findById(additionalConditionId)
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
-    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition))
-
+    val updatedAdditionalCondition = additionalCondition.copy(
+      additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
+    )
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+
+    // Update the licence contact
+    val username = SecurityContextHolder.getContext().authentication.name
+    val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    licenceRepository.saveAndFlush(updatedLicence)
   }
 
   @Transactional
@@ -268,12 +317,19 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
+
     val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val updatedLicence = licenceEntity.copy(statusCode = SUBMITTED, submittedBy = submitter, updatedByUsername = username, dateLastUpdated = LocalDateTime.now())
+    val updatedLicence = licenceEntity.copy(
+      statusCode = SUBMITTED,
+      submittedBy = submitter,
+      updatedByUsername = username,
+      dateLastUpdated = LocalDateTime.now()
+    )
 
     licenceRepository.saveAndFlush(updatedLicence)
+
     licenceHistoryRepository.saveAndFlush(
       EntityLicenceHistory(
         licenceId = licenceId,
