@@ -4,6 +4,7 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -15,6 +16,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -31,17 +35,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceHistory as EntityLicenceHistory
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 
 @Service
 class LicenceService(
@@ -382,10 +382,10 @@ class LicenceService(
 
     val newLicence = licenceRepository.save(licenceVariation)
     val standardConditions = licenceEntity.standardConditions.map {
-      it.copy(id=-1, licence = newLicence)
+      it.copy(id = -1, licence = newLicence)
     }
     val bespokeConditions = licenceEntity.bespokeConditions.map {
-      it.copy(id=-1, licence = newLicence)
+      it.copy(id = -1, licence = newLicence)
     }
 
     standardConditionRepository.saveAll(standardConditions)
@@ -399,7 +399,7 @@ class LicenceService(
         it.copy(id = -1)
       }
 
-      it.copy(id=-1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
+      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
     }
 
     var newAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions).toMutableList()
