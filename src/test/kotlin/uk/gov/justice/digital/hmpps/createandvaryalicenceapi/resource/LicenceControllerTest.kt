@@ -445,6 +445,7 @@ class LicenceControllerTest {
       additionalLicenceConditions = someAdditionalConditions,
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
+      isVariation = false,
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
