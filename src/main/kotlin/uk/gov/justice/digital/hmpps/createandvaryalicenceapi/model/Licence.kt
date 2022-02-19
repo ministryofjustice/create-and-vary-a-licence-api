@@ -152,6 +152,15 @@ data class Licence(
   @Schema(description = "The UK telephone number to contact the person the offender should meet for their initial meeting", example = "0114 2557665")
   val appointmentContact: String? = null,
 
+  @Schema(description = "Have you have discussed this variation request with your SPO?", example = "Yes")
+  val spoDiscussion: String? = null,
+
+  @Schema(description = "Have you consulted with the victim liaison officer (VLO) for this case?", example = "Yes")
+  val vloDiscussion: String? = null,
+
+  @Schema(description = "The reason for the variation, in rich-text.")
+  val reasonForVariation: String? = null,
+
   @Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val approvedDate: LocalDateTime? = null,
@@ -197,4 +206,10 @@ data class Licence(
 
   @Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<BespokeCondition> = emptyList(),
+
+  @Schema(description = "Is this licence a variation of another licence?")
+  val isVariation: Boolean,
+
+  @Schema(description = "The licence Id which this licence is a variation of")
+  val variationOf: Long? = null,
 )

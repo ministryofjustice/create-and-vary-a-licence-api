@@ -133,6 +133,9 @@ fun transform(licence: EntityLicence): ModelLicence {
     appointmentTime = licence.appointmentTime,
     appointmentAddress = licence.appointmentAddress,
     appointmentContact = licence.appointmentContact,
+    spoDiscussion = licence.spoDiscussion,
+    vloDiscussion = licence.vloDiscussion,
+    reasonForVariation = licence.reasonForVariation,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,
@@ -146,15 +149,17 @@ fun transform(licence: EntityLicence): ModelLicence {
     additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP"),
     additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS"),
     bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
+    isVariation = licence.variationOfId != null,
+    variationOf = licence.variationOfId,
   )
 }
 
 // Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
-fun List<ModelStandardCondition>.transformToEntityStandard(id: Long, conditionType: String): List<EntityStandardCondition> = map { term -> transform(term, id, conditionType) }
+fun List<ModelStandardCondition>.transformToEntityStandard(licence: EntityLicence, conditionType: String): List<EntityStandardCondition> = map { term -> transform(term, licence, conditionType) }
 
-fun transform(model: ModelStandardCondition, id: Long, conditionType: String): EntityStandardCondition {
+fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionType: String): EntityStandardCondition {
   return EntityStandardCondition(
-    licenceId = id,
+    licence = licence,
     conditionCode = model.code,
     conditionSequence = model.sequence,
     conditionText = model.text,
