@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -42,6 +43,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
+
+  @Autowired
+  lateinit var auditEventRepository: AuditEventRepository
 
   @Test
   @Sql(
@@ -103,6 +107,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Create a licence`() {
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -123,6 +128,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(licenceRepository.count()).isEqualTo(1)
     assertThat(standardConditionRepository.count()).isEqualTo(6)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
   @Test

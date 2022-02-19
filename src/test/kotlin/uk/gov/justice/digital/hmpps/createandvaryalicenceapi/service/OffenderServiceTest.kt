@@ -30,7 +30,9 @@ class OffenderServiceTest {
     val comDetails = CommunityOffenderManager(
       staffIdentifier = 2000,
       username = "joebloggs",
-      email = "jbloggs@probation.gov.uk"
+      email = "jbloggs@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
     )
 
     val expectedUpdatedLicences = listOf(Licence(responsibleCom = comDetails))

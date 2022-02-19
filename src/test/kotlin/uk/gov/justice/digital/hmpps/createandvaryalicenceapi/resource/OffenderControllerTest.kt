@@ -60,9 +60,9 @@ class OffenderControllerTest {
 
   @Test
   fun `update offender with new offender manager`() {
-    val body = UpdateComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
+    val body = UpdateComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk", firstName = "Joseph", lastName = "Bloggs")
 
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "joebloggs@probation.gov.uk")
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "joebloggs@probation.gov.uk", firstName = "Joseph", lastName = "Bloggs")
     whenever(comService.updateComDetails(any())).thenReturn(expectedCom)
 
     val request = put("/offender/crn/exampleCrn/responsible-com")

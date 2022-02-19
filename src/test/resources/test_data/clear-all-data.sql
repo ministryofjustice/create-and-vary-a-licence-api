@@ -8,3 +8,4 @@ DELETE from licence_history;
 DELETE from community_offender_manager_licence_mailing_list;
 DELETE from licence;
 DELETE from community_offender_manager;
+DELETE from audit_event;

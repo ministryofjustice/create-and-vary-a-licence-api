@@ -17,4 +17,12 @@ data class UpdateComRequest(
   @Schema(description = "The email address of the COM", example = "jbloggs@probation.gov.uk")
   @field:NotNull
   val staffEmail: String,
+
+  @Schema(description = "The first name of the COM", example = "Joseph")
+  @field:NotNull
+  val firstName: String,
+
+  @Schema(description = "The last name of the COM", example = "Bloggs")
+  @field:NotNull
+  val lastName: String,
 )

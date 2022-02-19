@@ -17,7 +17,13 @@ class OffenderIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
-    val requestBody = UpdateComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
+    val requestBody = UpdateComRequest(
+      staffIdentifier = 2000,
+      staffUsername = "joebloggs",
+      staffEmail = "joebloggs@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
 
     val result = webTestClient.put()
       .uri("/offender/crn/CRN1/responsible-com")
@@ -47,7 +53,13 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update an offender's inflight licences with new COM details`() {
-    val requestBody = UpdateComRequest(staffIdentifier = 3000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk")
+    val requestBody = UpdateComRequest(
+      staffIdentifier = 3000,
+      staffUsername = "joebloggs",
+      staffEmail = "joebloggs@probation.gov.uk",
+      firstName = "Joseph",
+      lastName = "Bloggs",
+    )
 
     webTestClient.put()
       .uri("/offender/crn/CRN1/responsible-com")
@@ -57,8 +69,9 @@ class OffenderIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    assertThat(licenceRepository.findById(1).get().responsibleCom!!.staffIdentifier).isEqualTo(3000)
-    assertThat(licenceRepository.findById(1).get().responsibleCom!!.username).isEqualTo("joebloggs")
-    assertThat(licenceRepository.findById(1).get().responsibleCom!!.email).isEqualTo("joebloggs@probation.gov.uk")
+    val licence = licenceRepository.findById(1L).orElseThrow()
+    assertThat(licence.responsibleCom)
+      .extracting("staffIdentifier", "username", "email", "firstName", "lastName")
+      .isEqualTo(listOf(3000L, "joebloggs", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
   }
 }
