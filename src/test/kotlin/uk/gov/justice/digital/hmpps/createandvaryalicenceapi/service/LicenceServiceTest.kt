@@ -69,7 +69,6 @@ class LicenceServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
 
-
   private val service = LicenceService(
     licenceRepository,
     communityOffenderManagerRepository,
@@ -98,7 +97,8 @@ class LicenceServiceTest {
       licenceHistoryRepository,
       additionalConditionUploadDetailRepository,
       auditEventRepository,
-      notifyService)
+      notifyService,
+    )
   }
 
   @Test
