@@ -367,7 +367,7 @@ class LicenceService(
   }
 
   @Transactional
-  fun createVariation(licenceId: Long): EntityLicence {
+  fun createVariation(licenceId: Long): LicenceSummary {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -419,7 +419,7 @@ class LicenceService(
 
     additionalConditionRepository.saveAll(newAdditionalConditions)
 
-    return newLicence
+    return transformToLicenceSummary(newLicence)
   }
 
   fun updateSpoDiscussion(licenceId: Long, spoDiscussionRequest: UpdateSpoDiscussionRequest) {

@@ -55,6 +55,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
@@ -519,6 +522,30 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `submitting a licence variation`() {
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk")
+    val licence = aLicenceEntity.copy(variationOfId = 1)
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+
+    service.submitLicence(1L)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    assertThat(licenceCaptor.value.submittedBy?.username).isEqualTo("smills")
+
+    assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED.name)
+    assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to VARIATION_SUBMITTED")
+  }
+
+  @Test
   fun `update additional conditions throws not found exception`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
@@ -687,6 +714,56 @@ class LicenceServiceTest {
 
     // Verify last contact info is recorded
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+  }
+
+  @Test
+  fun `update spo discussion persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateSpoDiscussion(1L, UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("spoDiscussion", "updatedByUsername")
+      .isEqualTo(listOf("Yes", "smills"))
+  }
+
+  @Test
+  fun `update vlo discussion persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateVloDiscussion(1L, UpdateVloDiscussionRequest(vloDiscussion = "Yes"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("vloDiscussion", "updatedByUsername")
+      .isEqualTo(listOf("Yes", "smills"))
+  }
+
+  @Test
+  fun `update reason for variation persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateReasonForVariation(1L, UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("reasonForVariation", "updatedByUsername")
+      .isEqualTo(listOf("reason", "smills"))
+  }
+
+  @Test
+  fun `Discarding a licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.discardLicence(1L)
+    verify(licenceRepository, times(1)).delete(aLicenceEntity)
   }
 
   private companion object {

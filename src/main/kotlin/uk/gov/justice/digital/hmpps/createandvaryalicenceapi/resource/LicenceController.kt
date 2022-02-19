@@ -615,7 +615,7 @@ class LicenceController(private val licenceService: LicenceService) {
   fun createVariation(
     @PathVariable("licenceId") licenceId: Long
   ): LicenceSummary {
-    return transformToLicenceSummary(licenceService.createVariation(licenceId))
+    return licenceService.createVariation(licenceId)
   }
 
   @PutMapping(value = ["/id/{licenceId}/spo-discussion"])
