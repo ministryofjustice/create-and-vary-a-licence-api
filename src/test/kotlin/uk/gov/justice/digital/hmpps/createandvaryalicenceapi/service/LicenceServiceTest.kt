@@ -32,6 +32,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -287,9 +290,9 @@ class LicenceServiceTest {
     whenever(bespokeConditionRepository.deleteByLicenceId(1L)).thenReturn(0)
 
     val bespokeEntities = listOf(
-      EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 0, conditionText = "Condition 1"),
-      EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 1, conditionText = "Condition 2"),
-      EntityBespokeCondition(id = -1L, licenceId = 1L, conditionSequence = 2, conditionText = "Condition 3"),
+      EntityBespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
+      EntityBespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
+      EntityBespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
     )
 
     bespokeEntities.forEach { bespoke ->
@@ -519,6 +522,30 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `submitting a licence variation`() {
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk")
+    val licence = aLicenceEntity.copy(variationOfId = 1)
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+
+    service.submitLicence(1L)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+
+    assertThat(licenceCaptor.value.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED)
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    assertThat(licenceCaptor.value.submittedBy?.username).isEqualTo("smills")
+
+    assertThat(historyCaptor.value.statusCode).isEqualTo(LicenceStatus.VARIATION_SUBMITTED.name)
+    assertThat(historyCaptor.value.actionDescription).isEqualTo("Status changed to VARIATION_SUBMITTED")
+  }
+
+  @Test
   fun `update additional conditions throws not found exception`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
@@ -689,6 +716,56 @@ class LicenceServiceTest {
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
   }
 
+  @Test
+  fun `update spo discussion persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateSpoDiscussion(1L, UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("spoDiscussion", "updatedByUsername")
+      .isEqualTo(listOf("Yes", "smills"))
+  }
+
+  @Test
+  fun `update vlo discussion persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateVloDiscussion(1L, UpdateVloDiscussionRequest(vloDiscussion = "Yes"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("vloDiscussion", "updatedByUsername")
+      .isEqualTo(listOf("Yes", "smills"))
+  }
+
+  @Test
+  fun `update reason for variation persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updateReasonForVariation(1L, UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("reasonForVariation", "updatedByUsername")
+      .isEqualTo(listOf("reason", "smills"))
+  }
+
+  @Test
+  fun `Discarding a licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.discardLicence(1L)
+    verify(licenceRepository, times(1)).delete(aLicenceEntity)
+  }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
 
@@ -701,9 +778,9 @@ class LicenceServiceTest {
     )
 
     val someEntityStandardConditions = listOf(
-      EntityStandardCondition(id = 1, conditionCode = "goodBehaviour", conditionSequence = 1, conditionText = "Be of good behaviour"),
-      EntityStandardCondition(id = 2, conditionCode = "notBreakLaw", conditionSequence = 2, conditionText = "Do not break any law"),
-      EntityStandardCondition(id = 3, conditionCode = "attendMeetings", conditionSequence = 3, conditionText = "Attend meetings"),
+      EntityStandardCondition(id = 1, conditionCode = "goodBehaviour", conditionSequence = 1, conditionText = "Be of good behaviour", licence = mock()),
+      EntityStandardCondition(id = 2, conditionCode = "notBreakLaw", conditionSequence = 2, conditionText = "Do not break any law", licence = mock()),
+      EntityStandardCondition(id = 3, conditionCode = "attendMeetings", conditionSequence = 3, conditionText = "Attend meetings", licence = mock()),
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(

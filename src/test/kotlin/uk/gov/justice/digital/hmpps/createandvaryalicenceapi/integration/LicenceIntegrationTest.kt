@@ -23,6 +23,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -459,6 +462,131 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
     assertThat(result?.comStaffId).isEqualTo(2000)
     assertThat(result?.updatedByUsername).isEqualTo("test-client")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Create licence variation`() {
+    val result = webTestClient.post()
+      .uri("/licence/id/1/create-variation")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.licenceId).isGreaterThan(1)
+    assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
+    assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+    assertThat(licenceRepository.count()).isEqualTo(2)
+
+    val newLicence = webTestClient.get()
+      .uri("/licence/id/${result.licenceId}")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(newLicence?.variationOf).isEqualTo(1)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Discard licence`() {
+    webTestClient.delete()
+      .uri("/licence/id/1/discard")
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(licenceRepository.count()).isEqualTo(0)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update spo discussion`() {
+    webTestClient.put()
+      .uri("/licence/id/1/spo-discussion")
+      .bodyValue(UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.spoDiscussion).isEqualTo("Yes")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update vlo discussion`() {
+    webTestClient.put()
+      .uri("/licence/id/1/vlo-discussion")
+      .bodyValue(UpdateVloDiscussionRequest(vloDiscussion = "Not applicable"))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.vloDiscussion).isEqualTo("Not applicable")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update reason for variation`() {
+    webTestClient.put()
+      .uri("/licence/id/1/reason-for-variation")
+      .bodyValue(UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.reasonForVariation).isEqualTo("reason")
   }
 
   private companion object {

@@ -46,6 +46,10 @@ CREATE TABLE licence (
   appointment_time timestamp with time zone,
   appointment_address varchar(240),
   appointment_contact varchar(20),
+  spo_discussion varchar(4),
+  vlo_discussion varchar(20),
+  reason_for_variation text,
+  variation_of_id integer references licence(id),
   approved_date timestamp with time zone,
   approved_by_username varchar(100),
   approved_by_name varchar(100),
@@ -107,8 +111,8 @@ CREATE INDEX idx_bespoke_condition_licence_id ON bespoke_condition(licence_id);
 
 CREATE TABLE licence_history (
   id serial NOT NULL constraint licence_history_pk PRIMARY KEY,
-  licence_id integer references licence(id),
-  status_code varchar(20) references licence_status(status_code),
+  licence_id integer references licence(id) ON DELETE CASCADE,
+  status_code varchar(40) references licence_status(status_code),
   action_time timestamp with time zone default CURRENT_TIMESTAMP,
   action_description varchar(80) NOT NULL,
   action_username varchar(100)

@@ -107,7 +107,8 @@ class ExclusionZoneServiceTest {
         id = 1,
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
-        conditionText = "Be of good behaviour"
+        conditionText = "Be of good behaviour",
+        licence = mock()
       ),
     )
 

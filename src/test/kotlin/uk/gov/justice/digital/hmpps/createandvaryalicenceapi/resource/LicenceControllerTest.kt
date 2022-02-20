@@ -19,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
@@ -41,6 +42,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -375,6 +379,71 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).submitLicence(4)
   }
 
+  @Test
+  fun `create variation`() {
+    whenever(licenceService.createVariation(4L)).thenReturn(aLicenceSummary)
+
+    mvc.perform(
+      post("/licence/id/4/create-variation")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).createVariation(4)
+  }
+
+  @Test
+  fun `update spo discussion`() {
+    mvc.perform(
+      put("/licence/id/4/spo-discussion")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(UpdateSpoDiscussionRequest(spoDiscussion = "Yes")))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateSpoDiscussion(4, UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
+  }
+
+  @Test
+  fun `update vlo discussion`() {
+    mvc.perform(
+      put("/licence/id/4/vlo-discussion")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(UpdateVloDiscussionRequest(vloDiscussion = "Yes")))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateVloDiscussion(4, UpdateVloDiscussionRequest(vloDiscussion = "Yes"))
+  }
+
+  @Test
+  fun `update reason for variation`() {
+    mvc.perform(
+      put("/licence/id/4/reason-for-variation")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(UpdateReasonForVariationRequest(reasonForVariation = "reason")))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateReasonForVariation(4, UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+  }
+
+  @Test
+  fun `discard a licence`() {
+    mvc.perform(
+      delete("/licence/id/4/discard")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).discardLicence(4)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -445,6 +514,7 @@ class LicenceControllerTest {
       additionalLicenceConditions = someAdditionalConditions,
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
+      isVariation = false,
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
