@@ -834,7 +834,6 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation discarded for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
-
   }
 
   private companion object {

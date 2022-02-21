@@ -491,7 +491,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceRepository.count()).isEqualTo(2)
 
     val newLicence = webTestClient.get()
-      .uri("/licence/id/${result.licenceId}")
+      .uri("/licence/id/${result?.licenceId}")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
