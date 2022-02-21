@@ -24,16 +24,25 @@ class ComServiceTest {
 
   @Test
   fun `updates existing COM with new details - email only`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs123@probation.gov.uk")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "joebloggs",
+      email = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
 
     whenever(communityOffenderManagerRepository.findByStaffIdentifier(any()))
-      .thenReturn(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk"))
+      .thenReturn(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B"))
+
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 3000,
       staffUsername = "jbloggs",
-      staffEmail = "jbloggs123@probation.gov.uk"
+      staffEmail = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
     )
 
     service.updateComDetails(comDetails)
@@ -44,14 +53,23 @@ class ComServiceTest {
 
   @Test
   fun `adds a new existing COM if it doesnt exist`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 3000, username = "jbloggs", email = "jbloggs123@probation.gov.uk")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 3000,
+      username = "jbloggs",
+      email = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
     whenever(communityOffenderManagerRepository.findByStaffIdentifier(any())).thenReturn(null)
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 3000,
       staffUsername = "jbloggs",
-      staffEmail = "jbloggs123@probation.gov.uk"
+      staffEmail = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
     )
 
     service.updateComDetails(comDetails)

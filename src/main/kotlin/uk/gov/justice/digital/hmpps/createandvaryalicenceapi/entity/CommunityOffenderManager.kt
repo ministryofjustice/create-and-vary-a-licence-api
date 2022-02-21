@@ -27,6 +27,10 @@ data class CommunityOffenderManager(
 
   val email: String?,
 
+  val firstName: String?,
+
+  val lastName: String?,
+
   @OneToMany(mappedBy = "responsibleCom")
   val licencesResponsibleFor: List<Licence> = emptyList(),
 
