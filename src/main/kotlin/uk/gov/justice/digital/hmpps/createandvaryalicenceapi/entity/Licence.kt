@@ -2,8 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
-import org.hibernate.annotations.LazyCollection
-import org.hibernate.annotations.LazyCollectionOption
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -43,7 +41,7 @@ data class Licence(
 
   @NotNull
   @Enumerated(STRING)
-  val statusCode: LicenceStatus = IN_PROGRESS,
+  var statusCode: LicenceStatus = IN_PROGRESS,
 
   val nomsId: String? = null,
   val bookingNo: String? = null,
@@ -78,6 +76,9 @@ data class Licence(
   val appointmentTime: LocalDateTime? = null,
   val appointmentAddress: String? = null,
   val appointmentContact: String? = null,
+  val spoDiscussion: String? = null,
+  val vloDiscussion: String? = null,
+  val reasonForVariation: String? = null,
   val approvedDate: LocalDateTime? = null,
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,
@@ -86,23 +87,19 @@ data class Licence(
   val dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
 
-  @JoinColumn(name = "licenceId")
+  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
-  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("conditionSequence")
-  @OneToMany
-  val standardConditions: List<StandardCondition> = emptyList(),
+  var standardConditions: List<StandardCondition> = emptyList(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   val additionalConditions: List<AdditionalCondition> = emptyList(),
 
-  @JoinColumn(name = "licenceId")
+  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
-  @LazyCollection(LazyCollectionOption.FALSE)
   @OrderBy("conditionSequence")
-  @OneToMany
   val bespokeConditions: List<BespokeCondition> = emptyList(),
 
   @ManyToOne
@@ -123,5 +120,50 @@ data class Licence(
     joinColumns = [JoinColumn(name = "licence_id")],
     inverseJoinColumns = [JoinColumn(name = "community_offender_manager_id")]
   )
-  val mailingList: MutableSet<CommunityOffenderManager> = mutableSetOf()
-)
+  val mailingList: MutableSet<CommunityOffenderManager> = mutableSetOf(),
+
+  var variationOfId: Long? = null,
+) {
+  fun createVariation(): Licence {
+    return Licence(
+      typeCode = this.typeCode,
+      version = this.version,
+      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      nomsId = this.nomsId,
+      bookingNo = this.bookingNo,
+      bookingId = this.bookingId,
+      crn = this.crn,
+      pnc = this.pnc,
+      cro = this.cro,
+      prisonCode = this.prisonCode,
+      prisonDescription = this.prisonDescription,
+      prisonTelephone = this.prisonTelephone,
+      forename = this.forename,
+      middleNames = this.middleNames,
+      surname = this.surname,
+      dateOfBirth = this.dateOfBirth,
+      conditionalReleaseDate = this.conditionalReleaseDate,
+      actualReleaseDate = this.actualReleaseDate,
+      sentenceStartDate = this.sentenceStartDate,
+      sentenceEndDate = this.sentenceEndDate,
+      licenceStartDate = this.licenceStartDate,
+      licenceExpiryDate = this.licenceExpiryDate,
+      topupSupervisionStartDate = this.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
+      probationAreaCode = this.probationAreaCode,
+      probationAreaDescription = this.probationAreaDescription,
+      probationPduCode = this.probationPduCode,
+      probationPduDescription = this.probationPduDescription,
+      probationLauCode = this.probationLauCode,
+      probationLauDescription = this.probationLauDescription,
+      probationTeamCode = this.probationTeamCode,
+      probationTeamDescription = this.probationTeamDescription,
+      appointmentPerson = this.appointmentPerson,
+      appointmentTime = this.appointmentTime,
+      appointmentAddress = this.appointmentAddress,
+      appointmentContact = this.appointmentContact,
+      responsibleCom = this.responsibleCom,
+      variationOfId = this.id,
+    )
+  }
+}

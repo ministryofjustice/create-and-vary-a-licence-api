@@ -4,6 +4,7 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -15,6 +16,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -32,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -74,11 +79,11 @@ class LicenceService(
     licence.mailingList.add(createdBy)
     licence.updatedByUsername = username
 
-    val saved = licenceRepository.saveAndFlush(licence)
-    val createLicenceResponse = transformToLicenceSummary(saved)
+    val licenceEntity = licenceRepository.saveAndFlush(licence)
+    val createLicenceResponse = transformToLicenceSummary(licenceEntity)
 
-    val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(createLicenceResponse.licenceId, "AP")
-    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(createLicenceResponse.licenceId, "PSS")
+    val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
+    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
     standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
 
     auditEventRepository.saveAndFlush(
@@ -88,7 +93,7 @@ class LicenceService(
           username = username,
           fullName = "${createdBy.firstName} ${createdBy.lastName}",
           summary = "Licence created for ${request.forename} ${request.surname}",
-          detail = "ID ${saved.id} type ${saved.typeCode} status ${saved.statusCode.name} version ${saved.version}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
         )
       )
     )
@@ -182,7 +187,7 @@ class LicenceService(
     bespokeConditionRepository.deleteByLicenceId(licenceId)
     request.conditions.forEachIndexed { index, condition ->
       bespokeConditionRepository.saveAndFlush(
-        EntityBespokeCondition(licenceId = licenceId, conditionSequence = index, conditionText = condition)
+        EntityBespokeCondition(licence = licenceEntity, conditionSequence = index, conditionText = condition)
       )
     }
   }
@@ -366,8 +371,10 @@ class LicenceService(
     val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
+    val newStatus = if (licenceEntity.variationOfId == null) SUBMITTED else VARIATION_SUBMITTED
+
     val updatedLicence = licenceEntity.copy(
-      statusCode = SUBMITTED,
+      statusCode = newStatus,
       submittedBy = submitter,
       updatedByUsername = username,
       dateLastUpdated = LocalDateTime.now()
@@ -378,12 +385,18 @@ class LicenceService(
     licenceHistoryRepository.saveAndFlush(
       EntityLicenceHistory(
         licenceId = licenceId,
-        statusCode = SUBMITTED.name,
+        statusCode = newStatus.name,
         actionTime = LocalDateTime.now(),
-        actionDescription = "Status changed to SUBMITTED",
+        actionDescription = "Status changed to ${newStatus.name}",
         actionUsername = username,
       )
     )
+
+    val summary = if (newStatus == SUBMITTED) {
+      "Licence submitted for ${updatedLicence.forename} ${updatedLicence.surname}"
+    } else {
+      "Licence variation submitted for ${updatedLicence.forename} ${updatedLicence.surname}"
+    }
 
     auditEventRepository.saveAndFlush(
       transform(
@@ -391,7 +404,7 @@ class LicenceService(
           licenceId = licenceId,
           username = username,
           fullName = "${submitter.firstName} ${submitter.lastName}",
-          summary = "Licence submitted for ${updatedLicence.forename} ${updatedLicence.surname}",
+          summary = summary,
           detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
         )
       )
@@ -414,6 +427,118 @@ class LicenceService(
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
     }
+  }
+
+  @Transactional
+  fun createVariation(licenceId: Long): LicenceSummary {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+
+    val licenceVariation = licenceEntity.createVariation()
+    licenceVariation.createdBy = createdBy
+    licenceVariation.mailingList.add(licenceVariation.responsibleCom!!)
+    licenceVariation.mailingList.add(createdBy!!)
+
+    val newLicence = licenceRepository.save(licenceVariation)
+    val standardConditions = licenceEntity.standardConditions.map {
+      it.copy(id = -1, licence = newLicence)
+    }
+    val bespokeConditions = licenceEntity.bespokeConditions.map {
+      it.copy(id = -1, licence = newLicence)
+    }
+
+    standardConditionRepository.saveAll(standardConditions)
+    bespokeConditionRepository.saveAll(bespokeConditions)
+
+    val additionalConditions = licenceEntity.additionalConditions.map {
+      val additionalConditionData = it.additionalConditionData.map { data ->
+        data.copy(id = -1)
+      }
+      val additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { upload ->
+        upload.copy(id = -1)
+      }
+
+      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
+    }
+
+    var newAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions).toMutableList()
+
+    newAdditionalConditions = newAdditionalConditions.map { condition ->
+      val updatedAdditionalConditionData = condition.additionalConditionData.map {
+        it.copy(additionalCondition = condition)
+      }
+      val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
+        var uploadDetail = additionalConditionUploadDetailRepository.getById(it.uploadDetailId)
+        uploadDetail = uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
+        uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
+        it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
+      }
+      condition.copy(additionalConditionData = updatedAdditionalConditionData, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
+    } as MutableList<AdditionalCondition>
+
+    additionalConditionRepository.saveAll(newAdditionalConditions)
+
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy.firstName} ${createdBy.lastName}",
+          summary = "Licence varied for ${newLicence.forename} ${newLicence.surname}",
+          detail = "Old ID $licenceId, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
+        )
+      )
+    )
+
+    return transformToLicenceSummary(newLicence)
+  }
+
+  fun updateSpoDiscussion(licenceId: Long, spoDiscussionRequest: UpdateSpoDiscussionRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val updatedLicenceEntity = licenceEntity.copy(spoDiscussion = spoDiscussionRequest.spoDiscussion, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+  }
+
+  fun updateVloDiscussion(licenceId: Long, vloDiscussionRequest: UpdateVloDiscussionRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val updatedLicenceEntity = licenceEntity.copy(vloDiscussion = vloDiscussionRequest.vloDiscussion, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+  }
+
+  fun updateReasonForVariation(licenceId: Long, reasonForVariationRequest: UpdateReasonForVariationRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val updatedLicenceEntity = licenceEntity.copy(reasonForVariation = reasonForVariationRequest.reasonForVariation, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+  }
+
+  fun discardLicence(licenceId: Long) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    licenceRepository.delete(licenceEntity)
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
