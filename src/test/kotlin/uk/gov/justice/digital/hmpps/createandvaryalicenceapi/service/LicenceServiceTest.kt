@@ -703,10 +703,17 @@ class LicenceServiceTest {
   fun `activate licences sets licence statuses to ACTIVE`() {
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
     service.activateLicences(listOf(1L))
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Licence automatically activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
   }
 
   @Test
@@ -717,6 +724,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -812,10 +820,21 @@ class LicenceServiceTest {
 
   @Test
   fun `Discarding a licence`() {
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
     service.discardLicence(1L)
+
     verify(licenceRepository, times(1)).delete(aLicenceEntity)
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation discarded for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
   }
 
   private companion object {

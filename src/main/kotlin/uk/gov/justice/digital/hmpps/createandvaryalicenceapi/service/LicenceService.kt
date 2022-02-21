@@ -30,12 +30,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -331,6 +333,7 @@ class LicenceService(
       IN_PROGRESS -> "Licence edited for $fullName"
       ACTIVE -> "Licence set to ACTIVE for $fullName"
       INACTIVE -> "Licence set to INACTIVE for $fullName"
+      VARIATION_IN_PROGRESS -> "Licence variation changed to in progress for $fullName"
       else -> "Check - licence status not accounted for in auditing"
     }
 
@@ -420,12 +423,27 @@ class LicenceService(
     }
   }
 
+  @Transactional
   fun activateLicences(licenceIds: List<Long>) {
-    // TODO: Audit this change of status
     val matchingLicences = licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
     val activatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = ACTIVE) }
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
+
+      activatedLicences.map { licence ->
+        auditEventRepository.saveAndFlush(
+          transform(
+            ModelAuditEvent(
+              licenceId = licence.id,
+              username = "SYSTEM",
+              fullName = "SYSTEM",
+              eventType = AuditEventType.SYSTEM_EVENT,
+              summary = "Licence automatically activated for ${licence.forename} ${licence.surname}",
+              detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+            )
+          )
+        )
+      }
     }
   }
 
@@ -533,10 +551,26 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicenceEntity)
   }
 
+  @Transactional
   fun discardLicence(licenceId: Long) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val discardedBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${discardedBy?.firstName} ${discardedBy?.lastName}",
+          summary = "Licence variation discarded for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+        )
+      )
+    )
 
     licenceRepository.delete(licenceEntity)
   }
