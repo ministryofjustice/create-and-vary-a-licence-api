@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -573,6 +574,32 @@ class LicenceService(
     )
 
     licenceRepository.delete(licenceEntity)
+  }
+
+  @Transactional
+  fun updatePrisonInformation(licenceId: Long, prisonInformationRequest: UpdatePrisonInformationRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val updatedLicenceEntity = licenceEntity.copy(prisonCode = prisonInformationRequest.prisonCode, prisonDescription = prisonInformationRequest.prisonDescription, prisonTelephone = prisonInformationRequest.prisonTelephone, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceEntity.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "Prison information updated for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
+        )
+      )
+    )
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
