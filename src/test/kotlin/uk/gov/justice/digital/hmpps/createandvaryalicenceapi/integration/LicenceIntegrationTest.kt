@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -593,6 +594,34 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.reasonForVariation).isEqualTo("reason")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update prison information`() {
+    webTestClient.put()
+      .uri("/licence/id/1/prison-information")
+      .bodyValue(UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545"))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.prisonCode).isEqualTo("PVI")
+    assertThat(result?.prisonDescription).isEqualTo("Pentonville (HMP)")
+    assertThat(result?.prisonTelephone).isEqualTo("+44 276 54545")
   }
 
   private companion object {

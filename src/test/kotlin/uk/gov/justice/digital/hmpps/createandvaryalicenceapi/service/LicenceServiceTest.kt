@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
@@ -834,6 +835,20 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation discarded for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+  }
+
+  @Test
+  fun `update prison information persists the updated entity`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    service.updatePrisonInformation(1L, UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545"))
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("prisonCode", "prisonDescription", "prisonTelephone", "updatedByUsername")
+      .isEqualTo(listOf("PVI", "Pentonville (HMP)", "+44 276 54545", "smills"))
   }
 
   private companion object {
