@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -458,6 +459,30 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).updatePrisonInformation(4, expectedRequest)
+  }
+
+  @Test
+  fun `update sentence dates`() {
+    val expectedRequest = UpdateSentenceDatesRequest(
+      conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+      actualReleaseDate = LocalDate.parse("2023-09-11"),
+      sentenceStartDate = LocalDate.parse("2021-09-11"),
+      sentenceEndDate = LocalDate.parse("2024-09-11"),
+      licenceStartDate = LocalDate.parse("2023-09-11"),
+      licenceExpiryDate = LocalDate.parse("2024-09-11"),
+      topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+      topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+    )
+
+    mvc.perform(
+      put("/licence/id/4/sentence-dates")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(expectedRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateSentenceDates(4, expectedRequest)
   }
 
   private companion object {

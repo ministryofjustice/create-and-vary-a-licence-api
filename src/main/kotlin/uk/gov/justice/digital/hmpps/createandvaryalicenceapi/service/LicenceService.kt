@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -596,6 +597,43 @@ class LicenceService(
           fullName = "SYSTEM",
           eventType = AuditEventType.SYSTEM_EVENT,
           summary = "Prison information updated for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
+        )
+      )
+    )
+  }
+
+  @Transactional
+  fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val updatedLicenceEntity = licenceEntity.copy(
+      conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
+      actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
+      sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
+      sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
+      licenceStartDate = sentenceDatesRequest.licenceStartDate,
+      licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
+      topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username
+    )
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceEntity.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
           detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
         )
       )

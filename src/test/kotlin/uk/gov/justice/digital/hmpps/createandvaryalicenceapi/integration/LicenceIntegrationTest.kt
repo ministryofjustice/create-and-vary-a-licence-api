@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -622,6 +623,50 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.prisonCode).isEqualTo("PVI")
     assertThat(result?.prisonDescription).isEqualTo("Pentonville (HMP)")
     assertThat(result?.prisonTelephone).isEqualTo("+44 276 54545")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql"
+  )
+  fun `Update sentence dates`() {
+    webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .bodyValue(
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          actualReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceEndDate = LocalDate.parse("2024-09-11"),
+          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        )
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.conditionalReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
+    assertThat(result?.actualReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
+    assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
+    assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2023-09-11"))
+    assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
+    assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
   }
 
   private companion object {
