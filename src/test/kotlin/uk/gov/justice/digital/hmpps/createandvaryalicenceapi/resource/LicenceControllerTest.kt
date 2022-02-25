@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -331,6 +332,29 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `match licences by pdu and status`() {
+    val licenceQueryObject = LicenceQueryObject(
+      pdus = listOf("A", "B", "C"),
+      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+    )
+
+    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(
+      get("/licence/match?pdu=A&pdu=B&pdu=C&status=APPROVED&status=ACTIVE")
+        .accept(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
+  }
+
+  @Test
   fun `update licence status`() {
     mvc.perform(
       put("/licence/id/4/status")
@@ -483,6 +507,33 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).updateSentenceDates(4, expectedRequest)
+  }
+
+  @Test
+  fun `approve a variation`() {
+    mvc.perform(
+      put("/licence/id/4/approve-variation")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).approveLicenceVariation(4)
+  }
+
+  @Test
+  fun `refer a variation`() {
+    val expectedRequest = ReferVariationRequest(reasonForReferral = "Reason")
+
+    mvc.perform(
+      put("/licence/id/4/refer-variation")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(expectedRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).referLicenceVariation(4, expectedRequest)
   }
 
   private companion object {

@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -366,7 +367,7 @@ class LicenceServiceTest {
 
   @Test
   fun `find licences matching criteria - no parameters matches all`() {
-    val licenceQueryObject = LicenceQueryObject(null, null, null, null)
+    val licenceQueryObject = LicenceQueryObject()
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -377,7 +378,23 @@ class LicenceServiceTest {
 
   @Test
   fun `find licences matching criteria - multiple parameters`() {
-    val licenceQueryObject = LicenceQueryObject(listOf("MDI"), listOf(LicenceStatus.APPROVED), listOf(1, 2, 3), listOf("A1234AA"))
+    val licenceQueryObject = LicenceQueryObject(
+      prisonCodes = listOf("MDI"),
+      statusCodes = listOf(LicenceStatus.APPROVED),
+      staffIds = listOf(1, 2, 3),
+      nomsIds = listOf("A1234AA"),
+    )
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.unsorted()))
+  }
+
+  @Test
+  fun `find licences matching criteria - list of PDUs`() {
+    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -821,7 +838,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `Discarding a licence`() {
+  fun `discarding a licence`() {
     val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
@@ -898,6 +915,92 @@ class LicenceServiceTest {
           "smills"
         )
       )
+  }
+
+  @Test
+  fun `referring a licence variation`() {
+    val referVariationRequest = ReferVariationRequest(reasonForReferral = "reason")
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    service.referLicenceVariation(1L, referVariationRequest)
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(1)).saveAndFlush(historyCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "reasonForReferral")
+      .isEqualTo(listOf(LicenceStatus.VARIATION_REJECTED, "smills", "reason"))
+
+    assertThat(historyCaptor.value)
+      .extracting("statusCode", "actionDescription")
+      .isEqualTo(listOf(LicenceStatus.VARIATION_REJECTED.name, "Status changed to VARIATION_REJECTED"))
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+  }
+
+  @Test
+  fun `approving a licence variation`() {
+    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+
+    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(aLicenceEntity.copy(id = 2, variationOfId = 1L)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val historyCaptor = ArgumentCaptor.forClass(EntityLicenceHistory::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    service.approveLicenceVariation(2L)
+
+    // Verify calls to find the current variation and the superseded licence
+    verify(licenceRepository, times(1)).findById(2L)
+    verify(licenceRepository, times(1)).findById(1L)
+
+    // Capture all calls to licence, history and audit saveAndFlush - they will be a list
+    verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceHistoryRepository, times(2)).saveAndFlush(historyCaptor.capture())
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+
+    // Check all calls were made
+    assertThat(licenceCaptor.allValues.size).isEqualTo(2)
+    assertThat(historyCaptor.allValues.size).isEqualTo(2)
+    assertThat(auditCaptor.allValues.size).isEqualTo(2)
+
+    // Assert the expected content of each call
+    assertThat(licenceCaptor.allValues.get(0))
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(2L, LicenceStatus.ACTIVE, "smills"))
+
+    assertThat(licenceCaptor.allValues.get(1))
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(1L, LicenceStatus.INACTIVE, "smills"))
+
+    assertThat(historyCaptor.allValues.get(0))
+      .extracting("licenceId", "statusCode", "actionDescription")
+      .isEqualTo(listOf(2L, LicenceStatus.ACTIVE.name, "Status changed to ACTIVE"))
+
+    assertThat(historyCaptor.allValues.get(1))
+      .extracting("licenceId","statusCode", "actionDescription")
+      .isEqualTo(listOf(1L, LicenceStatus.INACTIVE.name, "Status changed to INACTIVE"))
+
+    assertThat(auditCaptor.allValues.get(0))
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(2L, "smills", "X Y", "Licence variation approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    assertThat(auditCaptor.allValues.get(1))
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "smills", "X Y", "Licence superseded for ${aLicenceEntity.forename} ${aLicenceEntity.surname} by ID 2"))
+
   }
 
   private companion object {

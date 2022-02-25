@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -331,7 +332,7 @@ class LicenceController(private val licenceService: LicenceService) {
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Get a list of licence summaries matching the supplied criteria.",
-    description = "Get the licences matching the supplied lists of status, prison, staffId and nomsId. Requires ROLE_CVL_ADMIN.",
+    description = "Get the licences matching the supplied lists of status, prison, staffId, nomsId and PDU. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
@@ -358,11 +359,12 @@ class LicenceController(private val licenceService: LicenceService) {
     @RequestParam(name = "status", required = false) status: List<LicenceStatus>?,
     @RequestParam(name = "staffId", required = false) staffId: List<Int>?,
     @RequestParam(name = "nomsId", required = false) nomsId: List<String>?,
+    @RequestParam(name = "pdu", required = false) pdu: List<String>?,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?
   ): List<LicenceSummary> {
     return licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(prisonCodes = prison, statusCodes = status, staffIds = staffId, nomsIds = nomsId, sortBy = sortBy, sortOrder = sortOrder)
+      LicenceQueryObject(prisonCodes = prison, statusCodes = status, staffIds = staffId, nomsIds = nomsId, pdus = pdu, sortBy = sortBy, sortOrder = sortOrder)
     )
   }
 
@@ -743,6 +745,89 @@ class LicenceController(private val licenceService: LicenceService) {
     @Valid @RequestBody request: UpdateReasonForVariationRequest
   ) {
     licenceService.updateReasonForVariation(licenceId, request)
+  }
+
+  @PutMapping(value = ["/id/{licenceId}/refer-variation"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Updates a licence to referred and stores the reason provided.",
+    description = "Updates a licence to referred and stores the reason provided by the approver. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Licence updated to referred and the referral reason stored",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ]
+  )
+  fun referVariation(
+    @PathVariable("licenceId") licenceId: Long,
+    @Valid @RequestBody request: ReferVariationRequest
+  ) {
+    licenceService.referLicenceVariation(licenceId, request)
+  }
+
+  @PutMapping(value = ["/id/{licenceId}/approve-variation"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Approves a licence variation.",
+    description = "Approves a licence variation. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Variation approved"
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ]
+  )
+  fun approveVariation(
+    @PathVariable("licenceId") licenceId: Long
+  ) {
+    licenceService.approveLicenceVariation(licenceId)
   }
 
   @DeleteMapping(value = ["/id/{licenceId}/discard"])
