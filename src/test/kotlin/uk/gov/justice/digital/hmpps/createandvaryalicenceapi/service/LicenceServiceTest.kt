@@ -990,7 +990,7 @@ class LicenceServiceTest {
       .isEqualTo(listOf(2L, LicenceStatus.ACTIVE.name, "Status changed to ACTIVE"))
 
     assertThat(historyCaptor.allValues.get(1))
-      .extracting("licenceId","statusCode", "actionDescription")
+      .extracting("licenceId", "statusCode", "actionDescription")
       .isEqualTo(listOf(1L, LicenceStatus.INACTIVE.name, "Status changed to INACTIVE"))
 
     assertThat(auditCaptor.allValues.get(0))
@@ -1000,7 +1000,6 @@ class LicenceServiceTest {
     assertThat(auditCaptor.allValues.get(1))
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "smills", "X Y", "Licence superseded for ${aLicenceEntity.forename} ${aLicenceEntity.surname} by ID 2"))
-
   }
 
   private companion object {
