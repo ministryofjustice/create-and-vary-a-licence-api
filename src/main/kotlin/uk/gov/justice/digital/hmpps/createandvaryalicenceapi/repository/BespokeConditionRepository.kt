@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 
 @Repository
-interface BespokeConditionRepository : JpaRepository<BespokeCondition, Long> {
-}
+interface BespokeConditionRepository : JpaRepository<BespokeCondition, Long>
