@@ -136,6 +136,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     spoDiscussion = licence.spoDiscussion,
     vloDiscussion = licence.vloDiscussion,
     reasonForVariation = licence.reasonForVariation,
+    reasonForReferral = licence.reasonForReferral,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,

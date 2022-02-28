@@ -16,6 +16,7 @@ data class LicenceQueryObject(
   val statusCodes: List<LicenceStatus>? = null,
   val staffIds: List<Int>? = null,
   val nomsIds: List<String>? = null,
+  val pdus: List<String>? = null,
   val sortBy: String? = null,
   val sortOrder: String? = null
 )
@@ -24,7 +25,8 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
-  hasResponsibleComIn(staffIds)
+  hasResponsibleComIn(staffIds),
+  hasPdusIn(pdus)
 )
 
 fun LicenceQueryObject.getSort(): Sort {
@@ -60,4 +62,8 @@ fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffId
     val joinOffenderManager: Join<Licence, CommunityOffenderManager> = root.join("responsibleCom", JoinType.INNER)
     builder.and(joinOffenderManager.get<Int>("staffIdentifier").`in`(it))
   }
+}
+
+fun hasPdusIn(pduCodes: List<String>?): Specification<Licence>? = pduCodes?.let {
+  Licence::probationPduCode.`in`(it)
 }

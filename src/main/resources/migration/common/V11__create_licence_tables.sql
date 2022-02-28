@@ -49,6 +49,7 @@ CREATE TABLE licence (
   spo_discussion varchar(4),
   vlo_discussion varchar(20),
   reason_for_variation text,
+  reason_for_referral text,
   variation_of_id integer references licence(id),
   approved_date timestamp with time zone,
   approved_by_username varchar(100),

@@ -161,6 +161,9 @@ data class Licence(
   @Schema(description = "The reason for the variation, in rich-text.")
   val reasonForVariation: String? = null,
 
+  @Schema(description = "The reason why a variation was rejected/referred, in rich-text.")
+  val reasonForReferral: String? = null,
+
   @Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val approvedDate: LocalDateTime? = null,

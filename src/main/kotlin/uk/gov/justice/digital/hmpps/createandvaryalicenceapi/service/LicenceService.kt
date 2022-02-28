@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -33,13 +34,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -336,6 +340,8 @@ class LicenceService(
       ACTIVE -> "Licence set to ACTIVE for $fullName"
       INACTIVE -> "Licence set to INACTIVE for $fullName"
       VARIATION_IN_PROGRESS -> "Licence variation changed to in progress for $fullName"
+      VARIATION_APPROVED -> "Licence variation approved for $fullName"
+      VARIATION_REJECTED -> "Licence variation referred for $fullName"
       else -> "Check - licence status not accounted for in auditing"
     }
 
@@ -551,6 +557,125 @@ class LicenceService(
     val updatedLicenceEntity = licenceEntity.copy(reasonForVariation = reasonForVariationRequest.reasonForVariation, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
+  }
+
+  @Transactional
+  fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+
+    val updatedLicenceEntity = licenceEntity.copy(
+      reasonForReferral = referVariationRequest.reasonForReferral,
+      statusCode = LicenceStatus.VARIATION_REJECTED,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+
+    licenceHistoryRepository.saveAndFlush(
+      EntityLicenceHistory(
+        licenceId = licenceId,
+        statusCode = updatedLicenceEntity.statusCode.name,
+        actionTime = LocalDateTime.now(),
+        actionDescription = "Status changed to ${updatedLicenceEntity.statusCode.name}",
+        actionUsername = username,
+      )
+    )
+
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+          summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
+        )
+      )
+    )
+  }
+
+  @Transactional
+  fun approveLicenceVariation(licenceId: Long) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    // Get the full name of the user approving this licence variation
+    val username = SecurityContextHolder.getContext().authentication.name
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+
+    // Set the varied licence to ACTIVE
+    val updatedLicenceEntity = licenceEntity.copy(
+      statusCode = LicenceStatus.ACTIVE,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+
+    // Find the superseded licence and set it to INACTIVE
+    val supersededEntity = licenceRepository
+      .findById(licenceEntity.variationOfId!!)
+      .orElseThrow { EntityNotFoundException("${licenceEntity.variationOfId}") }
+
+    val updatedSupersededEntity = supersededEntity.copy(
+      statusCode = LicenceStatus.INACTIVE,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+    licenceRepository.saveAndFlush(updatedSupersededEntity)
+
+    // Create a history to show the new licence as ACTIVE
+    licenceHistoryRepository.saveAndFlush(
+      EntityLicenceHistory(
+        licenceId = licenceId,
+        statusCode = updatedLicenceEntity.statusCode.name,
+        actionTime = LocalDateTime.now(),
+        actionDescription = "Status changed to ${updatedLicenceEntity.statusCode.name}",
+        actionUsername = username,
+      )
+    )
+
+    // Create a history to show the superseded licence as INACTIVE
+    licenceHistoryRepository.saveAndFlush(
+      EntityLicenceHistory(
+        licenceId = supersededEntity.id,
+        statusCode = updatedSupersededEntity.statusCode.name,
+        actionTime = LocalDateTime.now(),
+        actionDescription = "Status changed to ${updatedSupersededEntity.statusCode.name}",
+        actionUsername = username,
+      )
+    )
+
+    // Audit event for the newly ACTIVATED licence
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+          summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
+        )
+      )
+    )
+
+    // Audit event for the superseded INACTIVE licence
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = supersededEntity.id,
+          username = username,
+          fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+          summary = "Licence superseded for ${licenceEntity.forename} ${licenceEntity.surname} by ID $licenceId",
+          detail = "ID ${supersededEntity.id} type ${updatedSupersededEntity.typeCode} status ${updatedSupersededEntity.statusCode.name} version ${updatedSupersededEntity.version}",
+        )
+      )
+    )
   }
 
   @Transactional
