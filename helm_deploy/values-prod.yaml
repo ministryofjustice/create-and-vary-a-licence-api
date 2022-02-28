@@ -1,0 +1,19 @@
+---
+# Per environment values which override defaults in create-and-vary-a-licence-api/values.yaml
+
+generic-service:
+  replicaCount: 4
+
+  ingress:
+    host: create-and-vary-a-licence-api.hmpps.service.justice.gov.uk
+    contextColour: green
+
+  env:
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+    HMPPS_AUTH_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
+    NOTIFY_TEMPLATES_LICENCEAPPROVED: 36c3f270-7393-4595-96f7-db2033cccd91
+
+# CloudPlatform AlertManager receiver to route prometheus alerts to slack
+# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
+generic-prometheus-alerts:
+  alertSeverity: digital-prison-service
