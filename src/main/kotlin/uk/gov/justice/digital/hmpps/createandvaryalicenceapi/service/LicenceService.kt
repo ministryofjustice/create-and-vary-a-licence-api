@@ -188,11 +188,10 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicence = licenceEntity.copy(bespokeConditions = emptyList(), dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicence)
 
     // Replace the bespoke conditions
-    bespokeConditionRepository.deleteByLicenceId(licenceId)
     request.conditions.forEachIndexed { index, condition ->
       bespokeConditionRepository.saveAndFlush(
         EntityBespokeCondition(licence = licenceEntity, conditionSequence = index, conditionText = condition)

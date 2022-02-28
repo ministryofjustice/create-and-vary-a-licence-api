@@ -6,5 +6,4 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 
 @Repository
 interface BespokeConditionRepository : JpaRepository<BespokeCondition, Long> {
-  fun deleteByLicenceId(id: Long): Long
 }
