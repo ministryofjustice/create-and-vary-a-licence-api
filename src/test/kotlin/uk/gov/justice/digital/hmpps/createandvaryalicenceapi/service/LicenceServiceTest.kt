@@ -310,7 +310,6 @@ class LicenceServiceTest {
   @Test
   fun `update bespoke conditions persists multiple entities`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(bespokeConditionRepository.deleteByLicenceId(1L)).thenReturn(0)
 
     val bespokeEntities = listOf(
       EntityBespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
@@ -328,9 +327,7 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
-
-    // Verify old bespoke conditions are removed
-    verify(bespokeConditionRepository, times(1)).deleteByLicenceId(1L)
+    assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<EntityBespokeCondition>())
 
     // Verify new bespoke conditions are added in their place
     bespokeEntities.forEach { bespoke ->
@@ -341,11 +338,9 @@ class LicenceServiceTest {
   @Test
   fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(bespokeConditionRepository.deleteByLicenceId(1L)).thenReturn(0)
 
     service.updateBespokeConditions(1L, BespokeConditionRequest())
 
-    verify(bespokeConditionRepository, times(1)).deleteByLicenceId(1L)
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
     verify(licenceRepository, times(1)).saveAndFlush(any())
   }
@@ -361,7 +356,6 @@ class LicenceServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
-    verify(bespokeConditionRepository, times(0)).deleteByLicenceId(1L)
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
   }
 
