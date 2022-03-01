@@ -9,7 +9,7 @@ generic-service:
     contextColour: green
 
   env:
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     HMPPS_AUTH_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
     NOTIFY_TEMPLATES_LICENCEAPPROVED: 36c3f270-7393-4595-96f7-db2033cccd91
 
