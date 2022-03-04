@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 /*
@@ -135,8 +137,6 @@ fun transform(licence: EntityLicence): ModelLicence {
     appointmentContact = licence.appointmentContact,
     spoDiscussion = licence.spoDiscussion,
     vloDiscussion = licence.vloDiscussion,
-    reasonForVariation = licence.reasonForVariation,
-    reasonForReferral = licence.reasonForReferral,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,
@@ -286,5 +286,20 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent {
     eventType = model.eventType,
     summary = model.summary,
     detail = model.detail,
+  )
+}
+
+fun List<EntityLicenceEvent>.transformToModelLicenceEvents(): List<ModelLicenceEvent> = map(::transform)
+
+fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
+  return ModelLicenceEvent(
+    id = entity.id,
+    licenceId = entity.licenceId,
+    eventType = entity.eventType,
+    username = entity.username,
+    forenames = entity.forenames,
+    surname = entity.surname,
+    eventDescription = entity.eventDescription,
+    eventTime = entity.eventTime,
   )
 }

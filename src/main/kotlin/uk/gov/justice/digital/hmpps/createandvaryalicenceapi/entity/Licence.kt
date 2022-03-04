@@ -78,8 +78,6 @@ data class Licence(
   val appointmentContact: String? = null,
   val spoDiscussion: String? = null,
   val vloDiscussion: String? = null,
-  val reasonForVariation: String? = null,
-  val reasonForReferral: String? = null,
   val approvedDate: LocalDateTime? = null,
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,
