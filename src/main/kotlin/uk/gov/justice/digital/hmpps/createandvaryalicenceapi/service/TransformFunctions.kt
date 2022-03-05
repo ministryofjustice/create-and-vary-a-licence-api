@@ -289,7 +289,7 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent {
   )
 }
 
-fun List<EntityLicenceEvent>.transformToModelLicenceEvents(): List<ModelLicenceEvent> = map(::transform)
+fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)
 
 fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   return ModelLicenceEvent(

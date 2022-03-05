@@ -404,41 +404,33 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    // Get the user details
     val username = SecurityContextHolder.getContext().authentication.name
     val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
     val newStatus = if (licenceEntity.variationOfId == null) SUBMITTED else VARIATION_SUBMITTED
 
-    // Update the status and contact time on the licence
     val updatedLicence = licenceEntity.copy(
       statusCode = newStatus,
       submittedBy = submitter,
       updatedByUsername = username,
       dateLastUpdated = LocalDateTime.now()
     )
+
     licenceRepository.saveAndFlush(updatedLicence)
 
-    // The event for VARIATION_SUBMITTED is already recorded when updating the reason for variation
-    if (newStatus == SUBMITTED) {
-      licenceEventRepository.saveAndFlush(
-        EntityLicenceEvent(
-          licenceId = licenceId,
-          eventType = LicenceEventType.SUBMITTED,
-          username = username,
-          forenames = submitter.firstName,
-          surname = submitter.lastName,
-          eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
-        )
-      )
-    }
+    val eventType = if (newStatus == SUBMITTED) LicenceEventType.SUBMITTED else LicenceEventType.VARIATION_SUBMITTED
 
-    val summary = if (newStatus == SUBMITTED) {
-      "Licence submitted for ${updatedLicence.forename} ${updatedLicence.surname}"
-    } else {
-      "Licence variation submitted for ${updatedLicence.forename} ${updatedLicence.surname}"
-    }
+    licenceEventRepository.saveAndFlush(
+      EntityLicenceEvent(
+        licenceId = licenceId,
+        eventType = eventType,
+        username = username,
+        forenames = submitter.firstName,
+        surname = submitter.lastName,
+        eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
+      )
+    )
 
     auditEventRepository.saveAndFlush(
       transform(
@@ -446,7 +438,7 @@ class LicenceService(
           licenceId = licenceId,
           username = username,
           fullName = "${submitter.firstName} ${submitter.lastName}",
-          summary = summary,
+          summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
           detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
         )
       )
@@ -470,7 +462,6 @@ class LicenceService(
       licenceRepository.saveAllAndFlush(activatedLicences)
 
       activatedLicences.map { licence ->
-        // Create an audit event for the licence activation
         auditEventRepository.saveAndFlush(
           transform(
             ModelAuditEvent(
@@ -484,7 +475,6 @@ class LicenceService(
           )
         )
 
-        // Create a licence event for the licence activation
         licenceEventRepository.saveAndFlush(
           EntityLicenceEvent(
             licenceId = licence.id,
@@ -514,9 +504,11 @@ class LicenceService(
     licenceVariation.mailingList.add(createdBy!!)
 
     val newLicence = licenceRepository.save(licenceVariation)
+
     val standardConditions = licenceEntity.standardConditions.map {
       it.copy(id = -1, licence = newLicence)
     }
+
     val bespokeConditions = licenceEntity.bespokeConditions.map {
       it.copy(id = -1, licence = newLicence)
     }
@@ -531,7 +523,6 @@ class LicenceService(
       val additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { upload ->
         upload.copy(id = -1)
       }
-
       it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
     }
 
@@ -541,18 +532,19 @@ class LicenceService(
       val updatedAdditionalConditionData = condition.additionalConditionData.map {
         it.copy(additionalCondition = condition)
       }
+
       val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
         var uploadDetail = additionalConditionUploadDetailRepository.getById(it.uploadDetailId)
         uploadDetail = uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
       }
+
       condition.copy(additionalConditionData = updatedAdditionalConditionData, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
     } as MutableList<AdditionalCondition>
 
     additionalConditionRepository.saveAll(newAdditionalConditions)
 
-    // Create a licence event to track the creation of a new variation
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = newLicence.id,
@@ -564,7 +556,6 @@ class LicenceService(
       )
     )
 
-    // Create an audit record of the variation
     auditEventRepository.saveAndFlush(
       transform(
         ModelAuditEvent(
@@ -609,19 +600,16 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    // Get the details of the current user
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
-    // Update the contact time on the licence
     val updatedLicenceEntity = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
-    // Create a licence event to hold the reason for variation
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.VARIATION_SUBMITTED,
+        eventType = LicenceEventType.VARIATION_SUBMITTED_REASON,
         username = username,
         forenames = createdBy?.firstName,
         surname = createdBy?.lastName,
@@ -636,16 +624,15 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    // Get the details of the current user
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
-    // Update the licence status and contact time
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = VARIATION_REJECTED,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
+
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     // Create a licence event to show the variation was referred and track the reason
@@ -660,7 +647,6 @@ class LicenceService(
       )
     )
 
-    // Create an audit trail of this referral
     auditEventRepository.saveAndFlush(
       transform(
         ModelAuditEvent(
@@ -680,11 +666,9 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    // Get the full name of the user approving this licence variation
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
-    // Set the varied licence to ACTIVE and update contact details
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = ACTIVE,
       dateLastUpdated = LocalDateTime.now(),

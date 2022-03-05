@@ -580,7 +580,7 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
   }
 
   @Test
@@ -595,20 +595,23 @@ class LicenceServiceTest {
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    // Not recorded for a VARIATION_SUBMITTED - as this event recorded with the reason for submission
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername")
       .isEqualTo(listOf(1L, LicenceStatus.VARIATION_SUBMITTED, "smills"))
 
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(listOf(1L, LicenceEventType.VARIATION_SUBMITTED, "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation submitted for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
   }
 
   @Test
@@ -841,7 +844,7 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.value)
       .extracting("eventType", "username", "eventDescription")
-      .isEqualTo(listOf(LicenceEventType.VARIATION_SUBMITTED, "smills", "reason"))
+      .isEqualTo(listOf(LicenceEventType.VARIATION_SUBMITTED_REASON, "smills", "reason"))
   }
 
   @Test
@@ -869,11 +872,18 @@ class LicenceServiceTest {
     service.updatePrisonInformation(1L, UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545"))
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     assertThat(licenceCaptor.value)
       .extracting("prisonCode", "prisonDescription", "prisonTelephone", "updatedByUsername")
       .isEqualTo(listOf("PVI", "Pentonville (HMP)", "+44 276 54545", "smills"))
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Prison information updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
   }
 
   @Test
@@ -895,7 +905,10 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     assertThat(licenceCaptor.value)
       .extracting(
@@ -922,6 +935,10 @@ class LicenceServiceTest {
           "smills"
         )
       )
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
   }
 
   @Test
@@ -969,7 +986,6 @@ class LicenceServiceTest {
 
     service.approveLicenceVariation(2L)
 
-    // Verify calls to find the current variation and the superseded licence
     verify(licenceRepository, times(1)).findById(2L)
     verify(licenceRepository, times(1)).findById(1L)
 
@@ -983,7 +999,6 @@ class LicenceServiceTest {
     assertThat(eventCaptor.allValues.size).isEqualTo(2)
     assertThat(auditCaptor.allValues.size).isEqualTo(2)
 
-    // Assert the expected content of each call
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername")
       .isEqualTo(listOf(2L, LicenceStatus.ACTIVE, "smills"))
