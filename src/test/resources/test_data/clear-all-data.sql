@@ -5,7 +5,6 @@ DELETE from additional_condition_upload_summary;
 DELETE from additional_condition;
 DELETE from bespoke_condition;
 DELETE from community_offender_manager_licence_mailing_list;
-DELETE from licence_event;
 DELETE from licence;
 DELETE from community_offender_manager;
 DELETE from audit_event;
