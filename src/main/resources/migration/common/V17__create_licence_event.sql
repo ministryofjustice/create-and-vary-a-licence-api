@@ -2,10 +2,10 @@
 CREATE TABLE licence_event (
   id serial NOT NULL constraint licence_event_pk PRIMARY KEY,
   licence_id integer references licence(id) ON DELETE CASCADE,
-  event_type varchar2(50),
-  username varchar2(100),
-  forenames varchar2(100),
-  surname varchar2(100),
+  event_type varchar(50),
+  username varchar(100),
+  forenames varchar(100),
+  surname varchar(100),
   event_description text,
   event_time timestamp with time zone default CURRENT_TIMESTAMP
 );
