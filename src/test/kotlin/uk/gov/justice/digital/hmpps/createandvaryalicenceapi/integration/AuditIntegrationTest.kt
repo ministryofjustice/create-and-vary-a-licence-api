@@ -47,10 +47,7 @@ class AuditIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql(
-    "classpath:test_data/clear-audit-events.sql",
-    "classpath:test_data/seed-licence-id-1.sql"
-  )
+  @Sql("classpath:test_data/seed-licence-id-1.sql")
   fun `Create an audit event`() {
     webTestClient.put()
       .uri("/audit/save")
@@ -69,7 +66,6 @@ class AuditIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
-    "classpath:test_data/clear-audit-events.sql",
     "classpath:test_data/seed-audit-events.sql"
   )
   fun `Get audit events for a licence and user`() {

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -585,16 +586,18 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     val result = webTestClient.get()
-      .uri("/licence/id/1")
+      .uri("/events/match?licenceId=1&eventType=VARIATION_SUBMITTED_REASON")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
+      .expectBodyList(LicenceEvent::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.reasonForVariation).isEqualTo("reason")
+    assertThat(result).isNotNull
+    assertThat(result).hasSize(1)
+    assertThat(result!!.get(0)?.eventDescription).isEqualTo("reason")
   }
 
   @Test
