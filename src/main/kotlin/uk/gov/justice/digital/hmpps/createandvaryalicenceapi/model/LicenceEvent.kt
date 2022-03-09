@@ -42,5 +42,5 @@ data class LicenceEvent(
 
   @Schema(description = "The date and time of the event", example = "12/01/2022 23:14:23")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val eventTime: LocalDateTime = LocalDateTime.now(),
+  val eventTime: LocalDateTime? = null,
 )
