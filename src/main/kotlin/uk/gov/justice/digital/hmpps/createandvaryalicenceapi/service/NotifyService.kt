@@ -43,7 +43,7 @@ class NotifyService(
           "prisonersForRelease",
           cases.map {
             prisoner ->
-            "${prisoner.name} who will leave custody on ${DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(prisoner.releaseDate)}"
+            "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
           }
         ),
       ),
