@@ -94,3 +94,5 @@ notify:
   enabled: true
   templates:
     licenceApproved: 36c3f270-7393-4595-96f7-db2033cccd91
+    initialLicencePrompt: 9f0cbdfd-70d2-435b-b36a-c85719776479
+    urgentLicencePrompt: e18cd289-fb1b-47bc-86e3-20382ddb4f21
