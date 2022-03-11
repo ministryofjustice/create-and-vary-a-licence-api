@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Promp
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 @Service
 class NotifyService(
