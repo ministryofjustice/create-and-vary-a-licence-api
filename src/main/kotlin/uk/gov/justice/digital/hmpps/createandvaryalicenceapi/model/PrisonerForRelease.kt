@@ -13,7 +13,7 @@ data class PrisonerForRelease(
   val name: String,
 
   @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @JsonFormat(pattern = "yyyy-MM-dd")
   @field:NotNull
   val releaseDate: LocalDate,
 )
