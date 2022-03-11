@@ -93,4 +93,40 @@ management:
 notify:
   enabled: true
   templates:
-    licenceApproved: 36c3f270-7393-4595-96f7-db2033cccd91
+    licenceApproved: d8a7fc37-ee6f-4138-a3a5-80bab80665e4
+    variationForApproval: a9c38c33-8aa9-428b-b486-9f1fb1e51a39
+
+# Used when running locally (dev profile) or whilst running tests (test profile)
+# These values are overridden by namespace secrets in all Kubernetes environments
+pdu:
+  contacts:
+    WPTNWS:
+      forename: 'Test'
+      surname: 'North'
+      description: 'North Wales'
+      email: 'north.wales@test.co.uk'
+    WPTWES:
+      forename: 'Test'
+      surname: 'Dyfed'
+      description: 'Dyfed Powys'
+      email: 'dyfed.powys@test.co.uk'
+    WPTGWT:
+      forename: 'Test'
+      surname: 'Gwent'
+      description: 'Gwent'
+      email: 'gwent@test.co.uk'
+    N03SNT:
+      forename: 'Test'
+      surname: 'Swansea'
+      description: 'Swansea, Neath, Port Talbot'
+      email: 'swansea@test.co.uk'
+    N03CTM:
+      forename: 'Test'
+      surname: 'Cwm'
+      description: 'Cwm Taf Morgannwg'
+      email: 'cwm.taf@test.co.uk'
+    NO3SW1:
+      forename: 'Test'
+      surname: 'Cardiff'
+      description: 'Cardiff and Vale'
+      email: 'cardiff@test.co.uk'
