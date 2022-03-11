@@ -600,6 +600,8 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(notifyService, times(1))
+      .sendVariationForApprovalEmail(licence.probationPduCode!!, licence.id.toString(), aLicenceEntity.forename!!, aLicenceEntity.surname!!)
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername")

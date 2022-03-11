@@ -22,19 +22,27 @@ class NotifyService(
   private val pduHeadProperties: PduHeadProperties,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
-    sendEmail(licenceApprovedTemplateId, emailAddress, values, reference)
+    // Hobbled this email - no current requirement to send this out - blanked out the email address to avoid sending
+    // sendEmail(licenceApprovedTemplateId, emailAddress, values, reference)
+    sendEmail(licenceApprovedTemplateId, "", values, reference)
   }
 
-  fun sendVariationForApprovalEmail(pduCode: String, values: Map<String, String>, reference: String) {
-    var pduHead: EmailConfig?
+  fun sendVariationForApprovalEmail(pduCode: String, licenceId: String, firstName: String, lastName: String) {
+    val pduHead: EmailConfig?
     try {
+      // TODO: Add environment-specific link to approval cases or specific page to approve this variation
       pduHead = pduHeadProperties.contacts.getValue(pduCode)
       if (pduHead.email.isNotBlank()) {
-        sendEmail(variationForApprovalTemplateId, pduHead.email, values, reference)
+        val values: Map<String, String> = mapOf(
+          Pair("pduHeadFirstName", pduHead.forename),
+          Pair("licenceFirstName", firstName),
+          Pair("licenceLastName", lastName),
+        )
+        sendEmail(variationForApprovalTemplateId, pduHead.email, values, null)
       } else {
         log.error("sendVariationForApproval: An email address was not configured for the head of PDU $pduCode")
       }
-    } catch(e: NoSuchElementException) {
+    } catch (e: NoSuchElementException) {
       log.error("sendVariationForApproval: No PDU head contact detail configured for $pduCode - No email was sent")
     }
   }
@@ -58,8 +66,7 @@ class NotifyService(
         Pair("comName", comName),
         Pair(
           "prisonersForRelease",
-          cases.map {
-              prisoner ->
+          cases.map { prisoner ->
             "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
           }
         ),

@@ -40,7 +40,11 @@ class NotifyServiceTest {
   @Test
   fun `send licence approved email`() {
     notifyService.sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
-    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
+    // This email is currently not enabled, will not send and should have no interaction with the client
+    verifyNoInteractions(notificationClient)
+
+    // When reinstated this is the verification
+    // verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
   }
 
   @Test
@@ -87,7 +91,7 @@ class NotifyServiceTest {
       urgentLicencePromptTemplateId = TEMPLATE_ID,
       client = notificationClient,
       pduHeadProperties = pduHeadProperties,
-    ).sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
+    ).sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
 
     verifyNoInteractions(notificationClient)
   }
@@ -102,27 +106,44 @@ class NotifyServiceTest {
   fun `Notify service catches and swallows exceptions`() {
     whenever(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(NotificationClientException("error"))
     assertDoesNotThrow {
-      notifyService.sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
+      notifyService.sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
     }
   }
 
   @Test
   fun `can read the configured PDU head information for Cardiff`() {
-    notifyService.sendVariationForApprovalEmail("CARDIFF", mapOf(Pair("key", "value")), REFERENCE)
-    verify(notificationClient).sendEmail(TEMPLATE_ID, "cardiff@test.com", mapOf(Pair("key", "value")), REFERENCE)
+    notifyService.sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
+    verify(notificationClient).sendEmail(
+      TEMPLATE_ID,
+      "cardiff@test.com",
+      mapOf(
+        Pair("pduHeadFirstName", "Bill"),
+        Pair("licenceFirstName", "First"),
+        Pair("licenceLastName", "Last"),
+      ),
+      null,
+    )
   }
 
   @Test
   fun `can read the configured PDU head information for Gwent`() {
-    notifyService.sendVariationForApprovalEmail("GWENT", mapOf(Pair("key", "value")), REFERENCE)
-    verify(notificationClient).sendEmail(TEMPLATE_ID, "gwent@test.com", mapOf(Pair("key", "value")), REFERENCE)
+    notifyService.sendVariationForApprovalEmail("GWENT", "1", "First", "Last")
+    verify(notificationClient).sendEmail(
+      TEMPLATE_ID,
+      "gwent@test.com",
+      mapOf(
+        Pair("pduHeadFirstName", "Ted"),
+        Pair("licenceFirstName", "First"),
+        Pair("licenceLastName", "Last"),
+      ),
+      null,
+    )
   }
 
   @Test
   fun `swallows the error and does not send email when a PDU head is not configured`() {
-    notifyService.sendVariationForApprovalEmail("NOT-PRESENT", mapOf(Pair("key", "value")), REFERENCE)
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail("NOT-PRESENT", mapOf(Pair("key", "value")), REFERENCE)
+      notifyService.sendVariationForApprovalEmail("NOT-PRESENT", "1", "First", "Last")
     }
     verifyNoInteractions(notificationClient)
   }

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PduHeadProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyServiceTest
 import uk.gov.service.notify.NotificationClient
 
 class NotifyIntegrationTest : IntegrationTestBase() {
@@ -18,19 +17,27 @@ class NotifyIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `check that PDU head contact info is injected from the spring context`() {
-    val templateId = "xxx-xxx-xxx"
     val notifyService = NotifyService(
       enabled = true,
-      licenceApprovedTemplateId = templateId,
-      variationForApprovalTemplateId = templateId,
-      initialLicencePromptTemplateId = templateId,
-      urgentLicencePromptTemplateId = templateId,
+      licenceApprovedTemplateId = "licence-approved",
+      variationForApprovalTemplateId = "variation-for-approval",
+      initialLicencePromptTemplateId = "initial-prompt",
+      urgentLicencePromptTemplateId = "urgent-prompt",
       client = notifyClient,
       pduHeadProperties = pduHeadProperties,
     )
 
-    notifyService.sendVariationForApprovalEmail("N03SNT", mapOf(Pair("key", "value")), "Reference")
+    notifyService.sendVariationForApprovalEmail("N03SNT", "1", "Ryan", "Smith")
 
-    verify(notifyClient).sendEmail(templateId, "swansea@test.co.uk", mapOf(Pair("key", "value")), "Reference")
+    verify(notifyClient).sendEmail(
+      "variation-for-approval",
+      "swansea@test.co.uk",
+      mapOf(
+        Pair("pduHeadFirstName", "Test"),
+        Pair("licenceFirstName", "Ryan"),
+        Pair("licenceLastName", "Smith"),
+      ),
+      null,
+    )
   }
 }
