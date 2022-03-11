@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRe
 import javax.validation.constraints.NotBlank
 
 @Schema(description = "Describes a COM's contact details and the upcoming releases that they must consider for licence creation")
-data class PromptLicenceCreationRequest (
+data class PromptLicenceCreationRequest(
   @Schema(description = "The email address of the COM", example = "jbloggs@probation.gov.uk")
   @field:NotBlank
   val email: String,

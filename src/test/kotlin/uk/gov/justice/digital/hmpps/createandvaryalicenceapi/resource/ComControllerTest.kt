@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")

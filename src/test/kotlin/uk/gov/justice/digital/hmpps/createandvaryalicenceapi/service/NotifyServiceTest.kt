@@ -12,8 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Promp
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
@@ -34,9 +32,12 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence initial licence create email`() {
-    val comToEmail = PromptLicenceCreationRequest(email = EMAIL_ADDRESS, comName = "Joe Bloggs", initialPromptCases = listOf(
-      PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
-    ))
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS, comName = "Joe Bloggs",
+      initialPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
+      )
+    )
     val expectedMap = mapOf(
       Pair("comName", "Joe Bloggs"),
       Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022"))
@@ -48,9 +49,12 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence urgent licence create email`() {
-    val comToEmail = PromptLicenceCreationRequest(email = EMAIL_ADDRESS, comName = "Joe Bloggs", urgentPromptCases = listOf(
-      PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
-    ))
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS, comName = "Joe Bloggs",
+      urgentPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
+      )
+    )
     val expectedMap = mapOf(
       Pair("comName", "Joe Bloggs"),
       Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022"))
@@ -62,7 +66,8 @@ class NotifyServiceTest {
 
   @Test
   fun `No email is sent when notify is not enabled`() {
-    NotifyService(enabled = false,
+    NotifyService(
+      enabled = false,
       licenceApprovedTemplateId = TEMPLATE_ID,
       initialLicencePromptTemplateId = TEMPLATE_ID,
       urgentLicencePromptTemplateId = TEMPLATE_ID,

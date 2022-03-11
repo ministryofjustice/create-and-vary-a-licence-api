@@ -39,11 +39,16 @@ class NotifyService(
       emailAddress,
       mapOf(
         Pair("comName", comName),
-        Pair("prisonersForRelease", cases.map {
-          prisoner -> "${prisoner.name} who will leave custody on ${DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(prisoner.releaseDate)}"
-        }),
+        Pair(
+          "prisonersForRelease",
+          cases.map {
+            prisoner ->
+            "${prisoner.name} who will leave custody on ${DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(prisoner.releaseDate)}"
+          }
+        ),
       ),
-      null)
+      null
+    )
   }
 
   private fun sendEmail(templateId: String, emailAddress: String, values: Map<String, Any>, reference: String?) {
