@@ -9,8 +9,11 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EmailConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PduHeadProperties
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
+import java.time.LocalDate
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
@@ -28,8 +31,10 @@ class NotifyServiceTest {
     enabled = true,
     licenceApprovedTemplateId = TEMPLATE_ID,
     variationForApprovalTemplateId = TEMPLATE_ID,
+    initialLicencePromptTemplateId = TEMPLATE_ID,
+    urgentLicencePromptTemplateId = TEMPLATE_ID,
     client = notificationClient,
-    pduHeadProperties,
+    pduHeadProperties = pduHeadProperties,
   )
 
   @Test
@@ -39,13 +44,49 @@ class NotifyServiceTest {
   }
 
   @Test
+  fun `send licence initial licence create email`() {
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS, comName = "Joe Bloggs",
+      initialPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
+      )
+    )
+    val expectedMap = mapOf(
+      Pair("comName", "Joe Bloggs"),
+      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022"))
+    )
+
+    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send licence urgent licence create email`() {
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS, comName = "Joe Bloggs",
+      urgentPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
+      )
+    )
+    val expectedMap = mapOf(
+      Pair("comName", "Joe Bloggs"),
+      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022"))
+    )
+
+    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
   fun `No email is sent when notify is not enabled`() {
     NotifyService(
       enabled = false,
       licenceApprovedTemplateId = TEMPLATE_ID,
       variationForApprovalTemplateId = TEMPLATE_ID,
+      initialLicencePromptTemplateId = TEMPLATE_ID,
+      urgentLicencePromptTemplateId = TEMPLATE_ID,
       client = notificationClient,
-      pduHeadProperties,
+      pduHeadProperties = pduHeadProperties,
     ).sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
 
     verifyNoInteractions(notificationClient)
