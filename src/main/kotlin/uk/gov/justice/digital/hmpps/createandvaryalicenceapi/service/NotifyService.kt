@@ -27,23 +27,20 @@ class NotifyService(
     sendEmail(licenceApprovedTemplateId, "", values, reference)
   }
 
+  // TODO: Add environment-specific link to approval cases or specific page to approve this variation
   fun sendVariationForApprovalEmail(pduCode: String, licenceId: String, firstName: String, lastName: String) {
-    val pduHead: EmailConfig?
-    try {
-      // TODO: Add environment-specific link to approval cases or specific page to approve this variation
-      pduHead = pduHeadProperties.contacts.getValue(pduCode)
-      if (pduHead.email.isNotBlank()) {
-        val values: Map<String, String> = mapOf(
-          Pair("pduHeadFirstName", pduHead.forename),
-          Pair("licenceFirstName", firstName),
-          Pair("licenceLastName", lastName),
-        )
-        sendEmail(variationForApprovalTemplateId, pduHead.email, values, null)
-      } else {
-        log.error("sendVariationForApproval: An email address was not configured for the head of PDU $pduCode")
-      }
-    } catch (e: NoSuchElementException) {
-      log.error("sendVariationForApproval: No PDU head contact detail configured for $pduCode - No email was sent")
+    val pduHead = pduHeadProperties.contacts
+      .getOrDefault(pduCode, EmailConfig(forename = "", surname = "", email = "", description = ""))
+
+    if (pduHead.email.isNotBlank()) {
+      val values: Map<String, String> = mapOf(
+        Pair("pduHeadFirstName", pduHead.forename),
+        Pair("licenceFirstName", firstName),
+        Pair("licenceLastName", lastName),
+      )
+      sendEmail(variationForApprovalTemplateId, pduHead.email, values, null)
+    } else {
+      log.error("sendVariationForApproval: A contact was not configured for the head of PDU $pduCode")
     }
   }
 
