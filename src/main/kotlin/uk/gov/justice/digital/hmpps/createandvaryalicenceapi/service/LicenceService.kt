@@ -443,6 +443,16 @@ class LicenceService(
         )
       )
     )
+
+    // Notify the head of PDU of this submitted licence variation
+    if (eventType === LicenceEventType.VARIATION_SUBMITTED) {
+      notifyService.sendVariationForApprovalEmail(
+        updatedLicence.probationPduCode!!,
+        licenceId.toString(),
+        updatedLicence.forename!!,
+        updatedLicence.surname!!,
+      )
+    }
   }
 
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {

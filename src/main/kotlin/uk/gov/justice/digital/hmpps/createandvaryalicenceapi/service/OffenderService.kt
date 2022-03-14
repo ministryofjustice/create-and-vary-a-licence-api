@@ -32,7 +32,7 @@ OffenderService(
             licenceId = it.id,
             username = "SYSTEM",
             fullName = "SYSTEM",
-            summary = "COM updated to ${newCom?.firstName} ${newCom?.lastName} on licence for ${it.forename} ${it.surname}",
+            summary = "COM updated to ${newCom.firstName} ${newCom.lastName} on licence for ${it.forename} ${it.surname}",
             detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
           )
         )
