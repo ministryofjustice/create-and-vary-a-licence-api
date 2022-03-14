@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.0.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.0"
   kotlin("plugin.spring") version "1.6.10"
   kotlin("plugin.jpa") version "1.6.10"
   jacoco
@@ -67,11 +67,11 @@ dependencies {
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
+  testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.29")
-  testImplementation("org.mockito:mockito-inline:4.2.0")
+  testImplementation("org.mockito:mockito-inline:4.4.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
 }
