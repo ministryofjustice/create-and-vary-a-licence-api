@@ -127,7 +127,7 @@ pdu:
       surname: 'Cwm'
       description: 'Cwm Taf Morgannwg'
       email: 'cwm.taf@test.co.uk'
-    NO3SW1:
+    N03SW1:
       forename: 'Test'
       surname: 'Cardiff'
       description: 'Cardiff and Vale'
