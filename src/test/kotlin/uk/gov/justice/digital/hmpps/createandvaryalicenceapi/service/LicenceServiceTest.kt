@@ -1002,8 +1002,8 @@ class LicenceServiceTest {
     assertThat(auditCaptor.allValues.size).isEqualTo(2)
 
     assertThat(licenceCaptor.allValues[0])
-      .extracting("id", "statusCode", "updatedByUsername")
-      .isEqualTo(listOf(2L, LicenceStatus.ACTIVE, "smills"))
+      .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedByName")
+      .isEqualTo(listOf(2L, LicenceStatus.ACTIVE, "smills", "smills", "X Y"))
 
     assertThat(licenceCaptor.allValues[1])
       .extracting("id", "statusCode", "updatedByUsername")

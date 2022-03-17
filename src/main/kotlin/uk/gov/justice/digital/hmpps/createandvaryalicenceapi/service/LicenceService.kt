@@ -677,12 +677,15 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val user = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = ACTIVE,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
+      approvedByUsername = username,
+      approvedDate = LocalDateTime.now(),
+      approvedByName = "${user?.firstName} ${user?.lastName}"
     )
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
@@ -704,8 +707,8 @@ class LicenceService(
         licenceId = licenceId,
         eventType = LicenceEventType.VARIATION_APPROVED,
         username = username,
-        forenames = createdBy?.firstName,
-        surname = createdBy?.lastName,
+        forenames = user?.firstName,
+        surname = user?.lastName,
         eventDescription = "Licence variation approved for ${updatedLicenceEntity.forename}${updatedLicenceEntity.surname}",
       )
     )
@@ -716,8 +719,8 @@ class LicenceService(
         licenceId = supersededEntity.id,
         eventType = LicenceEventType.SUPERSEDED,
         username = username,
-        forenames = createdBy?.firstName,
-        surname = createdBy?.lastName,
+        forenames = user?.firstName,
+        surname = user?.lastName,
         eventDescription = "Licence superseded for ${updatedSupersededEntity.forename}${updatedSupersededEntity.surname} by ID $licenceId",
       )
     )
@@ -728,7 +731,7 @@ class LicenceService(
         ModelAuditEvent(
           licenceId = licenceId,
           username = username,
-          fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+          fullName = "${user?.firstName} ${user?.lastName}",
           summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
           detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
         )
@@ -741,7 +744,7 @@ class LicenceService(
         ModelAuditEvent(
           licenceId = supersededEntity.id,
           username = username,
-          fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+          fullName = "${user?.firstName} ${user?.lastName}",
           summary = "Licence superseded for ${licenceEntity.forename} ${licenceEntity.surname} by ID $licenceId",
           detail = "ID ${supersededEntity.id} type ${updatedSupersededEntity.typeCode} status ${updatedSupersededEntity.statusCode.name} version ${updatedSupersededEntity.version}",
         )
