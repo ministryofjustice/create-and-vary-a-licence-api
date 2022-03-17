@@ -90,6 +90,7 @@ management:
       cache:
         time-to-live: 2000ms
 
+# Template IDs for the test Notify account (overridden in production)
 notify:
   enabled: true
   templates:
@@ -132,3 +133,8 @@ pdu:
       surname: 'Cardiff'
       description: 'Cardiff and Vale'
       email: 'cardiff@test.co.uk'
+
+# Overridden in real environments
+self:
+  link: "http://localhost:3000"
+

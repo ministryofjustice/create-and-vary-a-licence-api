@@ -29,6 +29,7 @@ class NotifyServiceTest {
 
   private val notifyService = NotifyService(
     enabled = true,
+    selfLink = "http://somewhere",
     licenceApprovedTemplateId = TEMPLATE_ID,
     variationForApprovalTemplateId = TEMPLATE_ID,
     initialLicencePromptTemplateId = TEMPLATE_ID,
@@ -57,7 +58,8 @@ class NotifyServiceTest {
     )
     val expectedMap = mapOf(
       Pair("comName", "Joe Bloggs"),
-      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022"))
+      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022")),
+      Pair("createLicenceLink", "http://somewhere/licence/create/caseload"),
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -74,7 +76,8 @@ class NotifyServiceTest {
     )
     val expectedMap = mapOf(
       Pair("comName", "Joe Bloggs"),
-      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022"))
+      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022")),
+      Pair("createLicenceLink", "http://somewhere/licence/create/caseload"),
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -85,6 +88,7 @@ class NotifyServiceTest {
   fun `No email is sent when notify is not enabled`() {
     NotifyService(
       enabled = false,
+      selfLink = "http://somewhere",
       licenceApprovedTemplateId = TEMPLATE_ID,
       variationForApprovalTemplateId = TEMPLATE_ID,
       initialLicencePromptTemplateId = TEMPLATE_ID,
@@ -120,6 +124,7 @@ class NotifyServiceTest {
         Pair("pduHeadFirstName", "Bill"),
         Pair("licenceFirstName", "First"),
         Pair("licenceLastName", "Last"),
+        Pair("approvalCasesLink", "http://somewhere/licence/vary-approve/list"),
       ),
       null,
     )
@@ -135,6 +140,7 @@ class NotifyServiceTest {
         Pair("pduHeadFirstName", "Ted"),
         Pair("licenceFirstName", "First"),
         Pair("licenceLastName", "Last"),
+        Pair("approvalCasesLink", "http://somewhere/licence/vary-approve/list"),
       ),
       null,
     )

@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter
 @Service
 class NotifyService(
   @Value("\${notify.enabled}") private val enabled: Boolean,
+  @Value("\${self.link}") private val selfLink: String,
   @Value("\${notify.templates.licenceApproved}") private val licenceApprovedTemplateId: String,
   @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
   @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
@@ -27,7 +28,6 @@ class NotifyService(
     sendEmail(licenceApprovedTemplateId, "", values, reference)
   }
 
-  // TODO: Add environment-specific link to approval cases or specific page to approve this variation
   fun sendVariationForApprovalEmail(pduCode: String, licenceId: String, firstName: String, lastName: String) {
     val pduHead = pduHeadProperties.contacts
       .getOrDefault(pduCode, EmailConfig(forename = "", surname = "", email = "", description = ""))
@@ -37,6 +37,7 @@ class NotifyService(
         Pair("pduHeadFirstName", pduHead.forename),
         Pair("licenceFirstName", firstName),
         Pair("licenceLastName", lastName),
+        Pair("approvalCasesLink", selfLink.plus("/licence/vary-approve/list"))
       )
       sendEmail(variationForApprovalTemplateId, pduHead.email, values, null)
     } else {
@@ -67,6 +68,7 @@ class NotifyService(
             "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
           }
         ),
+        Pair("createLicenceLink", selfLink.plus("/licence/create/caseload"))
       ),
       null
     )
