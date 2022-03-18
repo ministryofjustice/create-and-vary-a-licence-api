@@ -19,6 +19,7 @@ class NotifyIntegrationTest : IntegrationTestBase() {
   fun `check that PDU head contact info is injected from the spring context`() {
     val notifyService = NotifyService(
       enabled = true,
+      selfLink = "http://somewhere",
       licenceApprovedTemplateId = "licence-approved",
       variationForApprovalTemplateId = "variation-for-approval",
       initialLicencePromptTemplateId = "initial-prompt",
@@ -36,6 +37,7 @@ class NotifyIntegrationTest : IntegrationTestBase() {
         Pair("pduHeadFirstName", "Test"),
         Pair("licenceFirstName", "Ryan"),
         Pair("licenceLastName", "Smith"),
+        Pair("approvalCasesLink", "http://somewhere/licence/vary-approve/list"),
       ),
       null,
     )
