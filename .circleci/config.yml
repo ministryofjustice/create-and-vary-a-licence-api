@@ -64,6 +64,7 @@ workflows:
   build-test-and-deploy:
     jobs:
       - hmpps/gradle_owasp_dependency_check:
+          cache_key: "v2_0"
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
           context:
             - hmpps-common-vars
@@ -133,6 +134,7 @@ workflows:
                 - main
     jobs:
       - hmpps/gradle_owasp_dependency_check:
+          cache_key: "v2_0"
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
           context:
             - hmpps-common-vars
