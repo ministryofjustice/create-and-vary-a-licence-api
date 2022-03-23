@@ -47,7 +47,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:3.17.3-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:2.0.25")
