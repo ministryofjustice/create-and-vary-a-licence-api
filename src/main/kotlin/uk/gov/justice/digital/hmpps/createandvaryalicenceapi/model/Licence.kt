@@ -209,4 +209,7 @@ data class Licence(
 
   @Schema(description = "The licence Id which this licence is a variation of")
   val variationOf: Long? = null,
+
+  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  val createdByFullName: String? = null,
 )

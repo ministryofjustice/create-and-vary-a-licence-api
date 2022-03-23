@@ -120,6 +120,15 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `service returns a licence with the full name of the user who created it`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    val licence = service.getLicenceById(1L)
+
+    assertThat(licence.createdByFullName).isEqualTo("X Y")
+  }
+
+  @Test
   fun `service transforms key fields of a licence object correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
@@ -1003,7 +1012,7 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedByName")
-      .isEqualTo(listOf(2L, LicenceStatus.ACTIVE, "smills", "smills", "X Y"))
+      .isEqualTo(listOf(2L, LicenceStatus.VARIATION_APPROVED, "smills", "smills", "X Y"))
 
     assertThat(licenceCaptor.allValues[1])
       .extracting("id", "statusCode", "updatedByUsername")

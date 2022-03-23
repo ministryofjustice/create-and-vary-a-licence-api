@@ -152,6 +152,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
     isVariation = licence.variationOfId != null,
     variationOf = licence.variationOfId,
+    createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
   )
 }
 

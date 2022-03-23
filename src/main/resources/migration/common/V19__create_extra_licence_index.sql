@@ -1,0 +1,1 @@
+CREATE INDEX idx_licence_variation_of_id ON licence(variation_of_id);

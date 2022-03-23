@@ -680,7 +680,7 @@ class LicenceService(
     val user = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = ACTIVE,
+      statusCode = VARIATION_APPROVED,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
       approvedByUsername = username,
