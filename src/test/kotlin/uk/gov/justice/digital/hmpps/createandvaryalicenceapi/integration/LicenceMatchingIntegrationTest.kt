@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -17,9 +18,10 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licences matches - no filters`() {
-    val result = webTestClient.get()
+    val result = webTestClient.post()
       .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(MatchLicencesRequest())
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -45,9 +47,14 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licences matches - by list of staff identifiers`() {
-    val result = webTestClient.get()
-      .uri("/licence/match?staffId=125&staffId=126")
+    val result = webTestClient.post()
+      .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(
+        MatchLicencesRequest(
+          staffId = listOf(125, 126),
+        )
+      )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -71,9 +78,15 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licence matches - by list of staff identifiers and statuses`() {
-    val result = webTestClient.get()
-      .uri("/licence/match?staffId=125&status=ACTIVE")
+    val result = webTestClient.post()
+      .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(
+        MatchLicencesRequest(
+          staffId = listOf(125),
+          status = listOf(LicenceStatus.ACTIVE)
+        )
+      )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -92,9 +105,15 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licence matches - by list of prisons and statuses`() {
-    val result = webTestClient.get()
-      .uri("/licence/match?prison=MDI&prison=BMI&status=APPROVED&status=SUBMITTED")
+    val result = webTestClient.post()
+      .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(
+        MatchLicencesRequest(
+          prison = listOf("MDI", "BMI"),
+          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED)
+        )
+      )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
@@ -119,10 +138,16 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licence matches - no matching filters`() {
-    val result = webTestClient.get()
-      .uri("/licence/match?prison=XXX&status=APPROVED&status=SUBMITTED&status=IN_PROGRESS")
+    val result = webTestClient.post()
+      .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .bodyValue(
+        MatchLicencesRequest(
+          prison = listOf("XXX"),
+          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED, LicenceStatus.IN_PROGRESS)
+        )
+      )
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -137,9 +162,10 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licence matches - sort by conditional release date`() {
-    val result = webTestClient.get()
+    val result = webTestClient.post()
       .uri("/licence/match?sortBy=conditionalReleaseDate&sortOrder=DESC")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(MatchLicencesRequest())
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk

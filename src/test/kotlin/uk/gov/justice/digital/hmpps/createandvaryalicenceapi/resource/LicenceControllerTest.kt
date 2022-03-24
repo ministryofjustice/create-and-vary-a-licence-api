@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -294,10 +295,25 @@ class LicenceControllerTest {
 
   @Test
   fun `match licences by prison code and status`() {
-    val licenceQueryObject = LicenceQueryObject(prisonCodes = listOf("LEI"), statusCodes = listOf(LicenceStatus.APPROVED))
+    val licenceQueryObject = LicenceQueryObject(
+      prisonCodes = listOf("LEI"),
+      statusCodes = listOf(LicenceStatus.APPROVED)
+    )
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
-    val result = mvc.perform(get("/licence/match?prison=LEI&status=APPROVED").accept(APPLICATION_JSON))
+    val result = mvc.perform(
+      post("/licence/match")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(
+            MatchLicencesRequest(
+              prison = listOf("LEI"),
+              status = listOf(LicenceStatus.APPROVED)
+            )
+          )
+        )
+    )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
@@ -318,8 +334,17 @@ class LicenceControllerTest {
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
     val result = mvc.perform(
-      get("/licence/match?staffId=1&staffId=2&staffId=3&status=APPROVED&status=ACTIVE")
+      post("/licence/match")
         .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(
+            MatchLicencesRequest(
+              staffId = listOf(1, 2, 3),
+              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+            )
+          )
+        )
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -341,8 +366,17 @@ class LicenceControllerTest {
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
     val result = mvc.perform(
-      get("/licence/match?pdu=A&pdu=B&pdu=C&status=APPROVED&status=ACTIVE")
+      post("/licence/match")
         .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(
+            MatchLicencesRequest(
+              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+              pdu = listOf("A", "B", "C")
+            )
+          )
+        )
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))

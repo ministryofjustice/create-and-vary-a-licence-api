@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -39,7 +40,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import javax.validation.Valid
 
 @RestController
@@ -328,7 +328,7 @@ class LicenceController(private val licenceService: LicenceService) {
     licenceService.updateBespokeConditions(licenceId, request)
   }
 
-  @GetMapping(value = ["/match"])
+  @PostMapping(value = ["/match"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Get a list of licence summaries matching the supplied criteria.",
@@ -355,16 +355,20 @@ class LicenceController(private val licenceService: LicenceService) {
     ]
   )
   fun getLicencesMatchingCriteria(
-    @RequestParam(name = "prison", required = false) prison: List<String>?,
-    @RequestParam(name = "status", required = false) status: List<LicenceStatus>?,
-    @RequestParam(name = "staffId", required = false) staffId: List<Int>?,
-    @RequestParam(name = "nomsId", required = false) nomsId: List<String>?,
-    @RequestParam(name = "pdu", required = false) pdu: List<String>?,
+    @RequestBody body: MatchLicencesRequest,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?
   ): List<LicenceSummary> {
     return licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(prisonCodes = prison, statusCodes = status, staffIds = staffId, nomsIds = nomsId, pdus = pdu, sortBy = sortBy, sortOrder = sortOrder)
+      LicenceQueryObject(
+        prisonCodes = body.prison,
+        statusCodes = body.status,
+        staffIds = body.staffId,
+        nomsIds = body.nomsId,
+        pdus = body.pdu,
+        sortBy = sortBy,
+        sortOrder = sortOrder
+      )
     )
   }
 
