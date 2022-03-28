@@ -230,6 +230,7 @@ class LicenceService(
       } else {
         it.licence = licenceEntity
         additionalConditions[it.conditionCode] = it
+        additionalConditions[it.conditionCode]?.expandedConditionText = it.conditionText
       }
     }
 
