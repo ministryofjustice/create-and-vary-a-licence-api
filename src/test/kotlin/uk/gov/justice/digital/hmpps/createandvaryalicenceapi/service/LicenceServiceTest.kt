@@ -685,10 +685,13 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditionData(1L, 1L, UpdateAdditionalConditionDataRequest(
-        data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-        expandedConditionText = "expanded text"
-      ))
+      service.updateAdditionalConditionData(
+        1L, 1L,
+        UpdateAdditionalConditionDataRequest(
+          data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
+          expandedConditionText = "expanded text"
+        )
+      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -721,10 +724,13 @@ class LicenceServiceTest {
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditionData(1L, 1L, UpdateAdditionalConditionDataRequest(
-        data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-        expandedConditionText = "expanded text"
-      ))
+      service.updateAdditionalConditionData(
+        1L, 1L,
+        UpdateAdditionalConditionDataRequest(
+          data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
+          expandedConditionText = "expanded text"
+        )
+      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
