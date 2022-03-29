@@ -270,7 +270,8 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
     val updatedAdditionalCondition = additionalCondition.copy(
-      additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
+      additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition),
+      expandedConditionText = request.expandedConditionText
     )
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 

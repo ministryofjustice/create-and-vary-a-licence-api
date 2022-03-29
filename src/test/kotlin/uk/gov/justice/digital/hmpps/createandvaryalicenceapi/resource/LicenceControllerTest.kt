@@ -729,6 +729,9 @@ class LicenceControllerTest {
 
     val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
 
-    val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)))
+    val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
+      data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
+      expandedConditionText = "expanded text"
+    )
   }
 }
