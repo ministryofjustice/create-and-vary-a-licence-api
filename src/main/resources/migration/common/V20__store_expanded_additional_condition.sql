@@ -1,0 +1,1 @@
+ALTER TABLE additional_condition ADD COLUMN expanded_condition_text text NOT NULL DEFAULT ''
