@@ -230,6 +230,7 @@ class LicenceService(
       } else {
         it.licence = licenceEntity
         additionalConditions[it.conditionCode] = it
+        additionalConditions[it.conditionCode]?.expandedConditionText = it.conditionText
       }
     }
 
@@ -269,7 +270,8 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
     val updatedAdditionalCondition = additionalCondition.copy(
-      additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
+      additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition),
+      expandedConditionText = request.expandedConditionText
     )
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 
