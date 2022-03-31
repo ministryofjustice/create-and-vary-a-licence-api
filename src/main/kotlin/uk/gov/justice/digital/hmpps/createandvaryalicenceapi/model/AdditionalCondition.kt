@@ -19,6 +19,9 @@ data class AdditionalCondition(
   @Schema(description = "The textual value for this additional condition", example = "You must not enter the location [DESCRIPTION]")
   val text: String? = null,
 
+  @Schema(description = "The condition text with the users data inserted into the template", example = "You must not enter the location Tesco Superstore")
+  val expandedText: String? = null,
+
   @Schema(description = "The list of data items entered for this additional condition")
   val data: List<AdditionalConditionData> = emptyList(),
 
