@@ -401,8 +401,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.additionalLicenceConditions?.get(0)?.expandedText).isEqualTo("expanded text")
-
     assertThat(result?.additionalLicenceConditions?.get(0)?.data)
       .extracting<Tuple> { tuple(it.field, it.value, it.sequence) }
       .containsAll(
@@ -753,8 +751,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         AdditionalConditionData(field = "field1", value = "value1", sequence = 0),
         AdditionalConditionData(field = "field2", value = "value2", sequence = 1),
         AdditionalConditionData(field = "field3", value = "value3", sequence = 2),
-      ),
-      expandedConditionText = "expanded text"
+      )
     )
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")

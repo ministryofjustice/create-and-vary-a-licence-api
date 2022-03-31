@@ -685,13 +685,7 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditionData(
-        1L, 1L,
-        UpdateAdditionalConditionDataRequest(
-          data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-          expandedConditionText = "expanded text"
-        )
-      )
+      service.updateAdditionalConditionData(1L, 1L, UpdateAdditionalConditionDataRequest(data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0))))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -724,13 +718,7 @@ class LicenceServiceTest {
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditionData(
-        1L, 1L,
-        UpdateAdditionalConditionDataRequest(
-          data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-          expandedConditionText = "expanded text"
-        )
-      )
+      service.updateAdditionalConditionData(1L, 1L, UpdateAdditionalConditionDataRequest(data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0))))
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -802,10 +790,7 @@ class LicenceServiceTest {
         )
       )
 
-    val request = UpdateAdditionalConditionDataRequest(
-      data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-      expandedConditionText = "expanded text"
-    )
+    val request = UpdateAdditionalConditionDataRequest(data = listOf(ModelAdditionalConditionData(field = "field1", value = "value1", sequence = 0)))
 
     service.updateAdditionalConditionData(1L, 1L, request)
 
@@ -816,7 +801,6 @@ class LicenceServiceTest {
 
     verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
 
-    assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
     assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
       AdditionalConditionData(
         id = -1, additionalCondition = anAdditionalConditionEntity, dataSequence = 0, dataField = "field1", dataValue = "value1"

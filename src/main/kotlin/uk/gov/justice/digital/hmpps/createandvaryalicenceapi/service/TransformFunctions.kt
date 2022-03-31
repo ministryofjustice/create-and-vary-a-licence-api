@@ -205,7 +205,6 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
     category = entity.conditionCategory,
     sequence = entity.conditionSequence,
     text = entity.conditionText,
-    expandedText = entity.expandedConditionText,
     data = entity.additionalConditionData.transformToModelAdditionalData(),
     uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
   )
