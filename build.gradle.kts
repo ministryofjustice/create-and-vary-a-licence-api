@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.3"
-  kotlin("plugin.spring") version "1.6.10"
-  kotlin("plugin.jpa") version "1.6.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.5-beta"
+  kotlin("plugin.spring") version "1.6.21"
+  kotlin("plugin.jpa") version "1.6.21"
   jacoco
 }
 
@@ -54,7 +54,7 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.3.3")
+  runtimeOnly("org.postgresql:postgresql:42.3.4")
 
   implementation("com.google.code.gson:gson:2.8.9")
   implementation("io.arrow-kt:arrow-core:1.0.1")
@@ -69,7 +69,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.34.0")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.29")
   testImplementation("org.mockito:mockito-inline:4.4.0")
   testImplementation("io.projectreactor:reactor-test")
