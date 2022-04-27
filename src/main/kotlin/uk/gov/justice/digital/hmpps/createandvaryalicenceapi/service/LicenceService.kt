@@ -826,13 +826,13 @@ class LicenceService(
 
     log.info(
       "Event dates - ID $licenceId " +
-      "CRD ${sentenceDatesRequest.conditionalReleaseDate} " +
-      "ARD ${sentenceDatesRequest.actualReleaseDate} " +
-      "SSD ${sentenceDatesRequest.sentenceStartDate} " +
-      "SED ${sentenceDatesRequest.sentenceEndDate} " +
-      "LED ${sentenceDatesRequest.licenceExpiryDate} " +
-      "TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} " +
-      "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} "
+        "CRD ${sentenceDatesRequest.conditionalReleaseDate} " +
+        "ARD ${sentenceDatesRequest.actualReleaseDate} " +
+        "SSD ${sentenceDatesRequest.sentenceStartDate} " +
+        "SED ${sentenceDatesRequest.sentenceEndDate} " +
+        "LED ${sentenceDatesRequest.licenceExpiryDate} " +
+        "TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} " +
+        "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} "
     )
 
     val updatedLicenceEntity = licenceEntity.copy(
@@ -869,9 +869,7 @@ class LicenceService(
     val tussdChanged = (sentenceDatesRequest.topupSupervisionStartDate?.isEqual(licenceEntity?.topupSupervisionStartDate) == false)
     val tusedChanged = (sentenceDatesRequest.topupSupervisionExpiryDate?.isEqual(licenceEntity?.topupSupervisionExpiryDate) == false)
 
-    val isMaterial =
-      (lsdChanged || ledChanged || tussdChanged || tusedChanged ||
-        (sedChanged && licenceEntity.statusCode == APPROVED))
+    val isMaterial = lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED)
 
     val datesMap = mapOf(
       Pair("Licence start date", lsdChanged),
