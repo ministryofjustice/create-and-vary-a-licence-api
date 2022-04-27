@@ -862,7 +862,7 @@ class LicenceService(
 
     val datesMap = mapOf(
       Pair("Licence start date", lsdChanged),
-      Pair("Licence end date", lsdChanged),
+      Pair("Licence end date", ledChanged),
       Pair("Sentence end date", sedChanged),
       Pair("Top up supervision start date", tussdChanged),
       Pair("Top up supervision end date", tusedChanged),
