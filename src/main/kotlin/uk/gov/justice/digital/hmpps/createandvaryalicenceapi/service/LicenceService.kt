@@ -861,7 +861,7 @@ class LicenceService(
     log.info("Date change flags: LSD $lsdChanged LED $ledChanged SED $sedChanged TUSSD $tussdChanged TUSED $tusedChanged isMaterial $isMaterial")
 
     val datesMap = mapOf(
-      Pair("Licence start date", lsdChanged),
+      Pair("Release date", lsdChanged),
       Pair("Licence end date", ledChanged),
       Pair("Sentence end date", sedChanged),
       Pair("Top up supervision start date", tussdChanged),
