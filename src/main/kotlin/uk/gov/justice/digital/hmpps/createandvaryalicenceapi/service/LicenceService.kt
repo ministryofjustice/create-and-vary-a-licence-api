@@ -815,12 +815,13 @@ class LicenceService(
 
     log.info(
       "Licence dates - ID $licenceId " +
-        "CRD ${licenceEntity?.conditionalReleaseDate}" +
-        "ARD ${licenceEntity?.actualReleaseDate}" +
-        "SSD ${licenceEntity?.sentenceStartDate}" +
-        "SED ${licenceEntity?.sentenceEndDate}" +
-        "LED ${licenceEntity?.licenceExpiryDate}" +
-        "TUSSD ${licenceEntity?.topupSupervisionStartDate}" +
+        "CRD ${licenceEntity?.conditionalReleaseDate} " +
+        "ARD ${licenceEntity?.actualReleaseDate} " +
+        "SSD ${licenceEntity?.sentenceStartDate} " +
+        "SED ${licenceEntity?.sentenceEndDate} " +
+        "LSD ${licenceEntity?.licenceStartDate} " +
+        "LED ${licenceEntity?.licenceExpiryDate} " +
+        "TUSSD ${licenceEntity?.topupSupervisionStartDate} " +
         "TUSED ${licenceEntity?.topupSupervisionExpiryDate}"
     )
 
@@ -830,9 +831,10 @@ class LicenceService(
         "ARD ${sentenceDatesRequest.actualReleaseDate} " +
         "SSD ${sentenceDatesRequest.sentenceStartDate} " +
         "SED ${sentenceDatesRequest.sentenceEndDate} " +
+        "LSD ${sentenceDatesRequest.licenceStartDate} " +
         "LED ${sentenceDatesRequest.licenceExpiryDate} " +
         "TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} " +
-        "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} "
+        "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}"
     )
 
     val updatedLicenceEntity = licenceEntity.copy(
@@ -869,7 +871,9 @@ class LicenceService(
     val tussdChanged = (sentenceDatesRequest.topupSupervisionStartDate?.isEqual(licenceEntity?.topupSupervisionStartDate) == false)
     val tusedChanged = (sentenceDatesRequest.topupSupervisionExpiryDate?.isEqual(licenceEntity?.topupSupervisionExpiryDate) == false)
 
-    val isMaterial = lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED)
+    val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
+
+    log.info("Date change flags: LSD $lsdChanged LED $ledChanged SED $sedChanged TUSSD $tussdChanged TUSED $tusedChanged isMaterial $isMaterial")
 
     val datesMap = mapOf(
       Pair("Licence start date", lsdChanged),
@@ -881,6 +885,7 @@ class LicenceService(
 
     // Notify the COM of any change to material dates on the licence
     if (isMaterial) {
+      log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
       notifyService.sendDatesChangedEmail(
         licenceId.toString(),
         licenceEntity.responsibleCom?.email,
