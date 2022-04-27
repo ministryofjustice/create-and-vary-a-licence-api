@@ -850,21 +850,6 @@ class LicenceService(
       updatedByUsername = username
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
-
-    auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceEntity.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
-          eventType = AuditEventType.SYSTEM_EVENT,
-          summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-        )
-      )
-    )
-
     val lsdChanged = (sentenceDatesRequest.licenceStartDate?.isEqual(licenceEntity?.licenceStartDate) == false)
     val ledChanged = (sentenceDatesRequest.licenceExpiryDate?.isEqual(licenceEntity?.licenceExpiryDate) == false)
     val sedChanged = (sentenceDatesRequest.sentenceEndDate?.isEqual(licenceEntity?.sentenceEndDate) == false)
@@ -895,6 +880,21 @@ class LicenceService(
         datesMap,
       )
     }
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+
+    auditEventRepository.saveAndFlush(
+      transform(
+        ModelAuditEvent(
+          licenceId = licenceEntity.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
+        )
+      )
+    )
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {

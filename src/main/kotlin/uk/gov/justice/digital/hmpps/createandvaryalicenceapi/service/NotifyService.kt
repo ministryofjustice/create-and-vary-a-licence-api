@@ -19,7 +19,7 @@ class NotifyService(
   @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
   @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
-  @Value("\${notify.templates.datesChanged") private val datesChangedTemplateId: String,
+  @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
   private val client: NotificationClient,
   private val pduHeadProperties: PduHeadProperties,
 ) {
@@ -59,11 +59,11 @@ class NotifyService(
       val listOfDateTypes = mutableListOf<String>()
       datesChanged.asSequence().filter { it.value }.forEach { listOfDateTypes.add(it.key) }
 
-      val values: Map<String, String> = mapOf(
+      val values: Map<String, Any> = mapOf(
         Pair("comFullName", comFullName),
         Pair("offenderFullName", offenderFullName),
         Pair("crn", crn!!),
-        Pair("dateDescriptions", listOfDateTypes.toString()),
+        Pair("dateDescriptions", listOfDateTypes),
         Pair("caseloadLink", selfLink.plus("/licence/create/caseload"))
       )
 
