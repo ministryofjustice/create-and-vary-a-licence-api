@@ -88,7 +88,7 @@ class NotifyServiceTest {
   @Test
   fun `send dates changed email to the COM`() {
     val datesChanged = mapOf(
-      Pair("Licence start date", true),
+      Pair("Release date", true),
       Pair("Licence end date", true),
       Pair("Sentence end date", false),
       Pair("Top up supervision start date", false),
@@ -108,7 +108,7 @@ class NotifyServiceTest {
       Pair("comFullName", "Joe Bloggs"),
       Pair("offenderFullName", "James Jonas"),
       Pair("crn", "X11111"),
-      Pair("dateDescriptions", listOf("Licence start date", "Licence end date")),
+      Pair("dateDescriptions", listOf("Release date", "Licence end date")),
       Pair("caseloadLink", "http://somewhere/licence/create/caseload")
     )
 

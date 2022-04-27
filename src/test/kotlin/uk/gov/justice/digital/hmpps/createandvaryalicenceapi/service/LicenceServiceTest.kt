@@ -974,7 +974,7 @@ class LicenceServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Licence start date", true),
+        Pair("Release date", true),
         Pair("Licence end date", true),
         Pair("Sentence end date", true),
         Pair("Top up supervision start date", true),
