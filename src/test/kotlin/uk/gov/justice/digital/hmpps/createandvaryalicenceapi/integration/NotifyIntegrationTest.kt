@@ -24,6 +24,7 @@ class NotifyIntegrationTest : IntegrationTestBase() {
       variationForApprovalTemplateId = "variation-for-approval",
       initialLicencePromptTemplateId = "initial-prompt",
       urgentLicencePromptTemplateId = "urgent-prompt",
+      datesChangedTemplateId = "dates-changed",
       client = notifyClient,
       pduHeadProperties = pduHeadProperties,
     )

@@ -34,6 +34,7 @@ class NotifyServiceTest {
     variationForApprovalTemplateId = TEMPLATE_ID,
     initialLicencePromptTemplateId = TEMPLATE_ID,
     urgentLicencePromptTemplateId = TEMPLATE_ID,
+    datesChangedTemplateId = TEMPLATE_ID,
     client = notificationClient,
     pduHeadProperties = pduHeadProperties,
   )
@@ -85,6 +86,36 @@ class NotifyServiceTest {
   }
 
   @Test
+  fun `send dates changed email to the COM`() {
+    val datesChanged = mapOf(
+      Pair("Licence start date", true),
+      Pair("Licence end date", true),
+      Pair("Sentence end date", false),
+      Pair("Top up supervision start date", false),
+      Pair("Top up supervision end date", false),
+    )
+
+    notifyService.sendDatesChangedEmail(
+      "1",
+      EMAIL_ADDRESS,
+      "Joe Bloggs",
+      "James Jonas",
+      "X11111",
+      datesChanged,
+    )
+
+    val expectedMap = mapOf(
+      Pair("comFullName", "Joe Bloggs"),
+      Pair("offenderFullName", "James Jonas"),
+      Pair("crn", "X11111"),
+      Pair("dateDescriptions", "[Licence start date, Licence end date]"),
+      Pair("caseloadLink", "http://somewhere/licence/create/caseload")
+    )
+
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
   fun `No email is sent when notify is not enabled`() {
     NotifyService(
       enabled = false,
@@ -93,6 +124,7 @@ class NotifyServiceTest {
       variationForApprovalTemplateId = TEMPLATE_ID,
       initialLicencePromptTemplateId = TEMPLATE_ID,
       urgentLicencePromptTemplateId = TEMPLATE_ID,
+      datesChangedTemplateId = TEMPLATE_ID,
       client = notificationClient,
       pduHeadProperties = pduHeadProperties,
     ).sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
