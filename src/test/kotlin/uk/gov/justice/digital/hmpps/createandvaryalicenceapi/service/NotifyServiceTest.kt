@@ -108,7 +108,7 @@ class NotifyServiceTest {
       Pair("comFullName", "Joe Bloggs"),
       Pair("offenderFullName", "James Jonas"),
       Pair("crn", "X11111"),
-      Pair("dateDescriptions", "[Licence start date, Licence end date]"),
+      Pair("dateDescriptions", listOf("Licence start date", "Licence end date")),
       Pair("caseloadLink", "http://somewhere/licence/create/caseload")
     )
 
