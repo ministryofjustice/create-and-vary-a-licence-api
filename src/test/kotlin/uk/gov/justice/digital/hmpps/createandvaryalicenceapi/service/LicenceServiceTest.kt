@@ -966,6 +966,21 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        Pair("Licence start date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
   }
 
   @Test

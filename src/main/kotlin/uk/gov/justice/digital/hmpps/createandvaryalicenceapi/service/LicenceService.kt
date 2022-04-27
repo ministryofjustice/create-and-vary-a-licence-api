@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -812,6 +813,28 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    log.info(
+      "Licence dates - ID $licenceId " +
+        "CRD ${licenceEntity?.conditionalReleaseDate}" +
+        "ARD ${licenceEntity?.actualReleaseDate}" +
+        "SSD ${licenceEntity?.sentenceStartDate}" +
+        "SED ${licenceEntity?.sentenceEndDate}" +
+        "LED ${licenceEntity?.licenceExpiryDate}" +
+        "TUSSD ${licenceEntity?.topupSupervisionStartDate}" +
+        "TUSED ${licenceEntity?.topupSupervisionExpiryDate}"
+    )
+
+    log.info(
+      "Event dates - ID $licenceId " +
+      "CRD ${sentenceDatesRequest.conditionalReleaseDate} " +
+      "ARD ${sentenceDatesRequest.actualReleaseDate} " +
+      "SSD ${sentenceDatesRequest.sentenceStartDate} " +
+      "SED ${sentenceDatesRequest.sentenceEndDate} " +
+      "LED ${sentenceDatesRequest.licenceExpiryDate} " +
+      "TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} " +
+      "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} "
+    )
+
     val updatedLicenceEntity = licenceEntity.copy(
       conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
@@ -839,10 +862,44 @@ class LicenceService(
         )
       )
     )
+
+    val lsdChanged = (sentenceDatesRequest.licenceStartDate?.isEqual(licenceEntity?.licenceStartDate) == false)
+    val ledChanged = (sentenceDatesRequest.licenceExpiryDate?.isEqual(licenceEntity?.licenceExpiryDate) == false)
+    val sedChanged = (sentenceDatesRequest.sentenceEndDate?.isEqual(licenceEntity?.sentenceEndDate) == false)
+    val tussdChanged = (sentenceDatesRequest.topupSupervisionStartDate?.isEqual(licenceEntity?.topupSupervisionStartDate) == false)
+    val tusedChanged = (sentenceDatesRequest.topupSupervisionExpiryDate?.isEqual(licenceEntity?.topupSupervisionExpiryDate) == false)
+
+    val isMaterial =
+      (lsdChanged || ledChanged || tussdChanged || tusedChanged ||
+        (sedChanged && licenceEntity.statusCode == APPROVED))
+
+    val datesMap = mapOf(
+      Pair("Licence start date", lsdChanged),
+      Pair("Licence end date", lsdChanged),
+      Pair("Sentence end date", sedChanged),
+      Pair("Top up supervision start date", tussdChanged),
+      Pair("Top up supervision end date", tusedChanged),
+    )
+
+    // Notify the COM of any change to material dates on the licence
+    if (isMaterial) {
+      notifyService.sendDatesChangedEmail(
+        licenceId.toString(),
+        licenceEntity.responsibleCom?.email,
+        "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+        "${licenceEntity.forename} ${licenceEntity.surname}",
+        licenceEntity.crn,
+        datesMap,
+      )
+    }
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
     val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
     return inFlight.isNotEmpty()
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

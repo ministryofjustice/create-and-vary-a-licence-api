@@ -98,6 +98,7 @@ notify:
     variationForApproval: a9c38c33-8aa9-428b-b486-9f1fb1e51a39
     initialLicencePrompt: 9f0cbdfd-70d2-435b-b36a-c85719776479
     urgentLicencePrompt: e18cd289-fb1b-47bc-86e3-20382ddb4f21
+    datesChanged: f5681362-619f-4b3a-881f-01195bd4c581
 
 # Used when running locally (dev profile) or whilst running tests (test profile)
 # These values are overridden by namespace secrets in all Kubernetes environments

@@ -19,6 +19,7 @@ class NotifyService(
   @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
   @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
+  @Value("\${notify.templates.datesChanged") private val datesChangedTemplateId: String,
   private val client: NotificationClient,
   private val pduHeadProperties: PduHeadProperties,
 ) {
@@ -42,6 +43,33 @@ class NotifyService(
       sendEmail(variationForApprovalTemplateId, pduHead.email, values, null)
     } else {
       log.error("sendVariationForApproval: A contact was not configured for the head of PDU $pduCode")
+    }
+  }
+
+  fun sendDatesChangedEmail(
+    licenceId: String,
+    emailAddress: String?,
+    comFullName: String,
+    offenderFullName: String,
+    crn: String?,
+    datesChanged: Map<String, Boolean>
+  ) {
+    if (emailAddress?.isNotBlank() == true) {
+      // For all the dates with the change flag set to true get their descriptions as a list
+      val listOfDateTypes = mutableListOf<String>()
+      datesChanged.asSequence().filter { it.value }.forEach { listOfDateTypes.add(it.key) }
+
+      val values: Map<String, String> = mapOf(
+        Pair("comFullName", comFullName),
+        Pair("offenderFullName", offenderFullName),
+        Pair("crn", crn!!),
+        Pair("dateDescriptions", listOfDateTypes.toString()),
+        Pair("caseloadLink", selfLink.plus("/licence/create/caseload"))
+      )
+
+      sendEmail(datesChangedTemplateId, emailAddress, values, null)
+    } else {
+      log.error("sendDatesChangedEmail: The COM email address was not present to inform of a dates change for licence Id $licenceId")
     }
   }
 
