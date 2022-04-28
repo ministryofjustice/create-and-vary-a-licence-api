@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # This script is used to run the Create and Vary a licence API locally, to interact with
 # existing Postresql, localstack, prison-api and hmpps-auth containers.
@@ -17,6 +18,7 @@ export SERVER_PORT=8089
 # Matches with the seeded client details in hmpps-auth for its dev profile
 export SYSTEM_CLIENT_ID=create-and-vary-a-licence-admin
 export SYSTEM_CLIENT_SECRET=client_secret
+export NOTIFY_API_KEY=notify_key
 
 # Provide the DB connection details to local container-hosted Postgresql DB
 # Match with the credentials set in create-and-vary-a-licence/docker-compose.yml

@@ -30,7 +30,7 @@ Tools required:
 Start up the docker dependencies using the docker-compose file in the `create-and-vary-a-licence` service
 
 There is a script to help, which sets local profiles, port and DB connection properties to the 
-values required.
+values required. Rename run-local.dist to run-local.sh and enter the credentials for each env value where needed, then run:
 
 `$ ./run-local.sh`
 
