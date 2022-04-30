@@ -363,7 +363,7 @@ class LicenceService(
     )
   }
 
-  private fun getAuditEventType(request: StatusUpdateRequest): AuditEventType  {
+  private fun getAuditEventType(request: StatusUpdateRequest): AuditEventType {
     return if (request.username == "SYSTEM") {
       AuditEventType.SYSTEM_EVENT
     } else {
