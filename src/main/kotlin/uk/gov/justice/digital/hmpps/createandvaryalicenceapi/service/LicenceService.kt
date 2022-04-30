@@ -355,11 +355,20 @@ class LicenceService(
           licenceId = licenceId,
           username = request.username,
           fullName = request.fullName,
+          eventType = getAuditEventType(request),
           summary = summaryText,
           detail = detailText,
         )
       )
     )
+  }
+
+  private fun getAuditEventType(request: StatusUpdateRequest): AuditEventType  {
+    return if (request.username == "SYSTEM") {
+      AuditEventType.SYSTEM_EVENT
+    } else {
+      AuditEventType.USER_EVENT
+    }
   }
 
   private fun recordLicenceEventForStatus(licenceId: Long, licenceEntity: EntityLicence, request: StatusUpdateRequest) {
