@@ -49,7 +49,6 @@ OffenderService(
     }
   }
 
-  
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
     val inFlightLicenceStatuses = listOf(
