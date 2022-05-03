@@ -18,7 +18,15 @@ OffenderService(
 
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
-    val inFlightLicenceStatuses = listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+    val inFlightLicenceStatuses = listOf(
+      LicenceStatus.IN_PROGRESS,
+      LicenceStatus.SUBMITTED,
+      LicenceStatus.APPROVED,
+      LicenceStatus.VARIATION_IN_PROGRESS,
+      LicenceStatus.VARIATION_SUBMITTED,
+      LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.ACTIVE
+    )
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
     // Update the in-flight licences for this person on probation
@@ -41,9 +49,18 @@ OffenderService(
     }
   }
 
+  
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
-    val inFlightLicenceStatuses = listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+    val inFlightLicenceStatuses = listOf(
+      LicenceStatus.IN_PROGRESS,
+      LicenceStatus.SUBMITTED,
+      LicenceStatus.APPROVED,
+      LicenceStatus.VARIATION_IN_PROGRESS,
+      LicenceStatus.VARIATION_SUBMITTED,
+      LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.ACTIVE
+    )
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
     var probationRegionChanged = false
