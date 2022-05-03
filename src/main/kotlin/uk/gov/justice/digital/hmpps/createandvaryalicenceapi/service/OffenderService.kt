@@ -25,6 +25,7 @@ OffenderService(
       LicenceStatus.VARIATION_IN_PROGRESS,
       LicenceStatus.VARIATION_SUBMITTED,
       LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.VARIATION_REJECTED,
       LicenceStatus.ACTIVE
     )
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
@@ -58,6 +59,7 @@ OffenderService(
       LicenceStatus.VARIATION_IN_PROGRESS,
       LicenceStatus.VARIATION_SUBMITTED,
       LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.VARIATION_REJECTED,
       LicenceStatus.ACTIVE
     )
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)

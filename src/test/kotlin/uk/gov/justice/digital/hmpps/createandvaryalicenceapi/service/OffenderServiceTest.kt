@@ -43,7 +43,16 @@ class OffenderServiceTest {
     verify(licenceRepository, times(1))
       .findAllByCrnAndStatusCodeIn(
         "exampleCrn",
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE
+        )
       )
 
     verify(licenceRepository, times(1))
@@ -79,7 +88,16 @@ class OffenderServiceTest {
     verify(licenceRepository, times(1))
       .findAllByCrnAndStatusCodeIn(
         "exampleCrn",
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE
+        )
       )
 
     verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
@@ -110,7 +128,16 @@ class OffenderServiceTest {
     verify(licenceRepository, times(1))
       .findAllByCrnAndStatusCodeIn(
         "exampleCrn",
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE
+        )
       )
 
     verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
