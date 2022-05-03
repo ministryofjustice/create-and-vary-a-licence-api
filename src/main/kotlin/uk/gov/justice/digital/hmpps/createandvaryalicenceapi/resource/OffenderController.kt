@@ -103,6 +103,6 @@ class OffenderController(private val offenderService: OffenderService, private v
     @PathVariable crn: String,
     @RequestBody body: UpdateProbationTeamRequest
   ) {
-    this.offenderService.updateProbationRegion(crn, body)
+    this.offenderService.updateProbationTeam(crn, body)
   }
 }

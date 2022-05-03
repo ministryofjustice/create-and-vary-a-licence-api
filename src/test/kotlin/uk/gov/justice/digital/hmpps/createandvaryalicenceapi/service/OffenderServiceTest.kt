@@ -74,7 +74,7 @@ class OffenderServiceTest {
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
-    service.updateProbationRegion("exampleCrn", newProbationRegionDetails)
+    service.updateProbationTeam("exampleCrn", newProbationRegionDetails)
 
     verify(licenceRepository, times(1))
       .findAllByCrnAndStatusCodeIn(
@@ -93,7 +93,7 @@ class OffenderServiceTest {
   fun `does not update licences with probation region if it has not changed`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
 
-    service.updateProbationRegion(
+    service.updateProbationTeam(
       "exampleCrn",
       UpdateProbationTeamRequest(
         probationAreaCode = "N01",

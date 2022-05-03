@@ -93,6 +93,6 @@ class OffenderControllerTest {
 
     mvc.perform(request).andExpect(status().isOk)
 
-    verify(offenderService, times(1)).updateProbationRegion("exampleCrn", body)
+    verify(offenderService, times(1)).updateProbationTeam("exampleCrn", body)
   }
 }

@@ -42,7 +42,7 @@ OffenderService(
   }
 
   @Transactional
-  fun updateProbationRegion(crn: String, request: UpdateProbationTeamRequest) {
+  fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
     val inFlightLicenceStatuses = listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
