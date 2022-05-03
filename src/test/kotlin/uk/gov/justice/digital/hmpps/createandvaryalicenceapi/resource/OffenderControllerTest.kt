@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 
@@ -74,5 +75,24 @@ class OffenderControllerTest {
 
     verify(comService, times(1)).updateComDetails(body)
     verify(offenderService, times(1)).updateOffenderWithResponsibleCom("exampleCrn", expectedCom)
+  }
+
+  @Test
+  fun `update offender with new probation region`() {
+    val body = UpdateProbationTeamRequest(
+      probationAreaCode = "N02",
+      probationPduCode = "PDU2",
+      probationLauCode = "LAU2",
+      probationTeamCode = "TEAM2"
+    )
+
+    val request = put("/offender/crn/exampleCrn/probation-team")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(mapper.writeValueAsBytes(body))
+
+    mvc.perform(request).andExpect(status().isOk)
+
+    verify(offenderService, times(1)).updateProbationRegion("exampleCrn", body)
   }
 }
