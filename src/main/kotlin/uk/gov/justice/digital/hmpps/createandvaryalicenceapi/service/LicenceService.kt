@@ -412,20 +412,20 @@ class LicenceService(
   }
 
   @Transactional
-  fun submitLicence(licenceId: Long, notifyRequest: NotifyRequest) {
+  fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-//    val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-//      ?: throw ValidationException("Staff with username $username not found")
+    val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+      ?: throw ValidationException("Staff with username $username not found")
 
     val newStatus = if (licenceEntity.variationOfId == null) SUBMITTED else VARIATION_SUBMITTED
 
     val updatedLicence = licenceEntity.copy(
       statusCode = newStatus,
-//      submittedBy = submitter,
+      submittedBy = submitter,
       updatedByUsername = username,
       dateLastUpdated = LocalDateTime.now()
     )
@@ -439,8 +439,8 @@ class LicenceService(
         licenceId = licenceId,
         eventType = eventType,
         username = username,
-//        forenames = submitter.firstName,
-//        surname = submitter.lastName,
+        forenames = submitter.firstName,
+        surname = submitter.lastName,
         eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
       )
     )
@@ -450,7 +450,7 @@ class LicenceService(
         ModelAuditEvent(
           licenceId = licenceId,
           username = username,
-//          fullName = "${submitter.firstName} ${submitter.lastName}",
+          fullName = "${submitter.firstName} ${submitter.lastName}",
           summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
           detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
         )
@@ -459,12 +459,14 @@ class LicenceService(
 
     // Notify the head of PDU of this submitted licence variation
     if (eventType === LicenceEventType.VARIATION_SUBMITTED) {
-      notifyService.sendVariationForApprovalEmail(
-        notifyRequest,
-        licenceId.toString(),
-        updatedLicence.forename!!,
-        updatedLicence.surname!!,
-      )
+      notifyRequest.forEach {
+        notifyService.sendVariationForApprovalEmail(
+          it,
+          licenceId.toString(),
+          updatedLicence.forename!!,
+          updatedLicence.surname!!,
+        )
+      }
     }
   }
 
