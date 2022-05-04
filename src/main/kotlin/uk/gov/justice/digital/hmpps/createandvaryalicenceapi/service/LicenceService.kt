@@ -412,7 +412,7 @@ class LicenceService(
   }
 
   @Transactional
-  fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>) {
+  fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>?) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -459,7 +459,7 @@ class LicenceService(
 
     // Notify the head of PDU of this submitted licence variation
     if (eventType === LicenceEventType.VARIATION_SUBMITTED) {
-      notifyRequest.forEach {
+      notifyRequest?.forEach {
         notifyService.sendVariationForApprovalEmail(
           it,
           licenceId.toString(),

@@ -578,7 +578,7 @@ class LicenceController(private val licenceService: LicenceService) {
   )
   fun submitLicence(
     @PathVariable("licenceId") licenceId: Long,
-    @RequestBody request: List<NotifyRequest>
+    @RequestBody request: List<NotifyRequest>?
   ) {
     return licenceService.submitLicence(licenceId, request)
   }
