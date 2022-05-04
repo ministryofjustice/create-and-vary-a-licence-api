@@ -100,7 +100,7 @@ class NotifyService(
     cases.map { prisoner ->
       var promptType = "REMINDER"
       if (templateId == initialLicencePromptTemplateId) {
-          promptType = "INITIAL PROMPT"
+        promptType = "INITIAL PROMPT"
       }
       log.info("Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}")
     }
