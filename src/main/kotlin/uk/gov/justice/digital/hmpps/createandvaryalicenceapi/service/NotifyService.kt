@@ -36,6 +36,7 @@ class NotifyService(
         Pair("approvalCasesLink", selfLink.plus("/licence/vary-approve/list"))
       )
       sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
+      log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
     } else {
       log.error("sendVariationForApproval: A contact was not found for the PDU head for licence ID: $licenceId")
     }
@@ -63,6 +64,7 @@ class NotifyService(
       )
 
       sendEmail(datesChangedTemplateId, emailAddress, values, null)
+      log.info("Notification sent to $emailAddress DATES CHANGED for $licenceId $offenderFullName")
     } else {
       log.error("sendDatesChangedEmail: The COM email address was not present to inform of a dates change for licence Id $licenceId")
     }
@@ -95,6 +97,13 @@ class NotifyService(
       ),
       null
     )
+    cases.map { prisoner ->
+      var promptType = "REMINDER"
+      if (templateId == initialLicencePromptTemplateId) {
+        promptType = "INITIAL PROMPT"
+      }
+      log.info("Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}")
+    }
   }
 
   private fun sendEmail(templateId: String, emailAddress: String, values: Map<String, Any>, reference: String?) {
