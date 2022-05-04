@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -411,20 +412,20 @@ class LicenceService(
   }
 
   @Transactional
-  fun submitLicence(licenceId: Long) {
+  fun submitLicence(licenceId: Long, notifyRequest: NotifyRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw ValidationException("Staff with username $username not found")
+//    val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+//      ?: throw ValidationException("Staff with username $username not found")
 
     val newStatus = if (licenceEntity.variationOfId == null) SUBMITTED else VARIATION_SUBMITTED
 
     val updatedLicence = licenceEntity.copy(
       statusCode = newStatus,
-      submittedBy = submitter,
+//      submittedBy = submitter,
       updatedByUsername = username,
       dateLastUpdated = LocalDateTime.now()
     )
@@ -438,8 +439,8 @@ class LicenceService(
         licenceId = licenceId,
         eventType = eventType,
         username = username,
-        forenames = submitter.firstName,
-        surname = submitter.lastName,
+//        forenames = submitter.firstName,
+//        surname = submitter.lastName,
         eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
       )
     )
@@ -449,7 +450,7 @@ class LicenceService(
         ModelAuditEvent(
           licenceId = licenceId,
           username = username,
-          fullName = "${submitter.firstName} ${submitter.lastName}",
+//          fullName = "${submitter.firstName} ${submitter.lastName}",
           summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
           detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
         )
@@ -459,7 +460,7 @@ class LicenceService(
     // Notify the head of PDU of this submitted licence variation
     if (eventType === LicenceEventType.VARIATION_SUBMITTED) {
       notifyService.sendVariationForApprovalEmail(
-        updatedLicence.probationPduCode!!,
+        notifyRequest,
         licenceId.toString(),
         updatedLicence.forename!!,
         updatedLicence.surname!!,
