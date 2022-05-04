@@ -31,7 +31,7 @@ class NotifyService(
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
         Pair("pduHeadFirstName", notifyRequest.name),
-        Pair("licenceFirstName",firstName),
+        Pair("licenceFirstName", firstName),
         Pair("licenceLastName", lastName),
         Pair("approvalCasesLink", selfLink.plus("/licence/vary-approve/list"))
       )
