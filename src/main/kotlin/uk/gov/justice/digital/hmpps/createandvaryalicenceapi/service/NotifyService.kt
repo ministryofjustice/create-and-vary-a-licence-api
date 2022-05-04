@@ -30,7 +30,7 @@ class NotifyService(
   fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
-        Pair("pduHeadFirstName", notifyRequest.name),
+        Pair("pduHeadName", notifyRequest.name),
         Pair("licenceFirstName", firstName),
         Pair("licenceLastName", lastName),
         Pair("approvalCasesLink", selfLink.plus("/licence/vary-approve/list"))
