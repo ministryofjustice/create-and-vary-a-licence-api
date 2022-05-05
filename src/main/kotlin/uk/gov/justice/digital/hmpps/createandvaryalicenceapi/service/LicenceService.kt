@@ -372,10 +372,11 @@ class LicenceService(
   }
 
   private fun recordLicenceEventForStatus(licenceId: Long, licenceEntity: EntityLicence, request: StatusUpdateRequest) {
-    // Only interested when moving to the APPROVED or ACTIVE status codes
+    // Only interested when moving to the APPROVED, ACTIVE or INACTIVE states
     val eventType = when (licenceEntity.statusCode) {
       APPROVED -> LicenceEventType.APPROVED
       ACTIVE -> LicenceEventType.ACTIVATED
+      INACTIVE -> LicenceEventType.SUPERSEDED
       else -> return
     }
 
@@ -684,10 +685,7 @@ class LicenceService(
 
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
+    val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val username = SecurityContextHolder.getContext().authentication.name
     val user = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
@@ -699,21 +697,9 @@ class LicenceService(
       approvedDate = LocalDateTime.now(),
       approvedByName = "${user?.firstName} ${user?.lastName}"
     )
+
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
-    // Find the superseded licence and set it to INACTIVE
-    val supersededEntity = licenceRepository
-      .findById(licenceEntity.variationOfId!!)
-      .orElseThrow { EntityNotFoundException("${licenceEntity.variationOfId}") }
-
-    val updatedSupersededEntity = supersededEntity.copy(
-      statusCode = INACTIVE,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
-    )
-    licenceRepository.saveAndFlush(updatedSupersededEntity)
-
-    // Create a licence event to show the variation was approved
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
@@ -725,19 +711,6 @@ class LicenceService(
       )
     )
 
-    // Create a licence event to show the original licence was superseded
-    licenceEventRepository.saveAndFlush(
-      EntityLicenceEvent(
-        licenceId = supersededEntity.id,
-        eventType = LicenceEventType.SUPERSEDED,
-        username = username,
-        forenames = user?.firstName,
-        surname = user?.lastName,
-        eventDescription = "Licence superseded for ${updatedSupersededEntity.forename}${updatedSupersededEntity.surname} by ID $licenceId",
-      )
-    )
-
-    // Audit event for the newly ACTIVATED licence
     auditEventRepository.saveAndFlush(
       transform(
         ModelAuditEvent(
@@ -746,19 +719,6 @@ class LicenceService(
           fullName = "${user?.firstName} ${user?.lastName}",
           summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
           detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
-        )
-      )
-    )
-
-    // Audit event for the superseded INACTIVE licence
-    auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = supersededEntity.id,
-          username = username,
-          fullName = "${user?.firstName} ${user?.lastName}",
-          summary = "Licence superseded for ${licenceEntity.forename} ${licenceEntity.surname} by ID $licenceId",
-          detail = "ID ${supersededEntity.id} type ${updatedSupersededEntity.typeCode} status ${updatedSupersededEntity.statusCode.name} version ${updatedSupersededEntity.version}",
         )
       )
     )

@@ -1019,7 +1019,6 @@ class LicenceServiceTest {
     val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
 
     whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(aLicenceEntity.copy(id = 2, variationOfId = 1L)))
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1029,41 +1028,28 @@ class LicenceServiceTest {
     service.approveLicenceVariation(2L)
 
     verify(licenceRepository, times(1)).findById(2L)
-    verify(licenceRepository, times(1)).findById(1L)
 
-    // Capture all calls to licence, history and audit saveAndFlush - they will be a list
-    verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
-    verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
-    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    // Capture calls to licence, history and audit saveAndFlush - as a list
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     // Check all calls were made
-    assertThat(licenceCaptor.allValues.size).isEqualTo(2)
-    assertThat(eventCaptor.allValues.size).isEqualTo(2)
-    assertThat(auditCaptor.allValues.size).isEqualTo(2)
+    assertThat(licenceCaptor.allValues.size).isEqualTo(1)
+    assertThat(eventCaptor.allValues.size).isEqualTo(1)
+    assertThat(auditCaptor.allValues.size).isEqualTo(1)
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedByName")
       .isEqualTo(listOf(2L, LicenceStatus.VARIATION_APPROVED, "smills", "smills", "X Y"))
 
-    assertThat(licenceCaptor.allValues[1])
-      .extracting("id", "statusCode", "updatedByUsername")
-      .isEqualTo(listOf(1L, LicenceStatus.INACTIVE, "smills"))
-
     assertThat(eventCaptor.allValues[0])
       .extracting("licenceId", "eventType", "username")
       .isEqualTo(listOf(2L, LicenceEventType.VARIATION_APPROVED, "smills"))
 
-    assertThat(eventCaptor.allValues[1])
-      .extracting("licenceId", "eventType", "username")
-      .isEqualTo(listOf(1L, LicenceEventType.SUPERSEDED, "smills"))
-
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(2L, "smills", "X Y", "Licence variation approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
-
-    assertThat(auditCaptor.allValues[1])
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence superseded for ${aLicenceEntity.forename} ${aLicenceEntity.surname} by ID 2"))
   }
 
   private companion object {
