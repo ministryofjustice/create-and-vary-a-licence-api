@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -433,10 +434,11 @@ class LicenceControllerTest {
       put("/licence/id/4/submit")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(listOf(NotifyRequest("testName", "testEmail"))))
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).submitLicence(4)
+    verify(licenceService, times(1)).submitLicence(4, listOf(NotifyRequest("testName", "testEmail")))
   }
 
   @Test
