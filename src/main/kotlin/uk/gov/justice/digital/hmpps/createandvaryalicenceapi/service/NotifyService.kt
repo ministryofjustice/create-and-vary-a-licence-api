@@ -3,8 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EmailConfig
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PduHeadProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
@@ -20,6 +21,7 @@ class NotifyService(
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
   @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
   private val client: NotificationClient,
+  private val pduHeadProperties: PduHeadProperties,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
     // Hobbled this email - no current requirement to send this out - blanked out the email address to avoid sending
@@ -27,18 +29,21 @@ class NotifyService(
     sendEmail(licenceApprovedTemplateId, "", values, reference)
   }
 
-  fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String) {
-    if (notifyRequest.email != null && notifyRequest.name != null) {
+  fun sendVariationForApprovalEmail(pduCode: String, licenceId: String, firstName: String, lastName: String) {
+    val pduHead = pduHeadProperties.contacts
+      .getOrDefault(pduCode, EmailConfig(forename = "", surname = "", email = "", description = ""))
+
+    if (pduHead.email.isNotBlank()) {
       val values: Map<String, String> = mapOf(
-        Pair("pduHeadName", notifyRequest.name),
+        Pair("pduHeadName", pduHead.forename),
         Pair("licenceFirstName", firstName),
         Pair("licenceLastName", lastName),
         Pair("approvalCasesLink", selfLink.plus("/licence/vary-approve/list"))
       )
-      sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
-      log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
+      sendEmail(variationForApprovalTemplateId, pduHead.email, values, null)
+      log.info("Notification sent to ${pduHead.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
     } else {
-      log.error("sendVariationForApproval: A contact was not found for the PDU head for licence ID: $licenceId")
+      log.error("sendVariationForApproval: A contact was not configured for the head of PDU $pduCode")
     }
   }
 
