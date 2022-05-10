@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -412,7 +413,7 @@ class LicenceService(
   }
 
   @Transactional
-  fun submitLicence(licenceId: Long) {
+  fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>?) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -459,12 +460,14 @@ class LicenceService(
 
     // Notify the head of PDU of this submitted licence variation
     if (eventType === LicenceEventType.VARIATION_SUBMITTED) {
-      notifyService.sendVariationForApprovalEmail(
-        updatedLicence.probationPduCode!!,
-        licenceId.toString(),
-        updatedLicence.forename!!,
-        updatedLicence.surname!!,
-      )
+      notifyRequest?.forEach {
+        notifyService.sendVariationForApprovalEmail(
+          it,
+          licenceId.toString(),
+          updatedLicence.forename!!,
+          updatedLicence.surname!!,
+        )
+      }
     }
   }
 

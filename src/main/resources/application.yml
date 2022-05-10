@@ -100,41 +100,6 @@ notify:
     urgentLicencePrompt: e18cd289-fb1b-47bc-86e3-20382ddb4f21
     datesChanged: f5681362-619f-4b3a-881f-01195bd4c581
 
-# Used when running locally (dev profile) or whilst running tests (test profile)
-# These values are overridden by namespace secrets in all Kubernetes environments
-pdu:
-  contacts:
-    WPTNWS:
-      forename: 'Test'
-      surname: 'North'
-      description: 'North Wales'
-      email: 'north.wales@test.co.uk'
-    WPTWES:
-      forename: 'Test'
-      surname: 'Dyfed'
-      description: 'Dyfed Powys'
-      email: 'dyfed.powys@test.co.uk'
-    WPTGWT:
-      forename: 'Test'
-      surname: 'Gwent'
-      description: 'Gwent'
-      email: 'gwent@test.co.uk'
-    N03SNT:
-      forename: 'Test'
-      surname: 'Swansea'
-      description: 'Swansea, Neath, Port Talbot'
-      email: 'swansea@test.co.uk'
-    N03CTM:
-      forename: 'Test'
-      surname: 'Cwm'
-      description: 'Cwm Taf Morgannwg'
-      email: 'cwm.taf@test.co.uk'
-    N03SW1:
-      forename: 'Test'
-      surname: 'Cardiff'
-      description: 'Cardiff and Vale'
-      email: 'cardiff@test.co.uk'
-
 # Overridden in real environments
 self:
   link: "http://localhost:3000"

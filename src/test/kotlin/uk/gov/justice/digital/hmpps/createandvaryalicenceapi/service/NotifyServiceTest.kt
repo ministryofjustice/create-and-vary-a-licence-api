@@ -7,9 +7,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EmailConfig
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PduHeadProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
@@ -17,15 +16,6 @@ import java.time.LocalDate
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
-
-  private val cardiffPduHead = EmailConfig(forename = "Bill", surname = "Excellent", description = "Cardiff", email = "cardiff@test.com")
-  private val gwentPduHead = EmailConfig(forename = "Ted", surname = "Excellent", description = "Gwent", email = "gwent@test.com")
-  private val pduHeadProperties = PduHeadProperties(
-    contacts = mapOf(
-      Pair("CARDIFF", cardiffPduHead),
-      Pair("GWENT", gwentPduHead),
-    )
-  )
 
   private val notifyService = NotifyService(
     enabled = true,
@@ -36,7 +26,6 @@ class NotifyServiceTest {
     urgentLicencePromptTemplateId = TEMPLATE_ID,
     datesChangedTemplateId = TEMPLATE_ID,
     client = notificationClient,
-    pduHeadProperties = pduHeadProperties,
   )
 
   @Test
@@ -126,8 +115,7 @@ class NotifyServiceTest {
       urgentLicencePromptTemplateId = TEMPLATE_ID,
       datesChangedTemplateId = TEMPLATE_ID,
       client = notificationClient,
-      pduHeadProperties = pduHeadProperties,
-    ).sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
+    ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
     verifyNoInteractions(notificationClient)
   }
@@ -142,46 +130,14 @@ class NotifyServiceTest {
   fun `Notify service catches and swallows exceptions`() {
     whenever(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(NotificationClientException("error"))
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
+      notifyService.sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
     }
   }
 
   @Test
-  fun `can read the configured PDU head information for Cardiff`() {
-    notifyService.sendVariationForApprovalEmail("CARDIFF", "1", "First", "Last")
-    verify(notificationClient).sendEmail(
-      TEMPLATE_ID,
-      "cardiff@test.com",
-      mapOf(
-        Pair("pduHeadName", "Bill"),
-        Pair("licenceFirstName", "First"),
-        Pair("licenceLastName", "Last"),
-        Pair("approvalCasesLink", "http://somewhere/licence/vary-approve/list"),
-      ),
-      null,
-    )
-  }
-
-  @Test
-  fun `can read the configured PDU head information for Gwent`() {
-    notifyService.sendVariationForApprovalEmail("GWENT", "1", "First", "Last")
-    verify(notificationClient).sendEmail(
-      TEMPLATE_ID,
-      "gwent@test.com",
-      mapOf(
-        Pair("pduHeadName", "Ted"),
-        Pair("licenceFirstName", "First"),
-        Pair("licenceLastName", "Last"),
-        Pair("approvalCasesLink", "http://somewhere/licence/vary-approve/list"),
-      ),
-      null,
-    )
-  }
-
-  @Test
-  fun `swallows the error and does not send email when a PDU head is not configured`() {
+  fun `swallows the error and does not send email when contact info is null`() {
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail("NOT-PRESENT", "1", "First", "Last")
+      notifyService.sendVariationForApprovalEmail(NotifyRequest(null, null), "1", "First", "Last")
     }
     verifyNoInteractions(notificationClient)
   }
