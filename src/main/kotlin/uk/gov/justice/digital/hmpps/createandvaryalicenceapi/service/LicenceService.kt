@@ -83,6 +83,8 @@ class LicenceService(
       ?: throw RuntimeException("Staff with username $username not found")
 
     val licence = transform(request)
+
+    licence.dateCreated = LocalDateTime.now()
     licence.responsibleCom = responsibleCom
     licence.createdBy = createdBy
     licence.mailingList.add(responsibleCom)
