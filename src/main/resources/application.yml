@@ -99,6 +99,8 @@ notify:
     initialLicencePrompt: 9f0cbdfd-70d2-435b-b36a-c85719776479
     urgentLicencePrompt: e18cd289-fb1b-47bc-86e3-20382ddb4f21
     datesChanged: f5681362-619f-4b3a-881f-01195bd4c581
+    variationApproved: b9e7846e-aa92-483d-acac-6114d7908f13
+    variationReferred: 34e1ec13-548c-425c-8de7-d58509bb7383
 
 # Overridden in real environments
 self:

@@ -663,7 +663,6 @@ class LicenceService(
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
-    // Create a licence event to show the variation was referred and track the reason
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
@@ -685,6 +684,15 @@ class LicenceService(
           detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
         )
       )
+    )
+
+    notifyService.sendVariationReferredEmail(
+      licenceEntity.createdBy?.email ?: "",
+      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
+      licenceEntity.responsibleCom?.email ?: "",
+      "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceId.toString(),
     )
   }
 
@@ -726,6 +734,15 @@ class LicenceService(
           detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
         )
       )
+    )
+
+    notifyService.sendVariationApprovedEmail(
+      licenceEntity.createdBy?.email ?: "",
+      "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
+      licenceEntity.responsibleCom?.email ?: "",
+      "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceId.toString(),
     )
   }
 
