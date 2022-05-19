@@ -194,7 +194,7 @@ class NotifyService(
   }
 }
 
-data class Contact (
+data class Contact(
   var email: String,
   var name: String
 )
