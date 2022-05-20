@@ -1013,6 +1013,15 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    verify(notifyService, times(1)).sendVariationReferredEmail(
+      aLicenceEntity.createdBy?.email ?: "",
+      "${aLicenceEntity.createdBy?.firstName} ${aLicenceEntity.createdBy?.lastName}",
+      aLicenceEntity.responsibleCom?.email ?: "",
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      "1",
+    )
   }
 
   @Test
@@ -1051,6 +1060,15 @@ class LicenceServiceTest {
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(2L, "smills", "X Y", "Licence variation approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    verify(notifyService, times(1)).sendVariationApprovedEmail(
+      aLicenceEntity.createdBy?.email ?: "",
+      "${aLicenceEntity.createdBy?.firstName} ${aLicenceEntity.createdBy?.lastName}",
+      aLicenceEntity.responsibleCom?.email ?: "",
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      "2",
+    )
   }
 
   private companion object {

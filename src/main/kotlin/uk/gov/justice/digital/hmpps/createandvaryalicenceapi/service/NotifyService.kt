@@ -19,6 +19,8 @@ class NotifyService(
   @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
   @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
+  @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
+  @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   private val client: NotificationClient,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
@@ -38,7 +40,53 @@ class NotifyService(
       sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
       log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
     } else {
-      log.error("sendVariationForApproval: A contact was not found for the PDU head for licence ID: $licenceId")
+      log.error("Notification failed (variationSubmitted) - email address not present for the PDU head for licence ID: $licenceId")
+    }
+  }
+
+  fun sendVariationApprovedEmail(
+    creatorEmail: String,
+    creatorName: String,
+    comEmail: String,
+    comName: String,
+    popName: String,
+    licenceId: String
+  ) {
+    val contacts = getContacts(creatorEmail, creatorName, comEmail, comName)
+    contacts.forEach {
+      val values: Map<String, String> = mapOf(
+        Pair("comName", it.name),
+        Pair("fullName", popName),
+        Pair("caseListLink", selfLink.plus("/licence/vary/caseload"))
+      )
+      sendEmail(variationApprovedTemplateId, it.email, values, null)
+      log.info("Notification sent to ${it.email} VARIATION APPROVED for $licenceId $popName")
+    }
+    if (contacts.isEmpty()) {
+      log.error("Notification failed (variationApproved) - email addresses not present for licence ID: $licenceId")
+    }
+  }
+
+  fun sendVariationReferredEmail(
+    creatorEmail: String,
+    creatorName: String,
+    comEmail: String,
+    comName: String,
+    popName: String,
+    licenceId: String
+  ) {
+    val contacts = getContacts(creatorEmail, creatorName, comEmail, comName)
+    contacts.forEach {
+      val values: Map<String, String> = mapOf(
+        Pair("comName", it.name),
+        Pair("fullName", popName),
+        Pair("caseListLink", selfLink.plus("/licence/vary/caseload"))
+      )
+      sendEmail(variationReferredTemplateId, it.email, values, null)
+      log.info("Notification sent to ${it.email} VARIATION REFERRED for $licenceId $popName")
+    }
+    if (contacts.isEmpty()) {
+      log.error("Notification failed (variationReferred) - email addresses not present for licence ID: $licenceId")
     }
   }
 
@@ -66,7 +114,7 @@ class NotifyService(
       sendEmail(datesChangedTemplateId, emailAddress, values, null)
       log.info("Notification sent to $emailAddress DATES CHANGED for $licenceId $offenderFullName")
     } else {
-      log.error("sendDatesChangedEmail: The COM email address was not present to inform of a dates change for licence Id $licenceId")
+      log.error("Notification failed (datesChangedEmail) - email address not present for licence Id $licenceId")
     }
   }
 
@@ -113,18 +161,40 @@ class NotifyService(
     }
 
     if (emailAddress.isBlank()) {
-      log.info("Blank email address: Did not send notification for $templateId ref $reference")
+      log.info("Notification - blank email address: Did not send for template ID $templateId ref $reference")
       return
     }
 
     try {
       client.sendEmail(templateId, emailAddress, values, reference)
     } catch (e: NotificationClientException) {
-      log.error("Email notification failed - templateId $templateId to $emailAddress", e)
+      log.error("Notification failed - templateId $templateId to $emailAddress", e)
     }
+  }
+
+  private fun getContacts(creatorEmail: String, creatorName: String, comEmail: String, comName: String): List<Contact> {
+    val contacts = mutableListOf<Contact>()
+    val creatorIsBlank = creatorEmail.isEmpty()
+    val comIsBlank = comEmail.isEmpty()
+    if (creatorIsBlank && !comIsBlank) {
+      contacts.add(Contact(comEmail, comName))
+    } else if (comIsBlank && !creatorIsBlank) {
+      contacts.add(Contact(creatorEmail, creatorName))
+    } else if (creatorEmail == comEmail) {
+      contacts.add(Contact(creatorEmail, creatorName))
+    } else {
+      contacts.add(Contact(creatorEmail, creatorName))
+      contacts.add(Contact(comEmail, comName))
+    }
+    return contacts.toList()
   }
 
   companion object {
     private val log = LoggerFactory.getLogger(NotifyService::class.java)
   }
 }
+
+data class Contact(
+  var email: String,
+  var name: String
+)

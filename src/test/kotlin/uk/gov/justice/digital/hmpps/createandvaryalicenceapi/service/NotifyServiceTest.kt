@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -25,6 +27,8 @@ class NotifyServiceTest {
     initialLicencePromptTemplateId = TEMPLATE_ID,
     urgentLicencePromptTemplateId = TEMPLATE_ID,
     datesChangedTemplateId = TEMPLATE_ID,
+    variationApprovedTemplateId = TEMPLATE_ID,
+    variationReferredTemplateId = TEMPLATE_ID,
     client = notificationClient,
   )
 
@@ -105,6 +109,79 @@ class NotifyServiceTest {
   }
 
   @Test
+  fun `send variation approved email - just the creator`() {
+    notifyService.sendVariationApprovedEmail(
+      creatorEmail = EMAIL_ADDRESS,
+      creatorName = "Joe Bloggs",
+      comEmail = "",
+      comName = "",
+      popName = "Peter Falk",
+      licenceId = "1",
+    )
+
+    val expectedMap = mapOf(
+      Pair("comName", "Joe Bloggs"),
+      Pair("fullName", "Peter Falk"),
+      Pair("caseListLink", "http://somewhere/licence/vary/caseload")
+    )
+
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send variation approved email - creator and COM are the same`() {
+    notifyService.sendVariationApprovedEmail(
+      creatorEmail = EMAIL_ADDRESS,
+      creatorName = "Joe Bloggs",
+      comEmail = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
+      popName = "Peter Falk",
+      licenceId = "1",
+    )
+
+    val expectedMap = mapOf(
+      Pair("comName", "Joe Bloggs"),
+      Pair("fullName", "Peter Falk"),
+      Pair("caseListLink", "http://somewhere/licence/vary/caseload")
+    )
+
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send variation approved email - creator and COM are different`() {
+    notifyService.sendVariationApprovedEmail(
+      creatorEmail = EMAIL_ADDRESS,
+      creatorName = "Joe Bloggs",
+      comEmail = EMAIL_ADDRESS2,
+      comName = "Joe Bloggs-Two",
+      popName = "Peter Falk",
+      licenceId = "1",
+    )
+    verify(notificationClient, times(2)).sendEmail(any(), any(), any(), anyOrNull())
+  }
+
+  @Test
+  fun `send variation referred email - just the creator`() {
+    notifyService.sendVariationReferredEmail(
+      creatorEmail = EMAIL_ADDRESS,
+      creatorName = "Joe Bloggs",
+      comEmail = "",
+      comName = "",
+      popName = "Peter Falk",
+      licenceId = "1",
+    )
+
+    val expectedMap = mapOf(
+      Pair("comName", "Joe Bloggs"),
+      Pair("fullName", "Peter Falk"),
+      Pair("caseListLink", "http://somewhere/licence/vary/caseload")
+    )
+
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
   fun `No email is sent when notify is not enabled`() {
     NotifyService(
       enabled = false,
@@ -114,6 +191,8 @@ class NotifyServiceTest {
       initialLicencePromptTemplateId = TEMPLATE_ID,
       urgentLicencePromptTemplateId = TEMPLATE_ID,
       datesChangedTemplateId = TEMPLATE_ID,
+      variationApprovedTemplateId = TEMPLATE_ID,
+      variationReferredTemplateId = TEMPLATE_ID,
       client = notificationClient,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
@@ -145,6 +224,7 @@ class NotifyServiceTest {
   private companion object {
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
     const val EMAIL_ADDRESS = "joe.bloggs@mail.com"
+    const val EMAIL_ADDRESS2 = "joe.bloggs2@mail.com"
     const val REFERENCE = "licence-id"
   }
 }
