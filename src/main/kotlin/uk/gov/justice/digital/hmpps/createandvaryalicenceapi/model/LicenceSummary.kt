@@ -73,4 +73,7 @@ data class LicenceSummary(
 
   @Schema(description = "The username of the responsible probation officer", example = "jsmith")
   val comUsername: String?,
+
+  @Schema(description = "The bookingId associated with the licence", example = "773722")
+  val bookingId: Long?,
 )

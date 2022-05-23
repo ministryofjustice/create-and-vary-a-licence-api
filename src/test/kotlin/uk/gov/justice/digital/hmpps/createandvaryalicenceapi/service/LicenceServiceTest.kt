@@ -1197,6 +1197,7 @@ class LicenceServiceTest {
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       comUsername = "smills",
+      bookingId = 54321
     )
   }
 }
