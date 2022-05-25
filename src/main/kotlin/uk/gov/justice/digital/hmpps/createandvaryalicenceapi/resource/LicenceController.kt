@@ -541,6 +541,42 @@ class LicenceController(private val licenceService: LicenceService) {
     licenceService.activateLicences(request)
   }
 
+  @PostMapping(value = ["/inactivate-licences"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Inactivate licences in bulk",
+    description = "Set licence statuses to INACTIVE. Accepts a list of licence IDs. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Inactivate Licences"
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
+  fun inactivateLicences(
+    @Valid @RequestBody request: List<Long>
+  ) {
+    licenceService.inActivateLicences(request)
+  }
+
   @PutMapping(value = ["/id/{licenceId}/submit"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
