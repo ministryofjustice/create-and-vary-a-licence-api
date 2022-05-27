@@ -518,6 +518,41 @@ class LicenceService(
   }
 
   @Transactional
+  fun inActivateLicences(licenceIds: List<Long>) {
+    val matchingLicences = licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
+    val inActivatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = INACTIVE) }
+    if (inActivatedLicences.isNotEmpty()) {
+      licenceRepository.saveAllAndFlush(inActivatedLicences)
+
+      inActivatedLicences.map { licence ->
+        auditEventRepository.saveAndFlush(
+          transform(
+            ModelAuditEvent(
+              licenceId = licence.id,
+              username = "SYSTEM",
+              fullName = "SYSTEM",
+              eventType = AuditEventType.SYSTEM_EVENT,
+              summary = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
+              detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+            )
+          )
+        )
+
+        licenceEventRepository.saveAndFlush(
+          EntityLicenceEvent(
+            licenceId = licence.id,
+            eventType = LicenceEventType.SUPERSEDED,
+            username = "SYSTEM",
+            forenames = "SYSTEM",
+            surname = "SYSTEM",
+            eventDescription = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
+          )
+        )
+      }
+    }
+  }
+
+  @Transactional
   fun createVariation(licenceId: Long): LicenceSummary {
     val licenceEntity = licenceRepository
       .findById(licenceId)

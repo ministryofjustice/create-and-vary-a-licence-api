@@ -764,6 +764,29 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `inactivate licences sets licence statuses to INACTIVE`() {
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+    service.inActivateLicences(listOf(1L))
+
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(listOf(1L, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"))
+  }
+
+  @Test
   fun `activate licences does not activate if status is not approved`() {
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
 
