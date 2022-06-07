@@ -55,8 +55,8 @@ class OffenderIntegrationTest : IntegrationTestBase() {
   )
   fun `Update an offender's inflight licences with new COM details`() {
     val requestBody = UpdateComRequest(
-      staffIdentifier = 3000,
-      staffUsername = "joebloggs",
+      staffIdentifier = 2000,
+      staffUsername = "test-client",
       staffEmail = "joebloggs@probation.gov.uk",
       firstName = "Joseph",
       lastName = "Bloggs",
@@ -73,7 +73,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     val licence = licenceRepository.findById(1L).orElseThrow()
     assertThat(licence.responsibleCom)
       .extracting("staffIdentifier", "username", "email", "firstName", "lastName")
-      .isEqualTo(listOf(3000L, "joebloggs", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
+      .isEqualTo(listOf(2000L, "test-client", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
   }
 
   @Test

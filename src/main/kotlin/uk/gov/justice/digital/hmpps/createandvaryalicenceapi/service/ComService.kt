@@ -16,7 +16,12 @@ class ComService(
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
     val com = this.communityOffenderManagerRepository.findByStaffIdentifier(comDetails.staffIdentifier)
     val updatedCom = if (com !== null) {
-      com.copy(email = comDetails.staffEmail, firstName = comDetails.firstName, lastName = comDetails.lastName, lastUpdatedTimestamp = LocalDateTime.now())
+      com.copy(
+        email = comDetails.staffEmail,
+        firstName = comDetails.firstName,
+        lastName = comDetails.lastName,
+        lastUpdatedTimestamp = LocalDateTime.now()
+      )
     } else {
       CommunityOffenderManager(
         username = comDetails.staffUsername,
