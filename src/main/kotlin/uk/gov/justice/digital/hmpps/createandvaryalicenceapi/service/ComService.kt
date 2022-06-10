@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 class ComService(
   private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
 ) {
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
@@ -73,4 +74,3 @@ class ComService(
     return com
   }
 }
-
