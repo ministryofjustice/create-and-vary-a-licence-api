@@ -32,8 +32,8 @@ class ComServiceTest {
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifier(any()))
-      .thenReturn(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B"))
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
+      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
@@ -47,8 +47,37 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifier(3000)
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(3000, "jbloggs")
     verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `does not update COM with same details`() {
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "joebloggs",
+      email = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
+      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs123@probation.gov.uk", firstName = "X", lastName = "Y")))
+
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+
+    val comDetails = UpdateComRequest(
+      staffIdentifier = 2000,
+      staffUsername = "joebloggs",
+      staffEmail = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    service.updateComDetails(comDetails)
+
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(2000, "joebloggs")
+    verify(communityOffenderManagerRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -61,7 +90,7 @@ class ComServiceTest {
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifier(any())).thenReturn(null)
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any())).thenReturn(null)
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
@@ -74,7 +103,65 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifier(3000)
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(3000, "jbloggs")
     verify(communityOffenderManagerRepository, times(1)).saveAndFlush(expectedCom)
+  }
+
+  @Test
+  fun `updates existing COM with new username`() {
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "joebloggs",
+      email = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
+      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+
+    val comDetails = UpdateComRequest(
+      staffIdentifier = 2000,
+      staffUsername = "jbloggsnew1",
+      staffEmail = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    service.updateComDetails(comDetails)
+
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(2000, "jbloggsnew1")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `updates existing COM with new staffIdentifier`() {
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2001,
+      username = "joebloggs",
+      email = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
+      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+
+    val comDetails = UpdateComRequest(
+      staffIdentifier = 2001,
+      staffUsername = "joebloggs",
+      staffEmail = "jbloggs123@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    service.updateComDetails(comDetails)
+
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(2001, "joebloggs")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
   }
 }
