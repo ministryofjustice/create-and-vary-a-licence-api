@@ -876,7 +876,7 @@ class LicenceService(
       updatedByUsername = username
     )
 
-    val lsdChanged = nullableDatesDiffer(sentenceDatesRequest.licenceStartDate, licenceEntity?.licenceExpiryDate)
+    val lsdChanged = nullableDatesDiffer(sentenceDatesRequest.licenceStartDate, licenceEntity?.licenceStartDate)
     val ledChanged = nullableDatesDiffer(sentenceDatesRequest.licenceExpiryDate, licenceEntity?.licenceExpiryDate)
     val sedChanged = nullableDatesDiffer(sentenceDatesRequest.sentenceEndDate, licenceEntity?.sentenceEndDate)
     val tussdChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionStartDate, licenceEntity?.topupSupervisionStartDate)
