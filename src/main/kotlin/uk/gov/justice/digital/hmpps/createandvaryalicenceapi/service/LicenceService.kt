@@ -876,13 +876,33 @@ class LicenceService(
       updatedByUsername = username
     )
 
-    val lsdChanged = (sentenceDatesRequest.licenceStartDate?.isEqual(licenceEntity?.licenceStartDate) == false)
-    val ledChanged = (sentenceDatesRequest.licenceExpiryDate?.isEqual(licenceEntity?.licenceExpiryDate) == false)
-    val sedChanged = (sentenceDatesRequest.sentenceEndDate?.isEqual(licenceEntity?.sentenceEndDate) == false)
-    val tussdChanged = (sentenceDatesRequest.topupSupervisionStartDate?.isEqual(licenceEntity?.topupSupervisionStartDate) == false)
-    val tusedChanged = (sentenceDatesRequest.topupSupervisionExpiryDate?.isEqual(licenceEntity?.topupSupervisionExpiryDate) == false)
+    val lsdChanged = (
+      sentenceDatesRequest.licenceStartDate?.let { it != licenceEntity?.licenceStartDate }
+        ?: licenceEntity?.licenceExpiryDate
+      ) != null
 
-    val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
+    val ledChanged = (
+      sentenceDatesRequest.licenceExpiryDate?.let { it != licenceEntity?.licenceExpiryDate }
+        ?: licenceEntity?.licenceExpiryDate
+      ) == true
+
+    val sedChanged = (
+      sentenceDatesRequest.sentenceEndDate?.let { it != licenceEntity?.sentenceEndDate }
+        ?: licenceEntity?.sentenceEndDate
+      ) == true
+
+    val tussdChanged = (
+      sentenceDatesRequest.topupSupervisionStartDate?.let { it != licenceEntity?.topupSupervisionStartDate }
+        ?: licenceEntity?.topupSupervisionStartDate
+      ) == true
+
+    val tusedChanged = (
+      sentenceDatesRequest.topupSupervisionExpiryDate?.let { it != licenceEntity?.topupSupervisionExpiryDate }
+        ?: licenceEntity?.topupSupervisionExpiryDate
+      ) != null
+
+    val isMaterial =
+      (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
 
     log.info("Date change flags: LSD $lsdChanged LED $ledChanged SED $sedChanged TUSSD $tussdChanged TUSED $tusedChanged isMaterial $isMaterial")
 
