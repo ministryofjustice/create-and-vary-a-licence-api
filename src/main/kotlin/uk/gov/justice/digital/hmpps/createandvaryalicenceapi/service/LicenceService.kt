@@ -876,30 +876,11 @@ class LicenceService(
       updatedByUsername = username
     )
 
-    val lsdChanged = (
-      sentenceDatesRequest.licenceStartDate?.let { it != licenceEntity?.licenceStartDate }
-        ?: licenceEntity?.licenceExpiryDate
-      ) != null
-
-    val ledChanged = (
-      sentenceDatesRequest.licenceExpiryDate?.let { it != licenceEntity?.licenceExpiryDate }
-        ?: licenceEntity?.licenceExpiryDate
-      ) == true
-
-    val sedChanged = (
-      sentenceDatesRequest.sentenceEndDate?.let { it != licenceEntity?.sentenceEndDate }
-        ?: licenceEntity?.sentenceEndDate
-      ) == true
-
-    val tussdChanged = (
-      sentenceDatesRequest.topupSupervisionStartDate?.let { it != licenceEntity?.topupSupervisionStartDate }
-        ?: licenceEntity?.topupSupervisionStartDate
-      ) == true
-
-    val tusedChanged = (
-      sentenceDatesRequest.topupSupervisionExpiryDate?.let { it != licenceEntity?.topupSupervisionExpiryDate }
-        ?: licenceEntity?.topupSupervisionExpiryDate
-      ) != null
+    val lsdChanged = nullableDatesDiffer(sentenceDatesRequest.licenceStartDate, licenceEntity?.licenceExpiryDate)
+    val ledChanged = nullableDatesDiffer(sentenceDatesRequest.licenceExpiryDate, licenceEntity?.licenceExpiryDate)
+    val sedChanged = nullableDatesDiffer(sentenceDatesRequest.sentenceEndDate, licenceEntity?.sentenceEndDate)
+    val tussdChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionStartDate, licenceEntity?.topupSupervisionStartDate)
+    val tusedChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionExpiryDate, licenceEntity?.topupSupervisionExpiryDate)
 
     val isMaterial =
       (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
