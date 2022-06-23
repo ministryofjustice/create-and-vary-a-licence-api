@@ -1008,6 +1008,77 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `update sentence dates persists the updated entity with null dates`() {
+    val licence = aLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = null,
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate",
+        "actualReleaseDate",
+        "sentenceStartDate",
+        "sentenceEndDate",
+        "licenceStartDate",
+        "licenceExpiryDate",
+        "topupSupervisionStartDate",
+        "topupSupervisionExpiryDate",
+        "updatedByUsername"
+      )
+      .isEqualTo(
+        listOf(
+          LocalDate.parse("2023-09-11"),
+          null,
+          LocalDate.parse("2018-10-22"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          null,
+          "smills"
+        )
+      )
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${licence.forename} ${licence.surname}"))
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      licence.responsibleCom?.email,
+      "${licence.responsibleCom?.firstName} ${licence.responsibleCom?.lastName}",
+      "${licence.forename} ${licence.surname}",
+      licence.crn,
+      mapOf(
+        Pair("Release date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
+  }
+
+  @Test
   fun `referring a licence variation`() {
     val referVariationRequest = ReferVariationRequest(reasonForReferral = "reason")
     val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")

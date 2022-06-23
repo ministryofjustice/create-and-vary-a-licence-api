@@ -876,13 +876,14 @@ class LicenceService(
       updatedByUsername = username
     )
 
-    val lsdChanged = (sentenceDatesRequest.licenceStartDate?.isEqual(licenceEntity?.licenceStartDate) == false)
-    val ledChanged = (sentenceDatesRequest.licenceExpiryDate?.isEqual(licenceEntity?.licenceExpiryDate) == false)
-    val sedChanged = (sentenceDatesRequest.sentenceEndDate?.isEqual(licenceEntity?.sentenceEndDate) == false)
-    val tussdChanged = (sentenceDatesRequest.topupSupervisionStartDate?.isEqual(licenceEntity?.topupSupervisionStartDate) == false)
-    val tusedChanged = (sentenceDatesRequest.topupSupervisionExpiryDate?.isEqual(licenceEntity?.topupSupervisionExpiryDate) == false)
+    val lsdChanged = nullableDatesDiffer(sentenceDatesRequest.licenceStartDate, licenceEntity?.licenceStartDate)
+    val ledChanged = nullableDatesDiffer(sentenceDatesRequest.licenceExpiryDate, licenceEntity?.licenceExpiryDate)
+    val sedChanged = nullableDatesDiffer(sentenceDatesRequest.sentenceEndDate, licenceEntity?.sentenceEndDate)
+    val tussdChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionStartDate, licenceEntity?.topupSupervisionStartDate)
+    val tusedChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionExpiryDate, licenceEntity?.topupSupervisionExpiryDate)
 
-    val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
+    val isMaterial =
+      (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
 
     log.info("Date change flags: LSD $lsdChanged LED $ledChanged SED $sedChanged TUSSD $tussdChanged TUSED $tusedChanged isMaterial $isMaterial")
 
