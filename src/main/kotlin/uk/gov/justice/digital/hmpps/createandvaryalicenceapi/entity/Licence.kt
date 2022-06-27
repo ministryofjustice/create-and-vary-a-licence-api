@@ -86,7 +86,13 @@ data class Licence(
   val dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(
+    mappedBy = "licence",
+    fetch = FetchType.EAGER,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+    targetEntity = StandardCondition::class
+  )
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   var standardConditions: List<StandardCondition> = emptyList(),

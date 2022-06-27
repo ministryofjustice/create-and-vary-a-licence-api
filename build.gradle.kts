@@ -5,6 +5,14 @@ plugins {
   jacoco
 }
 
+allOpen {
+  annotations(
+    "javax.persistence.Entity",
+    "javax.persistence.MappedSuperclass",
+    "javax.persistence.Embeddable"
+  )
+}
+
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
