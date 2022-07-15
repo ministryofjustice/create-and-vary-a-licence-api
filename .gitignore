@@ -70,3 +70,6 @@ ecr.repo
 
 #Helm
 **/Chart.lock
+
+# ignore local script containing env credentials
+run-local.sh
