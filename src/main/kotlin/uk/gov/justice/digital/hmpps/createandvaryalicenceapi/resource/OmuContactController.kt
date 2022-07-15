@@ -37,6 +37,7 @@ class OmuContactController(private val omuService: OmuService) {
       ApiResponse(
         responseCode = "200",
         description = "The OMU was found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))]
       ),
       ApiResponse(
         responseCode = "404",
@@ -55,7 +56,7 @@ class OmuContactController(private val omuService: OmuService) {
       )
     ]
   )
-  fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact? {
+  fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact {
     return this.omuService.getOmuContactEmail(prisonCode)
   }
 
@@ -71,6 +72,7 @@ class OmuContactController(private val omuService: OmuService) {
       ApiResponse(
         responseCode = "200",
         description = "The OMU was updated",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))]
       ),
       ApiResponse(
         responseCode = "400",
@@ -92,7 +94,7 @@ class OmuContactController(private val omuService: OmuService) {
   fun updateOmuEmail(
     @Valid @RequestBody body: UpdateOmuEmailRequest,
     @PathVariable("prisonCode") prisonCode: String,
-  ): OmuContact? {
+  ): OmuContact {
     return this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
   }
 

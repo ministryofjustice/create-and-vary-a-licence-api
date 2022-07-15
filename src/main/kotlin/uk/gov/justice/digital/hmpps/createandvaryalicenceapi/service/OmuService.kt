@@ -12,7 +12,7 @@ class OmuService(private val omuRepository: OmuContactRepository) {
   /**
    * Get OMU email address belonging to the prison code
    */
-  fun getOmuContactEmail(prisonCode: String): OmuContact? {
+  fun getOmuContactEmail(prisonCode: String): OmuContact {
     return omuRepository.findByPrisonCode(prisonCode) ?: throw EntityNotFoundException(prisonCode)
   }
 
