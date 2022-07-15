@@ -87,21 +87,6 @@ class OmuContactControllerTest {
   }
 
   @Test
-  fun `update OMU email with invalid email address`() {
-    val body = UpdateOmuEmailRequest(email = "test@tes!!ting.bom")
-
-    val expectedOmuEmail = OmuContact(email = "test@testing.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
-    whenever(omuService.updateOmuEmail("LEI", body)).thenReturn(expectedOmuEmail)
-
-    val request = put("/omu/LEI/contact/email")
-      .accept(MediaType.APPLICATION_JSON)
-      .contentType(MediaType.APPLICATION_JSON)
-      .content(mapper.writeValueAsBytes(body))
-
-    mvc.perform(request).andExpect(status().isBadRequest)
-  }
-
-  @Test
   fun `delete OMU email contact`() {
     val expectedOmuEmail = OmuContact(email = "test@testing.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
     whenever(omuService.getOmuContactEmail("LEI")).thenReturn(expectedOmuEmail)
