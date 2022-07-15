@@ -26,6 +26,35 @@ import javax.validation.Valid
 class OmuContactController(private val omuService: OmuService) {
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Get OMU email address.",
+    description = "Obtain prison Offender Management Unit email address. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The OMU was found",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Not found, the OMU email was not found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
   fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact? {
     return this.omuService.getOmuContactEmail(prisonCode)
   }
@@ -67,7 +96,31 @@ class OmuContactController(private val omuService: OmuService) {
     return this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
   }
 
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @DeleteMapping()
+  @Operation(
+    summary = "Delete the OMU email address.",
+    description = "Delete prison Offender Management Unit email address. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The OMU email address was deleted",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
   fun deleteOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String) {
     this.omuService.deleteOmuEmail(prisonCode)
   }
