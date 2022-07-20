@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -261,6 +262,25 @@ class LicenceService(
         }
       }
     }
+  }
+
+  @Transactional
+  fun updateStandardConditions(licenceId: Long, request: UpdateStandardConditionDataRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
+    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val updatedLicence = licenceEntity.copy(
+      standardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+    licenceRepository.saveAndFlush(updatedLicence)
   }
 
   @Transactional

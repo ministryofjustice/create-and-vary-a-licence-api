@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -624,6 +625,58 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+  }
+
+  @Test
+  fun `update standard conditions for an individual licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    val APConditions = listOf(
+      ModelStandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour")
+    )
+
+    val PSSConditions = listOf(
+      ModelStandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+      ModelStandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
+    )
+
+    service.updateStandardConditions(
+      1,
+      UpdateStandardConditionDataRequest(
+        standardLicenceConditions = APConditions,
+        standardPssConditions = PSSConditions
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
+
+    assertThat(licenceCaptor.value.standardConditions).containsExactly(
+      EntityStandardCondition(
+        conditionCode = "goodBehaviour",
+        conditionSequence = 1,
+        conditionText = "Be of good behaviour",
+        conditionType = "AP",
+        licence = aLicenceEntity
+      ),
+      EntityStandardCondition(
+        conditionCode = "goodBehaviour",
+        conditionSequence = 1,
+        conditionText = "Be of good behaviour",
+        conditionType = "PSS",
+        licence = aLicenceEntity
+      ),
+      EntityStandardCondition(
+        conditionCode = "doNotBreakLaw",
+        conditionSequence = 2,
+        conditionText = "Do not break any law",
+        conditionType = "PSS",
+        licence = aLicenceEntity
+      )
+    )
   }
 
   @Test
