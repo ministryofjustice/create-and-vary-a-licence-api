@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Promp
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
+import java.time.Month
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
@@ -29,6 +30,7 @@ class NotifyServiceTest {
     datesChangedTemplateId = TEMPLATE_ID,
     variationApprovedTemplateId = TEMPLATE_ID,
     variationReferredTemplateId = TEMPLATE_ID,
+    variationForReApprovalTemplateId = TEMPLATE_ID,
     client = notificationClient,
   )
 
@@ -182,6 +184,35 @@ class NotifyServiceTest {
   }
 
   @Test
+  fun `send variation re-approval email`() {
+    val dateTime = LocalDate.of(2016, Month.FEBRUARY, 10)
+    notifyService.sendVariationForReApprovalEmail(
+      EMAIL_ADDRESS,
+      "Peter Falk",
+      "ABC123",
+      dateTime
+    )
+
+    val expectedMap = mapOf(
+      Pair("fullName", "Peter Falk"),
+      Pair("crd", "10 February 2016")
+    )
+
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `No re-approval email is sent when CRD is empty`() {
+    notifyService.sendVariationForReApprovalEmail(
+      EMAIL_ADDRESS,
+      "Peter Falk",
+      "ABC123",
+      null
+    )
+    verifyNoInteractions(notificationClient)
+  }
+
+  @Test
   fun `No email is sent when notify is not enabled`() {
     NotifyService(
       enabled = false,
@@ -193,6 +224,7 @@ class NotifyServiceTest {
       datesChangedTemplateId = TEMPLATE_ID,
       variationApprovedTemplateId = TEMPLATE_ID,
       variationReferredTemplateId = TEMPLATE_ID,
+      variationForReApprovalTemplateId = TEMPLATE_ID,
       client = notificationClient,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
