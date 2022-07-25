@@ -55,7 +55,7 @@ class NotifyService(
       sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
       log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
     } else {
-      log.error("Notification failed (variationReApproval) - OMU email and CRD must be present")
+      log.error("Notification failed (variationReApproval) for PrisonerNumber $prisonerNumber - OMU email and CRD must be present")
     }
   }
 
