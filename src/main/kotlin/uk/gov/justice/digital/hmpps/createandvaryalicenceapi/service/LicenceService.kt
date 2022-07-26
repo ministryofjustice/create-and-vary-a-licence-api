@@ -67,6 +67,7 @@ class LicenceService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
+  private val omuService: OmuService
 ) {
 
   @Transactional
@@ -336,6 +337,8 @@ class LicenceService(
       }
     }
 
+    val isReApproval = licenceEntity.statusCode === APPROVED && request.status === IN_PROGRESS
+
     val updatedLicence = licenceEntity.copy(
       statusCode = request.status,
       dateLastUpdated = LocalDateTime.now(),
@@ -346,6 +349,11 @@ class LicenceService(
       supersededDate = supersededDate,
     )
     licenceRepository.saveAndFlush(updatedLicence)
+
+    // if previous status was APPROVED and the new status is IN_PROGRESS then email OMU regarding re-approval
+    if (isReApproval) {
+      notifyReApprovalNeeded(licenceEntity)
+    }
 
     recordLicenceEventForStatus(licenceId, updatedLicence, request)
     auditStatusChange(licenceId, updatedLicence, request)
@@ -432,6 +440,16 @@ class LicenceService(
         licenceId.toString(),
       )
     }
+  }
+
+  private fun notifyReApprovalNeeded(licenceEntity: EntityLicence) {
+    val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it).email }
+    notifyService.sendVariationForReApprovalEmail(
+      omuEmail,
+      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceEntity.nomsId,
+      licenceEntity.conditionalReleaseDate
+    )
   }
 
   @Transactional

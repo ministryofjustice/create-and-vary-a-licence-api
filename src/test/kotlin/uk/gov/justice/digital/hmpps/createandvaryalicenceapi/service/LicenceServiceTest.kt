@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
@@ -77,6 +78,7 @@ class LicenceServiceTest {
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
+  private val omuService = mock<OmuService>()
 
   private val service = LicenceService(
     licenceRepository,
@@ -88,6 +90,7 @@ class LicenceServiceTest {
     additionalConditionUploadDetailRepository,
     auditEventRepository,
     notifyService,
+    omuService
   )
 
   @BeforeEach
@@ -484,6 +487,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any())
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -514,6 +518,10 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L))
       .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
 
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+
     service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"))
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -522,6 +530,12 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+      eq("test@OMU.testing.com"),
+      any(),
+      eq(aLicenceEntity.nomsId),
+      any()
+    )
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedDate")

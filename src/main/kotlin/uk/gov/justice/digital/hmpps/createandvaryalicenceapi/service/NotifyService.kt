@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -16,6 +17,7 @@ class NotifyService(
   @Value("\${self.link}") private val selfLink: String,
   @Value("\${notify.templates.licenceApproved}") private val licenceApprovedTemplateId: String,
   @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
+  @Value("\${notify.templates.variationReApproval}") private val variationForReApprovalTemplateId: String,
   @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
   @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
@@ -41,6 +43,19 @@ class NotifyService(
       log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
     } else {
       log.error("Notification failed (variationSubmitted) - email address not present for the PDU head for licence ID: $licenceId")
+    }
+  }
+
+  fun sendVariationForReApprovalEmail(emailAddress: String?, offenderFullName: String, prisonerNumber: String?, crd: LocalDate?) {
+    if (emailAddress != null && crd != null) {
+      val values: Map<String, String> = mapOf(
+        Pair("fullName", offenderFullName),
+        Pair("crd", crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy")))
+      )
+      sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
+      log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
+    } else {
+      log.error("Notification failed (variationReApproval) for PrisonerNumber $prisonerNumber - OMU email and CRD must be present")
     }
   }
 
