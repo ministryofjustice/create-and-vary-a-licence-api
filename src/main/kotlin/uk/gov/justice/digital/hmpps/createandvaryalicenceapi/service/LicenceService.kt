@@ -446,7 +446,8 @@ class LicenceService(
     val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it)?.email }
     notifyService.sendVariationForReApprovalEmail(
       omuEmail,
-      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceEntity.forename ?: "unknown",
+      licenceEntity.surname ?: "unknown",
       licenceEntity.nomsId,
       licenceEntity.conditionalReleaseDate
     )
