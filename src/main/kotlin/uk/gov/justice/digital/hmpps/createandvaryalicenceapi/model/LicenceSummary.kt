@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Schema(description = "Response object which summarises a licence")
 data class LicenceSummary(
@@ -76,4 +77,8 @@ data class LicenceSummary(
 
   @Schema(description = "The bookingId associated with the licence", example = "773722")
   val bookingId: Long?,
+
+  @Schema(description = "The date the licence was created", example = "02/12/2001")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val dateCreated: LocalDateTime?,
 )

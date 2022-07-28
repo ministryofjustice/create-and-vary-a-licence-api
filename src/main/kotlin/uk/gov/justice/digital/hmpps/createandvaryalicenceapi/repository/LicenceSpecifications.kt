@@ -17,6 +17,7 @@ data class LicenceQueryObject(
   val staffIds: List<Int>? = null,
   val nomsIds: List<String>? = null,
   val pdus: List<String>? = null,
+  val probationAreaCodes: List<String>? = null,
   val sortBy: String? = null,
   val sortOrder: String? = null
 )
@@ -26,7 +27,8 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
   hasResponsibleComIn(staffIds),
-  hasPdusIn(pdus)
+  hasPdusIn(pdus),
+  hasProbationAreaCodeIn(probationAreaCodes)
 )
 
 fun LicenceQueryObject.getSort(): Sort {
@@ -66,4 +68,8 @@ fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffId
 
 fun hasPdusIn(pduCodes: List<String>?): Specification<Licence>? = pduCodes?.let {
   Licence::probationPduCode.`in`(it)
+}
+
+fun hasProbationAreaCodeIn(areaCodes: List<String>?): Specification<Licence>? = areaCodes?.let {
+  Licence::probationAreaCode.`in`(it)
 }

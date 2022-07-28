@@ -169,6 +169,7 @@ data class Licence(
       appointmentContact = this.appointmentContact,
       responsibleCom = this.responsibleCom,
       variationOfId = this.id,
+      dateCreated = LocalDateTime.now()
     )
   }
 }
