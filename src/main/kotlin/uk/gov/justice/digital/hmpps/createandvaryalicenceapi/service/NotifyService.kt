@@ -46,10 +46,12 @@ class NotifyService(
     }
   }
 
-  fun sendVariationForReApprovalEmail(emailAddress: String?, offenderFullName: String, prisonerNumber: String?, crd: LocalDate?) {
+  fun sendVariationForReApprovalEmail(emailAddress: String?, firstName: String, lastName: String, prisonerNumber: String?, crd: LocalDate?) {
     if (emailAddress != null && crd != null) {
       val values: Map<String, String> = mapOf(
-        Pair("fullName", offenderFullName),
+        Pair("prisonerFirstName", firstName),
+        Pair("prisonerLastName", lastName),
+        Pair("prisonerNumber", lastName),
         Pair("crd", crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy")))
       )
       sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)

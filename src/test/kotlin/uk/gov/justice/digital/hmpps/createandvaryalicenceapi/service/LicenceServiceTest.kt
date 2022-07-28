@@ -487,7 +487,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -532,7 +532,8 @@ class LicenceServiceTest {
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(notifyService, times(1)).sendVariationForReApprovalEmail(
       eq("test@OMU.testing.com"),
-      any(),
+      eq(aLicenceEntity.forename ?: "unknown"),
+      eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
       any()
     )
@@ -544,6 +545,24 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "X", "Y", "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+  }
+
+  @Test
+  fun `update an APPROVED licence back to IN_PROGRESS does not call notify if no OMU contact is found`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
+
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(null)
+
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"))
+
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(
+      eq("test@OMU.testing.com"),
+      eq(aLicenceEntity.forename ?: ""),
+      eq(aLicenceEntity.surname ?: ""),
+      eq(aLicenceEntity.nomsId),
+      any()
+    )
   }
 
   @Test

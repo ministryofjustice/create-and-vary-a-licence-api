@@ -188,13 +188,16 @@ class NotifyServiceTest {
     val dateTime = LocalDate.of(2016, Month.FEBRUARY, 10)
     notifyService.sendVariationForReApprovalEmail(
       EMAIL_ADDRESS,
-      "Peter Falk",
+      "Peter",
+      "Falk",
       "ABC123",
       dateTime
     )
 
     val expectedMap = mapOf(
-      Pair("fullName", "Peter Falk"),
+      Pair("prisonerFirstName", "Peter"),
+      Pair("prisonerLastName", "Falk"),
+      Pair("prisonerNumber", "Falk"),
       Pair("crd", "10 February 2016")
     )
 
@@ -205,7 +208,8 @@ class NotifyServiceTest {
   fun `No re-approval email is sent when CRD is empty`() {
     notifyService.sendVariationForReApprovalEmail(
       EMAIL_ADDRESS,
-      "Peter Falk",
+      "Peter",
+      "Falk",
       "ABC123",
       null
     )
