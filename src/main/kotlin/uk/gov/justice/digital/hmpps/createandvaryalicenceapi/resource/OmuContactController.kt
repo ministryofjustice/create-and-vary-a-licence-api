@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OmuService
+import javax.persistence.EntityNotFoundException
 import javax.validation.Valid
 
 @RestController
@@ -56,8 +57,12 @@ class OmuContactController(private val omuService: OmuService) {
       )
     ]
   )
-  fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact {
-    return this.omuService.getOmuContactEmail(prisonCode)
+  fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact? {
+    val contact = this.omuService.getOmuContactEmail(prisonCode)
+    if (contact === null) {
+      throw EntityNotFoundException(prisonCode)
+    }
+    return contact
   }
 
   @PutMapping

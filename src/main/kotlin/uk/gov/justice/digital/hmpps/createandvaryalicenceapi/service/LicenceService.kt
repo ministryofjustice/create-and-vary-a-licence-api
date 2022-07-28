@@ -443,7 +443,7 @@ class LicenceService(
   }
 
   private fun notifyReApprovalNeeded(licenceEntity: EntityLicence) {
-    val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it).email }
+    val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it)?.email }
     notifyService.sendVariationForReApprovalEmail(
       omuEmail,
       "${licenceEntity.forename} ${licenceEntity.surname}",
