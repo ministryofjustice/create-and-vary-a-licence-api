@@ -78,7 +78,7 @@ data class LicenceSummary(
   @Schema(description = "The bookingId associated with the licence", example = "773722")
   val bookingId: Long?,
 
-  @Schema(description = "The date the licence was created", example = "02/12/2001")
-  @JsonFormat(pattern = "dd/MM/yyyy")
+  @Schema(description = "The date the licence was created", example = "02/12/2001 10:15")
+  @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val dateCreated: LocalDateTime?,
 )
