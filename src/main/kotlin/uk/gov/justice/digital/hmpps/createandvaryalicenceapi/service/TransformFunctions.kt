@@ -49,7 +49,8 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     conditionalReleaseDate = licence.conditionalReleaseDate,
     actualReleaseDate = licence.actualReleaseDate,
     comUsername = licence.responsibleCom!!.username,
-    bookingId = licence.bookingId
+    bookingId = licence.bookingId,
+    dateCreated = licence.dateCreated
   )
 }
 

@@ -1335,7 +1335,7 @@ class LicenceServiceTest {
       probationLauDescription = "Cardiff South",
       probationTeamCode = "NA01A2-A",
       probationTeamDescription = "Cardiff South Team A",
-      dateCreated = LocalDateTime.now(),
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       standardConditions = someEntityStandardConditions,
       mailingList = mutableSetOf(CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")),
       responsibleCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y"),
@@ -1377,7 +1377,8 @@ class LicenceServiceTest {
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       comUsername = "smills",
-      bookingId = 54321
+      bookingId = 54321,
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
     )
   }
 }

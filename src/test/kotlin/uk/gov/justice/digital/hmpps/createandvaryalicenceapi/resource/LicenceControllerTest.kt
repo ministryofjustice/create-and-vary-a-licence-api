@@ -703,7 +703,8 @@ class LicenceControllerTest {
       conditionalReleaseDate = LocalDate.of(2022, 12, 28),
       actualReleaseDate = LocalDate.of(2022, 12, 30),
       comUsername = "jsmith",
-      bookingId = 54321
+      bookingId = 54321,
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
