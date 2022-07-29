@@ -56,7 +56,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -705,10 +704,7 @@ class LicenceControllerTest {
       actualReleaseDate = LocalDate.of(2022, 12, 30),
       comUsername = "jsmith",
       bookingId = 54321,
-      dateCreated = LocalDateTime.of(
-        LocalDate.of(2020, 10, 1),
-        LocalTime.of(0, 0, 10)
-      ),
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
