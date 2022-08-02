@@ -197,7 +197,7 @@ class NotifyServiceTest {
     val expectedMap = mapOf(
       Pair("prisonerFirstName", "Peter"),
       Pair("prisonerLastName", "Falk"),
-      Pair("prisonerNumber", "Falk"),
+      Pair("prisonerNumber", "ABC123"),
       Pair("crd", "10 February 2016")
     )
 
