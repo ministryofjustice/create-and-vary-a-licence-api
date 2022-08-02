@@ -51,7 +51,7 @@ class NotifyService(
       val values: Map<String, String> = mapOf(
         Pair("prisonerFirstName", firstName),
         Pair("prisonerLastName", lastName),
-        Pair("prisonerNumber", lastName),
+        Pair("prisonerNumber", prisonerNumber ?: "unknown"),
         Pair("crd", crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy")))
       )
       sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
