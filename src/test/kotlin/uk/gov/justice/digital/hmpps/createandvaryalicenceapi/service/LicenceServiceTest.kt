@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
@@ -31,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -76,6 +78,7 @@ class LicenceServiceTest {
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
+  private val omuService = mock<OmuService>()
 
   private val service = LicenceService(
     licenceRepository,
@@ -87,6 +90,7 @@ class LicenceServiceTest {
     additionalConditionUploadDetailRepository,
     auditEventRepository,
     notifyService,
+    omuService
   )
 
   @BeforeEach
@@ -483,6 +487,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -513,6 +518,10 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L))
       .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
 
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+
     service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"))
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -521,6 +530,13 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+      eq("test@OMU.testing.com"),
+      eq(aLicenceEntity.forename ?: "unknown"),
+      eq(aLicenceEntity.surname ?: "unknown"),
+      eq(aLicenceEntity.nomsId),
+      any()
+    )
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedDate")
@@ -529,6 +545,24 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "X", "Y", "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+  }
+
+  @Test
+  fun `update an APPROVED licence back to IN_PROGRESS does not call notify if no OMU contact is found`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
+
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(null)
+
+    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"))
+
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(
+      eq("test@OMU.testing.com"),
+      eq(aLicenceEntity.forename ?: ""),
+      eq(aLicenceEntity.surname ?: ""),
+      eq(aLicenceEntity.nomsId),
+      any()
+    )
   }
 
   @Test
@@ -624,6 +658,58 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+  }
+
+  @Test
+  fun `update standard conditions for an individual licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    val APConditions = listOf(
+      ModelStandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour")
+    )
+
+    val PSSConditions = listOf(
+      ModelStandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+      ModelStandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
+    )
+
+    service.updateStandardConditions(
+      1,
+      UpdateStandardConditionDataRequest(
+        standardLicenceConditions = APConditions,
+        standardPssConditions = PSSConditions
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
+
+    assertThat(licenceCaptor.value.standardConditions).containsExactly(
+      EntityStandardCondition(
+        conditionCode = "goodBehaviour",
+        conditionSequence = 1,
+        conditionText = "Be of good behaviour",
+        conditionType = "AP",
+        licence = aLicenceEntity
+      ),
+      EntityStandardCondition(
+        conditionCode = "goodBehaviour",
+        conditionSequence = 1,
+        conditionText = "Be of good behaviour",
+        conditionType = "PSS",
+        licence = aLicenceEntity
+      ),
+      EntityStandardCondition(
+        conditionCode = "doNotBreakLaw",
+        conditionSequence = 2,
+        conditionText = "Do not break any law",
+        conditionType = "PSS",
+        licence = aLicenceEntity
+      )
+    )
   }
 
   @Test
@@ -1249,7 +1335,7 @@ class LicenceServiceTest {
       probationLauDescription = "Cardiff South",
       probationTeamCode = "NA01A2-A",
       probationTeamDescription = "Cardiff South Team A",
-      dateCreated = LocalDateTime.now(),
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       standardConditions = someEntityStandardConditions,
       mailingList = mutableSetOf(CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")),
       responsibleCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y"),
@@ -1291,7 +1377,8 @@ class LicenceServiceTest {
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       comUsername = "smills",
-      bookingId = 54321
+      bookingId = 54321,
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
     )
   }
 }
