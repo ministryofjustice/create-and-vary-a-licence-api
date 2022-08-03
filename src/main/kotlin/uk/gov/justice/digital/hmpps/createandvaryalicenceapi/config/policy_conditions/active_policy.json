@@ -1,14 +1,4 @@
-CREATE TABLE licence_conditions
-(
-    version      int  not null
-        constraint licence_conditions_pk
-            primary key,
-    conditions   json not null,
-    date_created timestamp with time zone default CURRENT_TIMESTAMP
-);
-
-INSERT INTO licence_conditions
-VALUES (1, '{
+{
   "version": "1.0",
   "standardConditions": {
     "AP": [
@@ -677,7 +667,7 @@ VALUES (1, '{
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
         "category": "Freedom of movement",
-        "text": "Not to enter or remain in sight of any [CHILDREN''S PLAY AREA, SWIMMING BATHS, SCHOOL ETC] without the prior approval of your supervising officer.",
+        "text": "Not to enter or remain in sight of any [CHILDREN'S PLAY AREA, SWIMMING BATHS, SCHOOL ETC] without the prior approval of your supervising officer.",
         "tpl": "Not to enter or remain in sight of any {typeOfPremises} without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
@@ -995,4 +985,4 @@ VALUES (1, '{
       }
     ]
   }
-}', now())
+}
