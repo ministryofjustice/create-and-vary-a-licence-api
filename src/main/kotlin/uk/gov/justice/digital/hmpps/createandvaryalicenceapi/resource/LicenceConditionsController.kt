@@ -14,19 +14,19 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicencePolicyDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
 
 @RestController
 @RequestMapping("/licence-conditions", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceConditionsController(private val licenceConditionsService: LicenceConditionsService) {
+class LicenceConditionsController(private val licenceConditionsService: LicencePolicyService) {
 
   @GetMapping(value = ["/version/{version}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
   @Operation(
-    summary = "Get licence conditions be version number",
-    description = "Returns a single licence detail by its unique identifier. " +
+    summary = "Get licence policy be version number",
+    description = "Returns a single policy using its unique identifier. " +
       "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
@@ -34,8 +34,8 @@ class LicenceConditionsController(private val licenceConditionsService: LicenceC
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licence Conditions found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicenceConditions::class))],
+        description = "Licence Policy found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicyDto::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -54,7 +54,7 @@ class LicenceConditionsController(private val licenceConditionsService: LicenceC
       )
     ]
   )
-  fun getLicenceByVersion(@PathVariable("version") version: Long): LicenceConditions? {
-    return licenceConditionsService.getConditionsByVersion(version)
+  fun getLicenceByVersion(@PathVariable("version") version: String): LicencePolicyDto? {
+    return licenceConditionsService.policyByVersion(version)
   }
 }

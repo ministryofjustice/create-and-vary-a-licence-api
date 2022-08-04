@@ -15,7 +15,9 @@ interface ILicenceCondition {
   var code: String
 }
 
-data class LicenceConditionsDto(
+data class LicencePolicyDto(
+  @JsonProperty("version")
+  val version: String,
   val standardConditions: StandardConditions,
   val additionalConditions: AdditionalConditions,
 )
@@ -117,5 +119,5 @@ class LicenceConditions {
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")
-  var conditions: LicenceConditionsDto? = null
+  var conditions: LicencePolicyDto? = null
 }
