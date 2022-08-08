@@ -16,7 +16,7 @@ fun <T : ILicenceCondition> amendedConditions(
   current: List<T>,
   other: List<T>
 ): List<Pair<T, T>> =
-  current.mapNotNull { c -> other.find { it.code == c.code && it != c }?.let { Pair(it, c) } }
+  current.mapNotNull { c -> other.find { it.code == c.code && it != c }?.let { Pair(c, it) } }
 
 fun <T : ILicenceCondition> conditionChanges(current: List<T>, other: List<T>) = ConditionChanges(
   removedConditions(current, other),
