@@ -5,6 +5,10 @@ plugins {
   jacoco
 }
 
+jacoco {
+  toolVersion = "0.8.8"
+}
+
 allOpen {
   annotations(
     "javax.persistence.Entity",
