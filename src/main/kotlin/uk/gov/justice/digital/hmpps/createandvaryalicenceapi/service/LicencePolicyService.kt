@@ -1,12 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PolicyConfiguration
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionsAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionsPss
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicencePolicyDto
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardConditionsAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardConditionsPss
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
 import javax.persistence.EntityNotFoundException
 
 data class ConditionChanges<T>(
@@ -20,21 +15,13 @@ data class ConditionChangesByType<T, U>(
   val Pss: ConditionChanges<U>
 )
 
-data class PolicyChanges(
-  val standardConditions: ConditionChangesByType<StandardConditionsAp, StandardConditionsPss>,
-  val additionalConditions: ConditionChangesByType<AdditionalConditionsAp, AdditionalConditionsPss>
-)
-
-@Service
-class LicencePolicyService(
-  private val policies: PolicyConfiguration
-) {
-  fun currentPolicy(): LicencePolicyDto = policies.currentPolicy
-  fun policyByVersion(version: String): LicencePolicyDto = policies.policies().find { it.version == version }
+class LicencePolicyService(private val policies: List<LicencePolicy>) {
+  fun currentPolicy(): LicencePolicy = policies.maxBy { it.version }
+  fun policyByVersion(version: String): LicencePolicy = policies.find { it.version == version }
     ?: throw EntityNotFoundException("policy version $version not found")
 
-  fun allPolicies(): List<LicencePolicyDto> = policies.policies()
-  fun compare(version1: LicencePolicyDto, version2: LicencePolicyDto): PolicyChanges {
+  fun allPolicies(): List<LicencePolicy> = policies
+  fun compare(version1: LicencePolicy, version2: LicencePolicy): PolicyChanges {
     val stdApChanges = conditionChanges(
       version1.standardConditions.standardConditionsAp,
       version2.standardConditions.standardConditionsAp

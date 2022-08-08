@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ILicenceCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 
 fun <T : ILicenceCondition> removedConditions(current: List<T>, other: List<T>): List<T> =
   current.filter { pssElement ->
