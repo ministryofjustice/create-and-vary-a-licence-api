@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicencePolicyDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PolicyChanges
 
 @RestController
 @RequestMapping("/licence-policy", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -36,7 +36,7 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
       ApiResponse(
         responseCode = "200",
         description = "Licence Policy found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicyDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicy::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -50,7 +50,7 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
       )
     ]
   )
-  fun getCurrentPolicy(): LicencePolicyDto? {
+  fun getCurrentPolicy(): LicencePolicy? {
     return licenceConditionsService.currentPolicy()
   }
 
@@ -68,7 +68,7 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
       ApiResponse(
         responseCode = "200",
         description = "Licence Policy found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicyDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicy::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -87,7 +87,7 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
       )
     ]
   )
-  fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicyDto? {
+  fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicy? {
     return licenceConditionsService.policyByVersion(version)
   }
 
@@ -105,7 +105,7 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
       ApiResponse(
         responseCode = "200",
         description = "Licence Policy found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicyDto::class))],
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicy::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -124,7 +124,7 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
       )
     ]
   )
-  fun getPolicies(): List<LicencePolicyDto> {
+  fun getPolicies(): List<LicencePolicy> {
     return licenceConditionsService.allPolicies()
   }
 
