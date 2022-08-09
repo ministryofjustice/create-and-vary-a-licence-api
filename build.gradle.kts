@@ -64,28 +64,28 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:3.17.3-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:2.0.25")
+  implementation("org.apache.pdfbox:pdfbox:2.0.26")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.3.4")
+  runtimeOnly("org.postgresql:postgresql:42.4.1")
 
-  implementation("com.google.code.gson:gson:2.8.9")
-  implementation("io.arrow-kt:arrow-core:1.0.1")
+  implementation("com.google.code.gson:gson:2.9.0")
+  implementation("io.arrow-kt:arrow-core:1.1.2")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.3")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.3")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.9")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
 
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.34.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.29")
-  testImplementation("org.mockito:mockito-inline:4.4.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.35.0")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.1")
+  testImplementation("org.mockito:mockito-inline:4.6.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
 }
