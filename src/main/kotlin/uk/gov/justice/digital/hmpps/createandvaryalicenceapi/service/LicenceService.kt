@@ -521,6 +521,12 @@ class LicenceService(
     }
   }
 
+  fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
+    val matchingLicences =
+      licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
+    return transformToListOfSummaries(matchingLicences)
+  }
+
   @Transactional
   fun activateLicences(licenceIds: List<Long>) {
     val matchingLicences = licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }

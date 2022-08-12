@@ -15,7 +15,7 @@ class ResourceServerConfiguration {
 
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
-    val chain = http
+    return http
       .sessionManagement()
       .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
       .and().headers().frameOptions().sameOrigin()
@@ -32,8 +32,6 @@ class ResourceServerConfiguration {
           "/swagger-ui.html",
           "/h2-console/**"
         ).permitAll().anyRequest().authenticated()
-      }
-    chain.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
-    return chain.build()
+      }.also { it.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter()) }.build()
   }
 }
