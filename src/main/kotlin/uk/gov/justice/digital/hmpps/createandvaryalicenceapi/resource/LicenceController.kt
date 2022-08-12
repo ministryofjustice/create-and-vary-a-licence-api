@@ -330,6 +330,38 @@ class LicenceController(private val licenceService: LicenceService) {
     licenceService.updateBespokeConditions(licenceId, request)
   }
 
+  @GetMapping(value = ["/variations/submitted/area/{areaCode}"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Get a list of licence summaries for submitted variations by probation area.",
+    description = "Get a list of licence summaries for all submitted variations belonging to the specified probation area code. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returned matching licence summary details - empty if no matches.",
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
+  fun submittedVariations(
+    @PathVariable("areaCode") areaCode: String,
+  ): List<LicenceSummary> {
+    return licenceService.findSubmittedVariationsByRegion(probationAreaCode = areaCode)
+  }
+
   @PostMapping(value = ["/match"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
