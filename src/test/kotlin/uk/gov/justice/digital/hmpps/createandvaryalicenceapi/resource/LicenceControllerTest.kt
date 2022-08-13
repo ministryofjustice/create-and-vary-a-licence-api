@@ -103,6 +103,21 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `get variation submitted for region`() {
+    whenever(licenceService.findSubmittedVariationsByRegion("N01A")).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/licence/variations/submitted/area/N01A").accept(APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findSubmittedVariationsByRegion("N01A")
+  }
+
+  @Test
   fun `404 licence not found`() {
     whenever(licenceService.getLicenceById(1)).thenThrow(EntityNotFoundException(""))
 
