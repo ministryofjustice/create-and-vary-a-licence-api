@@ -6,5 +6,5 @@ data class StandardConditions(
   @JsonProperty("AP")
   val standardConditionsAp: List<StandardConditionAp>,
   @JsonProperty("PSS")
-  val standardConditionsPsses: List<StandardConditionPss>,
+  val standardConditionsPss: List<StandardConditionPss>,
 )
