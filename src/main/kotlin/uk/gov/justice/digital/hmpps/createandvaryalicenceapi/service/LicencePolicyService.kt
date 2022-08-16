@@ -27,8 +27,8 @@ class LicencePolicyService(private val policies: List<LicencePolicy>) {
       version2.standardConditions.standardConditionsAp
     )
     val stdPssChanges = conditionChanges(
-      version1.standardConditions.standardConditionsPsses,
-      version2.standardConditions.standardConditionsPsses
+      version1.standardConditions.standardConditionsPss,
+      version2.standardConditions.standardConditionsPss
     )
 
     val additionalApChanges = conditionChanges(version1.additionalConditions.ap, version2.additionalConditions.ap)
