@@ -16,11 +16,16 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 
 @RestController
 @RequestMapping("/licence-policy", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicencePolicyController(private val licenceConditionsService: LicencePolicyService) {
+class LicencePolicyController(
+  private val licenceConditionsService: LicencePolicyService,
+  private val licenceService: LicenceService
+) {
 
   @GetMapping(value = ["/active"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -138,8 +143,26 @@ class LicencePolicyController(private val licenceConditionsService: LicencePolic
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   fun compare(@PathVariable("version1") version1: String, @PathVariable("version2") version2: String): PolicyChanges? {
-    val policy1 = licenceConditionsService.policyByVersion("1.0")
-    val policy2 = licenceConditionsService.policyByVersion("2.0")
+    val policy1 = licenceConditionsService.policyByVersion(version1)
+    val policy2 = licenceConditionsService.policyByVersion(version2)
     return licenceConditionsService.compare(policy1, policy2)
+  }
+
+  @GetMapping(value = ["/compare/{version}/licence/{licenceId}"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @ResponseBody
+  @Operation(
+    summary = "Get differences between saved licences conditions and new policy",
+    description = "Returns condition data saved against a licence no longer present within the new licence policy" +
+      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  fun compareLicence(
+    @PathVariable("version") version: String,
+    @PathVariable("licenceId") licenceId: Long
+  ): List<LicenceConditionChanges>? {
+    val policy = licenceConditionsService.policyByVersion(version)
+    val licence = licenceService.getLicenceById(licenceId = licenceId)
+    return licenceConditionsService.compareLicenceWithPolicy(licence, policy)
   }
 }

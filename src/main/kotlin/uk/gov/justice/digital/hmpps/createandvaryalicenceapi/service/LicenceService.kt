@@ -642,7 +642,7 @@ class LicenceService(
       }
 
       val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
-        var uploadDetail = additionalConditionUploadDetailRepository.getById(it.uploadDetailId)
+        var uploadDetail = additionalConditionUploadDetailRepository.findById(it.uploadDetailId).orElseThrow()
         uploadDetail = uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
