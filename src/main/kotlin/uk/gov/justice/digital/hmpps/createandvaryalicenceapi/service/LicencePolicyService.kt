@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
 import javax.persistence.EntityNotFoundException
@@ -15,7 +17,15 @@ data class ConditionChangesByType<T, U>(
   val Pss: ConditionChanges<U>
 )
 
+data class LicenceConditionChanges(
+  val code: String,
+  val previousText: String,
+  val currentText: String,
+  var dataChanges: List<AdditionalConditionData>
+)
+
 class LicencePolicyService(private val policies: List<LicencePolicy>) {
+
   fun currentPolicy(): LicencePolicy = policies.maxBy { it.version }
   fun policyByVersion(version: String): LicencePolicy = policies.find { it.version == version }
     ?: throw EntityNotFoundException("policy version $version not found")
@@ -39,4 +49,15 @@ class LicencePolicyService(private val policies: List<LicencePolicy>) {
       additionalConditions = ConditionChangesByType(additionalApChanges, additionalPssChanges)
     )
   }
+
+  fun compareLicenceWithPolicy(licence: Licence, policy: LicencePolicy): List<LicenceConditionChanges> =
+    licencePolicyChanges(
+      licence.additionalLicenceConditions,
+      policy.additionalConditions.ap,
+      getPolicyPlaceholders(policy.additionalConditions.ap)
+    ) + licencePolicyChanges(
+      licence.additionalPssConditions,
+      policy.additionalConditions.pss,
+      getPolicyPlaceholders(policy.additionalConditions.pss)
+    )
 }

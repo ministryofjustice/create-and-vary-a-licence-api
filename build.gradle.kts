@@ -48,8 +48,6 @@ tasks.named<JacocoReport>("jacocoTestReport") {
 }
 
 dependencies {
-  implementation("com.vladmihalcea:hibernate-types-52:2.16.2")
-  implementation("com.vladmihalcea:hibernate-types-parent:2.16.2")
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   // Spring boot dependencies
