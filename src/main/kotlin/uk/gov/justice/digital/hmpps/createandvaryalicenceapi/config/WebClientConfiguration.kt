@@ -15,9 +15,9 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration(
   @Value("\${hmpps.auth.url}") private val oauthApiUrl: String,
   @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String,
-  @Value("\${spring.security.oauth2.client.provider.hmpps-auth.token-uri}") private val oauthTokenUrl: String,
-  @Value("\${spring.security.oauth2.client.registration.oauth-clients.client-id}") private val oauthClientId: String,
-  @Value("\${spring.security.oauth2.client.registration.oauth-clients.client-secret}") private val oauthSecret: String,
+  @Value("\${oauth.client.token-url}") private val oauthTokenUrl: String,
+  @Value("\${oauth.client.id}") private val oauthClientId: String,
+  @Value("\${oauth.client.secret}") private val oauthSecret: String,
 ) {
 
   @Bean

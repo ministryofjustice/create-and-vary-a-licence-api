@@ -4,10 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
-import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -21,6 +19,7 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
@@ -53,6 +52,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -71,7 +71,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
-@ExtendWith(MockitoExtension::class)
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
@@ -1032,6 +1031,14 @@ class LicenceServiceTest {
   @Test
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
 
     service.updateSentenceDates(
       1L,
@@ -1100,9 +1107,97 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `update sentence dates does not email if HDC licence is not found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(Mono.empty())
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      )
+    )
+
+    verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
+  }
+
+  @Test
+  fun `update sentence dates does not email if HDC licence is Approved`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "APPROVED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      )
+    )
+
+    verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
+  }
+
+  @Test
+  fun `update sentence dates does not email if Licence BookingId is missing`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(bookingId = null)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = false
+        )
+      )
+    )
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      )
+    )
+
+    verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
+  }
+
+  @Test
   fun `update sentence dates persists the updated entity with null dates`() {
     val licence = aLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = false
+        )
+      )
+    )
 
     service.updateSentenceDates(
       1L,
