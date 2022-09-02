@@ -10,7 +10,9 @@ generic-service:
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
-    HMPPS_AUTH_URL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+    HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
+    HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
+    HMPPS_PRISON_API_URL: "https://api-dev.prison.service.justice.gov.uk/api"
     SELF_LINK: "https://create-and-vary-a-licence-dev.hmpps.service.justice.gov.uk"
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack

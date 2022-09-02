@@ -19,6 +19,17 @@ spring:
 
   security:
     oauth2:
+      client:
+        registration:
+          oauth-clients:
+            provider: hmpps-auth
+            client-id: ${SYSTEM_CLIENT_ID}
+            client-secret: ${SYSTEM_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope: write
+        provider:
+          hmpps-auth:
+            token-uri: ${HMPPS_AUTH_TOKEN_URL}
       resourceserver:
         jwt:
           jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
@@ -107,3 +118,11 @@ notify:
 self:
   link: "http://localhost:3000"
 
+prison-api:
+  endpoint:
+    url: https://api-dev.prison.service.justice.gov.uk/
+
+hmpps:
+  prison:
+    api:
+      url: "https://api-dev.prison.service.justice.gov.uk/api"
