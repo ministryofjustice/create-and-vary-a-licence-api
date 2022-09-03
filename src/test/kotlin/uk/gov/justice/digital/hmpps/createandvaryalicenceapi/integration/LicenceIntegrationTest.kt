@@ -3,12 +3,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -637,6 +640,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql"
   )
   fun `Update sentence dates`() {
+    prisonApiMockServer.stubGetHdcLatest()
+
     webTestClient.put()
       .uri("/licence/id/1/sentence-dates")
       .bodyValue(
@@ -677,6 +682,20 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    val prisonApiMockServer = PrisonApiMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      prisonApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      prisonApiMockServer.stop()
+    }
+
     val someStandardConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       StandardCondition(code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
