@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -950,23 +951,25 @@ class LicenceService(
 
     // Notify the COM of any change to material dates on the licence
     updatedLicenceEntity.bookingId?.let {
-      prisonApiClient.hdcStatus(it).filter { h -> h.approvalStatus !== "APPROVED" }.subscribe {
-        log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
-        notifyService.sendDatesChangedEmail(
-          licenceId.toString(),
-          licenceEntity.responsibleCom?.email,
-          "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
-          "${licenceEntity.forename} ${licenceEntity.surname}",
-          licenceEntity.crn,
-          mapOf(
-            Pair("Release date", sentenceChanges.lsdChanged),
-            Pair("Licence end date", sentenceChanges.ledChanged),
-            Pair("Sentence end date", sentenceChanges.sedChanged),
-            Pair("Top up supervision start date", sentenceChanges.tussdChanged),
-            Pair("Top up supervision end date", sentenceChanges.tusedChanged),
-          ),
-        )
-      }
+      prisonApiClient.hdcStatus(it)
+        .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
+        .filter { h -> h.approvalStatus !== "APPROVED" }.subscribe {
+          log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
+          notifyService.sendDatesChangedEmail(
+            licenceId.toString(),
+            licenceEntity.responsibleCom?.email,
+            "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+            "${licenceEntity.forename} ${licenceEntity.surname}",
+            licenceEntity.crn,
+            mapOf(
+              Pair("Release date", sentenceChanges.lsdChanged),
+              Pair("Licence end date", sentenceChanges.ledChanged),
+              Pair("Sentence end date", sentenceChanges.sedChanged),
+              Pair("Top up supervision start date", sentenceChanges.tussdChanged),
+              Pair("Top up supervision end date", sentenceChanges.tusedChanged),
+            ),
+          )
+        }
     }
   }
 

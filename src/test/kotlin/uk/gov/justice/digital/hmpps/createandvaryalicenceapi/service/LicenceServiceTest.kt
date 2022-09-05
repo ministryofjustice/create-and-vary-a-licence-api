@@ -1107,7 +1107,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `update sentence dates does not email if HDC licence is not found`() {
+  fun `update sentence dates still sends email if HDC licence is not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(Mono.empty())
 
@@ -1125,7 +1125,7 @@ class LicenceServiceTest {
       )
     )
 
-    verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
+    verify(notifyService, times(1)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
   }
 
   @Test
