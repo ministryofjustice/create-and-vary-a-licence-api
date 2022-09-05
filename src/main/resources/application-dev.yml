@@ -20,3 +20,9 @@ spring:
 hmpps:
   auth:
     url: http://localhost:8090/auth
+
+oauth:
+  client:
+    id: ${SYSTEM_CLIENT_ID}
+    secret: ${SYSTEM_CLIENT_SECRET}
+    token-url: ${HMPPS_AUTH_TOKEN_URL}

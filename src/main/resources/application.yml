@@ -19,9 +19,19 @@ spring:
 
   security:
     oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
+      client:
+        registration:
+          hmpps-auth:
+            provider: hmpps-auth
+            client-id: ${oauth.client.id}
+            client-secret: ${oauth.client.secret}
+            authorization-grant-type: client_credentials
+        provider:
+          hmpps-auth:
+            token-uri: ${oauth.client.token-url}
+    resourceserver:
+      jwt:
+        jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
 
   jpa:
     open-in-view: false
@@ -111,9 +121,3 @@ hmpps:
   prison:
     api:
       url: "https://api-dev.prison.service.justice.gov.uk/api"
-
-oauth:
-  client:
-    id: ${SYSTEM_CLIENT_ID}
-    secret: ${SYSTEM_CLIENT_SECRET}
-    token-url: ${HMPPS_AUTH_TOKEN_URL}
