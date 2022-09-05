@@ -962,11 +962,12 @@ class LicenceService(
             "${licenceEntity.forename} ${licenceEntity.surname}",
             licenceEntity.crn,
             mapOf(
-              Pair("Release date", sentenceChanges.lsdChanged),
-              Pair("Licence end date", sentenceChanges.ledChanged),
-              Pair("Sentence end date", sentenceChanges.sedChanged),
-              Pair("Top up supervision start date", sentenceChanges.tussdChanged),
-              Pair("Top up supervision end date", sentenceChanges.tusedChanged),
+              "Release date" to sentenceChanges.lsdChanged,
+              "Release date" to sentenceChanges.lsdChanged,
+              "Licence end date" to sentenceChanges.ledChanged,
+              "Sentence end date" to sentenceChanges.sedChanged,
+              "Top up supervision start date" to sentenceChanges.tussdChanged,
+              "Top up supervision end date" to sentenceChanges.tusedChanged,
             ),
           )
         }

@@ -33,7 +33,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
         val uriPath = request?.uri?.path
         when (statusCode) {
           FORBIDDEN -> {
-            log.info("Client token does not have correct role to call prisoner-api $uriPath")
+            log.error("Client token does not have correct role to call prisoner-api $uriPath")
           }
           NOT_FOUND -> {
             log.info("No resource found when calling prisoner-api $uriPath")
