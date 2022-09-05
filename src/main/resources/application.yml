@@ -29,9 +29,9 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${oauth.client.token-url}
-    resourceserver:
-      jwt:
-        jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
 
   jpa:
     open-in-view: false
