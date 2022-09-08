@@ -911,6 +911,8 @@ class LicenceService(
         "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}"
     )
 
+    val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
+
     val updatedLicenceEntity = licenceEntity.copy(
       conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
@@ -938,8 +940,6 @@ class LicenceService(
         )
       )
     )
-
-    val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
 
     log.info(
       "Date change flags: LSD ${sentenceChanges.lsdChanged} LED ${sentenceChanges.ledChanged} " +
