@@ -48,6 +48,15 @@ management.endpoint:
 hmpps:
   auth:
     url: http://localhost:8090/auth
+  prison:
+    api:
+      url: http://localhost:8091/api
 
 notify:
   enabled: false
+
+oauth:
+  client:
+    id: client-id
+    secret: clientsecret
+    token-url: http://localhost:8090/auth

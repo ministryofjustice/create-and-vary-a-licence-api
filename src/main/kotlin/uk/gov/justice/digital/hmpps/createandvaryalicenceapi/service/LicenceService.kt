@@ -36,6 +36,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -67,7 +69,8 @@ class LicenceService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
-  private val omuService: OmuService
+  private val omuService: OmuService,
+  private val prisonApiClient: PrisonApiClient
 ) {
 
   @Transactional
@@ -921,38 +924,6 @@ class LicenceService(
       updatedByUsername = username
     )
 
-    val lsdChanged = nullableDatesDiffer(sentenceDatesRequest.licenceStartDate, licenceEntity?.licenceStartDate)
-    val ledChanged = nullableDatesDiffer(sentenceDatesRequest.licenceExpiryDate, licenceEntity?.licenceExpiryDate)
-    val sedChanged = nullableDatesDiffer(sentenceDatesRequest.sentenceEndDate, licenceEntity?.sentenceEndDate)
-    val tussdChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionStartDate, licenceEntity?.topupSupervisionStartDate)
-    val tusedChanged = nullableDatesDiffer(sentenceDatesRequest.topupSupervisionExpiryDate, licenceEntity?.topupSupervisionExpiryDate)
-
-    val isMaterial =
-      (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && licenceEntity.statusCode == APPROVED))
-
-    log.info("Date change flags: LSD $lsdChanged LED $ledChanged SED $sedChanged TUSSD $tussdChanged TUSED $tusedChanged isMaterial $isMaterial")
-
-    val datesMap = mapOf(
-      Pair("Release date", lsdChanged),
-      Pair("Licence end date", ledChanged),
-      Pair("Sentence end date", sedChanged),
-      Pair("Top up supervision start date", tussdChanged),
-      Pair("Top up supervision end date", tusedChanged),
-    )
-
-    // Notify the COM of any change to material dates on the licence
-    if (isMaterial) {
-      log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
-      notifyService.sendDatesChangedEmail(
-        licenceId.toString(),
-        licenceEntity.responsibleCom?.email,
-        "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
-        "${licenceEntity.forename} ${licenceEntity.surname}",
-        licenceEntity.crn,
-        datesMap,
-      )
-    }
-
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     auditEventRepository.saveAndFlush(
@@ -967,6 +938,40 @@ class LicenceService(
         )
       )
     )
+
+    val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
+
+    log.info(
+      "Date change flags: LSD ${sentenceChanges.lsdChanged} LED ${sentenceChanges.ledChanged} " +
+        "SED ${sentenceChanges.sedChanged} TUSSD ${sentenceChanges.tussdChanged} TUSED ${sentenceChanges.tusedChanged} " +
+        "isMaterial ${sentenceChanges.isMaterial}"
+    )
+
+    if (!sentenceChanges.isMaterial) return
+
+    // Notify the COM of any change to material dates on the licence
+    updatedLicenceEntity.bookingId?.let {
+      prisonApiClient.hdcStatus(it)
+        .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
+        .filter { h -> h.approvalStatus !== "APPROVED" }.subscribe {
+          log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
+          notifyService.sendDatesChangedEmail(
+            licenceId.toString(),
+            licenceEntity.responsibleCom?.email,
+            "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+            "${licenceEntity.forename} ${licenceEntity.surname}",
+            licenceEntity.crn,
+            mapOf(
+              "Release date" to sentenceChanges.lsdChanged,
+              "Release date" to sentenceChanges.lsdChanged,
+              "Licence end date" to sentenceChanges.ledChanged,
+              "Sentence end date" to sentenceChanges.sedChanged,
+              "Top up supervision start date" to sentenceChanges.tussdChanged,
+              "Top up supervision end date" to sentenceChanges.tusedChanged,
+            ),
+          )
+        }
+    }
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
