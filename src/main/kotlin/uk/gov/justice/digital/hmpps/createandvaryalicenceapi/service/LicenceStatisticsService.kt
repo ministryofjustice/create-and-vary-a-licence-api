@@ -41,7 +41,7 @@ class LicenceStatisticsService(
   }
 
   private fun filterUniquePrisonsOfCrdScopedLicences(crdScopedLicences: List<LicenceSummary>): List<Prison> {
-    return crdScopedLicences.map { it.prisonCode }.toSet().toList().map { Prison(prisonId = it!!) }
+    return crdScopedLicences.map { it.prisonCode }.toSet().map { Prison(prisonId = it!!) }
   }
 
   private fun licenceStatsForEachPrison(
