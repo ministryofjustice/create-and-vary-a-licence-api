@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration(
   @Value("\${hmpps.auth.url}") private val oauthApiUrl: String,
   @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String,
+  @Value("\${hmpps.prisonregister.api.url}") private val prisonRegisterApiUrl: String,
 ) {
 
   @Bean
@@ -52,4 +53,19 @@ class WebClientConfiguration(
           .build()
       ).build()
   }
+
+  @Bean
+  fun prisonRegisterApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    return WebClient.builder()
+      .baseUrl(prisonRegisterApiUrl)
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build())
+      .build()
+  }
+
 }
