@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
 
 @Schema(description = "Describes an additional condition")
 data class AdditionalCondition(
@@ -27,4 +28,7 @@ data class AdditionalCondition(
 
   @Schema(description = "The list of file upload summary for this additional condition")
   val uploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
+
+  @Schema(description = "list of uploads for this additional condition")
+  val uploads: List<AdditionalConditionUpload> = emptyList()
 )

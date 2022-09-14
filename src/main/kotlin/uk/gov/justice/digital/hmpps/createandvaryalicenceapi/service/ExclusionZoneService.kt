@@ -8,8 +8,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUpload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AdditionalConditionUploadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import java.awt.Image
 import java.awt.image.BufferedImage
@@ -28,7 +31,42 @@ class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val additionalConditionUploadRepository: AdditionalConditionUploadRepository
 ) {
+
+  @Transactional
+  fun uploadExclusionZone(additionalConditionId: Long, licenceId: Long, request: AdditionalConditionUploadRequest) {
+    val condition = additionalConditionRepository
+      .findById(additionalConditionId)
+      .orElseThrow { EntityNotFoundException("$additionalConditionId") }
+
+    val upload = AdditionalConditionUpload(
+      licenceId = licenceId,
+      category = request.category,
+      key = request.key,
+      mineType = request.mineType,
+      url = request.url
+    )
+
+    upload.additionalCondition = condition
+
+    additionalConditionUploadRepository.saveAndFlush(upload)
+  }
+
+  @Transactional
+  fun deleteExclusionZone(id: Long, licenceId: Long, conditionId: Long) {
+    val upload = additionalConditionUploadRepository.findById(id).orElseThrow { EntityNotFoundException("$id") }
+
+    if (upload.additionalCondition.id != conditionId) {
+      throw ValidationException("upload $id does not belong to condition $conditionId")
+    }
+
+    if (upload.additionalCondition.licence.id != licenceId) {
+      throw ValidationException("upload $id is not linked to licence $licenceId")
+    }
+
+    additionalConditionUploadRepository.delete(upload)
+  }
 
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {

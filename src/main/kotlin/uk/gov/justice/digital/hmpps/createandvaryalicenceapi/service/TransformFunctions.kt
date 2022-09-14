@@ -210,6 +210,7 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
     expandedText = entity.expandedConditionText,
     data = entity.additionalConditionData.transformToModelAdditionalData(),
     uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
+    uploads = entity.additionalConditionsUploads
   )
 }
 
