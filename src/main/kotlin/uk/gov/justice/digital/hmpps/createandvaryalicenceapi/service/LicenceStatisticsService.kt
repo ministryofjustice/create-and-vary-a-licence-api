@@ -22,7 +22,7 @@ class LicenceStatisticsService(
     val prisonLicences = getLicencesForPrison(prisons)
     val crdScopedLicences = filterLicencesWithCrdInScope(prisonLicences, startDate, endDate)
     val crdScopedPrisons = filterUniquePrisonsOfCrdScopedLicences(crdScopedLicences)
-    return  licenceStatsForEachPrison(crdScopedPrisons, crdScopedLicences)
+    return licenceStatsForEachPrison(crdScopedPrisons, crdScopedLicences)
   }
 
   private fun getLicencesForPrison(prisons: List<Prison>): List<LicenceSummary> {
@@ -37,7 +37,7 @@ class LicenceStatisticsService(
     val dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
     val sDate = LocalDate.parse(startDate, dateFormatter)
     val eDate = LocalDate.parse(endDate, dateFormatter)
-   return prisonLicences.filter { (sDate <= it.conditionalReleaseDate) && (it.conditionalReleaseDate!! <= eDate) }
+    return prisonLicences.filter { (sDate <= it.conditionalReleaseDate) && (it.conditionalReleaseDate!! <= eDate) }
   }
 
   private fun filterUniquePrisonsOfCrdScopedLicences(crdScopedLicences: List<LicenceSummary>): List<Prison> {
@@ -73,6 +73,7 @@ class LicenceStatisticsService(
       inProgress = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.IN_PROGRESS },
       submitted = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.SUBMITTED },
       approved = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.APPROVED },
-      active = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.ACTIVE })
+      active = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.ACTIVE }
+    )
   }
 }

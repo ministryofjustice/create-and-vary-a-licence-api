@@ -41,4 +41,3 @@ data class LicenceStatistics(
   @Schema(description = "Approved but never printed", example = "1")
   val approvedNotPrinted: Int? = null,
 )
-

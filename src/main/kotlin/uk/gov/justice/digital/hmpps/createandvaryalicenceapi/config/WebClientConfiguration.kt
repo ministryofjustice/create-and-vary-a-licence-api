@@ -64,8 +64,8 @@ class WebClientConfiguration(
             configurer.defaultCodecs()
               .maxInMemorySize(-1)
           }
-          .build())
+          .build()
+      )
       .build()
   }
-
 }

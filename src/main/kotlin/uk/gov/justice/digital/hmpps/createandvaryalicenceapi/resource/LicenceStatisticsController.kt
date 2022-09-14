@@ -53,5 +53,4 @@ class LicenceStatisticsController(private val licenceStatisticsService: LicenceS
   fun getLicenceStatistics(@RequestParam("startDate") startDate: String, @RequestParam("endDate")endDate: String): List<LicenceStatistics> {
     return this.licenceStatisticsService.getStatistics(startDate, endDate)
   }
-
 }
