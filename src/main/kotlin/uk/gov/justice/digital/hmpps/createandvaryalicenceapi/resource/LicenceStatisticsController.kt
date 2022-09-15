@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.format.annotation.DateTimeFormat.ISO.DATE
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceStatistics
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceStatisticsService
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/support/licence-statistics", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -50,7 +53,11 @@ class LicenceStatisticsController(private val licenceStatisticsService: LicenceS
       )
     ]
   )
-  fun getLicenceStatistics(@RequestParam("startDate") startDate: String, @RequestParam("endDate")endDate: String): List<LicenceStatistics> {
+
+  fun getLicenceStatistics(
+    @RequestParam(required = true) @DateTimeFormat(iso = DATE) startDate: LocalDate,
+    @RequestParam(required = true) @DateTimeFormat(iso = DATE) endDate: LocalDate
+  ): List<LicenceStatistics> {
     return this.licenceStatisticsService.getStatistics(startDate, endDate)
   }
 }

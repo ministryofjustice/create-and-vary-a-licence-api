@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 
-@Service
+@Component
 class PrisonRegisterApiClient(@Qualifier("prisonRegisterApiWebClient") val prisonRegisterApiWebClient: WebClient) {
 
   fun getPrisonIds(): List<Prison> {

@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Service
 class LicenceStatisticsService(
@@ -17,7 +16,7 @@ class LicenceStatisticsService(
   private val licenceService: LicenceService
 ) {
 
-  fun getStatistics(startDate: String, endDate: String): List<LicenceStatistics> {
+  fun getStatistics(startDate: LocalDate, endDate: LocalDate): List<LicenceStatistics> {
     val prisons = prisonRegisterApiClient.getPrisonIds().sortedBy { it.prisonId }
     val prisonLicences = getLicencesForPrison(prisons)
     val crdScopedLicences = filterLicencesWithCrdInScope(prisonLicences, startDate, endDate)
@@ -31,26 +30,25 @@ class LicenceStatisticsService(
 
   private fun filterLicencesWithCrdInScope(
     prisonLicences: List<LicenceSummary>,
-    startDate: String,
-    endDate: String
+    startDate: LocalDate,
+    endDate: LocalDate
   ): List<LicenceSummary> {
-    val dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
-    val sDate = LocalDate.parse(startDate, dateFormatter)
-    val eDate = LocalDate.parse(endDate, dateFormatter)
-    return prisonLicences.filter { (sDate <= it.conditionalReleaseDate) && (it.conditionalReleaseDate!! <= eDate) }
+    return prisonLicences.filter { (startDate <= it.conditionalReleaseDate) && (it.conditionalReleaseDate!! <= endDate) }
   }
 
-  private fun filterUniquePrisonsOfCrdScopedLicences(crdScopedLicences: List<LicenceSummary>): List<Prison> {
-    return crdScopedLicences.map { it.prisonCode }.toSet().map { Prison(prisonId = it!!) }
+  private fun filterUniquePrisonsOfCrdScopedLicences(crdScopedLicences: List<LicenceSummary>): List<String> {
+    return crdScopedLicences.map { it.prisonCode!! }.distinctBy { it }
   }
 
   private fun licenceStatsForEachPrison(
-    prisons: List<Prison>,
+    prisons: List<String>,
     prisonLicences: List<LicenceSummary>
   ): List<LicenceStatistics> {
-    val prisonGroups =
-      prisons.map { it.prisonId to prisonLicences.filter { licence -> licence.prisonCode == it.prisonId } } // array of Pairs comprising prisonId with licences having a matching prisonCode
-    return prisonGroups.flatMap { extractStatsForPrison(it.first, it.second) }
+    return prisons.map { it to prisonLicences.getForPrison(it) }.flatMap { extractStatsForPrison(it.first, it.second) }
+  }
+
+  fun List<LicenceSummary>.getForPrison(prisonId: String): List<LicenceSummary> {
+    return this.filter { it.prisonCode == prisonId }
   }
 
   private fun extractStatsForPrison(prisonId: String, licenceSummaries: List<LicenceSummary>): List<LicenceStatistics> {
