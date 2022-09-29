@@ -33,7 +33,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
