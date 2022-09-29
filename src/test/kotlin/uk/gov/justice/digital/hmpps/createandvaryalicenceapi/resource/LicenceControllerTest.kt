@@ -19,10 +19,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -585,6 +582,18 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).referLicenceVariation(4, expectedRequest)
+  }
+
+  @Test
+  fun `get unapproved licences`() {
+    mvc.perform(
+      get("/licence/unapproved-by-crd")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).getLicenceUnapprovedByCrd()
   }
 
   private companion object {

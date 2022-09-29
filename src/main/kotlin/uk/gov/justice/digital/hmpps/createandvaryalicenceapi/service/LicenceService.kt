@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -134,6 +135,10 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     return transform(entityLicence)
+  }
+
+  fun getLicenceUnapprovedByCrd(): List<UnapprovedLicence> {
+    return licenceRepository.getLicencesNotApprovedByCRD()
   }
 
   @Transactional
@@ -645,7 +650,7 @@ class LicenceService(
       }
 
       val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
-        var uploadDetail = additionalConditionUploadDetailRepository.getById(it.uploadDetailId)
+        var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
         uploadDetail = uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
