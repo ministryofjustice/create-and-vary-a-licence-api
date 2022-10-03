@@ -13,4 +13,6 @@ insert into licence (
 (1,'100',1,1,1,'SUBMITTED', 'jim', 'smith', CURRENT_TIMESTAMP,'2022-09-29'),
 (2,'200',1,1,1,'SUBMITTED','harry','hope', CURRENT_TIMESTAMP,'2022-01-01'),
 (3,'300',1,1,2,'SUBMITTED','terry', 'towel','2022-09-29',CURRENT_TIMESTAMP),
-(4,'400',1,1,1,'APPROVED','bob', 'pint', CURRENT_TIMESTAMP,'2023-09-29');
+(4,'400',1,1,1,'APPROVED','bob', 'pint', CURRENT_TIMESTAMP,'2023-09-29'),
+(5,'500',1,1,1,'APPROVED','prisoner', 'five', '2023-09-29','2023-09-29'),
+(6,'600',1,1,1,'SUBMITTED','prisoner', 'six', CURRENT_TIMESTAMP,'2023-09-29');

@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -636,51 +635,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.prisonTelephone).isEqualTo("+44 276 54545")
   }
 
-  @Test
-  @Sql(
-    "classpath:test_data/clear-all-data.sql"
-  )
-  @Sql(
-    "classpath:test_data/seed-community-offender-manager.sql"
-  )
-  @Sql(
-    "classpath:test_data/seed-audit-events.sql"
-  )
-  @Sql(
-    "classpath:test_data/seed-submitted-licences.sql"
-  )
-  fun `Get unapproved licences`() {
-    val result = webTestClient.get()
-      .uri("/licence/unapproved-by-crd")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("SYSTEM_USER", "ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(UnapprovedLicence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result).size().isEqualTo(2)
-
-    assertThat(result?.get(0)?.crn).isEqualTo("100")
-    assertThat(result?.get(0)?.forename).isEqualTo("jim")
-    assertThat(result?.get(0)?.surname).isEqualTo("smith")
-    assertThat(result?.get(0)?.comFirstName).isEqualTo("Test")
-    assertThat(result?.get(0)?.comLastName).isEqualTo("Client")
-    assertThat(result?.get(0)?.comEmail).isEqualTo("testClient@probation.gov.uk")
-
-    assertThat(result?.get(1)?.crn).isEqualTo("300")
-    assertThat(result?.get(1)?.forename).isEqualTo("terry")
-    assertThat(result?.get(1)?.surname).isEqualTo("towel")
-    assertThat(result?.get(1)?.comFirstName).isEqualTo("Adam")
-    assertThat(result?.get(1)?.comLastName).isEqualTo("AAA")
-    assertThat(result?.get(1)?.comEmail).isEqualTo("testAAA@probation.gov.uk")
-  }
-
-  // com email address
-// com Name
-// prisonerFirstName prisonerLastName
-// CRN
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql"

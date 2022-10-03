@@ -51,7 +51,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -137,15 +136,6 @@ class LicenceServiceTest {
     val licence = service.getLicenceById(1L)
 
     assertThat(licence.createdByFullName).isEqualTo("X Y")
-  }
-
-  @Test
-  fun `service returns prisoner and com details for licences not approved by CRD`() {
-    whenever(licenceRepository.getLicencesNotApprovedByCRD()).thenReturn(listOf(anUnapprovedLicence))
-    val result = service.getLicenceUnapprovedByCrd()
-
-    assertThat(result).isEqualTo(listOf(anUnapprovedLicence))
-    verify(licenceRepository, times(1)).getLicencesNotApprovedByCRD()
   }
 
   @Test
@@ -1490,15 +1480,6 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
-    )
-
-    val anUnapprovedLicence = UnapprovedLicence(
-      crn = "100A",
-      forename = "jim",
-      surname = "smith",
-      comFirstName = "ComF",
-      comLastName = "ComL",
-      comEmail = "com@gmail.com"
     )
   }
 }

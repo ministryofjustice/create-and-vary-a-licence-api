@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
@@ -24,14 +25,26 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
                 (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')
     """
   )
-  fun getLicencesNotApprovedByCRD(): List<UnapprovedLicence>
+  fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence>
 }
 
+@Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
 data class UnapprovedLicence(
+  @Schema(description = "The Crime Reference Number", example = "Z882661")
   val crn: String? = null,
+
+  @Schema(description = "The prisoner's first name", example = "Jim")
   val forename: String? = null,
+
+  @Schema(description = "The prisoner's last name", example = "Smith")
   val surname: String? = null,
+
+  @Schema(description = "The COM's first name", example = "Joseph")
   val comFirstName: String? = null,
+
+  @Schema(description = "The COM's last name", example = "Bloggs")
   val comLastName: String? = null,
+
+  @Schema(description = "The COM's email address", example = "jbloggs@probation.gov.uk")
   val comEmail: String? = null
 )

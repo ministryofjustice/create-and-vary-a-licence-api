@@ -587,18 +587,6 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).referLicenceVariation(4, expectedRequest)
   }
 
-  @Test
-  fun `get unapproved licences`() {
-    mvc.perform(
-      get("/licence/unapproved-by-crd")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).getLicenceUnapprovedByCrd()
-  }
-
   private companion object {
 
     val someStandardConditions = listOf(
