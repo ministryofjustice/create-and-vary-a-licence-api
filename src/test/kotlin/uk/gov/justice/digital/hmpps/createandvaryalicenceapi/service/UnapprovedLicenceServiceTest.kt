@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -37,26 +36,18 @@ class UnapprovedLicenceServiceTest {
   }
 
   @Test
-  fun `service returns prisoner and com details for licences not approved by CRD`() {
-    whenever(licenceRepository.getEditedLicencesNotReApprovedByCrd()).thenReturn(listOf(anUnapprovedLicence))
-    val result = service.getEditedLicencesNotReApprovedByCrd()
-
-    assertThat(result).isEqualTo(listOf(anUnapprovedLicence))
-    verify(licenceRepository, times(1)).getEditedLicencesNotReApprovedByCrd()
-  }
-
-  @Test
   fun `service sends an email`() {
-    service.sendEmailsToProbationPractitioner(listOf(anUnapprovedLicence))
-    verify(notifyService, times(1)).sendUnapprovedLicenceEmail(listOf(anUnapprovedLicence))
-  }
+    val anUnapprovedLicence = listOf(UnapprovedLicence(
+      crn = "100A",
+      forename = "jim",
+      surname = "smith",
+      comFirstName = "ComF",
+      comLastName = "ComL",
+      comEmail = "com@gmail.com"
+    ))
 
-  val anUnapprovedLicence = UnapprovedLicence(
-    crn = "100A",
-    forename = "jim",
-    surname = "smith",
-    comFirstName = "ComF",
-    comLastName = "ComL",
-    comEmail = "com@gmail.com"
-  )
+    whenever(licenceRepository.getEditedLicencesNotReApprovedByCrd()).thenReturn(anUnapprovedLicence)
+    service.sendEmailsToProbationPractitioner()
+    verify(notifyService, times(1)).sendUnapprovedLicenceEmail(anUnapprovedLicence)
+  }
 }
