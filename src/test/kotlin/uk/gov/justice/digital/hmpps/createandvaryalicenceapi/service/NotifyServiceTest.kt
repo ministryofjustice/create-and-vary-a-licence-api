@@ -12,6 +12,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -31,6 +32,7 @@ class NotifyServiceTest {
     variationApprovedTemplateId = TEMPLATE_ID,
     variationReferredTemplateId = TEMPLATE_ID,
     variationForReApprovalTemplateId = TEMPLATE_ID,
+    unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     client = notificationClient,
   )
 
@@ -229,6 +231,7 @@ class NotifyServiceTest {
       variationApprovedTemplateId = TEMPLATE_ID,
       variationReferredTemplateId = TEMPLATE_ID,
       variationForReApprovalTemplateId = TEMPLATE_ID,
+      unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
@@ -255,6 +258,30 @@ class NotifyServiceTest {
       notifyService.sendVariationForApprovalEmail(NotifyRequest(null, null), "1", "First", "Last")
     }
     verifyNoInteractions(notificationClient)
+  }
+
+  @Test
+  fun `send unapproved licence email to probation practitioner`() {
+    val emailContent = listOf(
+      UnapprovedLicence(
+        "a123",
+        "jim",
+        "smith",
+        "comFirst",
+        "comLast",
+        EMAIL_ADDRESS
+      )
+    )
+
+    val expectedMap = mapOf(
+      Pair("crn", "a123"),
+      Pair("prisonerFirstName", "jim"),
+      Pair("prisonerLastName", "smith"),
+      Pair("comName", "comFirst comLast")
+    )
+
+    notifyService.sendUnapprovedLicenceEmail(emailContent)
+    verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedMap, null)
   }
 
   private companion object {

@@ -16,8 +16,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Unapprov
 
 class UnapprovedLicenceServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
+  private val notifyService = mock<NotifyService>()
   private val service = UnapprovedLicenceService(
-    licenceRepository
+    licenceRepository,
+    notifyService
   )
 
   @BeforeEach
@@ -41,6 +43,12 @@ class UnapprovedLicenceServiceTest {
 
     assertThat(result).isEqualTo(listOf(anUnapprovedLicence))
     verify(licenceRepository, times(1)).getEditedLicencesNotReApprovedByCrd()
+  }
+
+  @Test
+  fun `service sends an email`() {
+    service.sendEmailsToProbationPractitioner(listOf(anUnapprovedLicence))
+    verify(notifyService, times(1)).sendUnapprovedLicenceEmail(listOf(anUnapprovedLicence))
   }
 
   val anUnapprovedLicence = UnapprovedLicence(

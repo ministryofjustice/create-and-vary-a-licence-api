@@ -7,8 +7,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Unapprov
 @Service
 class UnapprovedLicenceService(
   private val licenceRepository: LicenceRepository,
+  private val notifyService: NotifyService,
 ) {
   fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence> {
     return licenceRepository.getEditedLicencesNotReApprovedByCrd()
+  }
+
+  fun sendEmailsToProbationPractitioner(unapprovedLicenceEmailData: List<UnapprovedLicence>) {
+    notifyService.sendUnapprovedLicenceEmail(unapprovedLicenceEmailData)
   }
 }
