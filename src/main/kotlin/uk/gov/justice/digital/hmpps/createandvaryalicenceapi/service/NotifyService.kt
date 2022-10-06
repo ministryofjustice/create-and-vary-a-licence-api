@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -23,6 +24,7 @@ class NotifyService(
   @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String,
   @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
+  @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
   private val client: NotificationClient,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
@@ -81,6 +83,26 @@ class NotifyService(
     }
     if (contacts.isEmpty()) {
       log.error("Notification failed (variationApproved) - email addresses not present for licence ID: $licenceId")
+    }
+  }
+
+  fun sendUnapprovedLicenceEmail(unapprovedLicenceEmailData: List<UnapprovedLicence>) {
+    if (unapprovedLicenceEmailData.isEmpty()) {
+      log.info("There were no emails to send to the probation practitioner to inform them of any edited emails that weren't re-approved by CRD date")
+    }
+    unapprovedLicenceEmailData.forEach {
+      sendEmail(
+        unapprovedLicenceByCrdTemplateId,
+        "${it.comEmail}",
+        mapOf(
+          Pair("crn", "${it.crn}"),
+          Pair("prisonerFirstName", "${it.forename}"),
+          Pair("prisonerLastName", "${it.surname}"),
+          Pair("comName", "${it.comFirstName} ${it.comLastName}"),
+        ),
+        null
+      )
+      log.info("Notification sent to ${it.comEmail} informing edited licence not reapproved by CRD for prisoner ${it.forename} ${it.surname}")
     }
   }
 

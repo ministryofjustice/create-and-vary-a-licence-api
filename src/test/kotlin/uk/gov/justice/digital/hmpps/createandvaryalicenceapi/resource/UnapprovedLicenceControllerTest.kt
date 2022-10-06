@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -16,10 +17,12 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UnapprovedLicenceService
 
 @ExtendWith(SpringExtension::class)
@@ -34,6 +37,9 @@ class UnapprovedLicenceControllerTest {
 
   @Autowired
   private lateinit var mvc: MockMvc
+
+  @Autowired
+  private lateinit var mapper: ObjectMapper
 
   @BeforeEach
   fun reset() {
@@ -55,5 +61,20 @@ class UnapprovedLicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(unapprovedLicenceService, times(1)).getEditedLicencesNotReApprovedByCrd()
+  }
+
+  @Test
+  fun `send email to probation practitioner`() {
+    val unapprovedLicence = listOf<UnapprovedLicence>()
+
+    mvc.perform(
+      MockMvcRequestBuilders.post("/notify-probation-of-unapproved-licences")
+        .accept(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(unapprovedLicence))
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+
+    verify(unapprovedLicenceService, times(1)).sendEmailsToProbationPractitioner(unapprovedLicence)
   }
 }
