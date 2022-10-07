@@ -35,7 +35,6 @@ class UnapprovedLicenceControllerTest {
   @Autowired
   private lateinit var mvc: MockMvc
 
-
   @BeforeEach
   fun reset() {
     reset(unapprovedLicenceService)

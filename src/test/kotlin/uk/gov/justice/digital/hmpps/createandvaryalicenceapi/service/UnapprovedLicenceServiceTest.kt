@@ -37,14 +37,16 @@ class UnapprovedLicenceServiceTest {
 
   @Test
   fun `service sends an email`() {
-    val anUnapprovedLicence = listOf(UnapprovedLicence(
-      crn = "100A",
-      forename = "jim",
-      surname = "smith",
-      comFirstName = "ComF",
-      comLastName = "ComL",
-      comEmail = "com@gmail.com"
-    ))
+    val anUnapprovedLicence = listOf(
+      UnapprovedLicence(
+        crn = "100A",
+        forename = "jim",
+        surname = "smith",
+        comFirstName = "ComF",
+        comLastName = "ComL",
+        comEmail = "com@gmail.com"
+      )
+    )
 
     whenever(licenceRepository.getEditedLicencesNotReApprovedByCrd()).thenReturn(anUnapprovedLicence)
     service.sendEmailsToProbationPractitioner()
