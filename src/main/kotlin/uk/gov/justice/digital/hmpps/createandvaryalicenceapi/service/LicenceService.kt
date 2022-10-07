@@ -976,7 +976,8 @@ class LicenceService(
     }
   }
   private fun hasOffenderResentensedWithActiveLicense(sentenceDatesRequest: UpdateSentenceDatesRequest, licenceEntity: EntityLicence): Boolean {
-    return (sentenceDatesRequest.conditionalReleaseDate?.isAfter(LocalDate.now()) == true || sentenceDatesRequest.actualReleaseDate?.isAfter(LocalDate.now()) == true) && licenceEntity.statusCode == ACTIVE
+    if (licenceEntity.statusCode != ACTIVE) return false
+    return (sentenceDatesRequest.actualReleaseDate?.isAfter(LocalDate.now()) == true || sentenceDatesRequest.conditionalReleaseDate?.isAfter(LocalDate.now()) == true)
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
