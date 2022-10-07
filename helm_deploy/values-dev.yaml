@@ -13,6 +13,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_PRISON_API_URL: "https://api-dev.prison.service.justice.gov.uk/api"
+    HMPPS_PRISONREGISTER_API_URL: "https://prison-register-dev.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence-dev.hmpps.service.justice.gov.uk"
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack

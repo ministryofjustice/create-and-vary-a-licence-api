@@ -23,3 +23,6 @@ hmpps:
   prison:
     api:
       url: "https://api-dev.prison.service.justice.gov.uk/api"
+  prisonregister:
+    api:
+      url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
