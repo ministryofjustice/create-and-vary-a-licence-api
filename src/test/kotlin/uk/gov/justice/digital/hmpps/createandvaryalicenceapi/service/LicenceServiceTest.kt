@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -731,6 +732,11 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
   }
 
+  /**
+   * In reality the update method updates, adds and removes conditions using a list
+   * of submitted condition codes. This process can be improved once policy documents are
+   * migrated form the Node app to this project.
+   */
   @Test
   fun `update additional conditions`() {
     whenever(licenceRepository.findById(1L))
@@ -744,6 +750,15 @@ class LicenceServiceTest {
                 conditionSequence = 5,
                 conditionCategory = "oldCategory",
                 conditionText = "oldText",
+                additionalConditionData = someAdditionalConditionData,
+                licence = aLicenceEntity
+              ),
+              EntityAdditionalCondition(
+                id = 2,
+                conditionCode = "code2",
+                conditionSequence = 6,
+                conditionCategory = "removedCategory",
+                conditionText = "removedText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity
               )
@@ -762,7 +777,12 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       EntityAdditionalCondition(
-        id = 1, conditionCode = "code", conditionCategory = "category", conditionSequence = 0, conditionText = "text", conditionType = "AP",
+        id = 1,
+        conditionCode = "code",
+        conditionCategory = "category",
+        conditionSequence = 0,
+        conditionText = "text",
+        conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
         licence = aLicenceEntity
       )
@@ -829,6 +849,118 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `add one additional condition to licence`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            additionalConditions = listOf(
+              EntityAdditionalCondition(
+                id = 1,
+                conditionCode = "code",
+                conditionSequence = 5,
+                conditionCategory = "oldCategory",
+                conditionText = "oldText",
+                additionalConditionData = emptyList(),
+                licence = aLicenceEntity
+              )
+            )
+          )
+        )
+      )
+
+    val request = AddAdditionalConditionRequest(conditionCode = "newCode", conditionCategory = "newCategory", conditionText = "newText", conditionType = "AP", expandedText = "newExpanded", sequence = 2)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    val newCondition = service.addAdditionalCondition(1L, "AP", request)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(newCondition)
+      .extracting("code", "category", "text", "expandedText", "sequence")
+      .isEqualTo(listOf("newCode", "newCategory", "newText", "newExpanded", 2))
+
+    // Verify last contact info is recorded
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+  }
+
+  @Test
+  fun `delete one additional condition`() {
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            additionalConditions = listOf(
+              EntityAdditionalCondition(
+                id = 1,
+                conditionCode = "code",
+                conditionSequence = 5,
+                conditionCategory = "oldCategory",
+                conditionText = "oldText",
+                additionalConditionData = someAdditionalConditionData,
+                licence = aLicenceEntity,
+                conditionType = "AP"
+              ),
+              EntityAdditionalCondition(
+                id = 2,
+                conditionCode = "code2",
+                conditionSequence = 6,
+                conditionCategory = "removedCategory",
+                conditionText = "removedText",
+                additionalConditionData = someAdditionalConditionData,
+                licence = aLicenceEntity,
+                conditionType = "AP"
+              ),
+              EntityAdditionalCondition(
+                id = 3,
+                conditionCode = "code3",
+                conditionSequence = 6,
+                conditionCategory = "oldCategory3",
+                conditionText = "oldText3",
+                additionalConditionData = someAdditionalConditionData,
+                licence = aLicenceEntity,
+                conditionType = "AP"
+              ),
+            )
+          )
+        )
+      )
+
+    service.deleteAdditionalCondition(1L, 2)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+      EntityAdditionalCondition(
+        id = 1,
+        conditionCode = "code",
+        conditionCategory = "oldCategory",
+        conditionSequence = 5,
+        conditionText = "oldText",
+        conditionType = "AP",
+        additionalConditionData = someAdditionalConditionData,
+        licence = aLicenceEntity
+      ),
+      EntityAdditionalCondition(
+        id = 3,
+        conditionCode = "code3",
+        conditionCategory = "oldCategory3",
+        conditionSequence = 6,
+        conditionText = "oldText3",
+        conditionType = "AP",
+        additionalConditionData = someAdditionalConditionData,
+        licence = aLicenceEntity
+      )
+    )
+
+    // Verify last contact info is recorded
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
   }
 
   @Test
