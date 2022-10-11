@@ -1351,7 +1351,255 @@ class LicenceServiceTest {
       "2",
     )
   }
+  @Test
+  fun `should set the license status to inactive when the offender has a new future conditional release date`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.now().plusDays(5),
+        actualReleaseDate = null,
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      )
+    )
 
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        Pair("Release date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
+  }
+  @Test
+  fun `should set the license status to inactive when the offender has a new future actual release date`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = null,
+        actualReleaseDate = LocalDate.now().plusDays(2),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        Pair("Release date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
+  }
+  @Test
+  fun `should not set the license status to inactive if existing license is not active`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.now().plusDays(5),
+        actualReleaseDate = LocalDate.now().plusDays(2),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.IN_PROGRESS)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        Pair("Release date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
+  }
+  @Test
+  fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.now().minusDays(1),
+        actualReleaseDate = LocalDate.now().plusDays(2),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        Pair("Release date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
+  }
+  @Test
+  fun `should set the license status to inactive even if actualReleaseDate is before today`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.now().plusDays(5),
+        actualReleaseDate = LocalDate.now().minusDays(2),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        Pair("Release date", true),
+        Pair("Licence end date", true),
+        Pair("Sentence end date", true),
+        Pair("Top up supervision start date", true),
+        Pair("Top up supervision end date", true)
+      )
+    )
+  }
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
 
