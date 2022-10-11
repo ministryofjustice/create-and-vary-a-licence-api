@@ -975,9 +975,21 @@ class LicenceService(
         }
     }
   }
-  private fun hasOffenderResentensedWithActiveLicense(sentenceDatesRequest: UpdateSentenceDatesRequest, licenceEntity: EntityLicence): Boolean {
-    if (licenceEntity.statusCode != ACTIVE) return false
-    return (sentenceDatesRequest.actualReleaseDate?.isAfter(LocalDate.now()) == true || sentenceDatesRequest.conditionalReleaseDate?.isAfter(LocalDate.now()) == true)
+
+  private fun hasOffenderResentensedWithActiveLicense(
+    sentenceDatesRequest: UpdateSentenceDatesRequest,
+    licenceEntity: EntityLicence
+  ): Boolean {
+    if (licenceEntity.statusCode == ACTIVE &&
+      (
+        sentenceDatesRequest.actualReleaseDate?.isAfter(LocalDate.now()) == true ||
+          sentenceDatesRequest.conditionalReleaseDate?.isAfter(LocalDate.now()) == true
+        )
+    ) {
+      log.warn("Active Licence ${licenceEntity.id} is no longer valid with ARD ${sentenceDatesRequest.actualReleaseDate} and CRD ${sentenceDatesRequest.conditionalReleaseDate}")
+      return true
+    }
+    return false
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
