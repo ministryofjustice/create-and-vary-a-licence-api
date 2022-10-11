@@ -260,7 +260,7 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicence)
 
     // return the newly added condition.
-    val newCondition = updatedLicence.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
+    val newCondition = licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
     return transform(newCondition)
   }
 
