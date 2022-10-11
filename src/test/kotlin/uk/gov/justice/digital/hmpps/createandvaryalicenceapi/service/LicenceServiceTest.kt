@@ -34,7 +34,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -849,43 +848,6 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
-  }
-
-  @Test
-  fun `add one additional condition to licence`() {
-    whenever(licenceRepository.findById(1L))
-      .thenReturn(
-        Optional.of(
-          aLicenceEntity.copy(
-            additionalConditions = listOf(
-              EntityAdditionalCondition(
-                id = 1,
-                conditionCode = "code",
-                conditionSequence = 5,
-                conditionCategory = "oldCategory",
-                conditionText = "oldText",
-                additionalConditionData = emptyList(),
-                licence = aLicenceEntity
-              )
-            )
-          )
-        )
-      )
-
-    val request = AddAdditionalConditionRequest(conditionCode = "newCode", conditionCategory = "newCategory", conditionText = "newText", conditionType = "AP", expandedText = "newExpanded", sequence = 2)
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    val newCondition = service.addAdditionalCondition(1L, "AP", request)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    assertThat(newCondition)
-      .extracting("code", "category", "text", "expandedText", "sequence")
-      .isEqualTo(listOf("newCode", "newCategory", "newText", "newExpanded", 2))
-
-    // Verify last contact info is recorded
-    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
   }
 
   @Test
