@@ -274,10 +274,10 @@ class NotifyServiceTest {
     )
 
     val expectedMap = mapOf(
-      Pair("crn", "a123"),
-      Pair("prisonerFirstName", "jim"),
-      Pair("prisonerLastName", "smith"),
-      Pair("comName", "comFirst comLast")
+      "crn" to "a123",
+      "prisonerFirstName" to "jim",
+      "prisonerLastName" to "smith",
+      "comName" to "comFirst comLast"
     )
 
     notifyService.sendUnapprovedLicenceEmail(emailContent)
