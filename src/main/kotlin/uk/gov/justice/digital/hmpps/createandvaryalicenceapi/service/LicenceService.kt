@@ -50,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -645,7 +646,7 @@ class LicenceService(
       }
 
       val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
-        var uploadDetail = additionalConditionUploadDetailRepository.findById(it.uploadDetailId).orElseThrow()
+        var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
         uploadDetail = uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
@@ -914,6 +915,7 @@ class LicenceService(
     val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
 
     val updatedLicenceEntity = licenceEntity.copy(
+      statusCode = if (hasOffenderResentensedWithActiveLicense(sentenceDatesRequest, licenceEntity)) INACTIVE else licenceEntity.statusCode,
       conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
       sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
@@ -972,6 +974,22 @@ class LicenceService(
           )
         }
     }
+  }
+
+  private fun hasOffenderResentensedWithActiveLicense(
+    sentenceDatesRequest: UpdateSentenceDatesRequest,
+    licenceEntity: EntityLicence
+  ): Boolean {
+    if (licenceEntity.statusCode == ACTIVE &&
+      (
+        sentenceDatesRequest.actualReleaseDate?.isAfter(LocalDate.now()) == true ||
+          sentenceDatesRequest.conditionalReleaseDate?.isAfter(LocalDate.now()) == true
+        )
+    ) {
+      log.warn("Active Licence ${licenceEntity.id} is no longer valid with ARD ${sentenceDatesRequest.actualReleaseDate} and CRD ${sentenceDatesRequest.conditionalReleaseDate}")
+      return true
+    }
+    return false
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
