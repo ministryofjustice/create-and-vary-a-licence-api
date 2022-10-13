@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -57,6 +58,7 @@ import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as AdditionalConditionModel
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
 @Service
@@ -220,6 +222,68 @@ class LicenceService(
     }
   }
 
+  /**
+   * Add additional condition. Allows for adding more than one condition of the same type
+   */
+  @Transactional
+  fun addAdditionalCondition(
+    licenceId: Long,
+    conditionType: String,
+    request: AddAdditionalConditionRequest
+  ): AdditionalConditionModel {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val newConditions = licenceEntity.additionalConditions.toMutableList()
+
+    newConditions.add(
+      AdditionalCondition(
+        conditionType = request.conditionType,
+        conditionCode = request.conditionCode,
+        conditionText = request.conditionText,
+        expandedConditionText = request.expandedText,
+        conditionCategory = request.conditionCategory,
+        licence = licenceEntity,
+        conditionSequence = request.sequence
+      )
+    )
+
+    val updatedLicence = licenceEntity.copy(
+      additionalConditions = newConditions,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicence)
+
+    // return the newly added condition.
+    val newCondition = licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
+    return transform(newCondition)
+  }
+
+  @Transactional
+  fun deleteAdditionalCondition(licenceId: Long, conditionId: Long) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    // return all conditions except condition with submitted conditionId
+    val revisedConditions = licenceEntity.additionalConditions.filter { it.id != conditionId }
+
+    val updatedLicence = licenceEntity.copy(
+      additionalConditions = revisedConditions,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicence)
+  }
+
   @Transactional
   fun updateAdditionalConditions(licenceId: Long, request: AdditionalConditionsRequest) {
     val licenceEntity = licenceRepository
@@ -227,43 +291,44 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val additionalConditions = licenceEntity.additionalConditions.associateBy { it.conditionCode }.toMutableMap()
-    val newAdditionalConditions = request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
-    // Update any existing additional conditions with new values, or add the new condition if it doesn't exist.
-    newAdditionalConditions.forEach {
-      if (additionalConditions[it.conditionCode] != null) {
-        additionalConditions[it.conditionCode]?.conditionCategory = it.conditionCategory
-        additionalConditions[it.conditionCode]?.conditionText = it.conditionText
-        additionalConditions[it.conditionCode]?.conditionSequence = it.conditionSequence
-        additionalConditions[it.conditionCode]?.conditionType = it.conditionType
-      } else {
-        it.licence = licenceEntity
-        additionalConditions[it.conditionCode] = it
-        additionalConditions[it.conditionCode]?.expandedConditionText = it.conditionText
+    val submittedAdditionalConditions =
+      request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
+
+    val newAdditionalConditions =
+      submittedAdditionalConditions.filter { licenceEntity.additionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
+        .map { newAdditionalCondition -> newAdditionalCondition.copy(expandedConditionText = newAdditionalCondition.conditionText, licence = licenceEntity) }
+
+    val removedAdditionalConditionsList =
+      licenceEntity.additionalConditions.filter { submittedAdditionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
+
+    val updatedAdditionalConditions =
+      licenceEntity.additionalConditions.filter { condition -> removedAdditionalConditionsList.none { it.conditionCode == condition.conditionCode } }
+
+    submittedAdditionalConditions.forEach { newAdditionalCondition ->
+      updatedAdditionalConditions.filter {
+        it.conditionCode == newAdditionalCondition.conditionCode
+      }.forEach {
+        it.conditionCategory = newAdditionalCondition.conditionCategory
+        it.conditionText = newAdditionalCondition.conditionText
+        it.conditionSequence = newAdditionalCondition.conditionSequence
+        it.conditionType = newAdditionalCondition.conditionType
       }
     }
 
-    // Remove any additional conditions which exist on the licence, but were not specified in the request
-    val resultAdditionalConditionsList = additionalConditions.values.filter { condition ->
-      newAdditionalConditions.find { newAdditionalCondition -> newAdditionalCondition.conditionCode == condition.conditionCode } != null ||
-        condition.conditionType != request.conditionType
-    }
-
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = resultAdditionalConditionsList,
+      additionalConditions = newAdditionalConditions + updatedAdditionalConditions,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
+
     licenceRepository.saveAndFlush(updatedLicence)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
-    val oldConditionsWithUploads = additionalConditions.values.filter { condition -> condition.additionalConditionUploadSummary.isNotEmpty() }
-    oldConditionsWithUploads.forEach { oldCondition ->
-      if (resultAdditionalConditionsList.find { newCondition -> newCondition.conditionCode == oldCondition.conditionCode } == null) {
-        val uploadId = oldCondition.additionalConditionUploadSummary.first().uploadDetailId
-        additionalConditionUploadDetailRepository.findById(uploadId).ifPresent {
-          additionalConditionUploadDetailRepository.delete(it)
+    removedAdditionalConditionsList.forEach { oldCondition ->
+      oldCondition.additionalConditionUploadSummary.forEach {
+        additionalConditionUploadDetailRepository.findById(it.uploadDetailId).ifPresent { uploadDetail ->
+          additionalConditionUploadDetailRepository.delete(uploadDetail)
         }
       }
     }
