@@ -1,22 +1,25 @@
 version: 2.1
 
 orbs:
-  hmpps: ministryofjustice/hmpps@5.1.0
+  hmpps: ministryofjustice/hmpps@6
   codecov: codecov/codecov@3.2.0
 
 parameters:
   alerts-slack-channel:
     type: string
-    default: farsight-alerts
+    default: cvl_alerts_security
   releases-slack-channel:
     type: string
     default: farsight-alerts
+  java-version:
+    type: string
+    default: "18.0"
 
 jobs:
   validate:
     executor:
       name: hmpps/java
-      tag: "16.0"
+      tag: << pipeline.parameters.java-version >>
     steps:
       - checkout
       - restore_cache:
@@ -41,7 +44,7 @@ jobs:
   integration-test:
     executor:
       name: hmpps/java
-      tag: "16.0"
+      tag: << pipeline.parameters.java-version >>
     steps:
       - checkout
       - restore_cache:

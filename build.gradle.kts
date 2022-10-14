@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.5.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.5.4"
   kotlin("plugin.spring") version "1.7.10"
   kotlin("plugin.jpa") version "1.7.10"
   jacoco
@@ -59,7 +59,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:3.17.3-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:3.18.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:2.0.26")
@@ -68,8 +68,8 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql:42.5.0")
 
-  implementation("com.google.code.gson:gson:2.9.0")
-  implementation("io.arrow-kt:arrow-core:1.1.2")
+  implementation("com.google.code.gson:gson:2.9.1")
+  implementation("io.arrow-kt:arrow-core:1.1.3")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
@@ -81,8 +81,8 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.35.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.2")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.36.0")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.3")
   testImplementation("org.mockito:mockito-inline:4.8.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
