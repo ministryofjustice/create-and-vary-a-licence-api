@@ -19,6 +19,7 @@ data class ConditionChangesByType<T, U>(
 
 data class LicenceConditionChanges(
   val code: String,
+  val sequence: Int?,
   val previousText: String,
   val currentText: String,
   var dataChanges: List<AdditionalConditionData>
