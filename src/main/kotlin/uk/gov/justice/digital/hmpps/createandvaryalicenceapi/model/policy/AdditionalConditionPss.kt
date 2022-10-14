@@ -7,5 +7,5 @@ data class AdditionalConditionPss(
   override val tpl: String?,
   override val requiresInput: Boolean,
   val pssDates: Boolean?,
-  val inputs: List<PassInput>,
+  val inputs: List<PassInput>?,
 ) : ILicenceCondition
