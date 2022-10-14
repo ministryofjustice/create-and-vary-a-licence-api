@@ -9,4 +9,5 @@ data class AdditionalConditionAp(
   val inputs: List<Input>?,
   val categoryShort: String?,
   val subtext: String?,
+  val type: String?,
 ) : ILicenceCondition

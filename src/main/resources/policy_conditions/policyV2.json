@@ -126,7 +126,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "RegionOfResidence"
       },
       {
         "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
@@ -139,7 +140,6 @@
             "type": "radio",
             "label": "Select the relevant text",
             "name": "gender",
-            "case": "lower",
             "options": [
               {
                 "value": "any"
@@ -150,7 +150,8 @@
               {
                 "value": "any male"
               }
-            ]
+            ],
+            "case": "lower"
           },
           {
             "type": "radio",
@@ -165,12 +166,13 @@
               }
             ]
           }
-        ]
+        ],
+        "categoryShort": null,
+        "type": "RestrictionOfResidency"
       },
       {
         "code": "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER].",
         "tpl": "Attend all appointments arranged for you with a {appointmentType}.",
         "requiresInput": true,
@@ -179,7 +181,6 @@
             "type": "check",
             "label": "Select all the relevant options",
             "name": "appointmentType",
-            "case": "lower",
             "listType": "AND",
             "options": [
               {
@@ -191,21 +192,23 @@
               {
                 "value": "Medical practitioner"
               }
-            ]
+            ],
+            "case": "lower"
           }
-        ]
+        ],
+        "categoryShort": "Contact with a person",
+        "type": "MedicalAppointmentType"
       },
       {
         "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Receive home visits from a Mental Health Worker.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Contact with a person"
       },
       {
         "code": "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
         "tpl": "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
         "requiresInput": true,
@@ -227,19 +230,20 @@
             "label": "Enter the address for the appointment",
             "name": "appointmentAddress"
           }
-        ]
+        ],
+        "categoryShort": "Contact with a person",
+        "type": "AppointmentTimeAndPlace"
       },
       {
         "code": "75a6aac6-02a7-4414-af14-942be6736892",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Should you return to the UK and Islands before the expiry date of your licence then your licence conditions will be in force and you must report within two working days to your supervising officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Contact with a person"
       },
       {
         "code": "4858cd8b-bca6-4f11-b6ee-439e27216d7d",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT].",
         "tpl": "Not to seek to approach or communicate with {name} without the prior approval of your supervising officer{socialServicesDepartment}.",
         "requiresInput": true,
@@ -258,15 +262,16 @@
             "type": "text",
             "label": "Enter social services department (optional)",
             "name": "socialServicesDepartment",
-            "includeBefore": " and / or ",
-            "case": "capitalise"
+            "case": "capitalise",
+            "includeBefore": " and / or "
           }
-        ]
+        ],
+        "categoryShort": "Contact with a person",
+        "type": "NoContactWithVictim"
       },
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
         "tpl": "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer{socialServicesDepartment} except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
         "requiresInput": true,
@@ -275,7 +280,6 @@
             "type": "radio",
             "label": "Select the relevant gender",
             "name": "gender",
-            "case": "lower",
             "options": [
               {
                 "value": "any"
@@ -286,7 +290,8 @@
               {
                 "value": "any male"
               }
-            ]
+            ],
+            "case": "lower"
           },
           {
             "type": "radio",
@@ -305,15 +310,16 @@
             "type": "text",
             "label": "Enter social services department (optional)",
             "name": "socialServicesDepartment",
-            "includeBefore": " and / or ",
-            "case": "capitalise"
+            "case": "capitalise",
+            "includeBefore": " and / or "
           }
-        ]
+        ],
+        "categoryShort": "Contact with a person",
+        "type": "UnsupervisedContact"
       },
       {
         "code": "355700a9-6184-40c0-9759-0dfed1994e1e",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Not to contact or associate with [NAMED OFFENDER(S) / NAMED INDIVIDUAL(S)] without the prior approval of your supervising officer.",
         "tpl": "Not to contact or associate with {nameOfIndividual} without the prior approval of your supervising officer.",
         "requiresInput": true,
@@ -326,28 +332,30 @@
             "case": "capitalise",
             "addAnother": {
               "label": "Add another person"
-            }
+            },
+            "includeBefore": null
           }
-        ]
+        ],
+        "categoryShort": "Contact with a person",
+        "type": "NamedIndividuals"
       },
       {
         "code": "0aa669bf-db8a-4b8e-b8ba-ca82fc245b94",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Not to contact or associate with a known sex offender other than when compelled by attendance at a Treatment Programme or when residing at Approved Premises without the prior approval of your supervising officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Contact with a person"
       },
       {
         "code": "cc80d02b-0b62-4940-bac6-0bcd374c725e",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Not to contact directly or indirectly any person who is a serving or remand prisoner or detained in State custody, without the prior approval of your supervising officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Contact with a person"
       },
       {
         "code": "18b69f61-800f-46b2-95c4-2019d33e34d6",
         "category": "Making or maintaining contact with a person",
-        "categoryShort": "Contact with a person",
         "text": "Not to associate with any person currently or formerly associated with [NAMES OF SPECIFIC GROUPS OR ORGANISATIONS] without the prior approval of your supervising officer.",
         "tpl": "Not to associate with any person currently or formerly associated with {nameOfOrganisation} without the prior approval of your supervising officer.",
         "requiresInput": true,
@@ -361,12 +369,13 @@
               "label": "Add another group or organisation"
             }
           }
-        ]
+        ],
+        "categoryShort": "Contact with a person",
+        "type": "NamedOrganisation"
       },
       {
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
         "category": "Participation in, or co-operation with, a programme or set of activities",
-        "categoryShort": "Programmes or activities",
         "text": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems at the [NAME OF COURSE / CENTRE].",
         "tpl": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems{course}.",
         "requiresInput": true,
@@ -415,12 +424,13 @@
             "name": "course",
             "includeBefore": " at the "
           }
-        ]
+        ],
+        "categoryShort": "Programmes or activities",
+        "type": "BehaviourProblems"
       },
       {
         "code": "9da214a3-c6ae-45e1-a465-12e22adf7c87",
         "category": "Participation in, or co-operation with, a programme or set of activities",
-        "categoryShort": "Programmes or activities",
         "text": "Not to undertake work or other organised activity which will involve a person under the age of [INSERT AGE], either on a paid or unpaid basis without the prior approval of your supervising officer.",
         "tpl": "Not to undertake work or other organised activity which will involve a person under the age of {age}, either on a paid or unpaid basis without the prior approval of your supervising officer.",
         "requiresInput": true,
@@ -438,61 +448,69 @@
               }
             ]
           }
-        ]
+        ],
+        "categoryShort": "Programmes or activities",
+        "type": "WorkingWithChildren"
+      },
+      {
+        "code": "0EDB6D01-46B6-408F-971C-0EBFF5FA93F0",
+        "category": "Participation in, or co-operation with, a programme or set of activities",
+        "categoryShort": "Programmes or activities",
+        "text": "To engage with the Integrated Offender Management Team, and follow their instructions.",
+        "requiresInput": false
       },
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "72d281c3-b194-43ab-812d-fea0683ada65",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "Not to own or possess a mobile phone with a photographic function without the prior approval of your supervising officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "ed607a91-fe3a-4816-8eb9-b447c945935c",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "Not to own or use a camera without the prior approval of your supervising officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection on request by your supervising officer and/or a police officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "5fa04bbf-6b7c-4b65-9388-a0115cd365a6",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "To surrender your passport(s) to your supervising officer and to notify your supervising officer of any intention to apply for a new passport.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "bfbc693c-ab65-4042-920e-ddb085bc7aba",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for the purpose, and only at a specific location, as specified by that officer.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Items and documents"
       },
       {
         "code": "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "categoryShort": "Items and documents",
         "text": "Not to own or possess a [SPECIFIED ITEM] without the prior approval of your supervising officer.",
         "tpl": "Not to own or possess {item} without the prior approval of your supervising officer.",
         "requiresInput": true,
@@ -507,7 +525,9 @@
               "label": "Add another item"
             }
           }
-        ]
+        ],
+        "categoryShort": "Items and documents",
+        "type": "SpecifiedItem"
       },
       {
         "code": "2a93b784-b8cb-49ed-95e2-a0df60723cda",
@@ -526,7 +546,6 @@
             "type": "radio",
             "label": "Select the relevant text",
             "name": "gender",
-            "case": "lower",
             "options": [
               {
                 "value": "men"
@@ -537,9 +556,11 @@
               {
                 "value": "women or men"
               }
-            ]
+            ],
+            "case": "lower"
           }
-        ]
+        ],
+        "type": "IntimateRelationshipWithGender"
       },
       {
         "code": "c5e91330-748d-46f3-93f6-bbe5ea8324ce",
@@ -564,7 +585,6 @@
         "category": "Curfew arrangement",
         "text": "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         "tpl": "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
         "requiresInput": true,
         "inputs": [
           {
@@ -581,8 +601,6 @@
             "type": "radio",
             "label": "Select a review period",
             "name": "reviewPeriod",
-            "case": "lower",
-            "handleIndefiniteArticle": true,
             "options": [
               {
                 "value": "Weekly"
@@ -604,16 +622,19 @@
                   ]
                 }
               }
-            ]
+            ],
+            "case": "lower",
+            "handleIndefiniteArticle": true
           }
-        ]
+        ],
+        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
+        "type": "CurfewTerms"
       },
       {
         "code": "c2435d4a-20a0-47de-b080-e1e740d1514c",
         "category": "Curfew arrangement",
         "text": "Confine yourself to remain at [CURFEW ADDRESS] initially from [START OF CURFEW HOURS] until [END OF CURFEW HOURS] each day, and, thereafter, for such a period as may be reasonably notified to you by your supervising officer; and comply with such arrangements as may be reasonably put in place and notified to you by your supervising officer so as to allow for your whereabouts and your compliance with your curfew requirement be monitored (whether by electronic means involving your wearing an electronic tag or otherwise).",
         "tpl": "Confine yourself to remain at {curfewAddress} initially from {curfewStart} until {curfewEnd} each day, and, thereafter, for such a period as may be reasonably notified to you by your supervising officer; and comply with such arrangements as may be reasonably put in place and notified to you by your supervising officer so as to allow for your whereabouts and your compliance with your curfew requirement be monitored (whether by electronic means involving your wearing an electronic tag or otherwise).",
-        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
         "requiresInput": true,
         "inputs": [
           {
@@ -631,13 +652,14 @@
             "label": "Enter the curfew end time",
             "name": "curfewEnd"
           }
-        ]
+        ],
+        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
+        "type": "CurfewAddress"
       },
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         "category": "Freedom of movement",
         "text": "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map without the prior approval of your supervising officer.",
-        "subtext": "If you need to upload more than one map, add one here and then email all maps directly to the prison OMU. Make sure the names of areas shown on all maps are entered here as a list. For example, Bridgend, Porthcawl and Port Talbot.",
         "tpl": "Not to enter the area of {outOfBoundArea}, as defined by the attached map without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
@@ -651,7 +673,9 @@
             "label": "Find and select the <a class=\"govuk-link\" href=\"https://mapmaker.field-dynamics.co.uk/moj/map/default\" rel=\"noreferrer noopener\" target=\"_blank\">Mapmaker PDF map</a> to include on the licence",
             "name": "outOfBoundFilename"
           }
-        ]
+        ],
+        "subtext": "If you need to upload more than one map, add one here and then email all maps directly to the prison OMU. Make sure the names of areas shown on all maps are entered here as a list. For example, Bridgend, Porthcawl and Port Talbot.",
+        "type": "OutOfBoundsRegion"
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
@@ -670,7 +694,8 @@
             "label": "Enter the address of the premises",
             "name": "premisesAddress"
           }
-        ]
+        ],
+        "type": "OutOfBoundsPremises"
       },
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
@@ -685,7 +710,8 @@
             "name": "typeOfPremises",
             "case": "lower"
           }
-        ]
+        ],
+        "type": "OutOfBoundsPremisesType"
       },
       {
         "code": "bb401b88-2137-4154-be4a-5e05c168638a",
@@ -702,7 +728,6 @@
       {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
-        "categoryShort": "Supervision in the community",
         "text": "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "tpl": "Report to staff at {approvedPremises} at {reportingTime}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "requiresInput": true,
@@ -722,8 +747,6 @@
             "type": "radio",
             "label": "Select a review period",
             "name": "reviewPeriod",
-            "case": "lower",
-            "handleIndefiniteArticle": true,
             "options": [
               {
                 "value": "Weekly"
@@ -745,14 +768,17 @@
                   ]
                 }
               }
-            ]
+            ],
+            "case": "lower",
+            "handleIndefiniteArticle": true
           }
-        ]
+        ],
+        "categoryShort": "Supervision in the community",
+        "type": "ReportToApprovedPremises"
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
-        "categoryShort": "Supervision in the community",
         "text": "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "tpl": "Report to staff at {policeStation} at {reportingTime}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "requiresInput": true,
@@ -772,8 +798,6 @@
             "type": "radio",
             "label": "Select a review period",
             "name": "reviewPeriod",
-            "case": "lower",
-            "handleIndefiniteArticle": true,
             "options": [
               {
                 "value": "Weekly"
@@ -795,16 +819,20 @@
                   ]
                 }
               }
-            ]
+            ],
+            "case": "lower",
+            "handleIndefiniteArticle": true
           }
-        ]
+        ],
+        "categoryShort": "Supervision in the community",
+        "type": "ReportToPoliceStation"
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
         "category": "Restriction of specified conduct or specified acts",
-        "categoryShort": "Restriction of conduct or acts",
         "text": "Not to participate directly or indirectly in organising and/or contributing to any demonstration, meeting, gathering or website without the prior approval of your supervising officer. This condition will be reviewed on a monthly basis and may be amended or removed if your risk is assessed as having changed.",
-        "requiresInput": false
+        "requiresInput": false,
+        "categoryShort": "Restriction of conduct or acts"
       },
       {
         "code": "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
@@ -859,7 +887,8 @@
             "label": "Enter address",
             "name": "address"
           }
-        ]
+        ],
+        "type": "DrugTestLocation"
       },
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
@@ -894,7 +923,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ElectronicMonitoringTypes"
       },
       {
         "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -908,7 +938,8 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "ElectronicMonitoringPeriod"
       },
       {
         "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
@@ -922,7 +953,8 @@
             "label": "Enter the approved address",
             "name": "approvedAddress"
           }
-        ]
+        ],
+        "type": "ApprovedAddress"
       },
       {
         "code": "599bdcae-d545-461c-b1a9-02cb3d4ba268",
@@ -941,7 +973,8 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "AlcoholMonitoringPeriod"
       },
       {
         "code": "9678FD9E-F80D-423A-A6FB-B79909094887",
@@ -976,7 +1009,8 @@
             "label": "Enter the address for the appointment",
             "name": "appointmentAddress"
           }
-        ]
+        ],
+        "type": "AppointmentTimeAndPlaceDuringPss"
       },
       {
         "code": "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
@@ -984,6 +1018,7 @@
         "text": "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
         "tpl": "Attend {name} {address}, as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
         "requiresInput": true,
+        "pssDates": null,
         "inputs": [
           {
             "type": "text",
@@ -995,7 +1030,8 @@
             "label": "Enter address",
             "name": "address"
           }
-        ]
+        ],
+        "type": "DrugTestLocation"
       }
     ]
   }
