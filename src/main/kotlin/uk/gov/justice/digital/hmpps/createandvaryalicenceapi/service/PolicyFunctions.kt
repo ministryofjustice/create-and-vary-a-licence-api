@@ -58,7 +58,9 @@ fun <T : ILicenceCondition> licencePolicyChanges(
   policyConditions.find { it.code == c.code }?.let { pc ->
     val textHasChanged = pc.text != c.text
     val dataChanges = c.data.filter { d -> policyPlaceholders[c.code]?.containsValue(d.field) == false }
-    if (textHasChanged || dataChanges.isNotEmpty()) LicenceConditionChanges(c.code!!, c.text!!, pc.text, dataChanges)
+    if (textHasChanged || dataChanges.isNotEmpty()) LicenceConditionChanges(
+      c.code!!, c.sequence, c.text!!, pc.text, dataChanges
+    )
     else null
   }
 }
