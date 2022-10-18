@@ -17,11 +17,16 @@ data class ConditionChangesByType<T, U>(
   val Pss: ConditionChanges<U>
 )
 
+enum class ConditionChangeType {
+  DELETED, REPLACED, NEW_OPTIONS, TEXT_CHANGE
+}
+
 data class LicenceConditionChanges(
+  val changeType: ConditionChangeType,
   val code: String,
   val sequence: Int?,
   val previousText: String,
-  val currentText: String,
+  val currentText: String?,
   var dataChanges: List<AdditionalConditionData>
 )
 
