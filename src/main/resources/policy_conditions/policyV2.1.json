@@ -126,7 +126,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "RegionOfResidence"
       },
       {
         "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
@@ -165,13 +166,14 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "RestrictionOfResidency"
       },
       {
         "code": "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
         "category": "Making or maintaining contact with a person",
         "categoryShort": "Contact with a person",
-        "text": "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner.",
+        "text": "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
         "requiresInput": false
       },
       {
@@ -220,7 +222,8 @@
             "includeBefore": " and / or ",
             "case": "capitalise"
           }
-        ]
+        ],
+        "type": "NoContactWithVictim"
       },
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
@@ -267,7 +270,8 @@
             "includeBefore": " and / or ",
             "case": "capitalise"
           }
-        ]
+        ],
+        "type": "UnsupervisedContact"
       },
       {
         "code": "355700a9-6184-40c0-9759-0dfed1994e1e",
@@ -287,7 +291,8 @@
               "label": "Add another person"
             }
           }
-        ]
+        ],
+        "type": "NamedIndividuals"
       },
       {
         "code": "0aa669bf-db8a-4b8e-b8ba-ca82fc245b94",
@@ -320,7 +325,8 @@
               "label": "Add another group or organisation"
             }
           }
-        ]
+        ],
+        "type": "NamedOrganisation"
       },
       {
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
@@ -350,7 +356,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "WorkingWithChildren"
       },
       {
         "code": "0EDB6D01-46B6-408F-971C-0EBFF5FA93F0",
@@ -384,7 +391,7 @@
         "code": "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "categoryShort": "Items and documents",
-        "text": "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection on request by your supervising officer and/or a police officer.",
+        "text": "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection upon request.",
         "requiresInput": false
       },
       {
@@ -405,7 +412,7 @@
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "categoryShort": "Items and documents",
-        "text": "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        "text": "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         "requiresInput": false
       },
       {
@@ -426,7 +433,8 @@
               "label": "Add another item"
             }
           }
-        ]
+        ],
+        "type": "SpecifiedItem"
       },
       {
         "code": "2a93b784-b8cb-49ed-95e2-a0df60723cda",
@@ -437,28 +445,8 @@
       {
         "code": "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
         "category": "Disclosure of information",
-        "text": "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
-        "tpl": "Notify your supervising officer of any developing intimate relationships with {gender}.",
-        "requiresInput": true,
-        "inputs": [
-          {
-            "type": "radio",
-            "label": "Select the relevant text",
-            "name": "gender",
-            "case": "lower",
-            "options": [
-              {
-                "value": "men"
-              },
-              {
-                "value": "women"
-              },
-              {
-                "value": "women or men"
-              }
-            ]
-          }
-        ]
+        "text": "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
+        "requiresInput": false
       },
       {
         "code": "c5e91330-748d-46f3-93f6-bbe5ea8324ce",
@@ -525,38 +513,13 @@
               }
             ]
           }
-        ]
-      },
-      {
-        "code": "c2435d4a-20a0-47de-b080-e1e740d1514c",
-        "category": "Curfew arrangement",
-        "text": "Confine yourself to remain at [CURFEW ADDRESS] initially from [START OF CURFEW HOURS] until [END OF CURFEW HOURS] each day, and, thereafter, for such a period as may be reasonably notified to you by your supervising officer; and comply with such arrangements as may be reasonably put in place and notified to you by your supervising officer so as to allow for your whereabouts and your compliance with your curfew requirement be monitored (whether by electronic means involving your wearing an electronic tag or otherwise).",
-        "tpl": "Confine yourself to remain at {curfewAddress} initially from {curfewStart} until {curfewEnd} each day, and, thereafter, for such a period as may be reasonably notified to you by your supervising officer; and comply with such arrangements as may be reasonably put in place and notified to you by your supervising officer so as to allow for your whereabouts and your compliance with your curfew requirement be monitored (whether by electronic means involving your wearing an electronic tag or otherwise).",
-        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
-        "requiresInput": true,
-        "inputs": [
-          {
-            "type": "address",
-            "label": "Enter the curfew address",
-            "name": "curfewAddress"
-          },
-          {
-            "type": "timePicker",
-            "label": "Enter the curfew start time",
-            "name": "curfewStart"
-          },
-          {
-            "type": "timePicker",
-            "label": "Enter the curfew end time",
-            "name": "curfewEnd"
-          }
-        ]
+        ],
+        "type": "CurfewTerms"
       },
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         "category": "Freedom of movement",
         "text": "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map without the prior approval of your supervising officer.",
-        "subtext": null,
         "tpl": "Not to enter the area of {outOfBoundArea}, as defined by the attached map without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
@@ -570,7 +533,8 @@
             "label": "Find and select the <a class=\"govuk-link\" href=\"https://mapmaker.field-dynamics.co.uk/moj/map/default\" rel=\"noreferrer noopener\" target=\"_blank\">Mapmaker PDF map</a> to include on the licence",
             "name": "outOfBoundFilename"
           }
-        ]
+        ],
+        "type": "OutOfBoundsRegion"
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
@@ -589,7 +553,8 @@
             "label": "Enter the address of the premises",
             "name": "premisesAddress"
           }
-        ]
+        ],
+        "type": "OutOfBoundsPremises"
       },
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
@@ -604,7 +569,8 @@
             "name": "typeOfPremises",
             "case": "lower"
           }
-        ]
+        ],
+        "type": "OutOfBoundsPremisesType"
       },
       {
         "code": "bb401b88-2137-4154-be4a-5e05c168638a",
@@ -623,7 +589,7 @@
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         "categoryShort": "Supervision in the community",
         "text": "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        "tpl": "Report to staff at {approvedPremises} at {reportingTime}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "tpl": "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "requiresInput": true,
         "inputs": [
           {
@@ -633,9 +599,68 @@
             "case": "capitalised"
           },
           {
-            "type": "timePicker",
-            "label": "Enter a reporting time",
-            "name": "reportingTime"
+            "type": "radio",
+            "label": "Select when the person needs to report",
+            "name": "reportingFrequency",
+            "options": [
+              {
+                "value": "Daily"
+              },
+              {
+                "value": "Monday to Friday"
+              },
+              {
+                "value": "Other",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter the other frequency",
+                      "name": "alternativeReportingFrequency",
+                      "case": "capitalise"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "radio",
+            "label": "Select how many times each day they need to report",
+            "subtext": "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
+            "name": "numberOfReportingTimes",
+            "options": [
+              {
+                "value": "Once a day",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the reporting time",
+                      "name": "reportingTime"
+                    }
+                  ]
+                }
+              },
+              { 
+                "value": "Twice a day",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the first reporting time",
+                      "name": "reportingTime1"
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the second reporting time",
+                      "name": "reportingTime2",
+                      "includeBefore": " and "
+                    }
+                  ]
+                }
+              }
+            ]
           },
           {
             "type": "radio",
@@ -666,14 +691,15 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ReportToApprovedPremises"
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         "categoryShort": "Supervision in the community",
         "text": "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        "tpl": "Report to staff at {policeStation} at {reportingTime}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        "tpl": "Report to staff at {policeStation} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "requiresInput": true,
         "inputs": [
           {
@@ -683,9 +709,68 @@
             "case": "capitalised"
           },
           {
-            "type": "timePicker",
-            "label": "Enter a reporting time",
-            "name": "reportingTime"
+            "type": "radio",
+            "label": "Select when the person needs to report",
+            "name": "reportingFrequency",
+            "options": [
+              {
+                "value": "Daily"
+              },
+              {
+                "value": "Monday to Friday"
+              },
+              {
+                "value": "Other",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Enter the other frequency",
+                      "name": "alternativeReportingFrequency",
+                      "case": "capitalise"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "radio",
+            "label": "Select how many times each day they need to report",
+            "subtext": "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
+            "name": "numberOfReportingTimes",
+            "options": [
+              {
+                "value": "Once a day",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the reporting time",
+                      "name": "reportingTime"
+                    }
+                  ]
+                }
+              },
+              { 
+                "value": "Twice a day",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the first reporting time",
+                      "name": "reportingTime1"
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the second reporting time",
+                      "name": "reportingTime2",
+                      "includeBefore": " and "
+                    }
+                  ]
+                }
+              }
+            ]
           },
           {
             "type": "radio",
@@ -716,7 +801,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ReportToPoliceStation"
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
@@ -762,6 +848,12 @@
         "requiresInput": false
       },
       {
+        "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
+        "category": "Drug testing",
+        "text": "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
+        "requiresInput": false
+      },
+      {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
         "category": "Electronic monitoring",
         "text": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
@@ -794,7 +886,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ElectronicMonitoringTypes"
       },
       {
         "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -808,7 +901,8 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "ElectronicMonitoringPeriod"
       },
       {
         "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
@@ -822,10 +916,11 @@
             "label": "Enter the approved address",
             "name": "approvedAddress"
           }
-        ]
+        ],
+        "type": "ApprovedAddress"
       },
       {
-        "code": "599bdcae-d545-461c-b1a9-02cb3d4ba268",
+        "code": "d36a3b77-30ba-40ce-8953-83e761d3b487",
         "category": "Electronic monitoring",
         "text": "You must not drink any alcohol until [END DATE] unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
         "tpl": "You must not drink any alcohol until {endDate} unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
@@ -836,13 +931,14 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "AlcoholMonitoringPeriod"
       },
       {
         "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
         "category": "Electronic monitoring",
-        "text": "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to",
-        "tpl": "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to",
+        "text": "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+        "tpl": "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
         "requiresInput": true,
         "inputs": [
           {
@@ -885,7 +981,8 @@
             "label": "Enter the address for the appointment",
             "name": "appointmentAddress"
           }
-        ]
+        ],
+        "type": "AppointmentTimeAndPlaceDuringPss"
       },
       {
         "code": "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",

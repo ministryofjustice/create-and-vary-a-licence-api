@@ -10,6 +10,7 @@ data class Input(
   val handleIndefiniteArticle: Boolean?,
   val addAnother: AddAnother?,
   val includeBefore: String?,
+  val subtext: String?,
 )
 
 data class AddAnother(
