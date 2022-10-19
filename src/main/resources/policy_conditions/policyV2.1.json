@@ -391,7 +391,7 @@
         "code": "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "categoryShort": "Items and documents",
-        "text": "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection on request by your supervising officer and/or a police officer.",
+        "text": "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection upon request.",
         "requiresInput": false
       },
       {
@@ -412,7 +412,7 @@
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "categoryShort": "Items and documents",
-        "text": "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        "text": "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         "requiresInput": false
       },
       {
