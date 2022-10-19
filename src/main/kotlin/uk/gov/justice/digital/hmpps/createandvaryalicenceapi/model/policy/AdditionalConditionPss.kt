@@ -8,4 +8,5 @@ data class AdditionalConditionPss(
   override val requiresInput: Boolean,
   val pssDates: Boolean?,
   val inputs: List<PassInput>?,
+  val type: String?,
 ) : ILicenceCondition
