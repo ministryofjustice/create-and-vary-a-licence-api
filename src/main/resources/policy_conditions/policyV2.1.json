@@ -946,7 +946,8 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "ElectronicTagPeriod"
       },
       {
         "code": "9678FD9E-F80D-423A-A6FB-B79909094887",
@@ -987,8 +988,22 @@
       {
         "code": "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
         "category": "Drug testing",
-        "text": "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
-        "requiresInput": false
+        "text": "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
+        "tpl": "Attend {name} {address}, as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "text",
+            "label": "Enter name",
+            "name": "name"
+          },
+          {
+            "type": "address",
+            "label": "Enter address",
+            "name": "address"
+          }
+        ],
+        "type": "DrugTestLocation"
       }
     ]
   }
