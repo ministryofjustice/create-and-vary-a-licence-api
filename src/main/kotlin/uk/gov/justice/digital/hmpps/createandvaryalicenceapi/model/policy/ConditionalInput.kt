@@ -4,6 +4,6 @@ data class ConditionalInput(
   val type: String,
   val label: String,
   val name: String,
-  val case: String,
-  val handleIndefiniteArticle: Boolean,
+  val case: String?,
+  val handleIndefiniteArticle: Boolean?,
 )
