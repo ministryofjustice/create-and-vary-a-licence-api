@@ -11,7 +11,7 @@ generic-service:
 
   ingress:
     enabled: true
-    host: app-hostname.local    # override per environment
+    hosts: app-hostname.local    # override per environment
     tlsSecretName: create-and-vary-a-licence-api-cert
 
   # Environment variables to load into the deployment
