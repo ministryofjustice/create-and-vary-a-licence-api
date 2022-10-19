@@ -6,4 +6,6 @@ data class ConditionalInput(
   val name: String,
   val case: String?,
   val handleIndefiniteArticle: Boolean?,
+  val includeBefore: String?,
+  val subtext: String?,
 )
