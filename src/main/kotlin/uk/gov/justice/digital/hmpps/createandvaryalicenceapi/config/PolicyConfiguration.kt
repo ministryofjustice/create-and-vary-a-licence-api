@@ -12,6 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePoli
 class PolicyConfiguration(@Value("classpath:policy_conditions/*.json") private val conditions: Array<Resource>) {
   @Bean
   fun policies(): LicencePolicyService {
-    return LicencePolicyService(conditions.map { policy -> jacksonObjectMapper().readValue(policy.file) })
+    return LicencePolicyService(conditions.map { policy -> jacksonObjectMapper().readValue(policy.inputStream) })
   }
 }
