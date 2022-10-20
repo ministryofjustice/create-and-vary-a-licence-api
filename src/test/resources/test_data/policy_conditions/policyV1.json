@@ -1,0 +1,163 @@
+{
+  "version": "1.0",
+  "standardConditions": {
+    "AP": [
+      {
+        "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+        "text": "Be of good behaviour and not behave in a way which undermines the purpose of the licence period."
+      },
+      {
+        "code": "3b19fdb0-4ca3-4615-9fdd-61fabc1587af",
+        "text": "Not commit any offence."
+      }
+    ],
+    "PSS": [
+      {
+        "code": "b3cd4a30-11fd-4715-9ebb-ed89f5386e1f",
+        "text": "Be of good behaviour and not behave in a way that undermines the rehabilitative purpose of the supervision period."
+      },
+      {
+        "code": "b950407d-2270-45b8-9666-3ad58a17d0be",
+        "text": "Not commit any offence."
+      }
+    ]
+  },
+  "additionalConditions": {
+    "AP": [
+      {
+        "code": "5db26ab3-9b6f-4bee-b2aa-53aa3f3be7dd",
+        "category": "Residence at a specific place",
+        "text": "You must reside within the [INSERT REGION] while of no fixed abode, unless otherwise approved by your supervising officer.",
+        "tpl": "You must reside within the {probationRegion} probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Select the probation region",
+            "name": "probationRegion",
+            "options": [
+              {
+                "value": "North East"
+              },
+              {
+                "value": "North West"
+              },
+              {
+                "value": "Greater Manchester"
+              },
+              {
+                "value": "Yorkshire and Humberside"
+              },
+              {
+                "value": "East Midlands"
+              },
+              {
+                "value": "West Midlands"
+              },
+              {
+                "value": "East of England"
+              },
+              {
+                "value": "South West"
+              },
+              {
+                "value": "South Central"
+              },
+              {
+                "value": "London"
+              },
+              {
+                "value": "Kent, Surrey and Sussex"
+              },
+              {
+                "value": "Wales"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
+        "category": "Restriction of residency",
+        "text": "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
+        "tpl": "Not to reside (not even to stay for one night) in the same household as {gender} child under the age of {age} without the prior approval of your supervising officer.",
+        "requiresInput": true,
+        "inputs": [
+          {
+            "type": "radio",
+            "label": "Select the relevant text",
+            "name": "gender",
+            "case": "lower",
+            "options": [
+              {
+                "value": "any"
+              },
+              {
+                "value": "any female"
+              },
+              {
+                "value": "any male"
+              }
+            ]
+          },
+          {
+            "type": "radio",
+            "label": "Select the relevant age",
+            "name": "age",
+            "options": [
+              {
+                "value": "16"
+              },
+              {
+                "value": "18"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
+        "category": "Possession, ownership, control or inspection of specified items or documents",
+        "categoryShort": "Items and documents",
+        "text": "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+        "requiresInput": false
+      },
+      {
+        "code": "72d281c3-b194-43ab-812d-fea0683ada65",
+        "category": "Possession, ownership, control or inspection of specified items or documents",
+        "categoryShort": "Items and documents",
+        "text": "Not to own or possess a mobile phone with a photographic function without the prior approval of your supervising officer.",
+        "requiresInput": false
+      }
+    ],
+    "PSS": [
+      {
+        "code": "62c83b80-2223-4562-a195-0670f4072088",
+        "category": "Drug appointment",
+        "text": "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
+        "tpl": "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
+        "requiresInput": true,
+        "pssDates": true,
+        "inputs": [
+          {
+            "type": "timePicker",
+            "label": "Enter time (optional)",
+            "name": "appointmentTime",
+            "includeBefore": " at "
+          },
+          {
+            "type": "datePicker",
+            "label": "Enter date (optional)",
+            "name": "appointmentDate",
+            "includeBefore": " on "
+          },
+          {
+            "type": "address",
+            "label": "Enter the address for the appointment",
+            "name": "appointmentAddress"
+          }
+        ]
+      }
+    ]
+  }
+}
