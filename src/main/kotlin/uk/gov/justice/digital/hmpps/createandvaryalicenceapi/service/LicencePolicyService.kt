@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
 import javax.persistence.EntityNotFoundException
 
 data class ConditionChanges<T>(
@@ -18,8 +19,27 @@ data class ConditionChangesByType<T, U>(
 )
 
 enum class ConditionChangeType {
-  DELETED, REPLACED, NEW_OPTIONS, TEXT_CHANGE
+  /**
+   * Deleted conditions are those whose replacements contain one or more existing conditions,
+   * in other words, the replacements are suggestions of existing conditions that may be appropriate, or may not.
+   */
+  DELETED,
+
+  /**
+   * Replaced conditions are those whose replacements are all new conditions,
+   * in other words, the replacements have been added as explicit replacements for the deleted condition.
+   */
+  REPLACED,
+
+  REMOVED_NO_REPLACEMENTS,
+  NEW_OPTIONS,
+  TEXT_CHANGE
 }
+
+data class SuggestedCondition(
+  val code: String,
+  val currentText: String,
+)
 
 data class LicenceConditionChanges(
   val changeType: ConditionChangeType,
@@ -27,7 +47,8 @@ data class LicenceConditionChanges(
   val sequence: Int?,
   val previousText: String,
   val currentText: String?,
-  var dataChanges: List<AdditionalConditionData>
+  var dataChanges: List<AdditionalConditionData>,
+  val suggestions: List<SuggestedCondition> = emptyList()
 )
 
 class LicencePolicyService(private val policies: List<LicencePolicy>) {
@@ -56,14 +77,16 @@ class LicencePolicyService(private val policies: List<LicencePolicy>) {
     )
   }
 
-  fun compareLicenceWithPolicy(licence: Licence, policy: LicencePolicy): List<LicenceConditionChanges> =
-    licencePolicyChanges(
-      licence.additionalLicenceConditions,
-      policy.additionalConditions.ap,
-      getPolicyPlaceholders(policy.additionalConditions.ap)
-    ) + licencePolicyChanges(
-      licence.additionalPssConditions,
-      policy.additionalConditions.pss,
-      getPolicyPlaceholders(policy.additionalConditions.pss)
-    )
+  fun compareLicenceWithPolicy(licence: Licence, policy: LicencePolicy, replacements: List<Replacements>):
+    List<LicenceConditionChanges> = licencePolicyChanges(
+    licence.additionalLicenceConditions,
+    policy.additionalConditions.ap,
+    replacements,
+    getPolicyPlaceholders(policy.additionalConditions.ap)
+  ) + licencePolicyChanges(
+    licence.additionalPssConditions,
+    policy.additionalConditions.pss,
+    replacements,
+    getPolicyPlaceholders(policy.additionalConditions.pss)
+  )
 }
