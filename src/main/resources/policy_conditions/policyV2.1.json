@@ -1,5 +1,15 @@
 {
   "version": "2.1",
+  "changeHints": [
+    {
+      "previousCode": "599bdcae-d545-461c-b1a9-02cb3d4ba268",
+      "replacements": ["d36a3b77-30ba-40ce-8953-83e761d3b487", "2F8A5418-C6E4-4F32-9E58-64B23550E504"]
+    },
+    {
+      "previousCode": "c2435d4a-20a0-47de-b080-e1e740d1514c",
+      "replacements": ["0a370862-5426-49c1-b6d4-3d074d78a81a", "fd129172-bdd3-4d97-a4a0-efd7b47a49d4"]
+    }
+  ],
   "standardConditions": {
     "AP": [
       {

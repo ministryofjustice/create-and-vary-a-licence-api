@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -161,8 +162,13 @@ class LicencePolicyController(
     @PathVariable("version") version: String,
     @PathVariable("licenceId") licenceId: Long
   ): List<LicenceConditionChanges>? {
-    val policy = licenceConditionsService.policyByVersion(version)
-    val licence = licenceService.getLicenceById(licenceId = licenceId)
-    return licenceConditionsService.compareLicenceWithPolicy(licence, policy)
+    val currentLicence = licenceService.getLicenceById(licenceId)
+    val currentPolicy = licenceConditionsService.policyByVersion(version)
+
+    val previousLicence = currentLicence.variationOf?.let { licenceService.getLicenceById(it) }?.version
+    val previousPolicy = previousLicence?.let { licenceConditionsService.policyByVersion(it) }
+
+    val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
+    return licenceConditionsService.compareLicenceWithPolicy(currentLicence, currentPolicy, replacements)
   }
 }
