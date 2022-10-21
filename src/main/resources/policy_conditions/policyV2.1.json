@@ -942,7 +942,7 @@
             "name": "endDate"
           }
         ],
-        "type": "AlcoholMonitoringPeriod"
+        "type": "AlcoholRestrictionPeriod"
       },
       {
         "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
