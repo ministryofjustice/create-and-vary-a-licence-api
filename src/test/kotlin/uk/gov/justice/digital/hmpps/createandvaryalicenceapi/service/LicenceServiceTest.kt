@@ -750,7 +750,8 @@ class LicenceServiceTest {
                 conditionCategory = "oldCategory",
                 conditionText = "oldText",
                 additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity
+                licence = aLicenceEntity,
+                conditionType = "AP"
               ),
               EntityAdditionalCondition(
                 id = 2,
@@ -759,7 +760,18 @@ class LicenceServiceTest {
                 conditionCategory = "removedCategory",
                 conditionText = "removedText",
                 additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity
+                licence = aLicenceEntity,
+                conditionType = "AP"
+              ),
+              EntityAdditionalCondition(
+                id = 3,
+                conditionCode = "code3",
+                conditionSequence = 6,
+                conditionCategory = "pssCategory",
+                conditionText = "pssText",
+                additionalConditionData = someAdditionalConditionData,
+                licence = aLicenceEntity,
+                conditionType = "PSS"
               )
             )
           )
@@ -784,6 +796,16 @@ class LicenceServiceTest {
         conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
         licence = aLicenceEntity
+      ),
+      EntityAdditionalCondition(
+        id = 3,
+        conditionCode = "code3",
+        conditionSequence = 6,
+        conditionCategory = "pssCategory",
+        conditionText = "pssText",
+        additionalConditionData = someAdditionalConditionData,
+        licence = aLicenceEntity,
+        conditionType = "PSS"
       )
     )
 

@@ -300,7 +300,9 @@ class LicenceService(
         .map { newAdditionalCondition -> newAdditionalCondition.copy(expandedConditionText = newAdditionalCondition.conditionText, licence = licenceEntity) }
 
     val removedAdditionalConditionsList =
-      licenceEntity.additionalConditions.filter { submittedAdditionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
+      licenceEntity.additionalConditions.filter {
+        it.conditionType == request.conditionType && submittedAdditionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode }
+      }
 
     val updatedAdditionalConditions =
       licenceEntity.additionalConditions.filter { condition -> removedAdditionalConditionsList.none { it.conditionCode == condition.conditionCode } }
