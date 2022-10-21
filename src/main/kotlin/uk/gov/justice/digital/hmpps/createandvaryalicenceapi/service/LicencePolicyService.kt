@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import javax.persistence.EntityNotFoundException
 
 data class ConditionChanges<T>(
@@ -47,7 +46,8 @@ data class LicenceConditionChanges(
   val sequence: Int?,
   val previousText: String,
   val currentText: String?,
-  var dataChanges: List<AdditionalConditionData>,
+  var addedInputs: List<Any>,
+  var removedInputs: List<Any>,
   val suggestions: List<SuggestedCondition> = emptyList()
 )
 
@@ -77,16 +77,21 @@ class LicencePolicyService(private val policies: List<LicencePolicy>) {
     )
   }
 
-  fun compareLicenceWithPolicy(licence: Licence, policy: LicencePolicy, replacements: List<Replacements>):
-    List<LicenceConditionChanges> = licencePolicyChanges(
-    licence.additionalLicenceConditions,
-    policy.additionalConditions.ap,
-    replacements,
-    getPolicyPlaceholders(policy.additionalConditions.ap)
-  ) + licencePolicyChanges(
-    licence.additionalPssConditions,
-    policy.additionalConditions.pss,
-    replacements,
-    getPolicyPlaceholders(policy.additionalConditions.pss)
-  )
+  fun compareLicenceWithPolicy(licence: Licence, previousPolicy: LicencePolicy, currentPolicy: LicencePolicy):
+
+    List<LicenceConditionChanges> {
+    if (previousPolicy.version == currentPolicy.version) return emptyList()
+    val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
+    return licencePolicyChanges(
+      licence.additionalLicenceConditions,
+      previousPolicy.additionalConditions.ap,
+      currentPolicy.additionalConditions.ap,
+      replacements,
+    ) + licencePolicyChanges(
+      licence.additionalPssConditions,
+      previousPolicy.additionalConditions.pss,
+      currentPolicy.additionalConditions.pss,
+      replacements,
+    )
+  }
 }

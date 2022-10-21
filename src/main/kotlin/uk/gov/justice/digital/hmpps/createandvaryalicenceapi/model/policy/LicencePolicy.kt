@@ -10,6 +10,12 @@ interface ILicenceCondition {
   val tpl: String?
 }
 
+interface IAdditionalCondition<INPUT> : ILicenceCondition {
+  val category: String
+  val inputs: List<INPUT>?
+  val type: String?
+}
+
 data class ChangeHint(
   val previousCode: String,
   val replacements: List<String>

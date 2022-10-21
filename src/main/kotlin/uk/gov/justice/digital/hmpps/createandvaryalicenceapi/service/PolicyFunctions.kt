@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
@@ -32,61 +32,49 @@ fun <T : ILicenceCondition> conditionChanges(current: List<T>, other: List<T>) =
   amendedConditions(current, other)
 )
 
-/*
- *  For each condition, create List item of custom type
- *  Add new list of HashMap<placeholder, variable> to condition list
- *  Iterate through placeholders and add to HashMap with corresponding date field ({} from tpl)
- */
-fun <T : ILicenceCondition> getPolicyPlaceholders(conditions: List<T>): Map<String, Map<String, String>> {
-  val placeholderPattern = Regex("(?<=\\[)(.*?)(?=])")
-  val variablePattern = Regex("(?<=\\{)(.*?)(?=})")
-  val results = HashMap<String, HashMap<String, String>>()
-
-  conditions.filter { it.requiresInput }.forEach {
-    val placeholders = placeholderPattern.findAll(it.text).iterator()
-    val variables = variablePattern.findAll(it.tpl ?: "").toSet().iterator()
-    val keyValuePairs = HashMap<String, String>()
-
-    while (placeholders.hasNext() && variables.hasNext()) {
-      keyValuePairs[placeholders.next().value] = variables.next().value
-    }
-
-    results[it.code] = keyValuePairs
+fun <T : Any> licencePolicyChanges(
+  presentConditions: List<AdditionalCondition>,
+  previousConditions: List<IAdditionalCondition<T>>,
+  currentConditions: List<IAdditionalCondition<T>>,
+  allReplacements: List<Replacements>
+): List<LicenceConditionChanges> {
+  val conditionsToCheck = currentConditions.filter { current ->
+    presentConditions.any { present -> current.code == present.code }
   }
+  val changes = conditionChanges(conditionsToCheck, previousConditions, allReplacements)
 
-  return results
+  return changes.map { change -> change.copy(sequence = presentConditions.find { condition -> condition.code == change.code }?.sequence) }
 }
 
-fun <T : ILicenceCondition> licencePolicyChanges(
-  conditions: List<AdditionalCondition>,
-  policyConditions: List<T>,
-  allReplacements: List<Replacements>,
-  policyPlaceholders: Map<String, Map<String, String>>
-): List<LicenceConditionChanges> = conditions.mapNotNull { condition ->
-  val match = policyConditions.find { it.code == condition.code }
-  if (match != null)
-    conditionUpdated(match, condition, policyPlaceholders)
+fun <T : Any> conditionChanges(
+  previousConditions: List<IAdditionalCondition<T>>,
+  currentConditions: List<IAdditionalCondition<T>>,
+  allReplacements: List<Replacements>
+): List<LicenceConditionChanges> = previousConditions.mapNotNull { previous ->
+  val current = currentConditions.find { it.code == previous.code }
+  if (current != null)
+    conditionUpdated(previous, current)
   else
-    conditionRemoved(condition, allReplacements)
+    conditionRemoved(previous, allReplacements)
 }
 
-private fun conditionUpdated(
-  match: ILicenceCondition,
-  condition: AdditionalCondition,
-  policyPlaceholders: Map<String, Map<String, String>>
+private fun <T : Any> conditionUpdated(
+  previous: IAdditionalCondition<T>,
+  current: IAdditionalCondition<T>,
 ): LicenceConditionChanges? {
-  val textHasChanged = match.text != condition.text
-  val dataChanges = condition.data.filter { d -> policyPlaceholders[condition.code]?.containsValue(d.field) == false }
-  val dataHasChanged = dataChanges.isNotEmpty()
+  val textHasChanged = previous.text != current.text
+  val removed = (previous.inputs ?: emptyList()) - (current.inputs ?: emptyList()).toSet()
+  val added = (current.inputs ?: emptyList()) - (previous.inputs ?: emptyList()).toSet()
+  val dataHasChanged = removed.isNotEmpty() || added.isNotEmpty()
   return when {
-    textHasChanged -> TEXT_CHANGE.update(condition, match.text, dataChanges)
-    dataHasChanged -> NEW_OPTIONS.update(condition, match.text, dataChanges)
+    textHasChanged -> TEXT_CHANGE.update(previous, current)
+    dataHasChanged -> NEW_OPTIONS.update(previous, current, removed, added)
     else -> null
   }
 }
 
 private fun conditionRemoved(
-  condition: AdditionalCondition,
+  condition: ILicenceCondition,
   allReplacements: List<Replacements>,
 ): LicenceConditionChanges {
   val replacements = allReplacements.find { it.code === condition.code }
@@ -98,22 +86,23 @@ private fun conditionRemoved(
 }
 
 fun ConditionChangeType.update(
-  condition: AdditionalCondition,
-  currentText: String? = null,
-  dataChanges: List<AdditionalConditionData> = emptyList()
+  previous: ILicenceCondition,
+  current: ILicenceCondition,
+  removed: List<Any> = emptyList(),
+  added: List<Any> = emptyList()
 ): LicenceConditionChanges =
-  LicenceConditionChanges(this, condition.code!!, condition.sequence, condition.text!!, currentText, dataChanges)
+  LicenceConditionChanges(this, current.code, null, previous.text, current.text, added, removed)
 
 fun ConditionChangeType.removal(
-  condition: AdditionalCondition,
+  condition: ILicenceCondition,
   alternatives: List<ILicenceCondition>,
-): LicenceConditionChanges =
-  LicenceConditionChanges(
-    this,
-    condition.code!!,
-    condition.sequence,
-    condition.text!!,
-    null,
-    emptyList(),
-    alternatives.map { SuggestedCondition(it.code, it.text) }
-  )
+) = LicenceConditionChanges(
+  this,
+  condition.code,
+  null,
+  condition.text,
+  null,
+  emptyList(),
+  emptyList(),
+  alternatives.map { SuggestedCondition(it.code, it.text) }
+)
