@@ -69,6 +69,7 @@ class LicenceService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
   private val licenceEventRepository: LicenceEventRepository,
+  private val licencePolicyService: LicencePolicyService,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
@@ -681,6 +682,7 @@ class LicenceService(
     licenceVariation.createdBy = createdBy
     licenceVariation.mailingList.add(licenceVariation.responsibleCom!!)
     licenceVariation.mailingList.add(createdBy!!)
+    licenceVariation.version = licencePolicyService.currentPolicy().version
 
     val newLicence = licenceRepository.save(licenceVariation)
 
