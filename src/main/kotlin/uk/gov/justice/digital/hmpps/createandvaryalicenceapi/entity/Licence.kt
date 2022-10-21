@@ -37,7 +37,7 @@ data class Licence(
   @Enumerated(STRING)
   val typeCode: LicenceType = AP,
 
-  val version: String? = null,
+  var version: String? = null,
 
   @NotNull
   @Enumerated(STRING)

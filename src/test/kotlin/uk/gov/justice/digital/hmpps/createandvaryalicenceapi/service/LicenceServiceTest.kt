@@ -34,6 +34,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -79,6 +82,7 @@ class LicenceServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
+  private val licencePolicyService = mock<LicencePolicyService>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
@@ -91,6 +95,7 @@ class LicenceServiceTest {
     additionalConditionRepository,
     bespokeConditionRepository,
     licenceEventRepository,
+    licencePolicyService,
     additionalConditionUploadDetailRepository,
     auditEventRepository,
     notifyService,
@@ -167,7 +172,13 @@ class LicenceServiceTest {
 
   @Test
   fun `service creates a licence with standard conditions`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
+    )
 
     whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(someEntityStandardConditions)
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
@@ -189,11 +200,27 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence created for ${aCreateLicenceRequest.forename} ${aCreateLicenceRequest.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence created for ${aCreateLicenceRequest.forename} ${aCreateLicenceRequest.surname}"
+        )
+      )
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
-      .isEqualTo(listOf(1L, LicenceEventType.CREATED, "smills", "X", "Y", "Licence created for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.CREATED,
+          "smills",
+          "X",
+          "Y",
+          "Licence created for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
   }
 
   @Test
@@ -391,7 +418,11 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - no parameters matches all`() {
     val licenceQueryObject = LicenceQueryObject()
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity
+      )
+    )
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -407,7 +438,11 @@ class LicenceServiceTest {
       staffIds = listOf(1, 2, 3),
       nomsIds = listOf("A1234AA"),
     )
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity
+      )
+    )
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -418,7 +453,11 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - list of PDUs`() {
     val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity
+      )
+    )
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
@@ -429,18 +468,30 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - sorted`() {
     val licenceQueryObject = LicenceQueryObject(sortBy = "conditionalReleaseDate", sortOrder = "DESC")
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity
+      )
+    )
 
     val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
 
     assertThat(licenceSummaries).isEqualTo(listOf(aLicenceSummary))
-    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.by(Sort.Direction.DESC, "conditionalReleaseDate")))
+    verify(licenceRepository, times(1)).findAll(
+      any<Specification<EntityLicence>>(),
+      eq(Sort.by(Sort.Direction.DESC, "conditionalReleaseDate"))
+    )
   }
 
   @Test
   fun `find licences matching criteria - unknown property`() {
     val licenceQueryObject = LicenceQueryObject(sortBy = "unknown", sortOrder = "DESC")
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenThrow(mock<PropertyReferenceException>())
+    whenever(
+      licenceRepository.findAll(
+        any<Specification<EntityLicence>>(),
+        any<Sort>()
+      )
+    ).thenThrow(mock<PropertyReferenceException>())
 
     assertThrows<ValidationException> {
       service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -450,7 +501,11 @@ class LicenceServiceTest {
   @Test
   fun `find licences matching criteria - unknown sort order`() {
     val licenceQueryObject = LicenceQueryObject(sortBy = "conditionalReleaseDate", sortOrder = "unknown")
-    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity
+      )
+    )
 
     assertThrows<ValidationException> {
       service.findLicencesMatchingCriteria(licenceQueryObject)
@@ -461,7 +516,10 @@ class LicenceServiceTest {
   fun `update licence status persists the licence and history correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.REJECTED, username = "X", fullName = "Y"))
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.REJECTED, username = "X", fullName = "Y")
+    )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -483,7 +541,10 @@ class LicenceServiceTest {
   fun `update licence status to APPROVED sets additional values`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y"))
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
+    )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -502,7 +563,13 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
-      .isEqualTo(listOf(1L, LicenceEventType.APPROVED, "Licence updated to APPROVED for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.APPROVED,
+          "Licence updated to APPROVED for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -521,13 +588,28 @@ class LicenceServiceTest {
   @Test
   fun `update an APPROVED licence back to IN_PROGRESS clears the approval fields`() {
     whenever(licenceRepository.findById(1L))
-      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
+      .thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.APPROVED,
+            approvedByUsername = "X",
+            approvedByName = "Y"
+          )
+        )
+      )
 
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
 
-    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"))
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y")
+    )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -555,11 +637,22 @@ class LicenceServiceTest {
   @Test
   fun `update an APPROVED licence back to IN_PROGRESS does not call notify if no OMU contact is found`() {
     whenever(licenceRepository.findById(1L))
-      .thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, approvedByUsername = "X", approvedByName = "Y")))
+      .thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.APPROVED,
+            approvedByUsername = "X",
+            approvedByName = "Y"
+          )
+        )
+      )
 
     whenever(omuService.getOmuContactEmail(any())).thenReturn(null)
 
-    service.updateLicenceStatus(1L, StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y"))
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.IN_PROGRESS, username = "X", fullName = "Y")
+    )
 
     verify(notifyService, times(0)).sendVariationForReApprovalEmail(
       eq("test@OMU.testing.com"),
@@ -604,7 +697,13 @@ class LicenceServiceTest {
 
   @Test
   fun `submit a licence saves new fields to the licence`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
+    )
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
@@ -625,16 +724,35 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
-      .isEqualTo(listOf(1L, LicenceEventType.SUBMITTED, "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.SUBMITTED,
+          "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
   }
 
   @Test
   fun `submitting a licence variation`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
+    )
     val licence = aLicenceEntity.copy(variationOfId = 1)
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
@@ -650,7 +768,12 @@ class LicenceServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(notifyService, times(2))
-      .sendVariationForApprovalEmail(any(), eq(licence.id.toString()), eq(aLicenceEntity.forename!!), eq(aLicenceEntity.surname!!))
+      .sendVariationForApprovalEmail(
+        any(),
+        eq(licence.id.toString()),
+        eq(aLicenceEntity.forename!!),
+        eq(aLicenceEntity.surname!!)
+      )
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername")
@@ -658,11 +781,24 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
-      .isEqualTo(listOf(1L, LicenceEventType.VARIATION_SUBMITTED, "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.VARIATION_SUBMITTED,
+          "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
   }
 
   @Test
@@ -722,7 +858,20 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditions(1L, AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0)), conditionType = "AP"))
+      service.updateAdditionalConditions(
+        1L,
+        AdditionalConditionsRequest(
+          additionalConditions = listOf(
+            AdditionalCondition(
+              code = "code",
+              category = "category",
+              text = "text",
+              sequence = 0
+            )
+          ),
+          conditionType = "AP"
+        )
+      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
@@ -778,7 +927,17 @@ class LicenceServiceTest {
         )
       )
 
-    val request = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", text = "text", sequence = 0)), conditionType = "AP")
+    val request = AdditionalConditionsRequest(
+      additionalConditions = listOf(
+        AdditionalCondition(
+          code = "code",
+          category = "category",
+          text = "text",
+          sequence = 0
+        )
+      ),
+      conditionType = "AP"
+    )
 
     service.updateAdditionalConditions(1L, request)
 
@@ -963,7 +1122,14 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Licence automatically activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "forenames", "surname")
@@ -980,13 +1146,23 @@ class LicenceServiceTest {
     service.inActivateLicences(listOf(1L))
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
+    verify(
+      licenceRepository,
+      times(1)
+    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "forenames", "surname")
@@ -1050,7 +1226,11 @@ class LicenceServiceTest {
     assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
     assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
       AdditionalConditionData(
-        id = -1, additionalCondition = anAdditionalConditionEntity, dataSequence = 0, dataField = "field1", dataValue = "value1"
+        id = -1,
+        additionalCondition = anAdditionalConditionEntity,
+        dataSequence = 0,
+        dataField = "field1",
+        dataValue = "value1"
       )
     )
 
@@ -1106,8 +1286,48 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `creating a variation`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null
+      )
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList()
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(aLicenceEntity)
+    )
+    whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    service.createVariation(1L)
+
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    with(licenceCaptor.value) {
+      assertThat(version).isEqualTo("2.1")
+    }
+  }
+
+  @Test
   fun `discarding a licence`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
+    )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
@@ -1120,14 +1340,28 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation discarded for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence variation discarded for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
   }
 
   @Test
   fun `update prison information persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updatePrisonInformation(1L, UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545"))
+    service.updatePrisonInformation(
+      1L,
+      UpdatePrisonInformationRequest(
+        prisonCode = "PVI",
+        prisonDescription = "Pentonville (HMP)",
+        prisonTelephone = "+44 276 54545"
+      )
+    )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -1141,7 +1375,14 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Prison information updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Prison information updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
   }
 
   @Test
@@ -1204,7 +1445,14 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -1384,7 +1632,13 @@ class LicenceServiceTest {
   @Test
   fun `referring a licence variation`() {
     val referVariationRequest = ReferVariationRequest(reasonForReferral = "reason")
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
+    )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
@@ -1409,7 +1663,14 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "X Y", "Licence variation rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence variation rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     verify(notifyService, times(1)).sendVariationReferredEmail(
       aLicenceEntity.createdBy?.email ?: "",
@@ -1423,7 +1684,13 @@ class LicenceServiceTest {
 
   @Test
   fun `approving a licence variation`() {
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
+    )
 
     whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(aLicenceEntity.copy(id = 2, variationOfId = 1L)))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
@@ -1456,7 +1723,14 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(2L, "smills", "X Y", "Licence variation approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          2L,
+          "smills",
+          "X Y",
+          "Licence variation approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     verify(notifyService, times(1)).sendVariationApprovedEmail(
       aLicenceEntity.createdBy?.email ?: "",
@@ -1467,6 +1741,7 @@ class LicenceServiceTest {
       "2",
     )
   }
+
   @Test
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
@@ -1500,7 +1775,14 @@ class LicenceServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
       aLicenceEntity.responsibleCom?.email,
@@ -1516,6 +1798,7 @@ class LicenceServiceTest {
       )
     )
   }
+
   @Test
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
@@ -1549,7 +1832,14 @@ class LicenceServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
       aLicenceEntity.responsibleCom?.email,
@@ -1565,6 +1855,7 @@ class LicenceServiceTest {
       )
     )
   }
+
   @Test
   fun `should not set the license status to inactive if existing license is not active`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
@@ -1598,7 +1889,14 @@ class LicenceServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -1615,6 +1913,7 @@ class LicenceServiceTest {
       )
     )
   }
+
   @Test
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
@@ -1648,7 +1947,14 @@ class LicenceServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -1665,6 +1971,7 @@ class LicenceServiceTest {
       )
     )
   }
+
   @Test
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
@@ -1699,7 +2006,14 @@ class LicenceServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -1716,10 +2030,12 @@ class LicenceServiceTest {
       )
     )
   }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
 
-    val someBespokeConditions = BespokeConditionRequest(conditions = listOf("Condition 1", "Condition 2", "Condition 3"))
+    val someBespokeConditions =
+      BespokeConditionRequest(conditions = listOf("Condition 1", "Condition 2", "Condition 3"))
 
     val someStandardConditions = listOf(
       ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -1728,9 +2044,27 @@ class LicenceServiceTest {
     )
 
     val someEntityStandardConditions = listOf(
-      EntityStandardCondition(id = 1, conditionCode = "goodBehaviour", conditionSequence = 1, conditionText = "Be of good behaviour", licence = mock()),
-      EntityStandardCondition(id = 2, conditionCode = "notBreakLaw", conditionSequence = 2, conditionText = "Do not break any law", licence = mock()),
-      EntityStandardCondition(id = 3, conditionCode = "attendMeetings", conditionSequence = 3, conditionText = "Attend meetings", licence = mock()),
+      EntityStandardCondition(
+        id = 1,
+        conditionCode = "goodBehaviour",
+        conditionSequence = 1,
+        conditionText = "Be of good behaviour",
+        licence = mock()
+      ),
+      EntityStandardCondition(
+        id = 2,
+        conditionCode = "notBreakLaw",
+        conditionSequence = 2,
+        conditionText = "Do not break any law",
+        licence = mock()
+      ),
+      EntityStandardCondition(
+        id = 3,
+        conditionCode = "attendMeetings",
+        conditionSequence = 3,
+        conditionText = "Attend meetings",
+        licence = mock()
+      ),
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
@@ -1802,12 +2136,39 @@ class LicenceServiceTest {
       probationTeamDescription = "Cardiff South Team A",
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       standardConditions = someEntityStandardConditions,
-      mailingList = mutableSetOf(CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y")),
-      responsibleCom = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y"),
-      createdBy = CommunityOffenderManager(staffIdentifier = 2000, username = "smills", email = "testemail@probation.gov.uk", firstName = "X", lastName = "Y"),
+      mailingList = mutableSetOf(
+        CommunityOffenderManager(
+          staffIdentifier = 2000,
+          username = "smills",
+          email = "testemail@probation.gov.uk",
+          firstName = "X",
+          lastName = "Y"
+        )
+      ),
+      responsibleCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y"
+      ),
+      createdBy = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y"
+      ),
     )
 
-    val someAdditionalConditionData = listOf(AdditionalConditionData(id = 1, dataField = "dataField", dataValue = "dataValue", additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity)))
+    val someAdditionalConditionData = listOf(
+      AdditionalConditionData(
+        id = 1,
+        dataField = "dataField",
+        dataValue = "dataValue",
+        additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity)
+      )
+    )
 
     val anAdditionalConditionEntity = EntityAdditionalCondition(
       id = 1,
