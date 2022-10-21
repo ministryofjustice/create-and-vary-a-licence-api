@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import javax.persistence.EntityNotFoundException
 
 data class ConditionChanges<T>(
@@ -17,12 +17,38 @@ data class ConditionChangesByType<T, U>(
   val Pss: ConditionChanges<U>
 )
 
+enum class ConditionChangeType {
+  /**
+   * Deleted conditions are those whose replacements contain one or more existing conditions,
+   * in other words, the replacements are suggestions of existing conditions that may be appropriate, or may not.
+   */
+  DELETED,
+
+  /**
+   * Replaced conditions are those whose replacements are all new conditions,
+   * in other words, the replacements have been added as explicit replacements for the deleted condition.
+   */
+  REPLACED,
+
+  REMOVED_NO_REPLACEMENTS,
+  NEW_OPTIONS,
+  TEXT_CHANGE
+}
+
+data class SuggestedCondition(
+  val code: String,
+  val currentText: String,
+)
+
 data class LicenceConditionChanges(
+  val changeType: ConditionChangeType,
   val code: String,
   val sequence: Int?,
   val previousText: String,
-  val currentText: String,
-  var dataChanges: List<AdditionalConditionData>
+  val currentText: String?,
+  var addedInputs: List<Any>,
+  var removedInputs: List<Any>,
+  val suggestions: List<SuggestedCondition> = emptyList()
 )
 
 class LicencePolicyService(private val policies: List<LicencePolicy>) {
@@ -51,14 +77,21 @@ class LicencePolicyService(private val policies: List<LicencePolicy>) {
     )
   }
 
-  fun compareLicenceWithPolicy(licence: Licence, policy: LicencePolicy): List<LicenceConditionChanges> =
-    licencePolicyChanges(
+  fun compareLicenceWithPolicy(licence: Licence, previousPolicy: LicencePolicy, currentPolicy: LicencePolicy):
+
+    List<LicenceConditionChanges> {
+    if (previousPolicy.version == currentPolicy.version) return emptyList()
+    val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
+    return licencePolicyChanges(
       licence.additionalLicenceConditions,
-      policy.additionalConditions.ap,
-      getPolicyPlaceholders(policy.additionalConditions.ap)
+      previousPolicy.additionalConditions.ap,
+      currentPolicy.additionalConditions.ap,
+      replacements,
     ) + licencePolicyChanges(
       licence.additionalPssConditions,
-      policy.additionalConditions.pss,
-      getPolicyPlaceholders(policy.additionalConditions.pss)
+      previousPolicy.additionalConditions.pss,
+      currentPolicy.additionalConditions.pss,
+      replacements,
     )
+  }
 }

@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 @RestController
 @RequestMapping("/licence-policy", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicencePolicyController(
-  private val licenceConditionsService: LicencePolicyService,
+  private val licencePolicyService: LicencePolicyService,
   private val licenceService: LicenceService
 ) {
 
@@ -56,7 +56,7 @@ class LicencePolicyController(
     ]
   )
   fun getCurrentPolicy(): LicencePolicy? {
-    return licenceConditionsService.currentPolicy()
+    return licencePolicyService.currentPolicy()
   }
 
   @GetMapping(value = ["/version/{version}"])
@@ -93,7 +93,7 @@ class LicencePolicyController(
     ]
   )
   fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicy? {
-    return licenceConditionsService.policyByVersion(version)
+    return licencePolicyService.policyByVersion(version)
   }
 
   @GetMapping(value = ["/"])
@@ -130,7 +130,7 @@ class LicencePolicyController(
     ]
   )
   fun getPolicies(): List<LicencePolicy> {
-    return licenceConditionsService.allPolicies()
+    return licencePolicyService.allPolicies()
   }
 
   @GetMapping(value = ["/compare/{version1}/{version2}"])
@@ -143,9 +143,9 @@ class LicencePolicyController(
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   fun compare(@PathVariable("version1") version1: String, @PathVariable("version2") version2: String): PolicyChanges? {
-    val policy1 = licenceConditionsService.policyByVersion(version1)
-    val policy2 = licenceConditionsService.policyByVersion(version2)
-    return licenceConditionsService.compare(policy1, policy2)
+    val policy1 = licencePolicyService.policyByVersion(version1)
+    val policy2 = licencePolicyService.policyByVersion(version2)
+    return licencePolicyService.compare(policy1, policy2)
   }
 
   @GetMapping(value = ["/compare/{version}/licence/{licenceId}"])
@@ -161,8 +161,14 @@ class LicencePolicyController(
     @PathVariable("version") version: String,
     @PathVariable("licenceId") licenceId: Long
   ): List<LicenceConditionChanges>? {
-    val policy = licenceConditionsService.policyByVersion(version)
-    val licence = licenceService.getLicenceById(licenceId = licenceId)
-    return licenceConditionsService.compareLicenceWithPolicy(licence, policy)
+    val currentLicence = licenceService.getLicenceById(licenceId)
+    val currentPolicy = licencePolicyService.policyByVersion(version)
+
+    val previousLicence = currentLicence.variationOf?.let { licenceService.getLicenceById(it) }?.version
+    val previousPolicy = previousLicence?.let { licencePolicyService.policyByVersion(it) }
+
+    if (previousPolicy == null) return emptyList()
+
+    return licencePolicyService.compareLicenceWithPolicy(currentLicence, previousPolicy, currentPolicy)
   }
 }
