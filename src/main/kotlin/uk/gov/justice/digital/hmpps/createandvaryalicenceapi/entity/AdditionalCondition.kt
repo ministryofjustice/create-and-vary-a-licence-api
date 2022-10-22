@@ -27,6 +27,7 @@ data class AdditionalCondition(
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
+  val conditionVersion: String,
   val conditionCode: String? = null,
   var conditionCategory: String? = null,
   var conditionSequence: Int? = null,

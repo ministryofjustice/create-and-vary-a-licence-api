@@ -185,6 +185,7 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
 
 fun transform(model: ModelAdditionalCondition, licence: EntityLicence, conditionType: String): EntityAdditionalCondition {
   return EntityAdditionalCondition(
+    conditionVersion = licence.version!!,
     conditionCode = model.code,
     conditionCategory = model.category,
     conditionSequence = model.sequence,
@@ -204,6 +205,7 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
   return ModelAdditionalCondition(
     id = entity.id,
     code = entity.conditionCode,
+    version = entity.conditionVersion,
     category = entity.conditionCategory,
     sequence = entity.conditionSequence,
     text = entity.conditionText,

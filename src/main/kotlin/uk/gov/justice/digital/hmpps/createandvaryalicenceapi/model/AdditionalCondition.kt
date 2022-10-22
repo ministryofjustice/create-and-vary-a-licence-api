@@ -10,6 +10,9 @@ data class AdditionalCondition(
   @Schema(description = "Coded value for the additional condition", example = "meetingAddress")
   val code: String? = null,
 
+  @Schema(description = "Version number for condition", example = "2.1")
+  val version: String? = null,
+
   @Schema(description = "The category of the additional condition", example = "Freedom of movement")
   val category: String? = null,
 

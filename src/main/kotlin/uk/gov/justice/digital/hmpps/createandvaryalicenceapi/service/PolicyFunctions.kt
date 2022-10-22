@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
@@ -32,18 +32,27 @@ fun <T : ILicenceCondition> conditionChanges(current: List<T>, other: List<T>) =
   amendedConditions(current, other)
 )
 
+/**
+ * This will return a list of all changes that need to be addressed as part of migrating a licence from one version of the policy to another.
+ */
 fun <T : Any> licencePolicyChanges(
-  presentConditions: List<AdditionalCondition>,
+  licence: Licence,
   previousConditions: List<IAdditionalCondition<T>>,
   currentConditions: List<IAdditionalCondition<T>>,
   allReplacements: List<Replacements>
 ): List<LicenceConditionChanges> {
-  val conditionsToCheck = currentConditions.filter { current ->
-    presentConditions.any { present -> current.code == present.code }
+  val conditionsToCheck = previousConditions.filter { policyCondition ->
+    licence.additionalLicenceConditions.any { licenceCondition ->
+      licenceCondition.code == policyCondition.code && licence.version != licenceCondition.version
+    }
   }
-  val changes = conditionChanges(conditionsToCheck, previousConditions, allReplacements)
+  val changes = conditionChanges(conditionsToCheck, currentConditions, allReplacements)
 
-  return changes.map { change -> change.copy(sequence = presentConditions.find { condition -> condition.code == change.code }?.sequence) }
+  return changes.map { change ->
+    change.copy(
+      sequence = licence.additionalLicenceConditions.find { condition -> condition.code == change.code }?.sequence
+    )
+  }
 }
 
 fun <T : Any> conditionChanges(

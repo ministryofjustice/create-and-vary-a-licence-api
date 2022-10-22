@@ -51,7 +51,9 @@ class ExclusionZoneServiceTest {
   fun `service uploads an exclusion zone file`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithoutUpload))
-    whenever(additionalConditionUploadDetailRepository.saveAndFlush(any())).thenReturn(anAdditionalConditionUploadDetailEntity)
+    whenever(additionalConditionUploadDetailRepository.saveAndFlush(any())).thenReturn(
+      anAdditionalConditionUploadDetailEntity
+    )
 
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
     AssertionsForClassTypes.assertThat(fileResource).isNotNull
@@ -75,7 +77,11 @@ class ExclusionZoneServiceTest {
   fun `service removes an upload exclusion zone`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
-    whenever(additionalConditionUploadDetailRepository.findById(1)).thenReturn(Optional.of(anAdditionalConditionUploadDetailEntity))
+    whenever(additionalConditionUploadDetailRepository.findById(1)).thenReturn(
+      Optional.of(
+        anAdditionalConditionUploadDetailEntity
+      )
+    )
 
     service.removeExclusionZoneFile(1L, 1L)
 
@@ -89,7 +95,11 @@ class ExclusionZoneServiceTest {
   fun `service returns a full-sized exclusion zone image`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
-    whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionUploadDetailEntity))
+    whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(
+      Optional.of(
+        anAdditionalConditionUploadDetailEntity
+      )
+    )
 
     val image = service.getExclusionZoneImage(1L, 1L)
 
@@ -149,13 +159,24 @@ class ExclusionZoneServiceTest {
     )
 
     val someAdditionalConditionData = listOf(
-      AdditionalConditionData(id = 1, dataField = "outOfBoundArea", dataValue = "Bristol town centre", additionalCondition = AdditionalCondition(licence = aLicenceEntity)),
-      AdditionalConditionData(id = 2, dataField = "outOfBoundFile", dataValue = "test.pdf", additionalCondition = AdditionalCondition(licence = aLicenceEntity))
+      AdditionalConditionData(
+        id = 1,
+        dataField = "outOfBoundArea",
+        dataValue = "Bristol town centre",
+        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+      ),
+      AdditionalConditionData(
+        id = 2,
+        dataField = "outOfBoundFile",
+        dataValue = "test.pdf",
+        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+      )
     )
 
     val anAdditionalConditionEntityWithoutUpload = AdditionalCondition(
       id = 1,
       licence = aLicenceEntity,
+      conditionVersion = "1.0",
       conditionCode = "outOfBounds",
       conditionCategory = "Freedom of movement",
       conditionSequence = 1,
@@ -176,6 +197,7 @@ class ExclusionZoneServiceTest {
 
     val anAdditionalConditionEntityWithUpload = AdditionalCondition(
       id = 1,
+      conditionVersion = "1.0",
       licence = aLicenceEntity,
       conditionCode = "outOfBounds",
       conditionCategory = "Freedom of movement",
