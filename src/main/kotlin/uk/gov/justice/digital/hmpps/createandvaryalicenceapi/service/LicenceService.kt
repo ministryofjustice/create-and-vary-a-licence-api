@@ -682,7 +682,7 @@ class LicenceService(
     licenceVariation.createdBy = createdBy
     licenceVariation.mailingList.add(licenceVariation.responsibleCom!!)
     licenceVariation.mailingList.add(createdBy!!)
-    licenceVariation.version = licencePolicyService.currentPolicy().version
+    licenceVariation.version = licenceEntity.version
 
     val newLicence = licenceRepository.save(licenceVariation)
 

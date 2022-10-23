@@ -1315,7 +1315,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
     with(licenceCaptor.value) {
-      assertThat(version).isEqualTo("2.1")
+      assertThat(version).isEqualTo(aLicenceEntity.version)
     }
   }
 
