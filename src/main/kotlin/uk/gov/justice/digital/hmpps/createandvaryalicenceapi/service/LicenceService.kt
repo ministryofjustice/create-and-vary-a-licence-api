@@ -242,6 +242,7 @@ class LicenceService(
 
     newConditions.add(
       AdditionalCondition(
+        conditionVersion = licenceEntity.version!!,
         conditionType = request.conditionType,
         conditionCode = request.conditionCode,
         conditionText = request.conditionText,
@@ -292,7 +293,6 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-
     val submittedAdditionalConditions =
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
@@ -367,6 +367,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
     val updatedAdditionalCondition = additionalCondition.copy(
+      conditionVersion = licenceEntity.version!!,
       additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition),
       expandedConditionText = request.expandedConditionText
     )

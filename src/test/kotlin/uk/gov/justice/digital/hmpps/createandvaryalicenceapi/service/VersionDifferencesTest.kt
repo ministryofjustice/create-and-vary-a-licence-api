@@ -11,17 +11,44 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionCh
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REPLACED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.TEXT_CHANGE
 
-class RealLicencePolicyServiceTest() {
+class VersionDifferencesTest() {
 
   private val licencePolicyService = LicencePolicyService(
     listOf(
+      ClassPathResource("/policy_conditions/policyV1.json").file,
       ClassPathResource("/policy_conditions/policyV2.json").file,
       ClassPathResource("/policy_conditions/policyV2.1.json").file
     ).map { policy -> jacksonObjectMapper().readValue(policy) }
   )
 
   @Test
-  fun `Current policy version is returned`() {
+  fun `1_0 to 2_0`() {
+    val currentPolicy = licencePolicyService.policyByVersion("2.0")
+    val previousPolicy = licencePolicyService.policyByVersion("1.0")
+
+    val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
+
+    val diffs =
+      conditionChanges(previousPolicy.additionalConditions.ap, currentPolicy.additionalConditions.ap, replacements)
+
+    showDiffs(diffs)
+  }
+
+  @Test
+  fun `1_0 to 2_1`() {
+    val currentPolicy = licencePolicyService.policyByVersion("2.1")
+    val previousPolicy = licencePolicyService.policyByVersion("1.0")
+
+    val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
+
+    val diffs =
+      conditionChanges(previousPolicy.additionalConditions.ap, currentPolicy.additionalConditions.ap, replacements)
+
+    showDiffs(diffs)
+  }
+
+  @Test
+  fun `2_0 to 2_1`() {
     val currentPolicy = licencePolicyService.policyByVersion("2.1")
     val previousPolicy = licencePolicyService.policyByVersion("2.0")
 
@@ -30,54 +57,66 @@ class RealLicencePolicyServiceTest() {
     val diffs =
       conditionChanges(previousPolicy.additionalConditions.ap, currentPolicy.additionalConditions.ap, replacements)
 
+    showDiffs(diffs)
+  }
+
+  private fun showDiffs(
+    diffs: List<LicenceConditionChanges>,
+  ): String {
+    var text = ""
     diffs.forEach {
       when (it.changeType) {
-        TEXT_CHANGE ->
-          println(
+        TEXT_CHANGE -> {
+          text +=
             """
-            type:   ${it.changeType}
-            id:     ${it.code}
-            before: ${it.previousText}
-            after:  ${it.currentText}
+              type:   ${it.changeType}
+              id:     ${it.code}
+              before: ${it.previousText}
+              after:  ${it.currentText}
             """.trimIndent()
-          )
-        NEW_OPTIONS ->
-          println(
+          text += "\n"
+        }
+        NEW_OPTIONS -> {
+          text +=
             """
-            type:   ${it.changeType}
-            id:     ${it.code}
-            before: ${it.previousText}
-            after:  ${it.currentText}
-            added: ${it.addedInputs}
-            removed:  ${it.removedInputs}
+              type:   ${it.changeType}
+              id:     ${it.code}
+              before: ${it.previousText}
+              after:  ${it.currentText}
+              added: ${it.addedInputs}
+              removed:  ${it.removedInputs}
             """.trimIndent()
-          )
+          text += "\n"
+        }
+
         REPLACED -> {
-          println(
+          text +=
             """
-            type:         ${it.changeType}
-            id:           ${it.code}
+              type:   ${it.changeType}
+              id:     ${it.code}
             """.trimIndent()
-          )
+          text += "\n"
           it.suggestions.forEach { suggestedCondition ->
-            println(" * $suggestedCondition")
+            text += " * $suggestedCondition\n"
           }
         }
         DELETED -> {
-          println(
+          text +=
             """
-            type:         ${it.changeType}
-            id:           ${it.code}
+              type:   ${it.changeType}
+              id:     ${it.code}   
             """.trimIndent()
-          )
+          text += "\n"
           it.suggestions.forEach { suggestedCondition ->
-            println(" * $suggestedCondition")
+            text += " * $suggestedCondition\n"
           }
         }
 
         REMOVED_NO_REPLACEMENTS -> println("ERROR!: NO REPLACEMENTS")
       }
-      println()
+      text += "\n"
     }
+    println(text)
+    return text
   }
 }

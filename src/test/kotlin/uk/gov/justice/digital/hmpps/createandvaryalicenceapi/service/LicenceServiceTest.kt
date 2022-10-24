@@ -894,6 +894,7 @@ class LicenceServiceTest {
             additionalConditions = listOf(
               EntityAdditionalCondition(
                 id = 1,
+                conditionVersion = "1.0",
                 conditionCode = "code",
                 conditionSequence = 5,
                 conditionCategory = "oldCategory",
@@ -904,6 +905,7 @@ class LicenceServiceTest {
               ),
               EntityAdditionalCondition(
                 id = 2,
+                conditionVersion = "1.0",
                 conditionCode = "code2",
                 conditionSequence = 6,
                 conditionCategory = "removedCategory",
@@ -914,6 +916,7 @@ class LicenceServiceTest {
               ),
               EntityAdditionalCondition(
                 id = 3,
+                conditionVersion = "1.0",
                 conditionCode = "code3",
                 conditionSequence = 6,
                 conditionCategory = "pssCategory",
@@ -948,6 +951,7 @@ class LicenceServiceTest {
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       EntityAdditionalCondition(
         id = 1,
+        conditionVersion = "1.0",
         conditionCode = "code",
         conditionCategory = "category",
         conditionSequence = 0,
@@ -958,6 +962,7 @@ class LicenceServiceTest {
       ),
       EntityAdditionalCondition(
         id = 3,
+        conditionVersion = "1.0",
         conditionCode = "code3",
         conditionSequence = 6,
         conditionCategory = "pssCategory",
@@ -1001,6 +1006,7 @@ class LicenceServiceTest {
             additionalConditions = listOf(
               EntityAdditionalCondition(
                 id = 1,
+                conditionVersion = "1.0",
                 conditionCode = "code",
                 conditionSequence = 5,
                 conditionCategory = "oldCategory",
@@ -1040,6 +1046,7 @@ class LicenceServiceTest {
             additionalConditions = listOf(
               EntityAdditionalCondition(
                 id = 1,
+                conditionVersion = "1.0",
                 conditionCode = "code",
                 conditionSequence = 5,
                 conditionCategory = "oldCategory",
@@ -1050,6 +1057,7 @@ class LicenceServiceTest {
               ),
               EntityAdditionalCondition(
                 id = 2,
+                conditionVersion = "1.0",
                 conditionCode = "code2",
                 conditionSequence = 6,
                 conditionCategory = "removedCategory",
@@ -1060,6 +1068,7 @@ class LicenceServiceTest {
               ),
               EntityAdditionalCondition(
                 id = 3,
+                conditionVersion = "1.0",
                 conditionCode = "code3",
                 conditionSequence = 6,
                 conditionCategory = "oldCategory3",
@@ -1082,6 +1091,7 @@ class LicenceServiceTest {
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       EntityAdditionalCondition(
         id = 1,
+        conditionVersion = "1.0",
         conditionCode = "code",
         conditionCategory = "oldCategory",
         conditionSequence = 5,
@@ -1092,6 +1102,7 @@ class LicenceServiceTest {
       ),
       EntityAdditionalCondition(
         id = 3,
+        conditionVersion = "1.0",
         conditionCode = "code3",
         conditionCategory = "oldCategory3",
         conditionSequence = 6,
@@ -1190,6 +1201,7 @@ class LicenceServiceTest {
             additionalConditions = listOf(
               EntityAdditionalCondition(
                 id = 1,
+                conditionVersion = "1.0",
                 conditionCode = "code",
                 conditionSequence = 5,
                 conditionCategory = "oldCategory",
@@ -1201,7 +1213,14 @@ class LicenceServiceTest {
           )
         )
       )
-
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList()
+      )
+    )
     whenever(additionalConditionRepository.findById(1L))
       .thenReturn(
         Optional.of(
@@ -2166,12 +2185,13 @@ class LicenceServiceTest {
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
-        additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity)
+        additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
       )
     )
 
     val anAdditionalConditionEntity = EntityAdditionalCondition(
       id = 1,
+      conditionVersion = "1.0",
       licence = aLicenceEntity,
       conditionCode = "code1",
       conditionCategory = "category1",

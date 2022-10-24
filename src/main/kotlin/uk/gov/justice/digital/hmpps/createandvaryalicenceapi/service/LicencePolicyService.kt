@@ -83,12 +83,12 @@ class LicencePolicyService(private val policies: List<LicencePolicy>) {
     if (previousPolicy.version == currentPolicy.version) return emptyList()
     val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
     return licencePolicyChanges(
-      licence.additionalLicenceConditions,
+      licence,
       previousPolicy.additionalConditions.ap,
       currentPolicy.additionalConditions.ap,
       replacements,
     ) + licencePolicyChanges(
-      licence.additionalPssConditions,
+      licence,
       previousPolicy.additionalConditions.pss,
       currentPolicy.additionalConditions.pss,
       replacements,
