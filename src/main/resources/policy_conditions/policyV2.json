@@ -765,7 +765,7 @@
             ]
           }
         ],
-        "type": "ReportToApprovedPremises"
+        "type": "ReportToApprovedPremisesPolicyV2_0"
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
@@ -816,7 +816,7 @@
             ]
           }
         ],
-        "type": "ReportToPoliceStation"
+        "type": "ReportToPoliceStationPolicyV2_0"
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
