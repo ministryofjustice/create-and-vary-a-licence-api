@@ -652,7 +652,6 @@
         "category": "Freedom of movement",
         "text": "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map without the prior approval of your supervising officer.",
         "tpl": "Not to enter the area of {outOfBoundArea}, as defined by the attached map without the prior approval of your supervising officer.",
-        "subtext": "If you need to upload more than one map, add one here and then email all maps directly to the prison OMU. Make sure the names of areas shown on all maps are entered here as a list. For example, Bridgend, Porthcawl and Port Talbot.",
         "requiresInput": true,
         "inputs": [
           {
