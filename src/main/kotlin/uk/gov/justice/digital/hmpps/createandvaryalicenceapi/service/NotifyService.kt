@@ -25,6 +25,7 @@ class NotifyService(
   @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
+  @Value("\${notify.templates.datesChanged14B}") private val datesChanged14bTemplateId: String,
   private val client: NotificationClient,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
@@ -166,6 +167,25 @@ class NotifyService(
         sendLicenceCreateEmail(urgentLicencePromptTemplateId, it.email, it.comName, it.urgentPromptCases)
       }
     }
+  }
+  fun send14BDatesChangedEmail(
+    emailAddress: String,
+    prisonerFirstName: String,
+    prisonerLastName: String,
+    prisonNumber: String,
+    dateChanges: String
+  ) {
+    sendEmail(
+      datesChanged14bTemplateId,
+      emailAddress,
+      mapOf(
+        Pair("prisonerFirstName", prisonerFirstName),
+        Pair("prisonerLastName", prisonerLastName),
+        Pair("prisonNumber", prisonNumber),
+        Pair("dateChanges", dateChanges)
+      ),
+      null
+    )
   }
 
   private fun sendLicenceCreateEmail(templateId: String, emailAddress: String, comName: String, cases: List<PrisonerForRelease>) {

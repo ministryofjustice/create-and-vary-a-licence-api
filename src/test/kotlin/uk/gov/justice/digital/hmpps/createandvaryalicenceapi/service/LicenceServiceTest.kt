@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
@@ -37,6 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -61,6 +64,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -2049,6 +2053,1516 @@ class LicenceServiceTest {
       )
     )
   }
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP, status In_Progress, LED of 12 month `() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().plusMonths(12)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status submitted, LED of 12 month `() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.SUBMITTED,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = LocalDate.of(2021, 12, 22)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status approved, LED greater than 12 month , no ARD date`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(14),
+      actualReleaseDate = null,
+      conditionalReleaseDate = LocalDate.of(2021, 10, 25),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP, status variation_in_progress, LED less than 12 month , no ARD date`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().plusMonths(10)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status variation_approved, LED greater than 12 month , no CRD date`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.VARIATION_SUBMITTED,
+      licenceExpiryDate = LocalDate.now().plusMonths(14),
+      actualReleaseDate = LocalDate.of(2021, 10, 25),
+      conditionalReleaseDate = null,
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP, status variation_in_approved, LED less than 12 month `() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.VARIATION_APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(10)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status variation_in_approved, LED greater than 12 month`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.VARIATION_APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(15),
+      actualReleaseDate = LocalDate.of(2021, 10, 26)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `create additional condition with 14b should not calculate end date automatically for license type PSS`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.PSS,
+      statusCode = LicenceStatus.VARIATION_APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(14),
+      actualReleaseDate = LocalDate.of(2021, 10, 26)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = LicenceStatus::class, names = ["REJECTED", "INACTIVE", "ACTIVE", "RECALLED", "VARIATION_REJECTED"])
+  fun `create additional condition with 14b should not calculate end date automatically for status code `(statusCode: LicenceStatus) {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP,
+      statusCode = statusCode,
+      licenceExpiryDate = LocalDate.now().plusMonths(14),
+      actualReleaseDate = LocalDate.of(2021, 10, 26)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+
+    val updateCopyOfLicense = copyOfLicenseEntity.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = copyOfLicenseEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+
+    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence LED changed greater than 12 with 14b should update end date for license type AP,status in-progress,current LED less than 12 `() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().minusMonths(1),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate,
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = LocalDate.now().plusMonths(14),
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "licence end date")
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `update sentence LED changed greater than 12 with 14b should not update end date for license type AP,status submitted,current LED less greater 12 `() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.SUBMITTED,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate,
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = LocalDate.now().plusMonths(14),
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `update sentence LED changed less than 12 with 14b should  update end date for license type AP,status approved`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate,
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = LocalDate.now().minusMonths(3),
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "licence end date")
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${updateSentenceDatesRequest.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence ARD changed, existing LED greater than 12, status in-progress, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().plusMonths(13),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate,
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate?.plusMonths(3),
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence ARD changed, existing LED equal to 12, status in-progress, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.SUBMITTED,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate,
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate?.plusMonths(3),
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence ARD changed, existing LED less than 12, status approved, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().minusMonths(2),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate,
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate?.plusMonths(3),
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+
+  @Test
+  fun `update sentence CRD changed, existing LED greater than 12, existing ARD is null, status approved, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(13),
+      actualReleaseDate = null,
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence CRD changed, existing LED greater than 12, existing ARD not null, status approved, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(13),
+      actualReleaseDate = LocalDate.of(2021, 10, 26),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, status approved, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = null,
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence CRD changed, existing LED less 12, status approved, license type AP&PSS`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP_PSS,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().minusMonths(2),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, status in_progress, license type PSS`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.PSS,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = null,
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence LED,ARD,CRD changed, existing LED less than 12, status in_progress, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().minusMonths(2),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate?.plusMonths(3),
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = LocalDate.now().plusMonths(12),
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService).getOmuContactEmail(any())
+    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date and licence end date")
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence ARD,CRD changed, existing LED less than 12, status in_progress, license type AP`() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.APPROVED,
+      licenceExpiryDate = LocalDate.now().minusMonths(2),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate?.plusMonths(3),
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
+  @Test
+  fun `update sentence LED,ARD,CRD changed, but 14b additional condition does not exist `() {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().minusMonths(2),
+      additionalConditions = listOf(
+        anAdditionalConditionEntity
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate?.plusMonths(3),
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = LocalDate.now().plusMonths(12),
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).isNull()
+  }
+  @ParameterizedTest
+  @EnumSource(value = LicenceStatus::class, names = ["REJECTED", "INACTIVE", "ACTIVE", "RECALLED", "VARIATION_IN_PROGRESS", "VARIATION_SUBMITTED", "VARIATION_REJECTED", "VARIATION_APPROVED"])
+  fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, license type AP and status code`(statusCode: LicenceStatus) {
+    val copyOfLicenseEntity = aLicenceEntity.copy(
+      typeCode = LicenceType.AP,
+      statusCode = statusCode,
+      licenceExpiryDate = LocalDate.now().plusMonths(12),
+      actualReleaseDate = null,
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        ),
+        EntityAdditionalCondition(
+          id = 3,
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionType = "AP",
+          conditionCategory = "Electronic monitoring",
+          conditionSequence = 1,
+          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        )
+      )
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    val updateSentenceDatesRequest =
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
+        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
+        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
+        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
+        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
+        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
+        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
+      )
+    service.updateSentenceDates(
+      1L,
+      updateSentenceDatesRequest
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(omuService, times(0)).getOmuContactEmail(any())
+    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+      .isEqualTo(
+        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+      )
+  }
 
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
@@ -2226,5 +3740,6 @@ class LicenceServiceTest {
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
     )
+    val dateFormatter = DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy")!!
   }
 }

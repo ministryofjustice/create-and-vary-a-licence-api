@@ -33,6 +33,7 @@ class NotifyServiceTest {
     variationReferredTemplateId = TEMPLATE_ID,
     variationForReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
+    datesChanged14bTemplateId = TEMPLATE_ID,
     client = notificationClient,
   )
 
@@ -232,6 +233,7 @@ class NotifyServiceTest {
       variationReferredTemplateId = TEMPLATE_ID,
       variationForReApprovalTemplateId = TEMPLATE_ID,
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
+      datesChanged14bTemplateId = TEMPLATE_ID,
       client = notificationClient,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
@@ -284,6 +286,17 @@ class NotifyServiceTest {
     verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedMap, null)
   }
 
+  @Test
+  fun `send email to OMU when 14b dates has change`() {
+    notifyService.send14BDatesChangedEmail(EMAIL_ADDRESS, "jim", "smith", "prisonNumber", "release date")
+    val expectedValue = mapOf(
+      "prisonerFirstName" to "jim",
+      "prisonerLastName" to "smith",
+      "prisonNumber" to "prisonNumber",
+      "dateChanges" to "release date"
+    )
+    verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedValue, null)
+  }
   private companion object {
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
     const val EMAIL_ADDRESS = "joe.bloggs@mail.com"
