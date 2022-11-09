@@ -1024,7 +1024,7 @@ class LicenceService(
         }
       }
     }
-
+    val copyOfOriginalLicenceEntity = licenceEntity.copy()
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     auditEventRepository.saveAndFlush(
@@ -1040,7 +1040,7 @@ class LicenceService(
       )
     )
     if (!endDate.isNullOrBlank()) {
-      val dateChanges: String? = getReasonFor14BDateChange(sentenceChanges.ledChanged, updatedLicenceEntity, licenceEntity)
+      val dateChanges: String? = getReasonFor14BDateChange(sentenceChanges.ledChanged, updatedLicenceEntity, copyOfOriginalLicenceEntity)
       if (dateChanges != null) {
         log.info("End date on additional condition 14B has changed because of $dateChanges changes for Licence id ${licenceEntity.id},notifying OMU")
         sendEmailFor14DateChanges(updatedLicenceEntity, dateChanges)
