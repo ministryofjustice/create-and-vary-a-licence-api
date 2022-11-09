@@ -2053,6 +2053,7 @@ class LicenceServiceTest {
       )
     )
   }
+
   @Test
   fun `create additional condition with 14b should calculate end date automatically for license type AP, status In_Progress, LED of 12 month `() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2063,26 +2064,28 @@ class LicenceServiceTest {
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
 
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2094,19 +2097,26 @@ class LicenceServiceTest {
       )
     )
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
+    assertThat(addConditionCaptor).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status submitted, LED of 12 month `() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2117,27 +2127,28 @@ class LicenceServiceTest {
       actualReleaseDate = LocalDate.of(2021, 12, 22)
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2151,16 +2162,18 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
   }
 
   @Test
@@ -2174,27 +2187,28 @@ class LicenceServiceTest {
       conditionalReleaseDate = LocalDate.of(2021, 10, 25),
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE].format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2208,16 +2222,19 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue")
+      .isEqualTo(copyOfLicenseEntity.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
   }
 
   @Test
@@ -2229,27 +2246,28 @@ class LicenceServiceTest {
       licenceExpiryDate = LocalDate.now().plusMonths(10)
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2263,16 +2281,18 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
   }
 
   @Test
@@ -2286,27 +2306,28 @@ class LicenceServiceTest {
       conditionalReleaseDate = null,
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2318,18 +2339,19 @@ class LicenceServiceTest {
       )
     )
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
   }
 
   @Test
@@ -2341,27 +2363,28 @@ class LicenceServiceTest {
       licenceExpiryDate = LocalDate.now().plusMonths(10)
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2375,17 +2398,20 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.licenceExpiryDate?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
   }
+
   @Test
   fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status variation_in_approved, LED greater than 12 month`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2396,27 +2422,27 @@ class LicenceServiceTest {
       actualReleaseDate = LocalDate.of(2021, 10, 26)
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = copyOfLicenseEntity,
+      conditionVersion = "1.0",
+      conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+      expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
+        "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = copyOfLicenseEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
+        entityAdditionalCondition
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
-
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
         conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2430,29 +2456,29 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataSequence").isEqualTo(0)
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
   }
 
   @Test
-  fun `create additional condition with 14b should not calculate end date automatically for license type PSS`() {
+  fun `create additional does not have 14b `() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
       additionalConditions = listOf(anAdditionalConditionEntity),
-      typeCode = LicenceType.PSS,
+      typeCode = LicenceType.AP,
       statusCode = LicenceStatus.VARIATION_APPROVED,
-      licenceExpiryDate = LocalDate.now().plusMonths(14),
-      actualReleaseDate = LocalDate.of(2021, 10, 26)
+      licenceExpiryDate = LocalDate.now().plusMonths(10)
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-
     val updateCopyOfLicense = copyOfLicenseEntity.copy(
       additionalConditions = listOf(
         anAdditionalConditionEntity,
@@ -2460,46 +2486,39 @@ class LicenceServiceTest {
           id = 2,
           licence = copyOfLicenseEntity,
           conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+          conditionCode = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
           conditionType = "AP",
           conditionCategory = "Electronic monitoring",
           conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          conditionText = "Receive home visits from a Mental Health Worker.",
+          expandedConditionText = "Receive home visits from a Mental Health Worker."
         )
       )
     )
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicense)
 
-    val savedAdditionalConditionEntity = service.addAdditionalCondition(
+    service.addAdditionalCondition(
       1L, "AP",
       AddAdditionalConditionRequest(
-        conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
+        conditionCode = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
         conditionType = "AP",
         conditionCategory = "Electronic monitoring",
         sequence = 0,
-        conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-        expandedText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+        conditionText = "Receive home visits from a Mental Health Worker.",
+        expandedText = "Receive home visits from a Mental Health Worker."
       )
     )
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-    assertThat(savedAdditionalConditionEntity).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).isNull()
   }
 
   @ParameterizedTest
-  @EnumSource(value = LicenceStatus::class, names = ["REJECTED", "INACTIVE", "ACTIVE", "RECALLED", "VARIATION_REJECTED"])
+  @EnumSource(
+    value = LicenceStatus::class,
+    names = ["REJECTED", "INACTIVE", "ACTIVE", "RECALLED", "VARIATION_REJECTED"]
+  )
   fun `create additional condition with 14b should not calculate end date automatically for status code `(statusCode: LicenceStatus) {
     val copyOfLicenseEntity = aLicenceEntity.copy(
       additionalConditions = listOf(anAdditionalConditionEntity),
@@ -2543,7 +2562,10 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
+    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting(
+      "expandedConditionText"
+    )
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
           " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
@@ -2554,6 +2576,7 @@ class LicenceServiceTest {
           " ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `update sentence LED changed greater than 12 with 14b should update end date for license type AP,status in-progress,current LED less than 12 `() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2564,7 +2587,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2573,10 +2596,27 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataSequence = 0,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            ),
+            AdditionalConditionData(
+              id = 2,
+              dataSequence = 1,
+              dataField = "infoInputReviewed",
+              dataValue = "false",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         )
       )
     )
+
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
@@ -2587,7 +2627,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     service.updateSentenceDates(
       1L,
@@ -2604,15 +2648,31 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
+    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "licence end date")
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "licence end date"
+    )
 
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.dataSequence == 0 })
+      .extracting("dataField").isEqualTo("endDate")
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.dataSequence == 0 })
+      .extracting("dataValue").isEqualTo(copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.dataSequence == 1 })
+      .extracting("dataField").isEqualTo("infoInputReviewed")
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.dataSequence == 1 })
+      .extracting("dataValue").isEqualTo("false")
+    assertThat(updateAdditionalConditionCaptor.value).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          " ending on ${copyOfLicenseEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)
+          }, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
 
@@ -2626,7 +2686,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2635,7 +2695,15 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         )
       )
     )
@@ -2649,7 +2717,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     service.updateSentenceDates(
       1L,
@@ -2666,15 +2738,17 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
+    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(0)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    verify(notifyService, times(0)).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "licence end date"
+    )
   }
 
   @Test
@@ -2687,7 +2761,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2696,7 +2770,15 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         )
       )
     )
@@ -2710,7 +2792,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     val updateSentenceDatesRequest =
       UpdateSentenceDatesRequest(
@@ -2727,19 +2813,27 @@ class LicenceServiceTest {
       1L,
       updateSentenceDatesRequest
     )
-
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
+    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "licence end date")
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "licence end date"
+    )
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.additionalCondition.id == updateAdditionalConditionCaptor.value.id })
+      .extracting("dataValue").isEqualTo(updateSentenceDatesRequest.licenceExpiryDate?.format(dateFormatter))
+    assertThat(updateAdditionalConditionCaptor.value).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
           " ending on ${updateSentenceDatesRequest.licenceExpiryDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `update sentence ARD changed, existing LED greater than 12, status in-progress, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2750,7 +2844,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2759,7 +2853,15 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         )
       )
     )
@@ -2773,7 +2875,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     val updateSentenceDatesRequest =
       UpdateSentenceDatesRequest(
@@ -2790,18 +2896,29 @@ class LicenceServiceTest {
       1L,
       updateSentenceDatesRequest
     )
-
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
+    verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "release date"
+    )
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.additionalCondition.id == updateAdditionalConditionCaptor.value.id })
+      .extracting("dataValue")
+      .isEqualTo(updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(updateAdditionalConditionCaptor.value).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)
+          }, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `update sentence ARD changed, existing LED equal to 12, status in-progress, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2811,8 +2928,9 @@ class LicenceServiceTest {
       actualReleaseDate = LocalDate.of(2021, 10, 26),
       additionalConditions = listOf(
         anAdditionalConditionEntity,
+
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2821,7 +2939,15 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         )
       )
     )
@@ -2835,7 +2961,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     val updateSentenceDatesRequest =
       UpdateSentenceDatesRequest(
@@ -2854,17 +2984,28 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "release date"
+    )
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.additionalCondition.id == updateAdditionalConditionCaptor.value.id })
+      .extracting("dataValue")
+      .isEqualTo(updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(updateAdditionalConditionCaptor.value).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)
+          }, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `update sentence ARD changed, existing LED less than 12, status approved, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -2875,7 +3016,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2884,10 +3025,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2896,7 +3045,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -2926,16 +3087,11 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(0)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
     verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
   }
 
   @Test
@@ -2948,7 +3104,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2957,10 +3113,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -2969,7 +3133,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -2983,7 +3159,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     val updateSentenceDatesRequest =
       UpdateSentenceDatesRequest(
@@ -3002,17 +3182,28 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(2)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "release date"
+    )
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.additionalCondition.id == updateAdditionalConditionCaptor.value.id })
+      .extracting("dataValue")
+      .isEqualTo(updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(updateAdditionalConditionCaptor.value).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          " ending on ${updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)
+          }, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `update sentence CRD changed, existing LED greater than 12, existing ARD not null, status approved, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -3023,7 +3214,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3032,10 +3223,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3044,7 +3243,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -3076,15 +3287,11 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(omuService, times(0)).getOmuContactEmail(any())
     verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
   }
+
   @Test
   fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, status approved, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -3095,7 +3302,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3104,10 +3311,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3116,7 +3331,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -3130,7 +3357,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     val updateSentenceDatesRequest =
       UpdateSentenceDatesRequest(
@@ -3149,17 +3380,28 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(2)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date")
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "release date"
+    )
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.additionalCondition.id == updateAdditionalConditionCaptor.value.id })
+      .extracting("dataValue")
+      .isEqualTo(updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(updateAdditionalConditionCaptor.value).extracting("expandedConditionText")
       .isEqualTo(
         "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+          " ending on ${updateSentenceDatesRequest.conditionalReleaseDate?.plusYears(1)?.format(dateFormatter)
+          }, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
       )
   }
+
   @Test
   fun `update sentence CRD changed, existing LED less 12, status approved, license type AP&PSS`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -3169,7 +3411,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3178,10 +3420,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3190,7 +3440,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -3222,87 +3484,15 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(omuService, times(0)).getOmuContactEmail(any())
     verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo("dataValue")
   }
-  @Test
-  fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, status in_progress, license type PSS`() {
-    val copyOfLicenseEntity = aLicenceEntity.copy(
-      typeCode = LicenceType.PSS,
-      statusCode = LicenceStatus.IN_PROGRESS,
-      licenceExpiryDate = LocalDate.now().plusMonths(12),
-      actualReleaseDate = null,
-      additionalConditions = listOf(
-        anAdditionalConditionEntity,
-        EntityAdditionalCondition(
-          id = 2,
-          licence = aLicenceEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        ),
-        EntityAdditionalCondition(
-          id = 3,
-          licence = aLicenceEntity,
-          conditionVersion = "1.0",
-          conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
-          conditionType = "AP",
-          conditionCategory = "Electronic monitoring",
-          conditionSequence = 1,
-          conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-          expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-        )
-      )
-    )
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(copyOfLicenseEntity))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
-    )
-    val updateSentenceDatesRequest =
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = copyOfLicenseEntity.conditionalReleaseDate?.plusMonths(3),
-        actualReleaseDate = copyOfLicenseEntity.actualReleaseDate,
-        sentenceStartDate = copyOfLicenseEntity.sentenceStartDate,
-        sentenceEndDate = copyOfLicenseEntity.sentenceEndDate,
-        licenceStartDate = copyOfLicenseEntity.licenceStartDate,
-        licenceExpiryDate = copyOfLicenseEntity.licenceExpiryDate,
-        topupSupervisionStartDate = copyOfLicenseEntity.topupSupervisionStartDate,
-        topupSupervisionExpiryDate = copyOfLicenseEntity.topupSupervisionExpiryDate,
-      )
-    service.updateSentenceDates(
-      1L,
-      updateSentenceDatesRequest
-    )
 
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
-  }
   @Test
   fun `update sentence LED,ARD,CRD changed, existing LED less than 12, status in_progress, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -3312,7 +3502,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3321,10 +3511,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3333,7 +3531,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -3347,7 +3557,11 @@ class LicenceServiceTest {
       )
     )
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
-      OmuContact(prisonCode = aLicenceEntity.prisonCode!!, email = "test@OMU.testing.com", dateCreated = LocalDateTime.now())
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now()
+      )
     )
     val updateSentenceDatesRequest =
       UpdateSentenceDatesRequest(
@@ -3366,17 +3580,23 @@ class LicenceServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(2)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail("test@OMU.testing.com", copyOfLicenseEntity.forename!!, copyOfLicenseEntity.surname!!, copyOfLicenseEntity.nomsId!!, "release date and licence end date")
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    verify(notifyService).send14BDatesChangedEmail(
+      "test@OMU.testing.com",
+      copyOfLicenseEntity.forename!!,
+      copyOfLicenseEntity.surname!!,
+      copyOfLicenseEntity.nomsId!!,
+      "release date and licence end date"
+    )
+    assertThat(updateAdditionalConditionCaptor.value.additionalConditionData.find { it.additionalCondition.id == updateAdditionalConditionCaptor.value.id })
+      .extracting("dataValue")
+      .isEqualTo(updateSentenceDatesRequest.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
   }
+
   @Test
   fun `update sentence ARD,CRD changed, existing LED less than 12, status in_progress, license type AP`() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -3386,7 +3606,7 @@ class LicenceServiceTest {
       additionalConditions = listOf(
         anAdditionalConditionEntity,
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3395,10 +3615,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3407,7 +3635,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -3439,15 +3679,12 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(omuService, times(0)).getOmuContactEmail(any())
     verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
   }
+
   @Test
   fun `update sentence LED,ARD,CRD changed, but 14b additional condition does not exist `() {
     val copyOfLicenseEntity = aLicenceEntity.copy(
@@ -3488,12 +3725,18 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
     verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).isNull()
   }
+
   @ParameterizedTest
-  @EnumSource(value = LicenceStatus::class, names = ["REJECTED", "INACTIVE", "ACTIVE", "RECALLED", "VARIATION_IN_PROGRESS", "VARIATION_SUBMITTED", "VARIATION_REJECTED", "VARIATION_APPROVED"])
-  fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, license type AP and status code`(statusCode: LicenceStatus) {
+  @EnumSource(
+    value = LicenceStatus::class,
+    names = ["REJECTED", "INACTIVE", "ACTIVE", "RECALLED", "VARIATION_IN_PROGRESS", "VARIATION_SUBMITTED", "VARIATION_REJECTED", "VARIATION_APPROVED"]
+  )
+  fun `update sentence CRD changed, existing LED equal 12, existing ARD is null, license type AP and status code`(
+    statusCode: LicenceStatus
+  ) {
     val copyOfLicenseEntity = aLicenceEntity.copy(
       typeCode = LicenceType.AP,
       statusCode = statusCode,
@@ -3501,8 +3744,9 @@ class LicenceServiceTest {
       actualReleaseDate = null,
       additionalConditions = listOf(
         anAdditionalConditionEntity,
+
         EntityAdditionalCondition(
-          id = 2,
+          id = -1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3511,10 +3755,18 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+            )
+          )
         ),
         EntityAdditionalCondition(
-          id = 3,
+          id = 1,
           licence = aLicenceEntity,
           conditionVersion = "1.0",
           conditionCode = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -3523,7 +3775,19 @@ class LicenceServiceTest {
           conditionSequence = 1,
           conditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
           expandedConditionText = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, " +
-            "ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+            "ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
+          additionalConditionData = listOf(
+            AdditionalConditionData(
+              id = 1,
+              dataField = "endDate",
+              dataValue = "dataValue",
+              additionalCondition = EntityAdditionalCondition(
+                id = 1,
+                licence = aLicenceEntity,
+                conditionVersion = "1.0"
+              )
+            )
+          )
         )
       )
     )
@@ -3557,11 +3821,12 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
     verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
-    assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedConditionText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${aLicenceEntity.actualReleaseDate?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    verify(additionalConditionRepository, times(0)).saveAndFlush(any())
+    val addConditionCaptor =
+      licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+
+    assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
+      .extracting("dataValue").isEqualTo("dataValue")
   }
 
   private companion object {

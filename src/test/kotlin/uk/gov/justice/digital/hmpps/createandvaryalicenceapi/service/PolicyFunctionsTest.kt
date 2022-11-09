@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.HelpLink
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
@@ -247,6 +248,12 @@ class PolicyFunctionsTest {
       ).containsExactly(REMOVED_NO_REPLACEMENTS.removal(previous, emptyList()))
     }
   }
+  @Test
+  fun `Help link Input class`() {
+    assertThat(
+      input().helpLink
+    ).isNotNull
+  }
 
   fun policyCondition() = AdditionalConditionAp(
     "default-code",
@@ -270,7 +277,11 @@ class PolicyFunctionsTest {
     handleIndefiniteArticle = null,
     addAnother = null,
     includeBefore = null,
-    subtext = null
+    subtext = null,
+    helpLink = HelpLink(
+      summary = "Summary",
+      text = "text"
+    )
   )
 
   fun licence() = Licence(1, PSS, "2.0", ACTIVE, isVariation = true)

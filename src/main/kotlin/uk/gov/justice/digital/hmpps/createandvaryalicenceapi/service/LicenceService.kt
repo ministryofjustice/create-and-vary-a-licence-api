@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -51,10 +52,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
@@ -240,27 +239,28 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val newConditions = licenceEntity.additionalConditions.toMutableList()
-
-    val expandedText = if (isAdditionalConditionOf14B(request.conditionCode))
-      replaceExpandedTextWithEndDate(licenceEntity, request.expandedText)
-    else request.expandedText
-
-    newConditions.add(
-      AdditionalCondition(
-        conditionVersion = licenceEntity.version!!,
-        conditionType = request.conditionType,
-        conditionCode = request.conditionCode,
-        conditionText = request.conditionText,
-        expandedConditionText = expandedText,
-        conditionCategory = request.conditionCategory,
-        licence = licenceEntity,
-        conditionSequence = request.sequence
-      )
+    val existingAdditionalConditions = licenceEntity.additionalConditions.toMutableList()
+    var newAdditionalCondition = AdditionalCondition(
+      conditionVersion = licenceEntity.version!!,
+      conditionType = request.conditionType,
+      conditionCode = request.conditionCode,
+      conditionText = request.conditionText,
+      expandedConditionText = request.expandedText,
+      conditionCategory = request.conditionCategory,
+      licence = licenceEntity,
+      conditionSequence = request.sequence
+    )
+    if (isAdditionalConditionOf14B(request.conditionCode) && hasCorrectStatusCodeForNew14B(licenceEntity)) {
+      newAdditionalCondition = additionalConditionRepository.saveAndFlush(newAdditionalCondition)
+      val additionalConditionDataFor14b = createAdditionalConditionDataFor14b(licenceEntity, newAdditionalCondition)
+      newAdditionalCondition = newAdditionalCondition.copy(additionalConditionData = additionalConditionDataFor14b)
+    }
+    existingAdditionalConditions.add(
+      newAdditionalCondition
     )
 
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = newConditions,
+      additionalConditions = existingAdditionalConditions,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
@@ -268,8 +268,8 @@ class LicenceService(
     val savedLicenceEntity = licenceRepository.saveAndFlush(updatedLicence)
 
     // return the newly added condition.
-    val newCondition = savedLicenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
-    return transform(newCondition)
+    val newSavedCondition = savedLicenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
+    return transform(newSavedCondition)
   }
 
   @Transactional
@@ -711,7 +711,7 @@ class LicenceService(
       val additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { upload ->
         upload.copy(id = -1)
       }
-      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
+      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData as MutableList<AdditionalConditionData>, additionalConditionUploadSummary = additionalConditionUploadSummary)
     }
 
     var newAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions).toMutableList()
@@ -728,7 +728,7 @@ class LicenceService(
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
       }
 
-      condition.copy(additionalConditionData = updatedAdditionalConditionData, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
+      condition.copy(additionalConditionData = updatedAdditionalConditionData as MutableList<AdditionalConditionData>, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
     } as MutableList<AdditionalCondition>
 
     additionalConditionRepository.saveAll(newAdditionalConditions)
@@ -1004,20 +1004,24 @@ class LicenceService(
       updatedByUsername = username
     )
     // 14b
-    var has14BEndDateChanged: Boolean ? = false
+    var endDate: String? = null
     val additionalConditions14b = hasExistingLicenseContains14B(licenceEntity)
-    if (additionalConditions14b.isNotEmpty() && hasCorrectStatusCodeForExisting14B(licenceEntity) && isLicenseOfCorrectType(licenceEntity)) {
+    if (additionalConditions14b.isNotEmpty() && hasCorrectStatusCodeForExisting14B(licenceEntity)) {
       additionalConditions14b.forEach { additionalCondition ->
-        var text = additionalCondition.expandedConditionText
-        if (sentenceChanges.ledChanged) {
-          text = changeTextForLEDChange(updatedLicenceEntity, licenceEntity, text, additionalCondition)
-        } else if (hasDateChanged(updatedLicenceEntity.actualReleaseDate, licenceEntity.actualReleaseDate)) {
-          text = changeTextWithEndDate(licenceEntity, text, updatedLicenceEntity, additionalCondition)
-        } else if (hasDateChanged(updatedLicenceEntity.conditionalReleaseDate, licenceEntity.conditionalReleaseDate) && isARDNull(licenceEntity)) {
-          text = changeTextWithEndDate(licenceEntity, text, updatedLicenceEntity, additionalCondition)
+        endDate = calculateEndDateForLedArdCrdChanges(sentenceChanges, updatedLicenceEntity, licenceEntity)
+        if (!endDate.isNullOrBlank()) {
+          val additionalConditionDataWith14bEndDate = additionalCondition.additionalConditionData
+            .find { it.dataField == "endDate" }?.copy(
+              dataValue = endDate
+            )
+
+          val updatedAdditionalCondition = additionalCondition.copy(
+            conditionVersion = updatedLicenceEntity.version!!,
+            additionalConditionData = additionalCondition.additionalConditionData.removeExistingEndDateAndAddNew(additionalConditionDataWith14bEndDate!!),
+            expandedConditionText = additionalCondition.conditionText?.replace("[INSERT END DATE]", endDate!!)
+          )
+          additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
         }
-        has14BEndDateChanged = has14BEndDateChanged(text, additionalCondition)
-        additionalCondition.expandedConditionText = text
       }
     }
 
@@ -1035,14 +1039,13 @@ class LicenceService(
         )
       )
     )
-    if (has14BEndDateChanged!!) {
+    if (!endDate.isNullOrBlank()) {
       val dateChanges: String? = getReasonFor14BDateChange(sentenceChanges.ledChanged, updatedLicenceEntity, licenceEntity)
       if (dateChanges != null) {
-        log.info("End date on additional condition 14B has changed because of $dateChanges changes for Licence ${licenceEntity.id},notifying OMU")
+        log.info("End date on additional condition 14B has changed because of $dateChanges changes for Licence id ${licenceEntity.id},notifying OMU")
         sendEmailFor14DateChanges(updatedLicenceEntity, dateChanges)
       }
     }
-
     log.info(
       "Date change flags: LSD ${sentenceChanges.lsdChanged} LED ${sentenceChanges.ledChanged} " +
         "SED ${sentenceChanges.sedChanged} TUSSD ${sentenceChanges.tussdChanged} TUSED ${sentenceChanges.tusedChanged} " +
@@ -1075,7 +1078,6 @@ class LicenceService(
         }
     }
   }
-
   private fun hasOffenderResentensedWithActiveLicense(
     sentenceDatesRequest: UpdateSentenceDatesRequest,
     licenceEntity: EntityLicence
@@ -1091,147 +1093,12 @@ class LicenceService(
     }
     return false
   }
-  private fun isAdditionalConditionOf14B(
-    conditionCode: String
-  ) = conditionCode == conditionCode14B
-
-  private fun replaceExpandedTextWithEndDate(
-    licenceEntity: EntityLicence,
-    expandedText: String
-  ): String {
-    var expandedText1 = expandedText
-    if (hasCorrectStatusCodeForNew14B(licenceEntity) && isLicenseOfCorrectType(licenceEntity)) {
-      expandedText1 = if (isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate)) {
-        replaceExpandedEndDateWithARDOrCRD(licenceEntity, expandedText1)
-      } else {
-        replaceExpandedEndDateWithLicenseExpiryDate(expandedText1, licenceEntity)
-      }
-    }
-    return expandedText1
-  }
-
-  private fun hasCorrectStatusCodeForNew14B(
-    licenceEntity: EntityLicence
-  ) = setOf(IN_PROGRESS, SUBMITTED, APPROVED, VARIATION_IN_PROGRESS, VARIATION_SUBMITTED, VARIATION_APPROVED)
-    .contains(licenceEntity.statusCode)
-
-  private fun hasCorrectStatusCodeForExisting14B(
-    licenceEntity: EntityLicence
-  ) = setOf(IN_PROGRESS, SUBMITTED, APPROVED)
-    .contains(licenceEntity.statusCode)
-
-  private fun isLicenseOfCorrectType(
-    licenceEntity: EntityLicence
-  ) = setOf(LicenceType.AP, LicenceType.AP_PSS).contains(licenceEntity.typeCode)
-
-  private fun isLicenseExpiryDateOnOrAfterTwelveMonths(
-    licenceExpiryDate: LocalDate?
-  ) = licenceExpiryDate?.isEqual(LocalDate.now().plusMonths(12)) == true ||
-    licenceExpiryDate?.isAfter(LocalDate.now().plusMonths(12)) == true
-
-  private fun replaceExpandedEndDateWithARDOrCRD(
-    licenceEntity: EntityLicence,
-    expandedText: String
-  ): String {
-    var expandedText1 = expandedText
-    val endDate = calculateEndDate(licenceEntity)
-    expandedText1 = expandedText1.replace("[INSERT END DATE]", endDate, true)
-    return expandedText1
-  }
-  private fun replaceExpandedEndDateWithLicenseExpiryDate(
-    expandedText: String,
-    licenceEntity: EntityLicence
-  ) = expandedText.replace(
-    "[INSERT END DATE]",
-    licenceEntity.licenceExpiryDate?.format(dateTimeFormatter)
-      .toString(),
-    true
-  )
-// USE ARD if exits else CRD
-  private fun calculateEndDate(
-    licenceEntity: EntityLicence
-  ): String {
-    val additionalConditionEndDate = licenceEntity.actualReleaseDate
-      ?: licenceEntity.conditionalReleaseDate
-    return additionalConditionEndDate?.plusYears(1)?.format(dateTimeFormatter).toString()
-  }
-
-  private fun hasExistingLicenseContains14B(
-    licenceEntity: EntityLicence
-  ) = licenceEntity.additionalConditions.filter { additionalCondition ->
-    isAdditionalConditionOf14B(additionalCondition.conditionCode!!)
-  }
-
-  private fun hasDateChanged(
-    oldDate: LocalDate?,
-    newDate: LocalDate?
-  ) = nullableDatesDiffer(oldDate, newDate)
-
-  private fun changeTextForLEDChange(
-    updatedLicenceEntity: EntityLicence,
-    licenceEntity: EntityLicence,
-    text: String?,
-    additionalCondition: AdditionalCondition
-  ): String? {
-    var text1 = text
-    if (isLicenseExpiryDateOnOrAfterTwelveMonths(updatedLicenceEntity.licenceExpiryDate)) {
-      // existing license LED before 12 months
-      if (!isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate)) {
-        text1 = replaceExpandedEndDateWithARDOrCRD(updatedLicenceEntity, additionalCondition.conditionText!!)
-      }
-    } else {
-      text1 = replaceExpandedEndDateWithLicenseExpiryDate(additionalCondition.conditionText!!, updatedLicenceEntity)
-    }
-    return text1
-  }
-  private fun changeTextWithEndDate(
-    licenceEntity: EntityLicence,
-    text: String?,
-    updatedLicenceEntity: EntityLicence,
-    additionalCondition: AdditionalCondition
-  ): String? {
-    var text1 = text
-    if (isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate)) {
-      text1 = replaceExpandedEndDateWithARDOrCRD(updatedLicenceEntity, additionalCondition.conditionText!!)
-    }
-    return text1
-  }
-  private fun isARDNull(
-    licenceEntity: EntityLicence
-  ) =
-    (licenceEntity.actualReleaseDate == null)
 
   private fun sendEmailFor14DateChanges(licenceEntity: EntityLicence, dateChanges: String) {
     val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it)?.email }
     notifyService.send14BDatesChangedEmail(omuEmail!!, licenceEntity.forename!!, licenceEntity.surname!!, licenceEntity.nomsId!!, dateChanges)
   }
 
-  private fun getReasonFor14BDateChange(
-    hasLedChange: Boolean,
-    updatedLicenceEntity: EntityLicence,
-    licenceEntity: EntityLicence
-  ): String? {
-    var dateChanges: String? = null
-    if (hasLedChange) {
-      dateChanges = ledDateChangeMsg
-    } else if (hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)) {
-      dateChanges = crdOrArdChangeMsg
-    }
-    if (hasLedChange && hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)) {
-      dateChanges = ledAndCrdOrArdChangeMsg
-    }
-
-    return dateChanges
-  }
-  private fun hasArdOrCrdChanged(
-    updatedLicenceEntity: EntityLicence,
-    licenceEntity: EntityLicence
-  ) = hasDateChanged(updatedLicenceEntity.actualReleaseDate, licenceEntity.actualReleaseDate) || hasDateChanged(updatedLicenceEntity.conditionalReleaseDate, licenceEntity.conditionalReleaseDate)
-
-  private fun has14BEndDateChanged(
-    text: String?,
-    additionalCondition: AdditionalCondition
-  ) = text != additionalCondition.expandedConditionText
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
     val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
     return inFlight.isNotEmpty()
@@ -1239,10 +1106,5 @@ class LicenceService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy")!!
-    private const val conditionCode14B = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"
-    private const val ledDateChangeMsg = "licence end date"
-    private const val crdOrArdChangeMsg = "release date"
-    private const val ledAndCrdOrArdChangeMsg = "release date and licence end date"
   }
 }

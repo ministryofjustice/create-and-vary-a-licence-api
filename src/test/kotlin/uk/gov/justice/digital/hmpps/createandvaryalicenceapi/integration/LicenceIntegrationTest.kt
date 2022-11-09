@@ -384,7 +384,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     // The condition ids will depend upon the order in which tests run so find these dynamically
-    val conditions = additionalConditionRepository.findAll().toMutableList().filter { condition -> condition.licence.id == 1L }
+    val conditions =
+      additionalConditionRepository.findAll().toMutableList().filter { condition -> condition.licence.id == 1L }
     assertThat(conditions).isNotEmpty
     val conditionId = conditions.first().id
 
@@ -616,7 +617,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Update prison information`() {
     webTestClient.put()
       .uri("/licence/id/1/prison-information")
-      .bodyValue(UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545"))
+      .bodyValue(
+        UpdatePrisonInformationRequest(
+          prisonCode = "PVI",
+          prisonDescription = "Pentonville (HMP)",
+          prisonTelephone = "+44 276 54545"
+        )
+      )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -682,6 +689,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
   }
+
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-3.sql"
@@ -720,8 +728,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
+
   @Test
-  fun `create additional condition with 14b should calculate end date automatically for license type AP&PSS, status submitted, LED of 12 month`() {
+  fun `Create additional condition with 14b should calculate end date automatically for license type AP&PSS, status submitted, LED of 12 month`() {
     // arrange
     val copyCreateLicenceStatus = aCreateLicenceRequest.copy(
       typeCode = LicenceType.AP,
@@ -751,17 +760,20 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(AdditionalCondition::class.java)
       .returnResult().responseBody
     // assert
-    assertThat(createdAdditionalCondition?.expandedText)
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyCreateLicenceStatus.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+
+    assertThat(
+      createdAdditionalCondition?.data?.find { it.sequence == 0 }
+    ).extracting("field").isEqualTo("endDate")
+    assertThat(
+      createdAdditionalCondition?.data?.find { it.sequence == 0 }
+    ).extracting("value").isEqualTo(copyCreateLicenceStatus.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
   }
+
   @Test
   @Sql(
     "classpath:test_data/seed-omu-contact-data.sql"
   )
-  fun `update sentence LED changed greater than 12 with 14b should update end date for license type AP,status in-progress,current LED less than 12 `() {
+  fun `Update sentence LED changed greater than 12 with 14b should update end date for license type AP,status in-progress,current LED less than 12 `() {
     // arrange
     val copyCreateLicenceStatus = aCreateLicenceRequest.copy(
       typeCode = LicenceType.AP,
@@ -816,12 +828,25 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
     // assert
-    assertThat(result.additionalLicenceConditions.find { it.code == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting("expandedText")
-      .isEqualTo(
-        "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
-          " ending on ${copyCreateLicenceStatus.actualReleaseDate?.plusYears(1)?.format(dateFormatter)}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
-      )
+    assertThat(
+      result?.additionalLicenceConditions?.find { it.code == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+        ?.data?.find { it.sequence == 0 }
+    )
+      .extracting("field").isEqualTo("endDate")
+    assertThat(
+      result?.additionalLicenceConditions?.find { it.code == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
+        ?.data?.find { it.sequence == 0 }
+    )
+      .extracting("value").isEqualTo(copyCreateLicenceStatus.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+    assertThat(result?.additionalLicenceConditions?.find { it.code == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).extracting(
+      "expandedText"
+    ).isEqualTo(
+      "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging," +
+        " ending on ${copyCreateLicenceStatus.actualReleaseDate?.plusYears(1)?.format(dateFormatter)
+        }, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer."
+    )
   }
+
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
 
