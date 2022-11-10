@@ -101,19 +101,14 @@ fun getReasonFor14BDateChange(
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
 ): String? {
-  var dateChanges: String? = null
-  if (hasLedChange) {
-    dateChanges = ledDateChangeMsg
-  } else if (hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)) {
-    dateChanges = crdOrArdChangeMsg
+  val hasArdOrCrdChanged = hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)
+  return when {
+    hasLedChange && hasArdOrCrdChanged -> ledAndCrdOrArdChangeMsg
+    hasLedChange -> ledDateChangeMsg
+    hasArdOrCrdChanged -> crdOrArdChangeMsg
+    else -> null
   }
-  if (hasLedChange && hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)) {
-    dateChanges = ledAndCrdOrArdChangeMsg
-  }
-
-  return dateChanges
 }
-
 fun hasArdOrCrdChanged(
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
