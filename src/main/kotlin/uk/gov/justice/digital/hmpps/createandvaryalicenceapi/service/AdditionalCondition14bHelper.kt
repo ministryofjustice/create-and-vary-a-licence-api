@@ -11,8 +11,59 @@ private const val conditionCode14B = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"
 private const val ledDateChangeMsg = "licence end date"
 private const val crdOrArdChangeMsg = "release date"
 private const val ledAndCrdOrArdChangeMsg = "release date and licence end date"
+private const val END_Date = "endDate"
 
-fun isAdditionalConditionOf14B(
+fun updateAdditionalConditionWithAdditionConditionData(
+  sentenceChanges: SentenceChanges,
+  updatedLicenceEntity: Licence,
+  licenceEntity: Licence
+): AdditionalCondition? {
+  var endDate: String? = null
+  val additionalCondition14b = hasExistingLicenseContains14B(licenceEntity)
+  additionalCondition14b?.let {
+    if (hasCorrectStatusCodeForExisting14B(licenceEntity)) {
+      endDate = calculateEndDateForLedArdCrdChanges(sentenceChanges, updatedLicenceEntity, licenceEntity)
+    }
+    if (!endDate.isNullOrBlank()) {
+      val additionalConditionDataWith14bEndDate = additionalCondition14b.additionalConditionData
+        .find { it.dataField == END_Date }?.copy(
+          dataValue = endDate
+        )
+      return additionalCondition14b.copy(
+        conditionVersion = updatedLicenceEntity.version!!,
+        additionalConditionData = additionalCondition14b.additionalConditionData.removeExistingEndDateAndAddNew(
+          additionalConditionDataWith14bEndDate!!
+        ),
+        expandedConditionText = additionalCondition14b.conditionText?.replace("[INSERT END DATE]", endDate!!)
+      )
+    }
+  }
+  return null
+}
+fun addAdditionalConditionDatasToAdditionalCondition(
+  conditionCode: String,
+  licenceEntity: Licence,
+  newAdditionalCondition: AdditionalCondition
+): List<AdditionalConditionData>? {
+  return when {
+    isAdditionalConditionOf14BWithCorrectStatusCode(conditionCode, licenceEntity) -> createAdditionalConditionDataFor14b(licenceEntity, newAdditionalCondition)
+    else -> null
+  }
+}
+fun getReasonForDateChange(
+  hasLedChange: Boolean,
+  updatedLicenceEntity: Licence,
+  licenceEntity: Licence
+): String? {
+  val hasArdOrCrdChanged = hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)
+  return when {
+    hasLedChange && hasArdOrCrdChanged -> ledAndCrdOrArdChangeMsg
+    hasLedChange -> ledDateChangeMsg
+    hasArdOrCrdChanged -> crdOrArdChangeMsg
+    else -> null
+  }
+}
+private fun isAdditionalConditionOf14B(
   conditionCode: String
 ) = conditionCode == conditionCode14B
 
@@ -25,7 +76,7 @@ fun calculateEndDate(
     return licenceEntity.licenceExpiryDate?.format(dateTimeFormatter).toString()
     )
 }
-fun hasCorrectStatusCodeForNew14B(
+private fun hasCorrectStatusCodeForNew14B(
   licenceEntity: Licence
 ) = setOf(
   LicenceStatus.IN_PROGRESS,
@@ -37,18 +88,13 @@ fun hasCorrectStatusCodeForNew14B(
 )
   .contains(licenceEntity.statusCode)
 
-fun hasCorrectStatusCodeForExisting14B(
+private fun hasCorrectStatusCodeForExisting14B(
   licenceEntity: Licence
 ) = setOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED)
   .contains(licenceEntity.statusCode)
 
-fun isLicenseExpiryDateOnOrAfterTwelveMonths(
-  licenceExpiryDate: LocalDate?
-) = licenceExpiryDate?.isEqual(LocalDate.now().plusMonths(12)) == true ||
-  licenceExpiryDate?.isAfter(LocalDate.now().plusMonths(12)) == true
-
 // USE ARD if exits else CRD
-fun calculateEndDateWithArdOrCrd(
+private fun calculateEndDateWithArdOrCrd(
   licenceEntity: Licence
 ): String {
   val additionalConditionEndDate = licenceEntity.actualReleaseDate
@@ -56,18 +102,18 @@ fun calculateEndDateWithArdOrCrd(
   return additionalConditionEndDate?.plusYears(1)?.format(dateTimeFormatter).toString()
 }
 
-fun hasExistingLicenseContains14B(
+private fun hasExistingLicenseContains14B(
   licenceEntity: Licence
-) = licenceEntity.additionalConditions.filter { additionalCondition ->
+) = licenceEntity.additionalConditions.find { additionalCondition ->
   isAdditionalConditionOf14B(additionalCondition.conditionCode!!)
-}.toMutableList()
+}
 
-fun hasDateChanged(
+private fun hasDateChanged(
   oldDate: LocalDate?,
   newDate: LocalDate?
 ) = nullableDatesDiffer(oldDate, newDate)
 
-fun calculateEndDateForLEDChange(
+private fun calculateEndDateForLEDChange(
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
 ): String? {
@@ -83,7 +129,7 @@ fun calculateEndDateForLEDChange(
   return endDate
 }
 
-fun calculateEndDate(
+private fun calculateEndDate(
   licenceEntity: Licence,
   updatedLicenceEntity: Licence
 ): String? = if (isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate)) {
@@ -91,33 +137,7 @@ fun calculateEndDate(
 } else {
   null
 }
-
-fun isARDNull(
-  licenceEntity: Licence
-) = (licenceEntity.actualReleaseDate == null)
-
-fun getReasonFor14BDateChange(
-  hasLedChange: Boolean,
-  updatedLicenceEntity: Licence,
-  licenceEntity: Licence
-): String? {
-  val hasArdOrCrdChanged = hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)
-  return when {
-    hasLedChange && hasArdOrCrdChanged -> ledAndCrdOrArdChangeMsg
-    hasLedChange -> ledDateChangeMsg
-    hasArdOrCrdChanged -> crdOrArdChangeMsg
-    else -> null
-  }
-}
-fun hasArdOrCrdChanged(
-  updatedLicenceEntity: Licence,
-  licenceEntity: Licence
-) = hasDateChanged(updatedLicenceEntity.actualReleaseDate, licenceEntity.actualReleaseDate) || hasDateChanged(
-  updatedLicenceEntity.conditionalReleaseDate,
-  licenceEntity.conditionalReleaseDate
-)
-
-fun createAdditionalConditionDataFor14b(
+private fun createAdditionalConditionDataFor14b(
   licenceEntity: Licence,
   newAdditionalCondition: AdditionalCondition
 ) = listOf(
@@ -134,27 +154,38 @@ fun createAdditionalConditionDataFor14b(
     additionalCondition = newAdditionalCondition
   )
 )
-
-fun calculateEndDateForLedArdCrdChanges(
+private fun calculateEndDateForLedArdCrdChanges(
   sentenceChanges: SentenceChanges,
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
 ): String? {
-  var endDate: String? = null
-  if (sentenceChanges.ledChanged) {
-    endDate = calculateEndDateForLEDChange(updatedLicenceEntity, licenceEntity)
-  } else if (hasDateChanged(updatedLicenceEntity.actualReleaseDate, licenceEntity.actualReleaseDate)) {
-    endDate = calculateEndDate(licenceEntity, updatedLicenceEntity)
-  } else if (hasDateChanged(updatedLicenceEntity.conditionalReleaseDate, licenceEntity.conditionalReleaseDate) && isARDNull(licenceEntity)
-  ) {
-    endDate = calculateEndDate(licenceEntity, updatedLicenceEntity)
+  return when {
+    sentenceChanges.ledChanged -> calculateEndDateForLEDChange(updatedLicenceEntity, licenceEntity)
+    hasDateChanged(updatedLicenceEntity.actualReleaseDate, licenceEntity.actualReleaseDate) -> calculateEndDate(licenceEntity, updatedLicenceEntity)
+    hasDateChanged(updatedLicenceEntity.conditionalReleaseDate, licenceEntity.conditionalReleaseDate) && licenceEntity.actualReleaseDate == null -> calculateEndDate(licenceEntity, updatedLicenceEntity)
+    else -> null
   }
-  return endDate
 }
-fun List<AdditionalConditionData>.removeExistingEndDateAndAddNew(
+private fun List<AdditionalConditionData>.removeExistingEndDateAndAddNew(
   newAdditionalCondition: AdditionalConditionData
 ): List<AdditionalConditionData> {
-  val restAdditionalConditionDate = filter { it.dataField != "endDate" }.toMutableList()
+  val restAdditionalConditionDate = filter { it.dataField != END_Date }.toMutableList()
   restAdditionalConditionDate.add(newAdditionalCondition)
   return restAdditionalConditionDate
 }
+private fun isAdditionalConditionOf14BWithCorrectStatusCode(
+  conditionCode: String,
+  licenceEntity: Licence
+) = isAdditionalConditionOf14B(conditionCode) && hasCorrectStatusCodeForNew14B(licenceEntity)
+
+private fun isLicenseExpiryDateOnOrAfterTwelveMonths(
+  licenceExpiryDate: LocalDate?
+) = licenceExpiryDate?.isEqual(LocalDate.now().plusMonths(12)) == true ||
+  licenceExpiryDate?.isAfter(LocalDate.now().plusMonths(12)) == true
+private fun hasArdOrCrdChanged(
+  updatedLicenceEntity: Licence,
+  licenceEntity: Licence
+) = hasDateChanged(updatedLicenceEntity.actualReleaseDate, licenceEntity.actualReleaseDate) || hasDateChanged(
+  updatedLicenceEntity.conditionalReleaseDate,
+  licenceEntity.conditionalReleaseDate
+)

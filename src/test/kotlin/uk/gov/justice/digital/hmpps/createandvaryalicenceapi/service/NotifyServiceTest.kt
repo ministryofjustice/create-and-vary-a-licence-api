@@ -288,7 +288,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send email to OMU when 14b dates has change`() {
-    notifyService.send14BDatesChangedEmail(EMAIL_ADDRESS, "jim", "smith", "prisonNumber", "release date")
+    notifyService.sendEndDatesChangedEmail(EMAIL_ADDRESS, "jim", "smith", "prisonNumber", "release date")
     val expectedValue = mapOf(
       "prisonerFirstName" to "jim",
       "prisonerLastName" to "smith",

@@ -168,7 +168,7 @@ class NotifyService(
       }
     }
   }
-  fun send14BDatesChangedEmail(
+  fun sendEndDatesChangedEmail(
     emailAddress: String,
     prisonerFirstName: String,
     prisonerLastName: String,
@@ -179,10 +179,10 @@ class NotifyService(
       datesChanged14bTemplateId,
       emailAddress,
       mapOf(
-        Pair("prisonerFirstName", prisonerFirstName),
-        Pair("prisonerLastName", prisonerLastName),
-        Pair("prisonNumber", prisonNumber),
-        Pair("dateChanges", dateChanges)
+        "prisonerFirstName" to prisonerFirstName,
+        "prisonerLastName" to prisonerLastName,
+        "prisonNumber" to prisonNumber,
+        "dateChanges" to dateChanges,
       ),
       null
     )

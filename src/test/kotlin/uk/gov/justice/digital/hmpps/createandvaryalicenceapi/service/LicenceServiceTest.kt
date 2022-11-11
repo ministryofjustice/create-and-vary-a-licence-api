@@ -2652,7 +2652,7 @@ class LicenceServiceTest {
     verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -2742,7 +2742,7 @@ class LicenceServiceTest {
     verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository, times(0)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -2818,7 +2818,7 @@ class LicenceServiceTest {
     verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -2901,7 +2901,7 @@ class LicenceServiceTest {
     verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -2988,7 +2988,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -3091,7 +3091,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository, times(0)).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(any(), any(), any(), any(), any())
   }
 
   @Test
@@ -3184,9 +3184,9 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(additionalConditionRepository, times(2)).saveAndFlush(updateAdditionalConditionCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -3289,7 +3289,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(any(), any(), any(), any(), any())
   }
 
   @Test
@@ -3382,9 +3382,9 @@ class LicenceServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(additionalConditionRepository, times(2)).saveAndFlush(updateAdditionalConditionCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -3486,7 +3486,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(any(), any(), any(), any(), any())
     val addConditionCaptor =
       licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
     assertThat(addConditionCaptor?.additionalConditionData?.find { it.additionalCondition.id == addConditionCaptor.id })
@@ -3583,9 +3583,9 @@ class LicenceServiceTest {
     val updateAdditionalConditionCaptor = ArgumentCaptor.forClass(EntityAdditionalCondition::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(additionalConditionRepository, times(2)).saveAndFlush(updateAdditionalConditionCaptor.capture())
+    verify(additionalConditionRepository).saveAndFlush(updateAdditionalConditionCaptor.capture())
     verify(omuService).getOmuContactEmail(any())
-    verify(notifyService).send14BDatesChangedEmail(
+    verify(notifyService).sendEndDatesChangedEmail(
       "test@OMU.testing.com",
       copyOfLicenseEntity.forename!!,
       copyOfLicenseEntity.surname!!,
@@ -3681,7 +3681,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(any(), any(), any(), any(), any())
     licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }
   }
 
@@ -3724,7 +3724,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(any(), any(), any(), any(), any())
     verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     assertThat(licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }).isNull()
   }
@@ -3820,7 +3820,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(omuService, times(0)).getOmuContactEmail(any())
-    verify(notifyService, times(0)).send14BDatesChangedEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendEndDatesChangedEmail(any(), any(), any(), any(), any())
     verify(additionalConditionRepository, times(0)).saveAndFlush(any())
     val addConditionCaptor =
       licenceCaptor.value.additionalConditions.find { it.conditionCode == "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4" }

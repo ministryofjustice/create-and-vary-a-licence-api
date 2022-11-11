@@ -250,10 +250,17 @@ class LicenceService(
       licence = licenceEntity,
       conditionSequence = request.sequence
     )
-    if (isAdditionalConditionOf14B(request.conditionCode) && hasCorrectStatusCodeForNew14B(licenceEntity)) {
+
+    addAdditionalConditionDatasToAdditionalCondition(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { it ->
       newAdditionalCondition = additionalConditionRepository.saveAndFlush(newAdditionalCondition)
-      val additionalConditionDataFor14b = createAdditionalConditionDataFor14b(licenceEntity, newAdditionalCondition)
-      newAdditionalCondition = newAdditionalCondition.copy(additionalConditionData = additionalConditionDataFor14b)
+      newAdditionalCondition = newAdditionalCondition.copy(
+        additionalConditionData =
+        it.map {
+          it.copy(
+            additionalCondition = newAdditionalCondition
+          )
+        }
+      )
     }
     existingAdditionalConditions.add(
       newAdditionalCondition
@@ -266,7 +273,6 @@ class LicenceService(
     )
 
     val savedLicenceEntity = licenceRepository.saveAndFlush(updatedLicence)
-
     // return the newly added condition.
     val newSavedCondition = savedLicenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
     return transform(newSavedCondition)
@@ -711,7 +717,7 @@ class LicenceService(
       val additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { upload ->
         upload.copy(id = -1)
       }
-      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData as MutableList<AdditionalConditionData>, additionalConditionUploadSummary = additionalConditionUploadSummary)
+      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
     }
 
     var newAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions).toMutableList()
@@ -1003,26 +1009,9 @@ class LicenceService(
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username
     )
-    // 14b
-    var endDate: String? = null
-    val additionalConditions14b = hasExistingLicenseContains14B(licenceEntity)
-    if (additionalConditions14b.isNotEmpty() && hasCorrectStatusCodeForExisting14B(licenceEntity)) {
-      additionalConditions14b.forEach { additionalCondition ->
-        endDate = calculateEndDateForLedArdCrdChanges(sentenceChanges, updatedLicenceEntity, licenceEntity)
-        if (!endDate.isNullOrBlank()) {
-          val additionalConditionDataWith14bEndDate = additionalCondition.additionalConditionData
-            .find { it.dataField == "endDate" }?.copy(
-              dataValue = endDate
-            )
-
-          val updatedAdditionalCondition = additionalCondition.copy(
-            conditionVersion = updatedLicenceEntity.version!!,
-            additionalConditionData = additionalCondition.additionalConditionData.removeExistingEndDateAndAddNew(additionalConditionDataWith14bEndDate!!),
-            expandedConditionText = additionalCondition.conditionText?.replace("[INSERT END DATE]", endDate!!)
-          )
-          additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
-        }
-      }
+    val updateAdditionalCondition = updateAdditionalConditionWithAdditionConditionData(sentenceChanges, updatedLicenceEntity, licenceEntity)
+    updateAdditionalCondition?.let {
+      additionalConditionRepository.saveAndFlush(it)
     }
     val copyOfOriginalLicenceEntity = licenceEntity.copy()
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -1039,11 +1028,11 @@ class LicenceService(
         )
       )
     )
-    if (!endDate.isNullOrBlank()) {
-      val dateChanges: String? = getReasonFor14BDateChange(sentenceChanges.ledChanged, updatedLicenceEntity, copyOfOriginalLicenceEntity)
-      if (dateChanges != null) {
-        log.info("End date on additional condition 14B has changed because of $dateChanges changes for Licence id ${licenceEntity.id},notifying OMU")
-        sendEmailFor14DateChanges(updatedLicenceEntity, dateChanges)
+    updateAdditionalCondition?.let {
+      val dateChanges: String? = getReasonForDateChange(sentenceChanges.ledChanged, updatedLicenceEntity, copyOfOriginalLicenceEntity)
+      dateChanges?.let {
+        log.info("End date on additional condition has changed because of $dateChanges changes for Licence id ${licenceEntity.id},notifying OMU")
+        sendEmailForEndDateChanges(updatedLicenceEntity, dateChanges)
       }
     }
     log.info(
@@ -1094,9 +1083,9 @@ class LicenceService(
     return false
   }
 
-  private fun sendEmailFor14DateChanges(licenceEntity: EntityLicence, dateChanges: String) {
+  private fun sendEmailForEndDateChanges(licenceEntity: EntityLicence, dateChanges: String) {
     val omuEmail = licenceEntity.prisonCode?.let { omuService.getOmuContactEmail(it)?.email }
-    notifyService.send14BDatesChangedEmail(omuEmail!!, licenceEntity.forename!!, licenceEntity.surname!!, licenceEntity.nomsId!!, dateChanges)
+    notifyService.sendEndDatesChangedEmail(omuEmail!!, licenceEntity.forename!!, licenceEntity.surname!!, licenceEntity.nomsId!!, dateChanges)
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
