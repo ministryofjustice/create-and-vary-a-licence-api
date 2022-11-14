@@ -7,46 +7,43 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val dateTimeFormatter = DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy")!!
-private const val conditionCode14B = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"
-private const val ledDateChangeMsg = "licence end date"
-private const val crdOrArdChangeMsg = "release date"
-private const val ledAndCrdOrArdChangeMsg = "release date and licence end date"
-private const val END_Date = "endDate"
+private const val CONDITION_CODE_FOR_14B = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"
+private const val LED_CHANGE_MSG = "licence end date"
+private const val CRD_OR_ARD_CHANGE_MSG = "release date"
+private const val END_DATE = "endDate"
 
 fun updateAdditionalConditionWithAdditionConditionData(
   sentenceChanges: SentenceChanges,
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
 ): AdditionalCondition? {
-  var endDate: String? = null
-  val additionalCondition14b = hasExistingLicenseContains14B(licenceEntity)
-  additionalCondition14b?.let {
-    if (hasCorrectStatusCodeForExisting14B(licenceEntity)) {
-      endDate = calculateEndDateForLedArdCrdChanges(sentenceChanges, updatedLicenceEntity, licenceEntity)
-    }
-    if (!endDate.isNullOrBlank()) {
-      val additionalConditionDataWith14bEndDate = additionalCondition14b.additionalConditionData
-        .find { it.dataField == END_Date }?.copy(
-          dataValue = endDate
+  val electronicMonitoringCondition = getElectronicMonitoringCondition(licenceEntity)
+  electronicMonitoringCondition?.let {
+    if (hasCorrectStatusCodeForExistingCondition(licenceEntity)) {
+      calculateEndDateForLedArdCrdChanges(sentenceChanges, updatedLicenceEntity, licenceEntity)?.let { it ->
+        val electronicMonitoringConditionData = electronicMonitoringCondition.additionalConditionData
+          .find { it -> it.dataField == END_DATE }?.copy(
+            dataValue = it
+          )
+        return electronicMonitoringCondition.copy(
+          conditionVersion = updatedLicenceEntity.version!!,
+          additionalConditionData = electronicMonitoringCondition.additionalConditionData.removeExistingEndDateAndAddNew(
+            electronicMonitoringConditionData!!
+          ),
+          expandedConditionText = electronicMonitoringCondition.conditionText?.replace("[INSERT END DATE]", it!!)
         )
-      return additionalCondition14b.copy(
-        conditionVersion = updatedLicenceEntity.version!!,
-        additionalConditionData = additionalCondition14b.additionalConditionData.removeExistingEndDateAndAddNew(
-          additionalConditionDataWith14bEndDate!!
-        ),
-        expandedConditionText = additionalCondition14b.conditionText?.replace("[INSERT END DATE]", endDate!!)
-      )
+      }
     }
   }
   return null
 }
-fun addAdditionalConditionDatasToAdditionalCondition(
+fun getAdditionalConditionDataForCondition(
   conditionCode: String,
   licenceEntity: Licence,
   newAdditionalCondition: AdditionalCondition
 ): List<AdditionalConditionData>? {
   return when {
-    isAdditionalConditionOf14BWithCorrectStatusCode(conditionCode, licenceEntity) -> createAdditionalConditionDataFor14b(licenceEntity, newAdditionalCondition)
+    hasAdditionalConditionGotElectronicMonitoringWithCorrectStatusCode(conditionCode, licenceEntity) -> createAdditionalConditionData(licenceEntity, newAdditionalCondition)
     else -> null
   }
 }
@@ -57,26 +54,25 @@ fun getReasonForDateChange(
 ): String? {
   val hasArdOrCrdChanged = hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)
   return when {
-    hasLedChange && hasArdOrCrdChanged -> ledAndCrdOrArdChangeMsg
-    hasLedChange -> ledDateChangeMsg
-    hasArdOrCrdChanged -> crdOrArdChangeMsg
+    hasLedChange && hasArdOrCrdChanged -> CRD_OR_ARD_CHANGE_MSG.plus(" and ").plus(LED_CHANGE_MSG)
+    hasLedChange -> LED_CHANGE_MSG
+    hasArdOrCrdChanged -> CRD_OR_ARD_CHANGE_MSG
     else -> null
   }
 }
-private fun isAdditionalConditionOf14B(
+private fun isElectronicMonitoringConditionPresent(
   conditionCode: String
-) = conditionCode == conditionCode14B
+) = conditionCode == CONDITION_CODE_FOR_14B
 
 fun calculateEndDate(
   licenceEntity: Licence
 ): String {
-  if (isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate)) {
-    return calculateEndDateWithArdOrCrd(licenceEntity)
-  } else (
-    return licenceEntity.licenceExpiryDate?.format(dateTimeFormatter).toString()
-    )
+  return when {
+    isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate) -> calculateEndDateWithArdOrCrd(licenceEntity)
+    else -> licenceEntity.licenceExpiryDate?.format(dateTimeFormatter).toString()
+  }
 }
-private fun hasCorrectStatusCodeForNew14B(
+private fun hasCorrectStatusCodeForNewCondition(
   licenceEntity: Licence
 ) = setOf(
   LicenceStatus.IN_PROGRESS,
@@ -88,7 +84,7 @@ private fun hasCorrectStatusCodeForNew14B(
 )
   .contains(licenceEntity.statusCode)
 
-private fun hasCorrectStatusCodeForExisting14B(
+private fun hasCorrectStatusCodeForExistingCondition(
   licenceEntity: Licence
 ) = setOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED)
   .contains(licenceEntity.statusCode)
@@ -102,10 +98,10 @@ private fun calculateEndDateWithArdOrCrd(
   return additionalConditionEndDate?.plusYears(1)?.format(dateTimeFormatter).toString()
 }
 
-private fun hasExistingLicenseContains14B(
+private fun getElectronicMonitoringCondition(
   licenceEntity: Licence
 ) = licenceEntity.additionalConditions.find { additionalCondition ->
-  isAdditionalConditionOf14B(additionalCondition.conditionCode!!)
+  isElectronicMonitoringConditionPresent(additionalCondition.conditionCode!!)
 }
 
 private fun hasDateChanged(
@@ -117,16 +113,15 @@ private fun calculateEndDateForLEDChange(
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
 ): String? {
-  var endDate: String? = null
   if (isLicenseExpiryDateOnOrAfterTwelveMonths(updatedLicenceEntity.licenceExpiryDate)) {
     // existing license LED before 12 months
     if (!isLicenseExpiryDateOnOrAfterTwelveMonths(licenceEntity.licenceExpiryDate)) {
-      endDate = calculateEndDateWithArdOrCrd(updatedLicenceEntity)
+      return calculateEndDateWithArdOrCrd(updatedLicenceEntity)
     }
   } else {
-    endDate = updatedLicenceEntity.licenceExpiryDate?.format(dateTimeFormatter)
+    return updatedLicenceEntity.licenceExpiryDate?.format(dateTimeFormatter)
   }
-  return endDate
+  return null
 }
 
 private fun calculateEndDate(
@@ -137,7 +132,7 @@ private fun calculateEndDate(
 } else {
   null
 }
-private fun createAdditionalConditionDataFor14b(
+private fun createAdditionalConditionData(
   licenceEntity: Licence,
   newAdditionalCondition: AdditionalCondition
 ) = listOf(
@@ -169,14 +164,14 @@ private fun calculateEndDateForLedArdCrdChanges(
 private fun List<AdditionalConditionData>.removeExistingEndDateAndAddNew(
   newAdditionalCondition: AdditionalConditionData
 ): List<AdditionalConditionData> {
-  val restAdditionalConditionDate = filter { it.dataField != END_Date }.toMutableList()
+  val restAdditionalConditionDate = filter { it.dataField != END_DATE }.toMutableList()
   restAdditionalConditionDate.add(newAdditionalCondition)
   return restAdditionalConditionDate
 }
-private fun isAdditionalConditionOf14BWithCorrectStatusCode(
+private fun hasAdditionalConditionGotElectronicMonitoringWithCorrectStatusCode(
   conditionCode: String,
   licenceEntity: Licence
-) = isAdditionalConditionOf14B(conditionCode) && hasCorrectStatusCodeForNew14B(licenceEntity)
+) = isElectronicMonitoringConditionPresent(conditionCode) && hasCorrectStatusCodeForNewCondition(licenceEntity)
 
 private fun isLicenseExpiryDateOnOrAfterTwelveMonths(
   licenceExpiryDate: LocalDate?

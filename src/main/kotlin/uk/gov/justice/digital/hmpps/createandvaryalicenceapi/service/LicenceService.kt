@@ -251,7 +251,7 @@ class LicenceService(
       conditionSequence = request.sequence
     )
 
-    addAdditionalConditionDatasToAdditionalCondition(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { it ->
+    getAdditionalConditionDataForCondition(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { it ->
       newAdditionalCondition = additionalConditionRepository.saveAndFlush(newAdditionalCondition)
       newAdditionalCondition = newAdditionalCondition.copy(
         additionalConditionData =
