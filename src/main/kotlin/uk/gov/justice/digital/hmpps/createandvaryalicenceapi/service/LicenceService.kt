@@ -6,7 +6,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -251,12 +250,12 @@ class LicenceService(
       conditionSequence = request.sequence
     )
 
-    getAdditionalConditionDataForCondition(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { it ->
+    getAdditionalConditionDataForCondition(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { newAdditionalConditionData ->
       newAdditionalCondition = additionalConditionRepository.saveAndFlush(newAdditionalCondition)
       newAdditionalCondition = newAdditionalCondition.copy(
         additionalConditionData =
-        it.map {
-          it.copy(
+        newAdditionalConditionData.map { additionalConditionData ->
+          additionalConditionData.copy(
             additionalCondition = newAdditionalCondition
           )
         }
@@ -734,7 +733,7 @@ class LicenceService(
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
       }
 
-      condition.copy(additionalConditionData = updatedAdditionalConditionData as MutableList<AdditionalConditionData>, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
+      condition.copy(additionalConditionData = updatedAdditionalConditionData, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
     } as MutableList<AdditionalCondition>
 
     additionalConditionRepository.saveAll(newAdditionalConditions)

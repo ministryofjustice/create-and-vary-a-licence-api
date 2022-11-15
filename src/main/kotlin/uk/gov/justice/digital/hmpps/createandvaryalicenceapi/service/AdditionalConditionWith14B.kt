@@ -19,10 +19,10 @@ fun updateAdditionalConditionWithAdditionConditionData(
 ): AdditionalCondition? {
   val electronicMonitoringCondition = getElectronicMonitoringCondition(licenceEntity)
   electronicMonitoringCondition?.let {
-    if (hasCorrectStatusCodeForExistingCondition(licenceEntity)) {
+    if (isLicenseOfValidStatusCodeForUpdate(licenceEntity)) {
       calculateEndDateForLedArdCrdChanges(sentenceChanges, updatedLicenceEntity, licenceEntity)?.let { it ->
         val electronicMonitoringConditionData = electronicMonitoringCondition.additionalConditionData
-          .find { it -> it.dataField == END_DATE }?.copy(
+          .find { additionalConditionData -> additionalConditionData.dataField == END_DATE }?.copy(
             dataValue = it
           )
         return electronicMonitoringCondition.copy(
@@ -54,7 +54,7 @@ fun getReasonForDateChange(
 ): String? {
   val hasArdOrCrdChanged = hasArdOrCrdChanged(updatedLicenceEntity, licenceEntity)
   return when {
-    hasLedChange && hasArdOrCrdChanged -> CRD_OR_ARD_CHANGE_MSG.plus(" and ").plus(LED_CHANGE_MSG)
+    hasLedChange && hasArdOrCrdChanged -> "$CRD_OR_ARD_CHANGE_MSG and $LED_CHANGE_MSG"
     hasLedChange -> LED_CHANGE_MSG
     hasArdOrCrdChanged -> CRD_OR_ARD_CHANGE_MSG
     else -> null
@@ -72,7 +72,7 @@ fun calculateEndDate(
     else -> licenceEntity.licenceExpiryDate?.format(dateTimeFormatter).toString()
   }
 }
-private fun hasCorrectStatusCodeForNewCondition(
+private fun isLicenseOfValidStatusCode(
   licenceEntity: Licence
 ) = setOf(
   LicenceStatus.IN_PROGRESS,
@@ -84,7 +84,7 @@ private fun hasCorrectStatusCodeForNewCondition(
 )
   .contains(licenceEntity.statusCode)
 
-private fun hasCorrectStatusCodeForExistingCondition(
+private fun isLicenseOfValidStatusCodeForUpdate(
   licenceEntity: Licence
 ) = setOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED)
   .contains(licenceEntity.statusCode)
@@ -171,7 +171,7 @@ private fun List<AdditionalConditionData>.removeExistingEndDateAndAddNew(
 private fun hasAdditionalConditionGotElectronicMonitoringWithCorrectStatusCode(
   conditionCode: String,
   licenceEntity: Licence
-) = isElectronicMonitoringConditionPresent(conditionCode) && hasCorrectStatusCodeForNewCondition(licenceEntity)
+) = isElectronicMonitoringConditionPresent(conditionCode) && isLicenseOfValidStatusCode(licenceEntity)
 
 private fun isLicenseExpiryDateOnOrAfterTwelveMonths(
   licenceExpiryDate: LocalDate?
