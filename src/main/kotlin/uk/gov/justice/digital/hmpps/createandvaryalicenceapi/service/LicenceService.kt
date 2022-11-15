@@ -250,7 +250,7 @@ class LicenceService(
       conditionSequence = request.sequence
     )
 
-    getAdditionalConditionDataForCondition(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { newAdditionalConditionData ->
+    getAdditionalConditionDataForElectronicMonitoring(request.conditionCode, licenceEntity, newAdditionalCondition)?.let { newAdditionalConditionData ->
       newAdditionalCondition = additionalConditionRepository.saveAndFlush(newAdditionalCondition)
       newAdditionalCondition = newAdditionalCondition.copy(
         additionalConditionData =
@@ -1008,8 +1008,8 @@ class LicenceService(
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username
     )
-    val updateAdditionalCondition = updateAdditionalConditionWithAdditionConditionData(sentenceChanges, updatedLicenceEntity, licenceEntity)
-    updateAdditionalCondition?.let {
+    val electronicMonitoringCondition = updateAdditionalConditionWithAdditionConditionDataForElectronicMonitoring(sentenceChanges, updatedLicenceEntity, licenceEntity)
+    electronicMonitoringCondition?.let {
       additionalConditionRepository.saveAndFlush(it)
     }
     val copyOfOriginalLicenceEntity = licenceEntity.copy()
@@ -1027,7 +1027,7 @@ class LicenceService(
         )
       )
     )
-    updateAdditionalCondition?.let {
+    electronicMonitoringCondition?.let {
       val dateChanges: String? = getReasonForDateChange(sentenceChanges.ledChanged, updatedLicenceEntity, copyOfOriginalLicenceEntity)
       dateChanges?.let {
         log.info("End date on additional condition has changed because of $dateChanges changes for Licence id ${licenceEntity.id},notifying OMU")

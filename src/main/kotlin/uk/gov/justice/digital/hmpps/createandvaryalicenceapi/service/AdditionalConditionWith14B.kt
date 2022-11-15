@@ -12,7 +12,7 @@ private const val LED_CHANGE_MSG = "licence end date"
 private const val CRD_OR_ARD_CHANGE_MSG = "release date"
 private const val END_DATE = "endDate"
 
-fun updateAdditionalConditionWithAdditionConditionData(
+fun updateAdditionalConditionWithAdditionConditionDataForElectronicMonitoring(
   sentenceChanges: SentenceChanges,
   updatedLicenceEntity: Licence,
   licenceEntity: Licence
@@ -37,13 +37,13 @@ fun updateAdditionalConditionWithAdditionConditionData(
   }
   return null
 }
-fun getAdditionalConditionDataForCondition(
+fun getAdditionalConditionDataForElectronicMonitoring(
   conditionCode: String,
   licenceEntity: Licence,
   newAdditionalCondition: AdditionalCondition
 ): List<AdditionalConditionData>? {
   return when {
-    hasAdditionalConditionGotElectronicMonitoringWithCorrectStatusCode(conditionCode, licenceEntity) -> createAdditionalConditionData(licenceEntity, newAdditionalCondition)
+    requiresInitialElectronicMonitoringData(conditionCode, licenceEntity) -> createAdditionalConditionData(licenceEntity, newAdditionalCondition)
     else -> null
   }
 }
@@ -168,7 +168,7 @@ private fun List<AdditionalConditionData>.removeExistingEndDateAndAddNew(
   restAdditionalConditionDate.add(newAdditionalCondition)
   return restAdditionalConditionDate
 }
-private fun hasAdditionalConditionGotElectronicMonitoringWithCorrectStatusCode(
+private fun requiresInitialElectronicMonitoringData(
   conditionCode: String,
   licenceEntity: Licence
 ) = isElectronicMonitoringConditionPresent(conditionCode) && isLicenseOfValidStatusCode(licenceEntity)
