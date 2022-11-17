@@ -1057,15 +1057,15 @@ class LicenceService(
         hasOffenderBeenRecalled(sentenceDatesRequest, licenceEntity) -> INACTIVE
         else -> licenceEntity.statusCode
       }
-  }
-  return licenceEntity.statusCode
+    }
+    return licenceEntity.statusCode
   }
 
   private fun hasOffenderResentensed(
     sentenceDatesRequest: UpdateSentenceDatesRequest,
     licenceEntity: EntityLicence
   ): Boolean {
-    return when{
+    return when {
       isDateInTheFuture(sentenceDatesRequest.actualReleaseDate) || isDateInTheFuture(sentenceDatesRequest.conditionalReleaseDate) -> {
         log.warn("Active Licence ${licenceEntity.id} is no longer valid with ARD ${sentenceDatesRequest.actualReleaseDate} and CRD ${sentenceDatesRequest.conditionalReleaseDate}")
         return true
@@ -1083,7 +1083,7 @@ class LicenceService(
       LicenceType.AP_PSS
     )
     return when {
-      validTypeCodeForRecall.contains(licenceEntity.typeCode) && isDateInTheFuture(sentenceDatesRequest.postRecallReleaseDate)   ->{
+      validTypeCodeForRecall.contains(licenceEntity.typeCode) && isDateInTheFuture(sentenceDatesRequest.postRecallReleaseDate) -> {
         log.warn("Active Licence ${licenceEntity.id} is no longer active as offender has been recalled")
         return true
       }
