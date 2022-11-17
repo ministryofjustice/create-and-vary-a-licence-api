@@ -9,3 +9,6 @@ import java.time.LocalDate
 fun nullableDatesDiffer(date1: LocalDate?, date2: LocalDate?): Boolean {
   return date1?.let { it != date2 } ?: (date2 != null)
 }
+fun isDateInTheFuture(
+  date: LocalDate?
+) = date?.isAfter(LocalDate.now()) == true

@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -51,7 +52,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
-import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -985,7 +986,7 @@ class LicenceService(
     val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
 
     val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = if (hasOffenderResentensedWithActiveLicense(sentenceDatesRequest, licenceEntity)) INACTIVE else licenceEntity.statusCode,
+      statusCode = activeLicenseRules(sentenceDatesRequest, licenceEntity),
       conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
       sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
@@ -1046,22 +1047,49 @@ class LicenceService(
     }
   }
 
-  private fun hasOffenderResentensedWithActiveLicense(
+  private fun activeLicenseRules(
+    sentenceDatesRequest: UpdateSentenceDatesRequest,
+    licenceEntity: EntityLicence
+  ): LicenceStatus {
+    if (licenceEntity.statusCode == ACTIVE) {
+      return when {
+        hasOffenderResentensed(sentenceDatesRequest, licenceEntity) -> INACTIVE
+        hasOffenderBeenRecalled(sentenceDatesRequest, licenceEntity) -> INACTIVE
+        else -> licenceEntity.statusCode
+      }
+  }
+  return licenceEntity.statusCode
+  }
+
+  private fun hasOffenderResentensed(
     sentenceDatesRequest: UpdateSentenceDatesRequest,
     licenceEntity: EntityLicence
   ): Boolean {
-    if (licenceEntity.statusCode == ACTIVE &&
-      (
-        sentenceDatesRequest.actualReleaseDate?.isAfter(LocalDate.now()) == true ||
-          sentenceDatesRequest.conditionalReleaseDate?.isAfter(LocalDate.now()) == true
-        )
-    ) {
-      log.warn("Active Licence ${licenceEntity.id} is no longer valid with ARD ${sentenceDatesRequest.actualReleaseDate} and CRD ${sentenceDatesRequest.conditionalReleaseDate}")
-      return true
+    return when{
+      isDateInTheFuture(sentenceDatesRequest.actualReleaseDate) || isDateInTheFuture(sentenceDatesRequest.conditionalReleaseDate) -> {
+        log.warn("Active Licence ${licenceEntity.id} is no longer valid with ARD ${sentenceDatesRequest.actualReleaseDate} and CRD ${sentenceDatesRequest.conditionalReleaseDate}")
+        return true
+      }
+      else -> false
     }
-    return false
   }
 
+  private fun hasOffenderBeenRecalled(
+    sentenceDatesRequest: UpdateSentenceDatesRequest,
+    licenceEntity: EntityLicence
+  ): Boolean {
+    val validTypeCodeForRecall = setOf(
+      LicenceType.AP,
+      LicenceType.AP_PSS
+    )
+    return when {
+      validTypeCodeForRecall.contains(licenceEntity.typeCode) && isDateInTheFuture(sentenceDatesRequest.postRecallReleaseDate)   ->{
+        log.warn("Active Licence ${licenceEntity.id} is no longer active as offender has been recalled")
+        return true
+      }
+      else -> false
+    }
+  }
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
     val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
     return inFlight.isNotEmpty()

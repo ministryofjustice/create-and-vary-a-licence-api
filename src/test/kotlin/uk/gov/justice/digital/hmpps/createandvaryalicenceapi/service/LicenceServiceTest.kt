@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
@@ -1427,6 +1429,7 @@ class LicenceServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = null
       )
     )
 
@@ -1505,6 +1508,7 @@ class LicenceServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = null
       )
     )
 
@@ -1534,6 +1538,7 @@ class LicenceServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = null
       )
     )
 
@@ -1563,6 +1568,7 @@ class LicenceServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = null
       )
     )
 
@@ -1593,6 +1599,7 @@ class LicenceServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = null
       )
     )
 
@@ -1897,6 +1904,7 @@ class LicenceServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = null
       )
     )
 
@@ -2048,6 +2056,184 @@ class LicenceServiceTest {
         Pair("Top up supervision end date", true)
       )
     )
+  }
+  @Test
+  fun `Update sentence with future PRRD should set license to inactive, current status active,type AP`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.AP)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2018-10-22"),
+        actualReleaseDate = LocalDate.parse("2018-10-22"),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.now().plusDays(1)
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+  }
+  @Test
+  fun `Update sentence with future PRRD should set license to inactive, current status active,type AP&PSS`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.AP_PSS)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2018-10-22"),
+        actualReleaseDate = LocalDate.parse("2018-10-22"),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.now().plusDays(1)
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+  }
+  @Test
+  fun `Update sentence with future PRRD should not set license to inactive, current status active,type PSS`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.PSS)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2018-10-22"),
+        actualReleaseDate = LocalDate.parse("2018-10-22"),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.now().plusDays(1)
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.ACTIVE)
+  }
+  @Test
+  fun `Update sentence with PRRD in the past should not set license to inactive, current status active,type AP`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.AP)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2018-10-22"),
+        actualReleaseDate = LocalDate.parse("2018-10-22"),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.now().minusDays(1)
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.ACTIVE)
+  }
+  @Test
+  fun `Update sentence with PRRD of current date should not set license to inactive, current status active,type AP`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.AP)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2018-10-22"),
+        actualReleaseDate = LocalDate.parse("2018-10-22"),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.now()
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.ACTIVE)
+  }
+  @ParameterizedTest
+  @EnumSource(
+    value = LicenceStatus::class,
+    names = ["IN_PROGRESS", "SUBMITTED", "APPROVED", "REJECTED", "INACTIVE", "RECALLED", "VARIATION_IN_PROGRESS", "VARIATION_SUBMITTED", "VARIATION_REJECTED", "VARIATION_APPROVED"]
+  )
+  fun `Update sentence with future PRRD should not set license to inactive, current status not active,type AP`(statusCode: LicenceStatus) {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = statusCode, typeCode = LicenceType.AP)))
+    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
+          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
+        )
+      )
+    )
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2018-10-22"),
+        actualReleaseDate = LocalDate.parse("2018-10-22"),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.now().plusDays(1)
+      )
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(statusCode)
   }
 
   private companion object {

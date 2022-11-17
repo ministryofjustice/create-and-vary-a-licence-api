@@ -718,6 +718,45 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-3.sql"
+  )
+  fun `Update sentence dates should set license status to inactive when offender has been recalled`() {
+    prisonApiMockServer.stubGetHdcLatest()
+
+    webTestClient.put()
+      .uri("/licence/id/3/sentence-dates")
+      .bodyValue(
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.parse("2020-09-11"),
+          actualReleaseDate = LocalDate.parse("2020-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceEndDate = LocalDate.parse("2024-09-11"),
+          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          postRecallReleaseDate = LocalDate.now().plusDays(1)
+        )
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/3")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+  }
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
 
