@@ -11,8 +11,14 @@ data class Input(
   val addAnother: AddAnother?,
   val includeBefore: String?,
   val subtext: String?,
+  val helpLink: HelpLink?
 )
 
 data class AddAnother(
   val label: String,
+)
+
+data class HelpLink(
+  val summary: String,
+  val text: String
 )

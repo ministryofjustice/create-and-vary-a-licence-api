@@ -270,7 +270,8 @@ class PolicyFunctionsTest {
     handleIndefiniteArticle = null,
     addAnother = null,
     includeBefore = null,
-    subtext = null
+    subtext = null,
+    helpLink = null,
   )
 
   fun licence() = Licence(1, PSS, "2.0", ACTIVE, isVariation = true)
