@@ -238,9 +238,7 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val newConditions = licenceEntity.additionalConditions.toMutableList()
-
-    newConditions.add(
+    val newCondition = additionalConditionRepository.saveAndFlush(
       AdditionalCondition(
         conditionVersion = licenceEntity.version!!,
         conditionType = request.conditionType,
@@ -253,17 +251,17 @@ class LicenceService(
       )
     )
 
+    val updatedCondition = newCondition.copy(additionalConditionData = newCondition.getInitialData())
+
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = newConditions,
+      additionalConditions = licenceEntity.additionalConditions + updatedCondition,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
 
-    // return the newly added condition.
-    val newCondition = licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
-    return transform(newCondition)
+    return transform(updatedCondition)
   }
 
   @Transactional
@@ -297,8 +295,12 @@ class LicenceService(
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
     val newAdditionalConditions =
-      submittedAdditionalConditions.filter { licenceEntity.additionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
-        .map { newAdditionalCondition -> newAdditionalCondition.copy(expandedConditionText = newAdditionalCondition.conditionText, licence = licenceEntity) }
+      submittedAdditionalConditions
+        .filter { licenceEntity.additionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
+        .map { it.copy(expandedConditionText = it.conditionText, licence = licenceEntity) }
+        // Persist conditions to allow creating back reference in new data items
+        .map { additionalConditionRepository.saveAndFlush(it) }
+        .map { it.copy(additionalConditionData = it.getInitialData()) }
 
     val removedAdditionalConditionsList =
       licenceEntity.additionalConditions.filter {
@@ -507,8 +509,8 @@ class LicenceService(
       notifyService.sendLicenceApprovedEmail(
         it.email.orEmpty(),
         mapOf(
-          Pair("fullName", "${licenceEntity.forename} ${licenceEntity.surname}"),
-          Pair("prisonName", licenceEntity.prisonDescription.orEmpty()),
+          "fullName" to "${licenceEntity.forename} ${licenceEntity.surname}",
+          "prisonName" to licenceEntity.prisonDescription.orEmpty(),
         ),
         licenceId.toString(),
       )
@@ -985,7 +987,11 @@ class LicenceService(
     val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
 
     val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = if (hasOffenderResentensedWithActiveLicense(sentenceDatesRequest, licenceEntity)) INACTIVE else licenceEntity.statusCode,
+      statusCode = if (hasOffenderBeenResentencedWithActiveLicence(
+          sentenceDatesRequest,
+          licenceEntity
+        )
+      ) INACTIVE else licenceEntity.statusCode,
       conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
       sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
@@ -1046,7 +1052,7 @@ class LicenceService(
     }
   }
 
-  private fun hasOffenderResentensedWithActiveLicense(
+  private fun hasOffenderBeenResentencedWithActiveLicence(
     sentenceDatesRequest: UpdateSentenceDatesRequest,
     licenceEntity: EntityLicence
   ): Boolean {

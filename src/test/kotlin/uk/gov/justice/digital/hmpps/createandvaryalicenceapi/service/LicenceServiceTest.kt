@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -61,6 +62,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -578,8 +580,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendLicenceApprovedEmail(
       "testemail@probation.gov.uk",
       mapOf(
-        Pair("fullName", "${aLicenceEntity.forename} ${aLicenceEntity.surname}"),
-        Pair("prisonName", aLicenceEntity.prisonDescription.orEmpty())
+        "fullName" to "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        "prisonName" to aLicenceEntity.prisonDescription.orEmpty()
       ),
       "1",
     )
@@ -805,11 +807,11 @@ class LicenceServiceTest {
   fun `update standard conditions for an individual licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    val APConditions = listOf(
+    val apConditions = listOf(
       ModelStandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour")
     )
 
-    val PSSConditions = listOf(
+    val pssConditions = listOf(
       ModelStandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       ModelStandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
     )
@@ -817,8 +819,8 @@ class LicenceServiceTest {
     service.updateStandardConditions(
       1,
       UpdateStandardConditionDataRequest(
-        standardLicenceConditions = APConditions,
-        standardPssConditions = PSSConditions
+        standardLicenceConditions = apConditions,
+        standardPssConditions = pssConditions
       )
     )
 
@@ -1480,7 +1482,7 @@ class LicenceServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
+        "Release date" to true,
         Pair("Licence end date", true),
         Pair("Sentence end date", true),
         Pair("Top up supervision start date", true),
@@ -1762,7 +1764,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should set the license status to inactive when the offender has a new future conditional release date`() {
+  fun `should set the licence status to inactive when the offender has a new future conditional release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
@@ -1819,7 +1821,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should set the license status to inactive when the offender has a new future actual release date`() {
+  fun `should set the licence status to inactive when the offender has a new future actual release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
@@ -1876,7 +1878,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should not set the license status to inactive if existing license is not active`() {
+  fun `should not set the licence status to inactive if existing licence is not active`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
@@ -1934,7 +1936,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
+  fun `should set the licence status to inactive even if conditionalReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
@@ -1992,7 +1994,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `should set the license status to inactive even if actualReleaseDate is before today`() {
+  fun `should set the licence status to inactive even if actualReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
@@ -2048,6 +2050,101 @@ class LicenceServiceTest {
         Pair("Top up supervision end date", true)
       )
     )
+  }
+
+  @Test
+  fun `Add condition where initial data is populated automatically`() {
+    val licence = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.IN_PROGRESS,
+      licenceExpiryDate = LocalDate.now().plusMonths(12)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+    val entityAdditionalCondition = EntityAdditionalCondition(
+      id = 2,
+      licence = licence,
+      conditionVersion = "1.0",
+      conditionCode = CONDITION_CODE_FOR_14B,
+      conditionType = "AP",
+      conditionCategory = "Electronic monitoring",
+      conditionSequence = 1,
+      conditionText = "some-text-1",
+      expandedConditionText = "expanded-text-1"
+    )
+    val updateCopyOfLicence = licence.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity, entityAdditionalCondition)
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicence)
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenReturn(entityAdditionalCondition)
+
+    val newCondition = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = CONDITION_CODE_FOR_14B,
+        conditionType = "AP",
+        conditionCategory = "Electronic monitoring",
+        sequence = 0,
+        conditionText = "some-text-1",
+        expandedText = "expanded-text-1"
+      )
+    )
+
+    val endDate = newCondition.data[0]
+    assertThat(endDate.field).isEqualTo("endDate")
+    assertThat(endDate.value).isEqualTo(licence.actualReleaseDate?.plusYears(1)?.format(dateFormatter))
+
+    val infoInputRequired = newCondition.data[1]
+    assertThat(infoInputRequired.field).isEqualTo("infoInputReviewed")
+    assertThat(infoInputRequired.value).isEqualTo("false")
+  }
+
+  @Test
+  fun `add condition without initial data`() {
+    val licence = aLicenceEntity.copy(
+      additionalConditions = listOf(anAdditionalConditionEntity),
+      typeCode = LicenceType.AP,
+      statusCode = LicenceStatus.VARIATION_APPROVED,
+      licenceExpiryDate = LocalDate.now().plusMonths(10)
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    whenever(additionalConditionRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+
+    val updateCopyOfLicence = licence.copy(
+      additionalConditions = listOf(
+        anAdditionalConditionEntity,
+        EntityAdditionalCondition(
+          id = 2,
+          licence = licence,
+          conditionVersion = "1.0",
+          conditionCode = "some other condition code",
+          conditionType = "AP",
+          conditionCategory = "Some category",
+          conditionSequence = 1,
+          conditionText = "condition-text-1",
+          expandedConditionText = "expanded-text-1"
+        )
+      )
+    )
+    whenever(licenceRepository.saveAndFlush(any())).thenReturn(updateCopyOfLicence)
+
+    val newCondition = service.addAdditionalCondition(
+      1L, "AP",
+      AddAdditionalConditionRequest(
+        conditionCode = "some other condition code",
+        conditionType = "AP",
+        conditionCategory = "Some category",
+        sequence = 0,
+        conditionText = "condition-text-1",
+        expandedText = "expanded-text-1"
+      )
+    )
+
+    verify(additionalConditionRepository, times(1)).saveAndFlush(any())
+    verify(licenceRepository, times(1)).saveAndFlush(any())
+
+    assertThat(newCondition.data).isEmpty()
   }
 
   private companion object {
@@ -2226,5 +2323,6 @@ class LicenceServiceTest {
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
     )
+    val dateFormatter = DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy")!!
   }
 }
