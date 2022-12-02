@@ -52,6 +52,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.SentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -71,6 +72,9 @@ class LicenceControllerTest {
   @MockBean
   private lateinit var licenceService: LicenceService
 
+  @MockBean
+  private lateinit var sentenceDateService: SentenceDateService
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -82,7 +86,7 @@ class LicenceControllerTest {
     reset(licenceService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(LicenceController(licenceService))
+      .standaloneSetup(LicenceController(licenceService, sentenceDateService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -506,7 +510,10 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateReasonForVariation(4, UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+    verify(licenceService, times(1)).updateReasonForVariation(
+      4,
+      UpdateReasonForVariationRequest(reasonForVariation = "reason")
+    )
   }
 
   @Test
@@ -523,7 +530,11 @@ class LicenceControllerTest {
 
   @Test
   fun `update prison information`() {
-    val expectedRequest = UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545")
+    val expectedRequest = UpdatePrisonInformationRequest(
+      prisonCode = "PVI",
+      prisonDescription = "Pentonville (HMP)",
+      prisonTelephone = "+44 276 54545"
+    )
 
     mvc.perform(
       put("/licence/id/4/prison-information")
@@ -557,7 +568,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateSentenceDates(4, expectedRequest)
+    verify(sentenceDateService, times(1)).updateSentenceDates(4, expectedRequest)
   }
 
   @Test
@@ -744,9 +755,20 @@ class LicenceControllerTest {
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
 
-    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
+    val aStatusUpdateRequest =
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
-    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
+    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(
+      additionalConditions = listOf(
+        AdditionalCondition(
+          code = "code",
+          category = "category",
+          sequence = 0,
+          text = "text"
+        )
+      ),
+      conditionType = "AP"
+    )
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
       data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
