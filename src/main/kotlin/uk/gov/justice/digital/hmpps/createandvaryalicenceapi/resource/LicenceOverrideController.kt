@@ -66,7 +66,6 @@ class LicenceOverrideController(private val licenceOverrideService: LicenceOverr
     @PathVariable("licenceId") licenceId: Long,
     @RequestBody @Valid request: OverrideLicenceStatusRequest
   ) {
-    val licence = licenceOverrideService.getLicenceById(licenceId)
-    licenceOverrideService.changeStatus(licence!!, request.statusCode, request.reason)
+    licenceOverrideService.changeStatus(licenceId, request.statusCode, request.reason)
   }
 }

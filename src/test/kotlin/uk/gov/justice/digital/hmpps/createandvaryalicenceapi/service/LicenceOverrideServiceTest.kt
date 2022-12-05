@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.util.Optional
 import javax.validation.ValidationException
 
 class LicenceOverrideServiceTest {
@@ -52,8 +53,10 @@ class LicenceOverrideServiceTest {
       listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB)
     )
 
+    whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
+
     val exception = assertThrows<ValidationException> {
-      licenceOverrideService.changeStatus(approvedLicenceB, LicenceStatus.APPROVED, "Test Exception")
+      licenceOverrideService.changeStatus(approvedLicenceB.id, LicenceStatus.APPROVED, "Test Exception")
     }
 
     assertThat(exception).isInstanceOf(ValidationException::class.java)
@@ -66,10 +69,12 @@ class LicenceOverrideServiceTest {
       listOf(inactiveLicenceA, inactiveLicenceB, approvedLicenceA, approvedLicenceB)
     )
 
+    whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
+
     val reasonForChange = "Test override from ${LicenceStatus.APPROVED} to ${LicenceStatus.INACTIVE}"
 
     licenceOverrideService.changeStatus(
-      approvedLicenceB,
+      approvedLicenceB.id,
       LicenceStatus.INACTIVE,
       reasonForChange
     )
@@ -107,10 +112,12 @@ class LicenceOverrideServiceTest {
       listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB)
     )
 
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+
     val reasonForChange = "Test override from ${LicenceStatus.APPROVED} to ${LicenceStatus.SUBMITTED}"
 
     licenceOverrideService.changeStatus(
-      approvedLicenceA,
+      approvedLicenceA.id,
       LicenceStatus.SUBMITTED,
       reasonForChange
     )

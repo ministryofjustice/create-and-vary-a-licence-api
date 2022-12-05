@@ -35,10 +35,12 @@ class LicenceOverrideService(
    * Override licence status
    * @throws ValidationException if new status is already in use by another licence
    */
-  fun changeStatus(licence: Licence, newStatus: LicenceStatus, reason: String) {
+  fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
+    val licence = getLicenceById(licenceId)
+
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence.crn!!, listOf(newStatus))
+    val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence?.crn!!, listOf(newStatus))
 
     if (newStatus != LicenceStatus.INACTIVE && licences.any { it.statusCode == newStatus }) {
       throw ValidationException("$newStatus is already in use for this offender on another licence")
