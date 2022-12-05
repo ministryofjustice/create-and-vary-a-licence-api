@@ -30,6 +30,10 @@ class ExclusionZoneService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
 ) {
 
+  init {
+    ImageIO.scanForPlugins()
+  }
+
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
     val licenceEntity = licenceRepository
