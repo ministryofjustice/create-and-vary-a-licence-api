@@ -63,10 +63,11 @@ dependencies {
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:2.0.27")
+  implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.5.0")
+  runtimeOnly("org.postgresql:postgresql:42.5.1")
 
   implementation("com.google.code.gson:gson:2.10")
   implementation("io.arrow-kt:arrow-core:1.1.3")
