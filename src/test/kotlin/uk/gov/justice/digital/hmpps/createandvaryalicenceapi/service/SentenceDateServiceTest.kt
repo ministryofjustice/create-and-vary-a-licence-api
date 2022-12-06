@@ -38,7 +38,8 @@ class SentenceDateServiceTest {
     licenceRepository,
     auditEventRepository,
     notifyService,
-    prisonApiClient
+    prisonApiClient,
+    emptyList(),
   )
 
   @BeforeEach

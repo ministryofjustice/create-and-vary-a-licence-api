@@ -657,7 +657,13 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Update prison information`() {
     webTestClient.put()
       .uri("/licence/id/1/prison-information")
-      .bodyValue(UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545"))
+      .bodyValue(
+        UpdatePrisonInformationRequest(
+          prisonCode = "PVI",
+          prisonDescription = "Pentonville (HMP)",
+          prisonTelephone = "+44 276 54545"
+        )
+      )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -836,8 +842,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           sequence = 1,
           text = "text"
         ),
-
-        ),
+      ),
       conditionType = "AP"
     )
 

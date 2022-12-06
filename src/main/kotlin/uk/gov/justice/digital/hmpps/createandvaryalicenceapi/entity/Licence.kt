@@ -129,6 +129,16 @@ data class Licence(
 
   var variationOfId: Long? = null,
 ) {
+
+  fun copyAndUpdateCondition(condition: AdditionalCondition): Licence =
+    this.copy(
+      additionalConditions = additionalConditions.map {
+        if (it.conditionCode == condition.conditionCode) {
+          condition
+        } else it
+      }
+    )
+
   fun createVariation(): Licence {
     return Licence(
       typeCode = this.typeCode,

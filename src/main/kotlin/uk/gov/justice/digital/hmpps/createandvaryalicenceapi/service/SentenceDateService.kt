@@ -4,6 +4,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -15,15 +17,28 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
+
+/**
+ * Defines hooks for condition specific behaviour when sentence date changes occur
+ */
+interface DateChangeListener {
+  /** Should this listener fire */
+  fun isDateChangeRelevant(licence: Licence, sentenceChanges: SentenceChanges): Boolean
+
+  /** Allow updating licence before persisting  */
+  fun modify(licence: Licence, sentenceChanges: SentenceChanges): Licence = licence
+
+  /** Allow performing an action after data has been flushed (but before transaction commit) */
+  fun afterFlush(licence: Licence, sentenceChanges: SentenceChanges) {}
+}
 
 @Service
 class SentenceDateService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
-  private val prisonApiClient: PrisonApiClient
+  private val prisonApiClient: PrisonApiClient,
+  private val listeners: List<DateChangeListener>
 ) {
 
   @Transactional
@@ -36,14 +51,14 @@ class SentenceDateService(
 
     log.info(
       "Licence dates - ID $licenceId " +
-        "CRD ${licenceEntity?.conditionalReleaseDate} " +
-        "ARD ${licenceEntity?.actualReleaseDate} " +
-        "SSD ${licenceEntity?.sentenceStartDate} " +
-        "SED ${licenceEntity?.sentenceEndDate} " +
-        "LSD ${licenceEntity?.licenceStartDate} " +
-        "LED ${licenceEntity?.licenceExpiryDate} " +
-        "TUSSD ${licenceEntity?.topupSupervisionStartDate} " +
-        "TUSED ${licenceEntity?.topupSupervisionExpiryDate}"
+        "CRD ${licenceEntity.conditionalReleaseDate} " +
+        "ARD ${licenceEntity.actualReleaseDate} " +
+        "SSD ${licenceEntity.sentenceStartDate} " +
+        "SED ${licenceEntity.sentenceEndDate} " +
+        "LSD ${licenceEntity.licenceStartDate} " +
+        "LED ${licenceEntity.licenceExpiryDate} " +
+        "TUSSD ${licenceEntity.topupSupervisionStartDate} " +
+        "TUSED ${licenceEntity.topupSupervisionExpiryDate}"
     )
 
     log.info(
@@ -60,8 +75,8 @@ class SentenceDateService(
 
     val sentenceChanges = getSentenceChanges(sentenceDatesRequest, licenceEntity)
 
-    val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = if (hasOffenderBeenResentencedWithActiveLicence(
+    var updatedLicenceEntity = licenceEntity.copy(
+      statusCode = if (hasOffenderBeenReSentencedWithActiveLicence(
           sentenceDatesRequest,
           licenceEntity
         )
@@ -78,11 +93,16 @@ class SentenceDateService(
       updatedByUsername = username
     )
 
+    val relevantListeners = listeners.filter { it.isDateChangeRelevant(updatedLicenceEntity, sentenceChanges) }
+    relevantListeners.forEach {
+      updatedLicenceEntity = it.modify(updatedLicenceEntity, sentenceChanges)
+    }
+
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     auditEventRepository.saveAndFlush(
       transform(
-        ModelAuditEvent(
+        AuditEvent(
           licenceId = licenceEntity.id,
           username = "SYSTEM",
           fullName = "SYSTEM",
@@ -98,6 +118,10 @@ class SentenceDateService(
         "SED ${sentenceChanges.sedChanged} TUSSD ${sentenceChanges.tussdChanged} TUSED ${sentenceChanges.tusedChanged} " +
         "isMaterial ${sentenceChanges.isMaterial}"
     )
+
+    relevantListeners.forEach {
+      it.afterFlush(licenceEntity, sentenceChanges)
+    }
 
     if (!sentenceChanges.isMaterial) return
 
@@ -126,9 +150,9 @@ class SentenceDateService(
     }
   }
 
-  private fun hasOffenderBeenResentencedWithActiveLicence(
+  private fun hasOffenderBeenReSentencedWithActiveLicence(
     sentenceDatesRequest: UpdateSentenceDatesRequest,
-    licenceEntity: EntityLicence
+    licenceEntity: Licence
   ): Boolean {
     if (licenceEntity.statusCode == ACTIVE &&
       (

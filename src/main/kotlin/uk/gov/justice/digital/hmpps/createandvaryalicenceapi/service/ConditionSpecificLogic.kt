@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter
 
 val LONG_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy")
 const val CONDITION_CODE_FOR_14B = "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4"
+const val CONDITION_14B_END_DATE = "endDate"
 
 fun AdditionalCondition.getInitialData(): List<AdditionalConditionData> = when (conditionCode) {
   CONDITION_CODE_FOR_14B -> createAdditionalConditionDataFor14b()
@@ -17,7 +18,7 @@ fun AdditionalCondition.getInitialData(): List<AdditionalConditionData> = when (
 private fun AdditionalCondition.createAdditionalConditionDataFor14b() = listOf(
   AdditionalConditionData(
     dataSequence = 0,
-    dataField = "endDate",
+    dataField = CONDITION_14B_END_DATE,
     dataValue = licence.getElectronicMonitoringEndDate(),
     additionalCondition = this
   ),
