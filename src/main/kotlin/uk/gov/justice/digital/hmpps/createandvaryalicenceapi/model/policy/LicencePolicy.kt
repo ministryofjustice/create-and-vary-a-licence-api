@@ -14,6 +14,7 @@ interface IAdditionalCondition<INPUT> : ILicenceCondition {
   val category: String
   val inputs: List<INPUT>?
   val type: String?
+  val categoryShort: String?
 }
 
 data class ChangeHint(

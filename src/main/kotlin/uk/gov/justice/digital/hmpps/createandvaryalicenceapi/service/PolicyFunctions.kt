@@ -10,28 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionCh
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REPLACED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.TEXT_CHANGE
 
-fun <T : ILicenceCondition> removedConditions(current: List<T>, other: List<T>): List<T> =
-  current.filter { pssElement ->
-    !other.any { pss -> pss.code == pssElement.code }
-  }
-
-fun <T : ILicenceCondition> addedConditions(current: List<T>, other: List<T>): List<T> =
-  other.filter { pssElement ->
-    !current.any { pss -> pss.code == pssElement.code }
-  }
-
-fun <T : ILicenceCondition> amendedConditions(
-  current: List<T>,
-  other: List<T>
-): List<Pair<T, T>> =
-  current.mapNotNull { c -> other.find { it.code == c.code && it != c }?.let { Pair(c, it) } }
-
-fun <T : ILicenceCondition> conditionChanges(current: List<T>, other: List<T>) = ConditionChanges(
-  removedConditions(current, other),
-  addedConditions(current, other),
-  amendedConditions(current, other)
-)
-
 /**
  * This will return a list of all changes that need to be addressed as part of migrating a licence from one version of the policy to another.
  */
