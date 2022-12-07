@@ -44,7 +44,7 @@ class ElectronicMonitoringEndDateChangeListener(
 
     val omuEmail = licence.prisonCode?.let { omuService.getOmuContactEmail(it)?.email }
     notifyService.sendElectronicMonitoringEndDatesChangedEmail(
-      omuEmail!!, licence.forename!!, licence.surname!!, licence.nomsId!!, reasonForChange
+      licence.id.toString(), omuEmail, licence.forename!!, licence.surname!!, licence.nomsId!!, reasonForChange
     )
   }
 

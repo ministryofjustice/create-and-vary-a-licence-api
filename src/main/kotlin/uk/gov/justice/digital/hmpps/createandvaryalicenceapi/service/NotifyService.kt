@@ -34,7 +34,12 @@ class NotifyService(
     sendEmail(licenceApprovedTemplateId, "", values, reference)
   }
 
-  fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String) {
+  fun sendVariationForApprovalEmail(
+    notifyRequest: NotifyRequest,
+    licenceId: String,
+    firstName: String,
+    lastName: String
+  ) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
         "pduHeadName" to notifyRequest.name,
@@ -49,7 +54,13 @@ class NotifyService(
     }
   }
 
-  fun sendVariationForReApprovalEmail(emailAddress: String?, firstName: String, lastName: String, prisonerNumber: String?, crd: LocalDate?) {
+  fun sendVariationForReApprovalEmail(
+    emailAddress: String?,
+    firstName: String,
+    lastName: String,
+    prisonerNumber: String?,
+    crd: LocalDate?
+  ) {
     if (emailAddress != null && crd != null) {
       val values: Map<String, String> = mapOf(
         "prisonerFirstName" to firstName,
@@ -168,27 +179,38 @@ class NotifyService(
       }
     }
   }
+
   fun sendElectronicMonitoringEndDatesChangedEmail(
-    emailAddress: String,
+    licenceId: String,
+    emailAddress: String?,
     prisonerFirstName: String,
     prisonerLastName: String,
     prisonNumber: String,
     reasonForChange: String
   ) {
-    sendEmail(
-      electronicMonitoringEndDateChangedTemplateId,
-      emailAddress,
-      mapOf(
-        "prisonerFirstName" to prisonerFirstName,
-        "prisonerLastName" to prisonerLastName,
-        "prisonNumber" to prisonNumber,
-        "dateChanges" to reasonForChange,
-      ),
-      null
-    )
+    if (emailAddress != null) {
+      sendEmail(
+        electronicMonitoringEndDateChangedTemplateId,
+        emailAddress,
+        mapOf(
+          "prisonerFirstName" to prisonerFirstName,
+          "prisonerLastName" to prisonerLastName,
+          "prisonNumber" to prisonNumber,
+          "dateChanges" to reasonForChange,
+        ),
+        null
+      )
+    } else {
+      log.error("Notification failed (electronicMonitoringEndDateChangedEmail) - email address not present for licence $licenceId")
+    }
   }
 
-  private fun sendLicenceCreateEmail(templateId: String, emailAddress: String, comName: String, cases: List<PrisonerForRelease>) {
+  private fun sendLicenceCreateEmail(
+    templateId: String,
+    emailAddress: String,
+    comName: String,
+    cases: List<PrisonerForRelease>
+  ) {
     sendEmail(
       templateId,
       emailAddress,
@@ -209,7 +231,13 @@ class NotifyService(
       if (templateId == initialLicencePromptTemplateId) {
         promptType = "INITIAL PROMPT"
       }
-      log.info("Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}")
+      log.info(
+        "Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${
+        prisoner.releaseDate.format(
+          DateTimeFormatter.ofPattern("dd LLLL yyyy")
+        )
+        }"
+      )
     }
   }
 

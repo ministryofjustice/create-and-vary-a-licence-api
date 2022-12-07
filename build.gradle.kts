@@ -87,6 +87,7 @@ dependencies {
   testImplementation("org.mockito:mockito-inline:4.8.1")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
+  testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.1")
 }
 
 java {

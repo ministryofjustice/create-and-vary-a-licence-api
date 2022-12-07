@@ -288,7 +288,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send email to OMU when electronic monitoring end date has changed`() {
-    notifyService.sendElectronicMonitoringEndDatesChangedEmail(EMAIL_ADDRESS, "jim", "smith", "prisonNumber", "release date")
+    notifyService.sendElectronicMonitoringEndDatesChangedEmail("1", EMAIL_ADDRESS, "jim", "smith", "prisonNumber", "release date")
     val expectedValue = mapOf(
       "prisonerFirstName" to "jim",
       "prisonerLastName" to "smith",
@@ -296,6 +296,12 @@ class NotifyServiceTest {
       "dateChanges" to "release date"
     )
     verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedValue, null)
+  }
+
+  @Test
+  fun `does not send email to OMU when email absent`() {
+    notifyService.sendElectronicMonitoringEndDatesChangedEmail("1", null, "jim", "smith", "prisonNumber", "release date")
+    verifyNoInteractions(notificationClient)
   }
 
   private companion object {
