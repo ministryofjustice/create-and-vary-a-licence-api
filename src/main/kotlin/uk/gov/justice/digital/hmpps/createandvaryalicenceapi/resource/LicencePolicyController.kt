@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PolicyChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -131,21 +130,6 @@ class LicencePolicyController(
   )
   fun getPolicies(): List<LicencePolicy> {
     return licencePolicyService.allPolicies()
-  }
-
-  @GetMapping(value = ["/compare/{version1}/{version2}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @ResponseBody
-  @Operation(
-    summary = "Get licence policy differences between two versions",
-    description = "Returns a list of added, remove or amended policy conditions between two versions" +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  fun compare(@PathVariable("version1") version1: String, @PathVariable("version2") version2: String): PolicyChanges? {
-    val policy1 = licencePolicyService.policyByVersion(version1)
-    val policy2 = licencePolicyService.policyByVersion(version2)
-    return licencePolicyService.compare(policy1, policy2)
   }
 
   @GetMapping(value = ["/compare/{version}/licence/{licenceId}"])

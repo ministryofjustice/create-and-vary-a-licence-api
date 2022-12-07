@@ -6,6 +6,7 @@ data class AdditionalConditionPss(
   override val text: String,
   override val tpl: String?,
   override val requiresInput: Boolean,
+  override val categoryShort: String?,
   val pssDates: Boolean?,
   override val inputs: List<PssInput>?,
   override val type: String?,

@@ -7,7 +7,7 @@ data class AdditionalConditionAp(
   override val tpl: String?,
   override val requiresInput: Boolean,
   override val inputs: List<Input>?,
-  val categoryShort: String?,
+  override val categoryShort: String?,
   val subtext: String?,
   override val type: String?,
 ) : IAdditionalCondition<Input>
