@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 interface ILicenceCondition {
   val code: String
-  val requiresInput: Boolean
   val text: String
   val tpl: String?
 }
@@ -14,6 +13,7 @@ interface IAdditionalCondition<INPUT> : ILicenceCondition {
   val category: String
   val inputs: List<INPUT>?
   val type: String?
+  val requiresInput: Boolean
   val categoryShort: String?
 }
 

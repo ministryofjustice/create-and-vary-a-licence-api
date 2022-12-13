@@ -7,6 +7,5 @@ data class StandardConditionPss(
   override var code: String,
   @Schema(description = "The text of this standard PSS condition", example = "Be of generally good behaviour")
   override val text: String,
-  override val requiresInput: Boolean,
   override val tpl: String?
 ) : ILicenceCondition
