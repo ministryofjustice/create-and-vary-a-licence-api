@@ -118,7 +118,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "RegionOfResidence"
       },
       {
         "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
@@ -157,7 +158,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "RestrictionOfResidency"
       },
       {
         "code": "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
@@ -185,7 +187,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "MedicalAppointmentType"
       },
       {
         "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
@@ -219,7 +222,8 @@
             "label": "Enter the address for the appointment",
             "name": "appointmentAddress"
           }
-        ]
+        ],
+        "type": "AppointmentTimeAndPlace"
       },
       {
         "code": "75a6aac6-02a7-4414-af14-942be6736892",
@@ -253,7 +257,8 @@
             "includeBefore": " and / or ",
             "case": "capitalise"
           }
-        ]
+        ],
+        "type": "NoContactWithVictim"
       },
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
@@ -300,7 +305,8 @@
             "includeBefore": " and / or ",
             "case": "capitalise"
           }
-        ]
+        ],
+        "type": "UnsupervisedContact"
       },
       {
         "code": "355700a9-6184-40c0-9759-0dfed1994e1e",
@@ -320,7 +326,8 @@
               "label": "Add another person"
             }
           }
-        ]
+        ],
+        "type": "NamedIndividuals"
       },
       {
         "code": "0aa669bf-db8a-4b8e-b8ba-ca82fc245b94",
@@ -353,7 +360,8 @@
               "label": "Add another group or organisation"
             }
           }
-        ]
+        ],
+        "type": "NamedOrganisation"
       },
       {
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
@@ -407,7 +415,8 @@
             "name": "course",
             "includeBefore": " at the "
           }
-        ]
+        ],
+        "type": "BehaviourProblems"
       },
       {
         "code": "9da214a3-c6ae-45e1-a465-12e22adf7c87",
@@ -430,7 +439,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "WorkingWithChildren"
       },
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
@@ -499,7 +509,8 @@
               "label": "Add another item"
             }
           }
-        ]
+        ],
+        "type": "SpecifiedItem"
       },
       {
         "code": "2a93b784-b8cb-49ed-95e2-a0df60723cda",
@@ -531,7 +542,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "IntimateRelationshipWithGender"
       },
       {
         "code": "c5e91330-748d-46f3-93f6-bbe5ea8324ce",
@@ -598,7 +610,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "CurfewTerms"
       },
       {
         "code": "c2435d4a-20a0-47de-b080-e1e740d1514c",
@@ -623,7 +636,8 @@
             "label": "Enter the curfew end time",
             "name": "curfewEnd"
           }
-        ]
+        ],
+        "type": "CurfewAddress"
       },
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
@@ -643,7 +657,8 @@
             "label": "Find and select the <a class=\"govuk-link\" href=\"https://mapmaker.field-dynamics.co.uk/moj/map/default\" rel=\"noreferrer noopener\" target=\"_blank\">Mapmaker PDF map</a> to include on the licence",
             "name": "outOfBoundFilename"
           }
-        ]
+        ],
+        "type": "OutOfBoundsRegion"
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
@@ -662,7 +677,8 @@
             "label": "Enter the address of the premises",
             "name": "premisesAddress"
           }
-        ]
+        ],
+        "type": "OutOfBoundsPremises"
       },
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
@@ -677,7 +693,8 @@
             "name": "typeOfPremises",
             "case": "lower"
           }
-        ]
+        ],
+        "type": "OutOfBoundsPremisesType"
       },
       {
         "code": "bb401b88-2137-4154-be4a-5e05c168638a",
@@ -739,7 +756,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ReportToApprovedPremisesPolicyV2_0"
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
@@ -789,7 +807,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ReportToPoliceStationPolicyV2_0"
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
@@ -851,7 +870,8 @@
             "label": "Enter address",
             "name": "address"
           }
-        ]
+        ],
+        "type": "DrugTestLocation"
       },
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
@@ -886,7 +906,8 @@
               }
             ]
           }
-        ]
+        ],
+        "type": "ElectronicMonitoringTypes"
       },
       {
         "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -900,7 +921,8 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "ElectronicMonitoringPeriod"
       },
       {
         "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
@@ -914,7 +936,8 @@
             "label": "Enter the approved address",
             "name": "approvedAddress"
           }
-        ]
+        ],
+        "type": "ApprovedAddress"
       },
       {
         "code": "599bdcae-d545-461c-b1a9-02cb3d4ba268",
@@ -933,7 +956,8 @@
             "label": "Enter the end date",
             "name": "endDate"
           }
-        ]
+        ],
+        "type": "AlcoholMonitoringPeriod"
       }
     ],
     "PSS": [
@@ -962,7 +986,8 @@
             "label": "Enter the address for the appointment",
             "name": "appointmentAddress"
           }
-        ]
+        ],
+        "type": "AppointmentTimeAndPlaceDuringPss"
       },
       {
         "code": "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
@@ -981,7 +1006,8 @@
             "label": "Enter address",
             "name": "address"
           }
-        ]
+        ],
+        "type": "DrugTestLocation"
       }
     ]
   }
