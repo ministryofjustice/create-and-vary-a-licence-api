@@ -30,6 +30,10 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasPdusIn(pdus),
   hasProbationAreaCodeIn(probationAreaCodes)
 )
+  .and { root, query, _ ->
+    root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.INNER)
+    query.restriction
+  }
 
 fun LicenceQueryObject.getSort(): Sort {
   if (sortBy == null) {
