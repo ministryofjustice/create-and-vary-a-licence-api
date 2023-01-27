@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -62,8 +64,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition

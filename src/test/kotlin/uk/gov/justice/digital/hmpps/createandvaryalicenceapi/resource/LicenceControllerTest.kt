@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,8 +59,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -344,7 +344,7 @@ class LicenceControllerTest {
   fun `match licences by staffId and status`() {
     val licenceQueryObject = LicenceQueryObject(
       staffIds = listOf(1, 2, 3),
-      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
@@ -357,7 +357,7 @@ class LicenceControllerTest {
           mapper.writeValueAsBytes(
             MatchLicencesRequest(
               staffId = listOf(1, 2, 3),
-              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
             )
           )
         )
@@ -376,7 +376,7 @@ class LicenceControllerTest {
   fun `match licences by pdu and status`() {
     val licenceQueryObject = LicenceQueryObject(
       pdus = listOf("A", "B", "C"),
-      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
@@ -546,7 +546,7 @@ class LicenceControllerTest {
       licenceStartDate = LocalDate.parse("2023-09-11"),
       licenceExpiryDate = LocalDate.parse("2024-09-11"),
       topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-      topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      topupSupervisionExpiryDate = LocalDate.parse("2025-09-11")
     )
 
     mvc.perform(
@@ -592,12 +592,12 @@ class LicenceControllerTest {
     val someStandardConditions = listOf(
       StandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       StandardCondition(id = 2, code = "notBreakLaw", sequence = 1, text = "Do not break any law"),
-      StandardCondition(id = 3, code = "attendMeetings", sequence = 1, text = "Attend meetings"),
+      StandardCondition(id = 3, code = "attendMeetings", sequence = 1, text = "Attend meetings")
     )
 
     val someAssociationData = listOf(
       AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 1),
-      AdditionalConditionData(id = 2, field = "field2", value = "value2", sequence = 2),
+      AdditionalConditionData(id = 2, field = "field2", value = "value2", sequence = 2)
     )
 
     val someAdditionalConditions = listOf(
@@ -607,13 +607,13 @@ class LicenceControllerTest {
         sequence = 1,
         text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
         expandedText = "Do not associate with value1 for a period of value2",
-        data = someAssociationData,
-      ),
+        data = someAssociationData
+      )
     )
 
     val someBespokeConditions = listOf(
       BespokeCondition(id = 1, sequence = 1, text = "Bespoke one text"),
-      BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text"),
+      BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text")
     )
 
     val aLicence = Licence(
@@ -658,7 +658,7 @@ class LicenceControllerTest {
       additionalLicenceConditions = someAdditionalConditions,
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
-      isVariation = false,
+      isVariation = false
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
@@ -719,27 +719,27 @@ class LicenceControllerTest {
       actualReleaseDate = LocalDate.of(2022, 12, 30),
       comUsername = "jsmith",
       bookingId = 54321,
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPerson = "John Smith",
+      appointmentPerson = "John Smith"
     )
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES),
+      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES)
     )
 
     val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
+      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS)
     )
 
     val aContactNumberRequest = ContactNumberRequest(
-      telephone = "0114 2566555",
+      telephone = "0114 2566555"
     )
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(
-      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
+      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"
     )
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))

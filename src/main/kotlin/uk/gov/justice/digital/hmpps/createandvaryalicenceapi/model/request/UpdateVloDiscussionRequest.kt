@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotBlank
 
 @Schema(description = "Request object for updating the VLO discussion")
 data class UpdateVloDiscussionRequest(

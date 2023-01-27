@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
@@ -52,8 +54,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent

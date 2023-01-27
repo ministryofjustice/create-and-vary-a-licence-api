@@ -1,15 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.7.4"
-  kotlin("plugin.spring") version "1.7.22"
-  kotlin("plugin.jpa") version "1.7.22"
-}
-
-allOpen {
-  annotations(
-    "javax.persistence.Entity",
-    "javax.persistence.MappedSuperclass",
-    "javax.persistence.Embeddable"
-  )
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.0.0-beta-5"
+  kotlin("plugin.spring") version "1.8.0"
+  kotlin("plugin.jpa") version "1.8.0"
 }
 
 configurations {
@@ -60,12 +52,10 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.1.3")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.12")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
   // Test dependencies
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")

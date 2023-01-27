@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotEmpty
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
-import javax.validation.constraints.NotEmpty
 
 @Schema(description = "Describes an audit event request")
 data class AuditEvent(

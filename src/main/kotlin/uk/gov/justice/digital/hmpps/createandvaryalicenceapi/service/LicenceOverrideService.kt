@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
@@ -11,8 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 @Service
 class LicenceOverrideService(

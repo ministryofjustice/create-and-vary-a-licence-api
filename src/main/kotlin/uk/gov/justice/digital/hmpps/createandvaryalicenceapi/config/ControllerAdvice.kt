@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -11,8 +13,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 @RestControllerAdvice
 class ControllerAdvice {
@@ -138,7 +138,7 @@ data class ErrorResponse(
   val errorCode: Int? = null,
   val userMessage: String? = null,
   val developerMessage: String? = null,
-  val moreInfo: String? = null,
+  val moreInfo: String? = null
 ) {
   constructor(
     status: HttpStatus,

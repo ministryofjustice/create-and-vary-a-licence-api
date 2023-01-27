@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -19,8 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OmuService
-import javax.persistence.EntityNotFoundException
-import javax.validation.Valid
 
 @RestController
 @RequestMapping("/omu/{prisonCode}/contact/email", produces = [MediaType.APPLICATION_JSON_VALUE])

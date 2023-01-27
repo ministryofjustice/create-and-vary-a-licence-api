@@ -6,13 +6,13 @@ Hats off to https://github.com/consoleau/kotlin-jpa-specification-dsl and contri
 Implemented here as a result of the JCenter repository closing and it not being available in other repositories yet.
 */
 
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.From
+import jakarta.persistence.criteria.Join
+import jakarta.persistence.criteria.Path
+import jakarta.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Root
 import org.springframework.data.jpa.domain.Specification
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.From
-import javax.persistence.criteria.Join
-import javax.persistence.criteria.Path
-import javax.persistence.criteria.Predicate
-import javax.persistence.criteria.Root
 import kotlin.reflect.KProperty1
 
 // Helper to allow joining to Properties

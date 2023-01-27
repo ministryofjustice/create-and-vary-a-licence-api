@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
-import javax.validation.constraints.NotNull
 
 @Schema(description = "Request object for updating the date and time of the initial appointment")
 data class AppointmentTimeRequest(

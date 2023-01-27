@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.validation.ValidationException
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -7,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.EventQue
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
-import javax.validation.ValidationException
 
 @Service
 class EventService(private val licenceEventRepository: LicenceEventRepository) {

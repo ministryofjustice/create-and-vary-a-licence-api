@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
-import javax.validation.constraints.NotBlank
 
 @Schema(description = "Describes a COM's contact details and the upcoming releases that they must consider for licence creation")
 data class PromptLicenceCreationRequest(

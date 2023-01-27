@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import jakarta.transaction.Transactional
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
@@ -18,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
-import javax.transaction.Transactional
 
 @RestController
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])

@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.OmuContactRepository
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
 
 @Service
 class OmuService(private val omuRepository: OmuContactRepository) {

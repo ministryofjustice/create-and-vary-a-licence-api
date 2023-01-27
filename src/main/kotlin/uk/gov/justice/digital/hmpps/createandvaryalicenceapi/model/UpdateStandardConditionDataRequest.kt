@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 data class UpdateStandardConditionDataRequest(
   @Schema(description = "The list of standard licence conditions from service configuration")
