@@ -135,11 +135,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }
@@ -294,11 +294,11 @@ class UpdateSentenceDateServiceTest {
       "${licence.forename} ${licence.surname}",
       licence.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }
@@ -351,11 +351,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }
@@ -408,11 +408,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }
@@ -466,11 +466,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }
@@ -524,11 +524,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }
@@ -583,11 +583,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        Pair("Release date", true),
-        Pair("Licence end date", true),
-        Pair("Sentence end date", true),
-        Pair("Top up supervision start date", true),
-        Pair("Top up supervision end date", true)
+        "Release date" to true,
+        "Licence end date" to true,
+        "Sentence end date" to true,
+        "Top up supervision start date" to true,
+        "Top up supervision end date" to true
       )
     )
   }

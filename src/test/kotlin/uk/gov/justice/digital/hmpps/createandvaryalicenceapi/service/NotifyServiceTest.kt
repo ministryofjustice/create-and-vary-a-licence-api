@@ -38,7 +38,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence approved email`() {
-    notifyService.sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
+    notifyService.sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf("key" to "value"), REFERENCE)
     // This email is currently not enabled, will not send and should have no interaction with the client
     verifyNoInteractions(notificationClient)
 
@@ -55,9 +55,9 @@ class NotifyServiceTest {
       )
     )
     val expectedMap = mapOf(
-      Pair("comName", "Joe Bloggs"),
-      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022")),
-      Pair("createLicenceLink", "http://somewhere/licence/create/caseload"),
+      "comName" to "Joe Bloggs",
+      "prisonersForRelease" to listOf("John Smith who will leave custody on 20 November 2022"),
+      "createLicenceLink" to "http://somewhere/licence/create/caseload",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -73,9 +73,9 @@ class NotifyServiceTest {
       )
     )
     val expectedMap = mapOf(
-      Pair("comName", "Joe Bloggs"),
-      Pair("prisonersForRelease", listOf("John Smith who will leave custody on 20 November 2022")),
-      Pair("createLicenceLink", "http://somewhere/licence/create/caseload"),
+      "comName" to "Joe Bloggs",
+      "prisonersForRelease" to listOf("John Smith who will leave custody on 20 November 2022"),
+      "createLicenceLink" to "http://somewhere/licence/create/caseload",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -85,11 +85,11 @@ class NotifyServiceTest {
   @Test
   fun `send dates changed email to the COM`() {
     val datesChanged = mapOf(
-      Pair("Release date", true),
-      Pair("Licence end date", true),
-      Pair("Sentence end date", false),
-      Pair("Top up supervision start date", false),
-      Pair("Top up supervision end date", false),
+      "Release date" to true,
+      "Licence end date" to true,
+      "Sentence end date" to false,
+      "Top up supervision start date" to false,
+      "Top up supervision end date" to false,
     )
 
     notifyService.sendDatesChangedEmail(
@@ -102,11 +102,11 @@ class NotifyServiceTest {
     )
 
     val expectedMap = mapOf(
-      Pair("comFullName", "Joe Bloggs"),
-      Pair("offenderFullName", "James Jonas"),
-      Pair("crn", "X11111"),
-      Pair("dateDescriptions", listOf("Release date", "Licence end date")),
-      Pair("caseloadLink", "http://somewhere/licence/create/caseload")
+      "comFullName" to "Joe Bloggs",
+      "offenderFullName" to "James Jonas",
+      "crn" to "X11111",
+      "dateDescriptions" to listOf("Release date", "Licence end date"),
+      "caseloadLink" to "http://somewhere/licence/create/caseload"
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -124,9 +124,9 @@ class NotifyServiceTest {
     )
 
     val expectedMap = mapOf(
-      Pair("comName", "Joe Bloggs"),
-      Pair("fullName", "Peter Falk"),
-      Pair("caseListLink", "http://somewhere/licence/vary/caseload")
+      "comName" to "Joe Bloggs",
+      "fullName" to "Peter Falk",
+      "caseListLink" to "http://somewhere/licence/vary/caseload"
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -144,9 +144,9 @@ class NotifyServiceTest {
     )
 
     val expectedMap = mapOf(
-      Pair("comName", "Joe Bloggs"),
-      Pair("fullName", "Peter Falk"),
-      Pair("caseListLink", "http://somewhere/licence/vary/caseload")
+      "comName" to "Joe Bloggs",
+      "fullName" to "Peter Falk",
+      "caseListLink" to "http://somewhere/licence/vary/caseload"
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -177,9 +177,9 @@ class NotifyServiceTest {
     )
 
     val expectedMap = mapOf(
-      Pair("comName", "Joe Bloggs"),
-      Pair("fullName", "Peter Falk"),
-      Pair("caseListLink", "http://somewhere/licence/vary/caseload")
+      "comName" to "Joe Bloggs",
+      "fullName" to "Peter Falk",
+      "caseListLink" to "http://somewhere/licence/vary/caseload"
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -197,10 +197,10 @@ class NotifyServiceTest {
     )
 
     val expectedMap = mapOf(
-      Pair("prisonerFirstName", "Peter"),
-      Pair("prisonerLastName", "Falk"),
-      Pair("prisonerNumber", "ABC123"),
-      Pair("crd", "10 February 2016")
+      "prisonerFirstName" to "Peter",
+      "prisonerLastName" to "Falk",
+      "prisonerNumber" to "ABC123",
+      "crd" to "10 February 2016"
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -240,7 +240,7 @@ class NotifyServiceTest {
 
   @Test
   fun `No email is sent when email address is empty`() {
-    notifyService.sendLicenceApprovedEmail("", mapOf(Pair("key", "value")), REFERENCE)
+    notifyService.sendLicenceApprovedEmail("", mapOf("key" to "value"), REFERENCE)
     verifyNoInteractions(notificationClient)
   }
 
