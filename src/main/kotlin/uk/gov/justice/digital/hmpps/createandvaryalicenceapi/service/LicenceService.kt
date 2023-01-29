@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -23,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -37,8 +35,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -73,7 +69,6 @@ class LicenceService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val omuService: OmuService,
-  private val prisonApiClient: PrisonApiClient
 ) {
 
   @Transactional
@@ -102,7 +97,8 @@ class LicenceService(
     val licenceEntity = licenceRepository.saveAndFlush(licence)
     val createLicenceResponse = transformToLicenceSummary(licenceEntity)
 
-    val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
+    val entityStandardLicenceConditions =
+      request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
     val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
     standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
 
@@ -211,7 +207,11 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val updatedLicence = licenceEntity.copy(bespokeConditions = emptyList(), dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicence = licenceEntity.copy(
+      bespokeConditions = emptyList(),
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username
+    )
     licenceRepository.saveAndFlush(updatedLicence)
 
     // Replace the bespoke conditions
@@ -261,7 +261,8 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicence)
 
     // return the newly added condition.
-    val newCondition = licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
+    val newCondition =
+      licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
     return transform(newCondition)
   }
 
@@ -297,7 +298,12 @@ class LicenceService(
 
     val newAdditionalConditions =
       submittedAdditionalConditions.filter { licenceEntity.additionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
-        .map { newAdditionalCondition -> newAdditionalCondition.copy(expandedConditionText = newAdditionalCondition.conditionText, licence = licenceEntity) }
+        .map { newAdditionalCondition ->
+          newAdditionalCondition.copy(
+            expandedConditionText = newAdditionalCondition.conditionText,
+            licence = licenceEntity
+          )
+        }
 
     val removedAdditionalConditionsList =
       licenceEntity.additionalConditions.filter {
@@ -342,7 +348,8 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val entityStandardLicenceConditions = request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
+    val entityStandardLicenceConditions =
+      request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
     val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -356,7 +363,11 @@ class LicenceService(
   }
 
   @Transactional
-  fun updateAdditionalConditionData(licenceId: Long, additionalConditionId: Long, request: UpdateAdditionalConditionDataRequest) {
+  fun updateAdditionalConditionData(
+    licenceId: Long,
+    additionalConditionId: Long,
+    request: UpdateAdditionalConditionDataRequest
+  ) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -438,7 +449,8 @@ class LicenceService(
 
   private fun auditStatusChange(licenceId: Long, licenceEntity: EntityLicence, request: StatusUpdateRequest) {
     val fullName = "${licenceEntity.forename} ${licenceEntity.surname}"
-    val detailText = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}"
+    val detailText =
+      "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}"
 
     val summaryText = when (licenceEntity.statusCode) {
       APPROVED -> "Licence approved for $fullName"
@@ -586,7 +598,8 @@ class LicenceService(
 
   fun findLicencesMatchingCriteria(licenceQueryObject: LicenceQueryObject): List<LicenceSummary> {
     try {
-      val matchingLicences = licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
+      val matchingLicences =
+        licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
       return transformToListOfSummaries(matchingLicences)
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message)
@@ -601,7 +614,8 @@ class LicenceService(
 
   @Transactional
   fun activateLicences(licenceIds: List<Long>) {
-    val matchingLicences = licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
+    val matchingLicences =
+      licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
     val activatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = ACTIVE) }
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
@@ -636,7 +650,8 @@ class LicenceService(
 
   @Transactional
   fun inActivateLicences(licenceIds: List<Long>) {
-    val matchingLicences = licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
+    val matchingLicences =
+      licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
     val inActivatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = INACTIVE) }
     if (inActivatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(inActivatedLicences)
@@ -704,7 +719,12 @@ class LicenceService(
       val additionalConditionUploadSummary = it.additionalConditionUploadSummary.map { upload ->
         upload.copy(id = -1)
       }
-      it.copy(id = -1, licence = newLicence, additionalConditionData = additionalConditionData, additionalConditionUploadSummary = additionalConditionUploadSummary)
+      it.copy(
+        id = -1,
+        licence = newLicence,
+        additionalConditionData = additionalConditionData,
+        additionalConditionUploadSummary = additionalConditionUploadSummary
+      )
     }
 
     var newAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions).toMutableList()
@@ -721,7 +741,10 @@ class LicenceService(
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
       }
 
-      condition.copy(additionalConditionData = updatedAdditionalConditionData, additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary)
+      condition.copy(
+        additionalConditionData = updatedAdditionalConditionData,
+        additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary
+      )
     } as MutableList<AdditionalCondition>
 
     additionalConditionRepository.saveAll(newAdditionalConditions)
@@ -759,7 +782,11 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val updatedLicenceEntity = licenceEntity.copy(spoDiscussion = spoDiscussionRequest.spoDiscussion, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicenceEntity = licenceEntity.copy(
+      spoDiscussion = spoDiscussionRequest.spoDiscussion,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username
+    )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
   }
@@ -771,7 +798,11 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val updatedLicenceEntity = licenceEntity.copy(vloDiscussion = vloDiscussionRequest.vloDiscussion, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicenceEntity = licenceEntity.copy(
+      vloDiscussion = vloDiscussionRequest.vloDiscussion,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username
+    )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
   }
@@ -931,7 +962,13 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val updatedLicenceEntity = licenceEntity.copy(prisonCode = prisonInformationRequest.prisonCode, prisonDescription = prisonInformationRequest.prisonDescription, prisonTelephone = prisonInformationRequest.prisonTelephone, dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicenceEntity = licenceEntity.copy(
+      prisonCode = prisonInformationRequest.prisonCode,
+      prisonDescription = prisonInformationRequest.prisonDescription,
+      prisonTelephone = prisonInformationRequest.prisonTelephone,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username
+    )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
@@ -949,108 +986,9 @@ class LicenceService(
     )
   }
 
-  @Transactional
-  fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    log.info(
-      "Licence dates - ID $licenceId " +
-        "CRD ${licenceEntity?.conditionalReleaseDate} " +
-        "ARD ${licenceEntity?.actualReleaseDate} " +
-        "SSD ${licenceEntity?.sentenceStartDate} " +
-        "SED ${licenceEntity?.sentenceEndDate} " +
-        "LSD ${licenceEntity?.licenceStartDate} " +
-        "LED ${licenceEntity?.licenceExpiryDate} " +
-        "TUSSD ${licenceEntity?.topupSupervisionStartDate} " +
-        "TUSED ${licenceEntity?.topupSupervisionExpiryDate}"
-    )
-
-    log.info(
-      "Event dates - ID $licenceId " +
-        "CRD ${sentenceDatesRequest.conditionalReleaseDate} " +
-        "ARD ${sentenceDatesRequest.actualReleaseDate} " +
-        "SSD ${sentenceDatesRequest.sentenceStartDate} " +
-        "SED ${sentenceDatesRequest.sentenceEndDate} " +
-        "LSD ${sentenceDatesRequest.licenceStartDate} " +
-        "LED ${sentenceDatesRequest.licenceExpiryDate} " +
-        "TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} " +
-        "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}"
-    )
-
-    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
-
-    val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = licenceEntity.calculateStatusCode(sentenceDatesRequest),
-      conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
-      actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
-      sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
-      sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
-      licenceStartDate = sentenceDatesRequest.licenceStartDate,
-      licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
-      topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
-      topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username
-    )
-
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
-
-    auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceEntity.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
-          eventType = AuditEventType.SYSTEM_EVENT,
-          summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-        )
-      )
-    )
-
-    log.info(
-      "Date change flags: LSD ${sentenceChanges.lsdChanged} LED ${sentenceChanges.ledChanged} " +
-        "SED ${sentenceChanges.sedChanged} TUSSD ${sentenceChanges.tussdChanged} TUSED ${sentenceChanges.tusedChanged} " +
-        "isMaterial ${sentenceChanges.isMaterial}"
-    )
-
-    if (!sentenceChanges.isMaterial) return
-
-    // Notify the COM of any change to material dates on the licence
-    updatedLicenceEntity.bookingId?.let {
-      prisonApiClient.hdcStatus(it)
-        .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
-        .filter { h -> h.approvalStatus != "APPROVED" }.subscribe {
-          log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
-          notifyService.sendDatesChangedEmail(
-            licenceId.toString(),
-            licenceEntity.responsibleCom?.email,
-            "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
-            "${licenceEntity.forename} ${licenceEntity.surname}",
-            licenceEntity.crn,
-            mapOf(
-              "Release date" to sentenceChanges.lsdChanged,
-              "Release date" to sentenceChanges.lsdChanged,
-              "Licence end date" to sentenceChanges.ledChanged,
-              "Sentence end date" to sentenceChanges.sedChanged,
-              "Top up supervision start date" to sentenceChanges.tussdChanged,
-              "Top up supervision end date" to sentenceChanges.tusedChanged,
-            ),
-          )
-        }
-    }
-  }
-
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
-    val inFlight = licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
+    val inFlight =
+      licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
     return inFlight.isNotEmpty()
-  }
-
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

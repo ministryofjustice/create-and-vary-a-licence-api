@@ -46,11 +46,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceController(private val licenceService: LicenceService) {
+class LicenceController(private val licenceService: LicenceService, private val updateSentenceDateService: UpdateSentenceDateService) {
 
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -1163,6 +1164,6 @@ class LicenceController(private val licenceService: LicenceService) {
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody request: UpdateSentenceDatesRequest
   ) {
-    licenceService.updateSentenceDates(licenceId, request)
+    updateSentenceDateService.updateSentenceDates(licenceId, request)
   }
 }
