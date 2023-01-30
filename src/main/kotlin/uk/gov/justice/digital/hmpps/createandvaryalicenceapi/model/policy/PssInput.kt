@@ -4,5 +4,5 @@ data class PssInput(
   val type: String,
   val label: String,
   val name: String,
-  val includeBefore: String?,
+  val includeBefore: String? = null,
 )
