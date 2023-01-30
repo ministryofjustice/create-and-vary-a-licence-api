@@ -572,8 +572,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendLicenceApprovedEmail(
       "testemail@probation.gov.uk",
       mapOf(
-        Pair("fullName", "${aLicenceEntity.forename} ${aLicenceEntity.surname}"),
-        Pair("prisonName", aLicenceEntity.prisonDescription.orEmpty())
+        "fullName" to "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        "prisonName" to aLicenceEntity.prisonDescription.orEmpty()
       ),
       "1",
     )

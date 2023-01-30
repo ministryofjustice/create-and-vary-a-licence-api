@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -12,7 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
 @Service
 class UpdateSentenceDateService(
@@ -24,34 +24,36 @@ class UpdateSentenceDateService(
 
   @Transactional
   fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
 
     log.info(
-      "Licence dates - ID $licenceId " +
-        "CRD ${licenceEntity?.conditionalReleaseDate} " +
-        "ARD ${licenceEntity?.actualReleaseDate} " +
-        "SSD ${licenceEntity?.sentenceStartDate} " +
-        "SED ${licenceEntity?.sentenceEndDate} " +
-        "LSD ${licenceEntity?.licenceStartDate} " +
-        "LED ${licenceEntity?.licenceExpiryDate} " +
-        "TUSSD ${licenceEntity?.topupSupervisionStartDate} " +
-        "TUSED ${licenceEntity?.topupSupervisionExpiryDate}"
+      buildString {
+        append("Licence dates - ID $licenceId ")
+        append("CRD ${licenceEntity?.conditionalReleaseDate} ")
+        append("ARD ${licenceEntity?.actualReleaseDate} ")
+        append("SSD ${licenceEntity?.sentenceStartDate} ")
+        append("SED ${licenceEntity?.sentenceEndDate} ")
+        append("LSD ${licenceEntity?.licenceStartDate} ")
+        append("LED ${licenceEntity?.licenceExpiryDate} ")
+        append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
+        append("TUSED ${licenceEntity?.topupSupervisionExpiryDate}")
+      }
     )
 
     log.info(
-      "Event dates - ID $licenceId " +
-        "CRD ${sentenceDatesRequest.conditionalReleaseDate} " +
-        "ARD ${sentenceDatesRequest.actualReleaseDate} " +
-        "SSD ${sentenceDatesRequest.sentenceStartDate} " +
-        "SED ${sentenceDatesRequest.sentenceEndDate} " +
-        "LSD ${sentenceDatesRequest.licenceStartDate} " +
-        "LED ${sentenceDatesRequest.licenceExpiryDate} " +
-        "TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} " +
-        "TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}"
+      buildString {
+        append("Event dates - ID $licenceId ")
+        append("CRD ${sentenceDatesRequest.conditionalReleaseDate} ")
+        append("ARD ${sentenceDatesRequest.actualReleaseDate} ")
+        append("SSD ${sentenceDatesRequest.sentenceStartDate} ")
+        append("SED ${sentenceDatesRequest.sentenceEndDate} ")
+        append("LSD ${sentenceDatesRequest.licenceStartDate} ")
+        append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
+        append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
+        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
+      }
     )
 
     val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
@@ -73,30 +75,33 @@ class UpdateSentenceDateService(
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceEntity.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
-          eventType = AuditEventType.SYSTEM_EVENT,
-          summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-        )
+      AuditEvent(
+        licenceId = licenceEntity.id,
+        username = "SYSTEM",
+        fullName = "SYSTEM",
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
       )
     )
 
     log.info(
-      "Date change flags: LSD ${sentenceChanges.lsdChanged} LED ${sentenceChanges.ledChanged} " +
-        "SED ${sentenceChanges.sedChanged} TUSSD ${sentenceChanges.tussdChanged} TUSED ${sentenceChanges.tusedChanged} " +
-        "isMaterial ${sentenceChanges.isMaterial}"
+      buildString {
+        append("Date change flags: ")
+        append("LSD ${sentenceChanges.lsdChanged} ")
+        append("LED ${sentenceChanges.ledChanged} ")
+        append("SED ${sentenceChanges.sedChanged} ")
+        append("TUSSD ${sentenceChanges.tussdChanged} ")
+        append("TUSED ${sentenceChanges.tusedChanged} ")
+        append("isMaterial ${sentenceChanges.isMaterial}")
+      }
     )
 
     if (!sentenceChanges.isMaterial) return
 
     // Notify the COM of any change to material dates on the licence
     updatedLicenceEntity.bookingId?.let {
-      prisonApiClient.hdcStatus(it)
-        .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
+      prisonApiClient.hdcStatus(it).defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
         .filter { h -> h.approvalStatus != "APPROVED" }.subscribe {
           log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
           notifyService.sendDatesChangedEmail(

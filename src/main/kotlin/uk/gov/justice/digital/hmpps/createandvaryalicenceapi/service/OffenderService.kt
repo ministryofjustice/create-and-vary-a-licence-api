@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -37,14 +37,12 @@ OffenderService(
     // Create an audit event for each of the licences updated
     offenderLicences.map {
       auditEventRepository.saveAndFlush(
-        transform(
-          AuditEvent(
-            licenceId = it.id,
-            username = "SYSTEM",
-            fullName = "SYSTEM",
-            summary = "COM updated to ${newCom.firstName} ${newCom.lastName} on licence for ${it.forename} ${it.surname}",
-            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
-          )
+        AuditEvent(
+          licenceId = it.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          summary = "COM updated to ${newCom.firstName} ${newCom.lastName} on licence for ${it.forename} ${it.surname}",
+          detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
         )
       )
     }
@@ -88,14 +86,12 @@ OffenderService(
       // Create an audit event for each of the licences updated
       offenderLicences.map {
         auditEventRepository.saveAndFlush(
-          transform(
-            AuditEvent(
-              licenceId = it.id,
-              username = "SYSTEM",
-              fullName = "SYSTEM",
-              summary = "Probation team updated to ${request.probationTeamDescription} at ${request.probationAreaDescription} on licence for ${it.forename} ${it.surname}",
-              detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
-            )
+          AuditEvent(
+            licenceId = it.id,
+            username = "SYSTEM",
+            fullName = "SYSTEM",
+            summary = "Probation team updated to ${request.probationTeamDescription} at ${request.probationAreaDescription} on licence for ${it.forename} ${it.surname}",
+            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
           )
         )
       }

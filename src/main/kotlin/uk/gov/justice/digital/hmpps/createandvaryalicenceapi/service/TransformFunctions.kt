@@ -270,7 +270,7 @@ fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
 
 fun List<EntityAuditEvent>.transformToModelAuditEvents(): List<ModelAuditEvent> = map(::transform)
 
-fun transform(entity: EntityAuditEvent): ModelAuditEvent {
+private fun transform(entity: EntityAuditEvent): ModelAuditEvent {
   return ModelAuditEvent(
     id = entity.id,
     licenceId = entity.licenceId,

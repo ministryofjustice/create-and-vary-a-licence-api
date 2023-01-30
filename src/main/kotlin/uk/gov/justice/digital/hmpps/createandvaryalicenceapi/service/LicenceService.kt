@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -54,7 +55,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as AdditionalConditionModel
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
 @Service
 class LicenceService(
@@ -103,14 +103,12 @@ class LicenceService(
     standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = createLicenceResponse.licenceId,
-          username = username,
-          fullName = "${createdBy.firstName} ${createdBy.lastName}",
-          summary = "Licence created for ${request.forename} ${request.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        )
+      AuditEvent(
+        licenceId = createLicenceResponse.licenceId,
+        username = username,
+        fullName = "${createdBy.firstName} ${createdBy.lastName}",
+        summary = "Licence created for ${request.forename} ${request.surname}",
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       )
     )
 
@@ -465,15 +463,13 @@ class LicenceService(
     }
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceId,
-          username = request.username,
-          fullName = request.fullName,
-          eventType = getAuditEventType(request),
-          summary = summaryText,
-          detail = detailText,
-        )
+      AuditEvent(
+        licenceId = licenceId,
+        username = request.username,
+        fullName = request.fullName,
+        eventType = getAuditEventType(request),
+        summary = summaryText,
+        detail = detailText,
       )
     )
   }
@@ -518,8 +514,8 @@ class LicenceService(
       notifyService.sendLicenceApprovedEmail(
         it.email.orEmpty(),
         mapOf(
-          Pair("fullName", "${licenceEntity.forename} ${licenceEntity.surname}"),
-          Pair("prisonName", licenceEntity.prisonDescription.orEmpty()),
+          "fullName" to "${licenceEntity.forename} ${licenceEntity.surname}",
+          "prisonName" to licenceEntity.prisonDescription.orEmpty(),
         ),
         licenceId.toString(),
       )
@@ -572,14 +568,12 @@ class LicenceService(
     )
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${submitter.firstName} ${submitter.lastName}",
-          summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
-          detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
-        )
+      AuditEvent(
+        licenceId = licenceId,
+        username = username,
+        fullName = "${submitter.firstName} ${submitter.lastName}",
+        summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
+        detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
       )
     )
 
@@ -622,15 +616,13 @@ class LicenceService(
 
       activatedLicences.map { licence ->
         auditEventRepository.saveAndFlush(
-          transform(
-            ModelAuditEvent(
-              licenceId = licence.id,
-              username = "SYSTEM",
-              fullName = "SYSTEM",
-              eventType = AuditEventType.SYSTEM_EVENT,
-              summary = "Licence automatically activated for ${licence.forename} ${licence.surname}",
-              detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-            )
+          AuditEvent(
+            licenceId = licence.id,
+            username = "SYSTEM",
+            fullName = "SYSTEM",
+            eventType = AuditEventType.SYSTEM_EVENT,
+            summary = "Licence automatically activated for ${licence.forename} ${licence.surname}",
+            detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
           )
         )
 
@@ -658,15 +650,13 @@ class LicenceService(
 
       inActivatedLicences.map { licence ->
         auditEventRepository.saveAndFlush(
-          transform(
-            ModelAuditEvent(
-              licenceId = licence.id,
-              username = "SYSTEM",
-              fullName = "SYSTEM",
-              eventType = AuditEventType.SYSTEM_EVENT,
-              summary = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
-              detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-            )
+          AuditEvent(
+            licenceId = licence.id,
+            username = "SYSTEM",
+            fullName = "SYSTEM",
+            eventType = AuditEventType.SYSTEM_EVENT,
+            summary = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
+            detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
           )
         )
 
@@ -761,14 +751,12 @@ class LicenceService(
     )
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${createdBy.firstName} ${createdBy.lastName}",
-          summary = "Licence varied for ${newLicence.forename} ${newLicence.surname}",
-          detail = "Old ID $licenceId, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
-        )
+      AuditEvent(
+        licenceId = licenceId,
+        username = username,
+        fullName = "${createdBy.firstName} ${createdBy.lastName}",
+        summary = "Licence varied for ${newLicence.forename} ${newLicence.surname}",
+        detail = "Old ID $licenceId, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
       )
     )
 
@@ -859,14 +847,12 @@ class LicenceService(
     )
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
-          summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
-        )
+      AuditEvent(
+        licenceId = licenceId,
+        username = username,
+        fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+        summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
       )
     )
 
@@ -909,14 +895,12 @@ class LicenceService(
     )
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${user?.firstName} ${user?.lastName}",
-          summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
-        )
+      AuditEvent(
+        licenceId = licenceId,
+        username = username,
+        fullName = "${user?.firstName} ${user?.lastName}",
+        summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}"
       )
     )
 
@@ -940,14 +924,12 @@ class LicenceService(
     val discardedBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${discardedBy?.firstName} ${discardedBy?.lastName}",
-          summary = "Licence variation discarded for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        )
+      AuditEvent(
+        licenceId = licenceId,
+        username = username,
+        fullName = "${discardedBy?.firstName} ${discardedBy?.lastName}",
+        summary = "Licence variation discarded for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       )
     )
 
@@ -973,15 +955,13 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     auditEventRepository.saveAndFlush(
-      transform(
-        ModelAuditEvent(
-          licenceId = licenceEntity.id,
-          username = "SYSTEM",
-          fullName = "SYSTEM",
-          eventType = AuditEventType.SYSTEM_EVENT,
-          summary = "Prison information updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-        )
+      AuditEvent(
+        licenceId = licenceEntity.id,
+        username = "SYSTEM",
+        fullName = "SYSTEM",
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Prison information updated for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
       )
     )
   }
