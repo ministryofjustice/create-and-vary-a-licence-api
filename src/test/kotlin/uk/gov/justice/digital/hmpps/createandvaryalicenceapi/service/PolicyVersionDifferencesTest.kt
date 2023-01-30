@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
@@ -59,6 +60,24 @@ class PolicyVersionDifferencesTest() {
       conditionChanges(previousPolicy.additionalConditions.ap, currentPolicy.additionalConditions.ap, replacements)
 
     showDiffs(diffs)
+  }
+
+  @Test
+  fun checkCodeVsJson() {
+    assertThat(licencePolicyService.policyByVersion("1.0"))
+      .usingRecursiveComparison()
+      .withStrictTypeChecking()
+      .isEqualTo(POLICY_V1_0)
+
+    assertThat(licencePolicyService.policyByVersion("2.0"))
+      .usingRecursiveComparison()
+      .withStrictTypeChecking()
+      .isEqualTo(POLICY_V2_0)
+
+    assertThat(licencePolicyService.policyByVersion("2.1"))
+      .usingRecursiveComparison()
+      .withStrictTypeChecking()
+      .isEqualTo(POLICY_V2_1)
   }
 
   private fun showDiffs(
