@@ -1,10 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.core.io.ClassPathResource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.NEW_OPTIONS
@@ -13,15 +9,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionCh
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.TEXT_CHANGE
 
 // This doesn't actually assert anything but dumps the differences between different versions of the policy
-class PolicyVersionDifferencesTest() {
+class PolicyVersionDifferencesTest {
 
-  private val licencePolicyService = LicencePolicyService(
-    listOf(
-      ClassPathResource("/policy_conditions/policyV1.json").file,
-      ClassPathResource("/policy_conditions/policyV2.json").file,
-      ClassPathResource("/policy_conditions/policyV2.1.json").file
-    ).map { policy -> jacksonObjectMapper().readValue(policy) }
-  )
+  private val licencePolicyService = LicencePolicyService()
 
   @Test
   fun `1_0 to 2_0`() {
@@ -60,24 +50,6 @@ class PolicyVersionDifferencesTest() {
       conditionChanges(previousPolicy.additionalConditions.ap, currentPolicy.additionalConditions.ap, replacements)
 
     showDiffs(diffs)
-  }
-
-  @Test
-  fun checkCodeVsJson() {
-    assertThat(licencePolicyService.policyByVersion("1.0"))
-      .usingRecursiveComparison()
-      .withStrictTypeChecking()
-      .isEqualTo(POLICY_V1_0)
-
-    assertThat(licencePolicyService.policyByVersion("2.0"))
-      .usingRecursiveComparison()
-      .withStrictTypeChecking()
-      .isEqualTo(POLICY_V2_0)
-
-    assertThat(licencePolicyService.policyByVersion("2.1"))
-      .usingRecursiveComparison()
-      .withStrictTypeChecking()
-      .isEqualTo(POLICY_V2_1)
   }
 
   private fun showDiffs(
