@@ -36,10 +36,10 @@ class NotifyService(
   fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
-        Pair("pduHeadName", notifyRequest.name),
-        Pair("licenceFirstName", firstName),
-        Pair("licenceLastName", lastName),
-        Pair("approvalCasesLink", selfLink.plus("/licence/vary-approve/list"))
+        "pduHeadName" to notifyRequest.name,
+        "licenceFirstName" to firstName,
+        "licenceLastName" to lastName,
+        "approvalCasesLink" to selfLink.plus("/licence/vary-approve/list")
       )
       sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
       log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
@@ -51,10 +51,10 @@ class NotifyService(
   fun sendVariationForReApprovalEmail(emailAddress: String?, firstName: String, lastName: String, prisonerNumber: String?, crd: LocalDate?) {
     if (emailAddress != null && crd != null) {
       val values: Map<String, String> = mapOf(
-        Pair("prisonerFirstName", firstName),
-        Pair("prisonerLastName", lastName),
-        Pair("prisonerNumber", prisonerNumber ?: "unknown"),
-        Pair("crd", crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy")))
+        "prisonerFirstName" to firstName,
+        "prisonerLastName" to lastName,
+        "prisonerNumber" to (prisonerNumber ?: "unknown"),
+        "crd" to crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))
       )
       sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
       log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
@@ -74,9 +74,9 @@ class NotifyService(
     val contacts = getContacts(creatorEmail, creatorName, comEmail, comName)
     contacts.forEach {
       val values: Map<String, String> = mapOf(
-        Pair("comName", it.name),
-        Pair("fullName", popName),
-        Pair("caseListLink", selfLink.plus("/licence/vary/caseload"))
+        "comName" to it.name,
+        "fullName" to popName,
+        "caseListLink" to selfLink.plus("/licence/vary/caseload")
       )
       sendEmail(variationApprovedTemplateId, it.email, values, null)
       log.info("Notification sent to ${it.email} VARIATION APPROVED for $licenceId $popName")
@@ -95,10 +95,10 @@ class NotifyService(
         unapprovedLicenceByCrdTemplateId,
         "${it.comEmail}",
         mapOf(
-          Pair("crn", "${it.crn}"),
-          Pair("prisonerFirstName", "${it.forename}"),
-          Pair("prisonerLastName", "${it.surname}"),
-          Pair("comName", "${it.comFirstName} ${it.comLastName}"),
+          "crn" to "${it.crn}",
+          "prisonerFirstName" to "${it.forename}",
+          "prisonerLastName" to "${it.surname}",
+          "comName" to "${it.comFirstName} ${it.comLastName}",
         ),
         null
       )
@@ -117,9 +117,9 @@ class NotifyService(
     val contacts = getContacts(creatorEmail, creatorName, comEmail, comName)
     contacts.forEach {
       val values: Map<String, String> = mapOf(
-        Pair("comName", it.name),
-        Pair("fullName", popName),
-        Pair("caseListLink", selfLink.plus("/licence/vary/caseload"))
+        "comName" to it.name,
+        "fullName" to popName,
+        "caseListLink" to selfLink.plus("/licence/vary/caseload")
       )
       sendEmail(variationReferredTemplateId, it.email, values, null)
       log.info("Notification sent to ${it.email} VARIATION REFERRED for $licenceId $popName")
@@ -143,11 +143,11 @@ class NotifyService(
       datesChanged.asSequence().filter { it.value }.forEach { listOfDateTypes.add(it.key) }
 
       val values: Map<String, Any> = mapOf(
-        Pair("comFullName", comFullName),
-        Pair("offenderFullName", offenderFullName),
-        Pair("crn", crn!!),
-        Pair("dateDescriptions", listOfDateTypes),
-        Pair("caseloadLink", selfLink.plus("/licence/create/caseload"))
+        "comFullName" to comFullName,
+        "offenderFullName" to offenderFullName,
+        "crn" to crn!!,
+        "dateDescriptions" to listOfDateTypes,
+        "caseloadLink" to selfLink.plus("/licence/create/caseload")
       )
 
       sendEmail(datesChangedTemplateId, emailAddress, values, null)
@@ -173,14 +173,11 @@ class NotifyService(
       templateId,
       emailAddress,
       mapOf(
-        Pair("comName", comName),
-        Pair(
-          "prisonersForRelease",
-          cases.map { prisoner ->
-            "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
-          }
-        ),
-        Pair("createLicenceLink", selfLink.plus("/licence/create/caseload"))
+        "comName" to comName,
+        "prisonersForRelease" to cases.map { prisoner ->
+          "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
+        },
+        "createLicenceLink" to selfLink.plus("/licence/create/caseload")
       ),
       null
     )

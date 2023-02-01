@@ -54,6 +54,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -71,6 +72,9 @@ class LicenceControllerTest {
   @MockBean
   private lateinit var licenceService: LicenceService
 
+  @MockBean
+  private lateinit var updateSentenceDateService: UpdateSentenceDateService
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -82,7 +86,7 @@ class LicenceControllerTest {
     reset(licenceService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(LicenceController(licenceService))
+      .standaloneSetup(LicenceController(licenceService, updateSentenceDateService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -557,7 +561,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateSentenceDates(4, expectedRequest)
+    verify(updateSentenceDateService, times(1)).updateSentenceDates(4, expectedRequest)
   }
 
   @Test
