@@ -20,8 +20,8 @@ class ResourceServerConfiguration {
       .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
       .and().headers().frameOptions().sameOrigin()
       .and().csrf().disable()
-      .authorizeRequests { auth ->
-        auth.antMatchers(
+      .authorizeHttpRequests { auth ->
+        auth.requestMatchers(
           "/webjars/**",
           "favicon.ico",
           "/health/**",

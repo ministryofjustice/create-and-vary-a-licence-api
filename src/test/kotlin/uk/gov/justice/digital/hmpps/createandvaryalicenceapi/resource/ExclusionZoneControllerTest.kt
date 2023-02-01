@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
+import jakarta.validation.ValidationException
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,7 +26,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
-import javax.validation.ValidationException
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -59,7 +59,7 @@ class ExclusionZoneControllerTest {
       "file",
       fileResource.filename,
       MediaType.MULTIPART_FORM_DATA_VALUE,
-      fileResource.file.inputStream(),
+      fileResource.file.inputStream()
     )
     AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
 
@@ -81,7 +81,7 @@ class ExclusionZoneControllerTest {
       "file",
       fileResource.filename,
       MediaType.MULTIPART_FORM_DATA_VALUE,
-      fileResource.file.inputStream(),
+      fileResource.file.inputStream()
     )
     AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
 

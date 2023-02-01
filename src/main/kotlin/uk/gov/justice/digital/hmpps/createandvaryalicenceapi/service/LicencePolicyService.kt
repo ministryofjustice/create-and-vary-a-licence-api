@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import jakarta.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
-import javax.persistence.EntityNotFoundException
 
 enum class ConditionChangeType {
   /**

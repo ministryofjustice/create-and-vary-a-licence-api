@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Request object for updating the list of additional conditions on a licence")
 data class UpdateAdditionalConditionDataRequest(

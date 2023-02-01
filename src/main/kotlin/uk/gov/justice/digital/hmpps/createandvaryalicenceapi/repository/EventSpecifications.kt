@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
+import jakarta.validation.ValidationException
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
@@ -7,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.equal
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`in`
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
-import javax.validation.ValidationException
 
 data class EventQueryObject(
   val licenceId: Long? = null,

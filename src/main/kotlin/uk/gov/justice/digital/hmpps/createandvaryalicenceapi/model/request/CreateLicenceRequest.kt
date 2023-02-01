@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import javax.validation.constraints.NotNull
 
 @Schema(description = "Request object for creating a new licence")
 data class CreateLicenceRequest(

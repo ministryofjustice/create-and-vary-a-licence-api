@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotNull
 
 @Schema(description = "Request object for updating the status of a licence")
 data class StatusUpdateRequest(

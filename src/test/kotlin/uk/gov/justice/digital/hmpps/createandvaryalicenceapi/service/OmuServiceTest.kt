@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.OmuContactRepository
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
 
 class OmuServiceTest {
   private val omuContactRepository = mock<OmuContactRepository>()

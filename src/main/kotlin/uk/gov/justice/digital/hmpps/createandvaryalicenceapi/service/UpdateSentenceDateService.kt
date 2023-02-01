@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -12,7 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
 
 @Service
 class UpdateSentenceDateService(
@@ -81,7 +81,7 @@ class UpdateSentenceDateService(
         fullName = "SYSTEM",
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}"
       )
     )
 
@@ -116,8 +116,8 @@ class UpdateSentenceDateService(
               "Licence end date" to sentenceChanges.ledChanged,
               "Sentence end date" to sentenceChanges.sedChanged,
               "Top up supervision start date" to sentenceChanges.tussdChanged,
-              "Top up supervision end date" to sentenceChanges.tusedChanged,
-            ),
+              "Top up supervision end date" to sentenceChanges.tusedChanged
+            )
           )
         }
     }

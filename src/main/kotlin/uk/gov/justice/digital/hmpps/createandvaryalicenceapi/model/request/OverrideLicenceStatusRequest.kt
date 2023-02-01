@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotEmpty
 import org.jetbrains.annotations.NotNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import javax.validation.constraints.NotEmpty
 
 @Schema(description = "Request object for overriding a licence status")
 data class OverrideLicenceStatusRequest(

@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository
 
+import jakarta.persistence.criteria.Join
+import jakarta.persistence.criteria.JoinType
+import jakarta.validation.ValidationException
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
@@ -7,9 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`in`
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import javax.persistence.criteria.Join
-import javax.persistence.criteria.JoinType
-import javax.validation.ValidationException
 
 data class LicenceQueryObject(
   val prisonCodes: List<String>? = null,
