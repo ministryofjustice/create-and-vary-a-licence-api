@@ -25,6 +25,7 @@ class NotifyService(
   @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
+  @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
@@ -112,6 +113,7 @@ class NotifyService(
         offenderDetails,
         null
       )
+      log.error("Error sending email to internal email address")
     }
   }
 

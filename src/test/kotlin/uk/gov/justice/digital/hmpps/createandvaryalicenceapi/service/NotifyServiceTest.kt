@@ -34,6 +34,7 @@ class NotifyServiceTest {
     variationForReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     client = notificationClient,
+    internalEmailAddress = "testemail@probation.gov.uk"
   )
 
   @Test
@@ -233,6 +234,7 @@ class NotifyServiceTest {
       variationForReApprovalTemplateId = TEMPLATE_ID,
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
+      internalEmailAddress = "testemail@probation.gov.uk"
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
     verifyNoInteractions(notificationClient)
