@@ -34,6 +34,7 @@ class NotifyServiceTest {
     variationForReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     client = notificationClient,
+    internalEmailAddress = INTERNAL_EMAIL_ADDRESS
   )
 
   @Test
@@ -233,6 +234,7 @@ class NotifyServiceTest {
       variationForReApprovalTemplateId = TEMPLATE_ID,
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
+      internalEmailAddress = INTERNAL_EMAIL_ADDRESS
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
     verifyNoInteractions(notificationClient)
@@ -282,6 +284,7 @@ class NotifyServiceTest {
 
     notifyService.sendUnapprovedLicenceEmail(emailContent)
     verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedMap, null)
+    verify(notificationClient).sendEmail(TEMPLATE_ID, INTERNAL_EMAIL_ADDRESS, expectedMap, null)
   }
 
   private companion object {
@@ -289,5 +292,6 @@ class NotifyServiceTest {
     const val EMAIL_ADDRESS = "joe.bloggs@mail.com"
     const val EMAIL_ADDRESS2 = "joe.bloggs2@mail.com"
     const val REFERENCE = "licence-id"
+    const val INTERNAL_EMAIL_ADDRESS = "testemail@probation.gov.uk"
   }
 }

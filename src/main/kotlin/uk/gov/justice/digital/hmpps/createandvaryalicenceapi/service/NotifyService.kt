@@ -25,6 +25,7 @@ class NotifyService(
   @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
+  @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
 ) {
   fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
@@ -91,18 +92,27 @@ class NotifyService(
       log.info("There were no emails to send to the probation practitioner to inform them of any edited emails that weren't re-approved by CRD date")
     }
     unapprovedLicenceEmailData.forEach {
+      val offenderDetails: Map<String, String> = mapOf(
+        "crn" to "${it.crn}",
+        "prisonerFirstName" to "${it.forename}",
+        "prisonerLastName" to "${it.surname}",
+        "comName" to "${it.comFirstName} ${it.comLastName}",
+      )
+
       sendEmail(
         unapprovedLicenceByCrdTemplateId,
         "${it.comEmail}",
-        mapOf(
-          "crn" to "${it.crn}",
-          "prisonerFirstName" to "${it.forename}",
-          "prisonerLastName" to "${it.surname}",
-          "comName" to "${it.comFirstName} ${it.comLastName}",
-        ),
+        offenderDetails,
         null
       )
       log.info("Notification sent to ${it.comEmail} informing edited licence not reapproved by CRD for prisoner ${it.forename} ${it.surname}")
+
+      sendEmail(
+        unapprovedLicenceByCrdTemplateId,
+        internalEmailAddress,
+        offenderDetails,
+        null
+      )
     }
   }
 
