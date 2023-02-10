@@ -113,7 +113,6 @@ class NotifyService(
         offenderDetails,
         null
       )
-      log.error("Error sending email to internal email address")
     }
   }
 
