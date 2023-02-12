@@ -1,15 +1,24 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
+import com.fasterxml.jackson.annotation.JsonValue
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.adjustCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.formatAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.formatUsing
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.startsWithVowel
 
-private const val ADDRESS = "address"
+enum class InputType(@JsonValue val description: String) {
+  RADIO("radio"),
+  ADDRESS("address"),
+  TIME_PICKER("timePicker"),
+  DATE_PICKER("datePicker"),
+  FILE_UPLOAD("fileUpload"),
+  TEXT("text"),
+  CHECK("check")
+}
 
 data class Input(
-  val type: String,
+  val type: InputType,
   val label: String,
   val name: String,
   val listType: String? = null,
@@ -34,7 +43,7 @@ fun Input?.format(
   return value
     .let { value.adjustCase(this.case) }
     .let { if (this.includeBefore != null) "${this.includeBefore}$it" else it }
-    .let { if (this.type == ADDRESS) formatAddress(it) else it }
+    .let { if (this.type == InputType.ADDRESS) formatAddress(it) else it }
     .let {
       if (this.handleIndefiniteArticle != null)
         if (it.startsWithVowel()) "an $it" else "a $it"

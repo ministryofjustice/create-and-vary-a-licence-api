@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
 data class ConditionalInput(
-  val type: String,
+  val type: InputType,
   val label: String,
   val name: String,
   val case: String? = null,

@@ -9,6 +9,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ConditionalInput
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.ADDRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.CHECK
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.DATE_PICKER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.RADIO
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TIME_PICKER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -182,7 +188,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "radio",
+          type = RADIO,
           label = "Select the relevant text",
           name = "gender",
           case = "lower",
@@ -259,7 +265,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "check",
+          type = CHECK,
           label = "Select all that apply",
           name = "behaviourProblems",
           case = null,
@@ -271,7 +277,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of course or centre (optional)",
           name = "course",
           includeBefore = " at the ",
@@ -321,7 +327,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "check",
+          type = CHECK,
           label = "Select all that apply",
           name = "behaviourProblems",
           case = null,
@@ -333,7 +339,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of course or centre (optional)",
           name = "course",
           includeBefore = " at the ",
@@ -383,7 +389,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "timePicker",
+          type = TIME_PICKER,
           label = "Enter time (optional)",
           name = "appointmentTime",
           includeBefore = " at ",
@@ -395,7 +401,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "datePicker",
+          type = DATE_PICKER,
           label = "Enter date (optional)",
           name = "appointmentDate",
           includeBefore = " on ",
@@ -407,7 +413,7 @@ class ConditionFormatterTest {
           listType = null
         ),
         Input(
-          type = "address",
+          type = ADDRESS,
           label = "Enter the address for the appointment",
           name = "appointmentAddress",
           includeBefore = null,
@@ -464,7 +470,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "timePicker",
+          type = TIME_PICKER,
           label = "Enter time (optional)",
           name = "appointmentTime",
           includeBefore = " at ",
@@ -476,7 +482,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "datePicker",
+          type = DATE_PICKER,
           label = "Enter date (optional)",
           name = "appointmentDate",
           includeBefore = " on ",
@@ -488,7 +494,7 @@ class ConditionFormatterTest {
           listType = null
         ),
         Input(
-          type = "address",
+          type = ADDRESS,
           label = "Enter the address for the appointment",
           name = "appointmentAddress",
           includeBefore = null,
@@ -573,7 +579,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "check",
+          type = CHECK,
           label = "Select all that apply",
           name = "behaviourProblems",
           listType = "AND",
@@ -585,7 +591,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of course or centre (optional)",
           name = "course",
           includeBefore = " at the ",
@@ -597,7 +603,7 @@ class ConditionFormatterTest {
           listType = null
         ),
 
-      ),
+        ),
       categoryShort = null,
       subtext = null,
       type = null
@@ -643,7 +649,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of victim or family member",
           name = "name",
           listType = "OR",
@@ -655,7 +661,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter social services department (optional)",
           name = "socialServicesDepartment",
           case = "capitalise",
@@ -718,7 +724,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of victim or family member",
           name = "name",
           listType = "OR",
@@ -730,7 +736,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter social services department (optional)",
           name = "socialServicesDepartment",
           case = "capitalise",
@@ -772,7 +778,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "timePicker",
+          type = TIME_PICKER,
           label = "Enter time (optional)",
           name = "appointmentTime",
           includeBefore = " at ",
@@ -784,7 +790,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "datePicker",
+          type = DATE_PICKER,
           label = "Enter date (optional)",
           name = "appointmentDate",
           includeBefore = " on ",
@@ -796,7 +802,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "address",
+          type = ADDRESS,
           label = "Enter the address for the appointment",
           name = "appointmentAddress",
           case = null,
@@ -859,7 +865,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of approved premises",
           name = "approvedPremises",
           case = "capitalised",
@@ -871,7 +877,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "timePicker",
+          type = TIME_PICKER,
           label = "Enter a reporting time",
           name = "reportingTime",
           includeBefore = null,
@@ -883,7 +889,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "radio",
+          type = RADIO,
           label = "Select a review period",
           name = "reviewPeriod",
           includeBefore = null,
@@ -894,7 +900,7 @@ class ConditionFormatterTest {
               conditional = Conditional(
                 inputs = listOf(
                   ConditionalInput(
-                    type = "text",
+                    type = TEXT,
                     label = "Enter a review period",
                     name = "alternativeReviewPeriod",
                     case = "lower",
@@ -964,7 +970,7 @@ class ConditionFormatterTest {
       requiresInput = true,
       inputs = listOf(
         Input(
-          type = "text",
+          type = TEXT,
           label = "Enter name of approved premises",
           name = "approvedPremises",
           case = "capitalised",
@@ -976,7 +982,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "timePicker",
+          type = TIME_PICKER,
           label = "Enter a reporting time",
           name = "reportingTime",
           includeBefore = null,
@@ -988,7 +994,7 @@ class ConditionFormatterTest {
           subtext = null,
         ),
         Input(
-          type = "radio",
+          type = RADIO,
           label = "Select a review period",
           name = "reviewPeriod",
           includeBefore = null,
@@ -999,7 +1005,7 @@ class ConditionFormatterTest {
               conditional = Conditional(
                 inputs = listOf(
                   ConditionalInput(
-                    type = "text",
+                    type = TEXT,
                     label = "Enter a review period",
                     name = "alternativeReviewPeriod",
                     case = "lower",

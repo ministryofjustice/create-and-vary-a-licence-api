@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.NEW_OPTIONS
@@ -261,7 +262,7 @@ class PolicyFunctionsTest {
   )
 
   fun input() = Input(
-    type = "default-type",
+    type = InputType.TEXT,
     label = "default-type",
     name = "default-type",
     listType = null,
