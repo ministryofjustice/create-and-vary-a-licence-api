@@ -9,12 +9,17 @@ interface ILicenceCondition {
   val tpl: String?
 }
 
-interface IAdditionalCondition<INPUT> : ILicenceCondition {
+interface IAdditionalCondition : ILicenceCondition, HasInputs {
   val category: String
-  val inputs: List<INPUT>?
+  val inputs: List<Input>?
   val type: String?
   val requiresInput: Boolean
   val categoryShort: String?
+  override fun getConditionInputs() = inputs
+}
+
+interface HasInputs {
+  fun getConditionInputs(): List<Input>?
 }
 
 data class ChangeHint(

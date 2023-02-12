@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Condit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PssInput
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
@@ -807,19 +806,19 @@ val POLICY_V2_0 = LicencePolicy(
         category = "Drug appointment",
         code = "62c83b80-2223-4562-a195-0670f4072088",
         inputs = listOf(
-          PssInput(
+          Input(
             includeBefore = " at ",
             label = "Enter time (optional)",
             name = "appointmentTime",
             type = "timePicker",
           ),
-          PssInput(
+          Input(
             includeBefore = " on ",
             label = "Enter date (optional)",
             name = "appointmentDate",
             type = "datePicker",
           ),
-          PssInput(
+          Input(
             label = "Enter the address for the appointment",
             name = "appointmentAddress",
             type = "address",
@@ -835,12 +834,12 @@ val POLICY_V2_0 = LicencePolicy(
         category = "Drug testing",
         code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
         inputs = listOf(
-          PssInput(
+          Input(
             label = "Enter name",
             name = "name",
             type = "text",
           ),
-          PssInput(
+          Input(
             label = "Enter address",
             name = "address",
             type = "address",
