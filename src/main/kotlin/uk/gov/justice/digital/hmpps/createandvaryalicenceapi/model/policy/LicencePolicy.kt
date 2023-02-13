@@ -19,6 +19,7 @@ interface IAdditionalCondition : ILicenceCondition, HasInputs {
 }
 
 interface HasInputs {
+  @JsonIgnore
   fun getConditionInputs(): List<Input>?
 }
 

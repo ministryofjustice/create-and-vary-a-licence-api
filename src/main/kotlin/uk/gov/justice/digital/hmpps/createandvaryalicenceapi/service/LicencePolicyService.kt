@@ -54,7 +54,6 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
   fun allPolicies(): List<LicencePolicy> = policies
 
   fun compareLicenceWithPolicy(licence: Licence, previousPolicy: LicencePolicy, currentPolicy: LicencePolicy):
-
     List<LicenceConditionChanges> {
     if (previousPolicy.version == currentPolicy.version) return emptyList()
     val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
