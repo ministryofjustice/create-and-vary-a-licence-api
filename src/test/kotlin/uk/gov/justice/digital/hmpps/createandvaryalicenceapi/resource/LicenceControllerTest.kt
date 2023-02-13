@@ -31,18 +31,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
@@ -288,32 +285,6 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `update bespoke conditions`() {
-    mvc.perform(
-      put("/licence/id/4/bespoke-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aBespokeConditionsRequest))
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
-  }
-
-  @Test
-  fun `update bespoke conditions with an empty request removes previous bespoke conditions`() {
-    mvc.perform(
-      put("/licence/id/4/bespoke-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(BespokeConditionRequest()))
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
-  }
-
-  @Test
   fun `match licences by prison code and status`() {
     val licenceQueryObject = LicenceQueryObject(
       prisonCodes = listOf("LEI"),
@@ -422,32 +393,6 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `update the list of additional conditions`() {
-    mvc.perform(
-      put("/licence/id/4/additional-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsListRequest))
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
-  }
-
-  @Test
-  fun `update the data associated with an additional condition`() {
-    mvc.perform(
-      put("/licence/id/4/additional-conditions/condition/1")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsDataRequest))
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
-  }
-
-  @Test
   fun `submit a licence`() {
     mvc.perform(
       put("/licence/id/4/submit")
@@ -510,7 +455,10 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateReasonForVariation(4, UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+    verify(licenceService, times(1)).updateReasonForVariation(
+      4,
+      UpdateReasonForVariationRequest(reasonForVariation = "reason")
+    )
   }
 
   @Test
@@ -527,7 +475,11 @@ class LicenceControllerTest {
 
   @Test
   fun `update prison information`() {
-    val expectedRequest = UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545")
+    val expectedRequest = UpdatePrisonInformationRequest(
+      prisonCode = "PVI",
+      prisonDescription = "Pentonville (HMP)",
+      prisonTelephone = "+44 276 54545"
+    )
 
     mvc.perform(
       put("/licence/id/4/prison-information")
@@ -746,15 +698,7 @@ class LicenceControllerTest {
       appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"
     )
 
-    val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
-
-    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
-
-    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
-
-    val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
-      data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-      expandedConditionText = "expanded text"
-    )
+    val aStatusUpdateRequest =
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
   }
 }

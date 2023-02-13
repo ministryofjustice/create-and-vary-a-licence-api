@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -20,22 +19,15 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
@@ -51,7 +43,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSente
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceController(private val licenceService: LicenceService, private val updateSentenceDateService: UpdateSentenceDateService) {
+class LicenceController(
+  private val licenceService: LicenceService,
+  private val updateSentenceDateService: UpdateSentenceDateService,
+) {
 
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -293,48 +288,6 @@ class LicenceController(private val licenceService: LicenceService, private val 
     licenceService.updateAppointmentAddress(licenceId, request)
   }
 
-  @PutMapping(value = ["/id/{licenceId}/bespoke-conditions"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Add or replace the bespoke conditions for a licence.",
-    description = "Add or replace the bespoke conditions on a licence with the content of this request. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Bespoke conditions added or replaced"
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun updateBespokeConditions(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: BespokeConditionRequest
-  ) {
-    licenceService.updateBespokeConditions(licenceId, request)
-  }
-
   @GetMapping(value = ["/variations/submitted/area/{areaCode}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
@@ -347,7 +300,12 @@ class LicenceController(private val licenceService: LicenceService, private val 
       ApiResponse(
         responseCode = "200",
         description = "Returned matching licence summary details - empty if no matches.",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class))
+          )
+        ],
       ),
       ApiResponse(
         responseCode = "401",
@@ -379,7 +337,12 @@ class LicenceController(private val licenceService: LicenceService, private val 
       ApiResponse(
         responseCode = "200",
         description = "Returned matching licence summary details - empty if no matches.",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class))
+          )
+        ],
       ),
       ApiResponse(
         responseCode = "401",
@@ -409,228 +372,6 @@ class LicenceController(private val licenceService: LicenceService, private val 
         sortOrder = sortOrder
       )
     )
-  }
-
-  @PostMapping(value = ["/id/{licenceId}/additional-condition/{conditionType}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Add additional condition to the licence.",
-    description = "Add additional condition to the licence. " +
-      "This does not include accompanying data per condition. Existing conditions which appear on " +
-      "the licence will be unaffected. More than one condition with the same code can be added " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Set of additional conditions added"
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun addAdditionalCondition(
-    @PathVariable licenceId: Long,
-    @PathVariable conditionType: String,
-    @Valid @RequestBody request: AddAdditionalConditionRequest
-  ): AdditionalCondition {
-    return this.licenceService.addAdditionalCondition(licenceId, conditionType, request)
-  }
-
-  @DeleteMapping(value = ["/id/{licenceId}/additional-condition/id/{conditionId}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @ResponseStatus(code = HttpStatus.NO_CONTENT)
-  @Operation(
-    summary = "Remove additional condition with specified condition Id",
-    description = "Remove additional condition from the licence list of additional conditions." +
-      "All user submitted condition data will also be removed.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "204",
-        description = "Condition has been removed from the licence"
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun deleteAdditionalCondition(
-    @PathVariable("licenceId") licenceId: Long,
-    @PathVariable("conditionId") conditionId: Long
-  ) {
-    return this.licenceService.deleteAdditionalCondition(licenceId, conditionId)
-  }
-
-  @PutMapping(value = ["/id/{licenceId}/additional-conditions"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Update the set of additional conditions on the licence.",
-    description = "Update the set of additional conditions on the licence. " +
-      "This does not include accompanying data per condition. Existing conditions which appear on " +
-      "the licence but which are not supplied to this endpoint will be deleted. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Set of additional conditions updated"
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun updateAdditionalConditions(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: AdditionalConditionsRequest
-  ) {
-    return licenceService.updateAdditionalConditions(licenceId, request)
-  }
-
-  /**
-   * This functionality can be replaced once proper licence versioning is implemented
-   */
-  @PutMapping("/id/{licenceId}/standard-conditions")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Update the standard condiions for a licence.",
-    description = "Replace the standard conditions against a licence if policy changes. " +
-      "Existing data for a condition which does not appear in this request will be deleted. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Standard conditions updated"
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun updateStandardConditions(
-    @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdateStandardConditionDataRequest
-  ) {
-    return licenceService.updateStandardConditions(licenceId, request)
-  }
-
-  @PutMapping(value = ["/id/{licenceId}/additional-conditions/condition/{additionalConditionId}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Update the user entered data to accompany an additional condition template.",
-    description = "Update the user entered data to accompany an additional condition template. " +
-      "Existing data for a condition which does not appear in this request will be deleted. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Additional condition updated"
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "The licence for this ID was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
-  )
-  fun updateAdditionalConditionData(
-    @PathVariable("licenceId") licenceId: Long,
-    @PathVariable("additionalConditionId") conditionId: Long,
-    @Valid @RequestBody request: UpdateAdditionalConditionDataRequest
-  ) {
-    return licenceService.updateAdditionalConditionData(licenceId, conditionId, request)
   }
 
   @PutMapping(value = ["/id/{licenceId}/status"])

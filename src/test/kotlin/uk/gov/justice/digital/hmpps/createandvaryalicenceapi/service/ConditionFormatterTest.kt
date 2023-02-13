@@ -603,7 +603,7 @@ class ConditionFormatterTest {
           listType = null
         ),
 
-        ),
+      ),
       categoryShort = null,
       subtext = null,
       type = null
