@@ -104,15 +104,15 @@ management:
 notify:
   enabled: true
   templates:
-    licenceApproved: d8a7fc37-ee6f-4138-a3a5-80bab80665e4
-    variationForApproval: a9c38c33-8aa9-428b-b486-9f1fb1e51a39
-    initialLicencePrompt: 9f0cbdfd-70d2-435b-b36a-c85719776479
-    urgentLicencePrompt: e18cd289-fb1b-47bc-86e3-20382ddb4f21
-    datesChanged: f5681362-619f-4b3a-881f-01195bd4c581
-    variationApproved: b9e7846e-aa92-483d-acac-6114d7908f13
-    variationReferred: 34e1ec13-548c-425c-8de7-d58509bb7383
+    datesChanged: 18e25609-607b-4067-b39f-04003eb6f416
+    initialLicencePrompt: c63e2cc8-afa9-4073-b134-e62fcdfef1f4
+    licenceApproved: ee742763-7e91-44fb-a429-42e5ed97ee54
+    unapprovedLicence: 11f3d28e-d7d9-47f9-bbad-57bd32fbed45
+    urgentLicencePrompt: 8fb9669b-bc0a-497e-870f-b0c37923f3fc
+    variationApproved: 24ad56b7-7bec-4fdb-ac8b-3b5af6f18666
+    variationForApproval: 2dc01a48-73f1-4dde-931e-05eaf502441e
     variationReApproval: 4a1c5ba4-e8e7-46a6-8ff7-149bdc99db8f
-    unapprovedLicence: b5669b3c-b586-41f0-a681-8ca6eaef0b7b
+    variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
