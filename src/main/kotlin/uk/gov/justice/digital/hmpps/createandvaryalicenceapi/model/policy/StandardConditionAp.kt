@@ -7,5 +7,5 @@ data class StandardConditionAp(
   override var code: String,
   @Schema(description = "The text of this standard AP condition", example = "Be of generally good behaviour")
   override val text: String,
-  override val tpl: String?
+  override val tpl: String? = null
 ) : ILicenceCondition
