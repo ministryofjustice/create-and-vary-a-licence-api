@@ -71,9 +71,6 @@ server:
   port: 8080
   servlet:
     context-path: /
-    session:
-      cookie:
-        http-only:
   forward-headers-strategy: native
   tomcat:
     remoteip:
