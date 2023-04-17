@@ -33,6 +33,11 @@ spring:
         jwt:
           jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   jpa:
     open-in-view: false
     properties:
@@ -66,6 +71,9 @@ server:
   port: 8080
   servlet:
     context-path: /
+    session:
+      cookie:
+        http-only:
   forward-headers-strategy: native
   tomcat:
     remoteip:
