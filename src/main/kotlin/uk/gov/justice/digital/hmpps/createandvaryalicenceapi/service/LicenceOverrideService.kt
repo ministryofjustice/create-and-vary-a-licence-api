@@ -38,7 +38,11 @@ class LicenceOverrideService(
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
     val licence = getLicenceById(licenceId)
 
-    val username = SecurityContextHolder.getContext().authentication.name
+    var username = SecurityContextHolder.getContext().authentication.name
+    if (username.equals(""))
+    {
+      username = "authentication.name empty"
+    }
 
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence?.crn!!, listOf(newStatus))
 

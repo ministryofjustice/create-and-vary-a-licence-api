@@ -51,6 +51,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.time.LocalDateTime
+import java.time.Month
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -131,6 +132,15 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     return transform(entityLicence)
+  }
+
+  fun getAuditForLicence(licenceId: Long): List<AuditEvent> {
+    val startDate = LocalDateTime.of(1977, Month.APRIL, 15, 3, 15)
+    val endDate = LocalDateTime.now()
+    val tst = auditEventRepository.findAll()
+
+    return auditEventRepository
+      .findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(licenceId, endDate, startDate)
   }
 
   @Transactional

@@ -1511,6 +1511,21 @@ class LicenceServiceTest {
     )
   }
 
+  @Test
+  fun `service returns a list of audit events by ID`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+
+    val licence = service.getLicenceById(1L)
+
+    val auditEvents = service.getAuditForLicence(licence.id)
+
+    assertThat(licence).isExactlyInstanceOf(ModelLicence::class.java)
+
+    //assertThat(auditEvents).isExactlyInstanceOf(List<ModelAuditEvent>::class.java)
+
+    verify(licenceRepository, times(1)).findById(1L)
+  }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
 
