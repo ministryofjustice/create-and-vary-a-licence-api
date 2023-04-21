@@ -39,10 +39,6 @@ class LicenceOverrideService(
     val licence = getLicenceById(licenceId)
 
     var username = SecurityContextHolder.getContext().authentication.name
-    if (username.equals(""))
-    {
-      username = "authentication.name empty"
-    }
 
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence?.crn!!, listOf(newStatus))
 
@@ -65,6 +61,7 @@ class LicenceOverrideService(
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
         username = username,
+        fullName = username,
         summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason"
       )
     )
