@@ -61,6 +61,7 @@ class LicenceOverrideService(
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
         username = username,
+        fullName = username,
         summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason"
       )
     )
