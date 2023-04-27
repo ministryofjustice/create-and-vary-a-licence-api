@@ -70,3 +70,6 @@ ecr.repo
 
 #Helm
 **/Chart.lock
+
+#Local setup script
+run-local.sh
