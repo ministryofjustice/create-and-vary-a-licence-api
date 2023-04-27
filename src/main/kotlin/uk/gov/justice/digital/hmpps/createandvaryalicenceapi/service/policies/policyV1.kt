@@ -495,12 +495,12 @@ val POLICY_V1_0 = LicencePolicy(
         code = "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         inputs = listOf(
           Input(
-            label = "Enter the name of area shown on the map",
+            label = "Enter the name of the area shown on the map",
             name = "outOfBoundArea",
             type = "text",
           ),
           Input(
-            label = """Find and select the <a class="govuk-link" href="https://mapmaker.field-dynamics.co.uk/moj/map/default" rel="noreferrer noopener" target="_blank">Mapmaker PDF map</a> to include on the licence""",
+            label = "Select a PDF map of the area this person must not enter",
             name = "outOfBoundFilename",
             type = "fileUpload",
           ),

@@ -649,12 +649,12 @@
         "inputs": [
           {
             "type": "text",
-            "label": "Enter the name of area shown on the map",
+            "label": "Enter the name of the area shown on the map",
             "name": "outOfBoundArea"
           },
           {
             "type": "fileUpload",
-            "label": "Find and select the <a class=\"govuk-link\" href=\"https://mapmaker.field-dynamics.co.uk/moj/map/default\" rel=\"noreferrer noopener\" target=\"_blank\">Mapmaker PDF map</a> to include on the licence",
+            "label": "Select a PDF map of the area this person must not enter",
             "name": "outOfBoundFilename"
           }
         ],
