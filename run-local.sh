@@ -24,13 +24,10 @@ export DB_SERVER=localhost
 export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=create-and-vary-a-licence
 export DB_PASS=create-and-vary-a-licence
-export DB_NAME=gurpreet-singh
-export DB_USER=gurpreetsingh
 
 # Provide URLs to other local container-based dependent services
 # Match with ports defined in docker-compose.yml
 export HMPPS_AUTH_URL=http://localhost:9090/auth
-export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
