@@ -551,7 +551,7 @@ class LicenceController(
   @PutMapping("/id/{licenceId}/standard-conditions")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Update the standard condiions for a licence.",
+    summary = "Update the standard conditions for a licence.",
     description = "Replace the standard conditions against a licence if policy changes. " +
       "Existing data for a condition which does not appear in this request will be deleted. " +
       "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
