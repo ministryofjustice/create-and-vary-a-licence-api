@@ -55,7 +55,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSente
 class LicenceController(
   private val licenceService: LicenceService,
   private val updateSentenceDateService: UpdateSentenceDateService,
-  private val licenceConditionService: LicenceConditionService) {
+  private val licenceConditionService: LicenceConditionService
+) {
 
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")

@@ -321,7 +321,6 @@ class LicenceControllerTest {
     verify(licenceConditionService, times(1)).deleteAdditionalCondition(4, 1)
   }
 
-
   @Test
   fun `match licences by prison code and status`() {
     val licenceQueryObject = LicenceQueryObject(
@@ -455,7 +454,6 @@ class LicenceControllerTest {
 
     verify(licenceConditionService, times(1)).updateStandardConditions(4, anUpdateStandardConditionRequest)
   }
-
 
   @Test
   fun `update the data associated with an additional condition`() {
