@@ -38,6 +38,9 @@ class LicenceConditionService (
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
+  /**
+   * Add additional condition. Allows for adding more than one condition of the same type
+   */
   @Transactional
   fun addAdditionalCondition(
     licenceId: Long,

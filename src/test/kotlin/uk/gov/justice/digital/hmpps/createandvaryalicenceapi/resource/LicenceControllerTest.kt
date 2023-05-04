@@ -29,29 +29,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -301,7 +280,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
+    verify(licenceConditionService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
   }
 
   @Test
@@ -314,8 +293,34 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
+    verify(licenceConditionService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
   }
+
+  @Test
+  fun `Add additional condition`() {
+    mvc.perform(
+      post("/licence/id/4/additional-condition/AP")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAddAdditionalConditionRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceConditionService, times(1)).addAdditionalCondition(4, "AP", anAddAdditionalConditionRequest)
+  }
+
+  @Test
+  fun `Delete additional condition`() {
+    mvc.perform(
+      delete("/licence/id/4/additional-condition/id/1")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isNoContent)
+
+    verify(licenceConditionService, times(1)).deleteAdditionalCondition(4, 1)
+  }
+
 
   @Test
   fun `match licences by prison code and status`() {
@@ -435,8 +440,22 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
+    verify(licenceConditionService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
   }
+
+  @Test
+  fun `update the list of standard conditions`() {
+    mvc.perform(
+      put("/licence/id/4/standard-conditions")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anUpdateStandardConditionRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceConditionService, times(1)).updateStandardConditions(4, anUpdateStandardConditionRequest)
+  }
+
 
   @Test
   fun `update the data associated with an additional condition`() {
@@ -448,7 +467,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
+    verify(licenceConditionService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
   }
 
   @Test
@@ -748,6 +767,23 @@ class LicenceControllerTest {
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(
       appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"
+    )
+
+    val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
+      standardLicenceConditions = listOf(
+        StandardCondition(code = "code1", sequence = 0, text = "text"),
+        StandardCondition(code = "code2", sequence = 1, text = "text"),
+        StandardCondition(code = "code3", sequence = 2, text = "text")
+      )
+    )
+
+    val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
+      conditionCode = "code",
+      conditionType = "AP",
+      conditionCategory = "category",
+      sequence = 4,
+      conditionText = "text",
+      expandedText = "some more text"
     )
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))

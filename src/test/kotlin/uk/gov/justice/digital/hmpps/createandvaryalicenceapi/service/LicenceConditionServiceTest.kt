@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -216,6 +215,11 @@ class LicenceConditionServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
   }
 
+  /**
+   * In reality the update method updates, adds and removes conditions using a list
+   * of submitted condition codes. This process can be improved once policy documents are
+   * migrated form the Node app to this project.
+   */
   @Test
   fun `update additional conditions`() {
     whenever(licenceRepository.findById(1L))
@@ -478,9 +482,6 @@ class LicenceConditionServiceTest {
     // Verify last contact info is recorded
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
   }
-
-
-
   private companion object {
 
     val someEntityStandardConditions = listOf(
@@ -593,4 +594,3 @@ class LicenceConditionServiceTest {
   }
 
 }
-
