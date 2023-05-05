@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 
 @Service
 class LicenceConditionService(
@@ -63,7 +64,7 @@ class LicenceConditionService(
     val newConditions = licenceEntity.additionalConditions.toMutableList()
 
     newConditions.add(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition(
+      EntityAdditionalCondition(
         conditionVersion = licenceEntity.version!!,
         conditionType = request.conditionType,
         conditionCode = request.conditionCode,
