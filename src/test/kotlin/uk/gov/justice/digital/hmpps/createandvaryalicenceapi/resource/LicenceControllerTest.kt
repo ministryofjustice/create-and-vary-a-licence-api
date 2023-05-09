@@ -43,6 +43,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
@@ -53,6 +55,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -75,6 +78,9 @@ class LicenceControllerTest {
   @MockBean
   private lateinit var updateSentenceDateService: UpdateSentenceDateService
 
+  @MockBean
+  private lateinit var licenceConditionService: LicenceConditionService
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -86,7 +92,7 @@ class LicenceControllerTest {
     reset(licenceService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(LicenceController(licenceService, updateSentenceDateService))
+      .standaloneSetup(LicenceController(licenceService, updateSentenceDateService, licenceConditionService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -297,7 +303,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
+    verify(licenceConditionService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
   }
 
   @Test
@@ -310,7 +316,32 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
+    verify(licenceConditionService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
+  }
+
+  @Test
+  fun `Add additional condition`() {
+    mvc.perform(
+      post("/licence/id/4/additional-condition/AP")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAddAdditionalConditionRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceConditionService, times(1)).addAdditionalCondition(4, "AP", anAddAdditionalConditionRequest)
+  }
+
+  @Test
+  fun `Delete additional condition`() {
+    mvc.perform(
+      delete("/licence/id/4/additional-condition/id/1")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isNoContent)
+
+    verify(licenceConditionService, times(1)).deleteAdditionalCondition(4, 1)
   }
 
   @Test
@@ -431,7 +462,20 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
+    verify(licenceConditionService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
+  }
+
+  @Test
+  fun `update the list of standard conditions`() {
+    mvc.perform(
+      put("/licence/id/4/standard-conditions")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anUpdateStandardConditionRequest))
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceConditionService, times(1)).updateStandardConditions(4, anUpdateStandardConditionRequest)
   }
 
   @Test
@@ -444,7 +488,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
+    verify(licenceConditionService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
   }
 
   @Test
@@ -744,6 +788,23 @@ class LicenceControllerTest {
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(
       appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"
+    )
+
+    val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
+      standardLicenceConditions = listOf(
+        StandardCondition(code = "code1", sequence = 0, text = "text"),
+        StandardCondition(code = "code2", sequence = 1, text = "text"),
+        StandardCondition(code = "code3", sequence = 2, text = "text")
+      )
+    )
+
+    val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
+      conditionCode = "code",
+      conditionType = "AP",
+      conditionCategory = "category",
+      sequence = 4,
+      conditionText = "text",
+      expandedText = "some more text"
     )
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))

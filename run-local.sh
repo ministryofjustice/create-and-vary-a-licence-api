@@ -36,4 +36,3 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun
 
 # End
-

@@ -46,12 +46,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceController(private val licenceService: LicenceService, private val updateSentenceDateService: UpdateSentenceDateService) {
+class LicenceController(
+  private val licenceService: LicenceService,
+  private val updateSentenceDateService: UpdateSentenceDateService,
+  private val licenceConditionService: LicenceConditionService
+) {
 
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -332,7 +337,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody request: BespokeConditionRequest
   ) {
-    licenceService.updateBespokeConditions(licenceId, request)
+    licenceConditionService.updateBespokeConditions(licenceId, request)
   }
 
   @GetMapping(value = ["/variations/submitted/area/{areaCode}"])
@@ -454,7 +459,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
     @PathVariable conditionType: String,
     @Valid @RequestBody request: AddAdditionalConditionRequest
   ): AdditionalCondition {
-    return this.licenceService.addAdditionalCondition(licenceId, conditionType, request)
+    return this.licenceConditionService.addAdditionalCondition(licenceId, conditionType, request)
   }
 
   @DeleteMapping(value = ["/id/{licenceId}/additional-condition/id/{conditionId}"])
@@ -493,7 +498,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
     @PathVariable("licenceId") licenceId: Long,
     @PathVariable("conditionId") conditionId: Long
   ) {
-    return this.licenceService.deleteAdditionalCondition(licenceId, conditionId)
+    return this.licenceConditionService.deleteAdditionalCondition(licenceId, conditionId)
   }
 
   @PutMapping(value = ["/id/{licenceId}/additional-conditions"])
@@ -538,7 +543,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody request: AdditionalConditionsRequest
   ) {
-    return licenceService.updateAdditionalConditions(licenceId, request)
+    return licenceConditionService.updateAdditionalConditions(licenceId, request)
   }
 
   /**
@@ -547,7 +552,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
   @PutMapping("/id/{licenceId}/standard-conditions")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Update the standard condiions for a licence.",
+    summary = "Update the standard conditions for a licence.",
     description = "Replace the standard conditions against a licence if policy changes. " +
       "Existing data for a condition which does not appear in this request will be deleted. " +
       "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
@@ -585,7 +590,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody request: UpdateStandardConditionDataRequest
   ) {
-    return licenceService.updateStandardConditions(licenceId, request)
+    return licenceConditionService.updateStandardConditions(licenceId, request)
   }
 
   @PutMapping(value = ["/id/{licenceId}/additional-conditions/condition/{additionalConditionId}"])
@@ -630,7 +635,7 @@ class LicenceController(private val licenceService: LicenceService, private val 
     @PathVariable("additionalConditionId") conditionId: Long,
     @Valid @RequestBody request: UpdateAdditionalConditionDataRequest
   ) {
-    return licenceService.updateAdditionalConditionData(licenceId, conditionId, request)
+    return licenceConditionService.updateAdditionalConditionData(licenceId, conditionId, request)
   }
 
   @PutMapping(value = ["/id/{licenceId}/status"])
