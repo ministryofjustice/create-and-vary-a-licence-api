@@ -10,7 +10,7 @@ parameters:
     default: cvl_alerts_security
   releases-slack-channel:
     type: string
-    default: the_elephants_dev
+    default: the_elephants_devs
   java-version:
     type: string
     default: "18.0"
