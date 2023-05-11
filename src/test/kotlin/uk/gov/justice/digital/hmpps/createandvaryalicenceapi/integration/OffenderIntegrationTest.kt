@@ -73,7 +73,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
     val licence = licenceRepository.findById(1L).orElseThrow()
     assertThat(licence.responsibleCom)
       .extracting("staffIdentifier", "username", "email", "firstName", "lastName")
-      .isEqualTo(listOf(2000L, "test-client", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
+      .isEqualTo(listOf(2000L, "TEST-CLIENT", "joebloggs@probation.gov.uk", "Joseph", "Bloggs"))
   }
 
   @Test
