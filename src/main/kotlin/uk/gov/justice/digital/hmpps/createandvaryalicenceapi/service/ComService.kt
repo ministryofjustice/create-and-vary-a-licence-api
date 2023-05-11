@@ -56,7 +56,7 @@ class ComService(
       (comDetails.firstName != com.firstName) ||
       (comDetails.lastName != com.lastName) ||
       (comDetails.staffEmail != com.email) ||
-      (comDetails.staffUsername.uppercase() != com.username.uppercase()) ||
+      (!comDetails.staffUsername.equals(com.username, ignoreCase = true)) ||
       (comDetails.staffIdentifier != com.staffIdentifier)
     ) {
       return this.communityOffenderManagerRepository.saveAndFlush(
