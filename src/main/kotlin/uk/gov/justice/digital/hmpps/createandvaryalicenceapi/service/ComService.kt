@@ -25,14 +25,14 @@ class ComService(
    */
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    val comResult = this.communityOffenderManagerRepository.findByStaffIdentifierOrUsername(
+    val comResult = this.communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
       comDetails.staffIdentifier, comDetails.staffUsername
     )
 
     if (comResult == null || comResult.isEmpty()) {
       return this.communityOffenderManagerRepository.saveAndFlush(
         CommunityOffenderManager(
-          username = comDetails.staffUsername,
+          username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
           email = comDetails.staffEmail,
           firstName = comDetails.firstName,
@@ -56,13 +56,13 @@ class ComService(
       (comDetails.firstName != com.firstName) ||
       (comDetails.lastName != com.lastName) ||
       (comDetails.staffEmail != com.email) ||
-      (comDetails.staffUsername != com.username) ||
+      (!comDetails.staffUsername.equals(com.username, ignoreCase = true)) ||
       (comDetails.staffIdentifier != com.staffIdentifier)
     ) {
       return this.communityOffenderManagerRepository.saveAndFlush(
         com.copy(
           staffIdentifier = comDetails.staffIdentifier,
-          username = comDetails.staffUsername,
+          username = comDetails.staffUsername.uppercase(),
           email = comDetails.staffEmail,
           firstName = comDetails.firstName,
           lastName = comDetails.lastName,

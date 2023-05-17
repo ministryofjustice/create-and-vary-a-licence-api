@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -23,16 +25,18 @@ class ComServiceTest {
   }
 
   @Test
-  fun `updates existing COM with new details - email only`() {
+  fun `updates existing COM with new details`() {
     val expectedCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "joebloggs",
+      staffIdentifier = 3000,
+      username = "JBLOGGS",
       email = "jbloggs123@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
+    val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
+
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
@@ -47,8 +51,10 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(3000, "jbloggs")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
+
+    assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
 
   @Test
@@ -61,14 +67,14 @@ class ComServiceTest {
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs123@probation.gov.uk", firstName = "X", lastName = "Y")))
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2000,
-      staffUsername = "joebloggs",
+      staffUsername = "JOEBLOGGS",
       staffEmail = "jbloggs123@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
@@ -76,7 +82,7 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(2000, "joebloggs")
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "JOEBLOGGS")
     verify(communityOffenderManagerRepository, times(0)).saveAndFlush(any())
   }
 
@@ -84,13 +90,13 @@ class ComServiceTest {
   fun `adds a new existing COM if it doesnt exist`() {
     val expectedCom = CommunityOffenderManager(
       staffIdentifier = 3000,
-      username = "jbloggs",
+      username = "JBLOGGS",
       email = "jbloggs123@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any())).thenReturn(null)
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any())).thenReturn(null)
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
@@ -103,22 +109,24 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(3000, "jbloggs")
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
     verify(communityOffenderManagerRepository, times(1)).saveAndFlush(expectedCom)
   }
 
   @Test
-  fun `updates existing COM with new username`() {
+  fun `updates existing COM with new username and forces it to be uppercase`() {
     val expectedCom = CommunityOffenderManager(
       staffIdentifier = 2000,
-      username = "joebloggs",
+      username = "JBLOGGSNEW1",
       email = "jbloggs123@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
-      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+    val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
+
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "JOEBLOGGS", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
@@ -132,28 +140,32 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(2000, "jbloggsnew1")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "jbloggsnew1")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
+
+    assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
 
   @Test
   fun `updates existing COM with new staffIdentifier`() {
     val expectedCom = CommunityOffenderManager(
       staffIdentifier = 2001,
-      username = "joebloggs",
+      username = "JOEBLOGGS",
       email = "jbloggs123@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsername(any(), any()))
-      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+    val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
+
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "JOEBLOGGS", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2001,
-      staffUsername = "joebloggs",
+      staffUsername = "JOEBLOGGS",
       staffEmail = "jbloggs123@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
@@ -161,7 +173,9 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsername(2001, "joebloggs")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(any())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2001, "JOEBLOGGS")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
+
+    assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
 }
