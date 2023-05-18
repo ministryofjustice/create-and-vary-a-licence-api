@@ -51,6 +51,12 @@ hmpps:
   prisonregister:
     api:
       url: http://localhost:8092/api
+  community:
+    api:
+      url: http://localhost:8093/api
+  probationSearch:
+    api:
+      url: http://localhost:8094/api
 
 notify:
   enabled: false

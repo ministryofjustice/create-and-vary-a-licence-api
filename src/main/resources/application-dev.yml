@@ -26,3 +26,9 @@ hmpps:
   prisonregister:
     api:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
+  community:
+    api:
+       url: "https://community-api.dev.probation.service.justice.gov.uk"
+  probationSearch:
+    api:
+      url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
