@@ -82,6 +82,7 @@ workflows:
             branches:
               only:
                 - main
+                - test1
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -121,7 +122,18 @@ workflows:
             - create-and-vary-a-licence-api-prod
           requires:
             - request-prod-approval
-
+      - hmpps/deploy_env:
+          name: deploy_test1
+          env: "test1"
+          context:
+            - hmpps-common-vars
+            - create-and-vary-a-licence-test1
+          requires:
+            - build_docker
+          filters:
+            branches:
+              only:
+                - test1
   security:
     triggers:
       - schedule:
