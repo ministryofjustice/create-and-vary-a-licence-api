@@ -12,7 +12,7 @@ generic-service:
   ingress:
     enabled: true
     hosts: app-hostname.local    # override per environment
-    tlsSecretName: create-and-vary-a-licence-api-cert
+    tlsSecretName: create-and-vary-a-licence-cert
     v1_2_enabled: true
     v0_47_enabled: false
 
