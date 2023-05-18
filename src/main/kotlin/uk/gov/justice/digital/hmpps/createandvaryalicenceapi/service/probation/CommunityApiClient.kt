@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
 import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
 @Component
@@ -25,5 +25,4 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
       return emptyList()
     }
   }
-
 }
