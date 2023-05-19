@@ -9,8 +9,6 @@ import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 
-
-
 class ComIntegrationTest : IntegrationTestBase() {
 
   @Value("\${hmpps.community.api.url}")
