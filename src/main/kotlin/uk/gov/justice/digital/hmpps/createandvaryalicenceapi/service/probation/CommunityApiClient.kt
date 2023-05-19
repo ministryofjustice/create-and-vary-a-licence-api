@@ -32,7 +32,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
     } catch (exception: WebClientResponseException) {
       with(exception) {
         val uriPath = request?.uri?.path
-        log.error("No user found for staff when calling the community-api $uriPath with the following message ${exception.message}")
+        log.error("No user found for staff identifier when calling the community-api $uriPath with the following message ${exception.message}")
       }
       return emptyList()
     }
