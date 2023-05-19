@@ -8,7 +8,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 class CommunityApiMockServer : WireMockServer(8093) {
   fun stubGetTeamCodesForUser(staffIdentifier: Long = 123456) {
     stubFor(
-      get(urlEqualTo("/api/secure/staff/staffIdentifier/$staffIdentifier")).willReturn(
+      get(urlEqualTo("/secure/staff/staffIdentifier/$staffIdentifier")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
                   "username": "Test User",

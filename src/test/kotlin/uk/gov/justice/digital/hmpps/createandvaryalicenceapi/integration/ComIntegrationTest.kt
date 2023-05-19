@@ -21,7 +21,6 @@ class ComIntegrationTest : IntegrationTestBase() {
     val result = webTestClient.get()
       .uri("$communityApiWiremockUrl/secure/staff/staffIdentifier/123456")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
