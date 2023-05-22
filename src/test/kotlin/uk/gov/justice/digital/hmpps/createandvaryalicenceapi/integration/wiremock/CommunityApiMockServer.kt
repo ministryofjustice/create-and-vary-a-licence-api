@@ -108,4 +108,17 @@ class CommunityApiMockServer : WireMockServer(8093) {
       )
     )
   }
+
+  fun stubGetTeamCodesForInvalidUser(staffIdentifier: Long = 123456) {
+    stubFor(
+      get(urlEqualTo("/secure/staff/staffIdentifier/$staffIdentifier")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """{
+                  "status": "404",
+                  "developerMessage": "This is a message"
+               }"""
+        ).withStatus(404)
+      )
+    )
+  }
 }

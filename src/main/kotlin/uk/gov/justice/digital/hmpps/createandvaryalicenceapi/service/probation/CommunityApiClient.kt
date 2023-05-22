@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
 
 @Component
 class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiClient: WebClient) {
@@ -15,26 +14,14 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   }
 
   fun getTeamsCodesForUser(staffIdentifier: Long): List<String> {
-    try {
-      val user = communityApiClient
-        .get()
-        .uri("/secure/staff/staffIdentifier/$staffIdentifier")
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToMono(User::class.java)
-        .block()
-      if (user === null) {
-        return emptyList()
-      } else {
-        val userTeams = user.teams
-        return userTeams.map { team: Team -> team.code }
-      }
-    } catch (exception: WebClientResponseException) {
-      with(exception) {
-        val uriPath = request?.uri?.path
-        log.error("No user found for staff identifier when calling the community-api $uriPath with the following message ${exception.message}")
-      }
-      return emptyList()
-    }
+    val communityApiResponse = communityApiClient
+      .get()
+      .uri("/secure/staff/staffIdentifier/$staffIdentifier")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(User::class.java)
+      .block()
+    return communityApiResponse?.teams?.map { it.code }
+      ?: throw IllegalStateException("Could not find user with staff identifier $staffIdentifier")
   }
 }
