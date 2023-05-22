@@ -18,7 +18,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String,
   @Value("\${hmpps.prisonregister.api.url}") private val prisonRegisterApiUrl: String,
   @Value("\${hmpps.community.api.url}") private val communityApiUrl: String,
-  @Value("\${hmpps.probationSearch.api.url}") private val probationSearchApiUrl: String,
+  @Value("\${hmpps.probationsearch.api.url}") private val probationSearchApiUrl: String,
 ) {
 
   @Bean
