@@ -24,7 +24,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       .bodyValue(licenceCaseLoadRequestBody)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(LicenceCaseload::class.java)
+      .bodyToMono(LicenceCaseloadSearchResult::class.java)
       .block()
 
     return probationOffenderSearchResponse?.content ?: throw IllegalStateException("Unexpected null response from API")

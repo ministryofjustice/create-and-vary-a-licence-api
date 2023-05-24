@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceCaseloadSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.LicenceCaseload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.LicenceCaseloadSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 
 class ComIntegrationTest : IntegrationTestBase() {
@@ -72,7 +72,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCaseload::class.java)
+      .expectBody(LicenceCaseloadSearchResult::class.java)
       .returnResult().responseBody
 
     assertThat(result?.content?.size).isEqualTo(1)
@@ -97,7 +97,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceCaseload::class.java)
+      .expectBody(LicenceCaseloadSearchResult::class.java)
       .returnResult().responseBody
 
     assertThat(result?.content?.size).isEqualTo(0)
