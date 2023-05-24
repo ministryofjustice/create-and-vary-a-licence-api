@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchSortByRequest
 
 @Schema(description = "Request object for searching for offenders within a set of teams attached to a staff member")
-data class LicenceCaseloadSearchRequest (
+data class LicenceCaseloadSearchRequest(
   @Schema(description = "A list of team codes for a given staff member", example = "['A12B34']")
   @field:NotBlank
   val teamCodes: List<String>,
