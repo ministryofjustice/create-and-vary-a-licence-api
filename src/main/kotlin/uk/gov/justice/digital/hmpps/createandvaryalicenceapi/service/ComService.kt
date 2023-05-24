@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderResult
@@ -79,8 +80,8 @@ class ComService(
     return com
   }
 
-  fun searchForOffenderOnStaffCaseload(query: String, staffIdentifier: Long): List<OffenderResult> {
-    return probationSearchApiClient.searchLicenceCaseloadByTeam(query, getTeamCodesForUser(staffIdentifier))
+  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<OffenderResult> {
+    return probationSearchApiClient.searchLicenceCaseloadByTeam(body.query, getTeamCodesForUser(body.staffIdentifier))
   }
 
   private fun getTeamCodesForUser(staffIdentifier: Long): List<String> {

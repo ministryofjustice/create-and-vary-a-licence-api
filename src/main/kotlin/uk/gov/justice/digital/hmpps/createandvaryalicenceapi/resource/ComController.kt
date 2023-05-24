@@ -138,6 +138,6 @@ class ComController(private val comService: ComService, private val notifyServic
   fun searchForOffenderOnStaffCaseload(
     @Valid @RequestBody body: ProbationUserSearchRequest
   ) {
-    comService.searchForOffenderOnStaffCaseload(body.query, body.staffIdentifier)
+    comService.searchForOffenderOnStaffCaseload(body)
   }
 }

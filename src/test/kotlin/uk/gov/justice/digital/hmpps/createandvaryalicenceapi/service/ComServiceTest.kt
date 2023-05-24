@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -12,9 +13,15 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 
 class ComServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
@@ -25,7 +32,7 @@ class ComServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(communityOffenderManagerRepository)
+    reset(communityOffenderManagerRepository, communityApiClient, probationSearchApiClient)
   }
 
   @Test
@@ -181,5 +188,44 @@ class ComServiceTest {
     verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
+  }
+
+  @Test
+  fun `search for offenders on a staff member's caseload`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02"
+      )
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        OffenderResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02")
+          ),
+          "2023/05/24"
+        )
+      )
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(
+      ProbationUserSearchRequest(
+        "Test",
+        2000
+      )
+    )
+
+    assertThat(result.size).isEqualTo(1)
+    assertThat(result)
+      .extracting<Tuple> { Tuple.tuple(it.name.forename, it.name.surname) }
+      .containsAll(
+        listOf(
+          Tuple.tuple("Test", "Surname"),
+        )
+      )
   }
 }

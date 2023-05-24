@@ -85,6 +85,24 @@ class ComIntegrationTest : IntegrationTestBase() {
       )
   }
 
+  @Test
+  fun `Search for offenders on a staff member's caseload with no results`() {
+    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
+
+    val result = webTestClient.post()
+      .uri("$probationSearchApiWiremockUrl/licence-caseload/by-team")
+      .bodyValue(aLicenceCaseloadSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_SEARCH")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceCaseload::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.content?.size).isEqualTo(0)
+  }
+
   private companion object {
     val communityApiMockServer = CommunityApiMockServer()
     val probationSearchApiMockServer = ProbationSearchMockServer()
