@@ -54,9 +54,9 @@ hmpps:
   community:
     api:
       url: http://localhost:8093
-  probationSearch:
+  probationsearch:
     api:
-      url: http://localhost:8094/api
+      url: http://localhost:8094
 
 notify:
   enabled: false

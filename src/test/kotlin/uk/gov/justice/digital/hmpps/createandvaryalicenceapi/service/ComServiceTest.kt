@@ -13,11 +13,15 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 
 class ComServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
+  private val communityApiClient = mock<CommunityApiClient>()
+  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
 
-  private val service = ComService(communityOffenderManagerRepository)
+  private val service = ComService(communityOffenderManagerRepository, communityApiClient, probationSearchApiClient)
 
   @BeforeEach
   fun reset() {
