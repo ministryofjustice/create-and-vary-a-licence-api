@@ -571,8 +571,8 @@
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         "category": "Freedom of movement",
-        "text": "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map without the prior approval of your supervising officer.",
-        "tpl": "Not to enter the area of {outOfBoundArea}, as defined by the attached map without the prior approval of your supervising officer.",
+        "text": "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
+        "tpl": "Not to enter the area of {outOfBoundArea}, as defined by the attached map, without the prior approval of your supervising officer.",
         "requiresInput": true,
         "inputs": [
           {
@@ -582,7 +582,7 @@
           },
           {
             "type": "fileUpload",
-            "label": "Select a PDF map of the area this person must not enter",
+            "label": "Select a PDF map of the area they must not enter to include in the licence",
             "name": "outOfBoundFilename"
           }
         ],
