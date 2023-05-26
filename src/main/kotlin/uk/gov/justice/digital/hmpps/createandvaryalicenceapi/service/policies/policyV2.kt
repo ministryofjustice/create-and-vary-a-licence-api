@@ -506,14 +506,14 @@ val POLICY_V2_0 = LicencePolicy(
             type = "text",
           ),
           Input(
-            label = "Select a PDF map of the area this person must not enter",
+            label = "Select a PDF map of the area they must not enter to include in the licence",
             name = "outOfBoundFilename",
             type = "fileUpload",
           ),
         ),
         requiresInput = true,
-        text = "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map without the prior approval of your supervising officer.",
-        tpl = "Not to enter the area of {outOfBoundArea}, as defined by the attached map without the prior approval of your supervising officer.",
+        text = "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
+        tpl = "Not to enter the area of {outOfBoundArea}, as defined by the attached map, without the prior approval of your supervising officer.",
         type = "OutOfBoundsRegion",
       ),
       AdditionalConditionAp(

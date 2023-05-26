@@ -500,15 +500,15 @@ val POLICY_V1_0 = LicencePolicy(
             type = "text",
           ),
           Input(
-            label = "Select a PDF map of the area this person must not enter",
+            label = "Select a PDF map of the area they must not enter to include in the licence",
             name = "outOfBoundFilename",
             type = "fileUpload",
           ),
         ),
         requiresInput = true,
         subtext = "If you need to upload more than one map, add one here and then email all maps directly to the prison OMU. Make sure the names of areas shown on all maps are entered here as a list. For example, Bridgend, Porthcawl and Port Talbot.",
-        text = "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map without the prior approval of your supervising officer.",
-        tpl = "Not to enter the area of {outOfBoundArea}, as defined by the attached map without the prior approval of your supervising officer.",
+        text = "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
+        tpl = "Not to enter the area of {outOfBoundArea}, as defined by the attached map, without the prior approval of your supervising officer.",
         type = "OutOfBoundsRegion",
       ),
       AdditionalConditionAp(
