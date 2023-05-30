@@ -32,3 +32,6 @@ hmpps:
   probationSearch:
     api:
       url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
+  prisonerSearch:
+    api:
+      url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
