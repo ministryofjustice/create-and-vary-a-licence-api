@@ -16,12 +16,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Manager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.ProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Team
 
 class ComServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
@@ -199,7 +199,7 @@ class ComServiceTest {
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
-        OffenderResult(
+        ProbationSearchResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(
@@ -221,10 +221,10 @@ class ComServiceTest {
 
     assertThat(result.size).isEqualTo(1)
     assertThat(result)
-      .extracting<Tuple> { Tuple.tuple(it.name.forename, it.name.surname) }
+      .extracting<Tuple> { Tuple.tuple(it.name, it.comName, it.comCode) }
       .containsAll(
         listOf(
-          Tuple.tuple("Test", "Surname"),
+          Tuple.tuple("Test Surname", "Staff Surname", "A01B02C"),
         )
       )
   }

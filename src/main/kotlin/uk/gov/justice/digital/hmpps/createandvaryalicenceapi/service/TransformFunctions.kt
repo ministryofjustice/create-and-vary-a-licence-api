@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.ProbationSearchResult as EntityProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.ProbationSearchResult as ModelProbationSearchResult
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
@@ -307,5 +309,15 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
     surname = entity.surname,
     eventDescription = entity.eventDescription,
     eventTime = entity.eventTime,
+  )
+}
+
+fun List<EntityProbationSearchResult>.transformToModelProbationResult(): List<ModelProbationSearchResult> = map(::transform)
+
+fun transform(entity: EntityProbationSearchResult): ModelProbationSearchResult {
+  return ModelProbationSearchResult(
+    name = "${entity.name.forename} ${entity.name.surname}",
+    comName = "${entity.manager.name.forename} ${entity.manager.name.surname}",
+    comCode = entity.manager.code
   )
 }

@@ -8,8 +8,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.ProbationSearchResult
 import java.time.LocalDateTime
 
 @Service
@@ -80,11 +80,11 @@ class ComService(
     return com
   }
 
-  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<OffenderResult> {
-    return probationSearchApiClient.searchLicenceCaseloadByTeam(body.query, getTeamCodesForUser(body.staffIdentifier))
-  }
-
-  private fun getTeamCodesForUser(staffIdentifier: Long): List<String> {
-    return communityApiClient.getTeamsCodesForUser(staffIdentifier)
+  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<ProbationSearchResult> {
+    val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
+      body.query,
+      communityApiClient.getTeamsCodesForUser(body.staffIdentifier)
+    )
+    return entityProbationSearchResult.transformToModelProbationResult()
   }
 }

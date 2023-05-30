@@ -6,7 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
 class CommunityApiMockServer : WireMockServer(8093) {
-  fun stubGetTeamCodesForUser(staffIdentifier: Long = 123456) {
+
+  fun stubGetTeamCodesForUser(staffIdentifier: Long = 1L) {
     stubFor(
       get(urlEqualTo("/secure/staff/staffIdentifier/$staffIdentifier")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
@@ -105,19 +106,6 @@ class CommunityApiMockServer : WireMockServer(8093) {
                   }
                }"""
         ).withStatus(200)
-      )
-    )
-  }
-
-  fun stubGetTeamCodesForInvalidUser(staffIdentifier: Long = 123456) {
-    stubFor(
-      get(urlEqualTo("/secure/staff/staffIdentifier/$staffIdentifier")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
-          """{
-                  "status": "404",
-                  "developerMessage": "This is a message"
-               }"""
-        ).withStatus(404)
       )
     )
   }

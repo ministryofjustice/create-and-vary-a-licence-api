@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.ProbationSearchResult
 
 @RestController
 @RequestMapping("/com", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -117,6 +119,7 @@ class ComController(private val comService: ComService, private val notifyServic
       ApiResponse(
         responseCode = "200",
         description = "The query retrieved a set of results",
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = ProbationSearchResult::class)))],
       ),
       ApiResponse(
         responseCode = "400",
@@ -137,7 +140,5 @@ class ComController(private val comService: ComService, private val notifyServic
   )
   fun searchForOffenderOnStaffCaseload(
     @Valid @RequestBody body: ProbationUserSearchRequest
-  ) {
-    comService.searchForOffenderOnStaffCaseload(body)
-  }
+  ) = comService.searchForOffenderOnStaffCaseload(body)
 }
