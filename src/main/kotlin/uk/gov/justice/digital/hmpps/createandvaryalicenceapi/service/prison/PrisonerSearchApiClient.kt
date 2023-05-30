@@ -9,7 +9,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 
 @Service
 class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prisonerSearchApiWebClient: WebClient) {
@@ -18,7 +17,7 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun searchPrisonersByBookingIds(bookingIds: List<Long>): Mono<List<PrisonerSearchPrisoner>>{
+  fun searchPrisonersByBookingIds(bookingIds: List<Long>): Mono<List<PrisonerSearchPrisoner>> {
     return prisonerSearchApiWebClient
       .post()
       .uri("/offender-sentences/home-detention-curfews/latest")
