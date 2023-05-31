@@ -40,6 +40,25 @@ class ComIntegrationTest : IntegrationTestBase() {
       )
   }
 
+  @Test
+  fun `Given a staff member and the teams they are in, search for offenders within their teams with no results`() {
+    communityApiMockServer.stubGetTeamCodesForUser()
+    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
+
+    val resultList = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(ProbationSearchResult::class.java)
+      .returnResult().responseBody
+
+    assertThat(resultList?.size).isEqualTo(0)
+  }
+
   private companion object {
     val communityApiMockServer = CommunityApiMockServer()
     val probationSearchApiMockServer = ProbationSearchMockServer()

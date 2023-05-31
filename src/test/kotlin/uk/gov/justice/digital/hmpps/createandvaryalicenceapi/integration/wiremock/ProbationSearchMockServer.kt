@@ -83,4 +83,46 @@ class ProbationSearchMockServer : WireMockServer(8094) {
         )
     )
   }
+
+  fun stubPostLicenceCaseloadByTeamNoResult(aLicenceCaseloadSearchRequest: String) {
+    stubFor(
+      post(urlEqualTo("/licence-caseload/by-team"))
+        .withRequestBody(equalToJson(aLicenceCaseloadSearchRequest))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type", "application/json"
+          )
+            .withBody(
+              """{
+                    "content": [],
+                    "pageable": {
+                        "pageSize": 100,
+                        "offset": 0,
+                        "sort": {
+                            "empty": false,
+                            "unsorted": false,
+                            "sorted": true
+                        },
+                        "pageNumber": 0,
+                        "paged": true,
+                        "unpaged": false
+                    },
+                    "totalElements": 0,
+                    "totalPages": 0,
+                    "last": true,
+                    "size": 100,
+                    "number": 0,
+                    "sort": {
+                        "empty": false,
+                        "unsorted": false,
+                        "sorted": true
+                    },
+                    "first": true,
+                    "numberOfElements": 0,
+                    "empty": true
+                }"""
+            ).withStatus(200)
+        )
+    )
+  }
 }
