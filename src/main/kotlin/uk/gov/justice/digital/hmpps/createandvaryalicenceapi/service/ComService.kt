@@ -4,13 +4,19 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import java.time.LocalDateTime
 
 @Service
 class ComService(
   private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
+  private val communityApiClient: CommunityApiClient,
+  private val probationSearchApiClient: ProbationSearchApiClient
 ) {
 
   companion object {
@@ -72,5 +78,13 @@ class ComService(
     }
 
     return com
+  }
+
+  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<ProbationSearchResult> {
+    val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
+      body.query,
+      communityApiClient.getTeamsCodesForUser(body.staffIdentifier)
+    )
+    return entityProbationSearchResult.transformToModelProbationResult()
   }
 }

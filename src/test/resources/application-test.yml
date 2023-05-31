@@ -44,6 +44,8 @@ management.endpoint:
 # Wiremock auth server
 hmpps:
   auth:
+    token:
+      url: http://localhost:8090/auth/oauth/token
     url: http://localhost:8090/auth
   prison:
     api:
@@ -54,9 +56,9 @@ hmpps:
   community:
     api:
       url: http://localhost:8093
-  probationSearch:
+  probationsearch:
     api:
-      url: http://localhost:8094/api
+      url: http://localhost:8094
   prisonerSearch:
     api:
       url: http://localhost:8095/api
