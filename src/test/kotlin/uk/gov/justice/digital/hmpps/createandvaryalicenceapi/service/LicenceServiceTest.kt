@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -885,7 +886,66 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
     with(licenceCaptor.value) {
       assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(variationOfId).isEqualTo(1)
+      assertThat(versionOfId).isNull()
     }
+  }
+
+  @Test
+  fun `editing an approved licence creates and saves a new licence version`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null
+      )
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList()
+      )
+    )
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence)
+    )
+    whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+    val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    service.editLicence(1L)
+
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    with(licenceCaptor.value) {
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(versionOfId).isEqualTo(1)
+      assertThat(variationOfId).isNull()
+    }
+
+    verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventDescription).isEqualTo("A new licence version was created for ${approvedLicence.forename} ${approvedLicence.surname} from ID ${approvedLicence.id}")
+    verify(auditEventRepository).saveAndFlush(auditEventCaptor.capture())
+    assertThat(auditEventCaptor.value.summary).isEqualTo("New licence version created for ${approvedLicence.forename} ${approvedLicence.surname}")
+  }
+
+  @Test
+  fun `attempting to editing a licence with status other that approved results in validation exception `() {
+    val activeLicence = aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(activeLicence)
+    )
+
+    val exception = assertThrows<ValidationException> { service.editLicence(1L) }
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Can only edit APPROVED licences")
   }
 
   @Test
