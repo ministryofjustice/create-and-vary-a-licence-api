@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
 data class ProbationSearchResult(
   val name: Name,

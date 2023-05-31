@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.ProbationSearchResult as EntityProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult as ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.ProbationSearchResult as ModelProbationSearchResult
 
 /*
@@ -312,12 +312,12 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun List<EntityProbationSearchResult>.transformToModelProbationResult(): List<ModelProbationSearchResult> = map(::transform)
+fun List<ProbationSearchResult>.transformToModelProbationResult(): List<ModelProbationSearchResult> = map(::transform)
 
-fun transform(entity: EntityProbationSearchResult): ModelProbationSearchResult {
+fun transform(result: ProbationSearchResult): ModelProbationSearchResult {
   return ModelProbationSearchResult(
-    name = "${entity.name.forename} ${entity.name.surname}",
-    comName = "${entity.manager.name.forename} ${entity.manager.name.surname}",
-    comCode = entity.manager.code
+    name = "${result.name.forename} ${result.name.surname}",
+    comName = "${result.manager.name.forename} ${result.manager.name.surname}",
+    comCode = result.manager.code
   )
 }

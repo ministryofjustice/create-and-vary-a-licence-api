@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.ProbationSearchResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 

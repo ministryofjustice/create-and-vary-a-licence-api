@@ -17,11 +17,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Identifiers
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Manager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.ProbationSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.entity.Team
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 
 class ComServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
