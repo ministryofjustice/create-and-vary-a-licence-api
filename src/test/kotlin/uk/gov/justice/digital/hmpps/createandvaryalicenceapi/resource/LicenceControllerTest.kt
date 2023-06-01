@@ -519,6 +519,21 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `edit a licence`() {
+    val licenceId = 42L
+    whenever(licenceService.editLicence(licenceId)).thenReturn(aLicenceSummary)
+
+    mvc.perform(
+      post("/licence/id/$licenceId/edit")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService).editLicence(licenceId)
+  }
+
+  @Test
   fun `update spo discussion`() {
     mvc.perform(
       put("/licence/id/4/spo-discussion")

@@ -52,10 +52,10 @@ class ControllerAdvice {
   fun handleRestClientException(e: RestClientResponseException): ResponseEntity<ErrorResponse> {
     log.error("RestClientResponseException: {}", e.message)
     return ResponseEntity
-      .status(e.rawStatusCode)
+      .status(e.statusCode)
       .body(
         ErrorResponse(
-          status = e.rawStatusCode,
+          status = e.statusCode.value(),
           userMessage = "Rest client exception ${e.message}",
           developerMessage = e.message
         )
