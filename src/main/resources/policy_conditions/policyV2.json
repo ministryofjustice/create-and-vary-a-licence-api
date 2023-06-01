@@ -375,7 +375,7 @@
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
         "category": "Participation in, or co-operation with, a programme or set of activities",
         "categoryShort": "Programmes or activities",
-        "text": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems at the [NAME OF COURSE / CENTRE].",
+        "text": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your [ALCOHOL/DRUG/ANGER/GAMBLING/DEBT/SOLVENT ABUSE/SEXUAL OFFENDING/VIOLENT OFFENDING/PROLIFIC OFFENDING/OFFENDING BEHAVIOUR] problems at the [NAME OF COURSE / CENTRE].",
         "tpl": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems{course}.",
         "requiresInput": true,
         "inputs": [
@@ -392,25 +392,25 @@
                 "value": "drug"
               },
               {
-                "value": "sexual"
-              },
-              {
-                "value": "violent"
+                "value": "anger"
               },
               {
                 "value": "gambling"
               },
               {
-                "value": "solvent abuse"
-              },
-              {
-                "value": "anger"
-              },
-              {
                 "value": "debt"
               },
               {
-                "value": "prolific offending behaviour"
+                "value": "solvent abuse"
+              },
+              {
+                "value": "sexual offending"
+              },
+              {
+                "value": "violent offending"
+              },
+              {
+                "value": "prolific offending"
               },
               {
                 "value": "offending behaviour"

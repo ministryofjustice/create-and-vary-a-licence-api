@@ -281,25 +281,25 @@ val POLICY_V2_1 = LicencePolicy(
                 value = "drug",
               ),
               Option(
-                value = "sexual",
-              ),
-              Option(
-                value = "violent",
+                value = "anger",
               ),
               Option(
                 value = "gambling",
               ),
               Option(
-                value = "solvent abuse",
-              ),
-              Option(
-                value = "anger",
-              ),
-              Option(
                 value = "debt",
               ),
               Option(
-                value = "prolific offending behaviour",
+                value = "solvent abuse",
+              ),
+              Option(
+                value = "sexual offending",
+              ),
+              Option(
+                value = "violent offending",
+              ),
+              Option(
+                value = "prolific offending",
               ),
               Option(
                 value = "offending behaviour",
@@ -309,7 +309,7 @@ val POLICY_V2_1 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
+        text = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your [ALCOHOL/DRUG/ANGER/GAMBLING/DEBT/SOLVENT ABUSE/SEXUAL OFFENDING/VIOLENT OFFENDING/PROLIFIC OFFENDING/OFFENDING BEHAVIOUR] problems.",
         tpl = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems.",
         type = "BehaviourProblems",
       ),
