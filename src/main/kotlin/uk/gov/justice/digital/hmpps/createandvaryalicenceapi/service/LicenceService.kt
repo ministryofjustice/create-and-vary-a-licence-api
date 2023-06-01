@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -714,6 +715,8 @@ class LicenceService(
   }
 
   private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence {
+    require(newStatus == IN_PROGRESS || newStatus == VARIATION_IN_PROGRESS) { "newStatus must be IN_PROGRESS or VARIATION_IN_PROGRESS was $newStatus" }
+
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
@@ -782,7 +785,7 @@ class LicenceService(
     val licenceEventMessage = when (newStatus) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
       IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      else -> "A licence copy with status ${newLicence.statusCode} was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
+      else -> { throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ") }
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
@@ -798,7 +801,7 @@ class LicenceService(
     val auditEventSummary = when (newStatus) {
       VARIATION_IN_PROGRESS -> "Licence varied for ${newLicence.forename} ${newLicence.surname}"
       IN_PROGRESS -> "New licence version created for ${newLicence.forename} ${newLicence.surname}"
-      else -> "Licence copy created for ${newLicence.forename} ${newLicence.surname}"
+      else -> { throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ") }
     }
     auditEventRepository.saveAndFlush(
       AuditEvent(
