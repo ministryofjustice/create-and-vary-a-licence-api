@@ -937,7 +937,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `attempting to editing a licence with status other that approved results in validation exception `() {
+  fun `attempting to editing a licence with status other than approved results in validation exception `() {
     val activeLicence = aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(activeLicence)
