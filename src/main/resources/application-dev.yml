@@ -32,6 +32,6 @@ hmpps:
   probationsearch:
     api:
       url: "http://create-and-vary-a-licence-hmpps-community-api-wiremock"
-  prisonerSearch:
+  prisonersearch:
     api:
       url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"

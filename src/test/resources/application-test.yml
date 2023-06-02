@@ -59,7 +59,7 @@ hmpps:
   probationsearch:
     api:
       url: http://localhost:8094
-  prisonerSearch:
+  prisonersearch:
     api:
       url: http://localhost:8095/api
 
