@@ -128,12 +128,14 @@ data class Licence(
   val mailingList: MutableSet<CommunityOffenderManager> = mutableSetOf(),
 
   var variationOfId: Long? = null,
+  var versionOfId: Long? = null,
+
 ) {
-  fun createVariation(): Licence {
+  fun copyLicence(newStatus: LicenceStatus): Licence {
     return Licence(
       typeCode = this.typeCode,
       version = this.version,
-      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      statusCode = newStatus,
       nomsId = this.nomsId,
       bookingNo = this.bookingNo,
       bookingId = this.bookingId,
@@ -168,7 +170,6 @@ data class Licence(
       appointmentAddress = this.appointmentAddress,
       appointmentContact = this.appointmentContact,
       responsibleCom = this.responsibleCom,
-      variationOfId = this.id,
       dateCreated = LocalDateTime.now()
     )
   }
