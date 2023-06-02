@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDateTime
 
 @Repository
 interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExecutor<Licence> {
@@ -26,6 +27,16 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
   )
   fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l 
+        WHERE (l.actualReleaseDate = CURRENT_DATE OR l.conditionalReleaseDate = CURRENT_DATE) 
+        AND l.statusCode = 'APPROVED'
+    """
+  )
+  fun getApprovedLicencesOnReleaseDate(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

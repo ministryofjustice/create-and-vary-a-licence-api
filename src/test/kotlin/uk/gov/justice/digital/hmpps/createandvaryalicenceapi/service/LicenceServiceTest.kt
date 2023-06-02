@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import org.mockito.Mockito
+import org.mockito.Spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -21,6 +23,7 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
@@ -49,6 +52,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -74,8 +81,10 @@ class LicenceServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
+  private val prisonApiClient = mock<PrisonApiClient>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
-  private val service = LicenceService(
+  private val service = Mockito.spy(LicenceService(
     licenceRepository,
     communityOffenderManagerRepository,
     standardConditionRepository,
@@ -87,7 +96,9 @@ class LicenceServiceTest {
     auditEventRepository,
     notifyService,
     omuService,
-  )
+    prisonApiClient,
+    prisonerSearchApiClient
+  ))
 
   @BeforeEach
   fun reset() {
@@ -809,6 +820,119 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `licence activation job calls for non-HDC approved, non-IS91 licences to be activated on their ARD if the offender has been released`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner))
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+
+    service.licenceActivationJob()
+
+    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
+    verify(service, times(0)).inActivateLicences(anyList())
+  }
+
+  @Test
+  fun `licence activation job calls for non-HDC approved, non-IS91 licences to be activated if their ARD is in the past and they have been released`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now().minusDays(10))))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner))
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+
+    service.licenceActivationJob()
+
+    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
+    verify(service, times(0)).inActivateLicences(anyList())
+  }
+
+  @Test
+  fun `licence activation job calls for non-HDC approved, IS91 licences to be activated on CRD`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, conditionalReleaseDate = LocalDate.now())))
+    // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+
+    service.licenceActivationJob()
+
+    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
+    verify(service, times(0)).inActivateLicences(anyList())
+  }
+
+  @Test
+  fun `licence activation job calls for non-HDC approved, IS91 licences to be activated on ARD if it is within 4 days before CRD`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now(), conditionalReleaseDate = LocalDate.now().plusDays(4))))
+    // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+
+    service.licenceActivationJob()
+
+    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
+    verify(service, times(0)).inActivateLicences(anyList())
+  }
+
+  @Test
+  fun `licence activation job calls for HDC approved, non-IS91 licences to be deactivated`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner))
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(listOf(anHdcStatus))
+
+    service.licenceActivationJob()
+
+    verify(service, times(0)).activateLicences(anyList())
+    verify(service, times(1)).inActivateLicences(listOf(aLicenceEntity.id))
+  }
+
+  @Test
+  fun `licence activation job does not call for non-HDC approved, IS91 licences to be activated on ARD if it is more than 4 days before`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now(), conditionalReleaseDate = LocalDate.now().plusDays(5))))
+    // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+
+    service.licenceActivationJob()
+
+    verify(service, times(0)).activateLicences(anyList())
+    verify(service, times(0)).inActivateLicences(anyList())
+  }
+
+  @Test
+  fun `licence activation job does not call for non-HDC approved, non-IS91 licences to be activated if the offender has not been released`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner.copy(status = "ACTIVE IN")))
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+
+    service.licenceActivationJob()
+
+    verify(service, times(0)).activateLicences(anyList())
+    verify(service, times(0)).inActivateLicences(anyList())
+  }
+
+  @Test
+  fun `licence activation job calls for activation and deactivation of different licences simultaneously`(){
+    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(
+      aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now()),
+      aLicenceEntity.copy(id = 2, bookingId = 54322, statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())
+    ))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321, 54322))).thenReturn(listOf(
+      prisonerSearchPrisoner,
+      prisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = "54322")
+    ))
+    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321, 54322))).thenReturn(emptyList())
+    whenever(prisonApiClient.hdcStatuses(listOf(54321, 54322))).thenReturn(listOf(anHdcStatus))
+
+    service.licenceActivationJob()
+
+    verify(service, times(1)).activateLicences(listOf(2))
+    verify(service, times(1)).inActivateLicences(listOf(aLicenceEntity.id))
+  }
+
+  @Test
   fun `update spo discussion persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
@@ -1277,6 +1401,18 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
+    )
+
+    val anHdcStatus = PrisonerHdcStatus(
+      approvalStatus = "APPROVED",
+      bookingId = 54321,
+      passed = true
+    )
+
+    val prisonerSearchPrisoner = PrisonerSearchPrisoner(
+      prisonerNumber = "A1234AA",
+      bookingId = "54321",
+      status = "INACTIVE OUT"
     )
   }
 }

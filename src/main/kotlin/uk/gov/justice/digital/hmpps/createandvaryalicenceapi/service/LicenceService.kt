@@ -33,6 +33,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -47,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.lang.IllegalStateException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -64,6 +68,8 @@ class LicenceService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val omuService: OmuService,
+  private val prisonApiClient: PrisonApiClient,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient
 ) {
 
   @Transactional
@@ -411,6 +417,34 @@ class LicenceService(
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
     return transformToListOfSummaries(matchingLicences)
+  }
+
+  @Transactional
+  fun licenceActivationJob(){
+    val potentialLicences = licenceRepository.getApprovedLicencesOnReleaseDate()
+    val licenceBookingIds = potentialLicences.map { it.bookingId as Long }
+    val prisonersWithApprovedLicences = prisonerSearchApiClient.searchPrisonersByBookingIds(licenceBookingIds)
+    val iS91AndExtraditionBookingIds = prisonApiClient.getIS91AndExtraditionBookingIds(licenceBookingIds)
+    val nonHdcLicences = deactivateApprovedHdcLicencesAndReturnOthers(potentialLicences)
+    val (iS91AndExtraditionLicences, standardLicences) =
+      nonHdcLicences.partition { iS91AndExtraditionBookingIds.contains(it.bookingId) }
+    val licencesToActivate = mutableListOf<EntityLicence>()
+    for(licence in iS91AndExtraditionLicences){
+      val releaseDate = getReleaseDateForIs91Case(licence)
+      if(releaseDate != null && releaseDate <= LocalDate.now()){
+        licencesToActivate.add(licence)
+      }
+    }
+    for(licence in standardLicences){
+      val prisoner: PrisonerSearchPrisoner = prisonersWithApprovedLicences.first { it.prisonerNumber == licence.nomsId }
+      if(licence.actualReleaseDate != null &&
+        licence.actualReleaseDate <= LocalDate.now() &&
+        prisoner.status?.startsWith("INACTIVE") == true
+      ){
+        licencesToActivate.add(licence)
+      }
+    }
+    if(licencesToActivate.any()) { activateLicences(licencesToActivate.map { it.id }) }
   }
 
   @Transactional
@@ -814,5 +848,30 @@ class LicenceService(
     )
 
     return newLicence
+  }
+  
+  private fun deactivateApprovedHdcLicencesAndReturnOthers(licences: List<EntityLicence>): List<EntityLicence>{
+    val bookingIds = licences.map{ it.bookingId } as List<Long>
+    val hdcStatuses = prisonApiClient.hdcStatuses(bookingIds)
+    val approvedHdcBookingIds = hdcStatuses.filter { it.approvalStatus == "APPROVED" }.map { it.bookingId }
+    val (licencesWithApprovedHdc, licencesToReturn) = licences.partition {
+      approvedHdcBookingIds.contains(it.bookingId)
+    }
+    if(licencesWithApprovedHdc.any()) { inActivateLicences(licencesWithApprovedHdc.map { it.id }) }
+    return licencesToReturn
+  }
+
+  private fun getReleaseDateForIs91Case(licence: EntityLicence): LocalDate? {
+    if(licence.conditionalReleaseDate == null) { return null }
+    // If ARD within CRD minus 4 days and CRD (inclusive), use ARD
+    val releaseDate = if(licence.actualReleaseDate != null &&
+      !licence.actualReleaseDate.isBefore(licence.conditionalReleaseDate.minusDays(4)) &&
+      !licence.actualReleaseDate.isAfter(licence.conditionalReleaseDate)
+    ){
+      licence.actualReleaseDate
+    } else {
+      licence.conditionalReleaseDate
+    }
+    return releaseDate
   }
 }

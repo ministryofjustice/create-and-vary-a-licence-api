@@ -1210,4 +1210,34 @@ class LicenceController(
   ) {
     updateSentenceDateService.updateSentenceDates(licenceId, request)
   }
+
+  @GetMapping(value = ["/run-activation-job"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Get a list of licence summaries ready for activation.",
+    description = "Get a list of licence summaries with a status of APPROVED, a CRD of today, and are either IS91 cases or have an NOMIS status beginning with 'INACTIVE'. Excludes offenders with approved HDC licences. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returned matching licence summary details - empty if no matches.",
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
+  fun runLicenceActivationJob() {
+    return licenceService.licenceActivationJob()
+  }
 }
