@@ -24,7 +24,6 @@ class NotifyServiceTest {
   private val notifyService = NotifyService(
     enabled = true,
     selfLink = "http://somewhere",
-    licenceApprovedTemplateId = TEMPLATE_ID,
     variationForApprovalTemplateId = TEMPLATE_ID,
     initialLicencePromptTemplateId = TEMPLATE_ID,
     urgentLicencePromptTemplateId = TEMPLATE_ID,
@@ -36,16 +35,6 @@ class NotifyServiceTest {
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS
   )
-
-  @Test
-  fun `send licence approved email`() {
-    notifyService.sendLicenceApprovedEmail(EMAIL_ADDRESS, mapOf("key" to "value"), REFERENCE)
-    // This email is currently not enabled, will not send and should have no interaction with the client
-    verifyNoInteractions(notificationClient)
-
-    // When reinstated this is the verification
-    // verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, mapOf(Pair("key", "value")), REFERENCE)
-  }
 
   @Test
   fun `send licence initial licence create email`() {
@@ -224,7 +213,6 @@ class NotifyServiceTest {
     NotifyService(
       enabled = false,
       selfLink = "http://somewhere",
-      licenceApprovedTemplateId = TEMPLATE_ID,
       variationForApprovalTemplateId = TEMPLATE_ID,
       initialLicencePromptTemplateId = TEMPLATE_ID,
       urgentLicencePromptTemplateId = TEMPLATE_ID,
@@ -237,12 +225,6 @@ class NotifyServiceTest {
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
-    verifyNoInteractions(notificationClient)
-  }
-
-  @Test
-  fun `No email is sent when email address is empty`() {
-    notifyService.sendLicenceApprovedEmail("", mapOf("key" to "value"), REFERENCE)
     verifyNoInteractions(notificationClient)
   }
 

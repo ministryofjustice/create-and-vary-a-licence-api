@@ -5,7 +5,6 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.ManyToMany
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
@@ -39,9 +38,6 @@ data class CommunityOffenderManager(
 
   @OneToMany(mappedBy = "submittedBy")
   val licencesSubmitted: List<Licence> = emptyList(),
-
-  @ManyToMany(mappedBy = "mailingList")
-  val licencesSubscribedTo: List<Licence> = emptyList(),
 
   val lastUpdatedTimestamp: LocalDateTime? = null,
 )
