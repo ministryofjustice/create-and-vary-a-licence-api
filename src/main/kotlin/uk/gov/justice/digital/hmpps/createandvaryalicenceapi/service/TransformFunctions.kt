@@ -317,7 +317,7 @@ fun List<ProbationSearchResult>.transformToModelProbationResult(): List<ModelPro
 fun transform(result: ProbationSearchResult): ModelProbationSearchResult {
   return ModelProbationSearchResult(
     name = "${result.name.forename} ${result.name.surname}",
-    comName = "${result.manager.name.forename} ${result.manager.name.surname}",
+    comName = "${result.manager.name?.forename} ${result.manager.name?.surname}",
     comCode = result.manager.code
   )
 }
