@@ -28,7 +28,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .onErrorResume { webClientErrorHandler(it) }
   }
 
-  fun hdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus>{
+  fun hdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
     return prisonerApiWebClient
       .post()
       .uri("/offender-sentences/home-detention-curfews/latest")
@@ -40,7 +40,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .block() ?: emptyList<PrisonerHdcStatus>()
   }
 
-  fun offenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory>{
+  fun offenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory> {
     return prisonerApiWebClient
       .post()
       .uri("/bookings/offence-history")
@@ -52,13 +52,13 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .block() ?: emptyList<PrisonerOffenceHistory>()
   }
 
-  fun getIS91AndExtraditionBookingIds(bookingIds: List<Long>): List<Long>{
+  fun getIS91AndExtraditionBookingIds(bookingIds: List<Long>): List<Long> {
     val allOffenceHistories = offenceHistories(bookingIds)
     val desiredResultCodes: Array<String> = arrayOf("5500", "4022", "3006", "5502")
     val is91AndExtraditionOffenceHistories = allOffenceHistories.filter {
       desiredResultCodes.contains(it.primaryResultCode) ||
-      desiredResultCodes.contains(it.secondaryResultCode) ||
-      it.offenceCode == "IA99000-001N"
+        desiredResultCodes.contains(it.secondaryResultCode) ||
+        it.offenceCode == "IA99000-001N"
     }
     return is91AndExtraditionOffenceHistories.map { it.bookingId }
   }
@@ -71,9 +71,11 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
           FORBIDDEN -> {
             log.error("Client token does not have correct role to call prisoner-api $uriPath")
           }
+
           NOT_FOUND -> {
             log.info("No resource found when calling prisoner-api $uriPath")
           }
+
           else -> {
             log.error("Failed to call prisoner-api $uriPath [statusCode: $statusCode, body: ${this.responseBodyAsString}]")
           }
