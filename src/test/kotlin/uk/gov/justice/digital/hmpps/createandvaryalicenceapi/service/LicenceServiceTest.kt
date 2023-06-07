@@ -9,7 +9,6 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mockito
-import org.mockito.Spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -23,7 +22,6 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
@@ -52,10 +50,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -82,19 +76,21 @@ class LicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
 
-  private val service = Mockito.spy(LicenceService(
-    licenceRepository,
-    communityOffenderManagerRepository,
-    standardConditionRepository,
-    additionalConditionRepository,
-    bespokeConditionRepository,
-    licenceEventRepository,
-    licencePolicyService,
-    additionalConditionUploadDetailRepository,
-    auditEventRepository,
-    notifyService,
-    omuService
-  ))
+  private val service = Mockito.spy(
+    LicenceService(
+      licenceRepository,
+      communityOffenderManagerRepository,
+      standardConditionRepository,
+      additionalConditionRepository,
+      bespokeConditionRepository,
+      licenceEventRepository,
+      licencePolicyService,
+      additionalConditionUploadDetailRepository,
+      auditEventRepository,
+      notifyService,
+      omuService
+    )
+  )
 
   @BeforeEach
   fun reset() {
@@ -768,7 +764,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `activateLicencesByIds calls activateLicences with the licences associated with the given IDs`(){
+  fun `activateLicencesByIds calls activateLicences with the licences associated with the given IDs`() {
     val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
@@ -779,7 +775,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `activateLicencesByIds filters unapproved licences out before calling activateLicences`(){
+  fun `activateLicencesByIds filters unapproved licences out before calling activateLicences`() {
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity))
 
     service.activateLicencesByIds(listOf(1))
@@ -819,7 +815,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `inActivateLicencesByIds calls inactivateLicences with the licences associated with the given IDs`(){
+  fun `inActivateLicencesByIds calls inactivateLicences with the licences associated with the given IDs`() {
     val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
@@ -830,7 +826,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `inActivateLicencesByIds filters unapproved licences out before calling inactivateLicences`(){
+  fun `inActivateLicencesByIds filters unapproved licences out before calling inactivateLicences`() {
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity))
 
     service.inActivateLicencesByIds(listOf(1))

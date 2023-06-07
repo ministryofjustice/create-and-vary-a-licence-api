@@ -19,17 +19,21 @@ class LicenceActivationService(
 ) {
 
   @Transactional
-  fun licenceActivationJob(){
+  fun licenceActivationJob() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(potentialLicences)
     val licencesToActivate = determineEligibleLicencesToActivate(eligibleLicences)
 
-    if(licencesToActivate.any()) { licenceService.activateLicences(licencesToActivate) }
-    if(ineligibleLicences.any()) { licenceService.inactivateLicences(ineligibleLicences) }
+    if (licencesToActivate.any()) {
+      licenceService.activateLicences(licencesToActivate)
+    }
+    if (ineligibleLicences.any()) {
+      licenceService.inactivateLicences(ineligibleLicences)
+    }
   }
 
   private fun determineLicenceEligibility(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
-    val bookingIds = licences.map{ it.bookingId!! }
+    val bookingIds = licences.map { it.bookingId!! }
     val hdcStatuses = prisonApiClient.hdcStatuses(bookingIds)
     val approvedHdcBookingIds = hdcStatuses.filter { it.approvalStatus == "APPROVED" }.map { it.bookingId }
     val (ineligibleLicences, eligibleLicences) = licences.partition {
@@ -40,15 +44,17 @@ class LicenceActivationService(
 
   private fun determineEligibleLicencesToActivate(licences: List<Licence>): List<Licence> {
     val (iS91Licences, standardLicences) = filterLicencesIntoTypes(licences)
-    val standardLicencesPrisoners = prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
+    val standardLicencesPrisoners =
+      prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
 
-    val iS91LicencesToActivate = iS91Licences.filter{ it.passedIS91ReleaseDate() }
-    val standardLicencesToActivate = standardLicences.filter{ it.standardLicenceForActivation(standardLicencesPrisoners) }
+    val iS91LicencesToActivate = iS91Licences.filter { it.passedIS91ReleaseDate() }
+    val standardLicencesToActivate =
+      standardLicences.filter { it.standardLicenceForActivation(standardLicencesPrisoners) }
 
     return iS91LicencesToActivate + standardLicencesToActivate
   }
 
-  private fun filterLicencesIntoTypes(licences: List<Licence>): Pair<List<Licence>, List<Licence>>{
+  private fun filterLicencesIntoTypes(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val licenceBookingIds = licences.map { it.bookingId!! }
     val iS91AndExtraditionBookingIds = prisonApiClient.getIS91AndExtraditionBookingIds(licenceBookingIds)
     val (iS91AndExtraditionLicences, standardLicences) =
@@ -57,12 +63,14 @@ class LicenceActivationService(
   }
 
   private fun Licence.passedIS91ReleaseDate(): Boolean {
-    if(this.conditionalReleaseDate == null) { return false }
+    if (this.conditionalReleaseDate == null) {
+      return false
+    }
     // If ARD within CRD minus 4 days and CRD (inclusive), use ARD
-    val releaseDate = if(this.actualReleaseDate != null &&
+    val releaseDate = if (this.actualReleaseDate != null &&
       !this.actualReleaseDate.isBefore(this.conditionalReleaseDate.minusDays(4)) &&
       !this.actualReleaseDate.isAfter(this.conditionalReleaseDate)
-    ){
+    ) {
       this.actualReleaseDate
     } else {
       this.conditionalReleaseDate
@@ -73,12 +81,12 @@ class LicenceActivationService(
 
   private fun Licence.standardLicenceForActivation(prisoners: List<PrisonerSearchPrisoner>): Boolean {
     val prisoner: PrisonerSearchPrisoner = prisoners.first {
-        it.prisonerNumber == this.nomsId
+      it.prisonerNumber == this.nomsId
     }
-    if(this.actualReleaseDate != null &&
+    if (this.actualReleaseDate != null &&
       this.actualReleaseDate <= LocalDate.now() &&
       prisoner.status?.startsWith("INACTIVE") == true
-    ){
+    ) {
       return true
     }
     return false

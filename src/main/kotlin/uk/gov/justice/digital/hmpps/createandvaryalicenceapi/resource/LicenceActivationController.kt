@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService
-
 
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -25,16 +22,15 @@ class LicenceActivationController(
   @PostMapping(value = ["/run-activation-job"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Get a list of licence summaries ready for activation.",
-    description = "Get a list of licence summaries with a status of APPROVED, a CRD of today, and are either IS91 cases or have an NOMIS status beginning with 'INACTIVE'. Excludes offenders with approved HDC licences. Requires ROLE_CVL_ADMIN.",
+    summary = "Triggers the licence activation job.",
+    description = "Triggers a job that causes licences with a status of APPROVED, a CRD or ARD of today, and that are either IS91 cases or have an NOMIS status beginning with 'INACTIVE' to be activated. Deactivates offenders with approved HDC licences. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Returned matching licence summary details - empty if no matches.",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+        description = "Activation job executed.",
       ),
       ApiResponse(
         responseCode = "401",

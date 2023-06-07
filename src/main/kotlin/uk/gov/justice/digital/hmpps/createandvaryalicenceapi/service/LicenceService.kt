@@ -449,7 +449,9 @@ class LicenceService(
   fun activateLicencesByIds(licenceIds: List<Long>) {
     val matchingLicences =
       licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
-    if(matchingLicences.any()) { activateLicences(matchingLicences) }
+    if (matchingLicences.any()) {
+      activateLicences(matchingLicences)
+    }
   }
 
   fun inactivateLicences(licences: List<EntityLicence>) {
@@ -487,7 +489,9 @@ class LicenceService(
   fun inActivateLicencesByIds(licenceIds: List<Long>) {
     val matchingLicences =
       licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
-    if (matchingLicences.any()) { inactivateLicences(matchingLicences) }
+    if (matchingLicences.any()) {
+      inactivateLicences(matchingLicences)
+    }
   }
 
   @Transactional
