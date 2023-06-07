@@ -15,6 +15,24 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-a-few-licences.sql"
+  )
+  fun `Find approved licences`() {
+    val result = webTestClient.post()
+      .uri("/licence/match")
+      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.APPROVED)))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody!!
+
+    assertThat(result.size).isEqualTo(5)
+    assertThat(result.map { it.licenceId }).containsExactly(1L, 2L, 3L, 4L, 5L)
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-matching-candidates.sql"
   )
   fun `Get licences matches - no filters`() {

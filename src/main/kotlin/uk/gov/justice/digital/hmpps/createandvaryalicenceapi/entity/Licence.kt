@@ -86,7 +86,7 @@ data class Licence(
 
   @OneToMany(
     mappedBy = "licence",
-    fetch = FetchType.EAGER,
+    fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
     orphanRemoval = true,
     targetEntity = StandardCondition::class
@@ -95,25 +95,25 @@ data class Licence(
   @OrderBy("conditionSequence")
   var standardConditions: List<StandardCondition> = emptyList(),
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   val additionalConditions: List<AdditionalCondition> = emptyList(),
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   val bespokeConditions: List<BespokeCondition> = emptyList(),
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   var responsibleCom: CommunityOffenderManager? = null,
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
