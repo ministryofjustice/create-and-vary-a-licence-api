@@ -81,8 +81,6 @@ class LicenceServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
-  private val prisonApiClient = mock<PrisonApiClient>()
-  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
   private val service = Mockito.spy(LicenceService(
     licenceRepository,
@@ -95,9 +93,7 @@ class LicenceServiceTest {
     additionalConditionUploadDetailRepository,
     auditEventRepository,
     notifyService,
-    omuService,
-    prisonApiClient,
-    prisonerSearchApiClient
+    omuService
   ))
 
   @BeforeEach
@@ -746,14 +742,11 @@ class LicenceServiceTest {
 
   @Test
   fun `activate licences sets licence statuses to ACTIVE`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
-
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.activateLicences(listOf(1L))
+    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
@@ -775,15 +768,33 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `inactivate licences sets licence statuses to INACTIVE`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+  fun `activateLicencesByIds calls activateLicences with the licences associated with the given IDs`(){
+    val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
+    service.activateLicencesByIds(listOf(1))
+
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(service, times(1)).activateLicences(listOf(licence))
+  }
+
+  @Test
+  fun `activateLicencesByIds filters unapproved licences out before calling activateLicences`(){
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity))
+
+    service.activateLicencesByIds(listOf(1))
+
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(service, times(0)).activateLicences(anyList())
+  }
+
+  @Test
+  fun `inactivate licences sets licence statuses to INACTIVE`() {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.inActivateLicences(listOf(1L))
+    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(
       licenceRepository,
       times(1)
@@ -808,128 +819,24 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `activate licences does not activate if status is not approved`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
+  fun `inActivateLicencesByIds calls inactivateLicences with the licences associated with the given IDs`(){
+    val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
-    service.activateLicences(listOf(1L))
+    service.inActivateLicencesByIds(listOf(1))
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(service, times(1)).inactivateLicences(listOf(licence))
   }
 
   @Test
-  fun `licence activation job calls for non-HDC approved, non-IS91 licences to be activated on their ARD if the offender has been released`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner))
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+  fun `inActivateLicencesByIds filters unapproved licences out before calling inactivateLicences`(){
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity))
 
-    service.licenceActivationJob()
+    service.inActivateLicencesByIds(listOf(1))
 
-    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
-    verify(service, times(0)).inActivateLicences(anyList())
-  }
-
-  @Test
-  fun `licence activation job calls for non-HDC approved, non-IS91 licences to be activated if their ARD is in the past and they have been released`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now().minusDays(10))))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner))
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
-
-    service.licenceActivationJob()
-
-    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
-    verify(service, times(0)).inActivateLicences(anyList())
-  }
-
-  @Test
-  fun `licence activation job calls for non-HDC approved, IS91 licences to be activated on CRD`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, conditionalReleaseDate = LocalDate.now())))
-    // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
-
-    service.licenceActivationJob()
-
-    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
-    verify(service, times(0)).inActivateLicences(anyList())
-  }
-
-  @Test
-  fun `licence activation job calls for non-HDC approved, IS91 licences to be activated on ARD if it is within 4 days before CRD`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now(), conditionalReleaseDate = LocalDate.now().plusDays(4))))
-    // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
-
-    service.licenceActivationJob()
-
-    verify(service, times(1)).activateLicences(listOf(aLicenceEntity.id))
-    verify(service, times(0)).inActivateLicences(anyList())
-  }
-
-  @Test
-  fun `licence activation job calls for HDC approved, non-IS91 licences to be deactivated`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner))
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(listOf(anHdcStatus))
-
-    service.licenceActivationJob()
-
-    verify(service, times(0)).activateLicences(anyList())
-    verify(service, times(1)).inActivateLicences(listOf(aLicenceEntity.id))
-  }
-
-  @Test
-  fun `licence activation job does not call for non-HDC approved, IS91 licences to be activated on ARD if it is more than 4 days before`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now(), conditionalReleaseDate = LocalDate.now().plusDays(5))))
-    // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
-
-    service.licenceActivationJob()
-
-    verify(service, times(0)).activateLicences(anyList())
-    verify(service, times(0)).inActivateLicences(anyList())
-  }
-
-  @Test
-  fun `licence activation job does not call for non-HDC approved, non-IS91 licences to be activated if the offender has not been released`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(listOf(prisonerSearchPrisoner.copy(status = "ACTIVE IN")))
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
-
-    service.licenceActivationJob()
-
-    verify(service, times(0)).activateLicences(anyList())
-    verify(service, times(0)).inActivateLicences(anyList())
-  }
-
-  @Test
-  fun `licence activation job calls for activation and deactivation of different licences simultaneously`(){
-    whenever(licenceRepository.getApprovedLicencesOnReleaseDate()).thenReturn(listOf(
-      aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now()),
-      aLicenceEntity.copy(id = 2, bookingId = 54322, statusCode = LicenceStatus.APPROVED, actualReleaseDate = LocalDate.now())
-    ))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321, 54322))).thenReturn(listOf(
-      prisonerSearchPrisoner,
-      prisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = "54322")
-    ))
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321, 54322))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321, 54322))).thenReturn(listOf(anHdcStatus))
-
-    service.licenceActivationJob()
-
-    verify(service, times(1)).activateLicences(listOf(2))
-    verify(service, times(1)).inActivateLicences(listOf(aLicenceEntity.id))
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(service, times(0)).inactivateLicences(anyList())
   }
 
   @Test
@@ -1401,18 +1308,6 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
-    )
-
-    val anHdcStatus = PrisonerHdcStatus(
-      approvalStatus = "APPROVED",
-      bookingId = 54321,
-      passed = true
-    )
-
-    val prisonerSearchPrisoner = PrisonerSearchPrisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "54321",
-      status = "INACTIVE OUT"
     )
   }
 }
