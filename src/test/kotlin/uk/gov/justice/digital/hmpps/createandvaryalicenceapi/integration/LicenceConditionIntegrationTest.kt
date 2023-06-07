@@ -30,7 +30,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql"
-  )/**/
+  )
   fun `Update the standard conditions`() {
     webTestClient.put()
       .uri("/licence/id/1/standard-conditions")
@@ -64,7 +64,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql"
-  )/**/
+  )
   fun `Add an additional condition`() {
     webTestClient.post()
       .uri("/licence/id/1/additional-condition/AP")

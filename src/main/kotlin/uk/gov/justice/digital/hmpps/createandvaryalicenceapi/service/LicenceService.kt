@@ -119,6 +119,7 @@ class LicenceService(
     return createLicenceResponse
   }
 
+  @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = licenceRepository
       .findById(licenceId)
