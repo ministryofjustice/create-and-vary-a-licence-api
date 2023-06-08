@@ -16,6 +16,7 @@ generic-service:
     HMPPS_COMMUNITY_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
     HMPPS_PRISON_API_URL: "https://api-dev.prison.service.justice.gov.uk/api"
     HMPPS_PRISONREGISTER_API_URL: "https://prison-register-dev.hmpps.service.justice.gov.uk"
+    HMPPS_PRISONERSEARCH_API_URL: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
     HMPPS_PROBATIONSEARCH_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence-dev.hmpps.service.justice.gov.uk"
 

@@ -33,3 +33,6 @@ hmpps:
   probationsearch:
     api:
       url: "http://localhost:5000"
+  prisonersearch:
+    api:
+      url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
