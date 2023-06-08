@@ -9,8 +9,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinTable
-import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
@@ -88,7 +86,7 @@ data class Licence(
 
   @OneToMany(
     mappedBy = "licence",
-    fetch = FetchType.EAGER,
+    fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
     orphanRemoval = true,
     targetEntity = StandardCondition::class
@@ -97,35 +95,27 @@ data class Licence(
   @OrderBy("conditionSequence")
   var standardConditions: List<StandardCondition> = emptyList(),
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   val additionalConditions: List<AdditionalCondition> = emptyList(),
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
   val bespokeConditions: List<BespokeCondition> = emptyList(),
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   var responsibleCom: CommunityOffenderManager? = null,
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
   var submittedBy: CommunityOffenderManager? = null,
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
-
-  @ManyToMany
-  @JoinTable(
-    name = "community_offender_manager_licence_mailing_list",
-    joinColumns = [JoinColumn(name = "licence_id")],
-    inverseJoinColumns = [JoinColumn(name = "community_offender_manager_id")]
-  )
-  val mailingList: MutableSet<CommunityOffenderManager> = mutableSetOf(),
 
   var variationOfId: Long? = null,
   var versionOfId: Long? = null,

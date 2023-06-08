@@ -16,7 +16,6 @@ import java.time.format.DateTimeFormatter
 class NotifyService(
   @Value("\${notify.enabled}") private val enabled: Boolean,
   @Value("\${self.link}") private val selfLink: String,
-  @Value("\${notify.templates.licenceApproved}") private val licenceApprovedTemplateId: String,
   @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String,
   @Value("\${notify.templates.variationReApproval}") private val variationForReApprovalTemplateId: String,
   @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String,
@@ -28,12 +27,6 @@ class NotifyService(
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
 ) {
-  fun sendLicenceApprovedEmail(emailAddress: String, values: Map<String, String>, reference: String) {
-    // Hobbled this email - no current requirement to send this out - blanked out the email address to avoid sending
-    // sendEmail(licenceApprovedTemplateId, emailAddress, values, reference)
-    sendEmail(licenceApprovedTemplateId, "", values, reference)
-  }
-
   fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(

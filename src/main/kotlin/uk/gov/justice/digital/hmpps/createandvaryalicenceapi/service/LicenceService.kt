@@ -85,8 +85,6 @@ class LicenceService(
     licence.dateCreated = LocalDateTime.now()
     licence.responsibleCom = responsibleCom
     licence.createdBy = createdBy
-    licence.mailingList.add(responsibleCom)
-    licence.mailingList.add(createdBy)
     licence.updatedByUsername = username
 
     val licenceEntity = licenceRepository.saveAndFlush(licence)
@@ -121,6 +119,7 @@ class LicenceService(
     return createLicenceResponse
   }
 
+  @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = licenceRepository
       .findById(licenceId)
@@ -245,11 +244,6 @@ class LicenceService(
 
     recordLicenceEventForStatus(licenceId, updatedLicence, request)
     auditStatusChange(licenceId, updatedLicence, request)
-
-    // Notify approvals only
-    if (request.status == APPROVED) {
-      notifyApproval(licenceId, updatedLicence)
-    }
   }
 
   private fun auditStatusChange(licenceId: Long, licenceEntity: EntityLicence, request: StatusUpdateRequest) {
@@ -314,19 +308,6 @@ class LicenceService(
         eventDescription = "Licence updated to ${licenceEntity.statusCode} for ${licenceEntity.forename} ${licenceEntity.surname}",
       )
     )
-  }
-
-  private fun notifyApproval(licenceId: Long, licenceEntity: EntityLicence) {
-    licenceEntity.mailingList.forEach {
-      notifyService.sendLicenceApprovedEmail(
-        it.email.orEmpty(),
-        mapOf(
-          "fullName" to "${licenceEntity.forename} ${licenceEntity.surname}",
-          "prisonName" to licenceEntity.prisonDescription.orEmpty(),
-        ),
-        licenceId.toString(),
-      )
-    }
   }
 
   private fun notifyReApprovalNeeded(licenceEntity: EntityLicence) {
@@ -718,12 +699,10 @@ class LicenceService(
     require(newStatus == IN_PROGRESS || newStatus == VARIATION_IN_PROGRESS) { "newStatus must be IN_PROGRESS or VARIATION_IN_PROGRESS was $newStatus" }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username) ?: throw IllegalStateException("Cannot find staff with username: $username")
 
     val licenceCopy = licence.copyLicence(newStatus)
     licenceCopy.createdBy = createdBy
-    licenceCopy.mailingList.add(licenceCopy.responsibleCom!!)
-    licenceCopy.mailingList.add(createdBy!!)
     licenceCopy.version = licencePolicyService.currentPolicy().version
 
     if (newStatus == VARIATION_IN_PROGRESS) {
