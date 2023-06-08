@@ -13,11 +13,11 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     HMPPS_AUTH_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
-    HMPPS_COMMUNITY_API_URL: "http://create-and-vary-a-licence-hmpps-community-api-wiremock"
+    HMPPS_COMMUNITY_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
     HMPPS_PRISON_API_URL: "https://api-dev.prison.service.justice.gov.uk/api"
     HMPPS_PRISONREGISTER_API_URL: "https://prison-register-dev.hmpps.service.justice.gov.uk"
     HMPPS_PRISONERSEARCH_API_URL: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
-    HMPPS_PROBATIONSEARCH_API_URL: "http://create-and-vary-a-licence-hmpps-community-api-wiremock"
+    HMPPS_PROBATIONSEARCH_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence-dev.hmpps.service.justice.gov.uk"
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack

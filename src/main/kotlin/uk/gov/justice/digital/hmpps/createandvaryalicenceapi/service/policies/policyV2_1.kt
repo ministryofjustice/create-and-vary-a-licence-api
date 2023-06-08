@@ -502,7 +502,7 @@ val POLICY_V2_1 = LicencePolicy(
             type = "text",
           ),
           Input(
-            label = "Select a PDF map of the area they must not enter to include in the licence",
+            label = "Select a PDF map of the area this person must not enter",
             name = "outOfBoundFilename",
             type = "fileUpload",
           ),

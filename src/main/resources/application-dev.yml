@@ -19,7 +19,8 @@ spring:
 # Container-provider local auth server
 hmpps:
   auth:
-    url: http://localhost:8090/auth
+    token:
+      url: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
   prison:
     api:
       url: "https://api-dev.prison.service.justice.gov.uk/api"
@@ -28,10 +29,10 @@ hmpps:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
   community:
     api:
-       url: "http://create-and-vary-a-licence-hmpps-community-api-wiremock"
+       url: "http://localhost:5000"
   probationsearch:
     api:
-      url: "http://create-and-vary-a-licence-hmpps-community-api-wiremock"
+      url: "http://localhost:5000"
   prisonersearch:
     api:
       url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"

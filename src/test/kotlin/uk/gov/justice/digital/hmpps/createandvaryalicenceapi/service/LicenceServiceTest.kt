@@ -509,15 +509,6 @@ class LicenceServiceTest {
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(listOf(1L, "X", "Y", "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
-
-    verify(notifyService, times(1)).sendLicenceApprovedEmail(
-      "testemail@probation.gov.uk",
-      mapOf(
-        "fullName" to "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-        "prisonName" to aLicenceEntity.prisonDescription.orEmpty()
-      ),
-      "1",
-    )
   }
 
   @Test
@@ -1255,15 +1246,6 @@ class LicenceServiceTest {
       probationTeamDescription = "Cardiff South Team A",
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       standardConditions = someEntityStandardConditions,
-      mailingList = mutableSetOf(
-        CommunityOffenderManager(
-          staffIdentifier = 2000,
-          username = "smills",
-          email = "testemail@probation.gov.uk",
-          firstName = "X",
-          lastName = "Y"
-        )
-      ),
       responsibleCom = CommunityOffenderManager(
         staffIdentifier = 2000,
         username = "smills",

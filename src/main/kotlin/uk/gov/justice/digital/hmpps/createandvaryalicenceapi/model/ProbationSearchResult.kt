@@ -11,5 +11,5 @@ data class ProbationSearchResult(
   val comName: String = "",
 
   @Schema(description = "The identifier for the COM")
-  val comCode: String = "",
+  val comCode: String? = "",
 )
