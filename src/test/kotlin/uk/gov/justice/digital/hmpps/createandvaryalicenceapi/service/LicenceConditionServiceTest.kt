@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -25,9 +26,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -40,12 +46,18 @@ class LicenceConditionServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
+  private val auditEventRepository = mock<AuditEventRepository>()
+  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
+  private val licencePolicyService = mock<LicencePolicyService>()
 
   private val service = LicenceConditionService(
     licenceRepository,
     additionalConditionRepository,
     bespokeConditionRepository,
     additionalConditionUploadDetailRepository,
+    auditEventRepository,
+    communityOffenderManagerRepository,
+    licencePolicyService,
   )
 
   @BeforeEach
@@ -61,12 +73,17 @@ class LicenceConditionServiceTest {
       additionalConditionRepository,
       bespokeConditionRepository,
       additionalConditionUploadDetailRepository,
+      auditEventRepository,
+      communityOffenderManagerRepository,
+      licencePolicyService,
     )
   }
 
   @Test
   fun `update standard conditions for an individual licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(licencePolicyService.currentPolicy()).thenReturn(aPolicy)
 
     val APConditions = listOf(
       StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -86,9 +103,10 @@ class LicenceConditionServiceTest {
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
 
     assertThat(licenceCaptor.value.standardConditions).containsExactly(
@@ -114,6 +132,28 @@ class LicenceConditionServiceTest {
         licence = aLicenceEntity,
       ),
     )
+
+    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
+    assertThat(auditCaptor.value.username).isEqualTo("smills")
+    assertThat(auditCaptor.value.summary)
+      .isEqualTo(
+        "Standard conditions updated to policy version ${aPolicy.version} for " +
+          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+      )
+    assertThat(auditCaptor.value.detail)
+      .isEqualTo(
+        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+      )
+    assertThat(auditCaptor.value.changes)
+      .extracting("typeOfChange", "condition", "changes")
+      .isEqualTo(
+        listOf(
+          "update",
+          "standard",
+          emptyList<String>()
+        )
+      )
   }
 
   @Test
@@ -130,6 +170,7 @@ class LicenceConditionServiceTest {
                 conditionSequence = 5,
                 conditionCategory = "oldCategory",
                 conditionText = "oldText",
+                expandedConditionText = "expandedOldText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
                 conditionType = "AP",
@@ -141,6 +182,7 @@ class LicenceConditionServiceTest {
                 conditionSequence = 6,
                 conditionCategory = "removedCategory",
                 conditionText = "removedText",
+                expandedConditionText = "removedText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
                 conditionType = "AP",
@@ -152,6 +194,7 @@ class LicenceConditionServiceTest {
                 conditionSequence = 6,
                 conditionCategory = "oldCategory3",
                 conditionText = "oldText3",
+                expandedConditionText = "expandedOldText3",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
                 conditionType = "AP",
@@ -160,12 +203,15 @@ class LicenceConditionServiceTest {
           ),
         ),
       )
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.deleteAdditionalCondition(1L, 2)
 
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       AdditionalCondition(
@@ -175,6 +221,7 @@ class LicenceConditionServiceTest {
         conditionCategory = "oldCategory",
         conditionSequence = 5,
         conditionText = "oldText",
+        expandedConditionText = "expandedOldText",
         conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
         licence = aLicenceEntity,
@@ -186,6 +233,7 @@ class LicenceConditionServiceTest {
         conditionCategory = "oldCategory3",
         conditionSequence = 6,
         conditionText = "oldText3",
+        expandedConditionText = "expandedOldText3",
         conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
         licence = aLicenceEntity,
@@ -194,6 +242,34 @@ class LicenceConditionServiceTest {
 
     // Verify last contact info is recorded
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+
+    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
+    assertThat(auditCaptor.value.username).isEqualTo("smills")
+    assertThat(auditCaptor.value.summary)
+      .isEqualTo(
+        "Deleted condition for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+      )
+    assertThat(auditCaptor.value.detail)
+      .isEqualTo(
+        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+      )
+
+    assertThat(auditCaptor.value.changes)
+      .extracting("typeOfChange", "condition", "changes")
+      .isEqualTo(
+        listOf(
+          "delete",
+          "additional",
+          listOf(
+            mapOf(
+              "conditionCode" to "code2",
+              "conditionType" to "AP",
+              "conditionText" to "removedText"
+            )
+          )
+        )
+      )
   }
 
   @Test
@@ -221,6 +297,7 @@ class LicenceConditionServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
   /**
@@ -272,6 +349,7 @@ class LicenceConditionServiceTest {
           ),
         ),
       )
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val request = AdditionalConditionsRequest(
       additionalConditions = listOf(
@@ -288,8 +366,10 @@ class LicenceConditionServiceTest {
     service.updateAdditionalConditions(1L, request)
 
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
       AdditionalCondition(
@@ -318,11 +398,40 @@ class LicenceConditionServiceTest {
 
     // Verify last contact info is recorded
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+
+    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
+    assertThat(auditCaptor.value.username).isEqualTo("smills")
+    assertThat(auditCaptor.value.summary)
+      .isEqualTo(
+        "Updated multiple conditions for " +
+          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+      )
+    assertThat(auditCaptor.value.detail)
+      .isEqualTo(
+        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+      )
+
+    assertThat(auditCaptor.value.changes)
+      .extracting("typeOfChange", "condition", "changes")
+      .isEqualTo(
+        listOf(
+          "remove",
+          "additional",
+          listOf(
+            mapOf(
+              "conditionCode" to "code2",
+              "conditionType" to "AP"
+            )
+          )
+        )
+      )
   }
 
   @Test
   fun `update bespoke conditions persists multiple entities`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val bespokeEntities = listOf(
       BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
@@ -338,8 +447,10 @@ class LicenceConditionServiceTest {
 
     // Verify licence entity is updated with last contact info
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
     assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
@@ -348,16 +459,45 @@ class LicenceConditionServiceTest {
     bespokeEntities.forEach { bespoke ->
       verify(bespokeConditionRepository, times(1)).saveAndFlush(bespoke)
     }
+
+    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
+    assertThat(auditCaptor.value.username).isEqualTo("smills")
+    assertThat(auditCaptor.value.summary)
+      .isEqualTo(
+        "Updated bespoke conditions for " +
+          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+      )
+    assertThat(auditCaptor.value.detail)
+      .isEqualTo(
+        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+      )
+
+    assertThat(auditCaptor.value.changes)
+      .extracting("typeOfChange", "condition", "changes")
+      .isEqualTo(
+        listOf(
+          "update",
+          "bespoke",
+          listOf(
+            "Condition 1",
+            "Condition 2",
+            "Condition 3"
+          )
+        )
+      )
   }
 
   @Test
   fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateBespokeConditions(1L, BespokeConditionRequest())
 
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
     verify(licenceRepository, times(1)).saveAndFlush(any())
+    verify(auditEventRepository, times(1)).saveAndFlush(any())
   }
 
   @Test
@@ -372,6 +512,7 @@ class LicenceConditionServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -393,6 +534,7 @@ class LicenceConditionServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -434,6 +576,7 @@ class LicenceConditionServiceTest {
 
     verify(licenceRepository, times(1)).findById(1L)
     verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -463,6 +606,7 @@ class LicenceConditionServiceTest {
           anAdditionalConditionEntity.copy(),
         ),
       )
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val request = UpdateAdditionalConditionDataRequest(
       data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
@@ -473,10 +617,13 @@ class LicenceConditionServiceTest {
 
     val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
     assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
     assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
@@ -491,7 +638,29 @@ class LicenceConditionServiceTest {
 
     // Verify last contact info is recorded
     assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+
+    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
+    assertThat(auditCaptor.value.username).isEqualTo("smills")
+    assertThat(auditCaptor.value.summary).isEqualTo("Updated additional condition data for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}")
+    assertThat(auditCaptor.value.detail).isEqualTo("ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}")
+
+    assertThat(auditCaptor.value.changes)
+      .extracting("typeOfChange", "condition", "changes")
+      .isEqualTo(
+        listOf(
+          "update",
+          "additional data",
+          listOf(
+            mapOf(
+              "conditionCode" to "code1",
+              "conditionType" to "AP",
+              "conditionText" to "expanded text"
+            )
+          )
+        )
+      )
   }
+
   private companion object {
 
     val someEntityStandardConditions = listOf(
@@ -591,6 +760,21 @@ class LicenceConditionServiceTest {
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = emptyList(),
       conditionType = "AP",
+    )
+
+    val aPolicy = LicencePolicy(
+      "2.1",
+      standardConditions = StandardConditions(emptyList(), emptyList()),
+      additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+      changeHints = emptyList()
+    )
+
+    val aCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y"
     )
   }
 }
