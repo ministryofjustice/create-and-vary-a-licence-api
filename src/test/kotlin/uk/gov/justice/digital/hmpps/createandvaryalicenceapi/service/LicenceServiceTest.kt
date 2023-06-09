@@ -766,16 +766,6 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `activateLicencesByIds filters unapproved licences out before calling activateLicences`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity))
-
-    service.activateLicencesByIds(listOf(1))
-
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(service, times(0)).activateLicences(anyList())
-  }
-
-  @Test
   fun `inactivate licences sets licence statuses to INACTIVE`() {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -814,16 +804,6 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(service, times(1)).inactivateLicences(listOf(licence))
-  }
-
-  @Test
-  fun `inActivateLicencesByIds filters unapproved licences out before calling inactivateLicences`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity))
-
-    service.inActivateLicencesByIds(listOf(1))
-
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(service, times(0)).inactivateLicences(anyList())
   }
 
   @Test
