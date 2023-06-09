@@ -84,8 +84,7 @@ class LicenceActivationService(
     return (
       this.actualReleaseDate != null &&
         this.actualReleaseDate <= LocalDate.now() &&
-        prisoner.status?.startsWith(
-          "INACTIVE") == true
+        prisoner.status?.startsWith("INACTIVE") == true
       )
   }
 }
