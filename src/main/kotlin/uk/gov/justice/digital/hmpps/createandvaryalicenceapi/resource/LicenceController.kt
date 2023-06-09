@@ -680,6 +680,9 @@ class LicenceController(
     return licenceService.updateLicenceStatus(licenceId, request)
   }
 
+  @Deprecated(
+    message = "This endpoint is being deprecated as it is believed to no longer be in use after the activation job was moved to the API"
+  )
   @PostMapping(value = ["/activate-licences"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(

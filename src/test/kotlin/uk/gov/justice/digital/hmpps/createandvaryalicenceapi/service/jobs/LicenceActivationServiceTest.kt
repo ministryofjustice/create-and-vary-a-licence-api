@@ -1,20 +1,22 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
+
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
-import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.context.SecurityContextHolder.setContext
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerOffenceHistory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -42,9 +44,9 @@ class LicenceActivationServiceTest {
 
     whenever(authentication.name).thenReturn("smills")
     whenever(securityContext.authentication).thenReturn(authentication)
-    SecurityContextHolder.setContext(securityContext)
+    setContext(securityContext)
 
-    org.mockito.kotlin.reset(
+    reset(
       licenceRepository,
       licenceService,
       prisonApiClient,
@@ -56,15 +58,15 @@ class LicenceActivationServiceTest {
   fun `licence activation job calls for non-HDC, non-IS91 licences to be activated on their ARD if the offender has been released`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(
-      listOf(prisonerSearchPrisoner)
+      listOf(aPrisonerSearchPrisoner)
     )
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity))
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -73,16 +75,16 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(
       listOf(
-        prisonerSearchPrisoner
+        aPrisonerSearchPrisoner
       )
     )
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
     verify(licenceService, times(1)).activateLicences(listOf(licence))
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -91,13 +93,13 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
     // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory.copy(primaryResultCode = "5500")))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
     verify(licenceService, times(1)).activateLicences(listOf(licence))
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -106,13 +108,13 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
     // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory.copy(primaryResultCode = "5500")))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
     verify(licenceService, times(1)).activateLicences(listOf(licence))
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -121,23 +123,23 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
     // Lack of PrisonerSearchPrisoner object shows activation is happening via IS91 path
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory.copy(primaryResultCode = "5500")))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(0)).activateLicences(anyList())
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).activateLicences(emptyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
   fun `licence activation job calls for HDC approved licences to be deactivated`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(listOf(anHdcStatus))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(listOf(anHdcStatus))
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(0)).activateLicences(anyList())
+    verify(licenceService, times(1)).activateLicences(emptyList())
     verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity))
   }
 
@@ -145,15 +147,15 @@ class LicenceActivationServiceTest {
   fun `licence activation job calls for non-IS91 licences with HDC (not approved) to be activated on their ARD if the offender has been released`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(
-      listOf(prisonerSearchPrisoner)
+      listOf(aPrisonerSearchPrisoner)
     )
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(listOf(anHdcStatus.copy(approvalStatus = "INACTIVE")))
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(listOf(anHdcStatus.copy(approvalStatus = "INACTIVE")))
 
     service.licenceActivationJob()
 
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity))
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -161,16 +163,16 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(
       listOf(
-        prisonerSearchPrisoner.copy(status = "ACTIVE IN")
+        aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")
       )
     )
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(0)).activateLicences(anyList())
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).activateLicences(emptyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -185,16 +187,16 @@ class LicenceActivationServiceTest {
     )
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(
       listOf(
-        prisonerSearchPrisoner
+        aPrisonerSearchPrisoner
       )
     )
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(0)).activateLicences(anyList())
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).activateLicences(emptyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -207,13 +209,13 @@ class LicenceActivationServiceTest {
       )
     )
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(emptyList())
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.hdcStatuses(listOf(54321))).thenReturn(emptyList())
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory.copy(primaryResultCode = "5500")))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321))).thenReturn(emptyList())
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(0)).activateLicences(anyList())
-    verify(licenceService, times(0)).inactivateLicences(anyList())
+    verify(licenceService, times(1)).activateLicences(emptyList())
+    verify(licenceService, times(1)).inactivateLicences(emptyList())
   }
 
   @Test
@@ -228,11 +230,11 @@ class LicenceActivationServiceTest {
     )
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54322))).thenReturn(
       listOf(
-        prisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = "54322")
+        aPrisonerSearchPrisoner.copy(prisonerNumber = "A1234AB", bookingId = "54322")
       )
     )
-    whenever(prisonApiClient.getIS91AndExtraditionBookingIds(listOf(54321, 54322))).thenReturn(emptyList())
-    whenever(prisonApiClient.hdcStatuses(listOf(54321, 54322))).thenReturn(listOf(anHdcStatus))
+    whenever(prisonApiClient.getOffenceHistories(listOf(54321))).thenReturn(listOf(aPrisonerOffenceHistory, aPrisonerOffenceHistory.copy(bookingId = 54322)))
+    whenever(prisonApiClient.getHdcStatuses(listOf(54321, 54322))).thenReturn(listOf(anHdcStatus))
 
     service.licenceActivationJob()
 
@@ -296,9 +298,16 @@ class LicenceActivationServiceTest {
     passed = true
   )
 
-  private val prisonerSearchPrisoner = PrisonerSearchPrisoner(
+  private val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(
     prisonerNumber = "A1234AA",
     bookingId = "54321",
     status = "INACTIVE OUT"
+  )
+
+  private val aPrisonerOffenceHistory = PrisonerOffenceHistory(
+    bookingId = 54321,
+    offenceCode = "abc123",
+    primaryResultCode = null,
+    secondaryResultCode = null
   )
 }

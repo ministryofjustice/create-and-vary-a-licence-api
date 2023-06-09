@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.getIS91AndExtraditionBookingIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -24,17 +25,13 @@ class LicenceActivationService(
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(potentialLicences)
     val licencesToActivate = determineEligibleLicencesToActivate(eligibleLicences)
 
-    if (licencesToActivate.any()) {
-      licenceService.activateLicences(licencesToActivate)
-    }
-    if (ineligibleLicences.any()) {
-      licenceService.inactivateLicences(ineligibleLicences)
-    }
+    licenceService.activateLicences(licencesToActivate)
+    licenceService.inactivateLicences(ineligibleLicences)
   }
 
   private fun determineLicenceEligibility(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val bookingIds = licences.map { it.bookingId!! }
-    val hdcStatuses = prisonApiClient.hdcStatuses(bookingIds)
+    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingIds)
     val approvedHdcBookingIds = hdcStatuses.filter { it.approvalStatus == "APPROVED" }.map { it.bookingId }
     val (ineligibleLicences, eligibleLicences) = licences.partition {
       approvedHdcBookingIds.contains(it.bookingId)
@@ -47,22 +44,23 @@ class LicenceActivationService(
     val standardLicencesPrisoners =
       prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
 
-    val iS91LicencesToActivate = iS91Licences.filter { it.passedIS91ReleaseDate() }
+    val iS91LicencesToActivate = iS91Licences.filter { it.isPassedIS91ReleaseDate() }
     val standardLicencesToActivate =
-      standardLicences.filter { it.standardLicenceForActivation(standardLicencesPrisoners) }
+      standardLicences.filter { it.isStandardLicenceForActivation(standardLicencesPrisoners) }
 
     return iS91LicencesToActivate + standardLicencesToActivate
   }
 
   private fun filterLicencesIntoTypes(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val licenceBookingIds = licences.map { it.bookingId!! }
-    val iS91AndExtraditionBookingIds = prisonApiClient.getIS91AndExtraditionBookingIds(licenceBookingIds)
+    val offenceHistories = prisonApiClient.getOffenceHistories(licenceBookingIds)
+    val iS91AndExtraditionBookingIds = getIS91AndExtraditionBookingIds(offenceHistories)
     val (iS91AndExtraditionLicences, standardLicences) =
       licences.partition { iS91AndExtraditionBookingIds.contains(it.bookingId) }
     return Pair(iS91AndExtraditionLicences, standardLicences)
   }
 
-  private fun Licence.passedIS91ReleaseDate(): Boolean {
+  private fun Licence.isPassedIS91ReleaseDate(): Boolean {
     if (this.conditionalReleaseDate == null) {
       return false
     }
@@ -79,16 +77,15 @@ class LicenceActivationService(
     return releaseDate <= LocalDate.now()
   }
 
-  private fun Licence.standardLicenceForActivation(prisoners: List<PrisonerSearchPrisoner>): Boolean {
+  private fun Licence.isStandardLicenceForActivation(prisoners: List<PrisonerSearchPrisoner>): Boolean {
     val prisoner: PrisonerSearchPrisoner = prisoners.first {
       it.prisonerNumber == this.nomsId
     }
-    if (this.actualReleaseDate != null &&
-      this.actualReleaseDate <= LocalDate.now() &&
-      prisoner.status?.startsWith("INACTIVE") == true
-    ) {
-      return true
-    }
-    return false
+    return (
+      this.actualReleaseDate != null &&
+        this.actualReleaseDate <= LocalDate.now() &&
+        prisoner.status?.startsWith(
+          "INACTIVE") == true
+      )
   }
 }

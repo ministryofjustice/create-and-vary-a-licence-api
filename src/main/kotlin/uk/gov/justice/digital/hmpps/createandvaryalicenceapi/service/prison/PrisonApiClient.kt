@@ -28,7 +28,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .onErrorResume { webClientErrorHandler(it) }
   }
 
-  fun hdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
+  fun getHdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
     return prisonerApiWebClient
       .post()
       .uri("/offender-sentences/home-detention-curfews/latest")
@@ -40,7 +40,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .block() ?: emptyList<PrisonerHdcStatus>()
   }
 
-  fun offenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory> {
+  fun getOffenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory> {
     return prisonerApiWebClient
       .post()
       .uri("/bookings/offence-history")
@@ -50,17 +50,6 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .bodyToMono(typeReference<List<PrisonerOffenceHistory>>())
       .onErrorResume { webClientErrorHandler(it) }
       .block() ?: emptyList<PrisonerOffenceHistory>()
-  }
-
-  fun getIS91AndExtraditionBookingIds(bookingIds: List<Long>): List<Long> {
-    val allOffenceHistories = offenceHistories(bookingIds)
-    val desiredResultCodes: Array<String> = arrayOf("5500", "4022", "3006", "5502")
-    val is91AndExtraditionOffenceHistories = allOffenceHistories.filter {
-      desiredResultCodes.contains(it.primaryResultCode) ||
-        desiredResultCodes.contains(it.secondaryResultCode) ||
-        it.offenceCode == "IA99000-001N"
-    }
-    return is91AndExtraditionOffenceHistories.map { it.bookingId }
   }
 
   private fun <API_RESPONSE_BODY_TYPE> webClientErrorHandler(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
