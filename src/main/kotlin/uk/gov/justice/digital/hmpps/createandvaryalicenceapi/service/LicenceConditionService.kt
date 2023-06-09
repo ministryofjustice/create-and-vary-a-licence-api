@@ -62,7 +62,6 @@ class LicenceConditionService(
     val changes = mapOf(
       "typeOfChange" to "update",
       "condition" to "standard",
-      "change" to emptyList<String>()
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -127,12 +126,8 @@ class LicenceConditionService(
     val changes = mapOf(
       "typeOfChange" to "add",
       "condition" to "additional",
-      "change" to listOf(
-        mapOf(
-          "conditionCode" to newCondition.conditionCode,
-          "conditionType" to newCondition.conditionType
-        )
-      )
+      "conditionCode" to newCondition.conditionCode,
+      "conditionType" to newCondition.conditionType
     )
 
     auditEventRepository.saveAndFlush(
@@ -173,13 +168,9 @@ class LicenceConditionService(
     val changes = mapOf(
       "typeOfChange" to "delete",
       "condition" to "additional",
-      "change" to listOf(
-        mapOf(
-          "conditionCode" to removedCondition.conditionCode,
-          "conditionType" to removedCondition.conditionType,
-          "conditionText" to removedCondition.expandedConditionText
-        )
-      )
+      "conditionCode" to removedCondition.conditionCode,
+      "conditionType" to removedCondition.conditionType,
+      "conditionText" to removedCondition.expandedConditionText
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -264,11 +255,11 @@ class LicenceConditionService(
       changes = mapOf(
         "typeOfChange" to "add",
         "condition" to "additional",
-        "change" to
+        "changes" to
           newAdditionalConditions.map {
             mapOf(
               "conditionCode" to it.conditionCode,
-              "conditionType" to it.conditionType,
+              "conditionType" to it.conditionType
             )
           }
       )
@@ -325,7 +316,6 @@ class LicenceConditionService(
     val changes = mapOf(
       "typeOfChange" to "update",
       "condition" to "bespoke",
-      "change" to request.conditions
     )
 
     auditEventRepository.saveAndFlush(
@@ -371,13 +361,9 @@ class LicenceConditionService(
     val changes = mapOf(
       "typeOfChange" to "update",
       "condition" to "additional data",
-      "change" to listOf(
-        mapOf(
-          "conditionCode" to updatedAdditionalCondition.conditionCode,
-          "conditionType" to updatedAdditionalCondition.conditionType,
-          "conditionText" to updatedAdditionalCondition.expandedConditionText
-        )
-      ),
+      "conditionCode" to updatedAdditionalCondition.conditionCode,
+      "conditionType" to updatedAdditionalCondition.conditionType,
+      "conditionText" to updatedAdditionalCondition.expandedConditionText
     )
 
     auditEventRepository.saveAndFlush(

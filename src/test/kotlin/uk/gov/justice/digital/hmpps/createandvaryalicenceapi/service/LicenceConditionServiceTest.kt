@@ -146,12 +146,11 @@ class LicenceConditionServiceTest {
           "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
       )
     assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "change")
+      .extracting("typeOfChange", "condition")
       .isEqualTo(
         listOf(
           "update",
-          "standard",
-          emptyList<String>()
+          "standard"
         )
       )
   }
@@ -256,18 +255,14 @@ class LicenceConditionServiceTest {
       )
 
     assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "change")
+      .extracting("typeOfChange", "condition", "conditionCode", "conditionType", "conditionText")
       .isEqualTo(
         listOf(
           "delete",
           "additional",
-          listOf(
-            mapOf(
-              "conditionCode" to "code2",
-              "conditionType" to "AP",
-              "conditionText" to "removedText"
-            )
-          )
+          "code2",
+          "AP",
+          "removedText"
         )
       )
   }
@@ -474,16 +469,11 @@ class LicenceConditionServiceTest {
       )
 
     assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "change")
+      .extracting("typeOfChange", "condition")
       .isEqualTo(
         listOf(
           "update",
-          "bespoke",
-          listOf(
-            "Condition 1",
-            "Condition 2",
-            "Condition 3"
-          )
+          "bespoke"
         )
       )
   }
@@ -643,18 +633,14 @@ class LicenceConditionServiceTest {
     assertThat(auditCaptor.value.detail).isEqualTo("ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}")
 
     assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "change")
+      .extracting("typeOfChange", "condition", "conditionCode", "conditionType", "conditionText")
       .isEqualTo(
         listOf(
           "update",
           "additional data",
-          listOf(
-            mapOf(
-              "conditionCode" to "code1",
-              "conditionType" to "AP",
-              "conditionText" to "expanded text"
-            )
-          )
+          "code1",
+          "AP",
+          "expanded text"
         )
       )
   }
