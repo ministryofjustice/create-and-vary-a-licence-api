@@ -255,7 +255,7 @@ class LicenceConditionService(
       changes = mapOf(
         "typeOfChange" to "add",
         "condition" to "additional",
-        "changes" to
+        "conditionList" to
           newAdditionalConditions.map {
             mapOf(
               "conditionCode" to it.conditionCode,
@@ -267,7 +267,7 @@ class LicenceConditionService(
       changes = mapOf(
         "typeOfChange" to "remove",
         "condition" to "additional",
-        "change" to
+        "conditionList" to
           removedAdditionalConditionsList.map {
             mapOf(
               "conditionCode" to it.conditionCode,

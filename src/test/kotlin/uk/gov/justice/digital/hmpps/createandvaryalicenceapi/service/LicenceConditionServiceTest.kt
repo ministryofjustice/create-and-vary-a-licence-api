@@ -408,7 +408,7 @@ class LicenceConditionServiceTest {
       )
 
     assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "change")
+      .extracting("typeOfChange", "condition", "conditionList")
       .isEqualTo(
         listOf(
           "remove",
