@@ -151,7 +151,7 @@ class LicenceConditionServiceTest {
         listOf(
           "update",
           "standard",
-          emptyList<String>()
+          emptyMap<String, Any>()
         )
       )
   }
