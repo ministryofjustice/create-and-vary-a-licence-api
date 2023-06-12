@@ -11,6 +11,7 @@ import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -49,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -465,8 +467,16 @@ class LicenceServiceTest {
       .isEqualTo(listOf(1L, LicenceStatus.REJECTED, "X"))
 
     assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "X", "Y", "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          1L,
+          "X",
+          "Y",
+          "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT
+        )
+      )
   }
 
   @Test
@@ -504,8 +514,101 @@ class LicenceServiceTest {
       )
 
     assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "X", "Y", "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          1L,
+          "X",
+          "Y",
+          "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT
+        )
+      )
+  }
+
+  @Test
+  fun `update licence status to APPROVED deactivates previous version of licence`() {
+    val newLicenceId = 23L
+    val username = "user"
+    val fullName = "user 1"
+    val firstVersionOfLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      approvedByUsername = username,
+      approvedByName = fullName,
+      approvedDate = LocalDateTime.now()
+    )
+    val newVersionOfLicence =
+      aLicenceEntity.copy(id = newLicenceId, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = aLicenceEntity.id)
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(firstVersionOfLicence))
+    whenever(licenceRepository.findById(newLicenceId)).thenReturn(Optional.of(newVersionOfLicence))
+
+    service.updateLicenceStatus(
+      newLicenceId,
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = username, fullName = fullName)
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(firstVersionOfLicence.id, LicenceStatus.INACTIVE, username))
+
+    assertThat(licenceCaptor.allValues[1])
+      .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
+      .isEqualTo(listOf(newVersionOfLicence.id, LicenceStatus.APPROVED, username, fullName))
+    assertThat(licenceCaptor.allValues[1].approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
+
+    assertThat(eventCaptor.allValues[0])
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(
+        listOf(
+          firstVersionOfLicence.id,
+          LicenceEventType.SUPERSEDED,
+          "Licence deactivated as a newer version was approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
+
+    assertThat(eventCaptor.allValues[1])
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(
+        listOf(
+          newVersionOfLicence.id,
+          LicenceEventType.APPROVED,
+          "Licence updated to APPROVED for ${newVersionOfLicence.forename} ${newVersionOfLicence.surname}"
+        )
+      )
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          firstVersionOfLicence.id,
+          username,
+          fullName,
+          "Licence set to INACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT
+        )
+      )
+
+    assertThat(auditCaptor.allValues[1])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          newVersionOfLicence.id,
+          username,
+          fullName,
+          "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT
+        )
+      )
   }
 
   @Test
