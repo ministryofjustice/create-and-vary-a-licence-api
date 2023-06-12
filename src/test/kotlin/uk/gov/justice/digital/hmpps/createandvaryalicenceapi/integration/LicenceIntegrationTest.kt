@@ -295,6 +295,36 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     // TODO : add more assertions
     assertThat(licenceV1?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
+    assertThat(licenceV1?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
+    assertThat(licenceV1?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-versioned-licence-id-1.sql"
+  )
+  fun `Approve a new version of a licence`() {
+    webTestClient.put()
+      .uri("/licence/id/2/status")
+      .bodyValue(aStatusUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val licenceV1 = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    // TODO : add more assertions
+    assertThat(licenceV1?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
     // assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
     // assertThat(licenceV1?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
     // assertThat(licenceV1?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
