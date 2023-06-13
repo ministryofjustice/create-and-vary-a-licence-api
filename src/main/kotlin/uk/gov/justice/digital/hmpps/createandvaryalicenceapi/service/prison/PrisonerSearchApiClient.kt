@@ -17,15 +17,16 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun searchPrisonersByBookingIds(bookingIds: List<Long>): Mono<List<PrisonerSearchPrisoner>> {
+  fun searchPrisonersByBookingIds(bookingIds: List<Long>): List<PrisonerSearchPrisoner> {
     return prisonerSearchApiWebClient
       .post()
-      .uri("/offender-sentences/home-detention-curfews/latest")
+      .uri("/prisoner-search/booking-ids")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(bookingIds)
       .retrieve()
       .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
       .onErrorResume { webClientErrorHandler(it) }
+      .block() ?: emptyList<PrisonerSearchPrisoner>()
   }
 
   private fun <API_RESPONSE_BODY_TYPE> webClientErrorHandler(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =

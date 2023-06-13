@@ -26,6 +26,16 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
   )
   fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l 
+        WHERE (l.actualReleaseDate <= CURRENT_DATE OR l.conditionalReleaseDate <= CURRENT_DATE) 
+        AND l.statusCode = 'APPROVED'
+    """
+  )
+  fun getApprovedLicencesOnOrPassedReleaseDate(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
