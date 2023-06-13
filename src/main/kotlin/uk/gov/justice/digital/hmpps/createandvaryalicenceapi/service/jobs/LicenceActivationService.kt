@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.getIS91AndExtraditionBookingIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -16,7 +16,8 @@ class LicenceActivationService(
   private val licenceRepository: LicenceRepository,
   private val licenceService: LicenceService,
   private val prisonApiClient: PrisonApiClient,
-  private val prisonerSearchApiClient: PrisonerSearchApiClient
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val iS91DeterminationService: IS91DeterminationService
 ) {
 
   @Transactional
@@ -53,8 +54,7 @@ class LicenceActivationService(
 
   private fun filterLicencesIntoTypes(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val licenceBookingIds = licences.map { it.bookingId!! }
-    val offenceHistories = prisonApiClient.getOffenceHistories(licenceBookingIds)
-    val iS91AndExtraditionBookingIds = getIS91AndExtraditionBookingIds(offenceHistories)
+    val iS91AndExtraditionBookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(licenceBookingIds)
     val (iS91AndExtraditionLicences, standardLicences) =
       licences.partition { iS91AndExtraditionBookingIds.contains(it.bookingId) }
     return Pair(iS91AndExtraditionLicences, standardLicences)
