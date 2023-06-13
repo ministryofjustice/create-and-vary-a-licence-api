@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -75,18 +76,20 @@ class LicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
 
-  private val service = LicenceService(
-    licenceRepository,
-    communityOffenderManagerRepository,
-    standardConditionRepository,
-    additionalConditionRepository,
-    bespokeConditionRepository,
-    licenceEventRepository,
-    licencePolicyService,
-    additionalConditionUploadDetailRepository,
-    auditEventRepository,
-    notifyService,
-    omuService,
+  private val service = Mockito.spy(
+    LicenceService(
+      licenceRepository,
+      communityOffenderManagerRepository,
+      standardConditionRepository,
+      additionalConditionRepository,
+      bespokeConditionRepository,
+      licenceEventRepository,
+      licencePolicyService,
+      additionalConditionUploadDetailRepository,
+      auditEventRepository,
+      notifyService,
+      omuService
+    )
   )
 
   @BeforeEach
@@ -726,14 +729,11 @@ class LicenceServiceTest {
 
   @Test
   fun `activate licences sets licence statuses to ACTIVE`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
-
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.activateLicences(listOf(1L))
+    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
@@ -755,15 +755,23 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `inactivate licences sets licence statuses to INACTIVE`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+  fun `activateLicencesByIds calls activateLicences with the licences associated with the given IDs`() {
+    val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
+    service.activateLicencesByIds(listOf(1))
+
+    verify(licenceRepository, times(1)).findAllById(listOf(1L))
+    verify(service, times(1)).activateLicences(listOf(licence))
+  }
+
+  @Test
+  fun `inactivate licences sets licence statuses to INACTIVE`() {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.inActivateLicences(listOf(1L))
+    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
     verify(
       licenceRepository,
       times(1)
@@ -788,15 +796,14 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `activate licences does not activate if status is not approved`() {
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
+  fun `inActivateLicencesByIds calls inactivateLicences with the licences associated with the given IDs`() {
+    val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
 
-    service.activateLicences(listOf(1L))
+    service.inActivateLicencesByIds(listOf(1))
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(service, times(1)).inactivateLicences(listOf(licence))
   }
 
   @Test

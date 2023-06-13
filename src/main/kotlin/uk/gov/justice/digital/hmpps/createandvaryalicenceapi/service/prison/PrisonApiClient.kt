@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 
 @Service
 class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: WebClient) {
@@ -27,6 +28,30 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .onErrorResume { webClientErrorHandler(it) }
   }
 
+  fun getHdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
+    return prisonerApiWebClient
+      .post()
+      .uri("/offender-sentences/home-detention-curfews/latest")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(bookingIds)
+      .retrieve()
+      .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
+      .onErrorResume { webClientErrorHandler(it) }
+      .block() ?: emptyList<PrisonerHdcStatus>()
+  }
+
+  fun getOffenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory> {
+    return prisonerApiWebClient
+      .post()
+      .uri("/bookings/offence-history")
+      .bodyValue(bookingIds)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<PrisonerOffenceHistory>>())
+      .onErrorResume { webClientErrorHandler(it) }
+      .block() ?: emptyList<PrisonerOffenceHistory>()
+  }
+
   private fun <API_RESPONSE_BODY_TYPE> webClientErrorHandler(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
     with(exception) {
       if (this is WebClientResponseException) {
@@ -35,9 +60,11 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
           FORBIDDEN -> {
             log.error("Client token does not have correct role to call prisoner-api $uriPath")
           }
+
           NOT_FOUND -> {
             log.info("No resource found when calling prisoner-api $uriPath")
           }
+
           else -> {
             log.error("Failed to call prisoner-api $uriPath [statusCode: $statusCode, body: ${this.responseBodyAsString}]")
           }

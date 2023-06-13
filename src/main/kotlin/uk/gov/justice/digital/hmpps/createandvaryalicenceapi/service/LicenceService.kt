@@ -395,10 +395,8 @@ class LicenceService(
   }
 
   @Transactional
-  fun activateLicences(licenceIds: List<Long>) {
-    val matchingLicences =
-      licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
-    val activatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = ACTIVE) }
+  fun activateLicences(licences: List<EntityLicence>) {
+    val activatedLicences = licences.map { it.copy(statusCode = ACTIVE) }
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
 
@@ -429,10 +427,14 @@ class LicenceService(
   }
 
   @Transactional
-  fun inActivateLicences(licenceIds: List<Long>) {
+  fun activateLicencesByIds(licenceIds: List<Long>) {
     val matchingLicences =
-      licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
-    val inActivatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = INACTIVE) }
+      licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
+    activateLicences(matchingLicences)
+  }
+
+  fun inactivateLicences(licences: List<EntityLicence>) {
+    val inActivatedLicences = licences.map { it.copy(statusCode = INACTIVE) }
     if (inActivatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(inActivatedLicences)
 
@@ -460,6 +462,13 @@ class LicenceService(
         )
       }
     }
+  }
+
+  @Transactional
+  fun inActivateLicencesByIds(licenceIds: List<Long>) {
+    val matchingLicences =
+      licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
+    inactivateLicences(matchingLicences)
   }
 
   @Transactional
