@@ -858,6 +858,33 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `activate licences sets licence statuses to ACTIVE and logs the provided reason`() {
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+    service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
+
+    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Test reason for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(listOf(1L, LicenceEventType.ACTIVATED, "SYSTEM", "SYSTEM"))
+  }
+
+  @Test
   fun `activateLicencesByIds calls activateLicences with the licences associated with the given IDs`() {
     val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
@@ -890,6 +917,36 @@ class LicenceServiceTest {
           "SYSTEM",
           "SYSTEM",
           "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
+        )
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(listOf(1L, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"))
+  }
+
+  @Test
+  fun `inactivate licences sets licence statuses to INACTIVE and logs the provided reason`() {
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
+
+    verify(
+      licenceRepository,
+      times(1)
+    ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Test reason for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
         )
       )
 

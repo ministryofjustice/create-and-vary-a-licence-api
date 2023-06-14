@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -24,10 +25,11 @@ class LicenceActivationService(
   fun licenceActivationJob() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(potentialLicences)
-    val licencesToActivate = determineEligibleLicencesToActivate(eligibleLicences)
+    val (iS91licencesToActivate, standardLicencesToActivate) = determineEligibleLicencesToActivate(eligibleLicences)
 
-    licenceService.activateLicences(licencesToActivate)
-    licenceService.inactivateLicences(ineligibleLicences)
+    licenceService.activateLicences(iS91licencesToActivate, "IS91 licence automatically activated via repeating job")
+    licenceService.activateLicences(standardLicencesToActivate, "Licence automatically activated via repeating job")
+    licenceService.inactivateLicences(ineligibleLicences, "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   private fun determineLicenceEligibility(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
@@ -40,7 +42,7 @@ class LicenceActivationService(
     return Pair(eligibleLicences, ineligibleLicences)
   }
 
-  private fun determineEligibleLicencesToActivate(licences: List<Licence>): List<Licence> {
+  private fun determineEligibleLicencesToActivate(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val (iS91Licences, standardLicences) = filterLicencesIntoTypes(licences)
     val standardLicencesPrisoners =
       prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
@@ -49,7 +51,7 @@ class LicenceActivationService(
     val standardLicencesToActivate =
       standardLicences.filter { it.isStandardLicenceForActivation(standardLicencesPrisoners) }
 
-    return iS91LicencesToActivate + standardLicencesToActivate
+    return Pair(iS91LicencesToActivate, standardLicencesToActivate)
   }
 
   private fun filterLicencesIntoTypes(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
@@ -86,5 +88,9 @@ class LicenceActivationService(
         this.actualReleaseDate <= LocalDate.now() &&
         prisoner.status?.startsWith("INACTIVE") == true
       )
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
