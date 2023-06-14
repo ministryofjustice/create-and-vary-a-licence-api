@@ -395,7 +395,7 @@ class LicenceService(
   }
 
   @Transactional
-  fun activateLicences(licences: List<EntityLicence>) {
+  fun activateLicences(licences: List<EntityLicence>, reason: String? = null) {
     val activatedLicences = licences.map { it.copy(statusCode = ACTIVE) }
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
@@ -407,7 +407,7 @@ class LicenceService(
             username = "SYSTEM",
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
-            summary = "Licence automatically activated for ${licence.forename} ${licence.surname}",
+            summary = "${reason ?: "Licence automatically activated"} for ${licence.forename} ${licence.surname}",
             detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
           )
         )
@@ -419,7 +419,7 @@ class LicenceService(
             username = "SYSTEM",
             forenames = "SYSTEM",
             surname = "SYSTEM",
-            eventDescription = "Licence automatically activated for ${licence.forename} ${licence.surname}",
+            eventDescription = "${reason ?: "Licence automatically activated"} for ${licence.forename} ${licence.surname}",
           )
         )
       }
@@ -433,7 +433,7 @@ class LicenceService(
     activateLicences(matchingLicences)
   }
 
-  fun inactivateLicences(licences: List<EntityLicence>) {
+  fun inactivateLicences(licences: List<EntityLicence>, reason: String? = null) {
     val inActivatedLicences = licences.map { it.copy(statusCode = INACTIVE) }
     if (inActivatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(inActivatedLicences)
@@ -445,7 +445,7 @@ class LicenceService(
             username = "SYSTEM",
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
-            summary = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
+            summary = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
             detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
           )
         )
@@ -457,7 +457,7 @@ class LicenceService(
             username = "SYSTEM",
             forenames = "SYSTEM",
             surname = "SYSTEM",
-            eventDescription = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
+            eventDescription = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
           )
         )
       }
