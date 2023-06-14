@@ -2,6 +2,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.2.2"
   kotlin("plugin.spring") version "1.8.22"
   kotlin("plugin.jpa") version "1.8.22"
+  id("io.gitlab.arturbosch.detekt") version "1.23.0"
 }
 
 configurations {
@@ -75,10 +76,35 @@ repositories {
   mavenCentral()
 }
 
+detekt {
+  source.setFrom("$projectDir/src/main")
+  buildUponDefaultConfig = true // preconfigure defaults
+  allRules = false // activate all available (even unstable) rules.
+  config.setFrom("$projectDir/detekt.yml") // point to your custom config defining rules to run, overwriting default behavior
+  baseline = file("$projectDir/detekt-baseline.xml") // a way of suppressing issues before introducing detekt
+}
+
+configurations.matching { it.name == "detekt" }.all {
+  resolutionStrategy.eachDependency {
+    if (requested.group == "org.jetbrains.kotlin") {
+      useVersion("1.8.21")
+    }
+  }
+}
+
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
       jvmTarget = "18"
+    }
+  }
+  withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+      html.required.set(true) // observe findings in your browser with structure and code snippets
+      xml.required.set(true) // checkstyle like format mainly for integrations like Jenkins
+      txt.required.set(true) // similar to the console output, contains issue signature to manually edit baseline files
+      sarif.required.set(true) // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations with GitHub Code Scanning
+      md.required.set(true) // simple Markdown format
     }
   }
 }
