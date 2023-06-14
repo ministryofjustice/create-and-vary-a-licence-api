@@ -68,8 +68,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity))
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -86,8 +87,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(listOf(licence))
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(listOf(licence), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -101,8 +103,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(listOf(licence))
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(listOf(licence), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -116,8 +119,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(listOf(licence))
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(listOf(licence), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -131,8 +135,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(emptyList())
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -142,8 +147,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(emptyList())
-    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity))
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -157,8 +163,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity))
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -174,8 +181,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(emptyList())
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -198,8 +206,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(emptyList())
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -217,8 +226,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(emptyList())
-    verify(licenceService, times(1)).inactivateLicences(emptyList())
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(emptyList(), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   @Test
@@ -241,8 +251,9 @@ class LicenceActivationServiceTest {
 
     service.licenceActivationJob()
 
-    verify(licenceService, times(1)).activateLicences(listOf(nonHdcLicence))
-    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity))
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(listOf(nonHdcLicence), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   private val aLicenceEntity = Licence(
