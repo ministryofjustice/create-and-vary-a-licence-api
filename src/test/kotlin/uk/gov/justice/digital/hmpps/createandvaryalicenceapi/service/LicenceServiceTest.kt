@@ -139,6 +139,22 @@ class LicenceServiceTest {
     assertThat(licence.nomsId).isEqualTo(aLicenceEntity.nomsId)
     assertThat(licence.bookingId).isEqualTo(aLicenceEntity.bookingId)
     assertThat(licence.pnc).isEqualTo(aLicenceEntity.pnc)
+    assertThat(licence.isInPssPeriod).isFalse()
+
+    verify(licenceRepository, times(1)).findById(1L)
+  }
+
+  @Test
+  fun `service transforms key fields of a licence in PSS period object correctly`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aPssLicenceEntity))
+
+    val pssLicence = service.getLicenceById(1L)
+
+    assertThat(pssLicence.cro).isEqualTo(aPssLicenceEntity.cro)
+    assertThat(pssLicence.nomsId).isEqualTo(aPssLicenceEntity.nomsId)
+    assertThat(pssLicence.bookingId).isEqualTo(aPssLicenceEntity.bookingId)
+    assertThat(pssLicence.pnc).isEqualTo(aPssLicenceEntity.pnc)
+    assertThat(pssLicence.isInPssPeriod).isTrue()
 
     verify(licenceRepository, times(1)).findById(1L)
   }
@@ -1232,7 +1248,7 @@ class LicenceServiceTest {
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y"
-      ),
+      )
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -1259,6 +1275,56 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
+    )
+
+    val aPssLicenceEntity = EntityLicence(
+      id = 1,
+      typeCode = LicenceType.AP,
+      version = "1.1",
+      statusCode = LicenceStatus.IN_PROGRESS,
+      nomsId = "A1234AA",
+      bookingNo = "123456",
+      bookingId = 54321,
+      crn = "X12345",
+      pnc = "2019/123445",
+      cro = "12345",
+      prisonCode = "MDI",
+      prisonDescription = "Moorland (HMP)",
+      forename = "Bob",
+      surname = "Mortimer",
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      actualReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceStartDate = LocalDate.of(2018, 10, 22),
+      sentenceEndDate = LocalDate.of(2021, 10, 22),
+      licenceStartDate = LocalDate.of(2021, 10, 22),
+      licenceExpiryDate = LocalDate.now().minusDays(1),
+      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+      probationAreaCode = "N01",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      standardConditions = someEntityStandardConditions,
+      responsibleCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y"
+      ),
+      createdBy = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y"
+      )
     )
   }
 }
