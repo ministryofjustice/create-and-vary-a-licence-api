@@ -37,7 +37,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-omu-contact-data.sql"
+    "classpath:test_data/seed-omu-contact-data.sql",
   )
   fun `query for OMU email address`() {
     webTestClient.get()
@@ -71,7 +71,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-omu-contact-data.sql"
+    "classpath:test_data/seed-omu-contact-data.sql",
   )
   fun `query for updating new OMU email address`() {
     webTestClient.put()
@@ -85,7 +85,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-omu-contact-data.sql"
+    "classpath:test_data/seed-omu-contact-data.sql",
   )
   fun `query for deleting OMU email address`() {
     webTestClient.delete()

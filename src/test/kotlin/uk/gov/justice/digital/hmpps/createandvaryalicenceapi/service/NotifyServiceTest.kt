@@ -33,16 +33,17 @@ class NotifyServiceTest {
     variationForReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     client = notificationClient,
-    internalEmailAddress = INTERNAL_EMAIL_ADDRESS
+    internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
   )
 
   @Test
   fun `send licence initial licence create email`() {
     val comToEmail = PromptLicenceCreationRequest(
-      email = EMAIL_ADDRESS, comName = "Joe Bloggs",
+      email = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
-      )
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20")),
+      ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
@@ -57,10 +58,11 @@ class NotifyServiceTest {
   @Test
   fun `send licence urgent licence create email`() {
     val comToEmail = PromptLicenceCreationRequest(
-      email = EMAIL_ADDRESS, comName = "Joe Bloggs",
+      email = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20"))
-      )
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20")),
+      ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
@@ -96,7 +98,7 @@ class NotifyServiceTest {
       "offenderFullName" to "James Jonas",
       "crn" to "X11111",
       "dateDescriptions" to listOf("Release date", "Licence end date"),
-      "caseloadLink" to "http://somewhere/licence/create/caseload"
+      "caseloadLink" to "http://somewhere/licence/create/caseload",
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -116,7 +118,7 @@ class NotifyServiceTest {
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "fullName" to "Peter Falk",
-      "caseListLink" to "http://somewhere/licence/vary/caseload"
+      "caseListLink" to "http://somewhere/licence/vary/caseload",
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -136,7 +138,7 @@ class NotifyServiceTest {
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "fullName" to "Peter Falk",
-      "caseListLink" to "http://somewhere/licence/vary/caseload"
+      "caseListLink" to "http://somewhere/licence/vary/caseload",
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -169,7 +171,7 @@ class NotifyServiceTest {
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "fullName" to "Peter Falk",
-      "caseListLink" to "http://somewhere/licence/vary/caseload"
+      "caseListLink" to "http://somewhere/licence/vary/caseload",
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -183,14 +185,14 @@ class NotifyServiceTest {
       "Peter",
       "Falk",
       "ABC123",
-      dateTime
+      dateTime,
     )
 
     val expectedMap = mapOf(
       "prisonerFirstName" to "Peter",
       "prisonerLastName" to "Falk",
       "prisonerNumber" to "ABC123",
-      "crd" to "10 February 2016"
+      "crd" to "10 February 2016",
     )
 
     verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
@@ -203,7 +205,7 @@ class NotifyServiceTest {
       "Peter",
       "Falk",
       "ABC123",
-      null
+      null,
     )
     verifyNoInteractions(notificationClient)
   }
@@ -222,7 +224,7 @@ class NotifyServiceTest {
       variationForReApprovalTemplateId = TEMPLATE_ID,
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
-      internalEmailAddress = INTERNAL_EMAIL_ADDRESS
+      internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
 
     verifyNoInteractions(notificationClient)
@@ -253,15 +255,15 @@ class NotifyServiceTest {
         "smith",
         "comFirst",
         "comLast",
-        EMAIL_ADDRESS
-      )
+        EMAIL_ADDRESS,
+      ),
     )
 
     val expectedMap = mapOf(
       "crn" to "a123",
       "prisonerFirstName" to "jim",
       "prisonerLastName" to "smith",
-      "comName" to "comFirst comLast"
+      "comName" to "comFirst comLast",
     )
 
     notifyService.sendUnapprovedLicenceEmail(emailContent)

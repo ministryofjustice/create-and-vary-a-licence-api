@@ -17,7 +17,7 @@ fun <T : Any> licencePolicyChanges(
   licence: Licence,
   previousConditions: List<IAdditionalCondition<T>>,
   currentConditions: List<IAdditionalCondition<T>>,
-  allReplacements: List<Replacements>
+  allReplacements: List<Replacements>,
 ): List<LicenceConditionChanges> {
   val conditionsToCheck = previousConditions.filter { policyCondition ->
     licence.additionalLicenceConditions.any { licenceCondition ->
@@ -28,7 +28,7 @@ fun <T : Any> licencePolicyChanges(
 
   return changes.map { change ->
     change.copy(
-      sequence = licence.additionalLicenceConditions.find { condition -> condition.code == change.code }?.sequence
+      sequence = licence.additionalLicenceConditions.find { condition -> condition.code == change.code }?.sequence,
     )
   }
 }
@@ -36,13 +36,14 @@ fun <T : Any> licencePolicyChanges(
 fun <T : Any> conditionChanges(
   previousConditions: List<IAdditionalCondition<T>>,
   currentConditions: List<IAdditionalCondition<T>>,
-  allReplacements: List<Replacements>
+  allReplacements: List<Replacements>,
 ): List<LicenceConditionChanges> = previousConditions.mapNotNull { previous ->
   val current = currentConditions.find { it.code == previous.code }
-  if (current != null)
+  if (current != null) {
     conditionUpdated(previous, current)
-  else
+  } else {
     conditionRemoved(previous, allReplacements)
+  }
 }
 
 private fun <T : Any> conditionUpdated(
@@ -76,7 +77,7 @@ fun ConditionChangeType.update(
   previous: ILicenceCondition,
   current: ILicenceCondition,
   removed: List<Any> = emptyList(),
-  added: List<Any> = emptyList()
+  added: List<Any> = emptyList(),
 ): LicenceConditionChanges =
   LicenceConditionChanges(this, current.code, null, previous.text, current.text, added, removed)
 
@@ -91,5 +92,5 @@ fun ConditionChangeType.removal(
   null,
   emptyList(),
   emptyList(),
-  alternatives.map { SuggestedCondition(it.code, it.text) }
+  alternatives.map { SuggestedCondition(it.code, it.text) },
 )

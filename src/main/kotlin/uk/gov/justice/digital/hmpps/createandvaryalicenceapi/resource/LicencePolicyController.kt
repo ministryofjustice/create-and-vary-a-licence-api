@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 @RequestMapping("/licence-policy", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicencePolicyController(
   private val licencePolicyService: LicencePolicyService,
-  private val licenceService: LicenceService
+  private val licenceService: LicenceService,
 ) {
 
   @GetMapping(value = ["/active"])
@@ -51,8 +51,8 @@ class LicencePolicyController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getCurrentPolicy(): LicencePolicy? {
     return licencePolicyService.currentPolicy()
@@ -88,8 +88,8 @@ class LicencePolicyController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicy? {
     return licencePolicyService.policyByVersion(version)
@@ -125,8 +125,8 @@ class LicencePolicyController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getPolicies(): List<LicencePolicy> {
     return licencePolicyService.allPolicies()
@@ -143,7 +143,7 @@ class LicencePolicyController(
   )
   fun compareLicence(
     @PathVariable("version") version: String,
-    @PathVariable("licenceId") licenceId: Long
+    @PathVariable("licenceId") licenceId: Long,
   ): List<LicenceConditionChanges>? {
     val currentLicence = licenceService.getLicenceById(licenceId)
     val currentPolicy = licencePolicyService.policyByVersion(version)

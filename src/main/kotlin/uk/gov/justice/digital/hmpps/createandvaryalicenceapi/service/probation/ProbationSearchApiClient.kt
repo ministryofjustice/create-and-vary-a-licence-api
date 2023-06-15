@@ -11,11 +11,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val probationSearchApiClient: WebClient) {
 
   fun searchLicenceCaseloadByTeam(query: String, teamCodes: List<String>): List<ProbationSearchResult> {
-
     val licenceCaseLoadRequestBody = LicenceCaseloadSearchRequest(
       teamCodes,
       query,
-      ProbationSearchSortByRequest()
+      ProbationSearchSortByRequest(),
     )
 
     val probationOffenderSearchResponse = probationSearchApiClient

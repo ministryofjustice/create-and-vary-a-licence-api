@@ -23,7 +23,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         AND l.statusCode = 'SUBMITTED'
         AND EXISTS 
                 (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')
-    """
+    """,
   )
   fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence>
 
@@ -33,7 +33,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         FROM Licence l 
         WHERE (l.actualReleaseDate <= CURRENT_DATE OR l.conditionalReleaseDate <= CURRENT_DATE) 
         AND l.statusCode = 'APPROVED'
-    """
+    """,
   )
   fun getApprovedLicencesOnOrPassedReleaseDate(): List<Licence>
 }
@@ -56,5 +56,5 @@ data class UnapprovedLicence(
   val comLastName: String? = null,
 
   @Schema(description = "The COM's email address", example = "jbloggs@probation.gov.uk")
-  val comEmail: String? = null
+  val comEmail: String? = null,
 )

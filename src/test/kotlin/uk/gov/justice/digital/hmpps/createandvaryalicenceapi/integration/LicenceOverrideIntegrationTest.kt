@@ -16,8 +16,10 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
+
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
+
   @Autowired
   lateinit var licenceEventRepository: AuditEventRepository
 
@@ -28,8 +30,8 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         OverrideLicenceStatusRequest(
           LicenceStatus.ACTIVE,
-          "Override Test"
-        )
+          "Override Test",
+        ),
       )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
@@ -50,8 +52,8 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         OverrideLicenceStatusRequest(
           LicenceStatus.ACTIVE,
-          "Override Test"
-        )
+          "Override Test",
+        ),
       )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -74,8 +76,8 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         OverrideLicenceStatusRequest(
           LicenceStatus.IN_PROGRESS,
-          "Override Test"
-        )
+          "Override Test",
+        ),
       )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))

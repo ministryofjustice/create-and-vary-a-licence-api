@@ -50,7 +50,7 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override status fails if another licence for the same offender already has requested status`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-      listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB)
+      listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB),
     )
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
@@ -66,7 +66,7 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override status should not fail when changing to INACTIVE regardless of other licences`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-      listOf(inactiveLicenceA, inactiveLicenceB, approvedLicenceA, approvedLicenceB)
+      listOf(inactiveLicenceA, inactiveLicenceB, approvedLicenceA, approvedLicenceB),
     )
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
@@ -76,7 +76,7 @@ class LicenceOverrideServiceTest {
     licenceOverrideService.changeStatus(
       approvedLicenceB.id,
       LicenceStatus.INACTIVE,
-      reasonForChange
+      reasonForChange,
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
@@ -97,8 +97,8 @@ class LicenceOverrideServiceTest {
           approvedLicenceB.id,
           "smills",
           AuditEventType.USER_EVENT,
-          "Licence status overridden to ${LicenceStatus.INACTIVE} for Robin Smith: $reasonForChange"
-        )
+          "Licence status overridden to ${LicenceStatus.INACTIVE} for Robin Smith: $reasonForChange",
+        ),
       )
 
     assertThat(licenceEventCaptor.value)
@@ -109,7 +109,7 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override status updates licence as expected for unused status code`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-      listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB)
+      listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB),
     )
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
@@ -119,7 +119,7 @@ class LicenceOverrideServiceTest {
     licenceOverrideService.changeStatus(
       approvedLicenceA.id,
       LicenceStatus.SUBMITTED,
-      reasonForChange
+      reasonForChange,
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
@@ -140,8 +140,8 @@ class LicenceOverrideServiceTest {
           approvedLicenceA.id,
           "smills",
           AuditEventType.USER_EVENT,
-          "Licence status overridden to ${LicenceStatus.SUBMITTED} for Robin Smith: $reasonForChange"
-        )
+          "Licence status overridden to ${LicenceStatus.SUBMITTED} for Robin Smith: $reasonForChange",
+        ),
       )
 
     assertThat(licenceEventCaptor.value)
@@ -165,7 +165,7 @@ class LicenceOverrideServiceTest {
       probationLauCode = "LAU1",
       probationLauDescription = "LAU1 Lau",
       probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team"
+      probationTeamDescription = "TEAM1 probation team",
     )
     val inactiveLicenceB = Licence(
       id = 2L,
@@ -182,7 +182,7 @@ class LicenceOverrideServiceTest {
       probationLauCode = "LAU1",
       probationLauDescription = "LAU1 Lau",
       probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team"
+      probationTeamDescription = "TEAM1 probation team",
     )
     val approvedLicenceA = Licence(
       id = 3L,
@@ -199,7 +199,7 @@ class LicenceOverrideServiceTest {
       probationLauCode = "LAU1",
       probationLauDescription = "LAU1 Lau",
       probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team"
+      probationTeamDescription = "TEAM1 probation team",
     )
     val approvedLicenceB = Licence(
       id = 4L,
@@ -216,7 +216,7 @@ class LicenceOverrideServiceTest {
       probationLauCode = "LAU1",
       probationLauDescription = "LAU1 Lau",
       probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team"
+      probationTeamDescription = "TEAM1 probation team",
     )
   }
 }

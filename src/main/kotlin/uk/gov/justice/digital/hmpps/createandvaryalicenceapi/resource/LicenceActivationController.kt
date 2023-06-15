@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Licenc
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicenceActivationController(
-  private val licenceActivationService: LicenceActivationService
+  private val licenceActivationService: LicenceActivationService,
 ) {
   @PostMapping(value = ["/run-activation-job"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -41,8 +41,8 @@ class LicenceActivationController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun runLicenceActivationJob() {
     return licenceActivationService.licenceActivationJob()

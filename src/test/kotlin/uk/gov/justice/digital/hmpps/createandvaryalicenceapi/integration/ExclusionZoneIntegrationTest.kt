@@ -31,7 +31,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-2.sql"
+    "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `Upload an exclusion zone file`() {
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
@@ -99,7 +99,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-2.sql"
+    "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `exclusion zone upload is role-protected`() {
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")

@@ -36,7 +36,9 @@ class AuditService(
 
     return auditEventRepository
       .findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
-        auditRequest.licenceId, auditRequest.startTime, auditRequest.endTime
+        auditRequest.licenceId,
+        auditRequest.startTime,
+        auditRequest.endTime,
       )
       .transformToModelAuditEvents()
   }
@@ -44,7 +46,9 @@ class AuditService(
   private fun getAuditEventsForUser(auditRequest: AuditRequest): List<ModelAuditEvent> {
     return auditEventRepository
       .findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-        auditRequest.username!!, auditRequest.startTime, auditRequest.endTime
+        auditRequest.username!!,
+        auditRequest.startTime,
+        auditRequest.endTime,
       )
       .transformToModelAuditEvents()
   }
@@ -56,7 +60,10 @@ class AuditService(
 
     return auditEventRepository
       .findAllByLicenceIdAndUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-        auditRequest.licenceId, auditRequest.username!!, auditRequest.startTime, auditRequest.endTime
+        auditRequest.licenceId,
+        auditRequest.username!!,
+        auditRequest.startTime,
+        auditRequest.endTime,
       )
       .transformToModelAuditEvents()
   }

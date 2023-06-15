@@ -26,7 +26,7 @@ class OffenderController(private val offenderService: OffenderService, private v
 
   @PutMapping(
     value = ["/crn/{crn}/responsible-com"],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -54,12 +54,12 @@ class OffenderController(private val offenderService: OffenderService, private v
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateResponsibleCom(
     @PathVariable crn: String,
-    @RequestBody body: UpdateComRequest
+    @RequestBody body: UpdateComRequest,
   ) {
     val newCom = this.comService.updateComDetails(body)
     this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
@@ -67,7 +67,7 @@ class OffenderController(private val offenderService: OffenderService, private v
 
   @PutMapping(
     value = ["/crn/{crn}/probation-team"],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -95,13 +95,13 @@ class OffenderController(private val offenderService: OffenderService, private v
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   @Transactional
   fun updateProbationTeam(
     @PathVariable crn: String,
-    @RequestBody body: UpdateProbationTeamRequest
+    @RequestBody body: UpdateProbationTeamRequest,
   ) {
     this.offenderService.updateProbationTeam(crn, body)
   }

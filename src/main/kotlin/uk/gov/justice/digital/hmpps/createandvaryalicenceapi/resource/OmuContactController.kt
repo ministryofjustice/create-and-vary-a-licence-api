@@ -38,7 +38,7 @@ class OmuContactController(private val omuService: OmuService) {
       ApiResponse(
         responseCode = "200",
         description = "The OMU was found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))],
       ),
       ApiResponse(
         responseCode = "404",
@@ -54,8 +54,8 @@ class OmuContactController(private val omuService: OmuService) {
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact? {
     val contact = this.omuService.getOmuContactEmail(prisonCode)
@@ -77,7 +77,7 @@ class OmuContactController(private val omuService: OmuService) {
       ApiResponse(
         responseCode = "200",
         description = "The OMU was updated",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))],
       ),
       ApiResponse(
         responseCode = "400",
@@ -93,11 +93,12 @@ class OmuContactController(private val omuService: OmuService) {
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateOmuEmail(
-    @Valid @RequestBody body: UpdateOmuEmailRequest,
+    @Valid @RequestBody
+    body: UpdateOmuEmailRequest,
     @PathVariable("prisonCode") prisonCode: String,
   ): OmuContact {
     return this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
@@ -125,8 +126,8 @@ class OmuContactController(private val omuService: OmuService) {
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun deleteOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String) {
     this.omuService.deleteOmuEmail(prisonCode)

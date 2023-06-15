@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 class ComService(
   private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
   private val communityApiClient: CommunityApiClient,
-  private val probationSearchApiClient: ProbationSearchApiClient
+  private val probationSearchApiClient: ProbationSearchApiClient,
 ) {
 
   companion object {
@@ -32,7 +32,8 @@ class ComService(
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
     val comResult = this.communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
-      comDetails.staffIdentifier, comDetails.staffUsername
+      comDetails.staffIdentifier,
+      comDetails.staffUsername,
     )
 
     if (comResult == null || comResult.isEmpty()) {
@@ -42,8 +43,8 @@ class ComService(
           staffIdentifier = comDetails.staffIdentifier,
           email = comDetails.staffEmail,
           firstName = comDetails.firstName,
-          lastName = comDetails.lastName
-        )
+          lastName = comDetails.lastName,
+        ),
       )
     }
 
@@ -51,7 +52,7 @@ class ComService(
       log.warn(
         "More then one COM record found for staffId {} username {}",
         comDetails.staffIdentifier,
-        comDetails.staffUsername
+        comDetails.staffUsername,
       )
     }
 
@@ -72,8 +73,8 @@ class ComService(
           email = comDetails.staffEmail,
           firstName = comDetails.firstName,
           lastName = comDetails.lastName,
-          lastUpdatedTimestamp = LocalDateTime.now()
-        )
+          lastUpdatedTimestamp = LocalDateTime.now(),
+        ),
       )
     }
 
@@ -83,7 +84,7 @@ class ComService(
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<ProbationSearchResult> {
     val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
       body.query,
-      communityApiClient.getTeamsCodesForUser(body.staffIdentifier)
+      communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
     )
     return entityProbationSearchResult.transformToModelProbationResult()
   }

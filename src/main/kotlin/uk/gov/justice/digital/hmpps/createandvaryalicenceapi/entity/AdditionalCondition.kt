@@ -43,5 +43,5 @@ data class AdditionalCondition(
   @OneToMany(mappedBy = "additionalCondition", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(FetchMode.SUBSELECT)
   @OrderBy("id")
-  val additionalConditionUploadSummary: List<AdditionalConditionUploadSummary> = emptyList()
+  val additionalConditionUploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
 )

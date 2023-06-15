@@ -149,7 +149,7 @@ class LicenceControllerTest {
       post("/licence/create")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest))
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest)),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -169,7 +169,7 @@ class LicenceControllerTest {
       post("/licence/create")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest))
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest)),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -186,7 +186,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAppointmentPersonRequest))
+        .content(mapper.writeValueAsBytes(anUpdateAppointmentPersonRequest)),
     )
       .andExpect(status().isOk)
 
@@ -199,7 +199,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ }))
+        .content(mapper.writeValueAsBytes({ })),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -211,7 +211,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointmentTime")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentTimeRequest))
+        .content(mapper.writeValueAsBytes(anAppointmentTimeRequest)),
     )
       .andExpect(status().isOk)
 
@@ -224,7 +224,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointmentTime")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({}))
+        .content(mapper.writeValueAsBytes({})),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -236,7 +236,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointmentTime")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentTimeRequestDateOnly))
+        .content(mapper.writeValueAsBytes(anAppointmentTimeRequestDateOnly)),
     )
       .andExpect(status().isOk)
 
@@ -249,7 +249,7 @@ class LicenceControllerTest {
       put("/licence/id/4/contact-number")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aContactNumberRequest))
+        .content(mapper.writeValueAsBytes(aContactNumberRequest)),
     )
       .andExpect(status().isOk)
 
@@ -262,7 +262,7 @@ class LicenceControllerTest {
       put("/licence/id/4/contact-number")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ }))
+        .content(mapper.writeValueAsBytes({ })),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -274,7 +274,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointment-address")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentAddressRequest))
+        .content(mapper.writeValueAsBytes(anAppointmentAddressRequest)),
     )
       .andExpect(status().isOk)
 
@@ -287,7 +287,7 @@ class LicenceControllerTest {
       put("/licence/id/4/appointment-address")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ }))
+        .content(mapper.writeValueAsBytes({ })),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -299,7 +299,7 @@ class LicenceControllerTest {
       put("/licence/id/4/bespoke-conditions")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aBespokeConditionsRequest))
+        .content(mapper.writeValueAsBytes(aBespokeConditionsRequest)),
     )
       .andExpect(status().isOk)
 
@@ -312,7 +312,7 @@ class LicenceControllerTest {
       put("/licence/id/4/bespoke-conditions")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(BespokeConditionRequest()))
+        .content(mapper.writeValueAsBytes(BespokeConditionRequest())),
     )
       .andExpect(status().isOk)
 
@@ -325,7 +325,7 @@ class LicenceControllerTest {
       post("/licence/id/4/additional-condition/AP")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAddAdditionalConditionRequest))
+        .content(mapper.writeValueAsBytes(anAddAdditionalConditionRequest)),
     )
       .andExpect(status().isOk)
 
@@ -337,7 +337,7 @@ class LicenceControllerTest {
     mvc.perform(
       delete("/licence/id/4/additional-condition/id/1")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isNoContent)
 
@@ -348,7 +348,7 @@ class LicenceControllerTest {
   fun `match licences by prison code and status`() {
     val licenceQueryObject = LicenceQueryObject(
       prisonCodes = listOf("LEI"),
-      statusCodes = listOf(LicenceStatus.APPROVED)
+      statusCodes = listOf(LicenceStatus.APPROVED),
     )
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
@@ -360,10 +360,10 @@ class LicenceControllerTest {
           mapper.writeValueAsBytes(
             MatchLicencesRequest(
               prison = listOf("LEI"),
-              status = listOf(LicenceStatus.APPROVED)
-            )
-          )
-        )
+              status = listOf(LicenceStatus.APPROVED),
+            ),
+          ),
+        ),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -379,7 +379,7 @@ class LicenceControllerTest {
   fun `match licences by staffId and status`() {
     val licenceQueryObject = LicenceQueryObject(
       staffIds = listOf(1, 2, 3),
-      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
@@ -392,10 +392,10 @@ class LicenceControllerTest {
           mapper.writeValueAsBytes(
             MatchLicencesRequest(
               staffId = listOf(1, 2, 3),
-              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
-            )
-          )
-        )
+              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+            ),
+          ),
+        ),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -411,7 +411,7 @@ class LicenceControllerTest {
   fun `match licences by pdu and status`() {
     val licenceQueryObject = LicenceQueryObject(
       pdus = listOf("A", "B", "C"),
-      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE)
+      statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
@@ -424,10 +424,10 @@ class LicenceControllerTest {
           mapper.writeValueAsBytes(
             MatchLicencesRequest(
               status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
-              pdu = listOf("A", "B", "C")
-            )
-          )
-        )
+              pdu = listOf("A", "B", "C"),
+            ),
+          ),
+        ),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -445,7 +445,7 @@ class LicenceControllerTest {
       put("/licence/id/4/status")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aStatusUpdateRequest))
+        .content(mapper.writeValueAsBytes(aStatusUpdateRequest)),
     )
       .andExpect(status().isOk)
 
@@ -458,7 +458,7 @@ class LicenceControllerTest {
       put("/licence/id/4/additional-conditions")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsListRequest))
+        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsListRequest)),
     )
       .andExpect(status().isOk)
 
@@ -471,7 +471,7 @@ class LicenceControllerTest {
       put("/licence/id/4/standard-conditions")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateStandardConditionRequest))
+        .content(mapper.writeValueAsBytes(anUpdateStandardConditionRequest)),
     )
       .andExpect(status().isOk)
 
@@ -484,7 +484,7 @@ class LicenceControllerTest {
       put("/licence/id/4/additional-conditions/condition/1")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsDataRequest))
+        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsDataRequest)),
     )
       .andExpect(status().isOk)
 
@@ -497,7 +497,7 @@ class LicenceControllerTest {
       put("/licence/id/4/submit")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(listOf(NotifyRequest("testName", "testEmail"))))
+        .content(mapper.writeValueAsBytes(listOf(NotifyRequest("testName", "testEmail")))),
     )
       .andExpect(status().isOk)
 
@@ -511,7 +511,7 @@ class LicenceControllerTest {
     mvc.perform(
       post("/licence/id/4/create-variation")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
 
@@ -526,7 +526,7 @@ class LicenceControllerTest {
     mvc.perform(
       post("/licence/id/$licenceId/edit")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
 
@@ -539,7 +539,7 @@ class LicenceControllerTest {
       put("/licence/id/4/spo-discussion")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(UpdateSpoDiscussionRequest(spoDiscussion = "Yes")))
+        .content(mapper.writeValueAsBytes(UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))),
     )
       .andExpect(status().isOk)
 
@@ -552,7 +552,7 @@ class LicenceControllerTest {
       put("/licence/id/4/vlo-discussion")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(UpdateVloDiscussionRequest(vloDiscussion = "Yes")))
+        .content(mapper.writeValueAsBytes(UpdateVloDiscussionRequest(vloDiscussion = "Yes"))),
     )
       .andExpect(status().isOk)
 
@@ -565,7 +565,7 @@ class LicenceControllerTest {
       put("/licence/id/4/reason-for-variation")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(UpdateReasonForVariationRequest(reasonForVariation = "reason")))
+        .content(mapper.writeValueAsBytes(UpdateReasonForVariationRequest(reasonForVariation = "reason"))),
     )
       .andExpect(status().isOk)
 
@@ -577,7 +577,7 @@ class LicenceControllerTest {
     mvc.perform(
       delete("/licence/id/4/discard")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
 
@@ -592,7 +592,7 @@ class LicenceControllerTest {
       put("/licence/id/4/prison-information")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(expectedRequest))
+        .content(mapper.writeValueAsBytes(expectedRequest)),
     )
       .andExpect(status().isOk)
 
@@ -609,14 +609,14 @@ class LicenceControllerTest {
       licenceStartDate = LocalDate.parse("2023-09-11"),
       licenceExpiryDate = LocalDate.parse("2024-09-11"),
       topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-      topupSupervisionExpiryDate = LocalDate.parse("2025-09-11")
+      topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
     )
 
     mvc.perform(
       put("/licence/id/4/sentence-dates")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(expectedRequest))
+        .content(mapper.writeValueAsBytes(expectedRequest)),
     )
       .andExpect(status().isOk)
 
@@ -628,7 +628,7 @@ class LicenceControllerTest {
     mvc.perform(
       put("/licence/id/4/approve-variation")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
 
@@ -643,7 +643,7 @@ class LicenceControllerTest {
       put("/licence/id/4/refer-variation")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(expectedRequest))
+        .content(mapper.writeValueAsBytes(expectedRequest)),
     )
       .andExpect(status().isOk)
 
@@ -655,12 +655,12 @@ class LicenceControllerTest {
     val someStandardConditions = listOf(
       StandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       StandardCondition(id = 2, code = "notBreakLaw", sequence = 1, text = "Do not break any law"),
-      StandardCondition(id = 3, code = "attendMeetings", sequence = 1, text = "Attend meetings")
+      StandardCondition(id = 3, code = "attendMeetings", sequence = 1, text = "Attend meetings"),
     )
 
     val someAssociationData = listOf(
       AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 1),
-      AdditionalConditionData(id = 2, field = "field2", value = "value2", sequence = 2)
+      AdditionalConditionData(id = 2, field = "field2", value = "value2", sequence = 2),
     )
 
     val someAdditionalConditions = listOf(
@@ -670,13 +670,13 @@ class LicenceControllerTest {
         sequence = 1,
         text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
         expandedText = "Do not associate with value1 for a period of value2",
-        data = someAssociationData
-      )
+        data = someAssociationData,
+      ),
     )
 
     val someBespokeConditions = listOf(
       BespokeCondition(id = 1, sequence = 1, text = "Bespoke one text"),
-      BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text")
+      BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text"),
     )
 
     val aLicence = Licence(
@@ -721,7 +721,7 @@ class LicenceControllerTest {
       additionalLicenceConditions = someAdditionalConditions,
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
-      isVariation = false
+      isVariation = false,
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
@@ -756,7 +756,7 @@ class LicenceControllerTest {
       probationTeamDescription = "Cardiff South Team A",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000
+      responsibleComStaffId = 2000,
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -782,35 +782,35 @@ class LicenceControllerTest {
       actualReleaseDate = LocalDate.of(2022, 12, 30),
       comUsername = "jsmith",
       bookingId = 54321,
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0)
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPerson = "John Smith"
+      appointmentPerson = "John Smith",
     )
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES)
+      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES),
     )
 
     val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS)
+      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
     )
 
     val aContactNumberRequest = ContactNumberRequest(
-      telephone = "0114 2566555"
+      telephone = "0114 2566555",
     )
 
     val anAppointmentAddressRequest = AppointmentAddressRequest(
-      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"
+      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
     )
 
     val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
       standardLicenceConditions = listOf(
         StandardCondition(code = "code1", sequence = 0, text = "text"),
         StandardCondition(code = "code2", sequence = 1, text = "text"),
-        StandardCondition(code = "code3", sequence = 2, text = "text")
-      )
+        StandardCondition(code = "code3", sequence = 2, text = "text"),
+      ),
     )
 
     val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
@@ -819,7 +819,7 @@ class LicenceControllerTest {
       conditionCategory = "category",
       sequence = 4,
       conditionText = "text",
-      expandedText = "some more text"
+      expandedText = "some more text",
     )
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
@@ -830,7 +830,7 @@ class LicenceControllerTest {
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
       data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-      expandedConditionText = "expanded text"
+      expandedConditionText = "expanded text",
     )
   }
 }

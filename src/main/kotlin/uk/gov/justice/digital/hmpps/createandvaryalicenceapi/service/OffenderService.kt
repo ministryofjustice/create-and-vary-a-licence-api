@@ -26,7 +26,7 @@ OffenderService(
       LicenceStatus.VARIATION_SUBMITTED,
       LicenceStatus.VARIATION_APPROVED,
       LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE
+      LicenceStatus.ACTIVE,
     )
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
@@ -43,7 +43,7 @@ OffenderService(
           fullName = "SYSTEM",
           summary = "COM updated to ${newCom.firstName} ${newCom.lastName} on licence for ${it.forename} ${it.surname}",
           detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
-        )
+        ),
       )
     }
   }
@@ -58,7 +58,7 @@ OffenderService(
       LicenceStatus.VARIATION_SUBMITTED,
       LicenceStatus.VARIATION_APPROVED,
       LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE
+      LicenceStatus.ACTIVE,
     )
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
@@ -92,7 +92,7 @@ OffenderService(
             fullName = "SYSTEM",
             summary = "Probation team updated to ${request.probationTeamDescription} at ${request.probationAreaDescription} on licence for ${it.forename} ${it.surname}",
             detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
-          )
+          ),
         )
       }
     }
