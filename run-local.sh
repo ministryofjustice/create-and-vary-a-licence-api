@@ -33,13 +33,14 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Bring up the licences-db container needed for the application
-docker-compose down --remove-orphans && docker-compose pull
-docker-compose -f docker-compose.yml up -d
-echo "Waiting for container to start..."
+docker compose down --remove-orphans && docker compose pull
+
+docker compose -f docker-compose.yml up -d
+echo "Waiting for container to be ready ..."
 until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
     sleep 0.1;
 done;
-echo "Licences database container has been started"
+echo "Licences database container is now ready"
 
 # Run the application with stdout and dev profiles active
 SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun
