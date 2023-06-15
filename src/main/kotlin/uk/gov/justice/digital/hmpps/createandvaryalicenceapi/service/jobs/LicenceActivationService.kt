@@ -3,13 +3,16 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDate
 
 @Service
@@ -18,7 +21,8 @@ class LicenceActivationService(
   private val licenceService: LicenceService,
   private val prisonApiClient: PrisonApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val iS91DeterminationService: IS91DeterminationService
+  private val iS91DeterminationService: IS91DeterminationService,
+  private val auditEventRepository: AuditEventRepository
 ) {
 
   @Transactional
@@ -80,9 +84,25 @@ class LicenceActivationService(
   }
 
   private fun Licence.isStandardLicenceForActivation(prisoners: List<PrisonerSearchPrisoner>): Boolean {
-    val prisoner: PrisonerSearchPrisoner = prisoners.first {
+    val prisoner = prisoners.firstOrNull {
       it.prisonerNumber == this.nomsId
     }
+
+    if (prisoner == null) {
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = this.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "Unable to find offender for ${this.forename} ${this.surname}, licence not activated",
+          detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode.name} version ${this.version}",
+        )
+      )
+
+      return false
+    }
+
     return (
       this.actualReleaseDate != null &&
         this.actualReleaseDate <= LocalDate.now() &&

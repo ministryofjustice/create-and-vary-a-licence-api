@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -10,8 +12,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder.setContext
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -30,13 +34,15 @@ class LicenceActivationServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
+  private val auditEventRepository = mock<AuditEventRepository>()
 
   private val service = LicenceActivationService(
     licenceRepository,
     licenceService,
     prisonApiClient,
     prisonerSearchApiClient,
-    iS91DeterminationService
+    iS91DeterminationService,
+    auditEventRepository
   )
 
   @BeforeEach
@@ -254,6 +260,32 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
     verify(licenceService, times(1)).activateLicences(listOf(nonHdcLicence), "Licence automatically activated via repeating job")
     verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), "Licence automatically deactivated as booking ID has approved HDC licence")
+  }
+
+  @Test
+  fun `licence activation job logs when a non-HDC, non-IS91 offender isn't found in the prisoner offender search call and does not prevent activation of other licences`() {
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val licenceWithOffender = aLicenceEntity.copy(bookingId = 54322, nomsId = "A1234AB")
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity, licenceWithOffender))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321, 54322))).thenReturn(listOf(aPrisonerSearchPrisoner.copy(bookingId = "54322", prisonerNumber = "A1234AB")))
+
+    service.licenceActivationJob()
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Unable to find offender for ${aLicenceEntity.forename} ${aLicenceEntity.surname}, licence not activated"
+        )
+      )
+    verify(licenceService, times(1)).activateLicences(emptyList(), "IS91 licence automatically activated via repeating job")
+    verify(licenceService, times(1)).activateLicences(listOf(licenceWithOffender), "Licence automatically activated via repeating job")
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), "Licence automatically deactivated as booking ID has approved HDC licence")
   }
 
   private val aLicenceEntity = Licence(
