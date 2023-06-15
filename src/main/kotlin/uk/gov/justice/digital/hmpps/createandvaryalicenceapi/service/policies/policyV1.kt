@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AddAnother
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
@@ -51,7 +51,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
         inputs = listOf(
           Input(
-            case = "lower", label = "Select the relevant text",
+            case = "lower",
+            label = "Select the relevant text",
             name = "gender",
             options = listOf(
               Option("any"),
