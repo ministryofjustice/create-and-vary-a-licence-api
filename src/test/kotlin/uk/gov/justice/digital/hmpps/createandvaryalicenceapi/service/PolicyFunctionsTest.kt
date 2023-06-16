@@ -28,8 +28,8 @@ class PolicyFunctionsTest {
           licence().copy(version = "1.0", additionalLicenceConditions = emptyList()),
           emptyList<AdditionalConditionAp>(),
           emptyList<AdditionalConditionAp>(),
-          emptyList<Replacements>()
-        )
+          emptyList<Replacements>(),
+        ),
       ).isEmpty()
     }
 
@@ -44,13 +44,13 @@ class PolicyFunctionsTest {
           licence().copy(
             version = "2.0",
             additionalLicenceConditions = listOf(
-              licenceCondition
-            )
+              licenceCondition,
+            ),
           ),
           listOf(previous),
           listOf(current),
-          emptyList<Replacements>()
-        )
+          emptyList<Replacements>(),
+        ),
       ).isEmpty()
     }
 
@@ -65,13 +65,13 @@ class PolicyFunctionsTest {
           licence().copy(
             version = "2.0",
             additionalLicenceConditions = listOf(
-              licenceCondition
-            )
+              licenceCondition,
+            ),
           ),
           listOf(previous),
           listOf(current),
-          emptyList<Replacements>()
-        )
+          emptyList<Replacements>(),
+        ),
       ).isEqualTo(
         listOf(
           LicenceConditionChanges(
@@ -82,9 +82,9 @@ class PolicyFunctionsTest {
             currentText = "new-text",
             addedInputs = emptyList(),
             removedInputs = emptyList(),
-            suggestions = emptyList()
-          )
-        )
+            suggestions = emptyList(),
+          ),
+        ),
       )
     }
 
@@ -99,13 +99,13 @@ class PolicyFunctionsTest {
           licence().copy(
             version = "2.0",
             additionalLicenceConditions = listOf(
-              licenceCondition
-            )
+              licenceCondition,
+            ),
           ),
           listOf(previous),
           listOf(current),
-          emptyList<Replacements>()
-        )
+          emptyList<Replacements>(),
+        ),
       ).isEmpty()
     }
   }
@@ -118,8 +118,8 @@ class PolicyFunctionsTest {
         conditionChanges(
           emptyList<AdditionalConditionAp>(),
           emptyList<AdditionalConditionAp>(),
-          emptyList<Replacements>()
-        )
+          emptyList<Replacements>(),
+        ),
       ).isEmpty()
     }
 
@@ -142,17 +142,21 @@ class PolicyFunctionsTest {
           listOf(previous),
           listOf(matching, newCondition),
           emptyList(),
-        )
+        ),
       ).isEmpty()
     }
 
     @Test
     fun `no changes when same placeholders`() {
       val previous = policyCondition().copy(
-        code = "code-1", text = "some-text", inputs = listOf(input().copy(name = "one"))
+        code = "code-1",
+        text = "some-text",
+        inputs = listOf(input().copy(name = "one")),
       )
       val after = policyCondition().copy(
-        code = "code-1", text = "some-text", inputs = listOf(input().copy(name = "one"))
+        code = "code-1",
+        text = "some-text",
+        inputs = listOf(input().copy(name = "one")),
       )
 
       assertThat(conditionChanges(listOf(previous), listOf(after), emptyList())).isEmpty()
@@ -180,8 +184,9 @@ class PolicyFunctionsTest {
     @Test
     fun `change when options change`() {
       val previous = policyCondition().copy(
-        code = "code-1", text = "some-text",
-        inputs = listOf(input().copy(name = "one"))
+        code = "code-1",
+        text = "some-text",
+        inputs = listOf(input().copy(name = "one")),
       )
       val after = policyCondition().copy(code = "code-1", text = "some-text")
 
@@ -190,11 +195,14 @@ class PolicyFunctionsTest {
           listOf(previous),
           listOf(after),
           emptyList(),
-        )
+        ),
       ).containsExactly(
         NEW_OPTIONS.update(
-          previous, after, listOf(input().copy(name = "one")), listOf()
-        )
+          previous,
+          after,
+          listOf(input().copy(name = "one")),
+          listOf(),
+        ),
       )
     }
 
@@ -209,7 +217,7 @@ class PolicyFunctionsTest {
           listOf(previous),
           emptyList(),
           listOf(replacements),
-        )
+        ),
       ).containsExactly(DELETED.removal(previous, replacements.alternatives))
     }
 
@@ -220,7 +228,7 @@ class PolicyFunctionsTest {
         Replacements(
           "code-1",
           REPLACED,
-          alternatives = listOf(policyCondition().copy(code = "code-2", text = "text-2"))
+          alternatives = listOf(policyCondition().copy(code = "code-2", text = "text-2")),
         )
 
       assertThat(
@@ -228,7 +236,7 @@ class PolicyFunctionsTest {
           listOf(previous),
           emptyList(),
           listOf(replacements),
-        )
+        ),
       ).containsExactly(REPLACED.removal(previous, replacements.alternatives))
     }
 
@@ -243,7 +251,7 @@ class PolicyFunctionsTest {
           listOf(previous),
           emptyList(),
           listOf(replacements),
-        )
+        ),
       ).containsExactly(REMOVED_NO_REPLACEMENTS.removal(previous, emptyList()))
     }
   }
@@ -257,7 +265,7 @@ class PolicyFunctionsTest {
     emptyList(),
     "default-category-short",
     "default-subtext",
-    "default-type"
+    "default-type",
   )
 
   fun input() = Input(
@@ -270,7 +278,7 @@ class PolicyFunctionsTest {
     handleIndefiniteArticle = null,
     addAnother = null,
     includeBefore = null,
-    subtext = null
+    subtext = null,
   )
 
   fun licence() = Licence(1, PSS, "2.0", ACTIVE, isVariation = true)

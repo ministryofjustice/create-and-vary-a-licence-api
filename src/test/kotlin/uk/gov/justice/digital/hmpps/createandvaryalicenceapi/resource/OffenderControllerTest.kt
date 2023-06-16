@@ -83,7 +83,7 @@ class OffenderControllerTest {
       probationAreaCode = "N02",
       probationPduCode = "PDU2",
       probationLauCode = "LAU2",
-      probationTeamCode = "TEAM2"
+      probationTeamCode = "TEAM2",
     )
 
     val request = put("/offender/crn/exampleCrn/probation-team")

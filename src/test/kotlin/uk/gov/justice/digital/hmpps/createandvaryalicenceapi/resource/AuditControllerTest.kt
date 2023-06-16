@@ -134,7 +134,7 @@ class AuditControllerTest {
         fullName = "First Last",
         eventType = AuditEventType.USER_EVENT,
         summary = "Summary1",
-        detail = "Detail1"
+        detail = "Detail1",
       ),
       AuditEvent(
         id = 2L,
@@ -144,7 +144,7 @@ class AuditControllerTest {
         fullName = "First Last",
         eventType = AuditEventType.USER_EVENT,
         summary = "Summary2",
-        detail = "Detail2"
+        detail = "Detail2",
       ),
       AuditEvent(
         id = 3L,
@@ -154,7 +154,7 @@ class AuditControllerTest {
         fullName = "First Last",
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Summary3",
-        detail = "Detail3"
+        detail = "Detail3",
       ),
     )
   }

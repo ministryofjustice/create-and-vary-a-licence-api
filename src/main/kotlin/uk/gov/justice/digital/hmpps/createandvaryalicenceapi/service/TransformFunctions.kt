@@ -52,7 +52,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     actualReleaseDate = licence.actualReleaseDate,
     comUsername = licence.responsibleCom!!.username,
     bookingId = licence.bookingId,
-    dateCreated = licence.dateCreated
+    dateCreated = licence.dateCreated,
   )
 }
 
@@ -181,7 +181,7 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
     id = entity.id,
     code = entity.conditionCode,
     sequence = entity.conditionSequence,
-    text = entity.conditionText
+    text = entity.conditionText,
   )
 }
 
@@ -237,7 +237,7 @@ fun transform(model: ModelAdditionalConditionData, additionalCondition: EntityAd
     dataSequence = model.sequence,
     dataField = model.field,
     dataValue = model.value,
-    additionalCondition = additionalCondition
+    additionalCondition = additionalCondition,
   )
 }
 
@@ -318,6 +318,6 @@ fun transform(result: ProbationSearchResult): ModelProbationSearchResult {
   return ModelProbationSearchResult(
     name = "${result.name.forename} ${result.name.surname}",
     comName = "${result.manager.name?.forename} ${result.manager.name?.surname}",
-    comCode = result.manager.code
+    comCode = result.manager.code,
   )
 }

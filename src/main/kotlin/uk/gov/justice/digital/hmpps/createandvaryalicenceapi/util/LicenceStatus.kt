@@ -11,7 +11,8 @@ enum class LicenceStatus {
   VARIATION_IN_PROGRESS,
   VARIATION_SUBMITTED,
   VARIATION_REJECTED,
-  VARIATION_APPROVED;
+  VARIATION_APPROVED,
+  ;
 
   companion object {
     fun lookupLicenceEventByStatus(status: LicenceStatus): LicenceEventType {

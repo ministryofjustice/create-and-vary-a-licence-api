@@ -23,7 +23,7 @@ class LicenceConditionService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
+  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
 ) {
 
   @Transactional
@@ -53,7 +53,7 @@ class LicenceConditionService(
   fun addAdditionalCondition(
     licenceId: Long,
     conditionType: String,
-    request: AddAdditionalConditionRequest
+    request: AddAdditionalConditionRequest,
   ): AdditionalCondition {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -72,8 +72,8 @@ class LicenceConditionService(
         expandedConditionText = request.expandedText,
         conditionCategory = request.conditionCategory,
         licence = licenceEntity,
-        conditionSequence = request.sequence
-      )
+        conditionSequence = request.sequence,
+      ),
     )
 
     val updatedLicence = licenceEntity.copy(
@@ -125,7 +125,7 @@ class LicenceConditionService(
         .map { newAdditionalCondition ->
           newAdditionalCondition.copy(
             expandedConditionText = newAdditionalCondition.conditionText,
-            licence = licenceEntity
+            licence = licenceEntity,
           )
         }
 
@@ -176,14 +176,14 @@ class LicenceConditionService(
     val updatedLicence = licenceEntity.copy(
       bespokeConditions = emptyList(),
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username
+      updatedByUsername = username,
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
     // Replace the bespoke conditions
     request.conditions.forEachIndexed { index, condition ->
       bespokeConditionRepository.saveAndFlush(
-        BespokeCondition(licence = licenceEntity, conditionSequence = index, conditionText = condition)
+        BespokeCondition(licence = licenceEntity, conditionSequence = index, conditionText = condition),
       )
     }
   }
@@ -192,7 +192,7 @@ class LicenceConditionService(
   fun updateAdditionalConditionData(
     licenceId: Long,
     additionalConditionId: Long,
-    request: UpdateAdditionalConditionDataRequest
+    request: UpdateAdditionalConditionDataRequest,
   ) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -205,7 +205,7 @@ class LicenceConditionService(
     val updatedAdditionalCondition = additionalCondition.copy(
       conditionVersion = licenceEntity.version!!,
       additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition),
-      expandedConditionText = request.expandedConditionText
+      expandedConditionText = request.expandedConditionText,
     )
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 

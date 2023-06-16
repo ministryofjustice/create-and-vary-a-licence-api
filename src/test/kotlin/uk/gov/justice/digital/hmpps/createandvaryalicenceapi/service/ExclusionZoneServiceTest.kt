@@ -52,7 +52,7 @@ class ExclusionZoneServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithoutUpload))
     whenever(additionalConditionUploadDetailRepository.saveAndFlush(any())).thenReturn(
-      anAdditionalConditionUploadDetailEntity
+      anAdditionalConditionUploadDetailEntity,
     )
 
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
@@ -79,8 +79,8 @@ class ExclusionZoneServiceTest {
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
     whenever(additionalConditionUploadDetailRepository.findById(1)).thenReturn(
       Optional.of(
-        anAdditionalConditionUploadDetailEntity
-      )
+        anAdditionalConditionUploadDetailEntity,
+      ),
     )
 
     service.removeExclusionZoneFile(1L, 1L)
@@ -97,8 +97,8 @@ class ExclusionZoneServiceTest {
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
     whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(
       Optional.of(
-        anAdditionalConditionUploadDetailEntity
-      )
+        anAdditionalConditionUploadDetailEntity,
+      ),
     )
 
     val image = service.getExclusionZoneImage(1L, 1L)
@@ -118,7 +118,7 @@ class ExclusionZoneServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
-        licence = mock()
+        licence = mock(),
       ),
     )
 
@@ -163,14 +163,14 @@ class ExclusionZoneServiceTest {
         id = 1,
         dataField = "outOfBoundArea",
         dataValue = "Bristol town centre",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
+        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
       ),
       AdditionalConditionData(
         id = 2,
         dataField = "outOfBoundFile",
         dataValue = "test.pdf",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
-      )
+        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+      ),
     )
 
     val anAdditionalConditionEntityWithoutUpload = AdditionalCondition(

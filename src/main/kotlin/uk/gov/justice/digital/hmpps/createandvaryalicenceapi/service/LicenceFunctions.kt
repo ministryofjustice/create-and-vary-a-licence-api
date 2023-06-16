@@ -12,7 +12,7 @@ data class SentenceChanges(
   val sedChanged: Boolean,
   val tussdChanged: Boolean,
   val tusedChanged: Boolean,
-  val isMaterial: Boolean
+  val isMaterial: Boolean,
 )
 
 fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest): SentenceChanges {

@@ -27,7 +27,7 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
   @PostMapping(
     value = ["/id/{licenceId}/condition/id/{conditionId}/file-upload"],
     consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -55,20 +55,20 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun uploadExclusionZoneFile(
     @PathVariable(value = "licenceId") licenceId: Long,
     @PathVariable(value = "conditionId") conditionId: Long,
-    @RequestPart("file") file: MultipartFile
+    @RequestPart("file") file: MultipartFile,
   ) {
     return exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
   }
 
   @PutMapping(
     value = ["/id/{licenceId}/condition/id/{conditionId}/remove-upload"],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -96,8 +96,8 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun removeExclusionZoneFile(
     @PathVariable(value = "licenceId") licenceId: Long,
@@ -108,7 +108,7 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
 
   @GetMapping(
     value = ["/id/{licenceId}/condition/id/{conditionId}/full-size-image"],
-    produces = [MediaType.IMAGE_JPEG_VALUE]
+    produces = [MediaType.IMAGE_JPEG_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
@@ -138,8 +138,8 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
         responseCode = "404",
         description = "No image was found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getExclusionZoneImage(
     @PathVariable(name = "licenceId") licenceId: Long,

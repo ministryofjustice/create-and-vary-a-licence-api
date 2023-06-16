@@ -22,7 +22,7 @@ class LicenceActivationService(
   private val prisonApiClient: PrisonApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val iS91DeterminationService: IS91DeterminationService,
-  private val auditEventRepository: AuditEventRepository
+  private val auditEventRepository: AuditEventRepository,
 ) {
 
   @Transactional
@@ -97,7 +97,7 @@ class LicenceActivationService(
           eventType = AuditEventType.SYSTEM_EVENT,
           summary = "Unable to find offender for ${this.forename} ${this.surname}, licence not activated",
           detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode.name} version ${this.version}",
-        )
+        ),
       )
 
       return false

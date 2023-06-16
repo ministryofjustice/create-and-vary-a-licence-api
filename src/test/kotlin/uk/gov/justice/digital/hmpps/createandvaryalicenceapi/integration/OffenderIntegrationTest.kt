@@ -51,7 +51,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update an offender's inflight licences with new COM details`() {
     val requestBody = UpdateComRequest(
@@ -78,7 +78,7 @@ class OffenderIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update an offender's inflight licences with new probation team`() {
     val requestBody = UpdateProbationTeamRequest(

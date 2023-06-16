@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 
 @Service
 class IS91DeterminationService(
-  private val prisonApiClient: PrisonApiClient
+  private val prisonApiClient: PrisonApiClient,
 ) {
 
   private companion object IS91Constants {

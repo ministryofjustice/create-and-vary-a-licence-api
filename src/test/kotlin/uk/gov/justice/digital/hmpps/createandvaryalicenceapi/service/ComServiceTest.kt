@@ -194,8 +194,8 @@ class ComServiceTest {
   fun `search for offenders on a staff member's caseload`() {
     whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
-        "A01B02"
-      )
+        "A01B02",
+      ),
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
@@ -205,18 +205,18 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02")
+            Team("A01B02"),
           ),
-          "2023/05/24"
-        )
-      )
+          "2023/05/24",
+        ),
+      ),
     )
 
     val result = service.searchForOffenderOnStaffCaseload(
       ProbationUserSearchRequest(
         "Test",
-        2000
-      )
+        2000,
+      ),
     )
 
     assertThat(result.size).isEqualTo(1)
@@ -225,7 +225,7 @@ class ComServiceTest {
       .containsAll(
         listOf(
           Tuple.tuple("Test Surname", "Staff Surname", "A01B02C"),
-        )
+        ),
       )
   }
 }

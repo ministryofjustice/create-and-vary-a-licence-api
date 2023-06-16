@@ -107,8 +107,8 @@ class ComControllerTest {
       ProbationSearchResult(
         name = "Test Surname",
         comName = "Staff Surname",
-        comCode = "A01B02C"
-      )
+        comCode = "A01B02C",
+      ),
     )
   }
 }

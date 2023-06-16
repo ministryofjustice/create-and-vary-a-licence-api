@@ -13,7 +13,8 @@ class ProbationSearchMockServer : WireMockServer(8094) {
         .withRequestBody(equalToJson(aLicenceCaseloadSearchRequest))
         .willReturn(
           aResponse().withHeader(
-            "Content-Type", "application/json"
+            "Content-Type",
+            "application/json",
           )
             .withBody(
               """{
@@ -78,9 +79,9 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                     "first": true,
                     "numberOfElements": 2,
                     "empty": false
-                }"""
-            ).withStatus(200)
-        )
+                }""",
+            ).withStatus(200),
+        ),
     )
   }
 
@@ -90,7 +91,8 @@ class ProbationSearchMockServer : WireMockServer(8094) {
         .withRequestBody(equalToJson(aLicenceCaseloadSearchRequest))
         .willReturn(
           aResponse().withHeader(
-            "Content-Type", "application/json"
+            "Content-Type",
+            "application/json",
           )
             .withBody(
               """{
@@ -120,9 +122,9 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                     "first": true,
                     "numberOfElements": 0,
                     "empty": true
-                }"""
-            ).withStatus(200)
-        )
+                }""",
+            ).withStatus(200),
+        ),
     )
   }
 }

@@ -13,12 +13,12 @@ data class EventQueryObject(
   val licenceId: Long? = null,
   val eventTypes: List<LicenceEventType>? = null,
   val sortBy: String? = null,
-  val sortOrder: String? = null
+  val sortOrder: String? = null,
 )
 
 fun EventQueryObject.toSpecification(): Specification<LicenceEvent> = and(
   hasLicenceEqualTo(licenceId),
-  hasEventTypeIn(eventTypes)
+  hasEventTypeIn(eventTypes),
 )
 
 fun EventQueryObject.getSort(): Sort {

@@ -30,7 +30,6 @@ class LicenceStatisticsServiceTest {
 
   @Test
   fun `matches and gets licence stats correctly`() {
-
     whenever(prisonRegisterApiClient.getPrisonIds()).thenReturn(listOfPrisons)
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(listOfLicenceSummaries)
 
@@ -67,8 +66,8 @@ class LicenceStatisticsServiceTest {
         dateOfBirth = null,
         comUsername = "jsmith",
         bookingId = 773722,
-        dateCreated = null
-      )
+        dateCreated = null,
+      ),
     )
     val expectedResult = listOf(
       LicenceStatistics(
@@ -83,7 +82,7 @@ class LicenceStatisticsServiceTest {
         inactiveNotApproved = null,
         inactiveApproved = null,
         inactiveHdcApproved = null,
-        approvedNotPrinted = null
+        approvedNotPrinted = null,
       ),
       LicenceStatistics(
         prison = "MDI",
@@ -97,7 +96,7 @@ class LicenceStatisticsServiceTest {
         inactiveNotApproved = null,
         inactiveApproved = null,
         inactiveHdcApproved = null,
-        approvedNotPrinted = null
+        approvedNotPrinted = null,
       ),
       LicenceStatistics(
         prison = "MDI",
@@ -111,8 +110,8 @@ class LicenceStatisticsServiceTest {
         inactiveNotApproved = null,
         inactiveApproved = null,
         inactiveHdcApproved = null,
-        approvedNotPrinted = null
-      )
+        approvedNotPrinted = null,
+      ),
     )
   }
 }

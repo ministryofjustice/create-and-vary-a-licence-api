@@ -45,7 +45,7 @@ class LicenceConditionServiceTest {
     licenceRepository,
     additionalConditionRepository,
     bespokeConditionRepository,
-    additionalConditionUploadDetailRepository
+    additionalConditionUploadDetailRepository,
   )
 
   @BeforeEach
@@ -60,7 +60,7 @@ class LicenceConditionServiceTest {
       licenceRepository,
       additionalConditionRepository,
       bespokeConditionRepository,
-      additionalConditionUploadDetailRepository
+      additionalConditionUploadDetailRepository,
     )
   }
 
@@ -69,7 +69,7 @@ class LicenceConditionServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
     val APConditions = listOf(
-      StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour")
+      StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
     )
 
     val PSSConditions = listOf(
@@ -81,8 +81,8 @@ class LicenceConditionServiceTest {
       1,
       UpdateStandardConditionDataRequest(
         standardLicenceConditions = APConditions,
-        standardPssConditions = PSSConditions
-      )
+        standardPssConditions = PSSConditions,
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
@@ -97,22 +97,22 @@ class LicenceConditionServiceTest {
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
         conditionType = "AP",
-        licence = aLicenceEntity
+        licence = aLicenceEntity,
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
         conditionType = "PSS",
-        licence = aLicenceEntity
+        licence = aLicenceEntity,
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
         conditionCode = "doNotBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
         conditionType = "PSS",
-        licence = aLicenceEntity
-      )
+        licence = aLicenceEntity,
+      ),
     )
   }
 
@@ -132,7 +132,7 @@ class LicenceConditionServiceTest {
                 conditionText = "oldText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
-                conditionType = "AP"
+                conditionType = "AP",
               ),
               AdditionalCondition(
                 id = 2,
@@ -143,7 +143,7 @@ class LicenceConditionServiceTest {
                 conditionText = "removedText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
-                conditionType = "AP"
+                conditionType = "AP",
               ),
               AdditionalCondition(
                 id = 3,
@@ -154,11 +154,11 @@ class LicenceConditionServiceTest {
                 conditionText = "oldText3",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
-                conditionType = "AP"
+                conditionType = "AP",
               ),
-            )
-          )
-        )
+            ),
+          ),
+        ),
       )
 
     service.deleteAdditionalCondition(1L, 2)
@@ -177,7 +177,7 @@ class LicenceConditionServiceTest {
         conditionText = "oldText",
         conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity
+        licence = aLicenceEntity,
       ),
       AdditionalCondition(
         id = 3,
@@ -188,8 +188,8 @@ class LicenceConditionServiceTest {
         conditionText = "oldText3",
         conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity
-      )
+        licence = aLicenceEntity,
+      ),
     )
 
     // Verify last contact info is recorded
@@ -209,11 +209,11 @@ class LicenceConditionServiceTest {
               code = "code",
               category = "category",
               text = "text",
-              sequence = 0
-            )
+              sequence = 0,
+            ),
           ),
-          conditionType = "AP"
-        )
+          conditionType = "AP",
+        ),
       )
     }
 
@@ -244,7 +244,7 @@ class LicenceConditionServiceTest {
                 conditionText = "oldText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
-                conditionType = "AP"
+                conditionType = "AP",
               ),
               AdditionalCondition(
                 id = 2,
@@ -255,7 +255,7 @@ class LicenceConditionServiceTest {
                 conditionText = "removedText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
-                conditionType = "AP"
+                conditionType = "AP",
               ),
               AdditionalCondition(
                 id = 3,
@@ -266,11 +266,11 @@ class LicenceConditionServiceTest {
                 conditionText = "pssText",
                 additionalConditionData = someAdditionalConditionData,
                 licence = aLicenceEntity,
-                conditionType = "PSS"
-              )
-            )
-          )
-        )
+                conditionType = "PSS",
+              ),
+            ),
+          ),
+        ),
       )
 
     val request = AdditionalConditionsRequest(
@@ -279,10 +279,10 @@ class LicenceConditionServiceTest {
           code = "code",
           category = "category",
           text = "text",
-          sequence = 0
-        )
+          sequence = 0,
+        ),
       ),
-      conditionType = "AP"
+      conditionType = "AP",
     )
 
     service.updateAdditionalConditions(1L, request)
@@ -301,7 +301,7 @@ class LicenceConditionServiceTest {
         conditionText = "text",
         conditionType = "AP",
         additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity
+        licence = aLicenceEntity,
       ),
       AdditionalCondition(
         id = 3,
@@ -312,8 +312,8 @@ class LicenceConditionServiceTest {
         conditionText = "pssText",
         additionalConditionData = someAdditionalConditionData,
         licence = aLicenceEntity,
-        conditionType = "PSS"
-      )
+        conditionType = "PSS",
+      ),
     )
 
     // Verify last contact info is recorded
@@ -380,11 +380,12 @@ class LicenceConditionServiceTest {
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateAdditionalConditionData(
-        1L, 1L,
+        1L,
+        1L,
         UpdateAdditionalConditionDataRequest(
           data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-          expandedConditionText = "expanded text"
-        )
+          expandedConditionText = "expanded text",
+        ),
       )
     }
 
@@ -409,22 +410,23 @@ class LicenceConditionServiceTest {
                 conditionCategory = "oldCategory",
                 conditionText = "oldText",
                 additionalConditionData = emptyList(),
-                licence = aLicenceEntity
-              )
-            )
-          )
-        )
+                licence = aLicenceEntity,
+              ),
+            ),
+          ),
+        ),
       )
 
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateAdditionalConditionData(
-        1L, 1L,
+        1L,
+        1L,
         UpdateAdditionalConditionDataRequest(
           data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-          expandedConditionText = "expanded text"
-        )
+          expandedConditionText = "expanded text",
+        ),
       )
     }
 
@@ -449,22 +451,22 @@ class LicenceConditionServiceTest {
                 conditionCategory = "oldCategory",
                 conditionText = "oldText",
                 additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity
-              )
-            )
-          )
-        )
+                licence = aLicenceEntity,
+              ),
+            ),
+          ),
+        ),
       )
     whenever(additionalConditionRepository.findById(1L))
       .thenReturn(
         Optional.of(
-          anAdditionalConditionEntity.copy()
-        )
+          anAdditionalConditionEntity.copy(),
+        ),
       )
 
     val request = UpdateAdditionalConditionDataRequest(
       data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-      expandedConditionText = "expanded text"
+      expandedConditionText = "expanded text",
     )
 
     service.updateAdditionalConditionData(1L, 1L, request)
@@ -483,8 +485,8 @@ class LicenceConditionServiceTest {
         additionalCondition = anAdditionalConditionEntity,
         dataSequence = 0,
         dataField = "field1",
-        dataValue = "value1"
-      )
+        dataValue = "value1",
+      ),
     )
 
     // Verify last contact info is recorded
@@ -498,21 +500,21 @@ class LicenceConditionServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
-        licence = mock()
+        licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
         id = 2,
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
-        licence = mock()
+        licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
         id = 3,
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
-        licence = mock()
+        licence = mock(),
       ),
     )
 
@@ -555,14 +557,14 @@ class LicenceConditionServiceTest {
         username = "smills",
         email = "testemail@probation.gov.uk",
         firstName = "X",
-        lastName = "Y"
+        lastName = "Y",
       ),
       createdBy = CommunityOffenderManager(
         staffIdentifier = 2000,
         username = "smills",
         email = "testemail@probation.gov.uk",
         firstName = "X",
-        lastName = "Y"
+        lastName = "Y",
       ),
     )
 
@@ -571,8 +573,8 @@ class LicenceConditionServiceTest {
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0")
-      )
+        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+      ),
     )
 
     val someBespokeConditions =
@@ -588,7 +590,7 @@ class LicenceConditionServiceTest {
       conditionText = "text",
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = emptyList(),
-      conditionType = "AP"
+      conditionType = "AP",
     )
   }
 }

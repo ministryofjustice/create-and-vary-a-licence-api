@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.0.0-beta-5"
-  kotlin("plugin.spring") version "1.8.0"
-  kotlin("plugin.jpa") version "1.8.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.2.0"
+  kotlin("plugin.spring") version "1.8.22"
+  kotlin("plugin.jpa") version "1.8.22"
 }
 
 configurations {
@@ -38,21 +38,21 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:3.19.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:4.1.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:2.0.27")
+  implementation("org.apache.pdfbox:pdfbox:2.0.28")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.5.1")
+  runtimeOnly("org.postgresql:postgresql:42.6.0")
 
-  implementation("com.google.code.gson:gson:2.10")
-  implementation("io.arrow-kt:arrow-core:1.1.3")
+  implementation("com.google.code.gson:gson:2.10.1")
+  implementation("io.arrow-kt:arrow-core:1.1.5")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
@@ -61,9 +61,9 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-api:0.11.5")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.11.5")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.36.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.38.0")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.3")
-  testImplementation("org.mockito:mockito-inline:4.8.1")
+  testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
 }
