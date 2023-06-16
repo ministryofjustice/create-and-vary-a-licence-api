@@ -19,7 +19,7 @@ class UpdateSentenceDateService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
-  private val prisonApiClient: PrisonApiClient
+  private val prisonApiClient: PrisonApiClient,
 ) {
 
   @Transactional
@@ -39,7 +39,7 @@ class UpdateSentenceDateService(
         append("LED ${licenceEntity?.licenceExpiryDate} ")
         append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
         append("TUSED ${licenceEntity?.topupSupervisionExpiryDate}")
-      }
+      },
     )
 
     log.info(
@@ -53,7 +53,7 @@ class UpdateSentenceDateService(
         append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
         append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
         append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
-      }
+      },
     )
 
     val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
@@ -69,7 +69,7 @@ class UpdateSentenceDateService(
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username
+      updatedByUsername = username,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -81,8 +81,8 @@ class UpdateSentenceDateService(
         fullName = "SYSTEM",
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}"
-      )
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
+      ),
     )
 
     log.info(
@@ -94,7 +94,7 @@ class UpdateSentenceDateService(
         append("TUSSD ${sentenceChanges.tussdChanged} ")
         append("TUSED ${sentenceChanges.tusedChanged} ")
         append("isMaterial ${sentenceChanges.isMaterial}")
-      }
+      },
     )
 
     if (!sentenceChanges.isMaterial) return
@@ -116,8 +116,8 @@ class UpdateSentenceDateService(
               "Licence end date" to sentenceChanges.ledChanged,
               "Sentence end date" to sentenceChanges.sedChanged,
               "Top up supervision start date" to sentenceChanges.tussdChanged,
-              "Top up supervision end date" to sentenceChanges.tusedChanged
-            )
+              "Top up supervision end date" to sentenceChanges.tusedChanged,
+            ),
           )
         }
     }

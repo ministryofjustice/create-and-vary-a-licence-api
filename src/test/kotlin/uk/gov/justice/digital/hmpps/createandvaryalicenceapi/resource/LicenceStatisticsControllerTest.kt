@@ -44,10 +44,10 @@ class LicenceStatisticsControllerTest {
     whenever(
       licenceStatisticsService.getStatistics(
         startDate = LocalDate.of(2022, 9, 2),
-        endDate = LocalDate.of(2022, 10, 23)
-      )
+        endDate = LocalDate.of(2022, 10, 23),
+      ),
     ).thenReturn(
-      aListOfStatistics
+      aListOfStatistics,
     )
 
     mvc.perform(request)
@@ -63,8 +63,8 @@ class LicenceStatisticsControllerTest {
       LicenceStatistics(
         prison = "MDI",
         licenceType = "AP",
-        inProgress = 10
-      )
+        inProgress = 10,
+      ),
     )
   }
 }

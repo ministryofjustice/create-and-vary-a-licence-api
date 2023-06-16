@@ -21,7 +21,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update sentence dates`() {
     prisonApiMockServer.stubGetHdcLatest()
@@ -38,7 +38,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
           licenceExpiryDate = LocalDate.parse("2024-09-11"),
           topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
           topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        )
+        ),
       )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -67,7 +67,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-3.sql"
+    "classpath:test_data/seed-licence-id-3.sql",
   )
   fun `Update sentence dates should set license status to inactive when the offender has a new future release date`() {
     prisonApiMockServer.stubGetHdcLatest()
@@ -84,7 +84,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
           licenceExpiryDate = LocalDate.parse("2024-09-11"),
           topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
           topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        )
+        ),
       )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))

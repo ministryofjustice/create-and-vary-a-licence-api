@@ -19,7 +19,7 @@ interface IAdditionalCondition<INPUT> : ILicenceCondition {
 
 data class ChangeHint(
   val previousCode: String,
-  val replacements: List<String>
+  val replacements: List<String>,
 )
 
 data class LicencePolicy(
@@ -27,7 +27,7 @@ data class LicencePolicy(
   val version: String,
   val standardConditions: StandardConditions,
   val additionalConditions: AdditionalConditions,
-  val changeHints: List<ChangeHint> = emptyList()
+  val changeHints: List<ChangeHint> = emptyList(),
 ) {
 
   @JsonIgnore

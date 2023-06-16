@@ -4,5 +4,5 @@ data class ProbationSearchResult(
   val name: Name,
   val identifiers: Identifiers,
   val manager: Manager,
-  val allocationDate: String
+  val allocationDate: String,
 )

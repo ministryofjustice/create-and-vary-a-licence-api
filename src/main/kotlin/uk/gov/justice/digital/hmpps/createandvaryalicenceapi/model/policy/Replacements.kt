@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionCh
 data class Replacements(
   val code: String,
   val changeType: ConditionChangeType,
-  val alternatives: List<ILicenceCondition>
+  val alternatives: List<ILicenceCondition>,
 )
 
 fun getSuggestedReplacements(previous: LicencePolicy?, current: LicencePolicy): List<Replacements> {
@@ -25,7 +25,6 @@ fun getSuggestedReplacements(previous: LicencePolicy?, current: LicencePolicy): 
           val replacements = current.changeHints.find { it.previousCode == condition.code }?.replacements ?: emptyList()
 
           val type = when {
-
             replacements.isEmpty() -> REMOVED_NO_REPLACEMENTS
             replacements.any { previousConditions.containsKey(it) } -> DELETED
             else -> REPLACED

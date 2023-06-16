@@ -6,5 +6,5 @@ data class PrisonerHdcStatus(
   val bookingId: Long? = null,
   val checksPassedDate: String? = null,
   val passed: Boolean,
-  val refusedReason: String? = null
+  val refusedReason: String? = null,
 )

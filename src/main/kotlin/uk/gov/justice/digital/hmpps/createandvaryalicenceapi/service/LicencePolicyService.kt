@@ -25,7 +25,7 @@ enum class ConditionChangeType {
 
   REMOVED_NO_REPLACEMENTS,
   NEW_OPTIONS,
-  TEXT_CHANGE
+  TEXT_CHANGE,
 }
 
 data class SuggestedCondition(
@@ -41,7 +41,7 @@ data class LicenceConditionChanges(
   val currentText: String?,
   @JsonIgnore var addedInputs: List<Any>,
   @JsonIgnore var removedInputs: List<Any>,
-  val suggestions: List<SuggestedCondition> = emptyList()
+  val suggestions: List<SuggestedCondition> = emptyList(),
 )
 
 @Service

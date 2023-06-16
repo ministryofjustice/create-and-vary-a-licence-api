@@ -82,7 +82,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
         inputs = listOf(
           Input(
-            case = "lower", label = "Select all the relevant options",
+            case = "lower",
+            label = "Select all the relevant options",
             listType = "AND",
             name = "appointmentType",
             options = listOf(
@@ -147,7 +148,8 @@ val POLICY_V1_0 = LicencePolicy(
         inputs = listOf(
           Input(
             addAnother = AddAnother("Add another person"),
-            case = "capitalise", label = "Enter name of victim or family member",
+            case = "capitalise",
+            label = "Enter name of victim or family member",
             listType = "OR",
             name = "name",
             type = "text",
@@ -171,7 +173,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
         inputs = listOf(
           Input(
-            case = "lower", label = "Select the relevant gender",
+            case = "lower",
+            label = "Select the relevant gender",
             name = "gender",
             options = listOf(
               Option("any"),
@@ -209,7 +212,8 @@ val POLICY_V1_0 = LicencePolicy(
         inputs = listOf(
           Input(
             addAnother = AddAnother("Add another person"),
-            case = "capitalise", label = "Enter name of offender or individual",
+            case = "capitalise",
+            label = "Enter name of offender or individual",
             listType = "OR",
             name = "nameOfIndividual",
             type = "text",
@@ -386,7 +390,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
         inputs = listOf(
           Input(
-            case = "lower", label = "Select the relevant text",
+            case = "lower",
+            label = "Select the relevant text",
             name = "gender",
             options = listOf(
               Option("men"),
@@ -537,7 +542,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "c4a17002-88a3-43b4-b3f7-82ff476cb217",
         inputs = listOf(
           Input(
-            case = "lower", label = "Enter area or type of premises",
+            case = "lower",
+            label = "Enter area or type of premises",
             name = "typeOfPremises",
             type = "text",
           ),
@@ -565,7 +571,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         inputs = listOf(
           Input(
-            case = "capitalised", label = "Enter name of approved premises",
+            case = "capitalised",
+            label = "Enter name of approved premises",
             name = "approvedPremises",
             type = "text",
           ),
@@ -611,7 +618,8 @@ val POLICY_V1_0 = LicencePolicy(
         code = "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
         inputs = listOf(
           Input(
-            case = "capitalised", label = "Enter name of police station",
+            case = "capitalised",
+            label = "Enter name of police station",
             name = "policeStation",
             type = "text",
           ),

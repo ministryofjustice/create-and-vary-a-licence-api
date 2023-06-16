@@ -15,7 +15,7 @@ class IS91DeterminationServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      prisonApiClient
+      prisonApiClient,
     )
   }
 
@@ -31,8 +31,8 @@ class IS91DeterminationServiceTest {
         aPrisonerOffenceHistory.copy(bookingId = 54323, primaryResultCode = "3006"),
         aPrisonerOffenceHistory.copy(bookingId = 54324, primaryResultCode = "5502"),
         aPrisonerOffenceHistory.copy(bookingId = 54325, primaryResultCode = "1000"),
-        aPrisonerOffenceHistory.copy(bookingId = 54326, primaryResultCode = "something_else")
-      )
+        aPrisonerOffenceHistory.copy(bookingId = 54326, primaryResultCode = "something_else"),
+      ),
     )
 
     assert(service.getIS91AndExtraditionBookingIds(expectedIS91s + expectedNonIS91s) == expectedIS91s)
@@ -50,8 +50,8 @@ class IS91DeterminationServiceTest {
         aPrisonerOffenceHistory.copy(bookingId = 54323, secondaryResultCode = "3006"),
         aPrisonerOffenceHistory.copy(bookingId = 54324, secondaryResultCode = "5502"),
         aPrisonerOffenceHistory.copy(bookingId = 54325, secondaryResultCode = "1000"),
-        aPrisonerOffenceHistory.copy(bookingId = 54326, secondaryResultCode = "something_else")
-      )
+        aPrisonerOffenceHistory.copy(bookingId = 54326, secondaryResultCode = "something_else"),
+      ),
     )
 
     assert(service.getIS91AndExtraditionBookingIds(expectedIS91s + expectedNonIS91s) == expectedIS91s)
@@ -65,8 +65,8 @@ class IS91DeterminationServiceTest {
     whenever(prisonApiClient.getOffenceHistories(expectedIS91 + expectedNonIS91)).thenReturn(
       listOf(
         aPrisonerOffenceHistory.copy(bookingId = 54321, offenceCode = "IA99000-001N"),
-        aPrisonerOffenceHistory.copy(bookingId = 54322, offenceCode = "something-else")
-      )
+        aPrisonerOffenceHistory.copy(bookingId = 54322, offenceCode = "something-else"),
+      ),
     )
 
     assert(service.getIS91AndExtraditionBookingIds(expectedIS91 + expectedNonIS91) == expectedIS91)
@@ -76,6 +76,6 @@ class IS91DeterminationServiceTest {
     bookingId = 54321,
     offenceCode = "abc123",
     primaryResultCode = null,
-    secondaryResultCode = null
+    secondaryResultCode = null,
   )
 }

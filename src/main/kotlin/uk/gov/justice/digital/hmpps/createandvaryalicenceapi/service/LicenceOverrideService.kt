@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 class LicenceOverrideService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
-  private val licenceEventRepository: LicenceEventRepository
+  private val licenceEventRepository: LicenceEventRepository,
 ) {
 
   /**
@@ -50,8 +50,8 @@ class LicenceOverrideService(
       licence.copy(
         statusCode = newStatus,
         updatedByUsername = username,
-        dateLastUpdated = LocalDateTime.now()
-      )
+        dateLastUpdated = LocalDateTime.now(),
+      ),
     )
 
     auditEventRepository.saveAndFlush(
@@ -62,8 +62,8 @@ class LicenceOverrideService(
         eventType = AuditEventType.USER_EVENT,
         username = username,
         fullName = username,
-        summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason"
-      )
+        summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason",
+      ),
     )
 
     licenceEventRepository.saveAndFlush(
@@ -71,8 +71,8 @@ class LicenceOverrideService(
         licenceId = licence.id,
         username = username,
         eventType = LicenceStatus.lookupLicenceEventByStatus(newStatus),
-        eventDescription = reason
-      )
+        eventDescription = reason,
+      ),
     )
   }
 }

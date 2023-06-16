@@ -50,7 +50,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Get a licence by ID`() {
     val result = webTestClient.get()
@@ -77,7 +77,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Get forbidden (403) when incorrect roles are supplied`() {
     val result = webTestClient.get()
@@ -94,7 +94,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Unauthorized (401) when no token is supplied`() {
     webTestClient.get()
@@ -164,7 +164,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update person to meet at initial appointment`() {
     webTestClient.put()
@@ -190,7 +190,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update time of the initial appointment`() {
     webTestClient.put()
@@ -217,7 +217,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the contact number for the officer on a licence`() {
     webTestClient.put()
@@ -243,7 +243,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the status of a licence to approved`() {
     webTestClient.put()
@@ -328,7 +328,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-approved-licences.sql"
+    "classpath:test_data/seed-approved-licences.sql",
   )
   fun `Activate licences in bulk`() {
     webTestClient.post()
@@ -362,7 +362,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Submit licence`() {
     webTestClient.put()
@@ -391,7 +391,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Create licence variation`() {
     val result = webTestClient.post()
@@ -424,7 +424,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Discard licence`() {
     webTestClient.delete()
@@ -438,7 +438,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update spo discussion`() {
     webTestClient.put()
@@ -464,7 +464,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update vlo discussion`() {
     webTestClient.put()
@@ -490,7 +490,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update reason for variation`() {
     webTestClient.put()
@@ -518,7 +518,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update prison information`() {
     webTestClient.put()
@@ -527,8 +527,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         UpdatePrisonInformationRequest(
           prisonCode = "PVI",
           prisonDescription = "Pentonville (HMP)",
-          prisonTelephone = "+44 276 54545"
-        )
+          prisonTelephone = "+44 276 54545",
+        ),
       )
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -589,7 +589,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       probationTeamDescription = "Cardiff South Team A",
       standardLicenceConditions = someStandardConditions,
       standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000
+      responsibleComStaffId = 2000,
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(

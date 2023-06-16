@@ -36,7 +36,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(resultList)
       .extracting<Tuple> { tuple(it.name, it.comName, it.comCode) }
       .contains(
-        tuple("Test Surname", "Staff Surname", "A01B02C")
+        tuple("Test Surname", "Staff Surname", "A01B02C"),
       )
   }
 
@@ -65,13 +65,13 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
-      1L
+      1L,
     )
 
     val aLicenceCaseloadSearchRequest = LicenceCaseloadSearchRequest(
       listOf("A01B02"),
       "Surname",
-      ProbationSearchSortByRequest()
+      ProbationSearchSortByRequest(),
     )
 
     @JvmStatic

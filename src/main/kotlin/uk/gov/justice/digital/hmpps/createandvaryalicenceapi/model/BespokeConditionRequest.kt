@@ -7,5 +7,5 @@ import jakarta.validation.constraints.NotNull
 data class BespokeConditionRequest(
   @Schema(description = "A list of bespoke conditions to add to a licence", example = "['cond1', 'cond2']")
   @field:NotNull
-  val conditions: List<String> = emptyList()
+  val conditions: List<String> = emptyList(),
 )

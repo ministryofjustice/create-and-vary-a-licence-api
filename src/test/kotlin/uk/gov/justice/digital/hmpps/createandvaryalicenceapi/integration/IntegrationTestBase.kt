@@ -34,7 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 @ActiveProfiles("test")
 @Sql(
   "classpath:test_data/clear-all-data.sql",
-  "classpath:test_data/seed-community-offender-manager.sql"
+  "classpath:test_data/seed-community-offender-manager.sql",
 )
 abstract class IntegrationTestBase {
 
@@ -52,7 +52,7 @@ abstract class IntegrationTestBase {
 
   internal fun setAuthorisation(
     user: String = "test-client",
-    roles: List<String> = listOf()
+    roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
 
   companion object {

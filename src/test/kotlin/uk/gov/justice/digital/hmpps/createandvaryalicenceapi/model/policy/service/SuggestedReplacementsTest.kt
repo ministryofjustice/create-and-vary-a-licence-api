@@ -23,15 +23,15 @@ class SuggestedReplacementsTest {
   @Test
   fun `policy with no replacements`() {
     val old = policy().copy(
-      additionalConditions = additionalConditions().copy(ap = listOf(condition().copy(code = "code-1")))
+      additionalConditions = additionalConditions().copy(ap = listOf(condition().copy(code = "code-1"))),
     )
 
     val new = policy().copy(
-      additionalConditions = additionalConditions()
+      additionalConditions = additionalConditions(),
     )
 
     assertThat(getSuggestedReplacements(old, new)).containsExactly(
-      Replacements("code-1", REMOVED_NO_REPLACEMENTS, alternatives = emptyList())
+      Replacements("code-1", REMOVED_NO_REPLACEMENTS, alternatives = emptyList()),
     )
   }
 
@@ -41,18 +41,18 @@ class SuggestedReplacementsTest {
       additionalConditions = additionalConditions().copy(
         ap = listOf(
           condition().copy(code = "code-1"),
-          condition().copy(code = "code-2")
-        )
-      )
+          condition().copy(code = "code-2"),
+        ),
+      ),
     )
 
     val new = policy().copy(
       additionalConditions = additionalConditions().copy(
         ap = listOf(
           condition().copy(code = "code-1"),
-          condition().copy(code = "code-2")
-        )
-      )
+          condition().copy(code = "code-2"),
+        ),
+      ),
     )
 
     assertThat(getSuggestedReplacements(old, new)).isEmpty()
@@ -61,16 +61,16 @@ class SuggestedReplacementsTest {
   @Test
   fun `condition replaced with single suggestion in new licence`() {
     val old = policy().copy(
-      additionalConditions = additionalConditions().copy(ap = listOf(condition().copy(code = "code-1")))
+      additionalConditions = additionalConditions().copy(ap = listOf(condition().copy(code = "code-1"))),
     )
 
     val new = policy().copy(
       additionalConditions = additionalConditions().copy(ap = listOf(condition().copy(code = "code-2"))),
-      changeHints = listOf(ChangeHint("code-1", listOf("code-2")))
+      changeHints = listOf(ChangeHint("code-1", listOf("code-2"))),
     )
 
     assertThat(getSuggestedReplacements(old, new)).containsExactly(
-      Replacements("code-1", REPLACED, alternatives = listOf(condition().copy(code = "code-2")))
+      Replacements("code-1", REPLACED, alternatives = listOf(condition().copy(code = "code-2"))),
     )
   }
 
@@ -81,21 +81,21 @@ class SuggestedReplacementsTest {
         ap = listOf(
           condition().copy(code = "code-1"),
           condition().copy(code = "code-2"),
-        )
-      )
+        ),
+      ),
     )
 
     val new = policy().copy(
       additionalConditions = additionalConditions().copy(
         ap = listOf(
           condition().copy(code = "code-2"),
-        )
+        ),
       ),
-      changeHints = listOf(ChangeHint("code-1", listOf("code-2")))
+      changeHints = listOf(ChangeHint("code-1", listOf("code-2"))),
     )
 
     assertThat(getSuggestedReplacements(old, new)).containsExactly(
-      Replacements("code-1", DELETED, alternatives = listOf(condition().copy(code = "code-2")))
+      Replacements("code-1", DELETED, alternatives = listOf(condition().copy(code = "code-2"))),
     )
   }
 
@@ -107,8 +107,8 @@ class SuggestedReplacementsTest {
           condition().copy(code = "code-1"),
           condition().copy(code = "code-2"),
           condition().copy(code = "code-3"),
-        )
-      )
+        ),
+      ),
     )
 
     val new = policy().copy(
@@ -116,17 +116,17 @@ class SuggestedReplacementsTest {
         ap = listOf(
           condition().copy(code = "code-2"),
           condition().copy(code = "code-3"),
-        )
+        ),
       ),
-      changeHints = listOf(ChangeHint("code-1", listOf("code-2", "code-3")))
+      changeHints = listOf(ChangeHint("code-1", listOf("code-2", "code-3"))),
     )
 
     assertThat(getSuggestedReplacements(old, new)).containsExactly(
       Replacements(
         "code-1",
         DELETED,
-        alternatives = listOf(condition().copy(code = "code-2"), condition().copy(code = "code-3"))
-      )
+        alternatives = listOf(condition().copy(code = "code-2"), condition().copy(code = "code-3")),
+      ),
     )
   }
 
@@ -138,8 +138,8 @@ class SuggestedReplacementsTest {
           condition().copy(code = "code-1"),
           condition().copy(code = "code-2"),
           condition().copy(code = "code-3"),
-        )
-      )
+        ),
+      ),
     )
 
     val new = policy().copy(
@@ -148,17 +148,17 @@ class SuggestedReplacementsTest {
           condition().copy(code = "code-2"),
           condition().copy(code = "code-3"),
           condition().copy(code = "code-4"),
-        )
+        ),
       ),
-      changeHints = listOf(ChangeHint("code-1", listOf("code-2", "code-4")))
+      changeHints = listOf(ChangeHint("code-1", listOf("code-2", "code-4"))),
     )
 
     assertThat(getSuggestedReplacements(old, new)).containsExactly(
       Replacements(
         "code-1",
         DELETED,
-        alternatives = listOf(condition().copy(code = "code-2"), condition().copy(code = "code-4"))
-      )
+        alternatives = listOf(condition().copy(code = "code-2"), condition().copy(code = "code-4")),
+      ),
     )
   }
 
@@ -166,7 +166,7 @@ class SuggestedReplacementsTest {
     "V1",
     standardConditions = StandardConditions(emptyList(), emptyList()),
     additionalConditions = additionalConditions(),
-    changeHints = emptyList()
+    changeHints = emptyList(),
   )
 
   fun additionalConditions() = AdditionalConditions(emptyList(), emptyList())
@@ -180,6 +180,6 @@ class SuggestedReplacementsTest {
     emptyList(),
     "default-category-short",
     "default-subtext",
-    "default-type"
+    "default-type",
   )
 }

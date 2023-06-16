@@ -2,5 +2,5 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.
 
 data class ProbationSearchSortByRequest(
   val field: String = "name.forename",
-  val direction: String = "asc"
+  val direction: String = "asc",
 )

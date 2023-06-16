@@ -51,8 +51,8 @@ class OffenderServiceTest {
           LicenceStatus.VARIATION_SUBMITTED,
           LicenceStatus.VARIATION_APPROVED,
           LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE
-        )
+          LicenceStatus.ACTIVE,
+        ),
       )
 
     verify(licenceRepository, times(1))
@@ -78,7 +78,7 @@ class OffenderServiceTest {
         probationLauDescription = "LAU2 Lau",
         probationTeamCode = "TEAM2",
         probationTeamDescription = "TEAM2 probation team",
-      )
+      ),
     )
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -96,8 +96,8 @@ class OffenderServiceTest {
           LicenceStatus.VARIATION_SUBMITTED,
           LicenceStatus.VARIATION_APPROVED,
           LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE
-        )
+          LicenceStatus.ACTIVE,
+        ),
       )
 
     verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
@@ -121,8 +121,8 @@ class OffenderServiceTest {
         probationLauCode = "LAU1",
         probationLauDescription = "LAU1 Lau",
         probationTeamCode = "TEAM1",
-        probationTeamDescription = "TEAM1 probation team"
-      )
+        probationTeamDescription = "TEAM1 probation team",
+      ),
     )
 
     verify(licenceRepository, times(1))
@@ -136,8 +136,8 @@ class OffenderServiceTest {
           LicenceStatus.VARIATION_SUBMITTED,
           LicenceStatus.VARIATION_APPROVED,
           LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE
-        )
+          LicenceStatus.ACTIVE,
+        ),
       )
 
     verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
@@ -160,7 +160,7 @@ class OffenderServiceTest {
       probationLauCode = "LAU1",
       probationLauDescription = "LAU1 Lau",
       probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team"
+      probationTeamDescription = "TEAM1 probation team",
     )
 
     val comDetails = CommunityOffenderManager(
@@ -179,7 +179,7 @@ class OffenderServiceTest {
       probationLauCode = "LAU2",
       probationLauDescription = "LAU2 Lau",
       probationTeamCode = "TEAM2",
-      probationTeamDescription = "TEAM2 probation team"
+      probationTeamDescription = "TEAM2 probation team",
     )
   }
 }

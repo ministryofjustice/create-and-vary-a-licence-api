@@ -29,7 +29,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the standard conditions`() {
     webTestClient.put()
@@ -57,13 +57,13 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
           Tuple.tuple("code1", "text", 0),
           Tuple.tuple("code2", "text", 1),
           Tuple.tuple("code3", "text", 2),
-        )
+        ),
       )
   }
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Add an additional condition`() {
     webTestClient.post()
@@ -93,7 +93,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the list of additional conditions`() {
     webTestClient.put()
@@ -121,14 +121,14 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
           Tuple.tuple("code1", "category", "text", 0),
           Tuple.tuple("code2", "category", "text", 1),
           Tuple.tuple("code3", "category", "text", 2),
-          Tuple.tuple("code4", "category", "text", 3)
-        )
+          Tuple.tuple("code4", "category", "text", 3),
+        ),
       )
   }
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )/**/
   fun `Update the bespoke conditions`() {
     webTestClient.put()
@@ -156,7 +156,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql"
+    "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the data associated with an additional condition`() {
     webTestClient.put()
@@ -200,7 +200,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
           Tuple.tuple("field1", "value1", 0),
           Tuple.tuple("field2", "value2", 1),
           Tuple.tuple("field3", "value3", 2),
-        )
+        ),
       )
   }
 
@@ -209,8 +209,8 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       standardLicenceConditions = listOf(
         StandardCondition(code = "code1", sequence = 0, text = "text"),
         StandardCondition(code = "code2", sequence = 1, text = "text"),
-        StandardCondition(code = "code3", sequence = 2, text = "text")
-      )
+        StandardCondition(code = "code3", sequence = 2, text = "text"),
+      ),
     )
 
     val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
@@ -219,11 +219,11 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       conditionCategory = "category",
       sequence = 4,
       conditionText = "text",
-      expandedText = "some more text"
+      expandedText = "some more text",
     )
 
     val aBespokeConditionRequest = BespokeConditionRequest(
-      conditions = listOf("Condition 1", "Condition 2", "Condition 3")
+      conditions = listOf("Condition 1", "Condition 2", "Condition 3"),
     )
 
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
@@ -231,9 +231,9 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
         AdditionalCondition(code = "code1", category = "category", sequence = 0, text = "text"),
         AdditionalCondition(code = "code2", category = "category", sequence = 1, text = "text"),
         AdditionalCondition(code = "code3", category = "category", sequence = 2, text = "text"),
-        AdditionalCondition(code = "code4", category = "category", sequence = 3, text = "text")
+        AdditionalCondition(code = "code4", category = "category", sequence = 3, text = "text"),
       ),
-      conditionType = "AP"
+      conditionType = "AP",
     )
 
     val anAdditionalConditionDataRequest = UpdateAdditionalConditionDataRequest(
@@ -242,7 +242,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
         AdditionalConditionData(field = "field2", value = "value2", sequence = 1),
         AdditionalConditionData(field = "field3", value = "value3", sequence = 2),
       ),
-      expandedConditionText = "expanded text"
+      expandedConditionText = "expanded text",
     )
   }
 }

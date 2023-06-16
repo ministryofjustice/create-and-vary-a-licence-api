@@ -34,7 +34,7 @@ class LicenceStatisticsController(private val licenceStatisticsService: LicenceS
       ApiResponse(
         responseCode = "200",
         description = "Licence statistics found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicenceStatistics::class))]
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicenceStatistics::class))],
       ),
       ApiResponse(
         responseCode = "404",
@@ -50,13 +50,16 @@ class LicenceStatisticsController(private val licenceStatisticsService: LicenceS
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
-
   fun getLicenceStatistics(
-    @RequestParam(required = true) @DateTimeFormat(iso = DATE) startDate: LocalDate,
-    @RequestParam(required = true) @DateTimeFormat(iso = DATE) endDate: LocalDate
+    @RequestParam(required = true)
+    @DateTimeFormat(iso = DATE)
+    startDate: LocalDate,
+    @RequestParam(required = true)
+    @DateTimeFormat(iso = DATE)
+    endDate: LocalDate,
   ): List<LicenceStatistics> {
     return this.licenceStatisticsService.getStatistics(startDate, endDate)
   }

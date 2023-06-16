@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyServi
 class ComController(private val comService: ComService, private val notifyService: NotifyService) {
   @PutMapping(
     value = ["/update"],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -56,18 +56,18 @@ class ComController(private val comService: ComService, private val notifyServic
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateComDetails(
-    @RequestBody body: UpdateComRequest
+    @RequestBody body: UpdateComRequest,
   ) {
     this.comService.updateComDetails(body)
   }
 
   @PostMapping(
     value = ["/prompt-licence-creation"],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -95,18 +95,19 @@ class ComController(private val comService: ComService, private val notifyServic
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun notifyOfUpcomingReleasesRequiringLicence(
-    @RequestBody @Valid body: List<PromptLicenceCreationRequest>
+    @RequestBody @Valid
+    body: List<PromptLicenceCreationRequest>,
   ) {
     notifyService.sendInitialLicenceCreateEmails(body)
   }
 
   @PostMapping(
     value = ["/case-search"],
-    produces = [MediaType.APPLICATION_JSON_VALUE]
+    produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -135,10 +136,11 @@ class ComController(private val comService: ComService, private val notifyServic
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun searchForOffenderOnStaffCaseload(
-    @Valid @RequestBody body: ProbationUserSearchRequest
+    @Valid @RequestBody
+    body: ProbationUserSearchRequest,
   ) = comService.searchForOffenderOnStaffCaseload(body)
 }

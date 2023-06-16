@@ -55,7 +55,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSente
 class LicenceController(
   private val licenceService: LicenceService,
   private val updateSentenceDateService: UpdateSentenceDateService,
-  private val licenceConditionService: LicenceConditionService
+  private val licenceConditionService: LicenceConditionService,
 ) {
 
   @PostMapping(value = ["/create"])
@@ -73,7 +73,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class))
+          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
         ],
       ),
       ApiResponse(
@@ -85,10 +85,13 @@ class LicenceController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
-  fun createLicence(@RequestBody @Valid request: CreateLicenceRequest): LicenceSummary {
+  fun createLicence(
+    @RequestBody @Valid
+    request: CreateLicenceRequest,
+  ): LicenceSummary {
     return licenceService.createLicence(request)
   }
 
@@ -122,8 +125,8 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence {
     return licenceService.getLicenceById(licenceId)
@@ -141,7 +144,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Appointment person updated"
+        description = "Appointment person updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -162,12 +165,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateAppointmentPerson(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: AppointmentPersonRequest
+    @Valid @RequestBody
+    request: AppointmentPersonRequest,
   ) {
     licenceService.updateAppointmentPerson(licenceId, request)
   }
@@ -183,7 +187,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Appointment date and time updated"
+        description = "Appointment date and time updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -204,12 +208,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateAppointmentTime(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: AppointmentTimeRequest
+    @Valid @RequestBody
+    request: AppointmentTimeRequest,
   ) {
     licenceService.updateAppointmentTime(licenceId, request)
   }
@@ -225,7 +230,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Contact number updated"
+        description = "Contact number updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -246,12 +251,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateContactNumber(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: ContactNumberRequest
+    @Valid @RequestBody
+    request: ContactNumberRequest,
   ) {
     licenceService.updateContactNumber(licenceId, request)
   }
@@ -267,7 +273,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Address updated"
+        description = "Address updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -288,12 +294,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateAppointmentAddress(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: AppointmentAddressRequest
+    @Valid @RequestBody
+    request: AppointmentAddressRequest,
   ) {
     licenceService.updateAppointmentAddress(licenceId, request)
   }
@@ -309,7 +316,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Bespoke conditions added or replaced"
+        description = "Bespoke conditions added or replaced",
       ),
       ApiResponse(
         responseCode = "400",
@@ -330,12 +337,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateBespokeConditions(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: BespokeConditionRequest
+    @Valid @RequestBody
+    request: BespokeConditionRequest,
   ) {
     licenceConditionService.updateBespokeConditions(licenceId, request)
   }
@@ -363,8 +371,8 @@ class LicenceController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun submittedVariations(
     @PathVariable("areaCode") areaCode: String,
@@ -395,13 +403,13 @@ class LicenceController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getLicencesMatchingCriteria(
     @RequestBody body: MatchLicencesRequest,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
-    @RequestParam(name = "sortOrder", required = false) sortOrder: String?
+    @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
   ): List<LicenceSummary> {
     return licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
@@ -411,8 +419,8 @@ class LicenceController(
         nomsIds = body.nomsId,
         pdus = body.pdu,
         sortBy = sortBy,
-        sortOrder = sortOrder
-      )
+        sortOrder = sortOrder,
+      ),
     )
   }
 
@@ -430,7 +438,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Set of additional conditions added"
+        description = "Set of additional conditions added",
       ),
       ApiResponse(
         responseCode = "400",
@@ -451,13 +459,14 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun addAdditionalCondition(
     @PathVariable licenceId: Long,
     @PathVariable conditionType: String,
-    @Valid @RequestBody request: AddAdditionalConditionRequest
+    @Valid @RequestBody
+    request: AddAdditionalConditionRequest,
   ): AdditionalCondition {
     return this.licenceConditionService.addAdditionalCondition(licenceId, conditionType, request)
   }
@@ -475,7 +484,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "204",
-        description = "Condition has been removed from the licence"
+        description = "Condition has been removed from the licence",
       ),
       ApiResponse(
         responseCode = "401",
@@ -491,12 +500,12 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun deleteAdditionalCondition(
     @PathVariable("licenceId") licenceId: Long,
-    @PathVariable("conditionId") conditionId: Long
+    @PathVariable("conditionId") conditionId: Long,
   ) {
     return this.licenceConditionService.deleteAdditionalCondition(licenceId, conditionId)
   }
@@ -515,7 +524,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Set of additional conditions updated"
+        description = "Set of additional conditions updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -536,12 +545,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateAdditionalConditions(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: AdditionalConditionsRequest
+    @Valid @RequestBody
+    request: AdditionalConditionsRequest,
   ) {
     return licenceConditionService.updateAdditionalConditions(licenceId, request)
   }
@@ -562,7 +572,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Standard conditions updated"
+        description = "Standard conditions updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -583,12 +593,13 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateStandardConditions(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdateStandardConditionDataRequest
+    @Valid @RequestBody
+    request: UpdateStandardConditionDataRequest,
   ) {
     return licenceConditionService.updateStandardConditions(licenceId, request)
   }
@@ -606,7 +617,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Additional condition updated"
+        description = "Additional condition updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -627,13 +638,14 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateAdditionalConditionData(
     @PathVariable("licenceId") licenceId: Long,
     @PathVariable("additionalConditionId") conditionId: Long,
-    @Valid @RequestBody request: UpdateAdditionalConditionDataRequest
+    @Valid @RequestBody
+    request: UpdateAdditionalConditionDataRequest,
   ) {
     return licenceConditionService.updateAdditionalConditionData(licenceId, conditionId, request)
   }
@@ -649,7 +661,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licence status updated"
+        description = "Licence status updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -670,18 +682,19 @@ class LicenceController(
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateLicenceStatus(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: StatusUpdateRequest
+    @Valid @RequestBody
+    request: StatusUpdateRequest,
   ) {
     return licenceService.updateLicenceStatus(licenceId, request)
   }
 
   @Deprecated(
-    message = "This endpoint is being deprecated as it is believed to no longer be in use after the activation job was moved to the API"
+    message = "This endpoint is being deprecated as it is believed to no longer be in use after the activation job was moved to the API",
   )
   @PostMapping(value = ["/activate-licences"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -694,7 +707,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licences activated"
+        description = "Licences activated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -710,11 +723,12 @@ class LicenceController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun activateLicences(
-    @Valid @RequestBody request: List<Long>
+    @Valid @RequestBody
+    request: List<Long>,
   ) {
     licenceService.activateLicencesByIds(request)
   }
@@ -730,7 +744,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Inactivate Licences"
+        description = "Inactivate Licences",
       ),
       ApiResponse(
         responseCode = "400",
@@ -746,11 +760,12 @@ class LicenceController(
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun inactivateLicences(
-    @Valid @RequestBody request: List<Long>
+    @Valid @RequestBody
+    request: List<Long>,
   ) {
     licenceService.inActivateLicencesByIds(request)
   }
@@ -766,7 +781,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licence submitted for approval"
+        description = "Licence submitted for approval",
       ),
       ApiResponse(
         responseCode = "400",
@@ -788,11 +803,11 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun submitLicence(
     @PathVariable("licenceId") licenceId: Long,
-    @RequestBody request: List<NotifyRequest>?
+    @RequestBody request: List<NotifyRequest>?,
   ) {
     return licenceService.submitLicence(licenceId, request)
   }
@@ -810,7 +825,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence variation created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class))
+          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
         ],
       ),
       ApiResponse(
@@ -833,10 +848,10 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun createVariation(
-    @PathVariable("licenceId") licenceId: Long
+    @PathVariable("licenceId") licenceId: Long,
   ): LicenceSummary {
     return licenceService.createVariation(licenceId)
   }
@@ -854,7 +869,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence version created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class))
+          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
         ],
       ),
       ApiResponse(
@@ -872,10 +887,10 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun editLicence(
-    @PathVariable("licenceId") licenceId: Long
+    @PathVariable("licenceId") licenceId: Long,
   ): LicenceSummary {
     return licenceService.editLicence(licenceId)
   }
@@ -891,7 +906,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "SPO discussion updated"
+        description = "SPO discussion updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -913,11 +928,12 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun updateSpoDiscussion(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdateSpoDiscussionRequest
+    @Valid @RequestBody
+    request: UpdateSpoDiscussionRequest,
   ) {
     licenceService.updateSpoDiscussion(licenceId, request)
   }
@@ -933,7 +949,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "VLO discussion updated"
+        description = "VLO discussion updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -955,11 +971,12 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun updateVloDiscussion(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdateVloDiscussionRequest
+    @Valid @RequestBody
+    request: UpdateVloDiscussionRequest,
   ) {
     licenceService.updateVloDiscussion(licenceId, request)
   }
@@ -975,7 +992,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Reason for variation updated"
+        description = "Reason for variation updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -997,11 +1014,12 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun updateReasonForVariation(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdateReasonForVariationRequest
+    @Valid @RequestBody
+    request: UpdateReasonForVariationRequest,
   ) {
     licenceService.updateReasonForVariation(licenceId, request)
   }
@@ -1039,11 +1057,12 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun referVariation(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: ReferVariationRequest
+    @Valid @RequestBody
+    request: ReferVariationRequest,
   ) {
     licenceService.referLicenceVariation(licenceId, request)
   }
@@ -1059,7 +1078,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Variation approved"
+        description = "Variation approved",
       ),
       ApiResponse(
         responseCode = "400",
@@ -1081,10 +1100,10 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun approveVariation(
-    @PathVariable("licenceId") licenceId: Long
+    @PathVariable("licenceId") licenceId: Long,
   ) {
     licenceService.approveLicenceVariation(licenceId)
   }
@@ -1100,7 +1119,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licence discarded"
+        description = "Licence discarded",
       ),
       ApiResponse(
         responseCode = "400",
@@ -1122,7 +1141,7 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun discard(
     @PathVariable("licenceId") licenceId: Long,
@@ -1141,7 +1160,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Prison information updated"
+        description = "Prison information updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -1163,11 +1182,12 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun updatePrisonInformation(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdatePrisonInformationRequest
+    @Valid @RequestBody
+    request: UpdatePrisonInformationRequest,
   ) {
     licenceService.updatePrisonInformation(licenceId, request)
   }
@@ -1183,7 +1203,7 @@ class LicenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Sentence dates updated"
+        description = "Sentence dates updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -1205,11 +1225,12 @@ class LicenceController(
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
-    ]
+    ],
   )
   fun updateSentenceDates(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody request: UpdateSentenceDatesRequest
+    @Valid @RequestBody
+    request: UpdateSentenceDatesRequest,
   ) {
     updateSentenceDateService.updateSentenceDates(licenceId, request)
   }

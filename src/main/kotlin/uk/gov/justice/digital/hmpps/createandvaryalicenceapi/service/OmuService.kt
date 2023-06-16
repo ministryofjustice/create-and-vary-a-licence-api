@@ -23,13 +23,13 @@ class OmuService(private val omuRepository: OmuContactRepository) {
     return this.omuRepository.saveAndFlush(
       this.omuRepository.findByPrisonCode(prisonCode)?.copy(
         email = contactRequest.email,
-        dateLastUpdated = LocalDateTime.now()
+        dateLastUpdated = LocalDateTime.now(),
       )
         ?: OmuContact(
           prisonCode = prisonCode,
           email = contactRequest.email,
-          dateCreated = LocalDateTime.now()
-        )
+          dateCreated = LocalDateTime.now(),
+        ),
     )
   }
 
@@ -38,7 +38,7 @@ class OmuService(private val omuRepository: OmuContactRepository) {
    */
   fun deleteOmuEmail(prisonCode: String) {
     omuRepository.findByPrisonCode(prisonCode)?.let { this.omuRepository.delete(it) } ?: throw EntityNotFoundException(
-      prisonCode
+      prisonCode,
     )
   }
 }

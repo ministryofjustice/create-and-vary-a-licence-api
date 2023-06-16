@@ -14,5 +14,5 @@ enum class LicenceEventType {
   VARIATION_REFERRED,
   VARIATION_APPROVED,
   INACTIVE,
-  RECALLED
+  RECALLED,
 }

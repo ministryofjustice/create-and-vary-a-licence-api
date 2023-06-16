@@ -38,7 +38,7 @@ data class AdditionalConditionUploadSummary(
   val thumbnailImage: ByteArray? = null,
 
   @NotNull
-  val uploadDetailId: Long
+  val uploadDetailId: Long,
 ) {
 
   override fun toString(): String {
