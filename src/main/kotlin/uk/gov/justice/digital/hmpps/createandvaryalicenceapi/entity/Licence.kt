@@ -89,7 +89,7 @@ data class Licence(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
     orphanRemoval = true,
-    targetEntity = StandardCondition::class
+    targetEntity = StandardCondition::class,
   )
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
@@ -160,7 +160,7 @@ data class Licence(
       appointmentAddress = this.appointmentAddress,
       appointmentContact = this.appointmentContact,
       responsibleCom = this.responsibleCom,
-      dateCreated = LocalDateTime.now()
+      dateCreated = LocalDateTime.now(),
     )
   }
 

@@ -13,7 +13,7 @@ import java.time.LocalDate
 @Service
 class LicenceStatisticsService(
   private val prisonRegisterApiClient: PrisonRegisterApiClient,
-  private val licenceService: LicenceService
+  private val licenceService: LicenceService,
 ) {
 
   fun getStatistics(startDate: LocalDate, endDate: LocalDate): List<LicenceStatistics> {
@@ -31,7 +31,7 @@ class LicenceStatisticsService(
   private fun filterLicencesWithCrdInScope(
     prisonLicences: List<LicenceSummary>,
     startDate: LocalDate,
-    endDate: LocalDate
+    endDate: LocalDate,
   ): List<LicenceSummary> {
     return prisonLicences.filter { (startDate <= it.conditionalReleaseDate) && (it.conditionalReleaseDate!! <= endDate) }
   }
@@ -42,7 +42,7 @@ class LicenceStatisticsService(
 
   private fun licenceStatsForEachPrison(
     prisons: List<String>,
-    prisonLicences: List<LicenceSummary>
+    prisonLicences: List<LicenceSummary>,
   ): List<LicenceStatistics> {
     return prisons.map { it to prisonLicences.getForPrison(it) }.flatMap { extractStatsForPrison(it.first, it.second) }
   }
@@ -55,14 +55,14 @@ class LicenceStatisticsService(
     return listOf(
       extractStatsForType(prisonId, LicenceType.AP, licenceSummaries),
       extractStatsForType(prisonId, LicenceType.PSS, licenceSummaries),
-      extractStatsForType(prisonId, LicenceType.AP_PSS, licenceSummaries)
+      extractStatsForType(prisonId, LicenceType.AP_PSS, licenceSummaries),
     )
   }
 
   private fun extractStatsForType(
     prisonId: String,
     licenceType: LicenceType,
-    licenceSummaries: List<LicenceSummary>
+    licenceSummaries: List<LicenceSummary>,
   ): LicenceStatistics {
     val filteredLicenceSummaries = licenceSummaries.filter { it.licenceType == licenceType }
     return LicenceStatistics(
@@ -71,7 +71,7 @@ class LicenceStatisticsService(
       inProgress = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.IN_PROGRESS },
       submitted = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.SUBMITTED },
       approved = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.APPROVED },
-      active = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.ACTIVE }
+      active = filteredLicenceSummaries.count { it.licenceStatus == LicenceStatus.ACTIVE },
     )
   }
 }

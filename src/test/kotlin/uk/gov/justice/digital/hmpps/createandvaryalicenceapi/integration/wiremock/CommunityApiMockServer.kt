@@ -104,9 +104,9 @@ class CommunityApiMockServer : WireMockServer(8093) {
                     "Code": "ABC123",
                     "Description": "Some description"
                   }
-               }"""
-        ).withStatus(200)
-      )
+               }""",
+        ).withStatus(200),
+      ),
     )
   }
 }

@@ -2,9 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 
 enum class ConditionChangeType {
   /**
@@ -21,7 +25,7 @@ enum class ConditionChangeType {
 
   REMOVED_NO_REPLACEMENTS,
   NEW_OPTIONS,
-  TEXT_CHANGE
+  TEXT_CHANGE,
 }
 
 data class SuggestedCondition(
@@ -37,10 +41,11 @@ data class LicenceConditionChanges(
   val currentText: String?,
   @JsonIgnore var addedInputs: List<Any>,
   @JsonIgnore var removedInputs: List<Any>,
-  val suggestions: List<SuggestedCondition> = emptyList()
+  val suggestions: List<SuggestedCondition> = emptyList(),
 )
 
-class LicencePolicyService(private val policies: List<LicencePolicy>) {
+@Service
+class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1)) {
 
   fun currentPolicy(): LicencePolicy = policies.maxBy { it.version }
   fun policyByVersion(version: String): LicencePolicy = policies.find { it.version == version }

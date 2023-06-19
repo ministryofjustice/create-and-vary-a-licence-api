@@ -102,7 +102,7 @@ class LicenceService(
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
         summary = "Licence created for ${request.forename} ${request.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-      )
+      ),
     )
 
     licenceEventRepository.saveAndFlush(
@@ -113,7 +113,7 @@ class LicenceService(
         forenames = createdBy.firstName,
         surname = createdBy.lastName,
         eventDescription = "Licence created for ${licenceEntity.forename} ${licenceEntity.surname}",
-      )
+      ),
     )
 
     return createLicenceResponse
@@ -271,7 +271,7 @@ class LicenceService(
         eventType = getAuditEventType(request),
         summary = summaryText,
         detail = detailText,
-      )
+      ),
     )
   }
 
@@ -306,7 +306,7 @@ class LicenceService(
         forenames = firstName,
         surname = lastName,
         eventDescription = "Licence updated to ${licenceEntity.statusCode} for ${licenceEntity.forename} ${licenceEntity.surname}",
-      )
+      ),
     )
   }
 
@@ -317,7 +317,7 @@ class LicenceService(
       licenceEntity.forename ?: "unknown",
       licenceEntity.surname ?: "unknown",
       licenceEntity.nomsId,
-      licenceEntity.conditionalReleaseDate
+      licenceEntity.conditionalReleaseDate,
     )
   }
 
@@ -337,7 +337,7 @@ class LicenceService(
       statusCode = newStatus,
       submittedBy = submitter,
       updatedByUsername = username,
-      dateLastUpdated = LocalDateTime.now()
+      dateLastUpdated = LocalDateTime.now(),
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -352,7 +352,7 @@ class LicenceService(
         forenames = submitter.firstName,
         surname = submitter.lastName,
         eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
-      )
+      ),
     )
 
     auditEventRepository.saveAndFlush(
@@ -362,7 +362,7 @@ class LicenceService(
         fullName = "${submitter.firstName} ${submitter.lastName}",
         summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
         detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
-      )
+      ),
     )
 
     // Notify the head of PDU of this submitted licence variation
@@ -395,10 +395,8 @@ class LicenceService(
   }
 
   @Transactional
-  fun activateLicences(licenceIds: List<Long>) {
-    val matchingLicences =
-      licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
-    val activatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = ACTIVE) }
+  fun activateLicences(licences: List<EntityLicence>, reason: String? = null) {
+    val activatedLicences = licences.map { it.copy(statusCode = ACTIVE) }
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
 
@@ -409,9 +407,9 @@ class LicenceService(
             username = "SYSTEM",
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
-            summary = "Licence automatically activated for ${licence.forename} ${licence.surname}",
+            summary = "${reason ?: "Licence automatically activated"} for ${licence.forename} ${licence.surname}",
             detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-          )
+          ),
         )
 
         licenceEventRepository.saveAndFlush(
@@ -421,18 +419,22 @@ class LicenceService(
             username = "SYSTEM",
             forenames = "SYSTEM",
             surname = "SYSTEM",
-            eventDescription = "Licence automatically activated for ${licence.forename} ${licence.surname}",
-          )
+            eventDescription = "${reason ?: "Licence automatically activated"} for ${licence.forename} ${licence.surname}",
+          ),
         )
       }
     }
   }
 
   @Transactional
-  fun inActivateLicences(licenceIds: List<Long>) {
+  fun activateLicencesByIds(licenceIds: List<Long>) {
     val matchingLicences =
-      licenceRepository.findAllById(licenceIds).filter { licence -> licence.statusCode == APPROVED }
-    val inActivatedLicences = matchingLicences.map { licence -> licence.copy(statusCode = INACTIVE) }
+      licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
+    activateLicences(matchingLicences)
+  }
+
+  fun inactivateLicences(licences: List<EntityLicence>, reason: String? = null) {
+    val inActivatedLicences = licences.map { it.copy(statusCode = INACTIVE) }
     if (inActivatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(inActivatedLicences)
 
@@ -443,9 +445,9 @@ class LicenceService(
             username = "SYSTEM",
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
-            summary = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
+            summary = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
             detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-          )
+          ),
         )
 
         licenceEventRepository.saveAndFlush(
@@ -455,11 +457,18 @@ class LicenceService(
             username = "SYSTEM",
             forenames = "SYSTEM",
             surname = "SYSTEM",
-            eventDescription = "Licence automatically inactivated for ${licence.forename} ${licence.surname}",
-          )
+            eventDescription = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
+          ),
         )
       }
     }
+  }
+
+  @Transactional
+  fun inActivateLicencesByIds(licenceIds: List<Long>) {
+    val matchingLicences =
+      licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
+    inactivateLicences(matchingLicences)
   }
 
   @Transactional
@@ -496,7 +505,7 @@ class LicenceService(
     val updatedLicenceEntity = licenceEntity.copy(
       spoDiscussion = spoDiscussionRequest.spoDiscussion,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username
+      updatedByUsername = username,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -512,7 +521,7 @@ class LicenceService(
     val updatedLicenceEntity = licenceEntity.copy(
       vloDiscussion = vloDiscussionRequest.vloDiscussion,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username
+      updatedByUsername = username,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -537,7 +546,7 @@ class LicenceService(
         forenames = createdBy?.firstName,
         surname = createdBy?.lastName,
         eventDescription = reasonForVariationRequest.reasonForVariation,
-      )
+      ),
     )
   }
 
@@ -566,7 +575,7 @@ class LicenceService(
         forenames = createdBy?.firstName,
         surname = createdBy?.lastName,
         eventDescription = referVariationRequest.reasonForReferral,
-      )
+      ),
     )
 
     auditEventRepository.saveAndFlush(
@@ -576,7 +585,7 @@ class LicenceService(
         fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
         summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
-      )
+      ),
     )
 
     notifyService.sendVariationReferredEmail(
@@ -601,7 +610,7 @@ class LicenceService(
       updatedByUsername = username,
       approvedByUsername = username,
       approvedDate = LocalDateTime.now(),
-      approvedByName = "${user?.firstName} ${user?.lastName}"
+      approvedByName = "${user?.firstName} ${user?.lastName}",
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -614,7 +623,7 @@ class LicenceService(
         forenames = user?.firstName,
         surname = user?.lastName,
         eventDescription = "Licence variation approved for ${updatedLicenceEntity.forename}${updatedLicenceEntity.surname}",
-      )
+      ),
     )
 
     auditEventRepository.saveAndFlush(
@@ -623,8 +632,8 @@ class LicenceService(
         username = username,
         fullName = "${user?.firstName} ${user?.lastName}",
         summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}"
-      )
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
+      ),
     )
 
     notifyService.sendVariationApprovedEmail(
@@ -653,7 +662,7 @@ class LicenceService(
         fullName = "${discardedBy?.firstName} ${discardedBy?.lastName}",
         summary = "Licence variation discarded for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-      )
+      ),
     )
 
     licenceRepository.delete(licenceEntity)
@@ -672,7 +681,7 @@ class LicenceService(
       prisonDescription = prisonInformationRequest.prisonDescription,
       prisonTelephone = prisonInformationRequest.prisonTelephone,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username
+      updatedByUsername = username,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -685,7 +694,7 @@ class LicenceService(
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Prison information updated for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-      )
+      ),
     )
   }
 
@@ -735,7 +744,7 @@ class LicenceService(
         id = -1,
         licence = newLicence,
         additionalConditionData = additionalConditionData,
-        additionalConditionUploadSummary = additionalConditionUploadSummary
+        additionalConditionUploadSummary = additionalConditionUploadSummary,
       )
     }
 
@@ -755,7 +764,7 @@ class LicenceService(
 
       condition.copy(
         additionalConditionData = updatedAdditionalConditionData,
-        additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary
+        additionalConditionUploadSummary = updatedAdditionalConditionUploadSummary,
       )
     } as MutableList<AdditionalCondition>
 
@@ -774,7 +783,7 @@ class LicenceService(
         forenames = createdBy.firstName,
         surname = createdBy.lastName,
         eventDescription = licenceEventMessage,
-      )
+      ),
     )
 
     val auditEventSummary = when (newStatus) {
@@ -789,7 +798,7 @@ class LicenceService(
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
         summary = auditEventSummary,
         detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
-      )
+      ),
     )
 
     return newLicence

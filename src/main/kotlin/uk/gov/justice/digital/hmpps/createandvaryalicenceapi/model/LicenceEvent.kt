@@ -12,7 +12,7 @@ data class LicenceEvent(
 
   @Schema(
     description = "The internal ID of the licence that this event relates to",
-    example = "1234"
+    example = "1234",
   )
   val licenceId: Long? = null,
 
@@ -21,19 +21,19 @@ data class LicenceEvent(
 
   @Schema(
     description = "The username related to this event or SYSTEM if an automated event",
-    example = "X63533"
+    example = "X63533",
   )
   val username: String? = null,
 
   @Schema(
     description = "The forename of the person related to this event, or SYSTEM if an automated event.",
-    example = "Robert Mortimer"
+    example = "Robert Mortimer",
   )
   val forenames: String? = null,
 
   @Schema(
     description = "The surname of the person related to this event, or SYSTEM if an automated event.",
-    example = "Robert Mortimer"
+    example = "Robert Mortimer",
   )
   val surname: String? = null,
 

@@ -21,7 +21,7 @@ class LicenceFunctionsKtTest {
     sentenceEndDate = fiveDaysAgo,
     topupSupervisionStartDate = fiveDaysAgo,
     topupSupervisionExpiryDate = fiveDaysAgo,
-    typeCode = LicenceType.AP_PSS
+    typeCode = LicenceType.AP_PSS,
   )
 
   private val testSentenceChanges = UpdateSentenceDatesRequest(
@@ -37,7 +37,7 @@ class LicenceFunctionsKtTest {
     val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
 
     Assertions.assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(licenceExpiryDate = fourDaysAgo))
+      licence.getSentenceChanges(testSentenceChanges.copy(licenceExpiryDate = fourDaysAgo)),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -45,7 +45,7 @@ class LicenceFunctionsKtTest {
         sedChanged = false,
         tussdChanged = false,
         tusedChanged = false,
-        isMaterial = true
+        isMaterial = true,
       ),
     )
   }
@@ -55,7 +55,7 @@ class LicenceFunctionsKtTest {
     val licence = testLicence.copy(statusCode = LicenceStatus.IN_PROGRESS)
 
     Assertions.assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(sentenceEndDate = fourDaysAgo))
+      licence.getSentenceChanges(testSentenceChanges.copy(sentenceEndDate = fourDaysAgo)),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -63,7 +63,7 @@ class LicenceFunctionsKtTest {
         sedChanged = true,
         tussdChanged = false,
         tusedChanged = false,
-        isMaterial = false
+        isMaterial = false,
       ),
     )
   }
@@ -74,8 +74,8 @@ class LicenceFunctionsKtTest {
 
     Assertions.assertThat(
       licence.getSentenceChanges(
-        testSentenceChanges.copy(sentenceEndDate = fourDaysAgo)
-      )
+        testSentenceChanges.copy(sentenceEndDate = fourDaysAgo),
+      ),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -83,7 +83,7 @@ class LicenceFunctionsKtTest {
         sedChanged = true,
         tussdChanged = false,
         tusedChanged = false,
-        isMaterial = true
+        isMaterial = true,
       ),
     )
   }

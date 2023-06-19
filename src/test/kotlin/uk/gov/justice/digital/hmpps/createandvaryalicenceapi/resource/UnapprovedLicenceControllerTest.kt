@@ -50,7 +50,7 @@ class UnapprovedLicenceControllerTest {
     mvc.perform(
       MockMvcRequestBuilders.post("/notify-probation-of-unapproved-licences")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
     verify(unapprovedLicenceService, times(1)).sendEmailsToProbationPractitioner()

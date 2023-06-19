@@ -16,9 +16,9 @@ class PrisonApiMockServer : WireMockServer(8091) {
                       "passed": $passed,
                       "bookingId": $bookingId
                    }
-               }"""
-        ).withStatus(200)
-      )
+               }""",
+        ).withStatus(200),
+      ),
     )
   }
 }

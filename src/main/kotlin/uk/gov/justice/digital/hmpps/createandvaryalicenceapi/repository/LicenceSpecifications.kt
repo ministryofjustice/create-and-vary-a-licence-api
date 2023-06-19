@@ -19,7 +19,7 @@ data class LicenceQueryObject(
   val pdus: List<String>? = null,
   val probationAreaCodes: List<String>? = null,
   val sortBy: String? = null,
-  val sortOrder: String? = null
+  val sortOrder: String? = null,
 )
 
 fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
@@ -28,7 +28,7 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasNomsIdIn(nomsIds),
   hasResponsibleComIn(staffIds),
   hasPdusIn(pdus),
-  hasProbationAreaCodeIn(probationAreaCodes)
+  hasProbationAreaCodeIn(probationAreaCodes),
 )
   .and { root, query, _ ->
     root.fetch<Licence, CommunityOffenderManager>("responsibleCom", JoinType.INNER)

@@ -50,8 +50,8 @@ class AuditController(private val auditService: AuditService) {
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun recordAuditEvent(@RequestBody body: AuditEvent) {
     this.auditService.recordAuditEvent(body)
@@ -85,8 +85,8 @@ class AuditController(private val auditService: AuditService) {
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun requestAuditEvents(@RequestBody body: AuditRequest): List<AuditEvent> {
     return this.auditService.getAuditEvents(body)

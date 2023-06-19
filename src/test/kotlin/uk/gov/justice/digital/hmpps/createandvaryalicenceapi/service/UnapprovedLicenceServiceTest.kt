@@ -18,7 +18,7 @@ class UnapprovedLicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val service = UnapprovedLicenceService(
     licenceRepository,
-    notifyService
+    notifyService,
   )
 
   @BeforeEach
@@ -31,7 +31,7 @@ class UnapprovedLicenceServiceTest {
     SecurityContextHolder.setContext(securityContext)
 
     reset(
-      licenceRepository
+      licenceRepository,
     )
   }
 
@@ -44,8 +44,8 @@ class UnapprovedLicenceServiceTest {
         surname = "smith",
         comFirstName = "ComF",
         comLastName = "ComL",
-        comEmail = "com@gmail.com"
-      )
+        comEmail = "com@gmail.com",
+      ),
     )
 
     whenever(licenceRepository.getEditedLicencesNotReApprovedByCrd()).thenReturn(anUnapprovedLicence)

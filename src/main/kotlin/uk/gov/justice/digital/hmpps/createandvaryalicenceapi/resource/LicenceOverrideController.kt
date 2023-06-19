@@ -38,7 +38,7 @@ class LicenceOverrideController(private val licenceOverrideService: LicenceOverr
     value = [
       ApiResponse(
         responseCode = "202",
-        description = "Status has been updated"
+        description = "Status has been updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -59,12 +59,13 @@ class LicenceOverrideController(private val licenceOverrideService: LicenceOverr
         responseCode = "404",
         description = "The licence for this ID was not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun changeStatus(
     @PathVariable("licenceId") licenceId: Long,
-    @RequestBody @Valid request: OverrideLicenceStatusRequest
+    @RequestBody @Valid
+    request: OverrideLicenceStatusRequest,
   ) {
     licenceOverrideService.changeStatus(licenceId, request.statusCode, request.reason)
   }

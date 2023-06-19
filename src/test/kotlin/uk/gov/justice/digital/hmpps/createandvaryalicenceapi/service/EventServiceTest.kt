@@ -42,10 +42,10 @@ class EventServiceTest {
   fun `find events matching criteria - no parameters matches all`() {
     val eventQueryObject = EventQueryObject()
     whenever(
-      licenceEventRepository.findAll(any<Specification<LicenceEvent>>(), any<Sort>())
+      licenceEventRepository.findAll(any<Specification<LicenceEvent>>(), any<Sort>()),
     )
       .thenReturn(
-        listOf(aLicenceEventEntity)
+        listOf(aLicenceEventEntity),
       )
 
     val events = service.findEventsMatchingCriteria(eventQueryObject)
@@ -53,7 +53,7 @@ class EventServiceTest {
     assertThat(events).isEqualTo(listOf(transform(aLicenceEventEntity)))
     verify(licenceEventRepository, times(1)).findAll(
       any<Specification<LicenceEvent>>(),
-      ArgumentMatchers.eq(Sort.unsorted())
+      ArgumentMatchers.eq(Sort.unsorted()),
     )
   }
 
@@ -64,10 +64,10 @@ class EventServiceTest {
       eventTypes = listOf(LicenceEventType.VARIATION_SUBMITTED),
     )
     whenever(
-      licenceEventRepository.findAll(any<Specification<LicenceEvent>>(), any<Sort>())
+      licenceEventRepository.findAll(any<Specification<LicenceEvent>>(), any<Sort>()),
     )
       .thenReturn(
-        listOf(aLicenceEventEntity)
+        listOf(aLicenceEventEntity),
       )
 
     val events = service.findEventsMatchingCriteria(eventQueryObject)
@@ -75,7 +75,7 @@ class EventServiceTest {
     assertThat(events).isEqualTo(listOf(transform(aLicenceEventEntity)))
     verify(licenceEventRepository, times(1)).findAll(
       any<Specification<LicenceEvent>>(),
-      ArgumentMatchers.eq(Sort.unsorted())
+      ArgumentMatchers.eq(Sort.unsorted()),
     )
   }
 

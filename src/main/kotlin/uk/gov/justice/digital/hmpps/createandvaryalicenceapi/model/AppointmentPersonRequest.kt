@@ -8,7 +8,7 @@ data class AppointmentPersonRequest(
 
   @Schema(
     description = "The name of the person the person on probation will meet at the initial appointment",
-    example = "John Smith"
+    example = "John Smith",
   )
   @field:NotBlank
   val appointmentPerson: String?,

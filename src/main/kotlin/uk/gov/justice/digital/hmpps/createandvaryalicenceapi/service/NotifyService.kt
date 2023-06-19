@@ -33,7 +33,7 @@ class NotifyService(
         "pduHeadName" to notifyRequest.name,
         "licenceFirstName" to firstName,
         "licenceLastName" to lastName,
-        "approvalCasesLink" to selfLink.plus("/licence/vary-approve/list")
+        "approvalCasesLink" to selfLink.plus("/licence/vary-approve/list"),
       )
       sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
       log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
@@ -48,7 +48,7 @@ class NotifyService(
         "prisonerFirstName" to firstName,
         "prisonerLastName" to lastName,
         "prisonerNumber" to (prisonerNumber ?: "unknown"),
-        "crd" to crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))
+        "crd" to crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy")),
       )
       sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
       log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
@@ -63,14 +63,14 @@ class NotifyService(
     comEmail: String,
     comName: String,
     popName: String,
-    licenceId: String
+    licenceId: String,
   ) {
     val contacts = getContacts(creatorEmail, creatorName, comEmail, comName)
     contacts.forEach {
       val values: Map<String, String> = mapOf(
         "comName" to it.name,
         "fullName" to popName,
-        "caseListLink" to selfLink.plus("/licence/vary/caseload")
+        "caseListLink" to selfLink.plus("/licence/vary/caseload"),
       )
       sendEmail(variationApprovedTemplateId, it.email, values, null)
       log.info("Notification sent to ${it.email} VARIATION APPROVED for $licenceId $popName")
@@ -96,7 +96,7 @@ class NotifyService(
         unapprovedLicenceByCrdTemplateId,
         "${it.comEmail}",
         offenderDetails,
-        null
+        null,
       )
       log.info("Notification sent to ${it.comEmail} informing edited licence not reapproved by CRD for prisoner ${it.forename} ${it.surname}")
 
@@ -104,7 +104,7 @@ class NotifyService(
         unapprovedLicenceByCrdTemplateId,
         internalEmailAddress,
         offenderDetails,
-        null
+        null,
       )
     }
   }
@@ -115,14 +115,14 @@ class NotifyService(
     comEmail: String,
     comName: String,
     popName: String,
-    licenceId: String
+    licenceId: String,
   ) {
     val contacts = getContacts(creatorEmail, creatorName, comEmail, comName)
     contacts.forEach {
       val values: Map<String, String> = mapOf(
         "comName" to it.name,
         "fullName" to popName,
-        "caseListLink" to selfLink.plus("/licence/vary/caseload")
+        "caseListLink" to selfLink.plus("/licence/vary/caseload"),
       )
       sendEmail(variationReferredTemplateId, it.email, values, null)
       log.info("Notification sent to ${it.email} VARIATION REFERRED for $licenceId $popName")
@@ -138,7 +138,7 @@ class NotifyService(
     comFullName: String,
     offenderFullName: String,
     crn: String?,
-    datesChanged: Map<String, Boolean>
+    datesChanged: Map<String, Boolean>,
   ) {
     if (emailAddress?.isNotBlank() == true) {
       // For all the dates with the change flag set to true get their descriptions as a list
@@ -150,7 +150,7 @@ class NotifyService(
         "offenderFullName" to offenderFullName,
         "crn" to crn!!,
         "dateDescriptions" to listOfDateTypes,
-        "caseloadLink" to selfLink.plus("/licence/create/caseload")
+        "caseloadLink" to selfLink.plus("/licence/create/caseload"),
       )
 
       sendEmail(datesChangedTemplateId, emailAddress, values, null)
@@ -180,9 +180,9 @@ class NotifyService(
         "prisonersForRelease" to cases.map { prisoner ->
           "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
         },
-        "createLicenceLink" to selfLink.plus("/licence/create/caseload")
+        "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
       ),
-      null
+      null,
     )
     cases.map { prisoner ->
       var promptType = "REMINDER"
@@ -235,5 +235,5 @@ class NotifyService(
 
 data class Contact(
   var email: String,
-  var name: String
+  var name: String,
 )

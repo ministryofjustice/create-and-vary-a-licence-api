@@ -1,9 +1,10 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AddAnother
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ChangeHint
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ConditionalInput
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
@@ -14,7 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 
-val POLICY_V2_0 = LicencePolicy(
+val POLICY_V2_1 = LicencePolicy(
   additionalConditions = AdditionalConditions(
     ap = listOf(
       AdditionalConditionAp(
@@ -25,25 +26,49 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select the probation region",
             name = "probationRegion",
             options = listOf(
-              Option("North East"),
-              Option("North West"),
-              Option("Greater Manchester"),
-              Option("Yorkshire and Humberside"),
-              Option("East Midlands"),
-              Option("West Midlands"),
-              Option("East of England"),
-              Option("South West"),
-              Option("South Central"),
-              Option("London"),
-              Option("Kent, Surrey and Sussex"),
-              Option("Wales"),
+              Option(
+                value = "North East",
+              ),
+              Option(
+                value = "North West",
+              ),
+              Option(
+                value = "Greater Manchester",
+              ),
+              Option(
+                value = "Yorkshire and Humberside",
+              ),
+              Option(
+                value = "East Midlands",
+              ),
+              Option(
+                value = "West Midlands",
+              ),
+              Option(
+                value = "East of England",
+              ),
+              Option(
+                value = "South West",
+              ),
+              Option(
+                value = "South Central",
+              ),
+              Option(
+                value = "London",
+              ),
+              Option(
+                value = "Kent, Surrey and Sussex",
+              ),
+              Option(
+                value = "Wales",
+              ),
             ),
             type = "radio",
           ),
         ),
         requiresInput = true,
-        text = "You must reside within the [INSERT REGION] while of no fixed abode, unless otherwise approved by your supervising officer.",
-        tpl = "You must reside within the {probationRegion} probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
+        text = "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
+        tpl = "You must reside overnight within {probationRegion} probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
         type = "RegionOfResidence",
       ),
       AdditionalConditionAp(
@@ -55,9 +80,15 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select the relevant text",
             name = "gender",
             options = listOf(
-              Option("any"),
-              Option("any female"),
-              Option("any male"),
+              Option(
+                value = "any",
+              ),
+              Option(
+                value = "any female",
+              ),
+              Option(
+                value = "any male",
+              ),
             ),
             type = "radio",
           ),
@@ -65,8 +96,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select the relevant age",
             name = "age",
             options = listOf(
-              Option("16"),
-              Option("18"),
+              Option(
+                value = "16",
+              ),
+              Option(
+                value = "18",
+              ),
             ),
             type = "radio",
           ),
@@ -80,24 +115,8 @@ val POLICY_V2_0 = LicencePolicy(
         category = "Making or maintaining contact with a person",
         categoryShort = "Contact with a person",
         code = "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
-        inputs = listOf(
-          Input(
-            case = "lower",
-            label = "Select all the relevant options",
-            listType = "AND",
-            name = "appointmentType",
-            options = listOf(
-              Option("Psychiatrist"),
-              Option("Psychologist"),
-              Option("Medical practitioner"),
-            ),
-            type = "check",
-          ),
-        ),
-        requiresInput = true,
-        text = "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER].",
-        tpl = "Attend all appointments arranged for you with a {appointmentType}.",
-        type = "MedicalAppointmentType",
+        requiresInput = false,
+        text = "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -110,29 +129,8 @@ val POLICY_V2_0 = LicencePolicy(
         category = "Making or maintaining contact with a person",
         categoryShort = "Contact with a person",
         code = "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
-        inputs = listOf(
-          Input(
-            includeBefore = " at ",
-            label = "Enter time (optional)",
-            name = "appointmentTime",
-            type = "timePicker",
-          ),
-          Input(
-            includeBefore = " on ",
-            label = "Enter date (optional)",
-            name = "appointmentDate",
-            type = "datePicker",
-          ),
-          Input(
-            label = "Enter the address for the appointment",
-            name = "appointmentAddress",
-            type = "address",
-          ),
-        ),
-        requiresInput = true,
-        text = "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        tpl = "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        type = "AppointmentTimeAndPlace",
+        requiresInput = false,
+        text = "Attend appointments, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -177,9 +175,15 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select the relevant gender",
             name = "gender",
             options = listOf(
-              Option("any"),
-              Option("any female"),
-              Option("any male"),
+              Option(
+                value = "any",
+              ),
+              Option(
+                value = "any female",
+              ),
+              Option(
+                value = "any male",
+              ),
             ),
             type = "radio",
           ),
@@ -187,8 +191,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select the relevant age",
             name = "age",
             options = listOf(
-              Option("16 years"),
-              Option("18 years"),
+              Option(
+                value = "16 years",
+              ),
+              Option(
+                value = "18 years",
+              ),
             ),
             type = "radio",
           ),
@@ -266,29 +274,43 @@ val POLICY_V2_0 = LicencePolicy(
             listType = "AND",
             name = "behaviourProblems",
             options = listOf(
-              Option("alcohol"),
-              Option("drug"),
-              Option("sexual"),
-              Option("violent"),
-              Option("gambling"),
-              Option("solvent abuse"),
-              Option("anger"),
-              Option("debt"),
-              Option("prolific offending behaviour"),
-              Option("offending behaviour"),
+              Option(
+                value = "alcohol",
+              ),
+              Option(
+                value = "drug",
+              ),
+              Option(
+                value = "sexual",
+              ),
+              Option(
+                value = "violent",
+              ),
+              Option(
+                value = "gambling",
+              ),
+              Option(
+                value = "solvent abuse",
+              ),
+              Option(
+                value = "anger",
+              ),
+              Option(
+                value = "debt",
+              ),
+              Option(
+                value = "prolific offending behaviour",
+              ),
+              Option(
+                value = "offending behaviour",
+              ),
             ),
             type = "check",
           ),
-          Input(
-            includeBefore = " at the ",
-            label = "Enter name of course or centre (optional)",
-            name = "course",
-            type = "text",
-          ),
         ),
         requiresInput = true,
-        text = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems at the [NAME OF COURSE / CENTRE].",
-        tpl = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems{course}.",
+        text = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
+        tpl = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems.",
         type = "BehaviourProblems",
       ),
       AdditionalConditionAp(
@@ -300,8 +322,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select the relevant age",
             name = "age",
             options = listOf(
-              Option("16 years"),
-              Option("18 years"),
+              Option(
+                value = "16 years",
+              ),
+              Option(
+                value = "18 years",
+              ),
             ),
             type = "radio",
           ),
@@ -310,6 +336,13 @@ val POLICY_V2_0 = LicencePolicy(
         text = "Not to undertake work or other organised activity which will involve a person under the age of [INSERT AGE], either on a paid or unpaid basis without the prior approval of your supervising officer.",
         tpl = "Not to undertake work or other organised activity which will involve a person under the age of {age}, either on a paid or unpaid basis without the prior approval of your supervising officer.",
         type = "WorkingWithChildren",
+      ),
+      AdditionalConditionAp(
+        category = "Participation in, or co-operation with, a programme or set of activities",
+        categoryShort = "Programmes or activities",
+        code = "0EDB6D01-46B6-408F-971C-0EBFF5FA93F0",
+        requiresInput = false,
+        text = "To engage with the Integrated Offender Management Team, and follow their instructions.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -337,7 +370,7 @@ val POLICY_V2_0 = LicencePolicy(
         categoryShort = "Items and documents",
         code = "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
         requiresInput = false,
-        text = "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection on request by your supervising officer and/or a police officer.",
+        text = "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection upon request.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -358,7 +391,7 @@ val POLICY_V2_0 = LicencePolicy(
         categoryShort = "Items and documents",
         code = "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
         requiresInput = false,
-        text = "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as required by the police or your supervising officer. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        text = "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -388,23 +421,8 @@ val POLICY_V2_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Disclosure of information",
         code = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
-        inputs = listOf(
-          Input(
-            case = "lower",
-            label = "Select the relevant text",
-            name = "gender",
-            options = listOf(
-              Option("men"),
-              Option("women"),
-              Option("women or men"),
-            ),
-            type = "radio",
-          ),
-        ),
-        requiresInput = true,
-        text = "Notify your supervising officer of any developing intimate relationships with [WOMEN / MEN / WOMEN OR MEN].",
-        tpl = "Notify your supervising officer of any developing intimate relationships with {gender}.",
-        type = "IntimateRelationshipWithGender",
+        requiresInput = false,
+        text = "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
       ),
       AdditionalConditionAp(
         category = "Disclosure of information",
@@ -444,8 +462,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select a review period",
             name = "reviewPeriod",
             options = listOf(
-              Option("Weekly"),
-              Option("Monthly"),
+              Option(
+                value = "Weekly",
+              ),
+              Option(
+                value = "Monthly",
+              ),
               Option(
                 conditional = Conditional(
                   inputs = listOf(
@@ -469,32 +491,6 @@ val POLICY_V2_0 = LicencePolicy(
         text = "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         tpl = "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         type = "CurfewTerms",
-      ),
-      AdditionalConditionAp(
-        category = "Curfew arrangement",
-        code = "c2435d4a-20a0-47de-b080-e1e740d1514c",
-        inputs = listOf(
-          Input(
-            label = "Enter the curfew address",
-            name = "curfewAddress",
-            type = "address",
-          ),
-          Input(
-            label = "Enter the curfew start time",
-            name = "curfewStart",
-            type = "timePicker",
-          ),
-          Input(
-            label = "Enter the curfew end time",
-            name = "curfewEnd",
-            type = "timePicker",
-          ),
-        ),
-        requiresInput = true,
-        subtext = "You must have PPCS approval if the curfew time is longer than 12 hours.",
-        text = "Confine yourself to remain at [CURFEW ADDRESS] initially from [START OF CURFEW HOURS] until [END OF CURFEW HOURS] each day, and, thereafter, for such a period as may be reasonably notified to you by your supervising officer; and comply with such arrangements as may be reasonably put in place and notified to you by your supervising officer so as to allow for your whereabouts and your compliance with your curfew requirement be monitored (whether by electronic means involving your wearing an electronic tag or otherwise).",
-        tpl = "Confine yourself to remain at {curfewAddress} initially from {curfewStart} until {curfewEnd} each day, and, thereafter, for such a period as may be reasonably notified to you by your supervising officer; and comply with such arrangements as may be reasonably put in place and notified to you by your supervising officer so as to allow for your whereabouts and your compliance with your curfew requirement be monitored (whether by electronic means involving your wearing an electronic tag or otherwise).",
-        type = "CurfewAddress",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
@@ -576,9 +572,68 @@ val POLICY_V2_0 = LicencePolicy(
             type = "text",
           ),
           Input(
-            label = "Enter a reporting time",
-            name = "reportingTime",
-            type = "timePicker",
+            label = "Select when the person needs to report",
+            name = "reportingFrequency",
+            options = listOf(
+              Option(
+                value = "Daily",
+              ),
+              Option(
+                value = "Monday to Friday",
+              ),
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      case = "capitalise",
+                      label = "Enter the other frequency",
+                      name = "alternativeReportingFrequency",
+                      type = "text",
+                    ),
+                  ),
+                ),
+                value = "Other",
+              ),
+            ),
+            type = "radio",
+          ),
+          Input(
+            label = "Select how many times each day they need to report",
+            name = "numberOfReportingTimes",
+            options = listOf(
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the reporting time",
+                      name = "reportingTime",
+                      type = "timePicker",
+                    ),
+                  ),
+                ),
+                value = "Once a day",
+              ),
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the first reporting time",
+                      name = "reportingTime1",
+                      type = "timePicker",
+                    ),
+                    ConditionalInput(
+                      includeBefore = " and ",
+                      label = "Enter the second reporting time",
+                      name = "reportingTime2",
+                      type = "timePicker",
+                    ),
+                  ),
+                ),
+                value = "Twice a day",
+              ),
+            ),
+            subtext = "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
+            type = "radio",
           ),
           Input(
             case = "lower",
@@ -586,8 +641,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select a review period",
             name = "reviewPeriod",
             options = listOf(
-              Option("Weekly"),
-              Option("Monthly"),
+              Option(
+                value = "Weekly",
+              ),
+              Option(
+                value = "Monthly",
+              ),
               Option(
                 conditional = Conditional(
                   inputs = listOf(
@@ -608,8 +667,8 @@ val POLICY_V2_0 = LicencePolicy(
         ),
         requiresInput = true,
         text = "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        tpl = "Report to staff at {approvedPremises} at {reportingTime}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        type = "ReportToApprovedPremisesPolicyV2_0",
+        tpl = "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        type = "ReportToApprovedPremises",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
@@ -623,9 +682,68 @@ val POLICY_V2_0 = LicencePolicy(
             type = "text",
           ),
           Input(
-            label = "Enter a reporting time",
-            name = "reportingTime",
-            type = "timePicker",
+            label = "Select when the person needs to report",
+            name = "reportingFrequency",
+            options = listOf(
+              Option(
+                value = "Daily",
+              ),
+              Option(
+                value = "Monday to Friday",
+              ),
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      case = "capitalise",
+                      label = "Enter the other frequency",
+                      name = "alternativeReportingFrequency",
+                      type = "text",
+                    ),
+                  ),
+                ),
+                value = "Other",
+              ),
+            ),
+            type = "radio",
+          ),
+          Input(
+            label = "Select how many times each day they need to report",
+            name = "numberOfReportingTimes",
+            options = listOf(
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the reporting time",
+                      name = "reportingTime",
+                      type = "timePicker",
+                    ),
+                  ),
+                ),
+                value = "Once a day",
+              ),
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the first reporting time",
+                      name = "reportingTime1",
+                      type = "timePicker",
+                    ),
+                    ConditionalInput(
+                      includeBefore = " and ",
+                      label = "Enter the second reporting time",
+                      name = "reportingTime2",
+                      type = "timePicker",
+                    ),
+                  ),
+                ),
+                value = "Twice a day",
+              ),
+            ),
+            subtext = "If you want to add more than 2 reporting times per day, this must be done as a bespoke condition approved by PPCS.",
+            type = "radio",
           ),
           Input(
             case = "lower",
@@ -633,8 +751,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select a review period",
             name = "reviewPeriod",
             options = listOf(
-              Option("Weekly"),
-              Option("Monthly"),
+              Option(
+                value = "Weekly",
+              ),
+              Option(
+                value = "Monthly",
+              ),
               Option(
                 conditional = Conditional(
                   inputs = listOf(
@@ -655,8 +777,8 @@ val POLICY_V2_0 = LicencePolicy(
         ),
         requiresInput = true,
         text = "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        tpl = "Report to staff at {policeStation} at {reportingTime}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        type = "ReportToPoliceStationPolicyV2_0",
+        tpl = "Report to staff at {policeStation} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        type = "ReportToPoliceStation",
       ),
       AdditionalConditionAp(
         category = "Restriction of specified conduct or specified acts",
@@ -704,22 +826,8 @@ val POLICY_V2_0 = LicencePolicy(
       AdditionalConditionAp(
         category = "Drug testing",
         code = "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
-        inputs = listOf(
-          Input(
-            label = "Enter name of organisation",
-            name = "name",
-            type = "text",
-          ),
-          Input(
-            label = "Enter address",
-            name = "address",
-            type = "address",
-          ),
-        ),
-        requiresInput = true,
-        text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
-        tpl = "Attend {name} {address}, as reasonably required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Not to take any action that could hamper or frustrate the drug testing process.",
-        type = "DrugTestLocation",
+        requiresInput = false,
+        text = "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -730,12 +838,24 @@ val POLICY_V2_0 = LicencePolicy(
             listType = "AND",
             name = "electronicMonitoringTypes",
             options = listOf(
-              Option("exclusion zone"),
-              Option("curfew"),
-              Option("location monitoring"),
-              Option("attendance at appointments"),
-              Option("alcohol monitoring"),
-              Option("alcohol abstinence"),
+              Option(
+                value = "exclusion zone",
+              ),
+              Option(
+                value = "curfew",
+              ),
+              Option(
+                value = "location monitoring",
+              ),
+              Option(
+                value = "attendance at appointments",
+              ),
+              Option(
+                value = "alcohol monitoring",
+              ),
+              Option(
+                value = "alcohol abstinence",
+              ),
             ),
             type = "check",
           ),
@@ -777,13 +897,8 @@ val POLICY_V2_0 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
-        code = "599bdcae-d545-461c-b1a9-02cb3d4ba268",
+        code = "d36a3b77-30ba-40ce-8953-83e761d3b487",
         inputs = listOf(
-          Input(
-            label = "Enter the timeframe",
-            name = "timeframe",
-            type = "text",
-          ),
           Input(
             label = "Enter the end date",
             name = "endDate",
@@ -791,9 +906,24 @@ val POLICY_V2_0 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "You are subject to alcohol monitoring. Your alcohol intake will be electronically monitored for a period of [INSERT TIMEFRAME] ending on [END DATE], and you may not consume units of alcohol, unless otherwise permitted by your supervising officer.",
-        tpl = "You are subject to alcohol monitoring. Your alcohol intake will be electronically monitored for a period of {timeframe} ending on {endDate}, and you may not consume units of alcohol, unless otherwise permitted by your supervising officer.",
-        type = "AlcoholMonitoringPeriod",
+        text = "You must not drink any alcohol until [END DATE] unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
+        tpl = "You must not drink any alcohol until {endDate} unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
+        type = "AlcoholRestrictionPeriod",
+      ),
+      AdditionalConditionAp(
+        category = "Electronic monitoring",
+        code = "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+        inputs = listOf(
+          Input(
+            label = "Enter the end date",
+            name = "endDate",
+            type = "datePicker",
+          ),
+        ),
+        requiresInput = true,
+        text = "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+        tpl = "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
+        type = "ElectronicTagPeriod",
       ),
       AdditionalConditionAp(
         category = "Terrorist personal search",
@@ -853,7 +983,22 @@ val POLICY_V2_0 = LicencePolicy(
       ),
     ),
   ),
-  changeHints = listOf(),
+  changeHints = listOf(
+    ChangeHint(
+      previousCode = "599bdcae-d545-461c-b1a9-02cb3d4ba268",
+      replacements = listOf(
+        "d36a3b77-30ba-40ce-8953-83e761d3b487",
+        "2F8A5418-C6E4-4F32-9E58-64B23550E504",
+      ),
+    ),
+    ChangeHint(
+      previousCode = "c2435d4a-20a0-47de-b080-e1e740d1514c",
+      replacements = listOf(
+        "0a370862-5426-49c1-b6d4-3d074d78a81a",
+        "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+      ),
+    ),
+  ),
   standardConditions = StandardConditions(
     standardConditionsAp = listOf(
       StandardConditionAp(
@@ -928,5 +1073,5 @@ val POLICY_V2_0 = LicencePolicy(
       ),
     ),
   ),
-  version = "2.0",
+  version = "2.1",
 )

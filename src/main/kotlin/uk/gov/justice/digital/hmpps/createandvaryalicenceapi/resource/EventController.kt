@@ -46,17 +46,17 @@ class EventController(private val eventService: EventService) {
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun getEventsMatchingCriteria(
     @RequestParam(name = "licenceId", required = false) licenceId: Long?,
     @RequestParam(name = "eventType", required = false) eventType: List<LicenceEventType>?,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
-    @RequestParam(name = "sortOrder", required = false) sortOrder: String?
+    @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
   ): List<LicenceEvent> {
     return eventService.findEventsMatchingCriteria(
-      EventQueryObject(licenceId = licenceId, eventTypes = eventType, sortBy = sortBy, sortOrder = sortOrder)
+      EventQueryObject(licenceId = licenceId, eventTypes = eventType, sortBy = sortBy, sortOrder = sortOrder),
     )
   }
 }

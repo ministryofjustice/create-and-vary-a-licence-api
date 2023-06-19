@@ -15,7 +15,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-a-few-licences.sql"
+    "classpath:test_data/seed-a-few-licences.sql",
   )
   fun `Find approved licences`() {
     val result = webTestClient.post()
@@ -33,7 +33,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-matching-candidates.sql"
+    "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licences matches - no filters`() {
     val result = webTestClient.post()
@@ -56,13 +56,13 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
         tuple(3L, LicenceStatus.ACTIVE),
         tuple(4L, LicenceStatus.APPROVED),
         tuple(5L, LicenceStatus.IN_PROGRESS),
-        tuple(6L, LicenceStatus.REJECTED)
+        tuple(6L, LicenceStatus.REJECTED),
       )
   }
 
   @Test
   @Sql(
-    "classpath:test_data/seed-matching-candidates.sql"
+    "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licences matches - by list of staff identifiers`() {
     val result = webTestClient.post()
@@ -71,7 +71,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         MatchLicencesRequest(
           staffId = listOf(125, 126),
-        )
+        ),
       )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -93,7 +93,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-matching-candidates.sql"
+    "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licence matches - by list of staff identifiers and statuses`() {
     val result = webTestClient.post()
@@ -102,8 +102,8 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         MatchLicencesRequest(
           staffId = listOf(125),
-          status = listOf(LicenceStatus.ACTIVE)
-        )
+          status = listOf(LicenceStatus.ACTIVE),
+        ),
       )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -120,7 +120,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-matching-candidates.sql"
+    "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licence matches - by list of prisons and statuses`() {
     val result = webTestClient.post()
@@ -129,8 +129,8 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         MatchLicencesRequest(
           prison = listOf("MDI", "BMI"),
-          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED)
-        )
+          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED),
+        ),
       )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -153,7 +153,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-matching-candidates.sql"
+    "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licence matches - no matching filters`() {
     val result = webTestClient.post()
@@ -163,8 +163,8 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
       .bodyValue(
         MatchLicencesRequest(
           prison = listOf("XXX"),
-          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED, LicenceStatus.IN_PROGRESS)
-        )
+          status = listOf(LicenceStatus.APPROVED, LicenceStatus.SUBMITTED, LicenceStatus.IN_PROGRESS),
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -177,7 +177,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-matching-candidates.sql"
+    "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licence matches - sort by conditional release date`() {
     val result = webTestClient.post()

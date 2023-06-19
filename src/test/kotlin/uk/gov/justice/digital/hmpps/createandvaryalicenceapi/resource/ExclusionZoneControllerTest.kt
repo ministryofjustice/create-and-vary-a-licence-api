@@ -59,13 +59,13 @@ class ExclusionZoneControllerTest {
       "file",
       fileResource.filename,
       MediaType.MULTIPART_FORM_DATA_VALUE,
-      fileResource.file.inputStream()
+      fileResource.file.inputStream(),
     )
     AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
 
     mvc
       .perform(
-        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload)
+        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload),
       )
       .andExpect(MockMvcResultMatchers.status().isOk)
 
@@ -81,7 +81,7 @@ class ExclusionZoneControllerTest {
       "file",
       fileResource.filename,
       MediaType.MULTIPART_FORM_DATA_VALUE,
-      fileResource.file.inputStream()
+      fileResource.file.inputStream(),
     )
     AssertionsForClassTypes.assertThat(fileToUpload).isNotNull
 
@@ -90,7 +90,7 @@ class ExclusionZoneControllerTest {
 
     mvc
       .perform(
-        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload)
+        MockMvcRequestBuilders.multipart("/exclusion-zone/id/4/condition/id/1/file-upload").file(fileToUpload),
       )
       .andExpect(MockMvcResultMatchers.status().is4xxClientError)
 
@@ -100,7 +100,7 @@ class ExclusionZoneControllerTest {
   @Test
   fun `remove an exclusion zone upload associated with an additional condition`() {
     mvc.perform(
-      MockMvcRequestBuilders.put("/exclusion-zone/id/4/condition/id/1/remove-upload")
+      MockMvcRequestBuilders.put("/exclusion-zone/id/4/condition/id/1/remove-upload"),
     )
       .andExpect(MockMvcResultMatchers.status().isOk)
 
@@ -110,7 +110,7 @@ class ExclusionZoneControllerTest {
   @Test
   fun `get a full-size image for an exclusion zone`() {
     mvc.perform(
-      MockMvcRequestBuilders.get("/exclusion-zone/id/4/condition/id/1/full-size-image")
+      MockMvcRequestBuilders.get("/exclusion-zone/id/4/condition/id/1/full-size-image"),
     )
       .andExpect(MockMvcResultMatchers.status().isOk)
 

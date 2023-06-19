@@ -62,7 +62,7 @@ class EventControllerTest {
     whenever(eventService.findEventsMatchingCriteria(eventQueryObject)).thenReturn(listOf(aLicenceEvent))
 
     val result = mvc.perform(
-      MockMvcRequestBuilders.get("/events/match?licenceId=1&eventType=SUBMITTED").accept(MediaType.APPLICATION_JSON)
+      MockMvcRequestBuilders.get("/events/match?licenceId=1&eventType=SUBMITTED").accept(MediaType.APPLICATION_JSON),
     )
       .andExpect(MockMvcResultMatchers.status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))

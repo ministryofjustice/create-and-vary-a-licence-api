@@ -12,5 +12,5 @@ data class OverrideLicenceStatusRequest(
   val statusCode: LicenceStatus,
   @Schema(description = "Reason for overriding the licence status")
   @NotEmpty
-  val reason: String
+  val reason: String,
 )

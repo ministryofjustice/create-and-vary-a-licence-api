@@ -43,8 +43,8 @@ class UnapprovedLicenceController(private val unapprovedLicenceService: Unapprov
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun notifyProbationOfUnapprovedLicences() {
     return unapprovedLicenceService.sendEmailsToProbationPractitioner()

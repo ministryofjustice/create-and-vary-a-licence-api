@@ -66,7 +66,7 @@ class AuditIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
-    "classpath:test_data/seed-audit-events.sql"
+    "classpath:test_data/seed-audit-events.sql",
   )
   fun `Get audit events for a licence and user`() {
     val result = webTestClient.post()

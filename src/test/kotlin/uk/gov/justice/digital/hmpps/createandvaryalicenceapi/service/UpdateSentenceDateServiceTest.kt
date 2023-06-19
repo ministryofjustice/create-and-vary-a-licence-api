@@ -39,7 +39,7 @@ class UpdateSentenceDateServiceTest {
     licenceRepository,
     auditEventRepository,
     notifyService,
-    prisonApiClient
+    prisonApiClient,
   )
 
   @BeforeEach
@@ -55,7 +55,7 @@ class UpdateSentenceDateServiceTest {
       licenceRepository,
       auditEventRepository,
       notifyService,
-      prisonApiClient
+      prisonApiClient,
     )
   }
 
@@ -65,10 +65,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
 
     service.updateSentenceDates(
@@ -82,7 +86,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -101,7 +105,7 @@ class UpdateSentenceDateServiceTest {
         "licenceExpiryDate",
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
-        "updatedByUsername"
+        "updatedByUsername",
       )
       .isEqualTo(
         listOf(
@@ -113,8 +117,8 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2025-09-11"),
-          "smills"
-        )
+          "smills",
+        ),
       )
 
     assertThat(auditCaptor.value)
@@ -124,8 +128,8 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
@@ -139,8 +143,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -160,7 +164,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      )
+      ),
     )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
@@ -172,10 +176,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "APPROVED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "APPROVED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
 
     service.updateSentenceDates(
@@ -189,7 +197,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      )
+      ),
     )
 
     verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
@@ -201,10 +209,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = false
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = false,
+        ),
+      ),
     )
 
     service.updateSentenceDates(
@@ -218,7 +230,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      )
+      ),
     )
 
     verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
@@ -231,10 +243,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = false
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = false,
+        ),
+      ),
     )
 
     service.updateSentenceDates(
@@ -248,7 +264,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -267,7 +283,7 @@ class UpdateSentenceDateServiceTest {
         "licenceExpiryDate",
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
-        "updatedByUsername"
+        "updatedByUsername",
       )
       .isEqualTo(
         listOf(
@@ -279,8 +295,8 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
           null,
-          "smills"
-        )
+          "smills",
+        ),
       )
 
     assertThat(auditCaptor.value)
@@ -298,8 +314,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -309,10 +325,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
     service.updateSentenceDates(
       1L,
@@ -325,7 +345,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -341,8 +361,8 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -355,8 +375,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -366,10 +386,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
     service.updateSentenceDates(
       1L,
@@ -382,7 +406,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -398,8 +422,8 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -412,8 +436,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -423,10 +447,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
     service.updateSentenceDates(
       1L,
@@ -439,7 +467,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -455,8 +483,8 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
@@ -470,8 +498,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -481,10 +509,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
     service.updateSentenceDates(
       1L,
@@ -497,7 +529,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -513,8 +545,8 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
@@ -528,8 +560,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -539,10 +571,14 @@ class UpdateSentenceDateServiceTest {
     whenever(prisonApiClient.hdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
-          approvalStatusDate = null, approvalStatus = "REJECTED", refusedReason = null,
-          checksPassedDate = null, bookingId = aLicenceEntity.bookingId!!, passed = true
-        )
-      )
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
     )
 
     service.updateSentenceDates(
@@ -556,7 +592,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
-      )
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -572,8 +608,8 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
@@ -587,8 +623,8 @@ class UpdateSentenceDateServiceTest {
         "Licence end date" to true,
         "Sentence end date" to true,
         "Top up supervision start date" to true,
-        "Top up supervision end date" to true
-      )
+        "Top up supervision end date" to true,
+      ),
     )
   }
 
@@ -599,21 +635,21 @@ class UpdateSentenceDateServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
-        licence = mock()
+        licence = mock(),
       ),
       EntityStandardCondition(
         id = 2,
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
-        licence = mock()
+        licence = mock(),
       ),
       EntityStandardCondition(
         id = 3,
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
-        licence = mock()
+        licence = mock(),
       ),
     )
 
@@ -656,14 +692,14 @@ class UpdateSentenceDateServiceTest {
         username = "smills",
         email = "testemail@probation.gov.uk",
         firstName = "X",
-        lastName = "Y"
+        lastName = "Y",
       ),
       createdBy = CommunityOffenderManager(
         staffIdentifier = 2000,
         username = "smills",
         email = "testemail@probation.gov.uk",
         firstName = "X",
-        lastName = "Y"
+        lastName = "Y",
       ),
     )
   }

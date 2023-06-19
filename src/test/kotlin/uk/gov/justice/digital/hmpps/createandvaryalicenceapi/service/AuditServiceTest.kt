@@ -48,7 +48,7 @@ class AuditServiceTest {
           aUserRequest.licenceId!!,
           aUserRequest.startTime,
           aUserRequest.endTime,
-        )
+        ),
     ).thenReturn(aListOfEntities)
 
     val response = service.getAuditEvents(aUserRequest)
@@ -73,7 +73,7 @@ class AuditServiceTest {
           aUserRequest.username!!,
           aUserRequest.startTime,
           aUserRequest.endTime,
-        )
+        ),
     ).thenReturn(aListOfEntities)
 
     val response = service.getAuditEvents(aUserRequest)
@@ -96,7 +96,7 @@ class AuditServiceTest {
         .findAllByEventTimeBetweenOrderByEventTimeDesc(
           aUserRequest.startTime,
           aUserRequest.endTime,
-        )
+        ),
     ).thenReturn(aListOfEntities)
 
     val response = service.getAuditEvents(aUserRequest)
@@ -139,7 +139,7 @@ class AuditServiceTest {
         fullName = "First Last",
         eventType = AuditEventType.USER_EVENT,
         summary = "Summary1",
-        detail = "Detail1"
+        detail = "Detail1",
       ),
       EntityAuditEvent(
         id = 2L,
@@ -149,7 +149,7 @@ class AuditServiceTest {
         fullName = "First Last",
         eventType = AuditEventType.USER_EVENT,
         summary = "Summary2",
-        detail = "Detail2"
+        detail = "Detail2",
       ),
       EntityAuditEvent(
         id = 3L,
@@ -159,7 +159,7 @@ class AuditServiceTest {
         fullName = "First Last",
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Summary3",
-        detail = "Detail3"
+        detail = "Detail3",
       ),
     )
   }
