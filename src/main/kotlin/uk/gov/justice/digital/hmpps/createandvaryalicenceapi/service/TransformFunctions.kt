@@ -4,7 +4,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
@@ -158,18 +157,8 @@ fun transform(licence: EntityLicence): ModelLicence {
     isVariation = licence.variationOfId != null,
     variationOf = licence.variationOfId,
     createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
-    isInPssPeriod = checkLicenceIsInPssPeriod(licence),
+    isInPssPeriod = licence.isInPssPeriod(licence),
   )
-}
-
-fun checkLicenceIsInPssPeriod(licence: EntityLicence): Boolean {
-  val led = licence.licenceExpiryDate
-  val tused = licence.topupSupervisionExpiryDate
-
-  if (led != null && tused != null) {
-    return led.isBefore(LocalDate.now()) && !(tused.isBefore(LocalDate.now()))
-  }
-  return false
 }
 
 // Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
