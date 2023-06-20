@@ -13,10 +13,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionCh
 /**
  * This will return a list of all changes that need to be addressed as part of migrating a licence from one version of the policy to another.
  */
-fun <T : Any> licencePolicyChanges(
+fun licencePolicyChanges(
   licence: Licence,
-  previousConditions: List<IAdditionalCondition<T>>,
-  currentConditions: List<IAdditionalCondition<T>>,
+  previousConditions: List<IAdditionalCondition>,
+  currentConditions: List<IAdditionalCondition>,
   allReplacements: List<Replacements>,
 ): List<LicenceConditionChanges> {
   val conditionsToCheck = previousConditions.filter { policyCondition ->
@@ -33,9 +33,9 @@ fun <T : Any> licencePolicyChanges(
   }
 }
 
-fun <T : Any> conditionChanges(
-  previousConditions: List<IAdditionalCondition<T>>,
-  currentConditions: List<IAdditionalCondition<T>>,
+fun conditionChanges(
+  previousConditions: List<IAdditionalCondition>,
+  currentConditions: List<IAdditionalCondition>,
   allReplacements: List<Replacements>,
 ): List<LicenceConditionChanges> = previousConditions.mapNotNull { previous ->
   val current = currentConditions.find { it.code == previous.code }
@@ -46,9 +46,9 @@ fun <T : Any> conditionChanges(
   }
 }
 
-private fun <T : Any> conditionUpdated(
-  previous: IAdditionalCondition<T>,
-  current: IAdditionalCondition<T>,
+private fun conditionUpdated(
+  previous: IAdditionalCondition,
+  current: IAdditionalCondition,
 ): LicenceConditionChanges? {
   val textHasChanged = previous.text != current.text
   val removed = (previous.inputs ?: emptyList()) - (current.inputs ?: emptyList()).toSet()
