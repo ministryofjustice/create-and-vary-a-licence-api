@@ -22,8 +22,8 @@ export SYSTEM_CLIENT_SECRET=$(kubectl -n create-and-vary-a-licence-api-dev get s
 # Match with the credentials set in create-and-vary-a-licence/docker-compose.yml
 export DB_SERVER=localhost
 export DB_NAME=create-and-vary-a-licence-db
-export DB_USER=create-and-vary-a-licence
-export DB_PASS=create-and-vary-a-licence
+export DB_USER=cvl
+export DB_PASS=cvl
 
 # Provide URLs to other local container-based dependent services
 # Match with ports defined in docker-compose.yml
@@ -32,9 +32,32 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
-# Bring up the licences-db container needed for the application
-docker compose down --remove-orphans && docker compose pull
+# Bring up the front end containers needed for the application
+cd ../create-and-vary-a-licence
+echo "Front end setup ..."
+echo "Bringing down current containers ..."
+docker compose down
+echo "Installing npm ..."
+npm install
+echo "Pulling front end containers ..."
+docker compose -f docker-compose-dev.yml pull
+docker compose -f docker-compose-dev.yml up -d
+echo "Waiting for front end containers to be ready ..."
+until [ "`docker inspect -f {{.State.Health.Status}} gotenberg`" == "healthy" ]; do
+    sleep 0.1;
+done;
+until [ "`docker inspect -f {{.State.Health.Status}} redis`" == "healthy" ]; do
+    sleep 0.1;
+done;
+until [ "`docker inspect -f {{.State.Health.Status}} localstack`" == "healthy" ]; do
+    sleep 0.1;
+done;
 
+
+# Bring up the back end containers needed for the application
+cd ../create-and-vary-a-licence-api
+docker compose down --remove-orphans
+docker compose pull
 docker compose -f docker-compose.yml up -d
 echo "Waiting for container to be ready ..."
 until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do

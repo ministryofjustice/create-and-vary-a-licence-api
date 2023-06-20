@@ -30,6 +30,12 @@ values required.
 
 `$ ./run-local.sh`
 
+This script will also build the necessary containers for the front end. Once the script has ran
+and has started, in a separate terminal (at the root of the create-and-vary-a-licence repo for the UI), 
+all you need to run is
+
+`$ npm run start:dev`
+
 # Running the unit tests
 
 Unit tests mock all external dependencies and can be run with no dependent containers.
