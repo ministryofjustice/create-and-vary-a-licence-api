@@ -8,10 +8,6 @@ This service provices access to data stored in the licences database via API end
 The main client is the create-and-vary-a-licence (UI) service.
 It is built as  docker image and deployed to the MOJ Cloud Platform.
 
-# Dependencies
-
-This service requires a postgresql database.
-
 # Building the project
 
 Tools required:
@@ -29,21 +25,10 @@ Tools required:
 
 # Running the service
 
-Start up the docker dependencies using the docker-compose file in the `create-and-vary-a-licence` service
-
 There is a script to help, which sets local profiles, port and DB connection properties to the 
 values required.
 
 `$ ./run-local.sh`
-
-Or, to run with default properties set in the docker-compose file
-
-`$ docker-compose pull && docker-compose up`
-
-Or, to use default port and properties
-
-`$ SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun`
-
 
 # Running the unit tests
 
@@ -60,7 +45,24 @@ that is seeded with data specific to each test suite.
 
 # Linting
 
+To locate any linting issues
+
 `$ ./gradlew ktlintcheck`
+
+To apply some fixes following linting
+
+`$ ./gradlew ktlintformat` 
+
+# Dependencies
+
+List the dependency tree
+
+`$ ./gradlew dependencies`
+
+Pull latest dependencies according to the `build.gradle.kts` file
+
+`$ ./gradlew dependencyUpdates`
+
 
 # OWASP vulnerability scanning
 
@@ -76,3 +78,29 @@ by criteria.
 As this dependency is not available in the Maven central repository yet, and JCenter has closed its
 services now, we have imported the single-file directly and kept the licence notification in the comments. 
 We can wait to see whether the dependency will soon become available in Maven central and import it from there.
+
+# Connecting to licences-db
+
+The licences-db container is the database that is used by the API. Once this is available, a final extra task would be 
+to manage the database locally using a SQL database manager application software of your choice (DBeaver, DataGrip etc).
+
+
+For the purposes of this, we will be using DBeaver. Using Homebrew, install the community version of DBeaver
+
+`brew install --cask dbeaver-community`
+
+Once installed, open up DBeaver and connect to a database using the Database Navigator and the plug type icon to connect to a database.
+
+![database-connection.png](images%2Fdatabase-connection.png)
+
+From the options, select PostgreSQL and click Next.
+
+![postgres-data-source.png](images%2Fpostgres-data-source.png)
+
+Some of the parameters should already be populated but you need to amend the following:
+
+![postgres-configuration.png](images%2Fpostgres-configuration.png)
+
+Once set up, you should see the following tree structure which will allow you to access the various tables in the CVL database locally.
+
+![posttgres-example.png](images%2Fposttgres-example.png)
