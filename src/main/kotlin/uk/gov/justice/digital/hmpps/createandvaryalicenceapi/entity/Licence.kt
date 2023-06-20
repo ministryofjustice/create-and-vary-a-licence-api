@@ -160,13 +160,13 @@ data class Licence(
       appointmentAddress = this.appointmentAddress,
       appointmentContact = this.appointmentContact,
       responsibleCom = this.responsibleCom,
-      dateCreated = LocalDateTime.now(),
+      dateCreated = LocalDateTime.now()
     )
   }
 
-  fun isInPssPeriod(licence: Licence): Boolean {
-    val led = licence.licenceExpiryDate
-    val tused = licence.topupSupervisionExpiryDate
+  fun checkIsInPssPeriod(): Boolean {
+    val led = this.licenceExpiryDate
+    val tused = this.topupSupervisionExpiryDate
 
     if (led != null && tused != null) {
       return led.isBefore(LocalDate.now()) && !(tused.isBefore(LocalDate.now()))

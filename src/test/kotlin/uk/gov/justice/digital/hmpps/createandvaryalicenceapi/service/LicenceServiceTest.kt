@@ -142,7 +142,6 @@ class LicenceServiceTest {
     assertThat(licence.nomsId).isEqualTo(aLicenceEntity.nomsId)
     assertThat(licence.bookingId).isEqualTo(aLicenceEntity.bookingId)
     assertThat(licence.pnc).isEqualTo(aLicenceEntity.pnc)
-//    assertThat(licence.isInPssPeriod).isFalse()
 
     verify(licenceRepository, times(1)).findById(1L)
   }
