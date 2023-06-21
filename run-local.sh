@@ -1,6 +1,6 @@
 #
-# This script is used to run the Create and Vary a licence API locally, to interact with
-# existing Postresql, localstack, prison-api and hmpps-auth containers.
+# This script is used to run the Create and Vary a licence API locally, to create the
+# licences-db Postresql container and to interact with localstack, prison-api and hmpps-auth containers from the UI.
 #
 # It runs with a combination of properties from the default spring profile (in application.yaml) and supplemented
 # with the -dev profile (from application-dev.yml). The latter overrides some of the defaults.
@@ -32,40 +32,29 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
-# Bring up the front end containers needed for the application
-cd ../create-and-vary-a-licence
-echo "Front end setup ..."
-echo "Bringing down current containers ..."
-docker compose down
-echo "Installing npm ..."
-npm install
-echo "Pulling front end containers ..."
-docker compose -f docker-compose-dev.yml pull
-docker compose -f docker-compose-dev.yml up -d
-echo "Waiting for front end containers to be ready ..."
-until [ "`docker inspect -f {{.State.Health.Status}} gotenberg`" == "healthy" ]; do
-    sleep 0.1;
-done;
-until [ "`docker inspect -f {{.State.Health.Status}} redis`" == "healthy" ]; do
-    sleep 0.1;
-done;
-until [ "`docker inspect -f {{.State.Health.Status}} localstack`" == "healthy" ]; do
-    sleep 0.1;
-done;
-
-
 # Bring up the back end containers needed for the application
-cd ../create-and-vary-a-licence-api
+echo "Bringing down current containers ..."
 docker compose down --remove-orphans
+
+#Prune existing containers
+#Comment in if you wish to perform a fresh install of all containers where all containers are removed and deleted
+#You will be prompted to continue with the deletion in the terminal
+docker system prune --all
+
+echo "Pulling back end containers ..."
 docker compose pull
 docker compose -f docker-compose.yml up -d
-echo "Waiting for container to be ready ..."
+
+echo "Waiting for back end containers to be ready ..."
 until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
     sleep 0.1;
 done;
-echo "Licences database container is now ready"
+
+echo "Back end containers are now ready"
 
 # Run the application with stdout and dev profiles active
+echo "Starting the API locally"
+
 SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun
 
 # End
