@@ -160,7 +160,7 @@ data class Licence(
       appointmentAddress = this.appointmentAddress,
       appointmentContact = this.appointmentContact,
       responsibleCom = this.responsibleCom,
-      dateCreated = LocalDateTime.now()
+      dateCreated = LocalDateTime.now(),
     )
   }
 
