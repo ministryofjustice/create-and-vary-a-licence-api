@@ -10,4 +10,4 @@ data class AdditionalConditionAp(
   override val categoryShort: String? = null,
   val subtext: String? = null,
   override val type: String? = null,
-) : IAdditionalCondition<Input>
+) : IAdditionalCondition

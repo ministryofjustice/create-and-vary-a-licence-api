@@ -281,7 +281,7 @@
             "name": "name",
             "listType": "OR",
             "options": null,
-            "case": "capitalise",
+            "case": "capitalised",
             "handleIndefiniteArticle": null,
             "addAnother": {
               "label": "Add another person"
@@ -295,7 +295,7 @@
             "name": "socialServicesDepartment",
             "listType": null,
             "options": null,
-            "case": "capitalise",
+            "case": "capitalised",
             "handleIndefiniteArticle": null,
             "addAnother": null,
             "includeBefore": " and / or ",
@@ -365,7 +365,7 @@
             "name": "socialServicesDepartment",
             "listType": null,
             "options": null,
-            "case": "capitalise",
+            "case": "capitalised",
             "handleIndefiniteArticle": null,
             "addAnother": null,
             "includeBefore": " and / or ",
@@ -389,7 +389,7 @@
             "name": "nameOfIndividual",
             "listType": "OR",
             "options": null,
-            "case": "capitalise",
+            "case": "capitalised",
             "handleIndefiniteArticle": null,
             "addAnother": {
               "label": "Add another person"
@@ -949,7 +949,7 @@
                       "type": "text",
                       "label": "Enter the other frequency",
                       "name": "alternativeReportingFrequency",
-                      "case": "capitalise",
+                      "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null
@@ -1101,7 +1101,7 @@
                       "type": "text",
                       "label": "Enter the other frequency",
                       "name": "alternativeReportingFrequency",
-                      "case": "capitalise",
+                      "case": null,
                       "handleIndefiniteArticle": null,
                       "includeBefore": null,
                       "subtext": null
@@ -1471,19 +1471,37 @@
             "type": "timePicker",
             "label": "Enter time (optional)",
             "name": "appointmentTime",
-            "includeBefore": " at "
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": " at ",
+            "subtext": null
           },
           {
             "type": "datePicker",
             "label": "Enter date (optional)",
             "name": "appointmentDate",
-            "includeBefore": " on "
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": " on ",
+            "subtext": null
           },
           {
             "type": "address",
             "label": "Enter the address for the appointment",
             "name": "appointmentAddress",
-            "includeBefore": null
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
           }
         ],
         "type": "AppointmentTimeAndPlaceDuringPss"
@@ -1501,13 +1519,25 @@
             "type": "text",
             "label": "Enter name",
             "name": "name",
-            "includeBefore": null
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
           },
           {
             "type": "address",
             "label": "Enter address",
             "name": "address",
-            "includeBefore": null
+            "listType": null,
+            "options": null,
+            "case": null,
+            "handleIndefiniteArticle": null,
+            "addAnother": null,
+            "includeBefore": null,
+            "subtext": null
           }
         ],
         "type": "DrugTestLocation"
