@@ -52,11 +52,6 @@ class LicenceConditionService(
       updatedByUsername = username,
     )
 
-    /*
-    When the function is called, the standard conditions are updated in line with the current policy version but
-    the licence will retain the version of the policy it was created with because any additional conditions will be on a previous
-    version and not updated. These additional conditions can only be updated via the vary journey.
-    */
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
 
     val changes = mapOf(
@@ -81,7 +76,6 @@ class LicenceConditionService(
 
   /**
    * Add additional condition. Allows for adding more than one condition of the same type
-   * TODO - This function is only called for subsequent calls to upload a map as part of an additional condition only - needs to be refactored
    */
   @Transactional
   fun addAdditionalCondition(
@@ -232,12 +226,6 @@ class LicenceConditionService(
         }
       }
     }
-
-    /*
-    Using this function, an additional condition is either a new condition or to be removed. Updates to existing
-    additional conditions only involve updating the data associated with the condition using the updateAdditionalConditionData
-    function
-     */
     val changes: Map<String, Any>
     if (newAdditionalConditions.isNotEmpty()) {
       changes = mapOf(
