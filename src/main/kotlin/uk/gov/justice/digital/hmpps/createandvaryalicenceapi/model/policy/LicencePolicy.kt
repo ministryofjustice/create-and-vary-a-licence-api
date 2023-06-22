@@ -48,6 +48,10 @@ data class LicencePolicy(
 ) {
 
   @JsonIgnore
-  fun allAdditionalConditions(): Set<ILicenceCondition> =
+  fun allAdditionalConditions(): Set<IAdditionalCondition> =
     (this.additionalConditions.pss + this.additionalConditions.ap).toSet()
+
+  @JsonIgnore
+  fun allStandardConditions(): Set<ILicenceCondition> =
+    (this.standardConditions.standardConditionsPss + this.standardConditions.standardConditionsAp).toSet()
 }
