@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +26,8 @@ class LicenceConditionService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val conditionFormatter: ConditionFormatter,
+  private val licencePolicyService: LicencePolicyService,
 ) {
 
   @Transactional
@@ -52,7 +56,6 @@ class LicenceConditionService(
   @Transactional
   fun addAdditionalCondition(
     licenceId: Long,
-    conditionType: String,
     request: AddAdditionalConditionRequest,
   ): AdditionalCondition {
     val licenceEntity = licenceRepository
@@ -87,6 +90,7 @@ class LicenceConditionService(
     // return the newly added condition.
     val newCondition =
       licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
+
     return transform(newCondition)
   }
 
@@ -129,7 +133,7 @@ class LicenceConditionService(
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = newConditions + updatedConditions,
+      additionalConditions = (newConditions + updatedConditions).onEach { checkFormattedText(it) },
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
@@ -225,10 +229,33 @@ class LicenceConditionService(
       additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition),
       expandedConditionText = request.expandedConditionText,
     )
+    checkFormattedText(updatedAdditionalCondition)
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 
     val username = SecurityContextHolder.getContext().authentication.name
     val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicence)
+  }
+
+  fun checkFormattedText(additionalCondition: EntityAdditionalCondition) {
+    try {
+      val conditionConfig = licencePolicyService.getConfigForCondition(additionalCondition)
+      val backendText = conditionFormatter.format(conditionConfig, additionalCondition.additionalConditionData)
+      val frontendText = additionalCondition.expandedConditionText
+      if (backendText != frontendText) {
+        log.warn("FormattingInconsistency: condition of type: ${conditionConfig.code}, licence: ${additionalCondition.licence.id}")
+      } else {
+        log.info("FormattingMatch: condition of type: ${conditionConfig.code}, licence: ${additionalCondition.licence.id}")
+      }
+    } catch (e: RuntimeException) {
+      log.error(
+        "FormattingError: condition of type: ${additionalCondition.conditionCode}, licence: ${additionalCondition.licence.id}",
+        e,
+      )
+    }
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 }

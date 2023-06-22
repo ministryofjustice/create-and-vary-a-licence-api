@@ -329,7 +329,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceConditionService, times(1)).addAdditionalCondition(4, "AP", anAddAdditionalConditionRequest)
+    verify(licenceConditionService, times(1)).addAdditionalCondition(4, anAddAdditionalConditionRequest)
   }
 
   @Test
