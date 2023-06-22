@@ -117,25 +117,41 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val submittedAdditionalConditions =
+    val submittedConditions =
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
-    val newAdditionalConditions =
-      submittedAdditionalConditions.filter { licenceEntity.additionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
-        .map { newAdditionalCondition ->
-          newAdditionalCondition.copy(
-            expandedConditionText = newAdditionalCondition.conditionText,
-            licence = licenceEntity,
-          )
+    val existingConditions = licenceEntity.additionalConditions
+
+    val newConditions = existingConditions.getAddedConditions(submittedConditions)
+
+    val removedConditions = existingConditions.getRemovedConditions(submittedConditions, request)
+
+    val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
+
+    val updatedLicence = licenceEntity.copy(
+      additionalConditions = newConditions + updatedConditions,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicence)
+
+    // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
+    removedConditions.forEach { oldCondition ->
+      oldCondition.additionalConditionUploadSummary.forEach {
+        additionalConditionUploadDetailRepository.findById(it.uploadDetailId).ifPresent { uploadDetail ->
+          additionalConditionUploadDetailRepository.delete(uploadDetail)
         }
-
-    val removedAdditionalConditionsList =
-      licenceEntity.additionalConditions.filter {
-        it.conditionType == request.conditionType && submittedAdditionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode }
       }
+    }
+  }
 
+  private fun List<EntityAdditionalCondition>.getUpdatedConditions(
+    submittedAdditionalConditions: List<EntityAdditionalCondition>,
+    removedAdditionalConditionsList: List<EntityAdditionalCondition>,
+  ): List<EntityAdditionalCondition> {
     val updatedAdditionalConditions =
-      licenceEntity.additionalConditions.filter { condition -> removedAdditionalConditionsList.none { it.conditionCode == condition.conditionCode } }
+      this.filter { condition -> removedAdditionalConditionsList.none { it.conditionCode == condition.conditionCode } }
 
     submittedAdditionalConditions.forEach { newAdditionalCondition ->
       updatedAdditionalConditions.filter {
@@ -147,24 +163,26 @@ class LicenceConditionService(
         it.conditionType = newAdditionalCondition.conditionType
       }
     }
-
-    val updatedLicence = licenceEntity.copy(
-      additionalConditions = newAdditionalConditions + updatedAdditionalConditions,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
-    )
-
-    licenceRepository.saveAndFlush(updatedLicence)
-
-    // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
-    removedAdditionalConditionsList.forEach { oldCondition ->
-      oldCondition.additionalConditionUploadSummary.forEach {
-        additionalConditionUploadDetailRepository.findById(it.uploadDetailId).ifPresent { uploadDetail ->
-          additionalConditionUploadDetailRepository.delete(uploadDetail)
-        }
-      }
-    }
+    return updatedAdditionalConditions
   }
+
+  private fun List<EntityAdditionalCondition>.getRemovedConditions(
+    submittedAdditionalConditions: List<EntityAdditionalCondition>,
+    request: AdditionalConditionsRequest,
+  ) = this.filter {
+    it.conditionType == request.conditionType && submittedAdditionalConditions.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode }
+  }
+
+  private fun List<EntityAdditionalCondition>.getAddedConditions(
+    submittedConditions: List<EntityAdditionalCondition>,
+  ) =
+    submittedConditions
+      .filter { this.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
+      .map { newAdditionalCondition ->
+        newAdditionalCondition.copy(
+          expandedConditionText = newAdditionalCondition.conditionText,
+        )
+      }
 
   @Transactional
   fun updateBespokeConditions(licenceId: Long, request: BespokeConditionRequest) {
