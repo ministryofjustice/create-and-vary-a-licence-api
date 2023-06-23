@@ -2,11 +2,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -21,10 +24,15 @@ class LicenceOverrideService(
   private val licenceEventRepository: LicenceEventRepository,
 ) {
 
+  companion object {
+    private val log = LoggerFactory.getLogger(LicenceOverrideService::class.java)
+  }
+
   /**
    * @return Licence
    * @throws EntityNotFoundException if not licence is found for licenceId
    */
+  @Transactional
   fun getLicenceById(licenceId: Long): Licence? {
     return licenceRepository
       .findById(licenceId)
@@ -35,6 +43,7 @@ class LicenceOverrideService(
    * Override licence status
    * @throws ValidationException if new status is already in use by another licence
    */
+  @Transactional
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
     val licence = getLicenceById(licenceId)
 
@@ -72,6 +81,68 @@ class LicenceOverrideService(
         username = username,
         eventType = LicenceStatus.lookupLicenceEventByStatus(newStatus),
         eventDescription = reason,
+      ),
+    )
+  }
+
+  @Transactional
+  fun changeDates(licenceId: Long, request: OverrideLicenceDatesRequest) {
+    val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    log.info(
+      buildString {
+        append("Current licence dates - ID $licenceId ")
+        append("CRD ${licence.conditionalReleaseDate} ")
+        append("ARD ${licence.actualReleaseDate} ")
+        append("SSD ${licence.sentenceStartDate} ")
+        append("SED ${licence.sentenceEndDate} ")
+        append("LSD ${licence.licenceStartDate} ")
+        append("LED ${licence.licenceExpiryDate} ")
+        append("TUSSD ${licence.topupSupervisionStartDate} ")
+        append("TUSED ${licence.topupSupervisionExpiryDate}")
+      },
+    )
+
+    log.info(
+      buildString {
+        append("Updated dates - ID $licenceId ")
+        append("CRD ${request.conditionalReleaseDate} ")
+        append("ARD ${request.actualReleaseDate} ")
+        append("SSD ${request.sentenceStartDate} ")
+        append("SED ${request.sentenceEndDate} ")
+        append("LSD ${request.licenceStartDate} ")
+        append("LED ${request.licenceExpiryDate} ")
+        append("TUSSD ${request.topupSupervisionStartDate} ")
+        append("TUSED ${request.topupSupervisionExpiryDate}")
+      },
+    )
+
+    val updatedLicenceEntity = licence.copy(
+      conditionalReleaseDate = request.conditionalReleaseDate,
+      actualReleaseDate = request.actualReleaseDate,
+      sentenceStartDate = request.sentenceStartDate,
+      sentenceEndDate = request.sentenceEndDate,
+      licenceStartDate = request.licenceStartDate,
+      licenceExpiryDate = request.licenceExpiryDate,
+      topupSupervisionStartDate = request.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicenceEntity)
+
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licence.id,
+        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+        eventTime = LocalDateTime.now(),
+        eventType = AuditEventType.USER_EVENT,
+        username = username,
+        fullName = username,
+        summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
       ),
     )
   }
