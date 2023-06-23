@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.FormattingRule
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.format
 
+@Service
 class ConditionFormatter {
 
   fun format(condition: IAdditionalCondition, data: List<AdditionalConditionData>): String {

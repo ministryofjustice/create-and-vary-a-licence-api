@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
@@ -70,4 +72,10 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       replacements,
     )
   }
+
+  fun getConfigForCondition(condition: AdditionalCondition): IAdditionalCondition =
+    policyByVersion(condition.conditionVersion)
+      .allAdditionalConditions()
+      .find { it.code == condition.conditionCode }
+      ?: error("Condition with code: '${condition.conditionCode}' and version: '${condition.conditionVersion}' not found.")
 }

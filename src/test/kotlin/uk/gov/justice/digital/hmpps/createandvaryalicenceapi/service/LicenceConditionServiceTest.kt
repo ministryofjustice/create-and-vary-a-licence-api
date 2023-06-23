@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
@@ -11,6 +13,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -29,12 +32,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -48,16 +53,16 @@ class LicenceConditionServiceTest {
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
-  private val licencePolicyService = mock<LicencePolicyService>()
+  private val policyService = mock<LicencePolicyService>()
+  private val conditionFormatter = mock<ConditionFormatter>()
 
   private val service = LicenceConditionService(
     licenceRepository,
     additionalConditionRepository,
     bespokeConditionRepository,
     additionalConditionUploadDetailRepository,
-    auditEventRepository,
-    communityOffenderManagerRepository,
-    licencePolicyService,
+    conditionFormatter,
+    policyService,
   )
 
   @BeforeEach
@@ -66,6 +71,7 @@ class LicenceConditionServiceTest {
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("smills")
     whenever(securityContext.authentication).thenReturn(authentication)
+    whenever(policyService.getConfigForCondition(any())).thenReturn(CONDITION_CONFIG)
     SecurityContextHolder.setContext(securityContext)
 
     reset(
@@ -272,396 +278,496 @@ class LicenceConditionServiceTest {
       )
   }
 
-  @Test
-  fun `update additional conditions throws not found exception`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+  @Nested
+  inner class `update additional conditions` {
+    @Test
+    fun `update additional conditions throws not found exception`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditions(
-        1L,
-        AdditionalConditionsRequest(
-          additionalConditions = listOf(
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
-              code = "code",
-              category = "category",
-              text = "text",
-              sequence = 0,
+      val exception = assertThrows<EntityNotFoundException> {
+        service.updateAdditionalConditions(
+          1L,
+          AdditionalConditionsRequest(
+            additionalConditions = listOf(
+              uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+                code = "code",
+                category = "category",
+                text = "text",
+                sequence = 0,
+              ),
             ),
+            conditionType = "AP",
           ),
-          conditionType = "AP",
-        ),
-      )
+        )
+      }
+
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
+      verify(licenceRepository, times(0)).saveAndFlush(any())
     }
 
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-  }
-
-  /**
-   * In reality the update method updates, adds and removes conditions using a list
-   * of submitted condition codes. This process can be improved once policy documents are
-   * migrated form the Node app to this project.
-   */
-  @Test
-  fun `update additional conditions`() {
-    whenever(licenceRepository.findById(1L))
-      .thenReturn(
-        Optional.of(
-          aLicenceEntity.copy(
-            additionalConditions = listOf(
-              AdditionalCondition(
-                id = 1,
-                conditionVersion = "1.0",
-                conditionCode = "code",
-                conditionSequence = 5,
-                conditionCategory = "oldCategory",
-                conditionText = "oldText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
-                conditionType = "AP",
-              ),
-              AdditionalCondition(
-                id = 2,
-                conditionVersion = "1.0",
-                conditionCode = "code2",
-                conditionSequence = 6,
-                conditionCategory = "removedCategory",
-                conditionText = "removedText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
-                conditionType = "AP",
-              ),
-              AdditionalCondition(
-                id = 3,
-                conditionVersion = "1.0",
-                conditionCode = "code3",
-                conditionSequence = 6,
-                conditionCategory = "pssCategory",
-                conditionText = "pssText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
-                conditionType = "PSS",
+    /**
+     * In reality the update method updates, adds and removes conditions using a list
+     * of submitted condition codes. This process can be improved once policy documents are
+     * migrated form the Node app to this project.
+     */
+    @Test
+    fun `update additional conditions`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                AdditionalCondition(
+                  id = 1,
+                  conditionVersion = "1.0",
+                  conditionCode = "code",
+                  conditionSequence = 5,
+                  conditionCategory = "oldCategory",
+                  conditionText = "oldText",
+                  additionalConditionData = someAdditionalConditionData,
+                  licence = aLicenceEntity,
+                  conditionType = "AP",
+                ),
+                AdditionalCondition(
+                  id = 2,
+                  conditionVersion = "1.0",
+                  conditionCode = "code2",
+                  conditionSequence = 6,
+                  conditionCategory = "removedCategory",
+                  conditionText = "removedText",
+                  additionalConditionData = someAdditionalConditionData,
+                  licence = aLicenceEntity,
+                  conditionType = "AP",
+                ),
+                AdditionalCondition(
+                  id = 3,
+                  conditionVersion = "1.0",
+                  conditionCode = "code3",
+                  conditionSequence = 6,
+                  conditionCategory = "pssCategory",
+                  conditionText = "pssText",
+                  additionalConditionData = someDifferentAdditionalConditionData,
+                  licence = aLicenceEntity,
+                  conditionType = "PSS",
+                ),
               ),
             ),
           ),
+        )
+
+      val request = AdditionalConditionsRequest(
+        additionalConditions = listOf(
+          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+            code = "code",
+            category = "category",
+            text = "text",
+            sequence = 0,
+          ),
         ),
+        conditionType = "AP",
       )
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
-    val request = AdditionalConditionsRequest(
-      additionalConditions = listOf(
-        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
-          code = "code",
-          category = "category",
-          text = "text",
-          sequence = 0,
+      service.updateAdditionalConditions(1L, request)
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+        AdditionalCondition(
+          id = 1,
+          conditionVersion = "1.0",
+          conditionCode = "code",
+          conditionCategory = "category",
+          conditionSequence = 0,
+          conditionText = "text",
+          conditionType = "AP",
+          additionalConditionData = someAdditionalConditionData,
+          licence = aLicenceEntity,
         ),
-      ),
-      conditionType = "AP",
-    )
+        AdditionalCondition(
+          id = 3,
+          conditionVersion = "1.0",
+          conditionCode = "code3",
+          conditionSequence = 6,
+          conditionCategory = "pssCategory",
+          conditionText = "pssText",
+          additionalConditionData = someDifferentAdditionalConditionData,
+          licence = aLicenceEntity,
+          conditionType = "PSS",
+        ),
+      )
 
-    service.updateAdditionalConditions(1L, request)
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
 
-    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+      verify(conditionFormatter).format(CONDITION_CONFIG, someAdditionalConditionData)
+      verify(conditionFormatter).format(CONDITION_CONFIG, someDifferentAdditionalConditionData)
+    }
+  }
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+  @Nested
+  inner class `add additional conditions` {
+    @Test
+    fun `update additional conditions`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                AdditionalCondition(
+                  id = 1,
+                  conditionVersion = "1.0",
+                  conditionCode = "code",
+                  conditionSequence = 5,
+                  conditionCategory = "oldCategory",
+                  conditionText = "oldText",
+                  additionalConditionData = someAdditionalConditionData,
+                  licence = aLicenceEntity,
+                  conditionType = "AP",
+                ),
+                AdditionalCondition(
+                  id = 3,
+                  conditionVersion = "1.0",
+                  conditionCode = "code3",
+                  conditionSequence = 6,
+                  conditionCategory = "pssCategory",
+                  conditionText = "pssText",
+                  additionalConditionData = someDifferentAdditionalConditionData,
+                  licence = aLicenceEntity,
+                  conditionType = "PSS",
+                ),
+              ),
+            ),
+          ),
+        )
 
-    assertThat(licenceCaptor.value.additionalConditions).containsExactly(
-      AdditionalCondition(
-        id = 1,
-        conditionVersion = "1.0",
+      val request = AddAdditionalConditionRequest(
         conditionCode = "code",
         conditionCategory = "category",
-        conditionSequence = 0,
         conditionText = "text",
+        sequence = 7,
         conditionType = "AP",
-        additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity,
-      ),
-      AdditionalCondition(
-        id = 3,
-        conditionVersion = "1.0",
-        conditionCode = "code3",
-        conditionSequence = 6,
-        conditionCategory = "pssCategory",
-        conditionText = "pssText",
-        additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity,
-        conditionType = "PSS",
-      ),
-    )
-
-    // Verify last contact info is recorded
-    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
-
-    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
-    assertThat(auditCaptor.value.username).isEqualTo("smills")
-    assertThat(auditCaptor.value.summary)
-      .isEqualTo(
-        "Updated multiple conditions for " +
-          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
-      )
-    assertThat(auditCaptor.value.detail)
-      .isEqualTo(
-        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
+        expandedText = "Hello",
       )
 
-    assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "changes")
-      .isEqualTo(
-        listOf(
-          "remove",
-          "additional",
-          listOf(
-            mapOf(
-              "conditionCode" to "code2",
-              "conditionType" to "AP",
-            ),
-          ),
-        ),
-      )
-  }
+      service.addAdditionalCondition(1L, request)
 
-  @Test
-  fun `update bespoke conditions persists multiple entities`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
-    val bespokeEntities = listOf(
-      BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
-      BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
-      BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
-    )
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    bespokeEntities.forEach { bespoke ->
-      whenever(bespokeConditionRepository.saveAndFlush(bespoke)).thenReturn(bespoke)
+      assertThat(licenceCaptor.value.additionalConditions).extracting("id", "conditionCode", "conditionSequence")
+        .containsExactly(
+          tuple(1L, "code", 5),
+          tuple(3L, "code3", 6),
+          tuple(-1L, "code", 7),
+        )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+
+      // No way of providing additional condition data via this endpoint so no point running through formatter
+      verifyNoInteractions(conditionFormatter)
     }
-
-    service.updateBespokeConditions(1L, someBespokeConditions)
-
-    // Verify licence entity is updated with last contact info
-    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
-    assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
-
-    // Verify new bespoke conditions are added in their place
-    bespokeEntities.forEach { bespoke ->
-      verify(bespokeConditionRepository, times(1)).saveAndFlush(bespoke)
-    }
-
-    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
-    assertThat(auditCaptor.value.username).isEqualTo("smills")
-    assertThat(auditCaptor.value.summary)
-      .isEqualTo(
-        "Updated bespoke conditions for " +
-          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
-      )
-    assertThat(auditCaptor.value.detail)
-      .isEqualTo(
-        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
-      )
-
-    assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "changes")
-      .isEqualTo(
-        listOf(
-          "update",
-          "bespoke",
-          listOf(
-            "Condition 1",
-            "Condition 2",
-            "Condition 3",
-          ),
-        ),
-      )
   }
 
-  @Test
-  fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+  @Nested
+  inner class `update bespoke conditions` {
+    @Test
+    fun `update bespoke conditions persists multiple entities`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateBespokeConditions(1L, BespokeConditionRequest())
+      val bespokeEntities = listOf(
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
+      )
 
-    verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
-    verify(licenceRepository, times(1)).saveAndFlush(any())
-    verify(auditEventRepository, times(1)).saveAndFlush(any())
-  }
+      bespokeEntities.forEach { bespoke ->
+        whenever(bespokeConditionRepository.saveAndFlush(bespoke)).thenReturn(bespoke)
+      }
 
-  @Test
-  fun `update bespoke conditions throws not found exception if licence not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
       service.updateBespokeConditions(1L, someBespokeConditions)
+
+      // Verify licence entity is updated with last contact info
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
+      assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
+
+      // Verify new bespoke conditions are added in their place
+      bespokeEntities.forEach { bespoke ->
+        verify(bespokeConditionRepository, times(1)).saveAndFlush(bespoke)
+      }
     }
 
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+    @Test
+    fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    verify(licenceRepository, times(1)).findById(1L)
-    verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-  }
+      service.updateBespokeConditions(1L, BespokeConditionRequest())
 
-  @Test
-  fun `update additional condition data throws not found exception if licence is not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditionData(
-        1L,
-        1L,
-        UpdateAdditionalConditionDataRequest(
-          data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-          expandedConditionText = "expanded text",
-        ),
-      )
+      verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+      verify(licenceRepository, times(1)).saveAndFlush(any())
     }
 
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+    @Test
+    fun `update bespoke conditions throws not found exception if licence not found`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
-    verify(licenceRepository, times(1)).findById(1L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
+      val exception = assertThrows<EntityNotFoundException> {
+        service.updateBespokeConditions(1L, someBespokeConditions)
+      }
+
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
+      verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
+    }
   }
 
-  @Test
-  fun `update additional condition data throws not found exception if condition is not found`() {
-    whenever(licenceRepository.findById(1L))
-      .thenReturn(
-        Optional.of(
-          aLicenceEntity.copy(
-            additionalConditions = listOf(
-              AdditionalCondition(
-                id = 1,
-                conditionVersion = "1.0",
-                conditionCode = "code",
-                conditionSequence = 5,
-                conditionCategory = "oldCategory",
-                conditionText = "oldText",
-                additionalConditionData = emptyList(),
-                licence = aLicenceEntity,
+  @Nested
+  inner class `update additional condition data` {
+
+    @Test
+    fun `update additional condition data throws not found exception if licence is not found`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+      val exception = assertThrows<EntityNotFoundException> {
+        service.updateAdditionalConditionData(
+          1L,
+          1L,
+          UpdateAdditionalConditionDataRequest(
+            data = listOf(
+              uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+                field = "field1",
+                value = "value1",
+                sequence = 0,
+              ),
+            ),
+            expandedConditionText = "expanded text",
+          ),
+        )
+      }
+
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `update additional condition data throws not found exception if condition is not found`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                AdditionalCondition(
+                  id = 1,
+                  conditionVersion = "1.0",
+                  conditionCode = "code",
+                  conditionSequence = 5,
+                  conditionCategory = "oldCategory",
+                  conditionText = "oldText",
+                  additionalConditionData = emptyList(),
+                  licence = aLicenceEntity,
+                ),
               ),
             ),
           ),
-        ),
-      )
+        )
 
-    whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
+      whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
 
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAdditionalConditionData(
-        1L,
-        1L,
-        UpdateAdditionalConditionDataRequest(
-          data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-          expandedConditionText = "expanded text",
-        ),
-      )
+      val exception = assertThrows<EntityNotFoundException> {
+        service.updateAdditionalConditionData(
+          1L,
+          1L,
+          UpdateAdditionalConditionDataRequest(
+            data = listOf(
+              uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+                field = "field1",
+                value = "value1",
+                sequence = 0,
+              ),
+            ),
+            expandedConditionText = "expanded text",
+          ),
+        )
+      }
+
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
+      verify(licenceRepository, times(0)).saveAndFlush(any())
     }
 
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-  }
-
-  @Test
-  fun `update additional condition data`() {
-    whenever(licenceRepository.findById(1L))
-      .thenReturn(
-        Optional.of(
-          aLicenceEntity.copy(
-            additionalConditions = listOf(
-              AdditionalCondition(
-                id = 1,
-                conditionVersion = "1.0",
-                conditionCode = "code",
-                conditionSequence = 5,
-                conditionCategory = "oldCategory",
-                conditionText = "oldText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
+    @Test
+    fun `update additional condition data`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                AdditionalCondition(
+                  id = 1,
+                  conditionVersion = "1.0",
+                  conditionCode = "code",
+                  conditionSequence = 5,
+                  conditionCategory = "oldCategory",
+                  conditionText = "oldText",
+                  additionalConditionData = someAdditionalConditionData,
+                  licence = aLicenceEntity,
+                ),
               ),
             ),
           ),
-        ),
-      )
-    whenever(additionalConditionRepository.findById(1L))
-      .thenReturn(
-        Optional.of(
-          anAdditionalConditionEntity.copy(),
-        ),
-      )
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+        )
+      whenever(additionalConditionRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            anAdditionalConditionEntity.copy(),
+          ),
+        )
 
-    val request = UpdateAdditionalConditionDataRequest(
-      data = listOf(uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-      expandedConditionText = "expanded text",
-    )
-
-    service.updateAdditionalConditionData(1L, 1L, request)
-
-    val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
-    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
-    assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
-      AdditionalConditionData(
-        id = -1,
-        additionalCondition = anAdditionalConditionEntity,
-        dataSequence = 0,
-        dataField = "field1",
-        dataValue = "value1",
-      ),
-    )
-
-    // Verify last contact info is recorded
-    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
-
-    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
-    assertThat(auditCaptor.value.username).isEqualTo("smills")
-    assertThat(auditCaptor.value.summary).isEqualTo("Updated additional condition data for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}")
-    assertThat(auditCaptor.value.detail).isEqualTo("ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}")
-
-    assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "changes")
-      .isEqualTo(
-        listOf(
-          "update",
-          "additional data",
-          listOf(
-            mapOf(
-              "conditionCode" to "code1",
-              "conditionType" to "AP",
-              "conditionText" to "expanded text",
-            ),
+      val request = UpdateAdditionalConditionDataRequest(
+        data = listOf(
+          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+            field = "field1",
+            value = "value1",
+            sequence = 0,
           ),
         ),
+        expandedConditionText = "expanded text",
       )
+
+      service.updateAdditionalConditionData(1L, 1L, request)
+
+      val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
+
+      assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
+      assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
+        AdditionalConditionData(
+          id = -1,
+          additionalCondition = anAdditionalConditionEntity,
+          dataSequence = 0,
+          dataField = "field1",
+          dataValue = "value1",
+        ),
+      )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+
+      verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
+    }
+
+    @Test
+    fun `updating additional condition data triggers checking condition formatting`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                AdditionalCondition(
+                  id = 1,
+                  conditionVersion = "1.0",
+                  conditionCode = "code",
+                  conditionSequence = 5,
+                  conditionCategory = "oldCategory",
+                  conditionText = "oldText",
+                  additionalConditionData = someAdditionalConditionData,
+                  licence = aLicenceEntity,
+                ),
+              ),
+            ),
+          ),
+        )
+      whenever(additionalConditionRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            anAdditionalConditionEntity.copy(),
+          ),
+        )
+
+      val request = UpdateAdditionalConditionDataRequest(
+        data = listOf(
+          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+            field = "field1",
+            value = "value1",
+            sequence = 0,
+          ),
+        ),
+        expandedConditionText = "expanded text",
+      )
+
+      service.updateAdditionalConditionData(1L, 1L, request)
+
+      val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
+
+      verify(additionalConditionRepository).saveAndFlush(conditionCaptor.capture())
+      verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
+    }
+
+    @Test
+    fun `formatting errors are not propagated`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                AdditionalCondition(
+                  id = 1,
+                  conditionVersion = "1.0",
+                  conditionCode = "code",
+                  conditionSequence = 5,
+                  conditionCategory = "oldCategory",
+                  conditionText = "oldText",
+                  additionalConditionData = someAdditionalConditionData,
+                  licence = aLicenceEntity,
+                ),
+              ),
+            ),
+          ),
+        )
+      whenever(additionalConditionRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            anAdditionalConditionEntity.copy(),
+          ),
+        )
+
+      val request = UpdateAdditionalConditionDataRequest(
+        data = listOf(
+          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+            field = "field1",
+            value = "value1",
+            sequence = 0,
+          ),
+        ),
+        expandedConditionText = "expanded text",
+      )
+
+      whenever(conditionFormatter.format(any(), any())).thenThrow(NullPointerException())
+
+      service.updateAdditionalConditionData(1L, 1L, request)
+    }
   }
 
   private companion object {
+    val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
 
     val someEntityStandardConditions = listOf(
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -742,6 +848,15 @@ class LicenceConditionServiceTest {
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
+        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+      ),
+    )
+
+    val someDifferentAdditionalConditionData = listOf(
+      AdditionalConditionData(
+        id = 2,
+        dataField = "dataField",
+        dataValue = "dataValue2",
         additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
       ),
     )

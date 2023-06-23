@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 import java.util.Optional
 
 class LicenceOverrideServiceTest {
@@ -147,6 +149,58 @@ class LicenceOverrideServiceTest {
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
       .isEqualTo(listOf(approvedLicenceA.id, "smills", LicenceEventType.SUBMITTED, reasonForChange))
+  }
+
+  @Test
+  fun `Override dates updates licence dates`() {
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+
+    val request = OverrideLicenceDatesRequest(
+      conditionalReleaseDate = LocalDate.now(),
+      actualReleaseDate = LocalDate.now(),
+      sentenceStartDate = LocalDate.now(),
+      sentenceEndDate = LocalDate.now(),
+      licenceStartDate = LocalDate.now(),
+      licenceExpiryDate = LocalDate.now(),
+      topupSupervisionStartDate = LocalDate.now(),
+      topupSupervisionExpiryDate = LocalDate.now(),
+      reason = "Test override dates",
+    )
+
+    licenceOverrideService.changeDates(
+      approvedLicenceA.id,
+      request,
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate", "actualReleaseDate",
+        "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
+        "topupSupervisionStartDate", "topupSupervisionExpiryDate", "updatedByUsername",
+      )
+      .isEqualTo(
+        listOf(
+          request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
+          request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
+          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, "smills",
+        ),
+      )
+
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
+      .isEqualTo(
+        listOf(
+          approvedLicenceA.id,
+          "smills",
+          AuditEventType.USER_EVENT,
+          "Sentence dates overridden for Robin Smith: ${request.reason}",
+        ),
+      )
   }
 
   private companion object {
