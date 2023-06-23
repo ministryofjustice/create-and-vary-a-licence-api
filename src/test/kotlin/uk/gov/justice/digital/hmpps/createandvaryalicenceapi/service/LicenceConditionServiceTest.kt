@@ -138,12 +138,12 @@ class LicenceConditionServiceTest {
     assertThat(auditCaptor.value.summary)
       .isEqualTo(
         "Standard conditions updated to policy version ${aPolicy.version} for " +
-          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
       )
     assertThat(auditCaptor.value.detail)
       .isEqualTo(
         "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
       )
     assertThat(auditCaptor.value.changes)
       .extracting("typeOfChange", "condition", "changes")
@@ -151,8 +151,8 @@ class LicenceConditionServiceTest {
         listOf(
           "update",
           "standard",
-          emptyMap<String, Any>()
-        )
+          emptyMap<String, Any>(),
+        ),
       )
   }
 
@@ -247,12 +247,12 @@ class LicenceConditionServiceTest {
     assertThat(auditCaptor.value.username).isEqualTo("smills")
     assertThat(auditCaptor.value.summary)
       .isEqualTo(
-        "Deleted condition for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+        "Deleted condition for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
       )
     assertThat(auditCaptor.value.detail)
       .isEqualTo(
         "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
       )
 
     assertThat(auditCaptor.value.changes)
@@ -265,10 +265,10 @@ class LicenceConditionServiceTest {
             mapOf(
               "conditionCode" to "code2",
               "conditionType" to "AP",
-              "conditionText" to "removedText"
-            )
-          )
-        )
+              "conditionText" to "removedText",
+            ),
+          ),
+        ),
       )
   }
 
@@ -404,12 +404,12 @@ class LicenceConditionServiceTest {
     assertThat(auditCaptor.value.summary)
       .isEqualTo(
         "Updated multiple conditions for " +
-          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
       )
     assertThat(auditCaptor.value.detail)
       .isEqualTo(
         "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
       )
 
     assertThat(auditCaptor.value.changes)
@@ -421,10 +421,10 @@ class LicenceConditionServiceTest {
           listOf(
             mapOf(
               "conditionCode" to "code2",
-              "conditionType" to "AP"
-            )
-          )
-        )
+              "conditionType" to "AP",
+            ),
+          ),
+        ),
       )
   }
 
@@ -465,12 +465,12 @@ class LicenceConditionServiceTest {
     assertThat(auditCaptor.value.summary)
       .isEqualTo(
         "Updated bespoke conditions for " +
-          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}"
+          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
       )
     assertThat(auditCaptor.value.detail)
       .isEqualTo(
         "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}"
+          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
       )
 
     assertThat(auditCaptor.value.changes)
@@ -482,9 +482,9 @@ class LicenceConditionServiceTest {
           listOf(
             "Condition 1",
             "Condition 2",
-            "Condition 3"
-          )
-        )
+            "Condition 3",
+          ),
+        ),
       )
   }
 
@@ -654,10 +654,10 @@ class LicenceConditionServiceTest {
             mapOf(
               "conditionCode" to "code1",
               "conditionType" to "AP",
-              "conditionText" to "expanded text"
-            )
-          )
-        )
+              "conditionText" to "expanded text",
+            ),
+          ),
+        ),
       )
   }
 
@@ -766,7 +766,7 @@ class LicenceConditionServiceTest {
       "2.1",
       standardConditions = StandardConditions(emptyList(), emptyList()),
       additionalConditions = AdditionalConditions(emptyList(), emptyList()),
-      changeHints = emptyList()
+      changeHints = emptyList(),
     )
 
     val aCom = CommunityOffenderManager(
@@ -774,7 +774,7 @@ class LicenceConditionServiceTest {
       username = "smills",
       email = "testemail@probation.gov.uk",
       firstName = "X",
-      lastName = "Y"
+      lastName = "Y",
     )
   }
 }

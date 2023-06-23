@@ -57,7 +57,7 @@ class LicenceConditionService(
     val changes = mapOf(
       "typeOfChange" to "update",
       "condition" to "standard",
-      "changes" to emptyMap<String, Any>()
+      "changes" to emptyMap<String, Any>(),
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -69,8 +69,8 @@ class LicenceConditionService(
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
         summary = "Standard conditions updated to policy version $currentPolicyVersion for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
-      )
+        changes = changes,
+      ),
     )
   }
 
@@ -124,9 +124,10 @@ class LicenceConditionService(
       "changes" to listOf(
         mapOf(
           "conditionCode" to newCondition.conditionCode,
-          "conditionType" to newCondition.conditionType
-        )
-      )
+          "conditionSequence" to newCondition.conditionSequence,
+          "conditionType" to newCondition.conditionType,
+        ),
+      ),
     )
 
     auditEventRepository.saveAndFlush(
@@ -134,10 +135,10 @@ class LicenceConditionService(
         licenceId = licenceId,
         username = username,
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Added condition for ${licenceEntity.forename} ${licenceEntity.surname}",
+        summary = "Added condition of the same type for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
-      )
+        changes = changes,
+      ),
     )
     return transform(newCondition)
   }
@@ -171,9 +172,9 @@ class LicenceConditionService(
         mapOf(
           "conditionCode" to removedCondition.conditionCode,
           "conditionType" to removedCondition.conditionType,
-          "conditionText" to removedCondition.expandedConditionText
-        )
-      )
+          "conditionText" to removedCondition.expandedConditionText,
+        ),
+      ),
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -185,8 +186,8 @@ class LicenceConditionService(
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
         summary = "Deleted condition for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
-      )
+        changes = changes,
+      ),
     )
   }
 
@@ -226,43 +227,54 @@ class LicenceConditionService(
         }
       }
     }
-    val changes: Map<String, Any>
-    if (newAdditionalConditions.isNotEmpty()) {
-      changes = mapOf(
+
+    if (newConditions.isNotEmpty()) {
+      val changes = mapOf(
         "typeOfChange" to "add",
         "condition" to "additional",
         "changes" to
-          newAdditionalConditions.map {
+          newConditions.map {
             mapOf(
               "conditionCode" to it.conditionCode,
               "conditionType" to it.conditionType,
             )
-          }
+          },
       )
-    } else {
-      changes = mapOf(
-        "typeOfChange" to "remove",
-        "condition" to "additional",
-        "changes" to
-          removedAdditionalConditionsList.map {
-            mapOf(
-              "conditionCode" to it.conditionCode,
-              "conditionType" to it.conditionType
-            )
-          }
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy.firstName} ${createdBy.lastName}",
+          summary = "Added additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+          changes = changes,
+        ),
       )
     }
 
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Updated multiple conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
+    if (removedConditions.isNotEmpty()) {
+      val changes = mapOf(
+        "typeOfChange" to "delete",
+        "condition" to "additional",
+        "changes" to
+          removedConditions.map {
+            mapOf(
+              "conditionCode" to it.conditionCode,
+              "conditionType" to it.conditionType,
+            )
+          },
       )
-    )
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy.firstName} ${createdBy.lastName}",
+          summary = "Removed additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+          changes = changes,
+        ),
+      )
+    }
   }
 
   private fun List<EntityAdditionalCondition>.getUpdatedConditions(
@@ -271,7 +283,6 @@ class LicenceConditionService(
   ): List<EntityAdditionalCondition> {
     val updatedAdditionalConditions =
       this.filter { condition -> removedAdditionalConditionsList.none { it.conditionCode == condition.conditionCode } }
-
     submittedAdditionalConditions.forEach { newAdditionalCondition ->
       updatedAdditionalConditions.filter {
         it.conditionCode == newAdditionalCondition.conditionCode
@@ -282,48 +293,6 @@ class LicenceConditionService(
         it.conditionType = newAdditionalCondition.conditionType
       }
     }
-    /*
-    Using this function, an additional condition is either a new condition or to be removed. Updates to existing
-    additional conditions only involve updating the data associated with the condition using the updateAdditionalConditionData
-    function
-     */
-    val changes: Map<String, Any>
-    if (newAdditionalConditions.isNotEmpty()) {
-      changes = mapOf(
-        "typeOfChange" to "add",
-        "condition" to "additional",
-        "changes" to
-          newAdditionalConditions.map {
-            mapOf(
-              "conditionCode" to it.conditionCode,
-              "conditionType" to it.conditionType,
-            )
-          }
-      )
-    } else {
-      changes = mapOf(
-        "typeOfChange" to "remove",
-        "condition" to "additional",
-        "changes" to
-          removedAdditionalConditionsList.map {
-            mapOf(
-              "conditionCode" to it.conditionCode,
-              "conditionType" to it.conditionType
-            )
-          }
-      )
-    }
-
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Updated multiple conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
-      )
-    )
     return updatedAdditionalConditions
   }
 
@@ -355,6 +324,14 @@ class LicenceConditionService(
     val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
+    val submittedConditions = request.conditions
+
+    val existingConditions = licenceEntity.bespokeConditions
+
+    val newConditions = existingConditions.getAddedBespokeConditions(submittedConditions)
+
+    val removedConditions = existingConditions.getRemovedBespokeConditions(submittedConditions)
+
     val updatedLicence = licenceEntity.copy(
       bespokeConditions = emptyList(),
       dateLastUpdated = LocalDateTime.now(),
@@ -369,22 +346,69 @@ class LicenceConditionService(
       )
     }
 
-    val changes = mapOf(
-      "typeOfChange" to "update",
-      "condition" to "bespoke",
-      "changes" to request.conditions
-    )
-
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Updated bespoke conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
+    if (newConditions.isNotEmpty()) {
+      val changes = mapOf(
+        "typeOfChange" to "add",
+        "condition" to "bespoke",
+        "changes" to
+          newConditions.map {
+            mapOf(
+              "conditionCode" to "",
+              "conditionType" to "",
+              "conditionText" to it,
+            )
+          },
       )
-    )
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy.firstName} ${createdBy.lastName}",
+          summary = "Add bespoke conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+          changes = changes,
+        ),
+      )
+    }
+
+    if (removedConditions.isNotEmpty()) {
+      val changes = mapOf(
+        "typeOfChange" to "delete",
+        "condition" to "bespoke",
+        "changes" to
+          newConditions.map {
+            mapOf(
+              "conditionCode" to "",
+              "conditionType" to "",
+              "conditionText" to it,
+            )
+          },
+      )
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = licenceId,
+          username = username,
+          fullName = "${createdBy.firstName} ${createdBy.lastName}",
+          summary = "Removed bespoke conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
+          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+          changes = changes,
+        ),
+      )
+    }
+  }
+
+  private fun List<BespokeCondition>.getAddedBespokeConditions(
+    submittedConditions: List<String>,
+  ) =
+    submittedConditions
+      .filter { this.none { existingCondition -> existingCondition.conditionText == it } }
+
+  private fun List<BespokeCondition>.getRemovedBespokeConditions(
+    submittedConditions: List<String>,
+  ) = this.filter {
+    submittedConditions.none { conditionText -> conditionText == it.conditionText }
+  }.map {
+    it.conditionText
   }
 
   @Transactional
@@ -422,8 +446,8 @@ class LicenceConditionService(
         mapOf(
           "conditionCode" to updatedAdditionalCondition.conditionCode,
           "conditionType" to updatedAdditionalCondition.conditionType,
-          "conditionText" to updatedAdditionalCondition.expandedConditionText
-        )
+          "conditionText" to updatedAdditionalCondition.expandedConditionText,
+        ),
       ),
     )
 
@@ -434,8 +458,8 @@ class LicenceConditionService(
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
         summary = "Updated additional condition data for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes
-      )
+        changes = changes,
+      ),
     )
   }
 }

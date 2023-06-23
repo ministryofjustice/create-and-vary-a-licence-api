@@ -40,5 +40,5 @@ data class AuditEvent(
 
   @Type(JsonBinaryType::class)
   @Column(columnDefinition = "jsonb")
-  val changes: Map<String, Any>? = null
+  val changes: Map<String, Any>? = null,
 )
