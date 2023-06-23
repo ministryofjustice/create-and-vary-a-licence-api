@@ -7,12 +7,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ConditionalInput
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.ADDRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.CHECK
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.DATE_PICKER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.FILE_UPLOAD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.RADIO
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TIME_PICKER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.PssInput
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
 
 val POLICY_V1_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
@@ -38,7 +46,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("Kent, Surrey and Sussex"),
               Option("Wales"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -51,7 +59,7 @@ val POLICY_V1_0 = LicencePolicy(
         code = "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
         inputs = listOf(
           Input(
-            case = "lower",
+            case = LOWER,
             label = "Select the relevant text",
             name = "gender",
             options = listOf(
@@ -59,7 +67,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("any female"),
               Option("any male"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
           Input(
             label = "Select the relevant age",
@@ -68,7 +76,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("16"),
               Option("18"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -82,7 +90,7 @@ val POLICY_V1_0 = LicencePolicy(
         code = "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
         inputs = listOf(
           Input(
-            case = "lower",
+            case = LOWER,
             label = "Select all the relevant options",
             listType = "AND",
             name = "appointmentType",
@@ -91,7 +99,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("Psychologist"),
               Option("Medical practitioner"),
             ),
-            type = "check",
+            type = CHECK,
           ),
         ),
         requiresInput = true,
@@ -115,18 +123,18 @@ val POLICY_V1_0 = LicencePolicy(
             includeBefore = " at ",
             label = "Enter time (optional)",
             name = "appointmentTime",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
           Input(
             includeBefore = " on ",
             label = "Enter date (optional)",
             name = "appointmentDate",
-            type = "datePicker",
+            type = DATE_PICKER,
           ),
           Input(
             label = "Enter the address for the appointment",
             name = "appointmentAddress",
-            type = "address",
+            type = ADDRESS,
           ),
         ),
         requiresInput = true,
@@ -148,18 +156,18 @@ val POLICY_V1_0 = LicencePolicy(
         inputs = listOf(
           Input(
             addAnother = AddAnother("Add another person"),
-            case = "capitalise",
+            case = CAPITALISED,
             label = "Enter name of victim or family member",
             listType = "OR",
             name = "name",
-            type = "text",
+            type = TEXT,
           ),
           Input(
-            case = "capitalise",
+            case = CAPITALISED,
             includeBefore = " and / or ",
             label = "Enter social services department (optional)",
             name = "socialServicesDepartment",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -173,7 +181,7 @@ val POLICY_V1_0 = LicencePolicy(
         code = "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
         inputs = listOf(
           Input(
-            case = "lower",
+            case = LOWER,
             label = "Select the relevant gender",
             name = "gender",
             options = listOf(
@@ -181,7 +189,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("any female"),
               Option("any male"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
           Input(
             label = "Select the relevant age",
@@ -190,14 +198,14 @@ val POLICY_V1_0 = LicencePolicy(
               Option("16 years"),
               Option("18 years"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
           Input(
-            case = "capitalise",
+            case = CAPITALISED,
             includeBefore = " and / or ",
             label = "Enter social services department (optional)",
             name = "socialServicesDepartment",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -212,11 +220,11 @@ val POLICY_V1_0 = LicencePolicy(
         inputs = listOf(
           Input(
             addAnother = AddAnother("Add another person"),
-            case = "capitalise",
+            case = CAPITALISED,
             label = "Enter name of offender or individual",
             listType = "OR",
             name = "nameOfIndividual",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -248,7 +256,7 @@ val POLICY_V1_0 = LicencePolicy(
             label = "Enter the name of group or organisation",
             listType = "OR",
             name = "nameOfOrganisation",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -277,13 +285,13 @@ val POLICY_V1_0 = LicencePolicy(
               Option("prolific offending behaviour"),
               Option("offending behaviour"),
             ),
-            type = "check",
+            type = CHECK,
           ),
           Input(
             includeBefore = " at the ",
             label = "Enter name of course or centre (optional)",
             name = "course",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -303,7 +311,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("16 years"),
               Option("18 years"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -371,7 +379,7 @@ val POLICY_V1_0 = LicencePolicy(
             label = "Enter the name of the item",
             listType = "OR",
             name = "item",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -390,7 +398,7 @@ val POLICY_V1_0 = LicencePolicy(
         code = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
         inputs = listOf(
           Input(
-            case = "lower",
+            case = LOWER,
             label = "Select the relevant text",
             name = "gender",
             options = listOf(
@@ -398,7 +406,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("women"),
               Option("women or men"),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -431,15 +439,15 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter the curfew start time",
             name = "curfewStart",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
           Input(
             label = "Enter the curfew end time",
             name = "curfewEnd",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
           Input(
-            case = "lower",
+            case = LOWER,
             handleIndefiniteArticle = true,
             label = "Select a review period",
             name = "reviewPeriod",
@@ -450,18 +458,18 @@ val POLICY_V1_0 = LicencePolicy(
                 conditional = Conditional(
                   inputs = listOf(
                     ConditionalInput(
-                      case = "lower",
+                      case = LOWER,
                       handleIndefiniteArticle = true,
                       label = "Enter a review period",
                       name = "alternativeReviewPeriod",
-                      type = "text",
+                      type = TEXT,
                     ),
                   ),
                 ),
                 value = "Other",
               ),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -477,17 +485,17 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter the curfew address",
             name = "curfewAddress",
-            type = "address",
+            type = ADDRESS,
           ),
           Input(
             label = "Enter the curfew start time",
             name = "curfewStart",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
           Input(
             label = "Enter the curfew end time",
             name = "curfewEnd",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
         ),
         requiresInput = true,
@@ -503,12 +511,12 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter the name of the area shown on the map",
             name = "outOfBoundArea",
-            type = "text",
+            type = TEXT,
           ),
           Input(
             label = "Select a PDF map of the area this person must not enter",
             name = "outOfBoundFilename",
-            type = "fileUpload",
+            type = FILE_UPLOAD,
           ),
         ),
         requiresInput = true,
@@ -524,12 +532,12 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter name or type of premises",
             name = "nameOfPremises",
-            type = "text",
+            type = TEXT,
           ),
           Input(
             label = "Enter the address of the premises",
             name = "premisesAddress",
-            type = "address",
+            type = ADDRESS,
           ),
         ),
         requiresInput = true,
@@ -542,10 +550,10 @@ val POLICY_V1_0 = LicencePolicy(
         code = "c4a17002-88a3-43b4-b3f7-82ff476cb217",
         inputs = listOf(
           Input(
-            case = "lower",
+            case = LOWER,
             label = "Enter area or type of premises",
             name = "typeOfPremises",
-            type = "text",
+            type = TEXT,
           ),
         ),
         requiresInput = true,
@@ -571,18 +579,18 @@ val POLICY_V1_0 = LicencePolicy(
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         inputs = listOf(
           Input(
-            case = "capitalised",
+            case = CAPITALISED,
             label = "Enter name of approved premises",
             name = "approvedPremises",
-            type = "text",
+            type = TEXT,
           ),
           Input(
             label = "Enter a reporting time",
             name = "reportingTime",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
           Input(
-            case = "lower",
+            case = LOWER,
             handleIndefiniteArticle = true,
             label = "Select a review period",
             name = "reviewPeriod",
@@ -593,18 +601,18 @@ val POLICY_V1_0 = LicencePolicy(
                 conditional = Conditional(
                   inputs = listOf(
                     ConditionalInput(
-                      case = "lower",
+                      case = LOWER,
                       handleIndefiniteArticle = true,
                       label = "Enter a review period",
                       name = "alternativeReviewPeriod",
-                      type = "text",
+                      type = TEXT,
                     ),
                   ),
                 ),
                 value = "Other",
               ),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -618,18 +626,18 @@ val POLICY_V1_0 = LicencePolicy(
         code = "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
         inputs = listOf(
           Input(
-            case = "capitalised",
+            case = CAPITALISED,
             label = "Enter name of police station",
             name = "policeStation",
-            type = "text",
+            type = TEXT,
           ),
           Input(
             label = "Enter a reporting time",
             name = "reportingTime",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
           Input(
-            case = "lower",
+            case = LOWER,
             handleIndefiniteArticle = true,
             label = "Select a review period",
             name = "reviewPeriod",
@@ -640,18 +648,18 @@ val POLICY_V1_0 = LicencePolicy(
                 conditional = Conditional(
                   inputs = listOf(
                     ConditionalInput(
-                      case = "lower",
+                      case = LOWER,
                       handleIndefiniteArticle = true,
                       label = "Enter a review period",
                       name = "alternativeReviewPeriod",
-                      type = "text",
+                      type = TEXT,
                     ),
                   ),
                 ),
                 value = "Other",
               ),
             ),
-            type = "radio",
+            type = RADIO,
           ),
         ),
         requiresInput = true,
@@ -709,12 +717,12 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter name of organisation",
             name = "name",
-            type = "text",
+            type = TEXT,
           ),
           Input(
             label = "Enter address",
             name = "address",
-            type = "address",
+            type = ADDRESS,
           ),
         ),
         requiresInput = true,
@@ -738,7 +746,7 @@ val POLICY_V1_0 = LicencePolicy(
               Option("alcohol monitoring"),
               Option("alcohol abstinence"),
             ),
-            type = "check",
+            type = CHECK,
           ),
         ),
         requiresInput = true,
@@ -753,7 +761,7 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter the end date",
             name = "endDate",
-            type = "datePicker",
+            type = DATE_PICKER,
           ),
         ),
         requiresInput = true,
@@ -768,7 +776,7 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter the approved address",
             name = "approvedAddress",
-            type = "address",
+            type = ADDRESS,
           ),
         ),
         requiresInput = true,
@@ -783,12 +791,12 @@ val POLICY_V1_0 = LicencePolicy(
           Input(
             label = "Enter the timeframe",
             name = "timeframe",
-            type = "text",
+            type = TEXT,
           ),
           Input(
             label = "Enter the end date",
             name = "endDate",
-            type = "datePicker",
+            type = DATE_PICKER,
           ),
         ),
         requiresInput = true,
@@ -802,22 +810,22 @@ val POLICY_V1_0 = LicencePolicy(
         category = "Drug appointment",
         code = "62c83b80-2223-4562-a195-0670f4072088",
         inputs = listOf(
-          PssInput(
+          Input(
             includeBefore = " at ",
             label = "Enter time (optional)",
             name = "appointmentTime",
-            type = "timePicker",
+            type = TIME_PICKER,
           ),
-          PssInput(
+          Input(
             includeBefore = " on ",
             label = "Enter date (optional)",
             name = "appointmentDate",
-            type = "datePicker",
+            type = DATE_PICKER,
           ),
-          PssInput(
+          Input(
             label = "Enter the address for the appointment",
             name = "appointmentAddress",
-            type = "address",
+            type = ADDRESS,
           ),
         ),
         pssDates = true,
@@ -830,15 +838,15 @@ val POLICY_V1_0 = LicencePolicy(
         category = "Drug testing",
         code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
         inputs = listOf(
-          PssInput(
+          Input(
             label = "Enter name",
             name = "name",
-            type = "text",
+            type = TEXT,
           ),
-          PssInput(
+          Input(
             label = "Enter address",
             name = "address",
-            type = "address",
+            type = ADDRESS,
           ),
         ),
         requiresInput = true,

@@ -468,7 +468,7 @@ class LicenceController(
     @Valid @RequestBody
     request: AddAdditionalConditionRequest,
   ): AdditionalCondition {
-    return this.licenceConditionService.addAdditionalCondition(licenceId, conditionType, request)
+    return this.licenceConditionService.addAdditionalCondition(licenceId, request)
   }
 
   @DeleteMapping(value = ["/id/{licenceId}/additional-condition/id/{conditionId}"])

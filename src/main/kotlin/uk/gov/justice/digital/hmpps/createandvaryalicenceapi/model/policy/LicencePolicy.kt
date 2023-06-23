@@ -9,12 +9,29 @@ interface ILicenceCondition {
   val tpl: String?
 }
 
-interface IAdditionalCondition<INPUT> : ILicenceCondition {
+interface IAdditionalCondition : ILicenceCondition, HasInputs {
   val category: String
-  val inputs: List<INPUT>?
+  val inputs: List<Input>?
   val type: String?
   val requiresInput: Boolean
   val categoryShort: String?
+  override fun getConditionInputs() = inputs
+}
+
+interface HasInputs {
+  @JsonIgnore
+  fun getConditionInputs(): List<Input>?
+
+  // Recursively gather all formatting rules, first top level and then recursively to get any conditional rules
+  @JsonIgnore
+  fun getFormattingRules(): List<Input> {
+    val inputs = this.getConditionInputs() ?: emptyList()
+    val options = inputs.flatMap { it.options ?: emptyList() }
+    val conditionalInputs =
+      options.filter { it.conditional != null }.mapNotNull { it.conditional }.flatMap { it.getFormattingRules() }
+
+    return inputs + conditionalInputs
+  }
 }
 
 data class ChangeHint(
@@ -31,6 +48,10 @@ data class LicencePolicy(
 ) {
 
   @JsonIgnore
-  fun allAdditionalConditions(): Set<ILicenceCondition> =
+  fun allAdditionalConditions(): Set<IAdditionalCondition> =
     (this.additionalConditions.pss + this.additionalConditions.ap).toSet()
+
+  @JsonIgnore
+  fun allStandardConditions(): Set<ILicenceCondition> =
+    (this.standardConditions.standardConditionsPss + this.standardConditions.standardConditionsAp).toSet()
 }

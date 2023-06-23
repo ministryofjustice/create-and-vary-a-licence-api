@@ -145,6 +145,7 @@ workflows:
     jobs:
       - hmpps/gradle_owasp_dependency_check:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
+          jdk_tag: << pipeline.parameters.java-version >>
           context:
             - hmpps-common-vars
       - hmpps/trivy_latest_scan:
