@@ -5,6 +5,7 @@ import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
@@ -31,6 +32,7 @@ class LicenceOverrideService(
    * @return Licence
    * @throws EntityNotFoundException if not licence is found for licenceId
    */
+  @Transactional
   fun getLicenceById(licenceId: Long): Licence? {
     return licenceRepository
       .findById(licenceId)
@@ -41,6 +43,7 @@ class LicenceOverrideService(
    * Override licence status
    * @throws ValidationException if new status is already in use by another licence
    */
+  @Transactional
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
     val licence = getLicenceById(licenceId)
 
@@ -82,6 +85,7 @@ class LicenceOverrideService(
     )
   }
 
+  @Transactional
   fun changeDates(licenceId: Long, request: OverrideLicenceDatesRequest) {
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
