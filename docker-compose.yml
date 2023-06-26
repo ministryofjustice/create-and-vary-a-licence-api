@@ -1,17 +1,23 @@
 version: "3"
 services:
-  create-and-vary-a-licence-api:
-    build:
-      context: .
-    network_mode: "host"
-    container_name: create-and-vary-a-licence-api
+  licences-db:
+    image: postgres:14.3
+    networks:
+      - hmpps
+    container_name: licences-db
+    restart: always
     ports:
-      - "8081:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
+      - "5432:5432"
     environment:
-      - SERVER_PORT=8080
-      - SPRING_PROFILES_ACTIVE=dev
+      - POSTGRES_PASSWORD=cvl
+      - POSTGRES_USER=cvl
+      - POSTGRES_DB=create-and-vary-a-licence-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d create-and-vary-a-licence-db -U cvl"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
 networks:
   hmpps:
