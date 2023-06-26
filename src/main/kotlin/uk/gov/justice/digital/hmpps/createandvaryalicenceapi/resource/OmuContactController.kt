@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
@@ -22,6 +23,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OmuService
 
+@Tag(
+  name = Tags.OMU_CONTACT_DETAILS,
+  description = "CVL stores contact information for Offender Management Units (OMUs). These endpoints are responsible for retrieving and managing that information",
+)
 @RestController
 @RequestMapping("/omu/{prisonCode}/contact/email", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OmuContactController(private val omuService: OmuService) {

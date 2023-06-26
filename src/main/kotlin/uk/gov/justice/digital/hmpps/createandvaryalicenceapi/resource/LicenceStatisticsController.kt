@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceStatis
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceStatisticsService
 import java.time.LocalDate
 
+@Deprecated(message = "Never used and likely to be removed")
 @RestController
 @RequestMapping("/support/licence-statistics", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicenceStatisticsController(private val licenceStatisticsService: LicenceStatisticsService) {
