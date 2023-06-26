@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
@@ -217,7 +218,7 @@ class LicenceConditionServiceTest {
           1L,
           AdditionalConditionsRequest(
             additionalConditions = listOf(
-              uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+              AdditionalConditionRequest(
                 code = "code",
                 category = "category",
                 text = "text",
@@ -287,7 +288,7 @@ class LicenceConditionServiceTest {
 
       val request = AdditionalConditionsRequest(
         additionalConditions = listOf(
-          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+          AdditionalConditionRequest(
             code = "code",
             category = "category",
             text = "text",

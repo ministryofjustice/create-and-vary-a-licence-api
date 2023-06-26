@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -7,7 +8,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
@@ -55,7 +55,10 @@ fun transform(createRequest: CreateLicenceRequest): EntityLicence {
 }
 
 // Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
-fun List<ModelStandardCondition>.transformToEntityStandard(licence: EntityLicence, conditionType: String): List<EntityStandardCondition> = map { term -> transform(term, licence, conditionType) }
+fun List<ModelStandardCondition>.transformToEntityStandard(
+  licence: EntityLicence,
+  conditionType: String,
+): List<EntityStandardCondition> = map { term -> transform(term, licence, conditionType) }
 
 fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionType: String): EntityStandardCondition {
   return EntityStandardCondition(
@@ -67,7 +70,11 @@ fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionTy
   )
 }
 
-fun transform(model: ModelAdditionalCondition, licence: EntityLicence, conditionType: String): EntityAdditionalCondition {
+fun transform(
+  model: AdditionalConditionRequest,
+  licence: EntityLicence,
+  conditionType: String,
+): EntityAdditionalCondition {
   return EntityAdditionalCondition(
     conditionVersion = licence.version!!,
     conditionCode = model.code,
@@ -80,12 +87,19 @@ fun transform(model: ModelAdditionalCondition, licence: EntityLicence, condition
 }
 
 // Transform a list of model additional conditions to entity additional conditions
-fun List<ModelAdditionalCondition>.transformToEntityAdditional(licence: EntityLicence, conditionType: String): List<EntityAdditionalCondition> = map { transform(it, licence, conditionType) }
+fun List<AdditionalConditionRequest>.transformToEntityAdditional(
+  licence: EntityLicence,
+  conditionType: String,
+): List<EntityAdditionalCondition> = map { transform(it, licence, conditionType) }
 
 // Transform a list of model additional condition data to entity additional condition data
-fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> = map { transform(it, additionalCondition) }
+fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> =
+  map { transform(it, additionalCondition) }
 
-fun transform(model: ModelAdditionalConditionData, additionalCondition: EntityAdditionalCondition): EntityAdditionalConditionData {
+fun transform(
+  model: ModelAdditionalConditionData,
+  additionalCondition: EntityAdditionalCondition,
+): EntityAdditionalConditionData {
   return EntityAdditionalConditionData(
     dataSequence = model.sequence,
     dataField = model.field,
