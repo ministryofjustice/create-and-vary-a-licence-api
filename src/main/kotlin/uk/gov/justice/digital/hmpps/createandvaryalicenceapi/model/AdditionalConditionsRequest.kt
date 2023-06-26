@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull
 data class AdditionalConditionsRequest(
   @Schema(description = "The list of additional conditions")
   @field:NotNull
-  val additionalConditions: List<AdditionalCondition>,
+  val additionalConditions: List<AdditionalConditionRequest>,
 
   @Schema(description = "The type of additional condition, either licence or post sentence supervision", allowableValues = ["AP", "PSS"])
   @field:NotNull
