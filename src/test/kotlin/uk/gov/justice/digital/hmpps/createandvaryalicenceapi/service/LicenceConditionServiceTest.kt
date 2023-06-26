@@ -331,8 +331,7 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
 
-      verify(conditionFormatter).format(CONDITION_CONFIG, someAdditionalConditionData)
-      verify(conditionFormatter).format(CONDITION_CONFIG, someDifferentAdditionalConditionData)
+      verifyNoInteractions(conditionFormatter)
     }
   }
 
