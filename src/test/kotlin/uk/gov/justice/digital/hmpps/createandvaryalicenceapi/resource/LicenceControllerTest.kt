@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -826,7 +827,12 @@ class LicenceControllerTest {
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
-    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(additionalConditions = listOf(AdditionalCondition(code = "code", category = "category", sequence = 0, text = "text")), conditionType = "AP")
+    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(
+      additionalConditions = listOf(
+        AdditionalConditionRequest(code = "code", category = "category", sequence = 0, text = "text"),
+      ),
+      conditionType = "AP",
+    )
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
       data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),

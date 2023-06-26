@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -228,10 +228,10 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(
-        AdditionalCondition(code = "code1", category = "category", sequence = 0, text = "text"),
-        AdditionalCondition(code = "code2", category = "category", sequence = 1, text = "text"),
-        AdditionalCondition(code = "code3", category = "category", sequence = 2, text = "text"),
-        AdditionalCondition(code = "code4", category = "category", sequence = 3, text = "text"),
+        AdditionalConditionRequest(code = "code1", category = "category", sequence = 0, text = "text"),
+        AdditionalConditionRequest(code = "code2", category = "category", sequence = 1, text = "text"),
+        AdditionalConditionRequest(code = "code3", category = "category", sequence = 2, text = "text"),
+        AdditionalConditionRequest(code = "code4", category = "category", sequence = 3, text = "text"),
       ),
       conditionType = "AP",
     )

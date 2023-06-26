@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.EventQue
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EventService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 
+@Tag(name = Tags.EVENTS)
 @RestController
 @RequestMapping("/events", produces = [MediaType.APPLICATION_JSON_VALUE])
 class EventController(private val eventService: EventService) {
