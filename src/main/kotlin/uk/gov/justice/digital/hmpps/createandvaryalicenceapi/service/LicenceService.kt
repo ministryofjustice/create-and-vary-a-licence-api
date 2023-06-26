@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -64,6 +65,7 @@ class LicenceService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val omuService: OmuService,
+  private val licenceConditionService: LicenceConditionService,
 ) {
 
   @Transactional
@@ -696,6 +698,17 @@ class LicenceService(
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
       ),
     )
+  }
+
+  @Transactional
+  fun removeAPConditions() {
+    val licencesInPSSPeriod = licenceRepository.getAllVariedLicencesInPSSPeriod()
+
+    licencesInPSSPeriod?.forEach { licence ->
+      val licenceWithAPConditions = licence.additionalConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }
+
+      licenceWithAPConditions?.forEach { this.licenceConditionService.deleteAdditionalCondition(it.licence.id, it.id) }
+    }
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {

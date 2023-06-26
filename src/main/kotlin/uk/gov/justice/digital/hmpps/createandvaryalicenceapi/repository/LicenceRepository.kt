@@ -36,6 +36,21 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getApprovedLicencesOnOrPassedReleaseDate(): List<Licence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l 
+        WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE) 
+        AND l.statusCode IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+        )
+    """,
+  )
+  fun getAllVariedLicencesInPSSPeriod(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
