@@ -477,8 +477,8 @@ class LicenceServiceTest {
           "X",
           "Y",
           "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          USER_EVENT
-        )
+          USER_EVENT,
+        ),
       )
   }
 
@@ -524,8 +524,8 @@ class LicenceServiceTest {
           "X",
           "Y",
           "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          USER_EVENT
-        )
+          USER_EVENT,
+        ),
       )
   }
 
@@ -538,7 +538,7 @@ class LicenceServiceTest {
       statusCode = LicenceStatus.APPROVED,
       approvedByUsername = username,
       approvedByName = fullName,
-      approvedDate = LocalDateTime.now()
+      approvedDate = LocalDateTime.now(),
     )
     val newVersionOfLicence =
       aLicenceEntity.copy(id = newLicenceId, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = aLicenceEntity.id)
@@ -548,7 +548,7 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       newLicenceId,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = username, fullName = fullName)
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = username, fullName = fullName),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -575,8 +575,8 @@ class LicenceServiceTest {
         listOf(
           firstVersionOfLicence.id,
           LicenceEventType.SUPERSEDED,
-          "Licence deactivated as a newer version was approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"
-        )
+          "Licence deactivated as a newer version was approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
       )
 
     assertThat(eventCaptor.allValues[1])
@@ -585,8 +585,8 @@ class LicenceServiceTest {
         listOf(
           newVersionOfLicence.id,
           LicenceEventType.APPROVED,
-          "Licence updated to APPROVED for ${newVersionOfLicence.forename} ${newVersionOfLicence.surname}"
-        )
+          "Licence updated to APPROVED for ${newVersionOfLicence.forename} ${newVersionOfLicence.surname}",
+        ),
       )
 
     assertThat(auditCaptor.allValues[0])
@@ -597,8 +597,8 @@ class LicenceServiceTest {
           username,
           fullName,
           "Licence set to INACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          USER_EVENT
-        )
+          USER_EVENT,
+        ),
       )
 
     assertThat(auditCaptor.allValues[1])
@@ -609,8 +609,8 @@ class LicenceServiceTest {
           username,
           fullName,
           "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          USER_EVENT
-        )
+          USER_EVENT,
+        ),
       )
   }
 

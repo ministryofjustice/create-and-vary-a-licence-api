@@ -211,15 +211,18 @@ class LicenceService(
         approvedDate = LocalDateTime.now()
         supersededDate = null
       }
+
       IN_PROGRESS -> {
         approvedByUser = null
         approvedByName = null
         approvedDate = null
         supersededDate = null
       }
+
       INACTIVE -> {
         supersededDate = LocalDateTime.now()
       }
+
       else -> {
         supersededDate = null
       }
@@ -326,7 +329,7 @@ class LicenceService(
       val updatedLicence = previousLicenceVersion.copy(
         dateLastUpdated = LocalDateTime.now(),
         updatedByUsername = username,
-        statusCode = INACTIVE
+        statusCode = INACTIVE,
       )
       licenceRepository.saveAndFlush(updatedLicence)
 
@@ -339,7 +342,7 @@ class LicenceService(
           forenames = firstName,
           surname = lastName,
           eventDescription = "Licence deactivated as a newer version was approved for ${licence.forename} ${licence.surname}",
-        )
+        ),
       )
 
       auditStatusChange(updatedLicence, username, fullName)
@@ -733,7 +736,8 @@ class LicenceService(
     require(newStatus == IN_PROGRESS || newStatus == VARIATION_IN_PROGRESS) { "newStatus must be IN_PROGRESS or VARIATION_IN_PROGRESS was $newStatus" }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username) ?: throw IllegalStateException("Cannot find staff with username: $username")
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+      ?: throw IllegalStateException("Cannot find staff with username: $username")
 
     val licenceCopy = licence.copyLicence(newStatus)
     licenceCopy.createdBy = createdBy
@@ -798,7 +802,9 @@ class LicenceService(
     val licenceEventMessage = when (newStatus) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
       IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      else -> { throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ") }
+      else -> {
+        throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")
+      }
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
@@ -814,7 +820,9 @@ class LicenceService(
     val auditEventSummary = when (newStatus) {
       VARIATION_IN_PROGRESS -> "Licence varied for ${newLicence.forename} ${newLicence.surname}"
       IN_PROGRESS -> "New licence version created for ${newLicence.forename} ${newLicence.surname}"
-      else -> { throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ") }
+      else -> {
+        throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")
+      }
     }
     auditEventRepository.saveAndFlush(
       AuditEvent(
