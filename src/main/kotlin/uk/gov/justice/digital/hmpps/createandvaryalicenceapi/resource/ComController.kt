@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyServi
 @RestController
 @RequestMapping("/com", produces = [MediaType.APPLICATION_JSON_VALUE])
 class ComController(private val comService: ComService, private val notifyService: NotifyService) {
+  @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/update"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -65,6 +67,7 @@ class ComController(private val comService: ComService, private val notifyServic
     this.comService.updateComDetails(body)
   }
 
+  @Tag(name = Tags.JOBS)
   @PostMapping(
     value = ["/prompt-licence-creation"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -105,6 +108,7 @@ class ComController(private val comService: ComService, private val notifyServic
     notifyService.sendInitialLicenceCreateEmails(body)
   }
 
+  @Tag(name = Tags.COM)
   @PostMapping(
     value = ["/case-search"],
     produces = [MediaType.APPLICATION_JSON_VALUE],

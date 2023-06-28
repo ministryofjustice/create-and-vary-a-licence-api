@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
-import jakarta.transaction.Transactional
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderSer
 @RestController
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenderController(private val offenderService: OffenderService, private val comService: ComService) {
-
+  @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/crn/{crn}/responsible-com"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -65,6 +65,7 @@ class OffenderController(private val offenderService: OffenderService, private v
     this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
   }
 
+  @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/crn/{crn}/probation-team"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -98,7 +99,6 @@ class OffenderController(private val offenderService: OffenderService, private v
       ),
     ],
   )
-  @Transactional
   fun updateProbationTeam(
     @PathVariable crn: String,
     @RequestBody body: UpdateProbationTeamRequest,

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -58,6 +59,7 @@ class LicenceController(
   private val licenceConditionService: LicenceConditionService,
 ) {
 
+  @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
@@ -95,6 +97,7 @@ class LicenceController(
     return licenceService.createLicence(request)
   }
 
+  @Tag(name = Tags.LICENCES)
   @GetMapping(value = ["/id/{licenceId}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
@@ -132,6 +135,7 @@ class LicenceController(
     return licenceService.getLicenceById(licenceId)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/appointmentPerson"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -176,6 +180,7 @@ class LicenceController(
     licenceService.updateAppointmentPerson(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/appointmentTime"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -219,6 +224,7 @@ class LicenceController(
     licenceService.updateAppointmentTime(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/contact-number"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -262,6 +268,7 @@ class LicenceController(
     licenceService.updateContactNumber(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/appointment-address"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -305,6 +312,7 @@ class LicenceController(
     licenceService.updateAppointmentAddress(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/bespoke-conditions"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -348,6 +356,7 @@ class LicenceController(
     licenceConditionService.updateBespokeConditions(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @GetMapping(value = ["/variations/submitted/area/{areaCode}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
@@ -360,7 +369,12 @@ class LicenceController(
       ApiResponse(
         responseCode = "200",
         description = "Returned matching licence summary details - empty if no matches.",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+          ),
+        ],
       ),
       ApiResponse(
         responseCode = "401",
@@ -380,6 +394,7 @@ class LicenceController(
     return licenceService.findSubmittedVariationsByRegion(probationAreaCode = areaCode)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/match"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
@@ -392,7 +407,12 @@ class LicenceController(
       ApiResponse(
         responseCode = "200",
         description = "Returned matching licence summary details - empty if no matches.",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+          ),
+        ],
       ),
       ApiResponse(
         responseCode = "401",
@@ -424,6 +444,7 @@ class LicenceController(
     )
   }
 
+  @Tag(name = Tags.LICENCE_CONDITIONS)
   @PostMapping(value = ["/id/{licenceId}/additional-condition/{conditionType}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -471,6 +492,7 @@ class LicenceController(
     return this.licenceConditionService.addAdditionalCondition(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_CONDITIONS)
   @DeleteMapping(value = ["/id/{licenceId}/additional-condition/id/{conditionId}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseStatus(code = HttpStatus.NO_CONTENT)
@@ -510,6 +532,7 @@ class LicenceController(
     return this.licenceConditionService.deleteAdditionalCondition(licenceId, conditionId)
   }
 
+  @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -559,6 +582,7 @@ class LicenceController(
   /**
    * This functionality can be replaced once proper licence versioning is implemented
    */
+  @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping("/id/{licenceId}/standard-conditions")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -604,6 +628,7 @@ class LicenceController(
     return licenceConditionService.updateStandardConditions(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions/condition/{additionalConditionId}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -650,6 +675,7 @@ class LicenceController(
     return licenceConditionService.updateAdditionalConditionData(licenceId, conditionId, request)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/status"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -693,6 +719,7 @@ class LicenceController(
     return licenceService.updateLicenceStatus(licenceId, request)
   }
 
+  @Tag(name = Tags.JOBS)
   @Deprecated(
     message = "This endpoint is being deprecated as it is believed to no longer be in use after the activation job was moved to the API",
   )
@@ -733,6 +760,7 @@ class LicenceController(
     licenceService.activateLicencesByIds(request)
   }
 
+  @Tag(name = Tags.JOBS)
   @PostMapping(value = ["/inactivate-licences"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -770,6 +798,7 @@ class LicenceController(
     licenceService.inActivateLicencesByIds(request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/submit"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -812,6 +841,7 @@ class LicenceController(
     return licenceService.submitLicence(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PostMapping(value = ["/id/{licenceId}/create-variation"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -856,6 +886,7 @@ class LicenceController(
     return licenceService.createVariation(licenceId)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/id/{licenceId}/edit"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -895,6 +926,7 @@ class LicenceController(
     return licenceService.editLicence(licenceId)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/spo-discussion"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -938,6 +970,7 @@ class LicenceController(
     licenceService.updateSpoDiscussion(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/vlo-discussion"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -981,6 +1014,7 @@ class LicenceController(
     licenceService.updateVloDiscussion(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/reason-for-variation"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -1024,6 +1058,7 @@ class LicenceController(
     licenceService.updateReasonForVariation(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/refer-variation"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -1067,6 +1102,7 @@ class LicenceController(
     licenceService.referLicenceVariation(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/approve-variation"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -1108,6 +1144,7 @@ class LicenceController(
     licenceService.approveLicenceVariation(licenceId)
   }
 
+  @Tag(name = Tags.LICENCES)
   @DeleteMapping(value = ["/id/{licenceId}/discard"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -1149,6 +1186,7 @@ class LicenceController(
     licenceService.discardLicence(licenceId)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/prison-information"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
@@ -1192,6 +1230,7 @@ class LicenceController(
     licenceService.updatePrisonInformation(licenceId, request)
   }
 
+  @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/sentence-dates"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(

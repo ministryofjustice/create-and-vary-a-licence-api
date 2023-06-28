@@ -213,7 +213,7 @@ class LicenceConditionService(
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = (newConditions + updatedConditions).onEach { checkFormattedText(it) },
+      additionalConditions = (newConditions + updatedConditions),
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )

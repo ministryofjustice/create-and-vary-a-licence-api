@@ -1,6 +1,7 @@
 [![repo standards badge](https://img.shields.io/badge/dynamic/json?color=blue&style=flat&logo=github&label=MoJ%20Compliant&query=%24.result&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fcreate-and-vary-a-licence-api)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-github-repositories.html#create-and-vary-a-licence-api "Link to report")
 [![CircleCI](https://circleci.com/gh/ministryofjustice/create-and-vary-a-licence-api/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/create-and-vary-a-licence-api)
 [![codecov](https://codecov.io/gh/ministryofjustice/create-and-vary-a-licence-api/branch/main/graph/badge.svg?token=G7EZ0S2D92)](https://codecov.io/gh/ministryofjustice/create-and-vary-a-licence-api)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html)
 
 # create-and-vary-a-licence-api
 
