@@ -107,7 +107,7 @@ management:
 
 # Template IDs for the test Notify account (overridden in production)
 notify:
-  enabled: false
+  enabled: true
   templates:
     datesChanged: 18e25609-607b-4067-b39f-04003eb6f416
     initialLicencePrompt: c63e2cc8-afa9-4073-b134-e62fcdfef1f4
