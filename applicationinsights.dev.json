@@ -20,6 +20,7 @@
     "sampling": {
       "overrides": [
         {
+          "telemetryType": "request",
           "attributes": [
             {
               "key": "http.url",
