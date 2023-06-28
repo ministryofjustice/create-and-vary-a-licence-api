@@ -616,6 +616,7 @@ class LicenceConditionServiceTest {
     @Test
     fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.updateBespokeConditions(1L, BespokeConditionRequest())
 
