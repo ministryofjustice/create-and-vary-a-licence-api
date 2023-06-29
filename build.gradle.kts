@@ -107,4 +107,5 @@ tasks {
       md.required.set(true) // simple Markdown format
     }
   }
+  getByPath("detekt").onlyIf { project.hasProperty("runDetekt") }
 }
