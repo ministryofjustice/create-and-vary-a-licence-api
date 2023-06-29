@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -93,6 +94,53 @@ OffenderService(
             summary = "Probation team updated to ${request.probationTeamDescription} at ${request.probationAreaDescription} on licence for ${it.forename} ${it.surname}",
             detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
           ),
+        )
+      }
+    }
+  }
+
+  @Transactional
+  fun updateOffenderDetails(nomsId: String, request: UpdateOffenderDetailsRequest) {
+    val licenceStatuses = listOf(
+      LicenceStatus.IN_PROGRESS,
+      LicenceStatus.SUBMITTED,
+      LicenceStatus.APPROVED,
+      LicenceStatus.VARIATION_IN_PROGRESS,
+      LicenceStatus.VARIATION_SUBMITTED,
+      LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.VARIATION_REJECTED,
+      LicenceStatus.ACTIVE
+    )
+    val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, licenceStatuses)
+    var offenderDetailsChanged = false
+    val updatedLicences = existingLicences.map {
+      if(
+        it.forename !== request.forename ||
+          it.middleNames !== request.middleNames ||
+          it.surname !== request.surname ||
+          it.dateOfBirth !== request.dateOfBirth
+      ){
+        offenderDetailsChanged = true
+      }
+      it.copy(
+        forename = request.forename,
+        middleNames = request.middleNames,
+        surname = request.surname,
+        dateOfBirth = request.dateOfBirth
+      )
+    }
+
+    if(offenderDetailsChanged){
+      this.licenceRepository.saveAllAndFlush(updatedLicences)
+      updatedLicences.map {
+        auditEventRepository.saveAndFlush(
+          AuditEvent(
+            licenceId = it.id,
+            username = "SYSTEM",
+            fullName = "SYSTEM",
+            summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
+            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}"
+          )
         )
       }
     }

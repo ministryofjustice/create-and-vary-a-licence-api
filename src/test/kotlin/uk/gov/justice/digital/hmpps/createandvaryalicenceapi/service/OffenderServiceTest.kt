@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -14,11 +15,13 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 
 class OffenderServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -144,12 +147,67 @@ class OffenderServiceTest {
     verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
 
+  @Test
+  fun `updates all non-inactive licences for an offender if the offender's personal details have changed`() {
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity,
+        aLicenceEntity.copy(id = 2, statusCode = LicenceStatus.ACTIVE)
+      )
+    )
+
+    val expectedUpdatedLicences = listOf(
+      aLicenceEntity.copy(
+        forename = "Peter",
+        middleNames = "Robin",
+        surname = "Smith",
+        dateOfBirth = LocalDate.parse("1970-02-01")
+      ),
+      aLicenceEntity.copy(
+        id = 2,
+        statusCode = LicenceStatus.ACTIVE,
+        forename = "Peter",
+        middleNames = "Robin",
+        surname = "Smith",
+        dateOfBirth = LocalDate.parse("1970-02-01")
+      )
+    )
+
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    service.updateOffenderDetails(aLicenceEntity.nomsId!!, newOffenderDetails)
+
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(aLicenceEntity.nomsId!!, listOf(
+      LicenceStatus.IN_PROGRESS,
+      LicenceStatus.SUBMITTED,
+      LicenceStatus.APPROVED,
+      LicenceStatus.VARIATION_IN_PROGRESS,
+      LicenceStatus.VARIATION_SUBMITTED,
+      LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.VARIATION_REJECTED,
+      LicenceStatus.ACTIVE
+    ))
+
+    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    assertThat(auditCaptor.allValues)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          Tuple(1L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
+          Tuple(2L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
+        )
+      )
+  }
+
   private companion object {
     val aLicenceEntity = Licence(
       id = 1L,
       crn = "exampleCrn",
+      nomsId = "A1234AB",
       forename = "Robin",
       surname = "Smith",
+      dateOfBirth = LocalDate.parse("1970-01-01"),
       typeCode = LicenceType.AP,
       statusCode = LicenceStatus.IN_PROGRESS,
       version = "1.0",
@@ -180,6 +238,13 @@ class OffenderServiceTest {
       probationLauDescription = "LAU2 Lau",
       probationTeamCode = "TEAM2",
       probationTeamDescription = "TEAM2 probation team",
+    )
+
+    val newOffenderDetails = UpdateOffenderDetailsRequest(
+      forename = "Peter",
+      middleNames = "Robin",
+      surname = "Smith",
+      dateOfBirth = LocalDate.parse("1970-02-01"),
     )
   }
 }

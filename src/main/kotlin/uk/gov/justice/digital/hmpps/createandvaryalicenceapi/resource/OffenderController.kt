@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
@@ -104,5 +105,42 @@ class OffenderController(private val offenderService: OffenderService, private v
     @RequestBody body: UpdateProbationTeamRequest,
   ) {
     this.offenderService.updateProbationTeam(crn, body)
+  }
+
+  @PutMapping(value = ["nomisid/{nomsId}/update-offender-details"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Updates the offender's personal information on all of their licences.",
+    description = "Updates the name and date of birth stored on all licences associated with the given offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The offender details were updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      )
+    ]
+  )
+  fun updateOffenderDetails(
+    @PathVariable nomsId: String,
+    @RequestBody body: UpdateOffenderDetailsRequest
+  ){
+    this.offenderService.updateOffenderDetails(nomsId, body)
   }
 }
