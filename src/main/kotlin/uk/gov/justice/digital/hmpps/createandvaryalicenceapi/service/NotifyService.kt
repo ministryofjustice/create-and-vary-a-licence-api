@@ -27,16 +27,18 @@ class NotifyService(
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
 ) {
-  fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String) {
+  fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
         "pduHeadName" to notifyRequest.name,
         "licenceFirstName" to firstName,
         "licenceLastName" to lastName,
         "approvalCasesLink" to selfLink.plus("/licence/vary-approve/list"),
+        "comName" to comName,
+        "crn" to crn,
       )
       sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
-      log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL for $licenceId $firstName $lastName")
+      log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL submitted by $comName for $licenceId $firstName $lastName with crn $crn")
     } else {
       log.error("Notification failed (variationSubmitted) - email address not present for the PDU head for licence ID: $licenceId")
     }
