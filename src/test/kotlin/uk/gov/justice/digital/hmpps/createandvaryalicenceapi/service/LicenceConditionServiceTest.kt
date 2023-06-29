@@ -87,82 +87,116 @@ class LicenceConditionServiceTest {
     )
   }
 
-  @Test
-  fun `update standard conditions for an individual licence`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    whenever(policyService.currentPolicy()).thenReturn(aPolicy)
+  @Nested
+  inner class `update standard conditions` {
+    @Test
+    fun `update standard conditions for an individual licence`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(policyService.currentPolicy()).thenReturn(aPolicy)
 
-    val APConditions = listOf(
-      StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-    )
-
-    val PSSConditions = listOf(
-      StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      StandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
-    )
-
-    service.updateStandardConditions(
-      1,
-      UpdateStandardConditionDataRequest(
-        standardLicenceConditions = APConditions,
-        standardPssConditions = PSSConditions,
-      ),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
-
-    assertThat(licenceCaptor.value.standardConditions).containsExactly(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        conditionType = "AP",
-        licence = aLicenceEntity,
-      ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        conditionType = "PSS",
-        licence = aLicenceEntity,
-      ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        conditionCode = "doNotBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        conditionType = "PSS",
-        licence = aLicenceEntity,
-      ),
-    )
-
-    assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
-    assertThat(auditCaptor.value.username).isEqualTo("smills")
-    assertThat(auditCaptor.value.summary)
-      .isEqualTo(
-        "Standard conditions updated to policy version ${aPolicy.version} for " +
-          "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+      val APConditions = listOf(
+        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       )
-    assertThat(auditCaptor.value.detail)
-      .isEqualTo(
-        "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
-          "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
+
+      val PSSConditions = listOf(
+        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+        StandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
       )
-    assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "changes")
-      .isEqualTo(
-        listOf(
-          "update",
-          "standard",
-          listOf(emptyMap<String, Any>()),
+
+      service.updateStandardConditions(
+        1,
+        UpdateStandardConditionDataRequest(
+          standardLicenceConditions = APConditions,
+          standardPssConditions = PSSConditions,
         ),
       )
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
+
+      assertThat(licenceCaptor.value.standardConditions).containsExactly(
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
+          conditionCode = "goodBehaviour",
+          conditionSequence = 1,
+          conditionText = "Be of good behaviour",
+          conditionType = "AP",
+          licence = aLicenceEntity,
+        ),
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
+          conditionCode = "goodBehaviour",
+          conditionSequence = 1,
+          conditionText = "Be of good behaviour",
+          conditionType = "PSS",
+          licence = aLicenceEntity,
+        ),
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
+          conditionCode = "doNotBreakLaw",
+          conditionSequence = 2,
+          conditionText = "Do not break any law",
+          conditionType = "PSS",
+          licence = aLicenceEntity,
+        ),
+      )
+
+      assertThat(auditCaptor.value.licenceId).isEqualTo(licenceCaptor.value.id)
+      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Standard conditions updated to policy version ${aPolicy.version} for " +
+            "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${licenceCaptor.value.id} type ${licenceCaptor.value.typeCode.name} " +
+            "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("typeOfChange", "condition", "changes")
+        .isEqualTo(
+          listOf(
+            "update",
+            "standard",
+            listOf(emptyMap<String, Any>()),
+          ),
+        )
+    }
+
+    @Test
+    fun `update standard conditions where staff name not found throws exception`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+      whenever(policyService.currentPolicy()).thenReturn(aPolicy)
+
+      val APConditions = listOf(
+        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+      )
+
+      val PSSConditions = listOf(
+        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+        StandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
+      )
+
+      val exception = assertThrows<RuntimeException> {
+        service.updateStandardConditions(
+          1,
+          UpdateStandardConditionDataRequest(
+            standardLicenceConditions = APConditions,
+            standardPssConditions = PSSConditions,
+          ),
+        )
+      }
+
+      assertThat(exception).isInstanceOf(RuntimeException::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+    }
   }
 
   @Test

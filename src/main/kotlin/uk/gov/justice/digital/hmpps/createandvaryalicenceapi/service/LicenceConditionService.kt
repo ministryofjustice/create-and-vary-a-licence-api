@@ -207,11 +207,15 @@ class LicenceConditionService(
       ?: throw RuntimeException("Staff with username $username not found")
     val submittedConditions =
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
+
     val existingConditions = licenceEntity.additionalConditions
+
     val newConditions = existingConditions.getAddedConditions(submittedConditions)
+
     val removedConditions = existingConditions.getRemovedConditions(submittedConditions, request)
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
+
     val updatedLicence = licenceEntity.copy(
       additionalConditions = (newConditions + updatedConditions),
       dateLastUpdated = LocalDateTime.now(),
