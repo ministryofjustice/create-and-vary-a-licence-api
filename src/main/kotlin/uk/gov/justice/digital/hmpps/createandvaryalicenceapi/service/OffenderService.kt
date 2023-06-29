@@ -109,28 +109,28 @@ OffenderService(
       LicenceStatus.VARIATION_SUBMITTED,
       LicenceStatus.VARIATION_APPROVED,
       LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE
+      LicenceStatus.ACTIVE,
     )
     val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, licenceStatuses)
     var offenderDetailsChanged = false
     val updatedLicences = existingLicences.map {
-      if(
+      if (
         it.forename !== request.forename ||
-          it.middleNames !== request.middleNames ||
-          it.surname !== request.surname ||
-          it.dateOfBirth !== request.dateOfBirth
-      ){
+        it.middleNames !== request.middleNames ||
+        it.surname !== request.surname ||
+        it.dateOfBirth !== request.dateOfBirth
+      ) {
         offenderDetailsChanged = true
       }
       it.copy(
         forename = request.forename,
         middleNames = request.middleNames,
         surname = request.surname,
-        dateOfBirth = request.dateOfBirth
+        dateOfBirth = request.dateOfBirth,
       )
     }
 
-    if(offenderDetailsChanged){
+    if (offenderDetailsChanged) {
       this.licenceRepository.saveAllAndFlush(updatedLicences)
       updatedLicences.map {
         auditEventRepository.saveAndFlush(
@@ -139,8 +139,8 @@ OffenderService(
             username = "SYSTEM",
             fullName = "SYSTEM",
             summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
-            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}"
-          )
+            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
+          ),
         )
       }
     }

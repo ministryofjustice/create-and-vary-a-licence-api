@@ -134,13 +134,13 @@ class OffenderController(private val offenderService: OffenderService, private v
         responseCode = "403",
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      )
-    ]
+      ),
+    ],
   )
   fun updateOffenderDetails(
     @PathVariable nomsId: String,
-    @RequestBody body: UpdateOffenderDetailsRequest
-  ){
+    @RequestBody body: UpdateOffenderDetailsRequest,
+  ) {
     this.offenderService.updateOffenderDetails(nomsId, body)
   }
 }

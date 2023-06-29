@@ -21,5 +21,5 @@ data class UpdateOffenderDetailsRequest(
   @Schema(description = "The offender's date of birth, from either prison or probation services", example = "12/12/2001")
   @NotNull
   @JsonFormat(pattern = "dd/MM/yyyy")
-  val dateOfBirth: LocalDate? = null
+  val dateOfBirth: LocalDate? = null,
 )

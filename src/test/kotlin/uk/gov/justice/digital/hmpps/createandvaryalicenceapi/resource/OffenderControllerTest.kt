@@ -99,12 +99,12 @@ class OffenderControllerTest {
   }
 
   @Test
-  fun `update offender details`(){
+  fun `update offender details`() {
     val body = UpdateOffenderDetailsRequest(
       forename = "Alex",
       middleNames = "Brian Cameron",
       surname = "David-Edgar",
-      dateOfBirth = LocalDate.parse("1970-01-01")
+      dateOfBirth = LocalDate.parse("1970-01-01"),
     )
 
     val request = put("/offender/nomisid/exampleNomisId/update-offender-details")
@@ -115,6 +115,5 @@ class OffenderControllerTest {
     mvc.perform(request).andExpect(status().isOk)
 
     verify(offenderService, times(1)).updateOffenderDetails("exampleNomisId", body)
-
   }
 }

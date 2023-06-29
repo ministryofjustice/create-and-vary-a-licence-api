@@ -152,8 +152,8 @@ class OffenderServiceTest {
     whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
         aLicenceEntity,
-        aLicenceEntity.copy(id = 2, statusCode = LicenceStatus.ACTIVE)
-      )
+        aLicenceEntity.copy(id = 2, statusCode = LicenceStatus.ACTIVE),
+      ),
     )
 
     val expectedUpdatedLicences = listOf(
@@ -161,7 +161,7 @@ class OffenderServiceTest {
         forename = "Peter",
         middleNames = "Robin",
         surname = "Smith",
-        dateOfBirth = LocalDate.parse("1970-02-01")
+        dateOfBirth = LocalDate.parse("1970-02-01"),
       ),
       aLicenceEntity.copy(
         id = 2,
@@ -169,24 +169,27 @@ class OffenderServiceTest {
         forename = "Peter",
         middleNames = "Robin",
         surname = "Smith",
-        dateOfBirth = LocalDate.parse("1970-02-01")
-      )
+        dateOfBirth = LocalDate.parse("1970-02-01"),
+      ),
     )
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
     service.updateOffenderDetails(aLicenceEntity.nomsId!!, newOffenderDetails)
 
-    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(aLicenceEntity.nomsId!!, listOf(
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.SUBMITTED,
-      LicenceStatus.APPROVED,
-      LicenceStatus.VARIATION_IN_PROGRESS,
-      LicenceStatus.VARIATION_SUBMITTED,
-      LicenceStatus.VARIATION_APPROVED,
-      LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE
-    ))
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(
+      aLicenceEntity.nomsId!!,
+      listOf(
+        LicenceStatus.IN_PROGRESS,
+        LicenceStatus.SUBMITTED,
+        LicenceStatus.APPROVED,
+        LicenceStatus.VARIATION_IN_PROGRESS,
+        LicenceStatus.VARIATION_SUBMITTED,
+        LicenceStatus.VARIATION_APPROVED,
+        LicenceStatus.VARIATION_REJECTED,
+        LicenceStatus.ACTIVE,
+      ),
+    )
 
     verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
@@ -196,7 +199,7 @@ class OffenderServiceTest {
         listOf(
           Tuple(1L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
           Tuple(2L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
-        )
+        ),
       )
   }
 
