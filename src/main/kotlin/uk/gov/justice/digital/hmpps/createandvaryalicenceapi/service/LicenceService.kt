@@ -374,7 +374,7 @@ class LicenceService(
           updatedLicence.forename!!,
           updatedLicence.surname!!,
           licenceEntity.crn!!,
-          licenceEntity.submittedBy?.username!!,
+          username!!,
         )
       }
     }
