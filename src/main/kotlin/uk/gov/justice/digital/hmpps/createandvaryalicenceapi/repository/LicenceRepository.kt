@@ -41,7 +41,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT l
         FROM Licence l 
-        WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE) 
+        WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE)
         AND l.statusCode IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED,

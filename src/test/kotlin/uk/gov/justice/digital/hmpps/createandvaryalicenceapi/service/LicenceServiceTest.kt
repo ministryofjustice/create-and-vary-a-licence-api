@@ -22,8 +22,6 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
@@ -77,7 +75,6 @@ class LicenceServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
-  private val licenceConditionService = mock<LicenceConditionService>()
 
   private val service = Mockito.spy(
     LicenceService(
@@ -92,7 +89,6 @@ class LicenceServiceTest {
       auditEventRepository,
       notifyService,
       omuService,
-      licenceConditionService,
     ),
   )
 
@@ -1186,98 +1182,6 @@ class LicenceServiceTest {
     )
   }
 
-  @Test
-  fun `remove AP condition for in PSS period licence`() {
-    whenever(licenceRepository.getAllVariedLicencesInPSSPeriod()).thenReturn(
-      listOf(
-        aLicenceEntity.copy(
-          licenceExpiryDate = LocalDate.now().minusDays(1),
-          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-          additionalConditions = listOf(
-            AdditionalCondition(
-              id = 1,
-              conditionVersion = "1.0",
-              conditionCode = "code",
-              conditionSequence = 5,
-              conditionCategory = "oldCategory",
-              conditionText = "oldText",
-              additionalConditionData = someAdditionalConditionData,
-              licence = aLicenceEntity,
-              conditionType = "AP",
-            ),
-            AdditionalCondition(
-              id = 3,
-              conditionVersion = "1.0",
-              conditionCode = "code3",
-              conditionSequence = 6,
-              conditionCategory = "pssCategory",
-              conditionText = "pssText",
-              additionalConditionData = someAdditionalConditionData,
-              licence = aLicenceEntity,
-              conditionType = "PSS",
-            ),
-          ),
-        ),
-      ),
-    )
-
-    service.removeAPConditions()
-
-    val licenceIdCaptor = ArgumentCaptor.forClass(Long::class.java)
-    val conditionIdCaptor = ArgumentCaptor.forClass(Long::class.java)
-
-    verify(licenceConditionService, times(1)).deleteAdditionalCondition(licenceIdCaptor.capture(), conditionIdCaptor.capture())
-
-    assertThat(licenceIdCaptor.value).isEqualTo(aLicenceEntity.id)
-    assertThat(conditionIdCaptor.value).isEqualTo(1)
-  }
-
-  @Test
-  fun `remove AP conditions for in PSS period licence`() {
-    whenever(licenceRepository.getAllVariedLicencesInPSSPeriod()).thenReturn(
-      listOf(
-        aLicenceEntity.copy(
-          licenceExpiryDate = LocalDate.now().minusDays(1),
-          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-          additionalConditions = listOf(
-            AdditionalCondition(
-              id = 1,
-              conditionVersion = "1.0",
-              conditionCode = "code",
-              conditionSequence = 5,
-              conditionCategory = "oldCategory",
-              conditionText = "oldText",
-              additionalConditionData = someAdditionalConditionData,
-              licence = aLicenceEntity,
-              conditionType = "AP",
-            ),
-            AdditionalCondition(
-              id = 3,
-              conditionVersion = "1.0",
-              conditionCode = "code3",
-              conditionSequence = 6,
-              conditionCategory = "pssCategory",
-              conditionText = "pssText",
-              additionalConditionData = someAdditionalConditionData,
-              licence = aLicenceEntity,
-              conditionType = "AP",
-            ),
-          ),
-        ),
-      ),
-    )
-
-    service.removeAPConditions()
-
-    val licenceIdCaptor = ArgumentCaptor.forClass(Long::class.java)
-    val conditionIdCaptor = ArgumentCaptor.forClass(Long::class.java)
-
-    verify(licenceConditionService, times(2)).deleteAdditionalCondition(licenceIdCaptor.capture(), conditionIdCaptor.capture())
-
-    assertThat(licenceIdCaptor.value).isEqualTo(aLicenceEntity.id)
-    assertThat(conditionIdCaptor.value).isEqualTo(3)
-  }
-
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
     val someStandardConditions = listOf(
@@ -1419,15 +1323,6 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-    )
-
-    val someAdditionalConditionData = listOf(
-      AdditionalConditionData(
-        id = 1,
-        dataField = "dataField",
-        dataValue = "dataValue",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
-      ),
     )
   }
 }

@@ -255,6 +255,26 @@ class LicenceConditionService(
     }
   }
 
+  @Transactional
+  fun deleteAdditionalConditions(licenceId: Long, conditionIds: List<Long>) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    // return all conditions except condition with submitted conditionIds
+    val revisedConditions = licenceEntity.additionalConditions.filter{ conditionIds.indexOf(it.id) == -1 }
+
+    val updatedLicence = licenceEntity.copy(
+      additionalConditions = revisedConditions,
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = username,
+    )
+
+    licenceRepository.saveAndFlush(updatedLicence)
+  }
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
