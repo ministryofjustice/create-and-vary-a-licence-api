@@ -32,7 +32,7 @@ values (
     3,
     'AP',
     '1.0',
-    'ACTIVE',
+    'VARIATION_IN_PROGRESS',
     'A1234AA',
     'BOOKNO',
     12345,
@@ -59,7 +59,7 @@ values (
     1
  );
 
--- Create the exclusion zone additional condition
+-- Create the AP and PSS additional condition
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 3, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
 
