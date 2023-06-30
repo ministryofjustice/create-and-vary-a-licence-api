@@ -272,6 +272,47 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-versioned-licence-id-1.sql",
+  )
+  fun `Approve a new version of a licence`() {
+    webTestClient.put()
+      .uri("/licence/id/2/status")
+      .bodyValue(aStatusUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val licenceV1 = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceV1?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
+
+    val licenceV2 = webTestClient.get()
+      .uri("/licence/id/2")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceV2?.statusCode).isEqualTo(LicenceStatus.APPROVED)
+    assertThat(licenceV2?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
+    assertThat(licenceV2?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Update the address where the initial appointment will take place`() {
