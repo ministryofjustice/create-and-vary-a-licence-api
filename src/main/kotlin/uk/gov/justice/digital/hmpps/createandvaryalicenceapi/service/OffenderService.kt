@@ -116,7 +116,7 @@ OffenderService(
     val licencesToChange = existingLicences.filter {
       it.isOffenderDetailUpdated(request)
     }
-    if(licencesToChange.isNotEmpty()){
+    if (licencesToChange.isNotEmpty()) {
       val updatedLicences = licencesToChange.map {
         it.copy(
           forename = request.forename,
@@ -143,9 +143,9 @@ OffenderService(
   private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean {
     return (
       this.forename !== request.forename ||
-      this.middleNames !== request.middleNames ||
-      this.surname !== request.surname ||
-      this.dateOfBirth !== request.dateOfBirth
-    )
+        this.middleNames !== request.middleNames ||
+        this.surname !== request.surname ||
+        this.dateOfBirth !== request.dateOfBirth
+      )
   }
 }

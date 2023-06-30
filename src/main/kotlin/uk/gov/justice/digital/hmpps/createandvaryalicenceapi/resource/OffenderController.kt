@@ -140,7 +140,8 @@ class OffenderController(private val offenderService: OffenderService, private v
   )
   fun updateOffenderDetails(
     @PathVariable nomsId: String,
-    @Valid @RequestBody body: UpdateOffenderDetailsRequest,
+    @Valid @RequestBody
+    body: UpdateOffenderDetailsRequest,
   ) {
     this.offenderService.updateOffenderDetails(nomsId, body)
   }
