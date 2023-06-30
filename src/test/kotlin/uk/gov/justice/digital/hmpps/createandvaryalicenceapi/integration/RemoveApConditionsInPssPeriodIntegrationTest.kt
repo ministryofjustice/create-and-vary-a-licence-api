@@ -50,5 +50,35 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
 
     // additionalPssCondition first record id should be equal to 2
     assertThat(additionalPssConditions?.first()?.id).isEqualTo(2)
+
+    val result1 = webTestClient.get()
+      .uri("/licence/id/4")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result1?.additionalLicenceConditions).isEmpty()
+    assertThat(result1?.additionalPssConditions?.size).isEqualTo(1)
+    assertThat(result1?.additionalPssConditions?.first()?.id).isEqualTo(7)
+
+    val result2 = webTestClient.get()
+      .uri("/licence/id/5")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result2?.additionalLicenceConditions).isNotEmpty()
+    assertThat(result2?.additionalLicenceConditions?.size).isEqualTo(1)
+    assertThat(result2?.additionalLicenceConditions?.first()?.id).isEqualTo(8)
+    assertThat(result2?.additionalPssConditions?.size).isEqualTo(1)
+    assertThat(result2?.additionalPssConditions?.first()?.id).isEqualTo(9)
   }
 }

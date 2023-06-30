@@ -57,7 +57,95 @@ values (
     'TEAM1',
     1,
     1
- );
+ ),
+   (
+       4,
+       'AP',
+       '1.0',
+       'VARIATION_IN_PROGRESS',
+       'A1234AA',
+       'BOOKNO',
+       12345,
+       'CRN1',
+       '2015/1234',
+       'CRO1',
+       'MDI',
+       'Moorland (HMP)',
+       'Bob',
+       'Mortimer',
+       '2020-10-25',
+       '2022-02-12',
+       '2022-02-25',
+       '2020-10-11',
+       '2022-02-25',
+       '2022-02-25',
+       CURRENT_DATE - 1,
+       CURRENT_DATE + 1,
+       'N01',
+       'PDU1',
+       'LAU1',
+       'TEAM1',
+       1,
+       1
+   ), (
+       5,
+       'AP',
+       '1.0',
+       'VARIATION_IN_PROGRESS',
+       'A1234AA',
+       'BOOKNO',
+       12345,
+       'CRN1',
+       '2015/1234',
+       'CRO1',
+       'MDI',
+       'Moorland (HMP)',
+       'Bob',
+       'Mortimer',
+       '2020-10-25',
+       '2022-02-12',
+       '2022-02-25',
+       '2020-10-11',
+       '2022-02-25',
+       '2022-02-25',
+       CURRENT_DATE + 1,
+       CURRENT_DATE + 1,
+       'N01',
+       'PDU1',
+       'LAU1',
+       'TEAM1',
+       1,
+       1
+   ), (
+       6,
+       'AP',
+       '1.0',
+       'ACTIVE',
+       'A1234AA',
+       'BOOKNO',
+       12345,
+       'CRN1',
+       '2015/1234',
+       'CRO1',
+       'MDI',
+       'Moorland (HMP)',
+       'Bob',
+       'Mortimer',
+       '2020-10-25',
+       '2022-02-12',
+       '2022-02-25',
+       '2020-10-11',
+       '2022-02-25',
+       '2022-02-25',
+       CURRENT_DATE - 1,
+       CURRENT_DATE + 1,
+       'N01',
+       'PDU1',
+       'LAU1',
+       'TEAM1',
+       1,
+       1
+   );
 
 -- Create the AP and PSS additional condition
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
@@ -74,6 +162,18 @@ values (4, 3, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
 values (5, 3, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
+values (6, 4, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
+values (7, 4, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'PSS');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
+values (8, 5, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
+values (9, 5, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'PSS');
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
@@ -105,3 +205,15 @@ values (9, 5, 1, 'outOfBoundArea', 'Plymouth town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (10, 5, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (11, 6, 1, 'outOfBoundArea', 'Plymouth town centre');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (12, 7, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (13, 8, 1, 'outOfBoundArea', 'Plymouth town centre');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (14, 9, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
