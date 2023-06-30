@@ -5,7 +5,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
-import org.mockito.kotlin.*
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
@@ -28,7 +33,7 @@ class RemoveApConditionsInPssPeriodServiceTest {
   private val service = Mockito.spy(
     RemoveApConditionsInPssPeriodService(
       licenceRepository,
-      licenceConditionService
+      licenceConditionService,
     ),
   )
 
@@ -87,8 +92,9 @@ class RemoveApConditionsInPssPeriodServiceTest {
     val licenceIdCaptor = ArgumentCaptor.forClass(Long::class.java)
     val conditionIdCaptor = argumentCaptor<List<Long>>()
 
-    verify(licenceConditionService, times(1)).deleteAdditionalConditions(licenceIdCaptor.capture(),
-      conditionIdCaptor.capture()
+    verify(licenceConditionService, times(1)).deleteAdditionalConditions(
+      licenceIdCaptor.capture(),
+      conditionIdCaptor.capture(),
     )
 
     assertThat(licenceIdCaptor.value).isEqualTo(aLicenceEntity.id)
@@ -135,14 +141,14 @@ class RemoveApConditionsInPssPeriodServiceTest {
     val licenceIdCaptor = ArgumentCaptor.forClass(Long::class.java)
     val conditionIdCaptor = argumentCaptor<List<Long>>()
 
-    verify(licenceConditionService, times(1)).deleteAdditionalConditions(licenceIdCaptor.capture(),
-      conditionIdCaptor.capture()
+    verify(licenceConditionService, times(1)).deleteAdditionalConditions(
+      licenceIdCaptor.capture(),
+      conditionIdCaptor.capture(),
     )
 
     assertThat(licenceIdCaptor.value).isEqualTo(aLicenceEntity.id)
-    assertThat(conditionIdCaptor.allValues[0]).isEqualTo(listOf(1L,3L))
+    assertThat(conditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 3L))
   }
-
 
   private companion object {
     val someEntityStandardConditions = listOf(

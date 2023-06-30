@@ -18,7 +18,6 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-4.sql",
   )
   fun `Update sentence dates`() {
-
     webTestClient.post()
       .uri("/run-remove-ap-conditions-job")
       .accept(MediaType.APPLICATION_JSON)
@@ -53,4 +52,3 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     assertThat(additionalPssConditions?.first()?.id).isEqualTo(2)
   }
 }
-

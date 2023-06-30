@@ -264,7 +264,7 @@ class LicenceConditionService(
     val username = SecurityContextHolder.getContext().authentication.name
 
     // return all conditions except condition with submitted conditionIds
-    val revisedConditions = licenceEntity.additionalConditions.filter{ conditionIds.indexOf(it.id) == -1 }
+    val revisedConditions = licenceEntity.additionalConditions.filter { conditionIds.indexOf(it.id) == -1 }
 
     val updatedLicence = licenceEntity.copy(
       additionalConditions = revisedConditions,

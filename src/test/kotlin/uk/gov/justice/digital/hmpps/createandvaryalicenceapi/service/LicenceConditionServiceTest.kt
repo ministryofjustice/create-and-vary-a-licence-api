@@ -760,7 +760,6 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
     }
-
   }
 
   private companion object {
