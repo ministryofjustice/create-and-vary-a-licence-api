@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -101,7 +102,7 @@ OffenderService(
 
   @Transactional
   fun updateOffenderDetails(nomsId: String, request: UpdateOffenderDetailsRequest) {
-    val licenceStatuses = listOf(
+    val inFlightLicenceStatuses = listOf(
       LicenceStatus.IN_PROGRESS,
       LicenceStatus.SUBMITTED,
       LicenceStatus.APPROVED,
@@ -111,26 +112,19 @@ OffenderService(
       LicenceStatus.VARIATION_REJECTED,
       LicenceStatus.ACTIVE,
     )
-    val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, licenceStatuses)
-    var offenderDetailsChanged = false
-    val updatedLicences = existingLicences.map {
-      if (
-        it.forename !== request.forename ||
-        it.middleNames !== request.middleNames ||
-        it.surname !== request.surname ||
-        it.dateOfBirth !== request.dateOfBirth
-      ) {
-        offenderDetailsChanged = true
-      }
-      it.copy(
-        forename = request.forename,
-        middleNames = request.middleNames,
-        surname = request.surname,
-        dateOfBirth = request.dateOfBirth,
-      )
+    val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, inFlightLicenceStatuses)
+    val licencesToChange = existingLicences.filter {
+      it.isOffenderDetailUpdated(request)
     }
-
-    if (offenderDetailsChanged) {
+    if(licencesToChange.isNotEmpty()){
+      val updatedLicences = licencesToChange.map {
+        it.copy(
+          forename = request.forename,
+          middleNames = request.middleNames,
+          surname = request.surname,
+          dateOfBirth = request.dateOfBirth,
+        )
+      }
       this.licenceRepository.saveAllAndFlush(updatedLicences)
       updatedLicences.map {
         auditEventRepository.saveAndFlush(
@@ -144,5 +138,14 @@ OffenderService(
         )
       }
     }
+  }
+
+  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean {
+    return (
+      this.forename !== request.forename ||
+      this.middleNames !== request.middleNames ||
+      this.surname !== request.surname ||
+      this.dateOfBirth !== request.dateOfBirth
+    )
   }
 }
