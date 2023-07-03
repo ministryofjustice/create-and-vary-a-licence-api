@@ -66,7 +66,7 @@ To generate/re-generate the baseline:
 
 To run Detekt:
 
-`$ ./gradlew detekt`
+`$ ./gradlew detekt -P runDetekt`
 
 Detekt provides some helpful reports in HTML as well which can be opened in any
 browser. These are available at `build/reports/detekt`.
