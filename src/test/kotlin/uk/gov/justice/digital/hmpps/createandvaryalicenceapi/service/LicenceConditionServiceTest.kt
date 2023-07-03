@@ -470,6 +470,8 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
+
+      verifyNoInteractions(conditionFormatter)
     }
   }
 
