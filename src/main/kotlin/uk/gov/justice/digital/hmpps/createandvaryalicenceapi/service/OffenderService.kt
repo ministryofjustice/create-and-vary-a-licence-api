@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -96,5 +98,54 @@ OffenderService(
         )
       }
     }
+  }
+
+  @Transactional
+  fun updateOffenderDetails(nomsId: String, request: UpdateOffenderDetailsRequest) {
+    val inFlightLicenceStatuses = listOf(
+      LicenceStatus.IN_PROGRESS,
+      LicenceStatus.SUBMITTED,
+      LicenceStatus.APPROVED,
+      LicenceStatus.VARIATION_IN_PROGRESS,
+      LicenceStatus.VARIATION_SUBMITTED,
+      LicenceStatus.VARIATION_APPROVED,
+      LicenceStatus.VARIATION_REJECTED,
+      LicenceStatus.ACTIVE,
+    )
+    val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, inFlightLicenceStatuses)
+    val licencesToChange = existingLicences.filter {
+      it.isOffenderDetailUpdated(request)
+    }
+    if (licencesToChange.isNotEmpty()) {
+      val updatedLicences = licencesToChange.map {
+        it.copy(
+          forename = request.forename,
+          middleNames = request.middleNames,
+          surname = request.surname,
+          dateOfBirth = request.dateOfBirth,
+        )
+      }
+      this.licenceRepository.saveAllAndFlush(updatedLicences)
+      updatedLicences.map {
+        auditEventRepository.saveAndFlush(
+          AuditEvent(
+            licenceId = it.id,
+            username = "SYSTEM",
+            fullName = "SYSTEM",
+            summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
+            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
+          ),
+        )
+      }
+    }
+  }
+
+  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean {
+    return (
+      this.forename !== request.forename ||
+        this.middleNames !== request.middleNames ||
+        this.surname !== request.surname ||
+        this.dateOfBirth !== request.dateOfBirth
+      )
   }
 }
