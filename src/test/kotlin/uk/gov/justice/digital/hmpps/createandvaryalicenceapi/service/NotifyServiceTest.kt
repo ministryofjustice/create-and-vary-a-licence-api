@@ -225,7 +225,7 @@ class NotifyServiceTest {
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
-    ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
+    ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)
   }
@@ -234,14 +234,14 @@ class NotifyServiceTest {
   fun `Notify service catches and swallows exceptions`() {
     whenever(notificationClient.sendEmail(any(), any(), any(), any())).thenThrow(NotificationClientException("error"))
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last")
+      notifyService.sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
     }
   }
 
   @Test
   fun `swallows the error and does not send email when contact info is null`() {
     assertDoesNotThrow {
-      notifyService.sendVariationForApprovalEmail(NotifyRequest(null, null), "1", "First", "Last")
+      notifyService.sendVariationForApprovalEmail(NotifyRequest(null, null), "1", "First", "Last", "crn", "ComName")
     }
     verifyNoInteractions(notificationClient)
   }
