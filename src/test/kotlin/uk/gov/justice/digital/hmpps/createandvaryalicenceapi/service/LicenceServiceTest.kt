@@ -782,7 +782,16 @@ class LicenceServiceTest {
       firstName = "X",
       lastName = "Y",
     )
-    val licence = aLicenceEntity.copy(variationOfId = 1)
+    val licence = aLicenceEntity.copy(
+      variationOfId = 1,
+      submittedBy = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      ),
+    )
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
@@ -802,6 +811,8 @@ class LicenceServiceTest {
         eq(licence.id.toString()),
         eq(aLicenceEntity.forename!!),
         eq(aLicenceEntity.surname!!),
+        eq(aLicenceEntity.crn!!),
+        eq(licence.submittedBy?.username!!),
       )
 
     assertThat(licenceCaptor.value)
