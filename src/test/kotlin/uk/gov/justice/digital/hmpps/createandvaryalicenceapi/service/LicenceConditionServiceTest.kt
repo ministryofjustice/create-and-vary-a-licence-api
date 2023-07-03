@@ -148,7 +148,7 @@ class LicenceConditionServiceTest {
       assertThat(auditCaptor.value.username).isEqualTo("smills")
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
-          "Standard conditions updated to policy version ${aPolicy.version} for " +
+          "Updated standard conditions to policy version ${aPolicy.version} for " +
             "${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
         )
       assertThat(auditCaptor.value.detail)
@@ -157,12 +157,11 @@ class LicenceConditionServiceTest {
             "status ${licenceCaptor.value.statusCode.name} version ${licenceCaptor.value.version}",
         )
       assertThat(auditCaptor.value.changes)
-        .extracting("typeOfChange", "condition", "changes")
+        .extracting("type", "changes")
         .isEqualTo(
           listOf(
-            "update",
-            "standard",
-            listOf(emptyMap<String, Any>()),
+            "Update standard conditions",
+            emptyMap<String, Any>(),
           ),
         )
     }
@@ -291,7 +290,7 @@ class LicenceConditionServiceTest {
     assertThat(auditCaptor.value.username).isEqualTo("smills")
     assertThat(auditCaptor.value.summary)
       .isEqualTo(
-        "Removed condition for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+        "Updated additional conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
       )
     assertThat(auditCaptor.value.detail)
       .isEqualTo(
@@ -300,13 +299,13 @@ class LicenceConditionServiceTest {
       )
 
     assertThat(auditCaptor.value.changes)
-      .extracting("typeOfChange", "condition", "changes")
+      .extracting("type", "changes")
       .isEqualTo(
         listOf(
-          "delete",
-          "additional",
+          "Update additional conditions",
           listOf(
             mapOf(
+              "type" to "REMOVED",
               "conditionCode" to "code2",
               "conditionType" to "AP",
               "conditionText" to "removedText",
@@ -448,7 +447,7 @@ class LicenceConditionServiceTest {
       assertThat(auditCaptor.value.username).isEqualTo("smills")
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
-          "Removed additional conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+          "Updated additional conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
         )
       assertThat(auditCaptor.value.detail)
         .isEqualTo(
@@ -457,13 +456,13 @@ class LicenceConditionServiceTest {
         )
 
       assertThat(auditCaptor.value.changes)
-        .extracting("typeOfChange", "condition", "changes")
+        .extracting("type", "changes")
         .isEqualTo(
           listOf(
-            "delete",
-            "additional",
+            "Update additional conditions",
             listOf(
               mapOf(
+                "type" to "REMOVED",
                 "conditionCode" to "code2",
                 "conditionType" to "AP",
                 "conditionText" to "removedText",
@@ -471,8 +470,6 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-
-      verifyNoInteractions(conditionFormatter)
     }
   }
 
@@ -544,7 +541,7 @@ class LicenceConditionServiceTest {
       assertThat(auditCaptor.value.username).isEqualTo("smills")
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
-          "Added condition of the same type for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+          "Updated additional conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
         )
       assertThat(auditCaptor.value.detail)
         .isEqualTo(
@@ -553,13 +550,13 @@ class LicenceConditionServiceTest {
         )
 
       assertThat(auditCaptor.value.changes)
-        .extracting("typeOfChange", "condition", "changes")
+        .extracting("type", "changes")
         .isEqualTo(
           listOf(
-            "add",
-            "additional",
+            "Update additional conditions",
             listOf(
               mapOf(
+                "type" to "ADDED",
                 "conditionCode" to "code",
                 "conditionType" to "AP",
                 "conditionText" to "oldText",
@@ -607,7 +604,7 @@ class LicenceConditionServiceTest {
       assertThat(auditCaptor.value.username).isEqualTo("smills")
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
-          "Add bespoke conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+          "Updated bespoke conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
         )
       assertThat(auditCaptor.value.detail)
         .isEqualTo(
@@ -616,25 +613,21 @@ class LicenceConditionServiceTest {
         )
 
       assertThat(auditCaptor.value.changes)
-        .extracting("typeOfChange", "condition", "changes")
+        .extracting("type", "changes")
         .isEqualTo(
           listOf(
-            "add",
-            "bespoke",
+            "Update bespoke conditions",
             listOf(
               mapOf(
-                "conditionCode" to "",
-                "conditionType" to "",
+                "type" to "ADDED",
                 "conditionText" to "Condition 1",
               ),
               mapOf(
-                "conditionCode" to "",
-                "conditionType" to "",
+                "type" to "ADDED",
                 "conditionText" to "Condition 2",
               ),
               mapOf(
-                "conditionCode" to "",
-                "conditionType" to "",
+                "type" to "ADDED",
                 "conditionText" to "Condition 3",
               ),
             ),
@@ -649,13 +642,51 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `update bespoke conditions with an empty list - removes previously persisted entities`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      val bespokeEntities = listOf(
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
+      )
+
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            bespokeConditions = bespokeEntities,
+          ),
+        ),
+      )
+
       whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.updateBespokeConditions(1L, BespokeConditionRequest())
 
+      val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
       verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
       verify(licenceRepository, times(1)).saveAndFlush(any())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Update bespoke conditions",
+            listOf(
+              mapOf(
+                "type" to "REMOVED",
+                "conditionText" to "Condition 2",
+              ),
+              mapOf(
+                "type" to "REMOVED",
+                "conditionText" to "Condition 3",
+              ),
+              mapOf(
+                "type" to "REMOVED",
+                "conditionText" to "Condition 1",
+              ),
+            ),
+          ),
+        )
     }
 
     @Test
@@ -829,13 +860,13 @@ class LicenceConditionServiceTest {
         )
 
       assertThat(auditCaptor.value.changes)
-        .extracting("typeOfChange", "condition", "changes")
+        .extracting("type", "changes")
         .isEqualTo(
           listOf(
-            "update",
-            "additional data",
+            "Update additional condition data",
             listOf(
               mapOf(
+                "type" to "ADDED",
                 "conditionCode" to "code1",
                 "conditionType" to "AP",
                 "conditionText" to "expanded text",

@@ -46,7 +46,7 @@ class LicenceConditionService(
     val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
     val updatedLicence = licenceEntity.copy(
@@ -58,11 +58,8 @@ class LicenceConditionService(
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
 
     val changes = mapOf(
-      "typeOfChange" to "update",
-      "condition" to "standard",
-      "changes" to listOf(
-        emptyMap<String, Any>(),
-      ),
+      "type" to "Update standard conditions",
+      "changes" to emptyMap<String, Any>(),
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -70,9 +67,9 @@ class LicenceConditionService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Standard conditions updated to policy version $currentPolicyVersion for ${licenceEntity.forename} ${licenceEntity.surname}",
+        username = currentUser.username,
+        fullName = "${currentUser.firstName} ${currentUser.lastName}",
+        summary = "Updated standard conditions to policy version $currentPolicyVersion for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
         changes = changes,
       ),
@@ -92,7 +89,7 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
     val newConditions = licenceEntity.additionalConditions.toMutableList()
@@ -123,10 +120,10 @@ class LicenceConditionService(
       licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
 
     val changes = mapOf(
-      "typeOfChange" to "add",
-      "condition" to "additional",
+      "type" to "Update additional conditions",
       "changes" to listOf(
         mapOf(
+          "type" to "ADDED",
           "conditionCode" to newCondition.conditionCode,
           "conditionType" to newCondition.conditionType,
           "conditionText" to newCondition.conditionText,
@@ -137,14 +134,13 @@ class LicenceConditionService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Added condition of the same type for ${licenceEntity.forename} ${licenceEntity.surname}",
+        username = currentUser.username,
+        fullName = "${currentUser.firstName} ${currentUser.lastName}",
+        summary = "Updated additional condition of the same type for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
         changes = changes,
       ),
     )
-
     return transform(newCondition)
   }
 
@@ -155,7 +151,7 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
     // return all conditions except condition with submitted conditionId
@@ -171,10 +167,10 @@ class LicenceConditionService(
     )
 
     val changes = mapOf(
-      "typeOfChange" to "delete",
-      "condition" to "additional",
+      "type" to "Update additional conditions",
       "changes" to listOf(
         mapOf(
+          "type" to "REMOVED",
           "conditionCode" to removedCondition.conditionCode,
           "conditionType" to removedCondition.conditionType,
           "conditionText" to removedCondition.expandedConditionText,
@@ -187,9 +183,9 @@ class LicenceConditionService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Removed condition for ${licenceEntity.forename} ${licenceEntity.surname}",
+        username = currentUser.username,
+        fullName = "${currentUser.firstName} ${currentUser.lastName}",
+        summary = "Updated additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
         changes = changes,
       ),
@@ -203,8 +199,9 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
+
     val submittedConditions =
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
@@ -217,7 +214,7 @@ class LicenceConditionService(
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = (newConditions + updatedConditions),
+      additionalConditions = (newConditions + updatedConditions).onEach { checkFormattedText(it) },
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
@@ -233,55 +230,36 @@ class LicenceConditionService(
       }
     }
 
-    if (newConditions.isNotEmpty()) {
-      val changes = mapOf(
-        "typeOfChange" to "add",
-        "condition" to "additional",
-        "changes" to
-          newConditions.map {
-            mapOf(
-              "conditionCode" to it.conditionCode,
-              "conditionType" to it.conditionType,
-              "conditionText" to it.conditionText,
-            )
-          },
-      )
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${createdBy.firstName} ${createdBy.lastName}",
-          summary = "Added additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-          changes = changes,
-        ),
-      )
-    }
+    val changes = mapOf(
+      "type" to "Update additional conditions",
+      "changes" to newConditions.map {
+        mapOf(
+          "type" to "ADDED",
+          "conditionCode" to it.conditionCode,
+          "conditionType" to it.conditionType,
+          "conditionText" to it.conditionText,
+        )
+      } +
+        removedConditions.map {
+          mapOf(
+            "type" to "REMOVED",
+            "conditionCode" to it.conditionCode,
+            "conditionType" to it.conditionType,
+            "conditionText" to it.conditionText,
+          )
+        },
+    )
 
-    if (removedConditions.isNotEmpty()) {
-      val changes = mapOf(
-        "typeOfChange" to "delete",
-        "condition" to "additional",
-        "changes" to
-          removedConditions.map {
-            mapOf(
-              "conditionCode" to it.conditionCode,
-              "conditionType" to it.conditionType,
-              "conditionText" to it.conditionText,
-            )
-          },
-      )
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${createdBy.firstName} ${createdBy.lastName}",
-          summary = "Removed additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-          changes = changes,
-        ),
-      )
-    }
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licenceId,
+        username = currentUser.username,
+        fullName = "${currentUser.firstName} ${currentUser.lastName}",
+        summary = "Updated additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+        changes = changes,
+      ),
+    )
   }
 
   private fun List<EntityAdditionalCondition>.getUpdatedConditions(
@@ -329,7 +307,7 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
     val submittedConditions = request.conditions
@@ -339,6 +317,11 @@ class LicenceConditionService(
     val newConditions = existingConditions.getAddedBespokeConditions(submittedConditions)
 
     val removedConditions = existingConditions.getRemovedBespokeConditions(submittedConditions)
+
+    // if the same bespoke conditions are submitted, return early
+    if (newConditions.isEmpty() && removedConditions.isEmpty()) {
+      return
+    }
 
     val updatedLicence = licenceEntity.copy(
       bespokeConditions = emptyList(),
@@ -354,55 +337,32 @@ class LicenceConditionService(
       )
     }
 
-    if (newConditions.isNotEmpty()) {
-      val changes = mapOf(
-        "typeOfChange" to "add",
-        "condition" to "bespoke",
-        "changes" to
-          newConditions.map {
-            mapOf(
-              "conditionCode" to "",
-              "conditionType" to "",
-              "conditionText" to it,
-            )
-          },
-      )
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${createdBy.firstName} ${createdBy.lastName}",
-          summary = "Add bespoke conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-          changes = changes,
-        ),
-      )
-    }
+    val changes = mapOf(
+      "type" to "Update bespoke conditions",
+      "changes" to newConditions.map {
+        mapOf(
+          "type" to "ADDED",
+          "conditionText" to it,
+        )
+      } +
+        removedConditions.map {
+          mapOf(
+            "type" to "REMOVED",
+            "conditionText" to it,
+          )
+        },
+    )
 
-    if (removedConditions.isNotEmpty()) {
-      val changes = mapOf(
-        "typeOfChange" to "delete",
-        "condition" to "bespoke",
-        "changes" to
-          removedConditions.map {
-            mapOf(
-              "conditionCode" to "",
-              "conditionType" to "",
-              "conditionText" to it,
-            )
-          },
-      )
-      auditEventRepository.saveAndFlush(
-        AuditEvent(
-          licenceId = licenceId,
-          username = username,
-          fullName = "${createdBy.firstName} ${createdBy.lastName}",
-          summary = "Removed bespoke conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-          detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-          changes = changes,
-        ),
-      )
-    }
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licenceId,
+        username = currentUser.username,
+        fullName = "${currentUser.firstName} ${currentUser.lastName}",
+        summary = "Updated bespoke conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+        changes = changes,
+      ),
+    )
   }
 
   private fun List<BespokeCondition>.getAddedBespokeConditions(
@@ -442,27 +402,29 @@ class LicenceConditionService(
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
+
     val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicence)
 
     val changes = mapOf(
-      "typeOfChange" to "update",
-      "condition" to "additional data",
+      "type" to "Update additional condition data",
       "changes" to listOf(
         mapOf(
+          "type" to "ADDED",
           "conditionCode" to updatedAdditionalCondition.conditionCode,
           "conditionType" to updatedAdditionalCondition.conditionType,
           "conditionText" to updatedAdditionalCondition.expandedConditionText,
         ),
       ),
     )
+
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
+        username = currentUser.username,
+        fullName = "${currentUser.firstName} ${currentUser.lastName}",
         summary = "Updated additional condition data for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
         changes = changes,
