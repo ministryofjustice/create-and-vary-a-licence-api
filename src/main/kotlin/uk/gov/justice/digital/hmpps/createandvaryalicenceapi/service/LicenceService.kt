@@ -205,20 +205,24 @@ class LicenceService(
 
     when (request.status) {
       APPROVED -> {
+        deactivatePreviousLicenceVersion(licenceEntity, request.username, request.fullName)
         approvedByUser = request.username
         approvedByName = request.fullName
         approvedDate = LocalDateTime.now()
         supersededDate = null
       }
+
       IN_PROGRESS -> {
         approvedByUser = null
         approvedByName = null
         approvedDate = null
         supersededDate = null
       }
+
       INACTIVE -> {
         supersededDate = LocalDateTime.now()
       }
+
       else -> {
         supersededDate = null
       }
@@ -243,40 +247,40 @@ class LicenceService(
     }
 
     recordLicenceEventForStatus(licenceId, updatedLicence, request)
-    auditStatusChange(licenceId, updatedLicence, request)
+    auditStatusChange(updatedLicence, request.username, request.fullName)
   }
 
-  private fun auditStatusChange(licenceId: Long, licenceEntity: EntityLicence, request: StatusUpdateRequest) {
-    val fullName = "${licenceEntity.forename} ${licenceEntity.surname}"
+  private fun auditStatusChange(licenceEntity: EntityLicence, username: String, fullName: String?) {
+    val licenceFullName = "${licenceEntity.forename} ${licenceEntity.surname}"
     val detailText =
-      "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}"
+      "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}"
 
     val summaryText = when (licenceEntity.statusCode) {
-      APPROVED -> "Licence approved for $fullName"
-      REJECTED -> "Licence rejected for $fullName"
-      IN_PROGRESS -> "Licence edited for $fullName"
-      ACTIVE -> "Licence set to ACTIVE for $fullName"
-      INACTIVE -> "Licence set to INACTIVE for $fullName"
-      VARIATION_IN_PROGRESS -> "Licence variation changed to in progress for $fullName"
-      VARIATION_APPROVED -> "Licence variation approved for $fullName"
-      VARIATION_REJECTED -> "Licence variation referred for $fullName"
+      APPROVED -> "Licence approved for $licenceFullName"
+      REJECTED -> "Licence rejected for $licenceFullName"
+      IN_PROGRESS -> "Licence edited for $licenceFullName"
+      ACTIVE -> "Licence set to ACTIVE for $licenceFullName"
+      INACTIVE -> "Licence set to INACTIVE for $licenceFullName"
+      VARIATION_IN_PROGRESS -> "Licence variation changed to in progress for $licenceFullName"
+      VARIATION_APPROVED -> "Licence variation approved for $licenceFullName"
+      VARIATION_REJECTED -> "Licence variation referred for $licenceFullName"
       else -> "Check - licence status not accounted for in auditing"
     }
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = licenceId,
-        username = request.username,
-        fullName = request.fullName,
-        eventType = getAuditEventType(request),
+        licenceId = licenceEntity.id,
+        username = username,
+        fullName = fullName,
+        eventType = getAuditEventType(username),
         summary = summaryText,
         detail = detailText,
       ),
     )
   }
 
-  private fun getAuditEventType(request: StatusUpdateRequest): AuditEventType {
-    return if (request.username == "SYSTEM") {
+  private fun getAuditEventType(username: String): AuditEventType {
+    return if (username == "SYSTEM") {
       AuditEventType.SYSTEM_EVENT
     } else {
       AuditEventType.USER_EVENT
@@ -292,12 +296,7 @@ class LicenceService(
       else -> return
     }
 
-    // Break the full name up into first and last parts
-    val names = request.fullName?.split(" ")?.toMutableList()
-    val firstName = names?.firstOrNull()
-    names?.removeAt(0)
-    val lastName = names?.joinToString(" ").orEmpty()
-
+    val (firstName, lastName) = splitName(request.fullName)
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
@@ -319,6 +318,35 @@ class LicenceService(
       licenceEntity.nomsId,
       licenceEntity.conditionalReleaseDate,
     )
+  }
+
+  private fun deactivatePreviousLicenceVersion(licence: EntityLicence, username: String, fullName: String?) {
+    val previousVersionId = licence.versionOfId
+
+    if (previousVersionId != null) {
+      val previousLicenceVersion =
+        licenceRepository.findById(previousVersionId).orElseThrow { EntityNotFoundException("$previousVersionId") }
+      val updatedLicence = previousLicenceVersion.copy(
+        dateLastUpdated = LocalDateTime.now(),
+        updatedByUsername = username,
+        statusCode = INACTIVE,
+      )
+      licenceRepository.saveAndFlush(updatedLicence)
+
+      val (firstName, lastName) = splitName(fullName)
+      licenceEventRepository.saveAndFlush(
+        EntityLicenceEvent(
+          licenceId = previousVersionId,
+          eventType = LicenceEventType.SUPERSEDED,
+          username = username,
+          forenames = firstName,
+          surname = lastName,
+          eventDescription = "Licence deactivated as a newer version was approved for ${licence.forename} ${licence.surname}",
+        ),
+      )
+
+      auditStatusChange(updatedLicence, username, fullName)
+    }
   }
 
   @Transactional
@@ -708,7 +736,8 @@ class LicenceService(
     require(newStatus == IN_PROGRESS || newStatus == VARIATION_IN_PROGRESS) { "newStatus must be IN_PROGRESS or VARIATION_IN_PROGRESS was $newStatus" }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username) ?: throw IllegalStateException("Cannot find staff with username: $username")
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+      ?: throw IllegalStateException("Cannot find staff with username: $username")
 
     val licenceCopy = licence.copyLicence(newStatus)
     licenceCopy.createdBy = createdBy
@@ -773,7 +802,9 @@ class LicenceService(
     val licenceEventMessage = when (newStatus) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
       IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      else -> { throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ") }
+      else -> {
+        throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")
+      }
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
@@ -789,7 +820,9 @@ class LicenceService(
     val auditEventSummary = when (newStatus) {
       VARIATION_IN_PROGRESS -> "Licence varied for ${newLicence.forename} ${newLicence.surname}"
       IN_PROGRESS -> "New licence version created for ${newLicence.forename} ${newLicence.surname}"
-      else -> { throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ") }
+      else -> {
+        throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")
+      }
     }
     auditEventRepository.saveAndFlush(
       AuditEvent(
@@ -802,5 +835,13 @@ class LicenceService(
     )
 
     return newLicence
+  }
+
+  private fun splitName(fullName: String?): Pair<String?, String?> {
+    val names = fullName?.split(" ")?.toMutableList()
+    val firstName = names?.firstOrNull()
+    names?.removeAt(0)
+    val lastName = names?.joinToString(" ").orEmpty()
+    return Pair(firstName, lastName)
   }
 }
