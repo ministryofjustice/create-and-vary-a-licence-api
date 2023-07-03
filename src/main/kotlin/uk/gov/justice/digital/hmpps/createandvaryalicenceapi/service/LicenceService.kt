@@ -373,7 +373,7 @@ class LicenceService(
           licenceId.toString(),
           updatedLicence.forename!!,
           updatedLicence.surname!!,
-          licenceEntity.crn!!,
+          updatedLicence.crn!!,
           username!!,
         )
       }
