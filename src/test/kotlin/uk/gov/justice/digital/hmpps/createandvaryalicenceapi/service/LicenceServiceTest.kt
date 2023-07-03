@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import arrow.core.valid
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
@@ -23,9 +24,8 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -1051,6 +1051,105 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `creating a variation in PSS period`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        aLicenceEntity.copy(
+          additionalConditions = listOf(
+            AdditionalCondition(
+              id = 1,
+              conditionVersion = "1.0",
+              conditionCode = "code",
+              conditionSequence = 5,
+              conditionCategory = "oldCategory",
+              conditionText = "oldText",
+              additionalConditionData = someAdditionalConditionData,
+              licence = aLicenceEntity,
+              conditionType = "AP",
+            ),
+            AdditionalCondition(
+              id = 2,
+              conditionVersion = "1.0",
+              conditionCode = "code",
+              conditionSequence = 5,
+              conditionCategory = "oldCategory",
+              conditionText = "oldText",
+              additionalConditionData = someAdditionalConditionData,
+              licence = aLicenceEntity,
+              conditionType = "PSS",
+            ),
+          ),
+          licenceExpiryDate = LocalDate.now().minusDays(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+          typeCode = LicenceType.AP_PSS,
+        ),
+      ),
+    )
+    whenever(licenceRepository.save(any())).thenReturn(
+      aLicenceEntity.copy(
+        additionalConditions = listOf(
+          AdditionalCondition(
+            id = 1,
+            conditionVersion = "1.0",
+            conditionCode = "code",
+            conditionSequence = 5,
+            conditionCategory = "oldCategory",
+            conditionText = "oldText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 2,
+            conditionVersion = "1.0",
+            conditionCode = "code",
+            conditionSequence = 5,
+            conditionCategory = "oldCategory",
+            conditionText = "oldText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "PSS",
+          ),
+        ),
+        licenceExpiryDate = LocalDate.now().minusDays(1),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+        typeCode = LicenceType.AP_PSS,
+      ),
+    )
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    service.createVariation(1L)
+
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    with(licenceCaptor.value) {
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(variationOfId).isEqualTo(1)
+      assertThat(versionOfId).isNull()
+      assertThat(additionalConditions.size).isEqualTo(1)
+      assertThat(additionalConditions.first().conditionType).isEqualTo(LicenceType.PSS)
+    }
+  }
+
+  @Test
   fun `editing an approved licence creates and saves a new licence version`() {
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
@@ -1284,7 +1383,6 @@ class LicenceServiceTest {
       "2",
     )
   }
-
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
     val someStandardConditions = listOf(
@@ -1426,6 +1524,18 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    )
+
+    val someAdditionalConditionData = listOf(
+      AdditionalConditionData(
+        id = 1,
+        dataField = "dataField",
+        dataValue = "dataValue",
+        additionalCondition = AdditionalCondition(
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+        ),
+      ),
     )
   }
 }
