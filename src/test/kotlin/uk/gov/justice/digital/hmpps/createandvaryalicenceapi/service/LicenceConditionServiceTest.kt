@@ -541,7 +541,7 @@ class LicenceConditionServiceTest {
       assertThat(auditCaptor.value.username).isEqualTo("smills")
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
-          "Updated additional conditions for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
+          "Updated additional condition of the same type for ${licenceCaptor.value.forename} ${licenceCaptor.value.surname}",
         )
       assertThat(auditCaptor.value.detail)
         .isEqualTo(
