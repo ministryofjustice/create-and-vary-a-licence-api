@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:ComService.kt$ComService$(comDetails.firstName != com.firstName) || (comDetails.lastName != com.lastName) || (comDetails.staffEmail != com.email) || (!comDetails.staffUsername.equals(com.username, ignoreCase = true)) || (comDetails.staffIdentifier != com.staffIdentifier)</ID>
+    <ID>FunctionNaming:JPASpecificationDSL.kt$fun &lt;T, R : Any&gt; KProperty1&lt;T, R?&gt;.`in`(values: Collection&lt;R&gt;): Specification&lt;T&gt;</ID>
+    <ID>LargeClass:LicenceController.kt$LicenceController</ID>
+    <ID>LargeClass:LicenceService.kt$LicenceService</ID>
+    <ID>LongMethod:LicenceService.kt$LicenceService$private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence</ID>
+    <ID>LongMethod:ToModelTransformers.kt$fun transform(licence: EntityLicence): ModelLicence</ID>
+    <ID>LongMethod:UpdateSentenceDateService.kt$UpdateSentenceDateService$@Transactional fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest)</ID>
+    <ID>LongParameterList:LicenceService.kt$LicenceService$( private val licenceRepository: LicenceRepository, private val communityOffenderManagerRepository: CommunityOffenderManagerRepository, private val standardConditionRepository: StandardConditionRepository, private val additionalConditionRepository: AdditionalConditionRepository, private val bespokeConditionRepository: BespokeConditionRepository, private val licenceEventRepository: LicenceEventRepository, private val licencePolicyService: LicencePolicyService, private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository, private val auditEventRepository: AuditEventRepository, private val notifyService: NotifyService, private val omuService: OmuService, )</ID>
+    <ID>LongParameterList:NotifyService.kt$NotifyService$( @Value("\${notify.enabled}") private val enabled: Boolean, @Value("\${self.link}") private val selfLink: String, @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String, @Value("\${notify.templates.variationReApproval}") private val variationForReApprovalTemplateId: String, @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String, @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String, @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String, @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String, @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String, @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String, @Value("\${internalEmailAddress}") private val internalEmailAddress: String, private val client: NotificationClient, )</ID>
+    <ID>LongParameterList:NotifyService.kt$NotifyService$( creatorEmail: String, creatorName: String, comEmail: String, comName: String, popName: String, licenceId: String, )</ID>
+    <ID>LongParameterList:NotifyService.kt$NotifyService$( licenceId: String, emailAddress: String?, comFullName: String, offenderFullName: String, crn: String?, datesChanged: Map&lt;String, Boolean&gt;, )</ID>
+    <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$100</ID>
+    <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$50</ID>
+    <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$500</ID>
+    <ID>MagicNumber:LicenceActivationService.kt$LicenceActivationService$4</ID>
+    <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
+    <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
+    <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
+    <ID>ReturnCount:ComService.kt$ComService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
+    <ID>ReturnCount:EventSpecifications.kt$fun EventQueryObject.getSort(): Sort</ID>
+    <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
+    <ID>ReturnCount:LicenceSpecifications.kt$fun LicenceQueryObject.getSort(): Sort</ID>
+    <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
+    <ID>SwallowedException:EventService.kt$EventService$e: PropertyReferenceException</ID>
+    <ID>SwallowedException:EventSpecifications.kt$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:LicenceService.kt$LicenceService$e: PropertyReferenceException</ID>
+    <ID>SwallowedException:LicenceSpecifications.kt$e: IllegalArgumentException</ID>
+    <ID>ThrowsCount:LicenceService.kt$LicenceService$@Transactional fun createLicence(request: CreateLicenceRequest): LicenceSummary</ID>
+    <ID>ThrowsCount:LicenceService.kt$LicenceService$private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence</ID>
+    <ID>TooGenericExceptionCaught:LicenceConditionService.kt$LicenceConditionService$e: RuntimeException</ID>
+    <ID>TooGenericExceptionThrown:LicenceService.kt$LicenceService$throw RuntimeException("Staff with username $username not found")</ID>
+    <ID>TooManyFunctions:JPASpecificationDSL.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
+    <ID>TooManyFunctions:LicenceController.kt$LicenceController</ID>
+    <ID>TooManyFunctions:LicenceService.kt$LicenceService</ID>
+    <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
+    <ID>UnusedParameter:LicenceController.kt$LicenceController$@PathVariable conditionType: String</ID>
+    <ID>UnusedParameter:OpenApiConfiguration.kt$OpenApiConfiguration$buildProperties: BuildProperties</ID>
+    <ID>UnusedParameter:WebClientConfiguration.kt$WebClientConfiguration$authorizedClientManager: OAuth2AuthorizedClientManager</ID>
+    <ID>UnusedPrivateProperty:LicenceActivationService.kt$LicenceActivationService.Companion$private val log = LoggerFactory.getLogger(this::class.java)</ID>
+    <ID>UnusedPrivateProperty:PrisonerSearchApiClient.kt$PrisonerSearchApiClient.Companion$private val log = LoggerFactory.getLogger(this::class.java)</ID>
+    <ID>UseCheckOrError:CommunityApiClient.kt$CommunityApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
+    <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Cannot find staff with username: $username")</ID>
+    <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")</ID>
+    <ID>UseCheckOrError:ProbationSearchApiClient.kt$ProbationSearchApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
+    <ID>UtilityClassWithPublicConstructor:Tags.kt$Tags</ID>
+  </CurrentIssues>
+</SmellBaseline>
