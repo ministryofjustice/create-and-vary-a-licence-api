@@ -431,8 +431,6 @@ class LicenceConditionService(
       updatedByUsername = username,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
-
     val changes = mapOf(
       "type" to "Update additional conditions",
       "changes" to removedConditions.map {
