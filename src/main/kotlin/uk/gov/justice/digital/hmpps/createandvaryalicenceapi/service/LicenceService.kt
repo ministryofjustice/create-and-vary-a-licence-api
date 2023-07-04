@@ -402,6 +402,8 @@ class LicenceService(
           licenceId.toString(),
           updatedLicence.forename!!,
           updatedLicence.surname!!,
+          updatedLicence.crn!!,
+          username!!,
         )
       }
     }

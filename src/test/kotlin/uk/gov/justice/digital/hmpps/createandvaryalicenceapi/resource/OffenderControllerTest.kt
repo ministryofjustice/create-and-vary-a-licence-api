@@ -25,9 +25,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -94,5 +96,24 @@ class OffenderControllerTest {
     mvc.perform(request).andExpect(status().isOk)
 
     verify(offenderService, times(1)).updateProbationTeam("exampleCrn", body)
+  }
+
+  @Test
+  fun `update offender details`() {
+    val body = UpdateOffenderDetailsRequest(
+      forename = "Alex",
+      middleNames = "Brian Cameron",
+      surname = "David-Edgar",
+      dateOfBirth = LocalDate.parse("1970-01-01"),
+    )
+
+    val request = put("/offender/nomisid/exampleNomisId/update-offender-details")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content(mapper.writeValueAsBytes(body))
+
+    mvc.perform(request).andExpect(status().isOk)
+
+    verify(offenderService, times(1)).updateOffenderDetails("exampleNomisId", body)
   }
 }

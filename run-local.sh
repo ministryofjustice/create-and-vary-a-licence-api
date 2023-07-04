@@ -32,7 +32,7 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
-# Bring up the back end containers needed for the application
+# Stop the back end containers
 echo "Bringing down current containers ..."
 docker compose down --remove-orphans
 
