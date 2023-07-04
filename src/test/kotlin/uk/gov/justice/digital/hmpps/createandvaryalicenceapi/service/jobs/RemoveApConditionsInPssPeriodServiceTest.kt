@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -17,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveApConditionsInPssPeriodService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -89,15 +89,15 @@ class RemoveApConditionsInPssPeriodServiceTest {
 
     service.removeAPConditions()
 
-    val licenceIdCaptor = ArgumentCaptor.forClass(Long::class.java)
+    val licenceEntityCaptor = argumentCaptor<Licence>()
     val conditionIdCaptor = argumentCaptor<List<Long>>()
 
     verify(licenceConditionService, times(1)).deleteAdditionalConditions(
-      licenceIdCaptor.capture(),
+      licenceEntityCaptor.capture(),
       conditionIdCaptor.capture(),
     )
 
-    assertThat(licenceIdCaptor.value).isEqualTo(aLicenceEntity.id)
+    assertThat(licenceEntityCaptor.firstValue.id).isEqualTo(aLicenceEntity.id)
     assertThat(conditionIdCaptor.allValues[0]).isEqualTo(listOf(1L))
   }
 
@@ -138,15 +138,15 @@ class RemoveApConditionsInPssPeriodServiceTest {
 
     service.removeAPConditions()
 
-    val licenceIdCaptor = ArgumentCaptor.forClass(Long::class.java)
+    val licenceEntityCaptor = argumentCaptor<Licence>()
     val conditionIdCaptor = argumentCaptor<List<Long>>()
 
     verify(licenceConditionService, times(1)).deleteAdditionalConditions(
-      licenceIdCaptor.capture(),
+      licenceEntityCaptor.capture(),
       conditionIdCaptor.capture(),
     )
 
-    assertThat(licenceIdCaptor.value).isEqualTo(aLicenceEntity.id)
+    assertThat(licenceEntityCaptor.firstValue.id).isEqualTo(aLicenceEntity.id)
     assertThat(conditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 3L))
   }
 

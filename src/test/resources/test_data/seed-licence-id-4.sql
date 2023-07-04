@@ -30,7 +30,7 @@ insert into licence (
 )
 values (
     3,
-    'AP',
+    'AP_PSS',
     '1.0',
     'VARIATION_IN_PROGRESS',
     'A1234AA',
@@ -60,7 +60,7 @@ values (
  ),
    (
        4,
-       'AP',
+       'AP_PSS',
        '1.0',
        'VARIATION_IN_PROGRESS',
        'A1234AA',
@@ -89,7 +89,7 @@ values (
        1
    ), (
        5,
-       'AP',
+       'AP_PSS',
        '1.0',
        'VARIATION_IN_PROGRESS',
        'A1234AA',
@@ -118,7 +118,7 @@ values (
        1
    ), (
        6,
-       'AP',
+       'AP_PSS',
        '1.0',
        'ACTIVE',
        'A1234AA',

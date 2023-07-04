@@ -763,10 +763,8 @@ class LicenceService(
     standardConditionRepository.saveAll(standardConditions)
     bespokeConditionRepository.saveAll(bespokeConditions)
 
-    val licenceInPSSPeriod = licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
-
     val licenceConditions = licence.additionalConditions.filter {
-      (!licenceInPSSPeriod && LicenceType.valueOf(it.conditionType!!) == LicenceType.AP)
+      !(LicenceType.valueOf(it.conditionType!!) == LicenceType.AP && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod())
     }
 
     val additionalConditions = licenceConditions.map {
@@ -782,7 +780,6 @@ class LicenceService(
         additionalConditionData = additionalConditionData,
         additionalConditionUploadSummary = additionalConditionUploadSummary,
       )
-
     }
 
     var newAdditionalConditions = additionalConditionRepository.saveAll(additionalConditions).toMutableList()

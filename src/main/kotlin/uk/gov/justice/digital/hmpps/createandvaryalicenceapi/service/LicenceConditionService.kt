@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
@@ -99,19 +100,7 @@ class LicenceConditionService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    // return all conditions except condition with submitted conditionId
-    val revisedConditions = licenceEntity.additionalConditions.filter { it.id != conditionId }
-
-    val updatedLicence = licenceEntity.copy(
-      additionalConditions = revisedConditions,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
-    )
-
-    licenceRepository.saveAndFlush(updatedLicence)
+    deleteAdditionalConditions(licenceEntity, listOf(conditionId))
   }
 
   @Transactional
@@ -256,11 +245,7 @@ class LicenceConditionService(
   }
 
   @Transactional
-  fun deleteAdditionalConditions(licenceId: Long, conditionIds: List<Long>) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
+  fun deleteAdditionalConditions(licenceEntity: Licence, conditionIds: List<Long>) {
     val username = SecurityContextHolder.getContext().authentication.name
 
     // return all conditions except condition with submitted conditionIds

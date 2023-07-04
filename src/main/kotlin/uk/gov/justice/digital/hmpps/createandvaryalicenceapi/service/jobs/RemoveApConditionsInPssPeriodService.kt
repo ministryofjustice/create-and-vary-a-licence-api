@@ -22,9 +22,10 @@ class RemoveApConditionsInPssPeriodService(
     log.info("Job to removeApConditions in PSS period started")
     val licencesInPSSPeriod = licenceRepository.getAllVariedLicencesInPSSPeriod()
 
-    licencesInPSSPeriod?.forEach { licence ->
-      val aPConditionIds = licence.additionalConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }.map { it.id }
-      this.licenceConditionService.deleteAdditionalConditions(licence.id, aPConditionIds)
+    licencesInPSSPeriod.forEach { licence ->
+      val aPConditionIds =
+        licence.additionalConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }.map { it.id }
+      this.licenceConditionService.deleteAdditionalConditions(licence, aPConditionIds)
     }
     log.info("Job removeApConditions in PSS period deleted AP conditions on ${licencesInPSSPeriod.size} licences")
   }

@@ -694,50 +694,49 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `delete multiple additional conditions`() {
+      val licenceEntity = aLicenceEntity.copy(
+        additionalConditions = listOf(
+          AdditionalCondition(
+            id = 1,
+            conditionVersion = "1.0",
+            conditionCode = "code",
+            conditionSequence = 5,
+            conditionCategory = "oldCategory",
+            conditionText = "oldText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 2,
+            conditionVersion = "1.0",
+            conditionCode = "code2",
+            conditionSequence = 6,
+            conditionCategory = "removedCategory",
+            conditionText = "removedText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 3,
+            conditionVersion = "1.0",
+            conditionCode = "code3",
+            conditionSequence = 6,
+            conditionCategory = "oldCategory3",
+            conditionText = "oldText3",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+        ),
+      )
       whenever(licenceRepository.findById(1L))
         .thenReturn(
-          Optional.of(
-            aLicenceEntity.copy(
-              additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
-                  conditionSequence = 5,
-                  conditionCategory = "oldCategory",
-                  conditionText = "oldText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "AP",
-                ),
-                AdditionalCondition(
-                  id = 2,
-                  conditionVersion = "1.0",
-                  conditionCode = "code2",
-                  conditionSequence = 6,
-                  conditionCategory = "removedCategory",
-                  conditionText = "removedText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "AP",
-                ),
-                AdditionalCondition(
-                  id = 3,
-                  conditionVersion = "1.0",
-                  conditionCode = "code3",
-                  conditionSequence = 6,
-                  conditionCategory = "oldCategory3",
-                  conditionText = "oldText3",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "AP",
-                ),
-              ),
-            ),
-          ),
+          Optional.of(licenceEntity),
         )
 
-      service.deleteAdditionalConditions(1L, listOf(2, 3))
+      service.deleteAdditionalConditions(licenceEntity, listOf(2, 3))
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
