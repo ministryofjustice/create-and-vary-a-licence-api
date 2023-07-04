@@ -977,6 +977,7 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `delete multiple additional conditions`() {
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       val licenceEntity = aLicenceEntity.copy(
         additionalConditions = listOf(
           AdditionalCondition(

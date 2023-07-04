@@ -417,13 +417,11 @@ class LicenceConditionService(
     val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
-
     // return all conditions except condition with submitted conditionIds
     val revisedConditions = licenceEntity.additionalConditions.filter { conditionIds.indexOf(it.id) == -1 }
 
     val removedConditions =
       licenceEntity.additionalConditions.filter { conditionIds.indexOf(it.id) != -1 }
-
 
     val updatedLicence = licenceEntity.copy(
       additionalConditions = revisedConditions,
