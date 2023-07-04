@@ -1193,6 +1193,45 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `editing an approved licence creates and saves a new licence version returns all conditions`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+
+    val approvedLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      additionalConditions = additionalConditions,
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+
+    whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+
+    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+    service.editLicence(1L)
+    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
+    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
+    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+  }
+
+  @Test
   fun `attempting to editing a licence with status other than approved results in validation exception `() {
     val activeLicence = aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(
