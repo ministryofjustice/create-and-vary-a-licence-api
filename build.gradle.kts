@@ -103,5 +103,11 @@ tasks {
       html.required.set(true) // observe findings in your browser with structure and code snippets
     }
   }
-  getByPath("detekt").onlyIf { project.hasProperty("runDetekt") }
+  named("check").configure {
+    this.setDependsOn(
+      this.dependsOn.filterNot {
+        it is TaskProvider<*> && it.name == "detekt"
+      }
+    )
+  }
 }
