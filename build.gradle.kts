@@ -50,6 +50,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson:2.10.1")
   implementation("io.arrow-kt:arrow-core:1.1.5")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.4.1")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
