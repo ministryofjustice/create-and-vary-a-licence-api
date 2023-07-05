@@ -766,9 +766,9 @@ class LicenceService(
     bespokeConditionRepository.saveAll(bespokeConditions)
 
     val licenceConditions: List<AdditionalCondition> =
-      if (newStatus == VARIATION_IN_PROGRESS) {
+      if (newStatus == VARIATION_IN_PROGRESS && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()) {
         licence.additionalConditions.filter {
-          !(LicenceType.valueOf(it.conditionType!!) == LicenceType.AP && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod())
+          LicenceType.valueOf(it.conditionType!!) != LicenceType.AP
         }
       } else {
         licence.additionalConditions
