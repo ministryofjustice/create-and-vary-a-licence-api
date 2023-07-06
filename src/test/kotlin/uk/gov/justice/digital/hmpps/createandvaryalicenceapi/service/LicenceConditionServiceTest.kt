@@ -974,6 +974,75 @@ class LicenceConditionServiceTest {
 
       service.updateAdditionalConditionData(1L, 1L, request)
     }
+
+    @Test
+    fun `delete multiple additional conditions`() {
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      val licenceEntity = aLicenceEntity.copy(
+        additionalConditions = listOf(
+          AdditionalCondition(
+            id = 1,
+            conditionVersion = "1.0",
+            conditionCode = "code",
+            conditionSequence = 5,
+            conditionCategory = "oldCategory",
+            conditionText = "oldText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 2,
+            conditionVersion = "1.0",
+            conditionCode = "code2",
+            conditionSequence = 6,
+            conditionCategory = "removedCategory",
+            conditionText = "removedText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 3,
+            conditionVersion = "1.0",
+            conditionCode = "code3",
+            conditionSequence = 6,
+            conditionCategory = "oldCategory3",
+            conditionText = "oldText3",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+        ),
+      )
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(licenceEntity),
+        )
+
+      service.deleteAdditionalConditions(licenceEntity, listOf(2, 3))
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+        AdditionalCondition(
+          id = 1,
+          conditionVersion = "1.0",
+          conditionCode = "code",
+          conditionCategory = "oldCategory",
+          conditionSequence = 5,
+          conditionText = "oldText",
+          conditionType = "AP",
+          additionalConditionData = someAdditionalConditionData,
+          licence = aLicenceEntity,
+        ),
+      )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    }
   }
 
   private companion object {
