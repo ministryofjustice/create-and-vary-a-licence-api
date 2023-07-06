@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
@@ -10,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -29,21 +27,23 @@ class LicenceActivationService(
   @Transactional
   fun licenceActivationJob() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()
+    if (potentialLicences.isEmpty()) {
+      return
+    }
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(potentialLicences)
     val (iS91licencesToActivate, standardLicencesToActivate) = determineEligibleLicencesToActivate(eligibleLicences)
 
     licenceService.activateLicences(iS91licencesToActivate, "IS91 licence automatically activated via repeating job")
     licenceService.activateLicences(standardLicencesToActivate, "Licence automatically activated via repeating job")
-    licenceService.inactivateLicences(ineligibleLicences, "Licence automatically deactivated as booking ID has approved HDC licence")
+    licenceService.inactivateLicences(
+      ineligibleLicences,
+      "Licence automatically deactivated as booking ID has approved HDC licence",
+    )
   }
 
   private fun determineLicenceEligibility(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val bookingIds = licences.map { it.bookingId!! }
-    val hdcStatuses = if (bookingIds != null) {
-      prisonApiClient.getHdcStatuses(bookingIds)
-    } else {
-      emptyList<PrisonerHdcStatus>()
-    }
+    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingIds)
     val approvedHdcBookingIds = hdcStatuses.filter { it.approvalStatus == "APPROVED" }.map { it.bookingId }
     val (ineligibleLicences, eligibleLicences) = licences.partition {
       approvedHdcBookingIds.contains(it.bookingId)
@@ -53,12 +53,8 @@ class LicenceActivationService(
 
   private fun determineEligibleLicencesToActivate(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val (iS91Licences, standardLicences) = filterLicencesIntoTypes(licences)
-    val standardLicencesPrisoners = if (standardLicences != null) {
+    val standardLicencesPrisoners =
       prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
-    } else {
-      emptyList<PrisonerSearchPrisoner>()
-    }
-
     val iS91LicencesToActivate = iS91Licences.filter { it.isPassedIS91ReleaseDate() }
     val standardLicencesToActivate =
       standardLicences.filter { it.isStandardLicenceForActivation(standardLicencesPrisoners) }
@@ -116,9 +112,5 @@ class LicenceActivationService(
         this.actualReleaseDate <= LocalDate.now() &&
         prisoner.status?.startsWith("INACTIVE") == true
       )
-  }
-
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
