@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -38,7 +39,11 @@ class LicenceActivationService(
 
   private fun determineLicenceEligibility(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val bookingIds = licences.map { it.bookingId!! }
-    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingIds)
+    val hdcStatuses = if (bookingIds != null) {
+      prisonApiClient.getHdcStatuses(bookingIds)
+    } else {
+      emptyList<PrisonerHdcStatus>()
+    }
     val approvedHdcBookingIds = hdcStatuses.filter { it.approvalStatus == "APPROVED" }.map { it.bookingId }
     val (ineligibleLicences, eligibleLicences) = licences.partition {
       approvedHdcBookingIds.contains(it.bookingId)
@@ -48,8 +53,11 @@ class LicenceActivationService(
 
   private fun determineEligibleLicencesToActivate(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
     val (iS91Licences, standardLicences) = filterLicencesIntoTypes(licences)
-    val standardLicencesPrisoners =
+    val standardLicencesPrisoners = if (standardLicences != null) {
       prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
+    } else {
+      emptyList<PrisonerSearchPrisoner>()
+    }
 
     val iS91LicencesToActivate = iS91Licences.filter { it.isPassedIS91ReleaseDate() }
     val standardLicencesToActivate =
