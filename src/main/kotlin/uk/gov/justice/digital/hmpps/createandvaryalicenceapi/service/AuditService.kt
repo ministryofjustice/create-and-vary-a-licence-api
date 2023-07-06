@@ -2,6 +2,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -27,6 +31,129 @@ class AuditService(
     } else {
       getAllEvents(auditRequest)
     }
+  }
+
+  fun recordAuditEventUpdateStandardCondition(licence: Licence, currentUser: CommunityOffenderManager, currentPolicyVersion: String) {
+    val summary = "Updated standard conditions to policy version $currentPolicyVersion"
+
+    val changes = mapOf(
+      "type" to "Updated standard conditions",
+      "changes" to emptyMap<String, Any>(),
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventAddAdditionalConditionOfSameType(licence: Licence, currentUser: CommunityOffenderManager, condition: AdditionalCondition) {
+    val summary = "Updated additional condition of the same type"
+
+    val changes = mapOf(
+      "type" to "Updated additional conditions",
+      "changes" to listOf(
+        mapOf(
+          "type" to "ADDED",
+          "conditionCode" to condition.conditionCode,
+          "conditionType" to condition.conditionType,
+          "conditionText" to condition.conditionText,
+        ),
+      ),
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventDeleteAdditionalConditions(licence: Licence, currentUser: CommunityOffenderManager, condition: AdditionalCondition) {
+    val summary = "Updated additional conditions"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to listOf(
+        mapOf(
+          "type" to "REMOVED",
+          "conditionCode" to condition.conditionCode,
+          "conditionType" to condition.conditionType,
+          "conditionText" to condition.expandedConditionText,
+        ),
+      ),
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventUpdateAdditionalConditions(
+    licence: Licence,
+    currentUser: CommunityOffenderManager,
+    newConditions: List<AdditionalCondition>,
+    removedConditions: List<AdditionalCondition>,
+  ) {
+    val summary = "Updated additional conditions"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to newConditions.map {
+        mapOf(
+          "type" to "ADDED",
+          "conditionCode" to it.conditionCode,
+          "conditionType" to it.conditionType,
+          "conditionText" to it.conditionText,
+        )
+      } +
+        removedConditions.map {
+          mapOf(
+            "type" to "REMOVED",
+            "conditionCode" to it.conditionCode,
+            "conditionType" to it.conditionType,
+            "conditionText" to it.conditionText,
+          )
+        },
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventUpdateBespokeConditions(
+    licence: Licence,
+    currentUser: CommunityOffenderManager,
+    newConditions: List<String>,
+    removedConditions: List<String?>,
+  ) {
+    val summary = "Updated bespoke conditions"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to newConditions.map {
+        mapOf(
+          "type" to "ADDED",
+          "conditionText" to it,
+        )
+      } +
+        removedConditions.map {
+          mapOf(
+            "type" to "REMOVED",
+            "conditionText" to it,
+          )
+        },
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventUpdateAdditionalConditionData(licence: Licence, currentUser: CommunityOffenderManager, condition: AdditionalCondition) {
+    val summary = "Updated additional condition data"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to listOf(
+        mapOf(
+          "type" to "ADDED",
+          "conditionCode" to condition.conditionCode,
+          "conditionType" to condition.conditionType,
+          "conditionText" to condition.expandedConditionText,
+        ),
+      ),
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
   }
 
   private fun getAuditEventsForLicence(auditRequest: AuditRequest): List<ModelAuditEvent> {
@@ -73,4 +200,14 @@ class AuditService(
       .findAllByEventTimeBetweenOrderByEventTimeDesc(auditRequest.startTime, auditRequest.endTime)
       .transformToModelAuditEvents()
   }
+
+  private fun createAuditEvent(licence: Licence, currentUser: CommunityOffenderManager, summary: String, changes: Map<String, Any>) =
+    AuditEvent(
+      licenceId = licence.id,
+      username = currentUser.username,
+      fullName = "${currentUser.firstName} ${currentUser.lastName}",
+      summary = "$summary for ${licence.forename} ${licence.surname}",
+      detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+      changes = changes,
+    )
 }
