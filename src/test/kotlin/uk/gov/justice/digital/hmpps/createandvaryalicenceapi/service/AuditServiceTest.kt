@@ -189,8 +189,10 @@ class AuditServiceTest {
 
     @Test
     fun `records an audit event when an additional condition is deleted`() {
-      val aDeletedCondition = anAdditionalConditionEntity.copy(
-        expandedConditionText = "removedText",
+      val aDeletedCondition = listOf(
+        anAdditionalConditionEntity.copy(
+          expandedConditionText = "removedText",
+        ),
       )
 
       service.recordAuditEventDeleteAdditionalConditions(aLicenceEntity, aComEntity, aDeletedCondition)

@@ -316,31 +316,9 @@ class LicenceConditionService(
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
-
-    val changes = mapOf(
-      "type" to "Update additional conditions",
-      "changes" to removedConditions.map {
-        mapOf(
-          "type" to "REMOVED",
-          "conditionCode" to it.conditionCode,
-          "conditionType" to it.conditionType,
-          "conditionText" to it.expandedConditionText,
-        )
-      },
-    )
-
     licenceRepository.saveAndFlush(updatedLicence)
 
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = updatedLicence.id,
-        username = currentUser.username,
-        fullName = "${currentUser.firstName} ${currentUser.lastName}",
-        summary = "Updated additional conditions for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-        changes = changes,
-      ),
-    )
+    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, currentUser, removedConditions)
   }
 
   companion object {

@@ -62,19 +62,19 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
   }
 
-  fun recordAuditEventDeleteAdditionalConditions(licence: Licence, currentUser: CommunityOffenderManager, condition: AdditionalCondition) {
+  fun recordAuditEventDeleteAdditionalConditions(licence: Licence, currentUser: CommunityOffenderManager, removedConditions: List<AdditionalCondition>) {
     val summary = "Updated additional conditions"
 
     val changes = mapOf(
       "type" to summary,
-      "changes" to listOf(
+      "changes" to removedConditions.map {
         mapOf(
           "type" to "REMOVED",
-          "conditionCode" to condition.conditionCode,
-          "conditionType" to condition.conditionType,
-          "conditionText" to condition.expandedConditionText,
-        ),
-      ),
+          "conditionCode" to it.conditionCode,
+          "conditionType" to it.conditionType,
+          "conditionText" to it.expandedConditionText,
+        )
+      },
     )
 
     auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
