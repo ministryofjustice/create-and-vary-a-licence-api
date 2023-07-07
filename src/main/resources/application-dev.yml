@@ -5,9 +5,9 @@
 #
 
 # Most values are inherited from - application.yml - except the following:
-
-jpa:
-  show-sql: true
+spring:
+  jpa:
+    show-sql: true
 
 # Container-provider local auth server
 hmpps:
