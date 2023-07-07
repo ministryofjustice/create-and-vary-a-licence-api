@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -764,7 +765,16 @@ class LicenceService(
     standardConditionRepository.saveAll(standardConditions)
     bespokeConditionRepository.saveAll(bespokeConditions)
 
-    val additionalConditions = licence.additionalConditions.map {
+    val licenceConditions: List<AdditionalCondition> =
+      if (newStatus == VARIATION_IN_PROGRESS && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()) {
+        licence.additionalConditions.filter {
+          LicenceType.valueOf(it.conditionType!!) != LicenceType.AP
+        }
+      } else {
+        licence.additionalConditions
+      }
+
+    val additionalConditions = licenceConditions.map {
       val additionalConditionData = it.additionalConditionData.map { data ->
         data.copy(id = -1)
       }

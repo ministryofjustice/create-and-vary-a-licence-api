@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
@@ -28,12 +27,18 @@ class LicenceActivationService(
   @Transactional
   fun licenceActivationJob() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()
+    if (potentialLicences.isEmpty()) {
+      return
+    }
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(potentialLicences)
     val (iS91licencesToActivate, standardLicencesToActivate) = determineEligibleLicencesToActivate(eligibleLicences)
 
     licenceService.activateLicences(iS91licencesToActivate, "IS91 licence automatically activated via repeating job")
     licenceService.activateLicences(standardLicencesToActivate, "Licence automatically activated via repeating job")
-    licenceService.inactivateLicences(ineligibleLicences, "Licence automatically deactivated as booking ID has approved HDC licence")
+    licenceService.inactivateLicences(
+      ineligibleLicences,
+      "Licence automatically deactivated as booking ID has approved HDC licence",
+    )
   }
 
   private fun determineLicenceEligibility(licences: List<Licence>): Pair<List<Licence>, List<Licence>> {
@@ -50,7 +55,6 @@ class LicenceActivationService(
     val (iS91Licences, standardLicences) = filterLicencesIntoTypes(licences)
     val standardLicencesPrisoners =
       prisonerSearchApiClient.searchPrisonersByBookingIds(standardLicences.map { it.bookingId!! })
-
     val iS91LicencesToActivate = iS91Licences.filter { it.isPassedIS91ReleaseDate() }
     val standardLicencesToActivate =
       standardLicences.filter { it.isStandardLicenceForActivation(standardLicencesPrisoners) }
@@ -108,9 +112,5 @@ class LicenceActivationService(
         this.actualReleaseDate <= LocalDate.now() &&
         prisoner.status?.startsWith("INACTIVE") == true
       )
-  }
-
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

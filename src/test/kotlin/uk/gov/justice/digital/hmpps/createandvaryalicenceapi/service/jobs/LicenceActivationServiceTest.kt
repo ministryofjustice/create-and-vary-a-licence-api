@@ -64,6 +64,19 @@ class LicenceActivationServiceTest {
   }
 
   @Test
+  fun `licence activation job should return if there are no APPROVED licences`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf())
+
+    service.licenceActivationJob()
+
+    verify(licenceService, times(0)).activateLicences(emptyList(), "")
+    verify(licenceService, times(0)).activateLicences(emptyList(), "")
+    verify(licenceService, times(0)).inactivateLicences(emptyList(), "")
+    verify(prisonApiClient, times(0)).getHdcStatuses(emptyList())
+    verify(prisonerSearchApiClient, times(0)).searchPrisonersByBookingIds(emptyList())
+  }
+
+  @Test
   fun `licence activation job calls for non-HDC, non-IS91 licences to be activated on their ARD if the offender has been released`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(listOf(54321))).thenReturn(
