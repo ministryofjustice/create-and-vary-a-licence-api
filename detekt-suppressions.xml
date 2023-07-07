@@ -1,0 +1,9 @@
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+   file name: sarif4k-jvm-0.4.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.github\.detekt\.sarif4k/sarif4k\-jvm@.*$</packageUrl>
+        <cve>CVE-2022-0272</cve>
+    </suppress>
+</suppressions>

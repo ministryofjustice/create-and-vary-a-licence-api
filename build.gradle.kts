@@ -8,6 +8,9 @@ plugins {
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
+dependencyCheck {
+  suppressionFiles.add("detekt-suppressions.xml")
+}
 val integrationTest = task<Test>("integrationTest") {
   description = "Integration tests"
   group = "verification"
