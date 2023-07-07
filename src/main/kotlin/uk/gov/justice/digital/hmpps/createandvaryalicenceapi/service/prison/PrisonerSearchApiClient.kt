@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -11,11 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.mode
 @Service
 class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prisonerSearchApiWebClient: WebClient) {
 
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
-
   fun searchPrisonersByBookingIds(bookingIds: List<Long>): List<PrisonerSearchPrisoner> {
+    if (bookingIds.isEmpty()) return emptyList<PrisonerSearchPrisoner>()
     return prisonerSearchApiWebClient
       .post()
       .uri("/prisoner-search/booking-ids")

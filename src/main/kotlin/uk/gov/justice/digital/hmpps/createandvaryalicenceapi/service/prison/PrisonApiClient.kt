@@ -29,6 +29,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
   }
 
   fun getHdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
+    if (bookingIds.isEmpty()) return emptyList<PrisonerHdcStatus>()
     return prisonerApiWebClient
       .post()
       .uri("/offender-sentences/home-detention-curfews/latest")
