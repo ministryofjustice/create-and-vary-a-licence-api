@@ -14,6 +14,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSear
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationUserSearchSortBy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 
 class ComIntegrationTest : IntegrationTestBase() {
   @Test
@@ -66,12 +69,17 @@ class ComIntegrationTest : IntegrationTestBase() {
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
       1L,
+      listOf(
+        ProbationUserSearchSortBy(SearchField.FORENAME, SearchDirection.ASC),
+      ),
     )
 
     val aLicenceCaseloadSearchRequest = LicenceCaseloadSearchRequest(
       listOf("A01B02"),
       "Surname",
-      ProbationSearchSortByRequest(),
+      listOf(
+        ProbationSearchSortByRequest("name.forename", "asc"),
+      ),
     )
 
     @JvmStatic

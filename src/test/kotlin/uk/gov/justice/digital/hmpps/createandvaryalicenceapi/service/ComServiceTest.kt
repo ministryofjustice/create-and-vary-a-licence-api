@@ -22,6 +22,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationUserSearchSortBy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 
 class ComServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
@@ -48,7 +52,17 @@ class ComServiceTest {
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
     whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
-      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+      .thenReturn(
+        listOf(
+          CommunityOffenderManager(
+            staffIdentifier = 2000,
+            username = "joebloggs",
+            email = "jbloggs@probation.gov.uk",
+            firstName = "A",
+            lastName = "B",
+          ),
+        ),
+      )
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
@@ -79,7 +93,17 @@ class ComServiceTest {
     )
 
     whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
-      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "jbloggs123@probation.gov.uk", firstName = "X", lastName = "Y")))
+      .thenReturn(
+        listOf(
+          CommunityOffenderManager(
+            staffIdentifier = 2000,
+            username = "joebloggs",
+            email = "jbloggs123@probation.gov.uk",
+            firstName = "X",
+            lastName = "Y",
+          ),
+        ),
+      )
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
@@ -107,7 +131,12 @@ class ComServiceTest {
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any())).thenReturn(null)
+    whenever(
+      communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+        any(),
+        any(),
+      ),
+    ).thenReturn(null)
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
@@ -137,7 +166,17 @@ class ComServiceTest {
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
     whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
-      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "JOEBLOGGS", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+      .thenReturn(
+        listOf(
+          CommunityOffenderManager(
+            staffIdentifier = 2000,
+            username = "JOEBLOGGS",
+            email = "jbloggs@probation.gov.uk",
+            firstName = "A",
+            lastName = "B",
+          ),
+        ),
+      )
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
@@ -170,7 +209,17 @@ class ComServiceTest {
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
     whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
-      .thenReturn(listOf(CommunityOffenderManager(staffIdentifier = 2000, username = "JOEBLOGGS", email = "jbloggs@probation.gov.uk", firstName = "A", lastName = "B")))
+      .thenReturn(
+        listOf(
+          CommunityOffenderManager(
+            staffIdentifier = 2000,
+            username = "JOEBLOGGS",
+            email = "jbloggs@probation.gov.uk",
+            firstName = "A",
+            lastName = "B",
+          ),
+        ),
+      )
 
     whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
@@ -212,10 +261,75 @@ class ComServiceTest {
       ),
     )
 
-    val result = service.searchForOffenderOnStaffCaseload(
-      ProbationUserSearchRequest(
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+    assertThat(result.size).isEqualTo(1)
+    assertThat(result)
+      .extracting<Tuple> { Tuple.tuple(it.name, it.comName, it.comCode) }
+      .containsAll(
+        listOf(
+          Tuple.tuple("Test Surname", "Staff Surname", "A01B02C"),
+        ),
+      )
+  }
+
+  @Test
+  fun `search for offenders on a staff member's caseload with results sorted`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(
+      probationSearchApiClient.searchLicenceCaseloadByTeam(
         "Test",
-        2000,
+        listOf("A01B02"),
+        listOf(
+          ProbationSearchSortByRequest(SearchField.SURNAME.probationSearchApiSortType, "asc"),
+          ProbationSearchSortByRequest(SearchField.COM_FORENAME.probationSearchApiSortType, "desc"),
+        ),
+      ),
+    ).thenReturn(
+      listOf(
+        ProbationSearchResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+      listOf(
+        ProbationUserSearchSortBy(SearchField.SURNAME, SearchDirection.ASC),
+        ProbationUserSearchSortBy(SearchField.COM_FORENAME, SearchDirection.DESC),
+      ),
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      listOf(
+        ProbationSearchSortByRequest(SearchField.SURNAME.probationSearchApiSortType, "asc"),
+        ProbationSearchSortByRequest(SearchField.COM_FORENAME.probationSearchApiSortType, "desc"),
       ),
     )
 

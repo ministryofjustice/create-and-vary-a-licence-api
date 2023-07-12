@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import java.time.LocalDateTime
 
 @Service
@@ -82,9 +84,17 @@ class ComService(
   }
 
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<ProbationSearchResult> {
+    val probationSearchApiSortBy = body.sortBy.map {
+      ProbationSearchSortByRequest(
+        it.field.probationSearchApiSortType,
+        if (it.direction == SearchDirection.ASC) "asc" else "desc",
+      )
+    }
+
     val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
       body.query,
       communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
+      probationSearchApiSortBy,
     )
     return entityProbationSearchResult.transformToModelProbationResult()
   }
