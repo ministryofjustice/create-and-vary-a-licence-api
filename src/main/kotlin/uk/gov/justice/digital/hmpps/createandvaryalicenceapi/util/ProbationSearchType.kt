@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
 
-data class ProbationUserSearchSortBy(val field: SearchField, val direction: SearchDirection)
+data class ProbationSearchSortBy(val field: SearchField, val direction: SearchDirection)
 
 enum class SearchField(val probationSearchApiSortType: String) {
   FORENAME("name.forename"),

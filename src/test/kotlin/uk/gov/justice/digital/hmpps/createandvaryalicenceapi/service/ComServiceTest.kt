@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationUserSearchSortBy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 
@@ -317,8 +317,8 @@ class ComServiceTest {
       "Test",
       2000,
       listOf(
-        ProbationUserSearchSortBy(SearchField.SURNAME, SearchDirection.ASC),
-        ProbationUserSearchSortBy(SearchField.COM_FORENAME, SearchDirection.DESC),
+        ProbationSearchSortBy(SearchField.SURNAME, SearchDirection.ASC),
+        ProbationSearchSortBy(SearchField.COM_FORENAME, SearchDirection.DESC),
       ),
     )
 

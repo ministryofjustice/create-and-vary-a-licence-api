@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSear
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationUserSearchSortBy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 
@@ -70,7 +70,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       "Surname",
       1L,
       listOf(
-        ProbationUserSearchSortBy(SearchField.FORENAME, SearchDirection.ASC),
+        ProbationSearchSortBy(SearchField.FORENAME, SearchDirection.ASC),
       ),
     )
 
