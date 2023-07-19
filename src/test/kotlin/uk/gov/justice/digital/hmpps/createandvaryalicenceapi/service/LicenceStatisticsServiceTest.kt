@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class LicenceStatisticsServiceTest {
   private val prisonRegisterApiClient = mock<PrisonRegisterApiClient>()
@@ -67,6 +68,8 @@ class LicenceStatisticsServiceTest {
         comUsername = "jsmith",
         bookingId = 773722,
         dateCreated = null,
+        approvedByName = "jim smith",
+        approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       ),
     )
     val expectedResult = listOf(

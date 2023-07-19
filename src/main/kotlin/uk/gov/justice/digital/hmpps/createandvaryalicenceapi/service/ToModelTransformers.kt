@@ -51,6 +51,8 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     comUsername = licence.responsibleCom!!.username,
     bookingId = licence.bookingId,
     dateCreated = licence.dateCreated,
+    approvedByName = licence.approvedByName,
+    approvedDate = licence.approvedDate,
   )
 }
 
