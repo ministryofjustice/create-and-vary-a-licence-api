@@ -212,7 +212,4 @@ data class Licence(
 
   @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
   val createdByFullName: String? = null,
-
-  @Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
-  val isInPssPeriod: Boolean? = false,
 )

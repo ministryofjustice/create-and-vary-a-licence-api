@@ -163,14 +163,4 @@ data class Licence(
       dateCreated = LocalDateTime.now(),
     )
   }
-
-  fun isInPssPeriod(): Boolean {
-    val led = licenceExpiryDate
-    val tused = topupSupervisionExpiryDate
-
-    if (led != null && tused != null) {
-      return led.isBefore(LocalDate.now()) && !(tused.isBefore(LocalDate.now()))
-    }
-    return false
-  }
 }
