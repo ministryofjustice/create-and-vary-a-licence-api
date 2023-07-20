@@ -489,7 +489,11 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceConditionService, times(1)).updateAdditionalConditionData(4, 1, anUpdateAdditionalConditionsDataRequest)
+    verify(licenceConditionService, times(1)).updateAdditionalConditionData(
+      4,
+      1,
+      anUpdateAdditionalConditionsDataRequest,
+    )
   }
 
   @Test
@@ -570,7 +574,10 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceService, times(1)).updateReasonForVariation(4, UpdateReasonForVariationRequest(reasonForVariation = "reason"))
+    verify(licenceService, times(1)).updateReasonForVariation(
+      4,
+      UpdateReasonForVariationRequest(reasonForVariation = "reason"),
+    )
   }
 
   @Test
@@ -587,7 +594,11 @@ class LicenceControllerTest {
 
   @Test
   fun `update prison information`() {
-    val expectedRequest = UpdatePrisonInformationRequest(prisonCode = "PVI", prisonDescription = "Pentonville (HMP)", prisonTelephone = "+44 276 54545")
+    val expectedRequest = UpdatePrisonInformationRequest(
+      prisonCode = "PVI",
+      prisonDescription = "Pentonville (HMP)",
+      prisonTelephone = "+44 276 54545",
+    )
 
     mvc.perform(
       put("/licence/id/4/prison-information")
@@ -784,6 +795,8 @@ class LicenceControllerTest {
       comUsername = "jsmith",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      approvedByName = "jim smith",
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
@@ -825,7 +838,8 @@ class LicenceControllerTest {
 
     val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
 
-    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
+    val aStatusUpdateRequest =
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
     val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(

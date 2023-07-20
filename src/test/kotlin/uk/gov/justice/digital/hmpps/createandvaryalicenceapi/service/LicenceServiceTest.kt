@@ -1432,6 +1432,7 @@ class LicenceServiceTest {
       "2",
     )
   }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
     val someStandardConditions = listOf(
@@ -1547,6 +1548,8 @@ class LicenceServiceTest {
         firstName = "X",
         lastName = "Y",
       ),
+      approvedByName = "jim smith",
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -1573,6 +1576,8 @@ class LicenceServiceTest {
       comUsername = "smills",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      approvedByName = "jim smith",
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
     val someAdditionalConditionData = listOf(

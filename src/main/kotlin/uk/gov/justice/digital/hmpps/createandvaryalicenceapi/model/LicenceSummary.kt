@@ -39,13 +39,19 @@ data class LicenceSummary(
   @Schema(description = "The probation area description", example = "Wales")
   val probationAreaDescription: String? = null,
 
-  @Schema(description = "The probation delivery unit (PDU or borough) where the licence is supervised", example = "N01CA")
+  @Schema(
+    description = "The probation delivery unit (PDU or borough) where the licence is supervised",
+    example = "N01CA",
+  )
   val probationPduCode: String?,
 
   @Schema(description = "The description for the PDU", example = "North Wales")
   val probationPduDescription: String? = null,
 
-  @Schema(description = "The local administrative unit (LAU or district) where the licence is supervised", example = "NA01CA-02")
+  @Schema(
+    description = "The local administrative unit (LAU or district) where the licence is supervised",
+    example = "NA01CA-02",
+  )
   val probationLauCode: String?,
 
   @Schema(description = "The LAU description", example = "North Wales")
@@ -65,10 +71,16 @@ data class LicenceSummary(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val actualReleaseDate: LocalDate?,
 
-  @Schema(description = "The case reference number (CRN) of this person, from either prison or probation service", example = "X12344")
+  @Schema(
+    description = "The case reference number (CRN) of this person, from either prison or probation service",
+    example = "X12344",
+  )
   val crn: String?,
 
-  @Schema(description = "The offender's date of birth, from either prison or probation services", example = "12/12/2001")
+  @Schema(
+    description = "The offender's date of birth, from either prison or probation services",
+    example = "12/12/2001",
+  )
   @JsonFormat(pattern = "dd/MM/yyyy")
   val dateOfBirth: LocalDate?,
 
@@ -81,4 +93,14 @@ data class LicenceSummary(
   @Schema(description = "The date the licence was created", example = "02/12/2001 10:15")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val dateCreated: LocalDateTime?,
+
+  @Schema(
+    description = "The full name of the person who approved the licence",
+    example = "John Smith",
+  )
+  val approvedByName: String? = null,
+
+  @Schema(description = "The date and time that this licence was approved", example = "24/08/2022 11:30:33")
+  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+  val approvedDate: LocalDateTime? = null,
 )
