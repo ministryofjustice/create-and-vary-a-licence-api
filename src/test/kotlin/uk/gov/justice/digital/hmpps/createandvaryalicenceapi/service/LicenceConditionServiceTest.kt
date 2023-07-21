@@ -72,7 +72,9 @@ class LicenceConditionServiceTest {
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("smills")
     whenever(securityContext.authentication).thenReturn(authentication)
-    whenever(policyService.getConfigForCondition(any())).thenReturn(CONDITION_CONFIG)
+    whenever(policyService.getConfigForCondition(any(), any())).thenReturn(CONDITION_CONFIG)
+    whenever(conditionFormatter.format(any(), any())).thenReturn("expanded text")
+
     SecurityContextHolder.setContext(securityContext)
 
     reset(
@@ -553,7 +555,6 @@ class LicenceConditionServiceTest {
                 sequence = 0,
               ),
             ),
-            expandedConditionText = "expanded text",
           ),
         )
       }
@@ -600,7 +601,6 @@ class LicenceConditionServiceTest {
                 sequence = 0,
               ),
             ),
-            expandedConditionText = "expanded text",
           ),
         )
       }
@@ -647,7 +647,6 @@ class LicenceConditionServiceTest {
             sequence = 0,
           ),
         ),
-        expandedConditionText = "expanded text",
       )
 
       whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -717,7 +716,6 @@ class LicenceConditionServiceTest {
             sequence = 0,
           ),
         ),
-        expandedConditionText = "expanded text",
       )
 
       service.updateAdditionalConditionData(1L, 1L, request)
@@ -726,52 +724,6 @@ class LicenceConditionServiceTest {
 
       verify(additionalConditionRepository).saveAndFlush(conditionCaptor.capture())
       verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
-    }
-
-    @Test
-    fun `formatting errors are not propagated`() {
-      whenever(licenceRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            aLicenceEntity.copy(
-              additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
-                  conditionSequence = 5,
-                  conditionCategory = "oldCategory",
-                  conditionText = "oldText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                ),
-              ),
-            ),
-          ),
-        )
-      whenever(additionalConditionRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            anAdditionalConditionEntity.copy(),
-          ),
-        )
-
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-      val request = UpdateAdditionalConditionDataRequest(
-        data = listOf(
-          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
-            field = "field1",
-            value = "value1",
-            sequence = 0,
-          ),
-        ),
-        expandedConditionText = "expanded text",
-      )
-
-      whenever(conditionFormatter.format(any(), any())).thenThrow(NullPointerException())
-
-      service.updateAdditionalConditionData(1L, 1L, request)
     }
   }
 

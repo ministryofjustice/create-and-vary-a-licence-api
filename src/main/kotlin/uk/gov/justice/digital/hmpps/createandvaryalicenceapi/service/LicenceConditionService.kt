@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
@@ -263,12 +264,15 @@ class LicenceConditionService(
       .findById(additionalConditionId)
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
+    val version = licenceEntity.version!!
+    val conditionCode = additionalCondition.conditionCode!!
+    val additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
+
     val updatedAdditionalCondition = additionalCondition.copy(
-      conditionVersion = licenceEntity.version!!,
-      additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition),
-      expandedConditionText = request.expandedConditionText,
+      conditionVersion = version,
+      additionalConditionData = additionalConditionData,
+      expandedConditionText = getFormattedText(version, conditionCode, additionalConditionData),
     )
-    checkFormattedText(updatedAdditionalCondition)
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -281,23 +285,8 @@ class LicenceConditionService(
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, currentUser, updatedAdditionalCondition)
   }
 
-  fun checkFormattedText(additionalCondition: EntityAdditionalCondition) {
-    try {
-      val conditionConfig = licencePolicyService.getConfigForCondition(additionalCondition)
-      val backendText = conditionFormatter.format(conditionConfig, additionalCondition.additionalConditionData)
-      val frontendText = additionalCondition.expandedConditionText
-      if (backendText != frontendText) {
-        log.warn("FormattingInconsistency: condition of type: ${conditionConfig.code}, licence: ${additionalCondition.licence.id}")
-      } else {
-        log.info("FormattingMatch: condition of type: ${conditionConfig.code}, licence: ${additionalCondition.licence.id}")
-      }
-    } catch (e: RuntimeException) {
-      log.error(
-        "FormattingError: condition of type: ${additionalCondition.conditionCode}, licence: ${additionalCondition.licence.id}",
-        e,
-      )
-    }
-  }
+  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
+    conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
   fun deleteAdditionalConditions(licenceEntity: Licence, conditionIds: List<Long>) {

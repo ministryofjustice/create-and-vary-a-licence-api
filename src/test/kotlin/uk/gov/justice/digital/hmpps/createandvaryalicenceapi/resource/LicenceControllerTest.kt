@@ -850,7 +850,6 @@ class LicenceControllerTest {
 
     val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
       data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-      expandedConditionText = "expanded text",
     )
   }
 }
