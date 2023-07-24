@@ -478,7 +478,8 @@ class LicenceController(
     ],
   )
   fun getRecentlyApprovedLicences(
-    @RequestBody body: RecentlyApprovedLicencesRequest,
+    @RequestBody @Valid
+    body: RecentlyApprovedLicencesRequest,
   ): List<LicenceSummary> {
     return licenceService.findRecentlyApprovedLicences(
       body.prison,
