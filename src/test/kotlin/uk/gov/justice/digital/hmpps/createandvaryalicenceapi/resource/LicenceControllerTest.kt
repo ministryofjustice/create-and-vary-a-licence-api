@@ -459,7 +459,7 @@ class LicenceControllerTest {
         .content(
           mapper.writeValueAsBytes(
             RecentlyApprovedLicencesRequest(
-              prison = prisonCodes,
+              prisonCodes = prisonCodes,
             ),
           ),
         ),

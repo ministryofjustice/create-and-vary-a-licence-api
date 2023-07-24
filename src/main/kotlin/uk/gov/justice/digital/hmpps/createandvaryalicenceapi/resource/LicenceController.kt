@@ -482,7 +482,7 @@ class LicenceController(
     body: RecentlyApprovedLicencesRequest,
   ): List<LicenceSummary> {
     return licenceService.findRecentlyApprovedLicences(
-      body.prison,
+      body.prisonCodes,
     )
   }
 

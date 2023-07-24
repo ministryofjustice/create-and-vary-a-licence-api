@@ -568,7 +568,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(
         RecentlyApprovedLicencesRequest(
-          prison = listOf("MDI", "BMI"),
+          prisonCodes = listOf("MDI", "BMI"),
         ),
       )
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))

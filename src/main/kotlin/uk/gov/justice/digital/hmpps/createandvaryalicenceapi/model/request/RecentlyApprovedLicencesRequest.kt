@@ -5,5 +5,5 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Request object for searching for recently approved licences")
 data class RecentlyApprovedLicencesRequest(
   @Schema(description = "A list of prison codes", example = "['PVI', 'BAI']")
-  val prison: List<String>? = null,
+  val prisonCodes: List<String>,
 )
