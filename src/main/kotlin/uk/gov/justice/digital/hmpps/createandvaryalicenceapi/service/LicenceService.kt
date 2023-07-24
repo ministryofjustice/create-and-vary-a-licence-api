@@ -424,12 +424,12 @@ class LicenceService(
   ): List<LicenceSummary> {
     try {
       val releasedAfterDate = LocalDate.now().minusDays(14L)
-      // val all = licenceRepository.findAll()
-      val licencesFilteredByReleaseDate = licenceRepository.getRecentlyApprovedLicences(prisonCodes, releasedAfterDate)
+      val recentActiveAndApprovedLicences =
+        licenceRepository.getRecentlyApprovedLicences(prisonCodes, releasedAfterDate)
 
       // if a licence is an active variation then we want to return the original
       // licence that the variation was created from and not the variation itself
-      val recentlyApprovedLicences = licencesFilteredByReleaseDate.map {
+      val recentlyApprovedLicences = recentActiveAndApprovedLicences.map {
         if (it.statusCode == ACTIVE && it.variationOfId != null) {
           findOriginalLicenceForVariation(it)
         } else {

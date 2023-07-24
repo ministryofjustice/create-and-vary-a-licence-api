@@ -449,8 +449,8 @@ class LicenceController(
   @PostMapping(value = ["/recently-approved"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Get a list of recently approved licence summaries matching the supplied criteria.",
-    description = "Get the recently approved licences matching the supplied lists of prison, staffId, nomsId and PDU. Requires ROLE_CVL_ADMIN.",
+    summary = "Get a list of recently approved licence summaries matching the supplied list of prisons.",
+    description = "Get the recently approved licences matching the supplied list of prisons. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
