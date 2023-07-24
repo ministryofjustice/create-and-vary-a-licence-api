@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -18,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+
+private const val CONDITION_CODE = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02"
 
 class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
@@ -51,12 +54,12 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.standardLicenceConditions)
-      .extracting<Tuple> { Tuple.tuple(it.code, it.text, it.sequence) }
+      .extracting<Tuple> { tuple(it.code, it.text, it.sequence) }
       .containsAll(
         listOf(
-          Tuple.tuple("code1", "text", 0),
-          Tuple.tuple("code2", "text", 1),
-          Tuple.tuple("code3", "text", 2),
+          tuple("code1", "text", 0),
+          tuple("code2", "text", 1),
+          tuple("code3", "text", 2),
         ),
       )
   }
@@ -115,13 +118,13 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.additionalLicenceConditions)
-      .extracting<Tuple> { Tuple.tuple(it.code, it.category, it.text, it.sequence) }
+      .extracting<Tuple> { tuple(it.code, it.category, it.text, it.sequence) }
       .containsAll(
         listOf(
-          Tuple.tuple("code1", "category", "text", 0),
-          Tuple.tuple("code2", "category", "text", 1),
-          Tuple.tuple("code3", "category", "text", 2),
-          Tuple.tuple("code4", "category", "text", 3),
+          tuple(CONDITION_CODE, "category", "text", 0),
+          tuple("code2", "category", "text", 1),
+          tuple("code3", "category", "text", 2),
+          tuple("code4", "category", "text", 3),
         ),
       )
   }
@@ -191,15 +194,13 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.additionalLicenceConditions?.get(0)?.expandedText).isEqualTo("expanded text")
+    assertThat(result?.additionalLicenceConditions?.get(0)?.expandedText).isEqualTo("Notify your supervising officer of any developing intimate relationships with women or men.")
 
     assertThat(result?.additionalLicenceConditions?.get(0)?.data)
-      .extracting<Tuple> { Tuple.tuple(it.field, it.value, it.sequence) }
+      .extracting<Tuple> { tuple(it.field, it.value, it.sequence) }
       .containsAll(
         listOf(
-          Tuple.tuple("field1", "value1", 0),
-          Tuple.tuple("field2", "value2", 1),
-          Tuple.tuple("field3", "value3", 2),
+          tuple("gender", "women or men", 0),
         ),
       )
   }
@@ -228,7 +229,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(
-        AdditionalConditionRequest(code = "code1", category = "category", sequence = 0, text = "text"),
+        AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 0, text = "text"),
         AdditionalConditionRequest(code = "code2", category = "category", sequence = 1, text = "text"),
         AdditionalConditionRequest(code = "code3", category = "category", sequence = 2, text = "text"),
         AdditionalConditionRequest(code = "code4", category = "category", sequence = 3, text = "text"),
@@ -238,11 +239,8 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
     val anAdditionalConditionDataRequest = UpdateAdditionalConditionDataRequest(
       data = listOf(
-        AdditionalConditionData(field = "field1", value = "value1", sequence = 0),
-        AdditionalConditionData(field = "field2", value = "value2", sequence = 1),
-        AdditionalConditionData(field = "field3", value = "value3", sequence = 2),
+        AdditionalConditionData(field = "gender", value = "women or men", sequence = 0),
       ),
-      expandedConditionText = "expanded text",
     )
   }
 }
