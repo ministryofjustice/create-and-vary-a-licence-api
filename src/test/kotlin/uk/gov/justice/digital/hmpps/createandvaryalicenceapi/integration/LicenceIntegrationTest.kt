@@ -20,11 +20,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -41,9 +41,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var standardConditionRepository: StandardConditionRepository
-
-  @Autowired
-  lateinit var additionalConditionRepository: AdditionalConditionRepository
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
@@ -559,6 +556,39 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.prisonCode).isEqualTo("PVI")
     assertThat(result?.prisonDescription).isEqualTo("Pentonville (HMP)")
     assertThat(result?.prisonTelephone).isEqualTo("+44 276 54545")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-recently-approved-licences.sql",
+  )
+  fun `find recently approved licences`() {
+    val result = webTestClient.post()
+      .uri("/licence/recently-approved")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(
+        RecentlyApprovedLicencesRequest(
+          prisonCodes = listOf("MDI", "BMI"),
+        ),
+      )
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.size).isEqualTo(4)
+    assertThat(result)
+      .extracting<Tuple> {
+        tuple(it.licenceId, it.licenceStatus, it.nomisId, it.surname, it.forename, it.prisonCode, it.prisonDescription)
+      }
+      .contains(
+        tuple(2L, LicenceStatus.APPROVED, "B1234BB", "Bobson", "Bob", "MDI", "Moorland HMP"),
+        tuple(4L, LicenceStatus.ACTIVE, "C1234DD", "Harcourt", "Kate", "BMI", "Birmingham HMP"),
+        tuple(6L, LicenceStatus.INACTIVE, "C1234FF", "Biggs", "Harold", "BMI", "Birmingham HMP"),
+        tuple(10L, LicenceStatus.APPROVED, "F2504MG", "Smith", "Jim", "MDI", "Moorland HMP"),
+      )
   }
 
   private companion object {

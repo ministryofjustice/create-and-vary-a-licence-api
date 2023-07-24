@@ -450,6 +450,49 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `find recently approved licences matching criteria - returns recently approved licences`() {
+    whenever(licenceRepository.getRecentlyApprovedLicences(any(), any())).thenReturn(
+      listOf(
+        aRecentlyApprovedLicence,
+      ),
+    )
+
+    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aRecentlyApprovedLicenceSummary))
+    verify(licenceRepository, times(1)).getRecentlyApprovedLicences(
+      anyList(),
+      any<LocalDate>(),
+    )
+  }
+
+  @Test
+  fun `find recently approved licences matching criteria - returns the original licence for an active variation`() {
+    val activeVariationLicence = aRecentlyApprovedLicence.copy(
+      id = aRecentlyApprovedLicence.id + 1,
+      statusCode = LicenceStatus.ACTIVE,
+      variationOfId = aRecentlyApprovedLicence.id,
+    )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aRecentlyApprovedLicence))
+    whenever(
+      licenceRepository.getRecentlyApprovedLicences(
+        anyList(),
+        any<LocalDate>(),
+      ),
+    ).thenReturn(
+      listOf(
+        activeVariationLicence,
+      ),
+    )
+
+    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
+
+    assertThat(licenceSummaries).isEqualTo(listOf(aRecentlyApprovedLicenceSummary))
+    verify(licenceRepository, times(1)).getRecentlyApprovedLicences(anyList(), any<LocalDate>())
+  }
+
+  @Test
   fun `update licence status persists the licence and history correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
@@ -1415,6 +1458,11 @@ class LicenceServiceTest {
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
+    val aRecentlyApprovedLicence = aLicenceEntity.copy(
+      actualReleaseDate = LocalDate.now().minusDays(1),
+      conditionalReleaseDate = LocalDate.now(),
+    )
+
     val aLicenceSummary = LicenceSummary(
       licenceId = 1,
       licenceType = LicenceType.AP,
@@ -1441,6 +1489,11 @@ class LicenceServiceTest {
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+    )
+
+    val aRecentlyApprovedLicenceSummary = aLicenceSummary.copy(
+      actualReleaseDate = LocalDate.now().minusDays(1),
+      conditionalReleaseDate = LocalDate.now(),
     )
   }
 }

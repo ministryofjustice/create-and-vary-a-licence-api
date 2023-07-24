@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -442,6 +443,47 @@ class LicenceController(
         sortBy = sortBy,
         sortOrder = sortOrder,
       ),
+    )
+  }
+
+  @Tag(name = Tags.LICENCES)
+  @PostMapping(value = ["/recently-approved"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Get a list of recently approved licence summaries matching the supplied list of prisons.",
+    description = "Get the recently approved licences matching the supplied list of prisons. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returned matching licence summary details - empty if no matches.",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getRecentlyApprovedLicences(
+    @RequestBody @Valid
+    body: RecentlyApprovedLicencesRequest,
+  ): List<LicenceSummary> {
+    return licenceService.findRecentlyApprovedLicences(
+      body.prisonCodes,
     )
   }
 
