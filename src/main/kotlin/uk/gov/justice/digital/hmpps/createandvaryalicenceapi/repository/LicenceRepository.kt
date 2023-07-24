@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 
 @Repository
 interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExecutor<Licence> {
@@ -36,6 +37,21 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getApprovedLicencesOnOrPassedReleaseDate(): List<Licence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l 
+        WHERE l.prisonCode IN :prisonCodes 
+        AND l.statusCode IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+        )
+        AND (COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) > :releasedAfterDate)
+        ORDER BY l.conditionalReleaseDate ASC
+    """,
+  )
+  fun getRecentlyApprovedLicences(prisonCodes: List<String>?, releasedAfterDate: LocalDate): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

@@ -7,6 +7,7 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -49,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -438,6 +440,38 @@ class LicenceControllerTest {
       .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
 
     verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
+  }
+
+  @Test
+  fun `get recently approved licences by prison code`() {
+    val prisonCodes = listOf("LEI")
+
+    whenever(licenceService.findRecentlyApprovedLicences(any())).thenReturn(
+      listOf(
+        aLicenceSummary,
+      ),
+    )
+
+    val result = mvc.perform(
+      post("/licence/recently-approved")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(
+            RecentlyApprovedLicencesRequest(
+              prison = prisonCodes,
+            ),
+          ),
+        ),
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(licenceService, times(1)).findRecentlyApprovedLicences(prisonCodes)
   }
 
   @Test

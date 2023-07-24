@@ -47,6 +47,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import java.lang.IllegalStateException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
@@ -413,6 +414,29 @@ class LicenceService(
       val matchingLicences =
         licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
       return transformToListOfSummaries(matchingLicences)
+    } catch (e: PropertyReferenceException) {
+      throw ValidationException(e.message)
+    }
+  }
+
+  fun findRecentlyApprovedLicences(
+    prisonCodes: List<String>?,
+  ): List<LicenceSummary> {
+    try {
+      val releasedAfterDate = LocalDate.now().minusDays(14L)
+      // val all = licenceRepository.findAll()
+      val licencesFilteredByReleaseDate = licenceRepository.getRecentlyApprovedLicences(prisonCodes, releasedAfterDate)
+
+      // if a licence is an active variation then we want to return the original
+      // licence that the variation was created from and not the variation itself
+      val recentlyApprovedLicences = licencesFilteredByReleaseDate.map {
+        if (it.statusCode == ACTIVE && it.variationOfId != null) {
+          findOriginalLicenceForVariation(it)
+        } else {
+          it
+        }
+      }
+      return transformToListOfSummaries(recentlyApprovedLicences)
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message)
     }
@@ -845,5 +869,15 @@ class LicenceService(
     names?.removeAt(0)
     val lastName = names?.joinToString(" ").orEmpty()
     return Pair(firstName, lastName)
+  }
+
+  private fun findOriginalLicenceForVariation(variationLicence: EntityLicence): EntityLicence {
+    var originalLicence = variationLicence
+    while (originalLicence.variationOfId != null) {
+      originalLicence = licenceRepository
+        .findById(originalLicence.variationOfId!!)
+        .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
+    }
+    return originalLicence
   }
 }
