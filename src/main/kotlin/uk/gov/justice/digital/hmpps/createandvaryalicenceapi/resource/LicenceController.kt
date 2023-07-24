@@ -427,7 +427,8 @@ class LicenceController(
     ],
   )
   fun getLicencesMatchingCriteria(
-    @RequestBody body: MatchLicencesRequest,
+    @Valid @RequestBody
+    body: MatchLicencesRequest,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
   ): List<LicenceSummary> {
@@ -836,7 +837,8 @@ class LicenceController(
   )
   fun submitLicence(
     @PathVariable("licenceId") licenceId: Long,
-    @RequestBody request: List<NotifyRequest>?,
+    @Valid @RequestBody
+    request: List<NotifyRequest>?,
   ) {
     return licenceService.submitLicence(licenceId, request)
   }

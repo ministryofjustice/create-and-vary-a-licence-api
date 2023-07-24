@@ -61,7 +61,8 @@ class OffenderController(private val offenderService: OffenderService, private v
   )
   fun updateResponsibleCom(
     @PathVariable crn: String,
-    @RequestBody body: UpdateComRequest,
+    @Valid @RequestBody
+    body: UpdateComRequest,
   ) {
     val newCom = this.comService.updateComDetails(body)
     this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
@@ -103,7 +104,8 @@ class OffenderController(private val offenderService: OffenderService, private v
   )
   fun updateProbationTeam(
     @PathVariable crn: String,
-    @RequestBody body: UpdateProbationTeamRequest,
+    @Valid @RequestBody
+    body: UpdateProbationTeamRequest,
   ) {
     this.offenderService.updateProbationTeam(crn, body)
   }

@@ -62,7 +62,9 @@ class ComController(private val comService: ComService, private val notifyServic
     ],
   )
   fun updateComDetails(
-    @RequestBody body: UpdateComRequest,
+    @Valid
+    @RequestBody
+    body: UpdateComRequest,
   ) {
     this.comService.updateComDetails(body)
   }
