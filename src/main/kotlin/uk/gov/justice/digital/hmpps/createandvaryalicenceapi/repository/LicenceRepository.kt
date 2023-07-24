@@ -51,7 +51,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         ORDER BY l.conditionalReleaseDate ASC
     """,
   )
-  fun getRecentlyApprovedLicences(prisonCodes: List<String>?, releasedAfterDate: LocalDate): List<Licence>
+  fun getRecentlyApprovedLicences(prisonCodes: List<String>, releasedAfterDate: LocalDate): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

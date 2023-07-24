@@ -420,7 +420,7 @@ class LicenceService(
   }
 
   fun findRecentlyApprovedLicences(
-    prisonCodes: List<String>?,
+    prisonCodes: List<String>,
   ): List<LicenceSummary> {
     try {
       val releasedAfterDate = LocalDate.now().minusDays(14L)
