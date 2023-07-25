@@ -725,6 +725,79 @@ class LicenceConditionServiceTest {
       verify(additionalConditionRepository).saveAndFlush(conditionCaptor.capture())
       verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
     }
+
+    @Test
+    fun `delete multiple conditions`() {
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      val licenceEntity = aLicenceEntity.copy(
+        additionalConditions = listOf(
+          AdditionalCondition(
+            id = 1,
+            conditionVersion = "1.0",
+            conditionCode = "code",
+            conditionSequence = 5,
+            conditionCategory = "oldCategory",
+            conditionText = "oldText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 2,
+            conditionVersion = "1.0",
+            conditionCode = "code2",
+            conditionSequence = 6,
+            conditionCategory = "removedCategory",
+            conditionText = "removedText",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+          AdditionalCondition(
+            id = 3,
+            conditionVersion = "1.0",
+            conditionCode = "code3",
+            conditionSequence = 6,
+            conditionCategory = "oldCategory3",
+            conditionText = "oldText3",
+            additionalConditionData = someAdditionalConditionData,
+            licence = aLicenceEntity,
+            conditionType = "AP",
+          ),
+        ),
+      )
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(licenceEntity),
+        )
+
+      service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2))
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+        AdditionalCondition(
+          id = 1,
+          conditionVersion = "1.0",
+          conditionCode = "code",
+          conditionCategory = "oldCategory",
+          conditionSequence = 5,
+          conditionText = "oldText",
+          conditionType = "AP",
+          additionalConditionData = someAdditionalConditionData,
+          licence = aLicenceEntity,
+        ),
+      )
+
+      assertThat(licenceCaptor.value.standardConditions).containsExactly(
+        aLicenceEntity.standardConditions[2],
+      )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    }
   }
 
   private companion object {
@@ -736,6 +809,7 @@ class LicenceConditionServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -743,6 +817,7 @@ class LicenceConditionServiceTest {
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -750,6 +825,7 @@ class LicenceConditionServiceTest {
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
+        conditionType = "PSS",
         licence = mock(),
       ),
     )

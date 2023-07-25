@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -62,17 +63,43 @@ class AuditService(
     auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
   }
 
-  fun recordAuditEventDeleteAdditionalConditions(licence: Licence, currentUser: CommunityOffenderManager, removedConditions: List<AdditionalCondition>) {
+  fun recordAuditEventDeleteAdditionalConditions(
+    licence: Licence,
+    currentUser: CommunityOffenderManager,
+    removedAdditionalConditions: List<AdditionalCondition>,
+  ) {
     val summary = "Updated additional conditions"
 
     val changes = mapOf(
       "type" to summary,
-      "changes" to removedConditions.map {
+      "changes" to removedAdditionalConditions.map {
         mapOf(
           "type" to "REMOVED",
           "conditionCode" to it.conditionCode,
           "conditionType" to it.conditionType,
           "conditionText" to it.expandedConditionText,
+        )
+      },
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventDeleteStandardConditions(
+    licence: Licence,
+    currentUser: CommunityOffenderManager,
+    removedStandardConditions: List<StandardCondition>,
+  ) {
+    val summary = "Updated standard conditions"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to removedStandardConditions.map {
+        mapOf(
+          "type" to "REMOVED",
+          "conditionCode" to it.conditionCode,
+          "conditionType" to it.conditionType,
+          "conditionText" to it.conditionText,
         )
       },
     )
