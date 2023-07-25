@@ -451,7 +451,12 @@ class LicenceService(
 
   @Transactional
   fun activateLicences(licences: List<EntityLicence>, reason: String? = null) {
-    val activatedLicences = licences.map { it.copy(statusCode = ACTIVE) }
+    val activatedLicences = licences.map {
+      it.copy(
+        statusCode = ACTIVE,
+        licenceExpiryDate = LocalDate.now(),
+      )
+    }
     if (activatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(activatedLicences)
 

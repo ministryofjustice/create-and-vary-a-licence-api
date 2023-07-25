@@ -83,4 +83,100 @@ class LicenceTest {
     val isInPssPeriod = testLicence.isInPssPeriod()
     assertTrue(isInPssPeriod)
   }
+
+  @Test
+  fun `isActivatedInPssPeriod should return false if LED is null`() {
+    val testLicence = Licence(
+      licenceExpiryDate = null,
+      topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+      licenceActivatedDate = LocalDate.now(),
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertFalse(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isActivatedInPssPeriod should returns false if TUSED is null`() {
+    val testLicence = Licence(
+      licenceExpiryDate = LocalDate.now().plusDays(1),
+      topupSupervisionExpiryDate = null,
+      licenceActivatedDate = LocalDate.now(),
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertFalse(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isActivatedInPssPeriod should returns false if LAD is null`() {
+    val testLicence = Licence(
+      licenceExpiryDate = LocalDate.now().plusDays(1),
+      topupSupervisionExpiryDate = LocalDate.now(),
+      licenceActivatedDate = null,
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertFalse(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isInPssPeriod should returns false if all LAD, LED and TUSED is null`() {
+    val testLicence = Licence(
+      licenceExpiryDate = null,
+      topupSupervisionExpiryDate = null,
+      licenceActivatedDate = null,
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertFalse(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isActivatedInPssPeriod should return false if LED is before LAD`() {
+    val testLicence = Licence(
+      licenceExpiryDate = LocalDate.now().plusDays(1),
+      topupSupervisionExpiryDate = LocalDate.now().minusDays(1),
+      licenceActivatedDate = LocalDate.now(),
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertFalse(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isActivatedInPssPeriod should return false if both LED and TUSED are before LAD`() {
+    val testLicence = Licence(
+      licenceExpiryDate = LocalDate.now().plusDays(1),
+      topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+      licenceActivatedDate = LocalDate.now(),
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertFalse(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isActivatedInPssPeriod should return true if LED less than LAD less than TUSED`() {
+    val testLicence = Licence(
+      licenceExpiryDate = LocalDate.now().minusDays(1),
+      topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+      licenceActivatedDate = LocalDate.now(),
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertTrue(isActivatedInPssPeriod)
+  }
+
+  @Test
+  fun `isActivatedInPssPeriod should return true if LED less than LAD equals TUSED`() {
+    val testLicence = Licence(
+      licenceExpiryDate = LocalDate.now().minusDays(1),
+      topupSupervisionExpiryDate = LocalDate.now(),
+      licenceActivatedDate = LocalDate.now(),
+    )
+
+    val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
+    assertTrue(isActivatedInPssPeriod)
+  }
 }

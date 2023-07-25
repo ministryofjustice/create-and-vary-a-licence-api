@@ -51,6 +51,10 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     // additionalPssCondition first record id should be equal to 2
     assertThat(additionalPssConditions?.first()?.id).isEqualTo(2)
 
+    // standard conditions
+    assertThat(result?.standardLicenceConditions?.size).isEqualTo(0)
+    assertThat(result?.standardPssConditions?.size).isEqualTo(1)
+
     val result1 = webTestClient.get()
       .uri("/licence/id/4")
       .accept(MediaType.APPLICATION_JSON)
@@ -64,6 +68,8 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     assertThat(result1?.additionalLicenceConditions).isEmpty()
     assertThat(result1?.additionalPssConditions?.size).isEqualTo(1)
     assertThat(result1?.additionalPssConditions?.first()?.id).isEqualTo(7)
+    assertThat(result1?.standardLicenceConditions?.size).isEqualTo(0)
+    assertThat(result1?.standardPssConditions?.size).isEqualTo(2)
 
     val result2 = webTestClient.get()
       .uri("/licence/id/5")
@@ -80,5 +86,7 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     assertThat(result2?.additionalLicenceConditions?.first()?.id).isEqualTo(8)
     assertThat(result2?.additionalPssConditions?.size).isEqualTo(1)
     assertThat(result2?.additionalPssConditions?.first()?.id).isEqualTo(9)
+    assertThat(result2?.standardLicenceConditions?.size).isEqualTo(2)
+    assertThat(result2?.standardPssConditions?.size).isEqualTo(1)
   }
 }

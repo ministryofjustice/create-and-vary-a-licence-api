@@ -53,7 +53,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   )
   fun getRecentlyApprovedLicences(prisonCodes: List<String>, releasedAfterDate: LocalDate): List<Licence>
 
-    @Query(
+  @Query(
     """
       SELECT l
       FROM Licence l
@@ -65,7 +65,8 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED,
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
   )
-  """,)
+  """,
+  )
   fun getAllVariedLicencesInPSSPeriod(): List<Licence>
 }
 

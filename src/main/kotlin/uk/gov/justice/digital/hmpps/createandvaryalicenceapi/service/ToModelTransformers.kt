@@ -121,6 +121,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     variationOf = licence.variationOfId,
     createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
     isInPssPeriod = licence.isInPssPeriod(),
+    isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
   )
 }
 

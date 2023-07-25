@@ -727,7 +727,7 @@ class LicenceConditionServiceTest {
     }
 
     @Test
-    fun `delete multiple additional conditions`() {
+    fun `delete multiple conditions`() {
       whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       val licenceEntity = aLicenceEntity.copy(
         additionalConditions = listOf(
@@ -771,7 +771,7 @@ class LicenceConditionServiceTest {
           Optional.of(licenceEntity),
         )
 
-      service.deleteAdditionalConditions(licenceEntity, listOf(2, 3))
+      service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2))
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
@@ -791,6 +791,10 @@ class LicenceConditionServiceTest {
         ),
       )
 
+      assertThat(licenceCaptor.value.standardConditions).containsExactly(
+        aLicenceEntity.standardConditions[2],
+      )
+
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
     }
@@ -805,6 +809,7 @@ class LicenceConditionServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -812,6 +817,7 @@ class LicenceConditionServiceTest {
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -819,6 +825,7 @@ class LicenceConditionServiceTest {
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
+        conditionType = "PSS",
         licence = mock(),
       ),
     )

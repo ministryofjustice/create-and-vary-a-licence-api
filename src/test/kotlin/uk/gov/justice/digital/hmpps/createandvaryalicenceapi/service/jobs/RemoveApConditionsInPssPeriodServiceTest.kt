@@ -90,15 +90,18 @@ class RemoveApConditionsInPssPeriodServiceTest {
     service.removeAPConditions()
 
     val licenceEntityCaptor = argumentCaptor<Licence>()
-    val conditionIdCaptor = argumentCaptor<List<Long>>()
+    val additionalConditionIdCaptor = argumentCaptor<List<Long>>()
+    val standardConditionIdCaptor = argumentCaptor<List<Long>>()
 
-    verify(licenceConditionService, times(1)).deleteAdditionalConditions(
+    verify(licenceConditionService, times(1)).deleteConditions(
       licenceEntityCaptor.capture(),
-      conditionIdCaptor.capture(),
+      additionalConditionIdCaptor.capture(),
+      standardConditionIdCaptor.capture(),
     )
 
     assertThat(licenceEntityCaptor.firstValue.id).isEqualTo(aLicenceEntity.id)
-    assertThat(conditionIdCaptor.allValues[0]).isEqualTo(listOf(1L))
+    assertThat(additionalConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L))
+    assertThat(standardConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 2L))
   }
 
   @Test
@@ -139,15 +142,18 @@ class RemoveApConditionsInPssPeriodServiceTest {
     service.removeAPConditions()
 
     val licenceEntityCaptor = argumentCaptor<Licence>()
-    val conditionIdCaptor = argumentCaptor<List<Long>>()
+    val additionalConditionIdCaptor = argumentCaptor<List<Long>>()
+    val standardConditionIdCaptor = argumentCaptor<List<Long>>()
 
-    verify(licenceConditionService, times(1)).deleteAdditionalConditions(
+    verify(licenceConditionService, times(1)).deleteConditions(
       licenceEntityCaptor.capture(),
-      conditionIdCaptor.capture(),
+      additionalConditionIdCaptor.capture(),
+      standardConditionIdCaptor.capture(),
     )
 
     assertThat(licenceEntityCaptor.firstValue.id).isEqualTo(aLicenceEntity.id)
-    assertThat(conditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 3L))
+    assertThat(additionalConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 3L))
+    assertThat(standardConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 2L))
   }
 
   private companion object {
@@ -157,6 +163,7 @@ class RemoveApConditionsInPssPeriodServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
+        conditionType = "AP",
         licence = mock(),
       ),
       EntityStandardCondition(
@@ -164,6 +171,7 @@ class RemoveApConditionsInPssPeriodServiceTest {
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
+        conditionType = "AP",
         licence = mock(),
       ),
       EntityStandardCondition(
@@ -171,6 +179,7 @@ class RemoveApConditionsInPssPeriodServiceTest {
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
+        conditionType = "PSS",
         licence = mock(),
       ),
     )

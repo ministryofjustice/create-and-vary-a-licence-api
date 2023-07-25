@@ -894,7 +894,14 @@ class LicenceServiceTest {
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    verify(licenceRepository, times(1)).saveAllAndFlush(
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.ACTIVE,
+          licenceExpiryDate = LocalDate.now(),
+        ),
+      ),
+    )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
@@ -921,7 +928,14 @@ class LicenceServiceTest {
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
 
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    verify(licenceRepository, times(1)).saveAllAndFlush(
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.ACTIVE,
+          licenceExpiryDate = LocalDate.now(),
+        ),
+      ),
+    )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 

@@ -114,7 +114,7 @@ class LicenceConditionService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    deleteAdditionalConditions(licenceEntity, listOf(conditionId))
+    deleteConditions(licenceEntity, listOf(conditionId), emptyList())
   }
 
   @Transactional
@@ -289,25 +289,39 @@ class LicenceConditionService(
     conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
-  fun deleteAdditionalConditions(licenceEntity: Licence, conditionIds: List<Long>) {
+  fun deleteConditions(
+    licenceEntity: Licence,
+    additionalConditionIds: List<Long>,
+    standardConditionIds: List<Long>,
+  ) {
     val username = SecurityContextHolder.getContext().authentication.name
     val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
 
     // return all conditions except condition with submitted conditionIds
-    val revisedConditions = licenceEntity.additionalConditions.filter { conditionIds.indexOf(it.id) == -1 }
+    val revisedAdditionalConditions =
+      licenceEntity.additionalConditions.filter { additionalConditionIds.indexOf(it.id) == -1 }
 
-    val removedConditions =
-      licenceEntity.additionalConditions.filter { conditionIds.indexOf(it.id) != -1 }
+    val removedAdditionalConditions =
+      licenceEntity.additionalConditions.filter { additionalConditionIds.indexOf(it.id) != -1 }
+
+    // return all conditions except condition with submitted conditionIds
+    val revisedStandardConditions =
+      licenceEntity.standardConditions.filter { standardConditionIds.indexOf(it.id) == -1 }
+
+    val removedStandardConditions =
+      licenceEntity.standardConditions.filter { standardConditionIds.indexOf(it.id) != -1 }
 
     val updatedLicence = licenceEntity.copy(
-      additionalConditions = revisedConditions,
+      additionalConditions = revisedAdditionalConditions,
+      standardConditions = revisedStandardConditions,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
-    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, currentUser, removedConditions)
+    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, currentUser, removedAdditionalConditions)
+    auditService.recordAuditEventDeleteStandardConditions(licenceEntity, currentUser, removedStandardConditions)
   }
 
   companion object {
