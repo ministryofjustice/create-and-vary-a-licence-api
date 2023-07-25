@@ -60,6 +60,7 @@ data class Licence(
   val sentenceEndDate: LocalDate? = null,
   val licenceStartDate: LocalDate? = null,
   val licenceExpiryDate: LocalDate? = null,
+  val licenceActivatedDate: LocalDate? = null,
   val topupSupervisionStartDate: LocalDate? = null,
   val topupSupervisionExpiryDate: LocalDate? = null,
   val probationAreaCode: String? = null,
@@ -119,7 +120,6 @@ data class Licence(
 
   var variationOfId: Long? = null,
   var versionOfId: Long? = null,
-
 ) {
   fun copyLicence(newStatus: LicenceStatus): Licence {
     return Licence(
@@ -162,5 +162,26 @@ data class Licence(
       responsibleCom = this.responsibleCom,
       dateCreated = LocalDateTime.now(),
     )
+  }
+
+  fun isInPssPeriod(): Boolean {
+    val led = licenceExpiryDate
+    val tused = topupSupervisionExpiryDate
+
+    if (led != null && tused != null) {
+      return led.isBefore(LocalDate.now()) && !(tused.isBefore(LocalDate.now()))
+    }
+    return false
+  }
+
+  fun isActivatedInPssPeriod(): Boolean {
+    val led = licenceExpiryDate
+    val tused = topupSupervisionExpiryDate
+    val lad = licenceActivatedDate
+
+    if (lad != null && led != null && tused != null) {
+      return led.isBefore(lad) && !(tused.isBefore(lad))
+    }
+    return false
   }
 }
