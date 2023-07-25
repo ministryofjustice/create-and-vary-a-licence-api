@@ -20,8 +20,22 @@ generic-service:
     HMPPS_PROBATIONSEARCH_API_URL: "https://probation-offender-search.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence.hmpps.service.justice.gov.uk"
 
-# CloudPlatform AlertManager receiver to route prometheus alerts to slack
-# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
+  postgresDatabaseRestore:
+    enabled: true
+    namespace_secrets:
+      rds-instance-output:
+        DB_NAME: "database_name"
+        DB_USER: "database_username"
+        DB_PASS: "database_password"
+        DB_HOST: "rds_instance_address"
+      rds-instance-output-preprod:
+        DB_NAME_PREPROD: "database_name"
+        DB_USER_PREPROD: "database_username"
+        DB_PASS_PREPROD: "database_password"
+        DB_HOST_PREPROD: "rds_instance_address"
+
+#CloudPlatform AlertManager receiver to route prometheus alerts to slack
+#See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: cvl-alerts
 
