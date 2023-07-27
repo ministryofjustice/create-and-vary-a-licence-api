@@ -74,9 +74,6 @@ dependencies {
   testImplementation("com.h2database:h2")
 }
 
-java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(18))
-}
 repositories {
   mavenCentral()
 }
