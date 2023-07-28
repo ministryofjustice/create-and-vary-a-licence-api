@@ -13,16 +13,16 @@ data class ProbationSearchResult(
   @Schema(description = "The forename and surname of the COM")
   val comName: String = "",
 
-  @Schema(description = "The description of the COM's team")
+  @Schema(description = "The description of the COM's team", example = "Test Team")
   val teamName: String? = "",
 
   @Schema(description = "The release date of the offender", example = "27/07/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate? = null,
 
-  @Schema(description = "The status of the licence")
+  @Schema(description = "The status of the licence", example = "IN_PROGRESS",)
   val licenceStatus: LicenceStatus? = null,
 
-  @Schema(description = "Indicates whether the offender is in prison or out on probation")
+  @Schema(description = "Indicates whether the offender is out on probation based on their licence", example = "true")
   val isOnProbation: Boolean? = null,
 )

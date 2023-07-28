@@ -100,16 +100,6 @@ class ComService(
       probationSearchApiSortBy,
     )
 
-    /**
-     * currently, I am assuming that all the results that are coming back will yield a licence with a
-     * required licence status but some search results may only have an inactive licence so the licence repo query will return an
-     * empty list
-     *
-     * In this case, we firstly need to filter out the results where an inactive licence is the only licence the
-     * person has and for the rest map them as normal
-     *
-     */
-
     val enrichedProbationSearchResult = entityProbationSearchResult.mapNotNull {
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.searchRelevantLicenceStatus())
