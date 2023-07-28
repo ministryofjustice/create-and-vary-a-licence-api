@@ -20,7 +20,7 @@ data class ProbationSearchResult(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate? = null,
 
-  @Schema(description = "The status of the licence", example = "IN_PROGRESS",)
+  @Schema(description = "The status of the licence", example = "IN_PROGRESS")
   val licenceStatus: LicenceStatus? = null,
 
   @Schema(description = "Indicates whether the offender is out on probation based on their licence", example = "true")
