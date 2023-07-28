@@ -4,19 +4,22 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.EnrichedProbationSearchResults
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import java.time.LocalDateTime
 
 @Service
 class ComService(
   private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
+  private val licenceRepository: LicenceRepository,
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
 ) {
@@ -83,7 +86,7 @@ class ComService(
     return com
   }
 
-  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): List<ProbationSearchResult> {
+  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): EnrichedProbationSearchResults {
     val probationSearchApiSortBy = body.sortBy.map {
       ProbationSearchSortByRequest(
         it.field.probationSearchApiSortType,
@@ -96,6 +99,49 @@ class ComService(
       communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
       probationSearchApiSortBy,
     )
-    return entityProbationSearchResult.transformToModelProbationResult()
+
+    /**
+     * currently, I am assuming that all the results that are coming back will yield a licence with a
+     * required licence status but some search results may only have an inactive licence so the licence repo query will return an
+     * empty list
+     *
+     * In this case, we firstly need to filter out the results where an inactive licence is the only licence the
+     * person has and for the rest map them as normal
+     *
+     */
+
+    val enrichedProbationSearchResult = entityProbationSearchResult.mapNotNull {
+      val licences =
+        licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.searchRelevantLicenceStatus())
+
+      // If an empty list has been returned, there are no relevant licences relating to search for the offender
+      if (licences.isEmpty()) {
+        null
+      } else {
+        val nonActiveLicenceStatuses = LicenceStatus.searchRelevantLicenceStatus().minusElement(LicenceStatus.ACTIVE)
+
+        val currentLicence =
+          if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
+
+        val isOnProbation = LicenceStatus.searchOnProbationLicenceStatus()
+          .any { status -> status.name == currentLicence?.statusCode?.name }
+
+        it.copy(
+          licenceType = currentLicence?.typeCode,
+          licenceStatus = currentLicence?.statusCode,
+          releaseDate = currentLicence?.conditionalReleaseDate ?: currentLicence?.actualReleaseDate,
+          isOnProbation = isOnProbation,
+        )
+      }
+    }
+
+    val onProbationCount = enrichedProbationSearchResult.count { it.isOnProbation == true }
+    val inPrisonCount = enrichedProbationSearchResult.count { it.isOnProbation == false }
+
+    return EnrichedProbationSearchResults(
+      enrichedProbationSearchResult.transformToModelProbationResult(),
+      inPrisonCount,
+      onProbationCount,
+    )
   }
 }

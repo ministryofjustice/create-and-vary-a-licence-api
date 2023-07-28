@@ -30,5 +30,28 @@ enum class LicenceStatus {
         RECALLED -> LicenceEventType.RECALLED
       }
     }
+
+    fun searchRelevantLicenceStatus(): List<LicenceStatus> {
+      return listOf(
+        ACTIVE,
+        IN_PROGRESS,
+        SUBMITTED,
+        APPROVED,
+        VARIATION_IN_PROGRESS,
+        VARIATION_SUBMITTED,
+        VARIATION_APPROVED,
+        VARIATION_REJECTED,
+      )
+    }
+
+    fun searchOnProbationLicenceStatus(): List<LicenceStatus> {
+      return listOf(
+        ACTIVE,
+        VARIATION_IN_PROGRESS,
+        VARIATION_SUBMITTED,
+        VARIATION_REJECTED,
+        VARIATION_APPROVED,
+      )
+    }
   }
 }
