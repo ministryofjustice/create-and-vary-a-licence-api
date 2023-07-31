@@ -32,7 +32,7 @@ class JobController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Activation job executed.",
+        description = "run-remove-ap-conditions-job",
       ),
       ApiResponse(
         responseCode = "401",

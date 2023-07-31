@@ -42,7 +42,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.userMessage).contains("Access is denied")
+    assertThat(result?.userMessage).contains("Access Denied")
   }
 
   @Test

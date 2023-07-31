@@ -23,7 +23,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
       .expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
-    Assertions.assertThat(result?.userMessage).contains("Access is denied")
+    Assertions.assertThat(result?.userMessage).contains("Access Denied")
   }
 
   @Test
