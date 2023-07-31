@@ -13,7 +13,7 @@ parameters:
     default: the_elephants_devs
   java-version:
     type: string
-    default: "18.0"
+    default: "19.0"
 
 jobs:
   validate:
