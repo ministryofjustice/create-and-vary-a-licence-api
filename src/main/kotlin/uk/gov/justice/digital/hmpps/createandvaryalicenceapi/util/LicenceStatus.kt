@@ -14,6 +14,8 @@ enum class LicenceStatus {
   VARIATION_APPROVED,
   ;
 
+  fun isOnProbation() = ON_PROBATION_STATUSES.contains(this)
+
   companion object {
     fun lookupLicenceEventByStatus(status: LicenceStatus): LicenceEventType {
       return when (status) {
@@ -31,27 +33,23 @@ enum class LicenceStatus {
       }
     }
 
-    fun searchRelevantLicenceStatus(): List<LicenceStatus> {
-      return listOf(
-        ACTIVE,
-        IN_PROGRESS,
-        SUBMITTED,
-        APPROVED,
-        VARIATION_IN_PROGRESS,
-        VARIATION_SUBMITTED,
-        VARIATION_APPROVED,
-        VARIATION_REJECTED,
-      )
-    }
+    val IN_FLIGHT_LICENCES = listOf(
+      ACTIVE,
+      IN_PROGRESS,
+      SUBMITTED,
+      APPROVED,
+      VARIATION_IN_PROGRESS,
+      VARIATION_SUBMITTED,
+      VARIATION_APPROVED,
+      VARIATION_REJECTED,
+    )
 
-    fun searchOnProbationLicenceStatus(): List<LicenceStatus> {
-      return listOf(
-        ACTIVE,
-        VARIATION_IN_PROGRESS,
-        VARIATION_SUBMITTED,
-        VARIATION_REJECTED,
-        VARIATION_APPROVED,
-      )
-    }
+    val ON_PROBATION_STATUSES = setOf(
+      ACTIVE,
+      VARIATION_IN_PROGRESS,
+      VARIATION_SUBMITTED,
+      VARIATION_REJECTED,
+      VARIATION_APPROVED,
+    )
   }
 }

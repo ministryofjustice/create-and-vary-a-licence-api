@@ -1,8 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
-import java.util.Base64
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
+import java.util.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
@@ -18,8 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult as ModelProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.EnrichedProbationSearchResult as ModelEnrichedProbationSearchResult
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -229,15 +230,13 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun List<ProbationSearchResult>.transformToModelProbationResult(): List<ModelProbationSearchResult> = map(::transform)
-
-fun transform(result: ProbationSearchResult): ModelProbationSearchResult {
-  return ModelProbationSearchResult(
+fun transformToModelEnrichedSearchResult(result: ProbationSearchResponseResult, licence: Licence?, isOnProbation: Boolean?): ModelEnrichedProbationSearchResult {
+  return ModelEnrichedProbationSearchResult(
     name = "${result.name.forename} ${result.name.surname}",
     comName = "${result.manager.name?.forename} ${result.manager.name?.surname}",
     teamName = result.manager.team.description,
-    releaseDate = result.releaseDate,
-    licenceStatus = result.licenceStatus,
-    isOnProbation = result.isOnProbation,
+    releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
+    licenceStatus = licence?.statusCode,
+    isOnProbation = isOnProbation ?: false,
   )
 }

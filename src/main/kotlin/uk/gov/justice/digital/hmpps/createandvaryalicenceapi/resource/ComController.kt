@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -125,8 +124,8 @@ class ComController(private val comService: ComService, private val notifyServic
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The query retrieved a set of results",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = ProbationSearchResult::class)))],
+        description = "The query retrieved a set of enriched results",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ProbationSearchResult::class))],
       ),
       ApiResponse(
         responseCode = "400",

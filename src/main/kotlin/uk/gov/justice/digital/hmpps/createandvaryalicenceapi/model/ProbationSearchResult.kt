@@ -1,28 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.EnrichedProbationSearchResult
 
-@Schema(description = "Describes a probation search result")
+@Schema(description = "Describes an enriched probation search result")
 data class ProbationSearchResult(
-  @Schema(description = "The forename and surname of the offender")
-  val name: String = "",
 
-  @Schema(description = "The forename and surname of the COM")
-  val comName: String = "",
+  @Schema(description = "A list of enriched probation search results")
+  val results: List<EnrichedProbationSearchResult>,
 
-  @Schema(description = "The description of the COM's team", example = "Test Team")
-  val teamName: String? = "",
+  @Schema(description = "Based on the search results, the number of results where an offender is in prison", example = "10")
+  val inPrisonCount: Int,
 
-  @Schema(description = "The release date of the offender", example = "27/07/2023")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val releaseDate: LocalDate? = null,
-
-  @Schema(description = "The status of the licence", example = "IN_PROGRESS")
-  val licenceStatus: LicenceStatus? = null,
-
-  @Schema(description = "Indicates whether the offender is out on probation based on their licence", example = "true")
-  val isOnProbation: Boolean? = null,
+  @Schema(description = "Based on the search results, the number of results where an offender is on probation", example = "10")
+  val onProbationCount: Int,
 )

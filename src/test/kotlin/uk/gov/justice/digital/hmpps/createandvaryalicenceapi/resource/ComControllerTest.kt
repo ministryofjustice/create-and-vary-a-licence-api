@@ -32,7 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.EnrichedProbationSearchResults
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.EnrichedProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -99,7 +99,7 @@ class ComControllerTest {
   fun `search for offenders on a given staff member's caseload`() {
     val body = ProbationUserSearchRequest(query = "Test", staffIdentifier = 2000)
 
-    whenever(comService.searchForOffenderOnStaffCaseload(any())).thenReturn(aProbationSearchResult)
+    whenever(comService.searchForOffenderOnStaffCaseload(any())).thenReturn(aEnrichedProbationSearchResult)
 
     val request = post("/com/case-search")
       .accept(MediaType.APPLICATION_JSON)
@@ -112,15 +112,15 @@ class ComControllerTest {
       .andReturn()
 
     assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(aProbationSearchResult))
+      .isEqualTo(mapper.writeValueAsString(aEnrichedProbationSearchResult))
 
     verify(comService, times(1)).searchForOffenderOnStaffCaseload(body)
   }
 
   private companion object {
-    val aProbationSearchResult = EnrichedProbationSearchResults(
+    val aEnrichedProbationSearchResult = ProbationSearchResult(
       listOf(
-        ProbationSearchResult(
+        EnrichedProbationSearchResult(
           name = "Test Surname",
           comName = "Staff Surname",
           teamName = "Test Team",

@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.I
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -257,7 +257,7 @@ class ComServiceTest {
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
-        ProbationSearchResult(
+        ProbationSearchResponseResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(
@@ -327,7 +327,7 @@ class ComServiceTest {
       ),
     ).thenReturn(
       listOf(
-        ProbationSearchResult(
+        ProbationSearchResponseResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(
@@ -382,7 +382,7 @@ class ComServiceTest {
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
-        ProbationSearchResult(
+        ProbationSearchResponseResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(
@@ -455,7 +455,7 @@ class ComServiceTest {
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
-        ProbationSearchResult(
+        ProbationSearchResponseResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(
@@ -503,7 +503,7 @@ class ComServiceTest {
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
-        ProbationSearchResult(
+        ProbationSearchResponseResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(
@@ -576,7 +576,7 @@ class ComServiceTest {
     )
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
-        ProbationSearchResult(
+        ProbationSearchResponseResult(
           Name("Test", "Surname"),
           Identifiers("A123456"),
           Manager(

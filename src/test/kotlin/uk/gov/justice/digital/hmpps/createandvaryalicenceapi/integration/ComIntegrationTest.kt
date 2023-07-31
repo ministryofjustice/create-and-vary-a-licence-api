@@ -10,8 +10,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.EnrichedProbationSearchResults
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -37,7 +37,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(EnrichedProbationSearchResults::class.java)
+      .expectBody(ProbationSearchResult::class.java)
       .returnResult().responseBody
 
     val resultsList = resultObject?.results
@@ -76,7 +76,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(EnrichedProbationSearchResults::class.java)
+      .expectBody(ProbationSearchResult::class.java)
       .returnResult().responseBody
 
     assertThat(resultList?.results?.size).isEqualTo(0)

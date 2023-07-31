@@ -4,12 +4,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.EnrichedProbationSearchResults
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -86,7 +86,7 @@ class ComService(
     return com
   }
 
-  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): EnrichedProbationSearchResults {
+  fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val probationSearchApiSortBy = body.sortBy.map {
       ProbationSearchSortByRequest(
         it.field.probationSearchApiSortType,
@@ -102,34 +102,28 @@ class ComService(
 
     val enrichedProbationSearchResult = entityProbationSearchResult.mapNotNull {
       val licences =
-        licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.searchRelevantLicenceStatus())
+        licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
 
       // If an empty list has been returned, there are no relevant licences relating to search for the offender
       if (licences.isEmpty()) {
         null
       } else {
-        val nonActiveLicenceStatuses = LicenceStatus.searchRelevantLicenceStatus().minusElement(LicenceStatus.ACTIVE)
+        val nonActiveLicenceStatuses = LicenceStatus.IN_FLIGHT_LICENCES - LicenceStatus.ACTIVE
 
         val currentLicence =
           if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
 
-        val isOnProbation = LicenceStatus.searchOnProbationLicenceStatus()
-          .any { status -> status.name == currentLicence?.statusCode?.name }
+        val isOnProbation = currentLicence?.statusCode?.isOnProbation()
 
-        it.copy(
-          licenceType = currentLicence?.typeCode,
-          licenceStatus = currentLicence?.statusCode,
-          releaseDate = currentLicence?.conditionalReleaseDate ?: currentLicence?.actualReleaseDate,
-          isOnProbation = isOnProbation,
-        )
+        transformToModelEnrichedSearchResult(it, currentLicence, isOnProbation)
       }
     }
 
     val onProbationCount = enrichedProbationSearchResult.count { it.isOnProbation == true }
     val inPrisonCount = enrichedProbationSearchResult.count { it.isOnProbation == false }
 
-    return EnrichedProbationSearchResults(
-      enrichedProbationSearchResult.transformToModelProbationResult(),
+    return ProbationSearchResult(
+      enrichedProbationSearchResult,
       inPrisonCount,
       onProbationCount,
     )
