@@ -27,11 +27,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -65,9 +68,21 @@ class ComControllerTest {
 
   @Test
   fun `update com with new contact details`() {
-    val body = UpdateComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk", firstName = "Joseph", lastName = "Bloggs")
+    val body = UpdateComRequest(
+      staffIdentifier = 2000,
+      staffUsername = "joebloggs",
+      staffEmail = "joebloggs@probation.gov.uk",
+      firstName = "Joseph",
+      lastName = "Bloggs",
+    )
 
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "joebloggs@probation.gov.uk", firstName = "Joseph", lastName = "Bloggs")
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "joebloggs",
+      email = "joebloggs@probation.gov.uk",
+      firstName = "Joseph",
+      lastName = "Bloggs",
+    )
     whenever(comService.updateComDetails(any())).thenReturn(expectedCom)
 
     val request = put("/com/update")
@@ -84,7 +99,7 @@ class ComControllerTest {
   fun `search for offenders on a given staff member's caseload`() {
     val body = ProbationUserSearchRequest(query = "Test", staffIdentifier = 2000)
 
-    whenever(comService.searchForOffenderOnStaffCaseload(any())).thenReturn(aProbationSearchResult)
+    whenever(comService.searchForOffenderOnStaffCaseload(any())).thenReturn(aFoundProbationRecord)
 
     val request = post("/com/case-search")
       .accept(MediaType.APPLICATION_JSON)
@@ -97,18 +112,25 @@ class ComControllerTest {
       .andReturn()
 
     assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(aProbationSearchResult))
+      .isEqualTo(mapper.writeValueAsString(aFoundProbationRecord))
 
     verify(comService, times(1)).searchForOffenderOnStaffCaseload(body)
   }
 
   private companion object {
-    val aProbationSearchResult = listOf(
-      ProbationSearchResult(
-        name = "Test Surname",
-        comName = "Staff Surname",
-        comCode = "A01B02C",
+    val aFoundProbationRecord = ProbationSearchResult(
+      listOf(
+        FoundProbationRecord(
+          name = "Test Surname",
+          comName = "Staff Surname",
+          teamName = "Test Team",
+          releaseDate = LocalDate.of(2021, 10, 22),
+          licenceStatus = LicenceStatus.IN_PROGRESS,
+          isOnProbation = false,
+        ),
       ),
+      1,
+      0,
     )
   }
 }

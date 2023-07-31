@@ -14,7 +14,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
     query: String,
     teamCodes: List<String>,
     sortBy: List<ProbationSearchSortByRequest> = emptyList(),
-  ): List<ProbationSearchResult> {
+  ): List<ProbationSearchResponseResult> {
     val sortOptions = sortBy.ifEmpty { listOf(ProbationSearchSortByRequest()) }
 
     val licenceCaseLoadRequestBody = LicenceCaseloadSearchRequest(

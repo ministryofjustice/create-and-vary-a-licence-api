@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
-data class ProbationSearchResult(
+data class ProbationSearchResponseResult(
   val name: Name,
   val identifiers: Identifiers,
   val manager: Manager,

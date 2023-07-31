@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
@@ -16,9 +17,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult as ModelProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 /*
@@ -229,12 +230,13 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun List<ProbationSearchResult>.transformToModelProbationResult(): List<ModelProbationSearchResult> = map(::transform)
-
-fun transform(result: ProbationSearchResult): ModelProbationSearchResult {
-  return ModelProbationSearchResult(
-    name = "${result.name.forename} ${result.name.surname}",
-    comName = "${result.manager.name?.forename} ${result.manager.name?.surname}",
-    comCode = result.manager.code,
+fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
+  return ModelFoundProbationRecord(
+    name = "${name.forename} ${name.surname}",
+    comName = "${manager.name?.forename} ${manager.name?.surname}",
+    teamName = manager.team.description,
+    releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
+    licenceStatus = licence?.statusCode,
+    isOnProbation = licence?.statusCode?.isOnProbation(),
   )
 }
