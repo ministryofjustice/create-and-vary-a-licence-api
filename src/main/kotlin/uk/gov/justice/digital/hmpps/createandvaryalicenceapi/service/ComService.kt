@@ -113,9 +113,7 @@ class ComService(
         val currentLicence =
           if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
 
-        val isOnProbation = currentLicence?.statusCode?.isOnProbation()
-
-        transformToModelEnrichedSearchResult(it, currentLicence, isOnProbation)
+        it.transformToModelFoundProbationRecord(currentLicence)
       }
     }
 

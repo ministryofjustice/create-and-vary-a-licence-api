@@ -230,13 +230,13 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun transformToModelEnrichedSearchResult(result: ProbationSearchResponseResult, licence: Licence?, isOnProbation: Boolean?): ModelFoundProbationRecord {
+fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
-    name = "${result.name.forename} ${result.name.surname}",
-    comName = "${result.manager.name?.forename} ${result.manager.name?.surname}",
-    teamName = result.manager.team.description,
+    name = "${name.forename} ${name.surname}",
+    comName = "${manager.name?.forename} ${manager.name?.surname}",
+    teamName = manager.team.description,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
     licenceStatus = licence?.statusCode,
-    isOnProbation = isOnProbation ?: false,
+    isOnProbation = licence?.statusCode?.isOnProbation(),
   )
 }
