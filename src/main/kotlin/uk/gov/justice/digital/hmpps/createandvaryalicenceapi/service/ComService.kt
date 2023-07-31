@@ -100,7 +100,7 @@ class ComService(
       probationSearchApiSortBy,
     )
 
-    val enrichedProbationSearchResult = entityProbationSearchResult.mapNotNull {
+    val enrichedProbationSearchResults = entityProbationSearchResult.mapNotNull {
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
 
@@ -119,11 +119,11 @@ class ComService(
       }
     }
 
-    val onProbationCount = enrichedProbationSearchResult.count { it.isOnProbation == true }
-    val inPrisonCount = enrichedProbationSearchResult.count { it.isOnProbation == false }
+    val onProbationCount = enrichedProbationSearchResults.count { it.isOnProbation == true }
+    val inPrisonCount = enrichedProbationSearchResults.count { it.isOnProbation == false }
 
     return ProbationSearchResult(
-      enrichedProbationSearchResult,
+      enrichedProbationSearchResults,
       inPrisonCount,
       onProbationCount,
     )
