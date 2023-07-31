@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.EnrichedProbationSearchResult as ModelEnrichedProbationSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -230,8 +230,8 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun transformToModelEnrichedSearchResult(result: ProbationSearchResponseResult, licence: Licence?, isOnProbation: Boolean?): ModelEnrichedProbationSearchResult {
-  return ModelEnrichedProbationSearchResult(
+fun transformToModelEnrichedSearchResult(result: ProbationSearchResponseResult, licence: Licence?, isOnProbation: Boolean?): ModelFoundProbationRecord {
+  return ModelFoundProbationRecord(
     name = "${result.name.forename} ${result.name.surname}",
     comName = "${result.manager.name?.forename} ${result.manager.name?.surname}",
     teamName = result.manager.team.description,
