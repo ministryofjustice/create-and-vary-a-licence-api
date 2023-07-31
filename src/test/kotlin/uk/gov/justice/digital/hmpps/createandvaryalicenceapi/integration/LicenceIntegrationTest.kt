@@ -86,7 +86,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.userMessage).contains("Access is denied")
+    assertThat(result?.userMessage).contains("Access Denied")
   }
 
   @Test
@@ -154,7 +154,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.userMessage).contains("Access is denied")
+    assertThat(result?.userMessage).contains("Access Denied")
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
   }
