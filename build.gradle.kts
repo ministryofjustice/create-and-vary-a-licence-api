@@ -2,7 +2,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.3.0-beta"
   kotlin("plugin.spring") version "1.9.0"
   kotlin("plugin.jpa") version "1.9.0"
-  id("io.gitlab.arturbosch.detekt") version "1.23.0"
+  id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 
 configurations {
@@ -67,7 +67,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-api:0.11.5")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.11.5")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.38.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.0.0")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.16")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
@@ -84,14 +84,6 @@ detekt {
   allRules = false // activate all available (even unstable) rules.
   config.setFrom("$projectDir/detekt.yml") // point to your custom config defining rules to run, overwriting default behavior
   baseline = file("$projectDir/detekt-baseline.xml") // a way of suppressing issues before introducing detekt
-}
-
-configurations.matching { it.name == "detekt" }.all {
-  resolutionStrategy.eachDependency {
-    if (requested.group == "org.jetbrains.kotlin") {
-      useVersion("1.8.21")
-    }
-  }
 }
 
 java {
