@@ -26,7 +26,7 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                                 "middleName": ""
                             },
                             "identifiers": {
-                                "crn": "A123456"
+                                "crn": "CRN1"
                             },
                             "manager": {
                                 "code": "A01B02C",
@@ -36,7 +36,7 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                                 },
                                 "team": {
                                     "code": "A01B02",
-                                    "description": "description",
+                                    "description": "Test Team",
                                     "borough": {
                                         "code": "A01B02",
                                         "description": "description"
