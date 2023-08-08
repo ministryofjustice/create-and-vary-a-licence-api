@@ -13,14 +13,11 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
   fun searchLicenceCaseloadByTeam(
     query: String,
     teamCodes: List<String>,
-    sortBy: List<ProbationSearchSortByRequest> = emptyList(),
   ): List<ProbationSearchResponseResult> {
-    val sortOptions = sortBy.ifEmpty { listOf(ProbationSearchSortByRequest()) }
-
     val licenceCaseLoadRequestBody = LicenceCaseloadSearchRequest(
       teamCodes,
       query,
-      sortOptions,
+      ProbationSearchSortByRequest(),
     )
 
     val probationOffenderSearchResponse = probationSearchApiClient

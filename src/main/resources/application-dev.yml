@@ -22,10 +22,10 @@ hmpps:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
   community:
     api:
-       url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
+       url: "http://localhost:5000"
   probationsearch:
     api:
-      url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
+      url: "http://localhost:5000"
   prisonersearch:
     api:
       url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"

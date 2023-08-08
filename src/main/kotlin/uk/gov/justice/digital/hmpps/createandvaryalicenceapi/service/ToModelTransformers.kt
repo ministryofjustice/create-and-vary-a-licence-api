@@ -237,7 +237,7 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: 
     nomisId = licence?.nomsId,
     comName = "${manager.name?.forename} ${manager.name?.surname}",
     comStaffCode = manager.code,
-    teamName = manager.team.description,
+    teamName = manager.team?.description,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
     licenceId = licence?.id,
     licenceType = licence?.typeCode,

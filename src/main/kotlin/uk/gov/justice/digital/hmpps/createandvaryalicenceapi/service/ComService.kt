@@ -11,9 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Communit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import java.time.LocalDateTime
 
 @Service
@@ -87,23 +85,17 @@ class ComService(
   }
 
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
-    val probationSearchApiSortBy = body.sortBy.map {
-      ProbationSearchSortByRequest(
-        it.field.probationSearchApiSortType,
-        if (it.direction == SearchDirection.ASC) "asc" else "desc",
-      )
-    }
+//    val probationSearchApiSortBy = body.sortBy.map {
+//      ProbationSearchSortByRequest()
+//    }
 
     val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
       body.query,
       communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
-      probationSearchApiSortBy,
     )
-
     val enrichedProbationSearchResults = entityProbationSearchResult.mapNotNull {
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
-
       // If an empty list has been returned, there are no relevant licences relating to search for the offender
       if (licences.isEmpty()) {
         null

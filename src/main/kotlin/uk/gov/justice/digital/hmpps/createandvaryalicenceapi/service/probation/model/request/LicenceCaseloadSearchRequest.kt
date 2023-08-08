@@ -3,5 +3,5 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.
 data class LicenceCaseloadSearchRequest(
   val teamCodes: List<String>,
   val query: String,
-  val sortBy: List<ProbationSearchSortByRequest>,
+  val sortBy: ProbationSearchSortByRequest,
 )
