@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.internal.OmuContactController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OmuService
 import java.time.LocalDateTime
 
