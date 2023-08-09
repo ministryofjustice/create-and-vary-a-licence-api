@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.internal
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -7,40 +7,41 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
 
+@Tag(name = Tags.EXCLUSION_ZONES)
 @RestController
-@RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
-class OffenderController(private val offenderService: OffenderService, private val comService: ComService) {
-  @Tag(name = Tags.COM)
-  @PutMapping(
-    value = ["/crn/{crn}/responsible-com"],
+@RequestMapping("/exclusion-zone", produces = [MediaType.APPLICATION_JSON_VALUE])
+class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneService) {
+
+  @PostMapping(
+    value = ["/id/{licenceId}/condition/id/{conditionId}/file-upload"],
+    consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender.",
-    description = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Upload a multipart/form-data request containing a PDF exclusion zone file.",
+    description = "Uploads a PDF file containing an exclusion zone map and description. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The responsible COM was updated",
+        description = "The exclusion zone file was uploaded",
       ),
       ApiResponse(
         responseCode = "400",
@@ -59,31 +60,29 @@ class OffenderController(private val offenderService: OffenderService, private v
       ),
     ],
   )
-  fun updateResponsibleCom(
-    @PathVariable crn: String,
-    @Valid @RequestBody
-    body: UpdateComRequest,
+  fun uploadExclusionZoneFile(
+    @PathVariable(value = "licenceId") licenceId: Long,
+    @PathVariable(value = "conditionId") conditionId: Long,
+    @RequestPart("file") file: MultipartFile,
   ) {
-    val newCom = this.comService.updateComDetails(body)
-    this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
+    return exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
   }
 
-  @Tag(name = Tags.COM)
   @PutMapping(
-    value = ["/crn/{crn}/probation-team"],
+    value = ["/id/{licenceId}/condition/id/{conditionId}/remove-upload"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Updates in-flight licences associated with an offender with a new probation team.",
-    description = "Updates in-flight licences associated with an offender with a new probation team. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Removes a previously uploaded exclusion zone file from an additional condition.",
+    description = "Removes a previously uploaded exclusion zone file. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The probation team was updated",
+        description = "The exclusion zone file was removed",
       ),
       ApiResponse(
         responseCode = "400",
@@ -102,31 +101,30 @@ class OffenderController(private val offenderService: OffenderService, private v
       ),
     ],
   )
-  fun updateProbationTeam(
-    @PathVariable crn: String,
-    @Valid @RequestBody
-    body: UpdateProbationTeamRequest,
+  fun removeExclusionZoneFile(
+    @PathVariable(value = "licenceId") licenceId: Long,
+    @PathVariable(value = "conditionId") conditionId: Long,
   ) {
-    this.offenderService.updateProbationTeam(crn, body)
+    return exclusionZoneService.removeExclusionZoneFile(licenceId, conditionId)
   }
 
-  @PutMapping(value = ["nomisid/{nomsId}/update-offender-details"])
+  @GetMapping(
+    value = ["/id/{licenceId}/condition/id/{conditionId}/full-size-image"],
+    produces = [MediaType.IMAGE_JPEG_VALUE],
+  )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @ResponseBody
   @Operation(
-    summary = "Updates the offender's personal information on all of their licences.",
-    description = "Updates the name and date of birth stored on all licences associated with the given offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Get the exclusion zone map image for a specified licence and condition",
+    description = "Get the exclusion zone map image. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The offender details were updated",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+        description = "Image returned",
+        content = [Content(mediaType = "image/jpeg")],
       ),
       ApiResponse(
         responseCode = "401",
@@ -138,13 +136,17 @@ class OffenderController(private val offenderService: OffenderService, private v
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "No image was found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
     ],
   )
-  fun updateOffenderDetails(
-    @PathVariable nomsId: String,
-    @Valid @RequestBody
-    body: UpdateOffenderDetailsRequest,
-  ) {
-    this.offenderService.updateOffenderDetails(nomsId, body)
+  fun getExclusionZoneImage(
+    @PathVariable(name = "licenceId") licenceId: Long,
+    @PathVariable(name = "conditionId") conditionId: Long,
+  ): ByteArray? {
+    return exclusionZoneService.getExclusionZoneImage(licenceId, conditionId)
   }
 }

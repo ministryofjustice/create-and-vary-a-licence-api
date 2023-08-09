@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.EventQueryObject
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.internal.EventController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EventService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.time.LocalDateTime

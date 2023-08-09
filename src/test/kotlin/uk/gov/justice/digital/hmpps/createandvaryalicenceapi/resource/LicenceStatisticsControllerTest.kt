@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceStatistics
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.internal.LicenceStatisticsController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceStatisticsService
 import java.time.LocalDate
 
