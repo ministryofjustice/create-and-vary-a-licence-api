@@ -300,17 +300,17 @@ class LicenceConditionService(
 
     // return all conditions except condition with submitted conditionIds
     val revisedAdditionalConditions =
-      licenceEntity.additionalConditions.filter { additionalConditionIds.indexOf(it.id) == -1 }
+      licenceEntity.additionalConditions.filter { !additionalConditionIds.contains(it.id) }
 
     val removedAdditionalConditions =
-      licenceEntity.additionalConditions.filter { additionalConditionIds.indexOf(it.id) != -1 }
+      licenceEntity.additionalConditions.filter { additionalConditionIds.contains(it.id) }
 
     // return all conditions except condition with submitted conditionIds
     val revisedStandardConditions =
-      licenceEntity.standardConditions.filter { standardConditionIds.indexOf(it.id) == -1 }
+      licenceEntity.standardConditions.filter { !standardConditionIds.contains(it.id) }
 
     val removedStandardConditions =
-      licenceEntity.standardConditions.filter { standardConditionIds.indexOf(it.id) != -1 }
+      licenceEntity.standardConditions.filter { standardConditionIds.contains(it.id) }
 
     val updatedLicence = licenceEntity.copy(
       additionalConditions = revisedAdditionalConditions,
