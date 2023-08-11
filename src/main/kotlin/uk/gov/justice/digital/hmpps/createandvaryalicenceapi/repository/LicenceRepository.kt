@@ -41,7 +41,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   @Query(
     """
     SELECT l
-        FROM Licence l 
+        FROM Licence l
         WHERE l.prisonCode IN :prisonCodes 
         AND l.statusCode IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE,
@@ -52,6 +52,22 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getRecentlyApprovedLicences(prisonCodes: List<String>, releasedAfterDate: LocalDate): List<Licence>
+
+  @Query(
+    """
+      SELECT l
+      FROM Licence l
+      WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
+      AND l.typeCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS))
+      AND l.statusCode IN (
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED,
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED,
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+  )
+  """,
+  )
+  fun getAllVariedLicencesInPSSPeriod(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

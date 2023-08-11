@@ -182,42 +182,9 @@ class LicenceConditionServiceTest {
         Optional.of(
           aLicenceEntity.copy(
             additionalConditions = listOf(
-              AdditionalCondition(
-                id = 1,
-                conditionVersion = "1.0",
-                conditionCode = "code",
-                conditionSequence = 5,
-                conditionCategory = "oldCategory",
-                conditionText = "oldText",
-                expandedConditionText = "expandedOldText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
-                conditionType = "AP",
-              ),
-              AdditionalCondition(
-                id = 2,
-                conditionVersion = "1.0",
-                conditionCode = "code2",
-                conditionSequence = 6,
-                conditionCategory = "removedCategory",
-                conditionText = "removedText",
-                expandedConditionText = "removedText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
-                conditionType = "AP",
-              ),
-              AdditionalCondition(
-                id = 3,
-                conditionVersion = "1.0",
-                conditionCode = "code3",
-                conditionSequence = 6,
-                conditionCategory = "oldCategory3",
-                conditionText = "oldText3",
-                expandedConditionText = "expandedOldText",
-                additionalConditionData = someAdditionalConditionData,
-                licence = aLicenceEntity,
-                conditionType = "AP",
-              ),
+              additionalCondition(1),
+              additionalCondition(2),
+              additionalCondition(3),
             ),
           ),
         ),
@@ -233,30 +200,47 @@ class LicenceConditionServiceTest {
     verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
 
     assertThat(licenceCaptor.value.additionalConditions).containsExactly(
-      AdditionalCondition(
-        id = 1,
-        conditionVersion = "1.0",
-        conditionCode = "code",
-        conditionCategory = "oldCategory",
-        conditionSequence = 5,
-        conditionText = "oldText",
-        expandedConditionText = "expandedOldText",
-        conditionType = "AP",
-        additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity,
+      additionalCondition(1),
+      additionalCondition(3),
+    )
+
+    // Verify last contact info is recorded
+    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+  }
+
+  @Test
+  fun `delete multiple conditions`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    val licenceEntity = aLicenceEntity.copy(
+      additionalConditions = listOf(
+        additionalCondition(1),
+        additionalCondition(2),
+        additionalCondition(3),
       ),
-      AdditionalCondition(
-        id = 3,
-        conditionVersion = "1.0",
-        conditionCode = "code3",
-        conditionCategory = "oldCategory3",
-        conditionSequence = 6,
-        conditionText = "oldText3",
-        expandedConditionText = "expandedOldText",
-        conditionType = "AP",
-        additionalConditionData = someAdditionalConditionData,
-        licence = aLicenceEntity,
+      standardConditions = listOf(
+        standardCondition(1).copy(conditionType = "AP"),
+        standardCondition(2).copy(conditionType = "AP"),
+        standardCondition(3).copy(conditionType = "PSS"),
+
       ),
+    )
+    whenever(licenceRepository.findById(1L))
+      .thenReturn(
+        Optional.of(licenceEntity),
+      )
+
+    service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2))
+
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+      additionalCondition(1),
+    )
+
+    assertThat(licenceCaptor.value.standardConditions).containsExactly(
+      standardCondition(3).copy(conditionType = "PSS"),
     )
 
     // Verify last contact info is recorded
@@ -304,39 +288,15 @@ class LicenceConditionServiceTest {
           Optional.of(
             aLicenceEntity.copy(
               additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
+                additionalCondition(1).copy(
                   conditionSequence = 5,
+                  conditionCode = "code",
                   conditionCategory = "oldCategory",
                   conditionText = "oldText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
                   conditionType = "AP",
                 ),
-                AdditionalCondition(
-                  id = 2,
-                  conditionVersion = "1.0",
-                  conditionCode = "code2",
-                  conditionSequence = 6,
-                  conditionCategory = "removedCategory",
-                  conditionText = "removedText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "AP",
-                ),
-                AdditionalCondition(
-                  id = 3,
-                  conditionVersion = "1.0",
-                  conditionCode = "code3",
-                  conditionSequence = 6,
-                  conditionCategory = "pssCategory",
-                  conditionText = "pssText",
-                  additionalConditionData = someDifferentAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "PSS",
-                ),
+                additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP"),
+                additionalCondition(3).copy(conditionSequence = 7, conditionCode = "code3", conditionType = "PSS"),
               ),
             ),
           ),
@@ -363,28 +323,14 @@ class LicenceConditionServiceTest {
       verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
-        AdditionalCondition(
-          id = 1,
-          conditionVersion = "1.0",
-          conditionCode = "code",
-          conditionCategory = "category",
+        additionalCondition(1).copy(
           conditionSequence = 0,
-          conditionText = "text",
+          conditionCode = "code",
           conditionType = "AP",
-          additionalConditionData = someAdditionalConditionData,
-          licence = aLicenceEntity,
+          conditionCategory = "category",
+          conditionText = "text",
         ),
-        AdditionalCondition(
-          id = 3,
-          conditionVersion = "1.0",
-          conditionCode = "code3",
-          conditionSequence = 6,
-          conditionCategory = "pssCategory",
-          conditionText = "pssText",
-          additionalConditionData = someDifferentAdditionalConditionData,
-          licence = aLicenceEntity,
-          conditionType = "PSS",
-        ),
+        additionalCondition(3).copy(conditionSequence = 7, conditionCode = "code3", conditionType = "PSS"),
       )
 
       // Verify last contact info is recorded
@@ -403,27 +349,11 @@ class LicenceConditionServiceTest {
           Optional.of(
             aLicenceEntity.copy(
               additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
-                  conditionSequence = 5,
-                  conditionCategory = "oldCategory",
-                  conditionText = "oldText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "AP",
-                ),
-                AdditionalCondition(
-                  id = 3,
-                  conditionVersion = "1.0",
+                additionalCondition(1),
+                additionalCondition(3).copy(
                   conditionCode = "code3",
                   conditionSequence = 6,
-                  conditionCategory = "pssCategory",
-                  conditionText = "pssText",
                   additionalConditionData = someDifferentAdditionalConditionData,
-                  licence = aLicenceEntity,
-                  conditionType = "PSS",
                 ),
               ),
             ),
@@ -461,6 +391,18 @@ class LicenceConditionServiceTest {
       verifyNoInteractions(conditionFormatter)
     }
   }
+
+  private fun additionalCondition(id: Long) = AdditionalCondition(
+    id = id,
+    conditionVersion = "1.0",
+    conditionCode = "code",
+    conditionSequence = 5,
+    conditionCategory = "oldCategory",
+    conditionText = "oldText",
+    additionalConditionData = someAdditionalConditionData,
+    licence = aLicenceEntity,
+    conditionType = "AP",
+  )
 
   @Nested
   inner class `update bespoke conditions` {
@@ -572,16 +514,7 @@ class LicenceConditionServiceTest {
           Optional.of(
             aLicenceEntity.copy(
               additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
-                  conditionSequence = 5,
-                  conditionCategory = "oldCategory",
-                  conditionText = "oldText",
-                  additionalConditionData = emptyList(),
-                  licence = aLicenceEntity,
-                ),
+                additionalCondition(1),
               ),
             ),
           ),
@@ -618,16 +551,7 @@ class LicenceConditionServiceTest {
           Optional.of(
             aLicenceEntity.copy(
               additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
-                  conditionSequence = 5,
-                  conditionCategory = "oldCategory",
-                  conditionText = "oldText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                ),
+                additionalCondition(1),
               ),
             ),
           ),
@@ -685,16 +609,7 @@ class LicenceConditionServiceTest {
           Optional.of(
             aLicenceEntity.copy(
               additionalConditions = listOf(
-                AdditionalCondition(
-                  id = 1,
-                  conditionVersion = "1.0",
-                  conditionCode = "code",
-                  conditionSequence = 5,
-                  conditionCategory = "oldCategory",
-                  conditionText = "oldText",
-                  additionalConditionData = someAdditionalConditionData,
-                  licence = aLicenceEntity,
-                ),
+                additionalCondition(1),
               ),
             ),
           ),
@@ -736,6 +651,7 @@ class LicenceConditionServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -743,6 +659,7 @@ class LicenceConditionServiceTest {
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -750,6 +667,7 @@ class LicenceConditionServiceTest {
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
+        conditionType = "PSS",
         licence = mock(),
       ),
     )
@@ -853,4 +771,13 @@ class LicenceConditionServiceTest {
       lastName = "Y",
     )
   }
+
+  private fun standardCondition(id: Long) = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
+    id = id,
+    conditionCode = "goodBehaviour",
+    conditionSequence = id.toInt(),
+    conditionText = "Be of good behaviour",
+    conditionType = "AP",
+    licence = aLicenceEntity,
+  )
 }

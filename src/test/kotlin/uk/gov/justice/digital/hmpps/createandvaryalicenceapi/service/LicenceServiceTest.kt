@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -23,6 +24,8 @@ import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
@@ -891,7 +894,14 @@ class LicenceServiceTest {
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    verify(licenceRepository, times(1)).saveAllAndFlush(
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.ACTIVE,
+          licenceActivatedDate = LocalDate.now(),
+        ),
+      ),
+    )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
@@ -918,7 +928,14 @@ class LicenceServiceTest {
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
 
-    verify(licenceRepository, times(1)).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    verify(licenceRepository, times(1)).saveAllAndFlush(
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.ACTIVE,
+          licenceActivatedDate = LocalDate.now(),
+        ),
+      ),
+    )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
@@ -1105,6 +1122,54 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `creating a variation not PSS period should not delete AP conditions`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        aLicenceEntity.copy(
+          additionalConditions = additionalConditions,
+          licenceExpiryDate = LocalDate.now().plusDays(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+          typeCode = LicenceType.AP_PSS,
+        ),
+      ),
+    )
+    whenever(licenceRepository.save(any())).thenReturn(
+      aLicenceEntity.copy(
+        additionalConditions = additionalConditions,
+        licenceExpiryDate = LocalDate.now().plusDays(1),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+        typeCode = LicenceType.AP_PSS,
+      ),
+    )
+    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+
+    service.createVariation(1L)
+
+    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
+    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
+    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+  }
+
+  @Test
   fun `editing an approved licence creates and saves a new licence version`() {
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
@@ -1146,6 +1211,45 @@ class LicenceServiceTest {
     assertThat(licenceEventCaptor.value.eventDescription).isEqualTo("A new licence version was created for ${approvedLicence.forename} ${approvedLicence.surname} from ID ${approvedLicence.id}")
     verify(auditEventRepository).saveAndFlush(auditEventCaptor.capture())
     assertThat(auditEventCaptor.value.summary).isEqualTo("New licence version created for ${approvedLicence.forename} ${approvedLicence.surname}")
+  }
+
+  @Test
+  fun `editing an approved licence creates and saves a new licence version returns all conditions`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+
+    val approvedLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      additionalConditions = additionalConditions,
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+
+    whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+
+    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+    service.editLicence(1L)
+    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
+    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
+    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
+    assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
   }
 
   @Test
@@ -1494,6 +1598,42 @@ class LicenceServiceTest {
     val aRecentlyApprovedLicenceSummary = aLicenceSummary.copy(
       actualReleaseDate = LocalDate.now().minusDays(1),
       conditionalReleaseDate = LocalDate.now(),
+    )
+    val someAdditionalConditionData = listOf(
+      AdditionalConditionData(
+        id = 1,
+        dataField = "dataField",
+        dataValue = "dataValue",
+        additionalCondition = AdditionalCondition(
+          licence = aLicenceEntity,
+          conditionVersion = "1.0",
+        ),
+      ),
+    )
+
+    val additionalConditions = listOf(
+      AdditionalCondition(
+        id = 1,
+        conditionVersion = "1.0",
+        conditionCode = "code",
+        conditionSequence = 5,
+        conditionCategory = "oldCategory",
+        conditionText = "oldText",
+        additionalConditionData = someAdditionalConditionData,
+        licence = aLicenceEntity,
+        conditionType = "AP",
+      ),
+      AdditionalCondition(
+        id = 2,
+        conditionVersion = "1.0",
+        conditionCode = "code",
+        conditionSequence = 5,
+        conditionCategory = "oldCategory",
+        conditionText = "oldText",
+        additionalConditionData = someAdditionalConditionData,
+        licence = aLicenceEntity,
+        conditionType = "PSS",
+      ),
     )
   }
 }
