@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -203,6 +204,7 @@ class LicenceService(
     var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
     val supersededDate: LocalDateTime?
+    val licenceActivatedDate: LocalDate?
 
     when (request.status) {
       APPROVED -> {
@@ -211,6 +213,7 @@ class LicenceService(
         approvedByName = request.fullName
         approvedDate = LocalDateTime.now()
         supersededDate = null
+        licenceActivatedDate = null
       }
 
       IN_PROGRESS -> {
@@ -218,14 +221,22 @@ class LicenceService(
         approvedByName = null
         approvedDate = null
         supersededDate = null
+        licenceActivatedDate = null
       }
 
       INACTIVE -> {
         supersededDate = LocalDateTime.now()
+        licenceActivatedDate = null
+      }
+
+      ACTIVE -> {
+        supersededDate = null
+        licenceActivatedDate = LocalDate.now()
       }
 
       else -> {
         supersededDate = null
+        licenceActivatedDate = null
       }
     }
 
@@ -239,6 +250,7 @@ class LicenceService(
       approvedByName = approvedByName,
       approvedDate = approvedDate,
       supersededDate = supersededDate,
+      licenceActivatedDate = licenceActivatedDate,
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
@@ -791,9 +803,24 @@ class LicenceService(
     }
 
     standardConditionRepository.saveAll(standardConditions)
-    bespokeConditionRepository.saveAll(bespokeConditions)
 
-    val additionalConditions = licence.additionalConditions.map {
+    val blockConditions =
+      newStatus == VARIATION_IN_PROGRESS && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
+
+    if (!blockConditions) {
+      bespokeConditionRepository.saveAll(bespokeConditions)
+    }
+
+    val licenceConditions: List<AdditionalCondition> =
+      if (blockConditions) {
+        licence.additionalConditions.filter {
+          LicenceType.valueOf(it.conditionType!!) != LicenceType.AP
+        }
+      } else {
+        licence.additionalConditions
+      }
+
+    val additionalConditions = licenceConditions.map {
       val additionalConditionData = it.additionalConditionData.map { data ->
         data.copy(id = -1)
       }
