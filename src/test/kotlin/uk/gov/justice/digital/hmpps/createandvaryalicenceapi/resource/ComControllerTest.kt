@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
@@ -122,9 +123,13 @@ class ComControllerTest {
       listOf(
         FoundProbationRecord(
           name = "Test Surname",
+          crn = "CRN1",
+          nomisId = "NOMS1",
           comName = "Staff Surname",
           teamName = "Test Team",
           releaseDate = LocalDate.of(2021, 10, 22),
+          licenceId = 1L,
+          licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           isOnProbation = false,
         ),
