@@ -13,12 +13,12 @@ data class FoundProbationRecord(
   val name: String = "",
 
   @Schema(
-    description = "The case reference number (CRN) of this person, from either prison or probation service",
+    description = "The case reference number (CRN) of the offender,",
     example = "X12344",
   )
   val crn: String? = "",
 
-  @Schema(description = "The prison nomis number for this offender", example = "A1234AA")
+  @Schema(description = "The prison nomis number for the offender", example = "A1234AA")
   val nomisId: String? = "",
 
   @Schema(description = "The forename and surname of the COM")
