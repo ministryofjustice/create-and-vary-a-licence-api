@@ -21,6 +21,7 @@ class RemoveApConditionsInPssPeriodService(
   fun removeAPConditions() {
     log.info("Job to removeApConditions in PSS period started")
     val licencesInPSSPeriod = licenceRepository.getAllVariedLicencesInPSSPeriod()
+    log.info("Job removeApConditions found ${licencesInPSSPeriod.size} licences to process")
 
     licencesInPSSPeriod.forEach { licence ->
       val additionalApConditionIds =

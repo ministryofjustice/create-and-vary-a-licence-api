@@ -68,6 +68,9 @@ class AuditService(
     currentUser: CommunityOffenderManager,
     removedAdditionalConditions: List<AdditionalCondition>,
   ) {
+    if (removedAdditionalConditions.isEmpty()) {
+      return
+    }
     val summary = "Updated additional conditions"
 
     val changes = mapOf(
@@ -90,6 +93,9 @@ class AuditService(
     currentUser: CommunityOffenderManager,
     removedStandardConditions: List<StandardCondition>,
   ) {
+    if (removedStandardConditions.isEmpty()) {
+      return
+    }
     val summary = "Updated standard conditions"
 
     val changes = mapOf(
@@ -113,6 +119,9 @@ class AuditService(
     newConditions: List<AdditionalCondition>,
     removedConditions: List<AdditionalCondition>,
   ) {
+    if (newConditions.isEmpty() && removedConditions.isEmpty()) {
+      return
+    }
     val summary = "Updated additional conditions"
 
     val changes = mapOf(
@@ -144,6 +153,9 @@ class AuditService(
     newConditions: List<String>,
     removedConditions: List<String?>,
   ) {
+    if (newConditions.isEmpty() && removedConditions.isEmpty()) {
+      return
+    }
     val summary = "Updated bespoke conditions"
 
     val changes = mapOf(

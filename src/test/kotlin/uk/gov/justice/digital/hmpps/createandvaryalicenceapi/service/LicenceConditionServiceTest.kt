@@ -175,76 +175,84 @@ class LicenceConditionServiceTest {
     }
   }
 
-  @Test
-  fun `delete one additional condition`() {
-    whenever(licenceRepository.findById(1L))
-      .thenReturn(
-        Optional.of(
-          aLicenceEntity.copy(
-            additionalConditions = listOf(
-              additionalCondition(1),
-              additionalCondition(2),
-              additionalCondition(3),
+  @Nested
+  inner class `deleting additional conditions` {
+    @Test
+    fun `delete one additional condition`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                additionalCondition(1),
+                additionalCondition(2),
+                additionalCondition(3),
+              ),
             ),
           ),
+        )
+
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      service.deleteAdditionalCondition(1L, 2)
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
+
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+        additionalCondition(1),
+        additionalCondition(3),
+      )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    }
+
+    @Test
+    fun `delete multiple conditions`() {
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      val licenceEntity = aLicenceEntity.copy(
+        additionalConditions = listOf(
+          additionalCondition(1),
+          additionalCondition(2),
+          additionalCondition(3),
+        ),
+        standardConditions = listOf(
+          standardCondition(1).copy(conditionType = "AP"),
+          standardCondition(2).copy(conditionType = "AP"),
+          standardCondition(3).copy(conditionType = "PSS"),
+
         ),
       )
 
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2))
 
-    service.deleteAdditionalCondition(1L, 2)
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
-    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
-
-    assertThat(licenceCaptor.value.additionalConditions).containsExactly(
-      additionalCondition(1),
-      additionalCondition(3),
-    )
-
-    // Verify last contact info is recorded
-    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
-  }
-
-  @Test
-  fun `delete multiple conditions`() {
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    val licenceEntity = aLicenceEntity.copy(
-      additionalConditions = listOf(
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
-        additionalCondition(2),
-        additionalCondition(3),
-      ),
-      standardConditions = listOf(
-        standardCondition(1).copy(conditionType = "AP"),
-        standardCondition(2).copy(conditionType = "AP"),
-        standardCondition(3).copy(conditionType = "PSS"),
-
-      ),
-    )
-    whenever(licenceRepository.findById(1L))
-      .thenReturn(
-        Optional.of(licenceEntity),
       )
 
-    service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2))
+      assertThat(licenceCaptor.value.standardConditions).containsExactly(
+        standardCondition(3).copy(conditionType = "PSS"),
+      )
 
-    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+    }
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    @Test
+    fun `deleting multiple conditions is a noop if no conditions provided`() {
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
-    assertThat(licenceCaptor.value.additionalConditions).containsExactly(
-      additionalCondition(1),
-    )
+      service.deleteConditions(aLicenceEntity, emptyList(), emptyList())
 
-    assertThat(licenceCaptor.value.standardConditions).containsExactly(
-      standardCondition(3).copy(conditionType = "PSS"),
-    )
-
-    // Verify last contact info is recorded
-    assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
+      verifyNoInteractions(licenceRepository)
+    }
   }
 
   @Nested
@@ -772,12 +780,13 @@ class LicenceConditionServiceTest {
     )
   }
 
-  private fun standardCondition(id: Long) = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-    id = id,
-    conditionCode = "goodBehaviour",
-    conditionSequence = id.toInt(),
-    conditionText = "Be of good behaviour",
-    conditionType = "AP",
-    licence = aLicenceEntity,
-  )
+  private fun standardCondition(id: Long) =
+    uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
+      id = id,
+      conditionCode = "goodBehaviour",
+      conditionSequence = id.toInt(),
+      conditionText = "Be of good behaviour",
+      conditionType = "AP",
+      licence = aLicenceEntity,
+    )
 }

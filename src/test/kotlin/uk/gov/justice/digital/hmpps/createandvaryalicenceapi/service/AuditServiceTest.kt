@@ -9,6 +9,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
@@ -152,6 +153,65 @@ class AuditServiceTest {
     }
 
     @Test
+    fun `records an audit event when standard conditions are updated by removing existing conditions`() {
+      service.recordAuditEventDeleteStandardConditions(
+        aLicenceEntity,
+        aComEntity,
+        someEntityStandardConditions,
+      )
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
+      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Updated standard conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Updated standard conditions",
+            listOf(
+              mapOf(
+                "type" to "REMOVED",
+                "conditionCode" to "goodBehaviour",
+                "conditionType" to "AP",
+                "conditionText" to "Be of good behaviour",
+              ),
+              mapOf(
+                "type" to "REMOVED",
+                "conditionCode" to "notBreakLaw",
+                "conditionType" to "AP",
+                "conditionText" to "Do not break any law",
+              ),
+              mapOf(
+                "type" to "REMOVED",
+                "conditionCode" to "attendMeetings",
+                "conditionType" to "AP",
+                "conditionText" to "Attend meetings",
+              ),
+            ),
+          ),
+        )
+    }
+
+    @Test
+    fun `records no audit event when no standard conditions are removed`() {
+      service.recordAuditEventDeleteStandardConditions(aLicenceEntity, aComEntity, emptyList())
+
+      verifyNoMoreInteractions(auditEventRepository)
+    }
+
+    @Test
     fun `records an audit event when an additional condition of the same type is added`() {
       service.recordAuditEventAddAdditionalConditionOfSameType(aLicenceEntity, aComEntity, anAdditionalConditionEntity)
 
@@ -242,7 +302,12 @@ class AuditServiceTest {
         ),
       )
 
-      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, aComEntity, anAddedAdditionalCondition, emptyList())
+      service.recordAuditEventUpdateAdditionalConditions(
+        aLicenceEntity,
+        aComEntity,
+        anAddedAdditionalCondition,
+        emptyList(),
+      )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -282,7 +347,12 @@ class AuditServiceTest {
         anAdditionalConditionEntity,
       )
 
-      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, aComEntity, emptyList(), aRemovedAdditionalCondition)
+      service.recordAuditEventUpdateAdditionalConditions(
+        aLicenceEntity,
+        aComEntity,
+        emptyList(),
+        aRemovedAdditionalCondition,
+      )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -333,7 +403,12 @@ class AuditServiceTest {
         anAdditionalConditionEntity,
       )
 
-      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, aComEntity, anAddedAddtionalCondition, aRemovedAdditionalCondition)
+      service.recordAuditEventUpdateAdditionalConditions(
+        aLicenceEntity,
+        aComEntity,
+        anAddedAddtionalCondition,
+        aRemovedAdditionalCondition,
+      )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -371,6 +446,13 @@ class AuditServiceTest {
             ),
           ),
         )
+    }
+
+    @Test
+    fun `does not record an audit event when no additional conditions are updated`() {
+      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, aComEntity, emptyList(), emptyList())
+
+      verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
@@ -447,7 +529,12 @@ class AuditServiceTest {
         "Condition2",
       )
 
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, anAddedBespokeCondition, someBespokeConditions)
+      service.recordAuditEventUpdateBespokeConditions(
+        aLicenceEntity,
+        aComEntity,
+        anAddedBespokeCondition,
+        someBespokeConditions,
+      )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -481,6 +568,13 @@ class AuditServiceTest {
             ),
           ),
         )
+    }
+
+    @Test
+    fun `does not record an audit event when no bespoke conditions are updated`() {
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, emptyList(), emptyList())
+
+      verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
@@ -548,6 +642,7 @@ class AuditServiceTest {
         conditionCode = "goodBehaviour",
         conditionSequence = 1,
         conditionText = "Be of good behaviour",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -555,6 +650,7 @@ class AuditServiceTest {
         conditionCode = "notBreakLaw",
         conditionSequence = 2,
         conditionText = "Do not break any law",
+        conditionType = "AP",
         licence = mock(),
       ),
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -562,6 +658,7 @@ class AuditServiceTest {
         conditionCode = "attendMeetings",
         conditionSequence = 3,
         conditionText = "Attend meetings",
+        conditionType = "AP",
         licence = mock(),
       ),
     )

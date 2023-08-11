@@ -155,7 +155,12 @@ class LicenceConditionService(
       }
     }
 
-    auditService.recordAuditEventUpdateAdditionalConditions(licenceEntity, currentUser, newConditions, removedConditions)
+    auditService.recordAuditEventUpdateAdditionalConditions(
+      licenceEntity,
+      currentUser,
+      newConditions,
+      removedConditions,
+    )
   }
 
   private fun List<EntityAdditionalCondition>.getUpdatedConditions(
@@ -294,6 +299,9 @@ class LicenceConditionService(
     additionalConditionIds: List<Long>,
     standardConditionIds: List<Long>,
   ) {
+    if (standardConditionIds.isEmpty() && additionalConditionIds.isEmpty()) {
+      return
+    }
     val username = SecurityContextHolder.getContext().authentication.name
     val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw RuntimeException("Staff with username $username not found")
