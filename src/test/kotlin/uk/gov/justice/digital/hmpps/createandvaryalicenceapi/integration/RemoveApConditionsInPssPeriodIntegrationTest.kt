@@ -25,68 +25,61 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/licence/id/3")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+    // In PSS period
+    getLicence(3).run {
+      // AP conditions should be deleted i.e. empty if licence is in PSS period
+      assertThat(additionalLicenceConditions).isEmpty()
 
-    val additionalConditions = result?.additionalLicenceConditions
+      // PSS conditions should not be deleted
+      assertThat(additionalPssConditions).hasSize(2)
+      assertThat(additionalPssConditions.first().id).isEqualTo(2)
 
-    // additionalConditions should be deleted i.e. empty if licence is in PSS period
-    assertThat(additionalConditions).isEmpty()
+      assertThat(standardLicenceConditions).isEmpty()
+      assertThat(standardPssConditions).hasSize(1)
+    }
 
-    val additionalPssConditions = result?.additionalPssConditions
+    // In PSS period
+    getLicence(4).run {
+      assertThat(additionalLicenceConditions).hasSize(0)
 
-    // additionalPssConditions should not be deleted
-    assertThat(additionalPssConditions).isNotEmpty()
+      assertThat(additionalPssConditions).hasSize(1)
+      assertThat(additionalPssConditions.first().id).isEqualTo(7)
 
-    // additionalPssConditions length should be equal to 2
-    assertThat(additionalPssConditions?.size).isEqualTo(2)
+      assertThat(standardLicenceConditions).isEmpty()
+      assertThat(standardPssConditions).hasSize(2)
+    }
 
-    // additionalPssCondition first record id should be equal to 2
-    assertThat(additionalPssConditions?.first()?.id).isEqualTo(2)
+    // Before PSS period
+    getLicence(5).run {
+      assertThat(additionalLicenceConditions).hasSize(1)
+      assertThat(additionalLicenceConditions.first().id).isEqualTo(8)
 
-    // standard conditions
-    assertThat(result?.standardLicenceConditions?.size).isEqualTo(0)
-    assertThat(result?.standardPssConditions?.size).isEqualTo(1)
+      assertThat(additionalPssConditions).hasSize(1)
+      assertThat(additionalPssConditions.first().id).isEqualTo(9)
 
-    val result1 = webTestClient.get()
-      .uri("/licence/id/4")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+      assertThat(standardLicenceConditions).hasSize(2)
+      assertThat(standardPssConditions).hasSize(1)
+    }
 
-    assertThat(result1?.additionalLicenceConditions).isEmpty()
-    assertThat(result1?.additionalPssConditions?.size).isEqualTo(1)
-    assertThat(result1?.additionalPssConditions?.first()?.id).isEqualTo(7)
-    assertThat(result1?.standardLicenceConditions?.size).isEqualTo(0)
-    assertThat(result1?.standardPssConditions?.size).isEqualTo(2)
+    // In PSS period but ACTIVE
+    getLicence(6).run {
+      assertThat(additionalLicenceConditions).hasSize(1)
 
-    val result2 = webTestClient.get()
-      .uri("/licence/id/5")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+      assertThat(additionalPssConditions).hasSize(1)
+      assertThat(additionalPssConditions.first().id).isEqualTo(11)
 
-    assertThat(result2?.additionalLicenceConditions).isNotEmpty()
-    assertThat(result2?.additionalLicenceConditions?.size).isEqualTo(1)
-    assertThat(result2?.additionalLicenceConditions?.first()?.id).isEqualTo(8)
-    assertThat(result2?.additionalPssConditions?.size).isEqualTo(1)
-    assertThat(result2?.additionalPssConditions?.first()?.id).isEqualTo(9)
-    assertThat(result2?.standardLicenceConditions?.size).isEqualTo(2)
-    assertThat(result2?.standardPssConditions?.size).isEqualTo(1)
+      assertThat(standardLicenceConditions).hasSize(1)
+      assertThat(standardPssConditions).hasSize(1)
+    }
   }
+
+  private fun getLicence(id: Long) = webTestClient.get()
+    .uri("/licence/id/$id")
+    .accept(MediaType.APPLICATION_JSON)
+    .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+    .exchange()
+    .expectStatus().isOk
+    .expectHeader().contentType(MediaType.APPLICATION_JSON)
+    .expectBody(Licence::class.java)
+    .returnResult().responseBody!!
 }

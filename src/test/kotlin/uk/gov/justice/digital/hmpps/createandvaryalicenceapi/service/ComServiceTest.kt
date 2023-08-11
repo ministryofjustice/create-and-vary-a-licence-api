@@ -286,8 +286,8 @@ class ComServiceTest {
 
     val resultsList = result.results
     val offender = resultsList.first()
-    val inPrisonCount = result.inPrisonCount as Int
-    val onProbationCount = result.onProbationCount as Int
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
 
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)

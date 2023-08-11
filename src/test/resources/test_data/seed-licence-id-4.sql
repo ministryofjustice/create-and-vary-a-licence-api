@@ -172,6 +172,12 @@ values (5, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (5, 'attendMeetings', 1, 'Attend meetings', 'PSS');
 
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (6, 'notBreakLaw', 2, 'Do not break the law', 'AP');
+
+insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
+values (6, 'attendMeetings', 1, 'Attend meetings', 'PSS');
+
 -- Create the AP and PSS additional condition
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
@@ -218,6 +224,16 @@ values (8, 5, '1.0', 'Freedom of movement', 'code-1', 3, 'Not to enter exclusion
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
 values (9, 5, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'PSS');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, condition_type)
+values (10, 6, '1.0', 'Freedom of movement', 'code-1', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+        'AP');
+
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
+                                  condition_sequence, condition_text, condition_type)
+values (11, 6, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'PSS');
 
 -- Create the data for the exclusion zone condition

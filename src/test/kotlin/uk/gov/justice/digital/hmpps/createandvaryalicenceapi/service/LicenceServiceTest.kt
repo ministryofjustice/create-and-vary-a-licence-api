@@ -1122,53 +1122,6 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `creating a variation in PSS period should delete AP conditions`() {
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
-      CommunityOffenderManager(
-        -1,
-        1,
-        "user",
-        null,
-        null,
-        null,
-      ),
-    )
-    whenever(licencePolicyService.currentPolicy()).thenReturn(
-      LicencePolicy(
-        "2.1",
-        standardConditions = StandardConditions(emptyList(), emptyList()),
-        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
-        changeHints = emptyList(),
-      ),
-    )
-    whenever(licenceRepository.findById(1L)).thenReturn(
-      Optional.of(
-        aLicenceEntity.copy(
-          additionalConditions = additionalConditions,
-          licenceExpiryDate = LocalDate.now().minusDays(1),
-          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-          typeCode = LicenceType.AP_PSS,
-        ),
-      ),
-    )
-    whenever(licenceRepository.save(any())).thenReturn(
-      aLicenceEntity.copy(
-        additionalConditions = additionalConditions,
-        licenceExpiryDate = LocalDate.now().minusDays(1),
-        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-        typeCode = LicenceType.AP_PSS,
-      ),
-    )
-    val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
-
-    service.createVariation(1L)
-
-    verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
-    assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(1)
-    assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.PSS.toString())
-  }
-
-  @Test
   fun `creating a variation not PSS period should not delete AP conditions`() {
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
