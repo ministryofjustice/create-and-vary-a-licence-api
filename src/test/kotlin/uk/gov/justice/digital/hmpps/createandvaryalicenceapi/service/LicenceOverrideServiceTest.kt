@@ -90,8 +90,8 @@ class LicenceOverrideServiceTest {
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername")
-      .isEqualTo(listOf(LicenceStatus.INACTIVE, "smills"))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(LicenceStatus.INACTIVE, "smills", null))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
@@ -133,8 +133,8 @@ class LicenceOverrideServiceTest {
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername")
-      .isEqualTo(listOf(LicenceStatus.SUBMITTED, "smills"))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(LicenceStatus.SUBMITTED, "smills", null))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
@@ -149,6 +149,51 @@ class LicenceOverrideServiceTest {
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
       .isEqualTo(listOf(approvedLicenceA.id, "smills", LicenceEventType.SUBMITTED, reasonForChange))
+  }
+
+  @Test
+  fun `update licenceActivatedDate when licence status is ACTIVE`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB),
+    )
+
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+
+    val reasonForChange = "Test licenceActivatedDate when licence is made ${LicenceStatus.ACTIVE}"
+
+    licenceOverrideService.changeStatus(
+      approvedLicenceA.id,
+      LicenceStatus.ACTIVE,
+      reasonForChange,
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
+
+    assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(LicenceStatus.ACTIVE, "smills", licenceCaptor.value.licenceActivatedDate))
+
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
+      .isEqualTo(
+        listOf(
+          approvedLicenceA.id,
+          "smills",
+          AuditEventType.USER_EVENT,
+          "Licence status overridden to ${LicenceStatus.ACTIVE} for Robin Smith: $reasonForChange",
+        ),
+      )
+
+    assertThat(licenceEventCaptor.value)
+      .extracting("licenceId", "username", "eventType", "eventDescription")
+      .isEqualTo(listOf(approvedLicenceA.id, "smills", LicenceEventType.ACTIVATED, reasonForChange))
   }
 
   @Test

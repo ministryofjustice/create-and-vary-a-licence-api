@@ -39,7 +39,6 @@ private data class ControllerInfo(
   val authString: String? = null,
 )
 
-
 private fun getAllControllers() = ClassPathScanningCandidateComponentProvider(false).also {
   it.addIncludeFilter(AnnotationTypeFilter(RestController::class.java))
 }.findCandidateComponents("uk.gov.justice.digital.hmpps")
@@ -62,7 +61,7 @@ private fun toJsonDto(info: ControllerInfo): Map<String, Any?> {
     "violationDetected" to hasAnyViolation,
     "authorizeAnnotationPresent" to info.hasClassLevelProtection,
     "authString" to info.authString,
-    "protectedEndpoints" to "${protectedEndpoints}/${info.endpoints.size}",
+    "protectedEndpoints" to "$protectedEndpoints/${info.endpoints.size}",
     "endpoints" to info.endpoints.map {
       mapOf(
         "name" to it.method.name,

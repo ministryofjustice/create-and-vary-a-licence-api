@@ -61,5 +61,4 @@ class PublicLicenceController(
   fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence? {
     return null
   }
-
 }

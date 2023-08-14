@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.internal.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 
 @Tag(name = Tags.ADMIN)

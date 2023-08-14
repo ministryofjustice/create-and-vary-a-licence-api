@@ -12,4 +12,4 @@ data class AdditionalConditionData(
 
   @Schema(description = "The value of this data item", example = "Norfolk")
   val value: String? = null,
-  )
+)

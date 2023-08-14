@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
@@ -100,4 +99,4 @@ data class Licence(
 
   @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
   val createdByFullName: String? = null,
-  )
+)
