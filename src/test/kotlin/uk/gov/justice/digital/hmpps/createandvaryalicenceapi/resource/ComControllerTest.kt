@@ -126,6 +126,7 @@ class ComControllerTest {
           crn = "CRN1",
           nomisId = "NOMS1",
           comName = "Staff Surname",
+          comStaffCode = "A01B02C",
           teamName = "Test Team",
           releaseDate = LocalDate.of(2021, 10, 22),
           licenceId = 1L,

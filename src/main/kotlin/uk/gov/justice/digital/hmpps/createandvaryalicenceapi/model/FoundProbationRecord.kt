@@ -24,6 +24,9 @@ data class FoundProbationRecord(
   @Schema(description = "The forename and surname of the COM")
   val comName: String = "",
 
+  @Schema(description = "The COM's staff code")
+  val comStaffCode: String? = "",
+
   @Schema(description = "The description of the COM's team")
   val teamName: String? = "",
 
