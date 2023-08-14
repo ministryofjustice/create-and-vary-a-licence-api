@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -51,8 +52,14 @@ class LicenceOverrideService(
 
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence?.crn!!, listOf(newStatus))
 
+    var licenceActivatedDate: LocalDate? = null
+
     if (newStatus != LicenceStatus.INACTIVE && licences.any { it.statusCode == newStatus }) {
       throw ValidationException("$newStatus is already in use for this offender on another licence")
+    }
+
+    if (newStatus == LicenceStatus.ACTIVE) {
+      licenceActivatedDate = LocalDate.now()
     }
 
     licenceRepository.saveAndFlush(
@@ -60,6 +67,7 @@ class LicenceOverrideService(
         statusCode = newStatus,
         updatedByUsername = username,
         dateLastUpdated = LocalDateTime.now(),
+        licenceActivatedDate = licenceActivatedDate,
       ),
     )
 

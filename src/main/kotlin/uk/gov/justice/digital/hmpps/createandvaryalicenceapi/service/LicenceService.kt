@@ -203,6 +203,7 @@ class LicenceService(
     var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
     val supersededDate: LocalDateTime?
+    val licenceActivatedDate: LocalDate?
 
     when (request.status) {
       APPROVED -> {
@@ -211,6 +212,7 @@ class LicenceService(
         approvedByName = request.fullName
         approvedDate = LocalDateTime.now()
         supersededDate = null
+        licenceActivatedDate = null
       }
 
       IN_PROGRESS -> {
@@ -218,14 +220,22 @@ class LicenceService(
         approvedByName = null
         approvedDate = null
         supersededDate = null
+        licenceActivatedDate = null
       }
 
       INACTIVE -> {
         supersededDate = LocalDateTime.now()
+        licenceActivatedDate = null
+      }
+
+      ACTIVE -> {
+        supersededDate = null
+        licenceActivatedDate = LocalDate.now()
       }
 
       else -> {
         supersededDate = null
+        licenceActivatedDate = null
       }
     }
 
@@ -239,6 +249,7 @@ class LicenceService(
       approvedByName = approvedByName,
       approvedDate = approvedDate,
       supersededDate = supersededDate,
+      licenceActivatedDate = licenceActivatedDate,
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
