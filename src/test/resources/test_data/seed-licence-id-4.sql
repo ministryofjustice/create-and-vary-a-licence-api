@@ -278,3 +278,24 @@ values (13, 8, 1, 'outOfBoundArea', 'Plymouth town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (14, 9, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (1, 3, 0, 'condition 1');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (2, 3, 0, 'condition 2');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (3, 3, 0, 'condition 3');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (4, 4, 0, 'condition 1');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (5, 4, 0, 'condition 2');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (6, 5, 0, 'condition 1');
+
+insert into bespoke_condition (id, licence_id, condition_sequence, condition_text)
+values (7, 6, 0, 'condition 1');

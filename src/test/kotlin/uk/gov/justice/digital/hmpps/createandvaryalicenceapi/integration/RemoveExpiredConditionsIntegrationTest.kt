@@ -8,7 +8,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 
-class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
+class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -19,7 +19,7 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
   )
   fun `Update sentence dates`() {
     webTestClient.post()
-      .uri("/run-remove-ap-conditions-job")
+      .uri("/run-remove-expired-conditions-job")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -29,6 +29,8 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     getLicence(3).run {
       // AP conditions should be deleted i.e. empty if licence is in PSS period
       assertThat(additionalLicenceConditions).isEmpty()
+      // Bespoke conditions should be deleted
+      assertThat(bespokeConditions).isEmpty()
 
       // PSS conditions should not be deleted
       assertThat(additionalPssConditions).hasSize(2)
@@ -41,6 +43,7 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     // In PSS period
     getLicence(4).run {
       assertThat(additionalLicenceConditions).hasSize(0)
+      assertThat(bespokeConditions).hasSize(0)
 
       assertThat(additionalPssConditions).hasSize(1)
       assertThat(additionalPssConditions.first().id).isEqualTo(7)
@@ -54,6 +57,9 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
       assertThat(additionalLicenceConditions).hasSize(1)
       assertThat(additionalLicenceConditions.first().id).isEqualTo(8)
 
+      assertThat(bespokeConditions).hasSize(1)
+      assertThat(bespokeConditions.first().id).isEqualTo(6)
+
       assertThat(additionalPssConditions).hasSize(1)
       assertThat(additionalPssConditions.first().id).isEqualTo(9)
 
@@ -64,6 +70,7 @@ class RemoveApConditionsInPssPeriodIntegrationTest : IntegrationTestBase() {
     // In PSS period but ACTIVE
     getLicence(6).run {
       assertThat(additionalLicenceConditions).hasSize(1)
+      assertThat(bespokeConditions).hasSize(1)
 
       assertThat(additionalPssConditions).hasSize(1)
       assertThat(additionalPssConditions.first().id).isEqualTo(11)

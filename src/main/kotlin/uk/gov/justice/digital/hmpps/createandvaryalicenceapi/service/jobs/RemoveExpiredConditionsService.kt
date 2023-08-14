@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 @Service
-class RemoveApConditionsInPssPeriodService(
+class RemoveExpiredConditionsService(
   private val licenceRepository: LicenceRepository,
   private val licenceConditionService: LicenceConditionService,
 ) {
@@ -18,18 +18,24 @@ class RemoveApConditionsInPssPeriodService(
   }
 
   @Transactional
-  fun removeAPConditions() {
-    log.info("Job to removeApConditions in PSS period started")
+  fun removeExpiredConditions() {
+    log.info("Job to removeExpiredConditions in PSS period started")
     val licencesInPSSPeriod = licenceRepository.getAllVariedLicencesInPSSPeriod()
-    log.info("Job removeApConditions found ${licencesInPSSPeriod.size} licences to process")
+    log.info("Job removeExpiredConditions found ${licencesInPSSPeriod.size} licences to process")
 
     licencesInPSSPeriod.forEach { licence ->
       val additionalApConditionIds =
         licence.additionalConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }.map { it.id }
       val standardApConditionIds =
         licence.standardConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }.map { it.id }
-      this.licenceConditionService.deleteConditions(licence, additionalApConditionIds, standardApConditionIds)
+      val bespokeConditionIds = licence.bespokeConditions.map { it.id }
+      this.licenceConditionService.deleteConditions(
+        licence,
+        additionalApConditionIds,
+        standardApConditionIds,
+        bespokeConditionIds,
+      )
     }
-    log.info("Job removeApConditions in PSS period deleted AP conditions on ${licencesInPSSPeriod.size} licences")
+    log.info("Job removeExpiredConditions in PSS period deleted AP and Bespoke conditions on ${licencesInPSSPeriod.size} licences")
   }
 }

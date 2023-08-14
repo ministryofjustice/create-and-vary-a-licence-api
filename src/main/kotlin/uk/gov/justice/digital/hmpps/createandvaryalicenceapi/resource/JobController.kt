@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveApConditionsInPssPeriodService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveExpiredConditionsService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class JobController(
-  private val removeApConditionsInPssPeriodService: RemoveApConditionsInPssPeriodService,
+  private val removeExpiredConditionsService: RemoveExpiredConditionsService,
 ) {
-  @PostMapping(value = ["/run-remove-ap-conditions-job"])
+  @PostMapping(value = ["/run-remove-expired-conditions-job"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Job to remove AP conditions.",
@@ -46,7 +46,7 @@ class JobController(
       ),
     ],
   )
-  fun runRemoveAPConditionsJob() {
-    return removeApConditionsInPssPeriodService.removeAPConditions()
+  fun runRemoveExpiredConditionsJob() {
+    return removeExpiredConditionsService.removeExpiredConditions()
   }
 }

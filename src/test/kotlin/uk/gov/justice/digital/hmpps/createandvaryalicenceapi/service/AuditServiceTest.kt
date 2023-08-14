@@ -13,6 +13,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
@@ -205,8 +206,53 @@ class AuditServiceTest {
     }
 
     @Test
+    fun `records an audit event when bespoke conditions are deleted in PSS period`() {
+      service.recordAuditEventDeleteBespokeConditions(
+        aLicenceEntity,
+        aComEntity,
+        someBespokeConditions,
+      )
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
+      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Updated bespoke conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Updated bespoke conditions",
+            listOf(
+              mapOf(
+                "type" to "REMOVED",
+                "conditionText" to someBespokeConditions[0].conditionText,
+              ),
+            ),
+          ),
+        )
+    }
+
+    @Test
     fun `records no audit event when no standard conditions are removed`() {
       service.recordAuditEventDeleteStandardConditions(aLicenceEntity, aComEntity, emptyList())
+
+      verifyNoMoreInteractions(auditEventRepository)
+    }
+
+    @Test
+    fun `records no audit event when no bespoke conditions are removed`() {
+      service.recordAuditEventDeleteBespokeConditions(aLicenceEntity, aComEntity, emptyList())
 
       verifyNoMoreInteractions(auditEventRepository)
     }
@@ -457,7 +503,7 @@ class AuditServiceTest {
 
     @Test
     fun `records an audit event when bespoke conditions are updated by adding new conditions`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, someBespokeConditions, emptyList())
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, newBespokeConditions, emptyList())
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -491,7 +537,7 @@ class AuditServiceTest {
 
     @Test
     fun `records an audit event when bespoke conditions are updated by removing existing conditions`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, emptyList(), someBespokeConditions)
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, emptyList(), newBespokeConditions)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -533,7 +579,7 @@ class AuditServiceTest {
         aLicenceEntity,
         aComEntity,
         anAddedBespokeCondition,
-        someBespokeConditions,
+        newBespokeConditions,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -723,6 +769,10 @@ class AuditServiceTest {
     )
 
     val someBespokeConditions = listOf(
+      BespokeCondition(1, licence = aLicenceEntity).copy(conditionText = "condition 1"),
+    )
+
+    val newBespokeConditions = listOf(
       "Condition1",
     )
 

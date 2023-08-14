@@ -15,10 +15,11 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveApConditionsInPssPeriodService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveExpiredConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -26,12 +27,12 @@ import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 
-class RemoveApConditionsInPssPeriodServiceTest {
+class RemoveExpiredConditionsServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceConditionService = mock<LicenceConditionService>()
 
   private val service = Mockito.spy(
-    RemoveApConditionsInPssPeriodService(
+    RemoveExpiredConditionsService(
       licenceRepository,
       licenceConditionService,
     ),
@@ -53,7 +54,7 @@ class RemoveApConditionsInPssPeriodServiceTest {
   }
 
   @Test
-  fun `remove AP condition for in PSS period licence`() {
+  fun `remove AP and Bespoke condition for in PSS period licence`() {
     whenever(licenceRepository.getAllVariedLicencesInPSSPeriod()).thenReturn(
       listOf(
         aLicenceEntity.copy(
@@ -83,25 +84,33 @@ class RemoveApConditionsInPssPeriodServiceTest {
               conditionType = "PSS",
             ),
           ),
+          bespokeConditions = listOf(
+            BespokeCondition(1, licence = aLicenceEntity).copy(conditionText = "condition 1"),
+            BespokeCondition(2, licence = aLicenceEntity).copy(conditionText = "condition 2"),
+            BespokeCondition(3, licence = aLicenceEntity).copy(conditionText = "condition 3"),
+          ),
         ),
       ),
     )
 
-    service.removeAPConditions()
+    service.removeExpiredConditions()
 
     val licenceEntityCaptor = argumentCaptor<Licence>()
     val additionalConditionIdCaptor = argumentCaptor<List<Long>>()
     val standardConditionIdCaptor = argumentCaptor<List<Long>>()
+    val bespokeConditionIdCaptor = argumentCaptor<List<Long>>()
 
     verify(licenceConditionService, times(1)).deleteConditions(
       licenceEntityCaptor.capture(),
       additionalConditionIdCaptor.capture(),
       standardConditionIdCaptor.capture(),
+      bespokeConditionIdCaptor.capture(),
     )
 
     assertThat(licenceEntityCaptor.firstValue.id).isEqualTo(aLicenceEntity.id)
     assertThat(additionalConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L))
     assertThat(standardConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 2L))
+    assertThat(bespokeConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 2L, 3L))
   }
 
   @Test
@@ -139,21 +148,24 @@ class RemoveApConditionsInPssPeriodServiceTest {
       ),
     )
 
-    service.removeAPConditions()
+    service.removeExpiredConditions()
 
     val licenceEntityCaptor = argumentCaptor<Licence>()
     val additionalConditionIdCaptor = argumentCaptor<List<Long>>()
     val standardConditionIdCaptor = argumentCaptor<List<Long>>()
+    val bespokeConditionIdCaptor = argumentCaptor<List<Long>>()
 
     verify(licenceConditionService, times(1)).deleteConditions(
       licenceEntityCaptor.capture(),
       additionalConditionIdCaptor.capture(),
       standardConditionIdCaptor.capture(),
+      bespokeConditionIdCaptor.capture(),
     )
 
     assertThat(licenceEntityCaptor.firstValue.id).isEqualTo(aLicenceEntity.id)
     assertThat(additionalConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 3L))
     assertThat(standardConditionIdCaptor.allValues[0]).isEqualTo(listOf(1L, 2L))
+    assertThat(bespokeConditionIdCaptor.allValues[0]).isEmpty()
   }
 
   private companion object {

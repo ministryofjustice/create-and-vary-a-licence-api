@@ -223,11 +223,15 @@ class LicenceConditionServiceTest {
           standardCondition(1).copy(conditionType = "AP"),
           standardCondition(2).copy(conditionType = "AP"),
           standardCondition(3).copy(conditionType = "PSS"),
-
+        ),
+        bespokeConditions = listOf(
+          BespokeCondition(1, licence = aLicenceEntity).copy(conditionText = "condition 1"),
+          BespokeCondition(2, licence = aLicenceEntity).copy(conditionText = "condition 2"),
+          BespokeCondition(3, licence = aLicenceEntity).copy(conditionText = "condition 3"),
         ),
       )
 
-      service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2))
+      service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2), listOf(1, 3))
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
@@ -241,6 +245,10 @@ class LicenceConditionServiceTest {
         standardCondition(3).copy(conditionType = "PSS"),
       )
 
+      assertThat(licenceCaptor.value.bespokeConditions).containsExactly(
+        BespokeCondition(2, licence = aLicenceEntity).copy(conditionText = "condition 2"),
+      )
+
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value.updatedByUsername).isEqualTo("smills")
     }
@@ -249,7 +257,7 @@ class LicenceConditionServiceTest {
     fun `deleting multiple conditions is a noop if no conditions provided`() {
       whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
-      service.deleteConditions(aLicenceEntity, emptyList(), emptyList())
+      service.deleteConditions(aLicenceEntity, emptyList(), emptyList(), emptyList())
 
       verifyNoInteractions(licenceRepository)
     }
