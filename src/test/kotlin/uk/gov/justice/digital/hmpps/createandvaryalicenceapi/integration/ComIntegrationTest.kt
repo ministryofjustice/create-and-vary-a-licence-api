@@ -50,8 +50,8 @@ class ComIntegrationTest : IntegrationTestBase() {
     assertThat(offender)
       .extracting {
         tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceType,
-          it?.licenceStatus, it?.isOnProbation,
+          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
+          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
         )
       }
       .isEqualTo(
@@ -60,6 +60,7 @@ class ComIntegrationTest : IntegrationTestBase() {
           "CRN1",
           "A1234AA",
           "Staff Surname",
+          "A01B02C",
           "Test Team",
           LocalDate.parse("2022-02-12"),
           1L,

@@ -293,13 +293,19 @@ class ComServiceTest {
     assertThat(resultsList.size).isEqualTo(1)
 
     assertThat(offender)
-      .extracting { Tuple.tuple(it.name, it.crn, it.nomisId, it.comName, it.teamName, it.releaseDate, it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation) }
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
       .isEqualTo(
         Tuple.tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
           "Staff Surname",
+          "A01B02C",
           "Test Team",
           LocalDate.parse("2021-10-22"),
           1L,
@@ -434,13 +440,19 @@ class ComServiceTest {
     assertThat(resultsList.size).isEqualTo(1)
 
     assertThat(offender)
-      .extracting { Tuple.tuple(it.name, it.crn, it.nomisId, it.comName, it.teamName, it.releaseDate, it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation) }
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
       .isEqualTo(
         Tuple.tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
           "Staff Surname",
+          "A01B02C",
           "Test Team",
           LocalDate.parse("2021-10-22"),
           1L,
@@ -559,13 +571,19 @@ class ComServiceTest {
     assertThat(resultsList.size).isEqualTo(1)
 
     assertThat(offender)
-      .extracting { Tuple.tuple(it.name, it.crn, it.nomisId, it.comName, it.teamName, it.releaseDate, it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation) }
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
       .isEqualTo(
         Tuple.tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
           "Staff Surname",
+          "A01B02C",
           "Test Team",
           LocalDate.parse("2021-10-22"),
           1L,
@@ -638,13 +656,19 @@ class ComServiceTest {
     assertThat(resultsList.size).isEqualTo(1)
 
     assertThat(offender)
-      .extracting { Tuple.tuple(it.name, it.crn, it.nomisId, it.comName, it.teamName, it.releaseDate, it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation) }
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
       .isEqualTo(
         Tuple.tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
           "Staff Surname",
+          "A01B02C",
           "Test Team",
           LocalDate.parse("2023-07-27"),
           1L,
