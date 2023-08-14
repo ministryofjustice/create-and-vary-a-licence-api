@@ -233,9 +233,13 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
 fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}",
+    crn = licence?.crn,
+    nomisId = licence?.nomsId,
     comName = "${manager.name?.forename} ${manager.name?.surname}",
     teamName = manager.team.description,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
+    licenceId = licence?.id,
+    licenceType = licence?.typeCode,
     licenceStatus = licence?.statusCode,
     isOnProbation = licence?.statusCode?.isOnProbation(),
   )

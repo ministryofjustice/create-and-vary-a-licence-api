@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
@@ -47,13 +48,22 @@ class ComIntegrationTest : IntegrationTestBase() {
 
     assertThat(resultsList?.size).isEqualTo(1)
     assertThat(offender)
-      .extracting { tuple(it?.name, it?.comName, it?.teamName, it?.releaseDate, it?.licenceStatus, it?.isOnProbation) }
+      .extracting {
+        tuple(
+          it?.name, it?.crn, it?.nomisId, it?.comName, it?.teamName, it?.releaseDate, it?.licenceId, it?.licenceType,
+          it?.licenceStatus, it?.isOnProbation,
+        )
+      }
       .isEqualTo(
         tuple(
           "Test Surname",
+          "CRN1",
+          "A1234AA",
           "Staff Surname",
           "Test Team",
           LocalDate.parse("2022-02-12"),
+          1L,
+          LicenceType.AP,
           LicenceStatus.IN_PROGRESS,
           false,
         ),
