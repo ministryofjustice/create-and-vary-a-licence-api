@@ -114,7 +114,7 @@ class LicenceConditionService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    deleteConditions(licenceEntity, listOf(conditionId), emptyList())
+    deleteConditions(licenceEntity, listOf(conditionId), emptyList(), emptyList())
   }
 
   @Transactional
@@ -298,8 +298,9 @@ class LicenceConditionService(
     licenceEntity: Licence,
     additionalConditionIds: List<Long>,
     standardConditionIds: List<Long>,
+    bespokeConditionIds: List<Long>,
   ) {
-    if (standardConditionIds.isEmpty() && additionalConditionIds.isEmpty()) {
+    if (standardConditionIds.isEmpty() && additionalConditionIds.isEmpty() && bespokeConditionIds.isEmpty()) {
       return
     }
     val username = SecurityContextHolder.getContext().authentication.name
@@ -320,9 +321,17 @@ class LicenceConditionService(
     val removedStandardConditions =
       licenceEntity.standardConditions.filter { standardConditionIds.contains(it.id) }
 
+    // return all conditions except condition with submitted conditionIds
+    val revisedBespokeConditions =
+      licenceEntity.bespokeConditions.filter { !bespokeConditionIds.contains(it.id) }
+
+    val removedBespokeConditions =
+      licenceEntity.bespokeConditions.filter { bespokeConditionIds.contains(it.id) }
+
     val updatedLicence = licenceEntity.copy(
       additionalConditions = revisedAdditionalConditions,
       standardConditions = revisedStandardConditions,
+      bespokeConditions = revisedBespokeConditions,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
@@ -330,6 +339,7 @@ class LicenceConditionService(
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, currentUser, removedAdditionalConditions)
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, currentUser, removedStandardConditions)
+    auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, currentUser, removedBespokeConditions)
   }
 
   companion object {

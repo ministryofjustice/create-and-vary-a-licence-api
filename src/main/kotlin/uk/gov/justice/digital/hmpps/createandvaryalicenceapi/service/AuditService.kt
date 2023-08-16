@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
@@ -105,6 +106,29 @@ class AuditService(
           "type" to "REMOVED",
           "conditionCode" to it.conditionCode,
           "conditionType" to it.conditionType,
+          "conditionText" to it.conditionText,
+        )
+      },
+    )
+
+    auditEventRepository.save(createAuditEvent(licence, currentUser, summary, changes))
+  }
+
+  fun recordAuditEventDeleteBespokeConditions(
+    licence: Licence,
+    currentUser: CommunityOffenderManager,
+    removedBespokeConditions: List<BespokeCondition>,
+  ) {
+    if (removedBespokeConditions.isEmpty()) {
+      return
+    }
+    val summary = "Updated bespoke conditions"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to removedBespokeConditions.map {
+        mapOf(
+          "type" to "REMOVED",
           "conditionText" to it.conditionText,
         )
       },
