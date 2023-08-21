@@ -48,7 +48,6 @@ class AuditServiceTest {
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("smills")
     whenever(securityContext.authentication).thenReturn(authentication)
-    whenever(securityContext.authentication).thenReturn(authentication)
 
     SecurityContextHolder.setContext(securityContext)
 
@@ -682,34 +681,34 @@ class AuditServiceTest {
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
-
-      assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("SYSTEM")
-      assertThat(auditCaptor.value.summary)
-        .isEqualTo(
-          "Unable to find offender for smills",
-        )
-      assertThat(auditCaptor.value.detail)
-        .isEqualTo(
-          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
-            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
-        )
-
-      assertThat(auditCaptor.value.changes)
-        .extracting("type", "changes")
-        .isEqualTo(
-          listOf(
-            "Updated additional condition data",
+      with(auditCaptor.value) {
+        assertThat(licenceId).isEqualTo(aLicenceEntity.id)
+        assertThat(username).isEqualTo("SYSTEM")
+        assertThat(summary)
+          .isEqualTo(
+            "Updated additional condition data for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          )
+        assertThat(detail)
+          .isEqualTo(
+            "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+              "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+          )
+        assertThat(changes)
+          .extracting("type", "changes")
+          .isEqualTo(
             listOf(
-              mapOf(
-                "type" to "ADDED",
-                "conditionCode" to "code1",
-                "conditionType" to "AP",
-                "conditionText" to "updatedText",
+              "Updated additional condition data",
+              listOf(
+                mapOf(
+                  "type" to "ADDED",
+                  "conditionCode" to "code1",
+                  "conditionType" to "AP",
+                  "conditionText" to "updatedText",
+                ),
               ),
             ),
-          ),
-        )
+          )
+      }
     }
   }
 

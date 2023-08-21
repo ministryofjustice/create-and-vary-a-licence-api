@@ -278,8 +278,7 @@ class AuditService(
       username = currentUser?.username ?: "SYSTEM",
       fullName = if (currentUser != null) "${currentUser.firstName} ${currentUser.lastName}" else "SYSTEM",
       eventType = if (currentUser == null) AuditEventType.SYSTEM_EVENT else AuditEventType.USER_EVENT,
-      summary =
-      if (currentUser != null) "$summary for ${licence.forename} ${licence.surname}" else "Unable to find offender for $authUsername",
+      summary = "$summary for ${licence.forename} ${licence.surname}",
       detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
       changes = changes,
     )
