@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
@@ -31,7 +30,6 @@ class LicenceConditionService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val conditionFormatter: ConditionFormatter,
   private val licencePolicyService: LicencePolicyService,
-  private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
   private val auditService: AuditService,
 ) {
 
@@ -46,8 +44,6 @@ class LicenceConditionService(
     val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
 
     val updatedLicence = licenceEntity.copy(
       standardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
@@ -58,7 +54,7 @@ class LicenceConditionService(
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
 
     licenceRepository.saveAndFlush(updatedLicence)
-    auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentUser, currentPolicyVersion)
+    auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion)
   }
 
   /**
@@ -74,8 +70,6 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
 
     val newConditions = licenceEntity.additionalConditions.toMutableList()
 
@@ -104,7 +98,7 @@ class LicenceConditionService(
     val newCondition =
       licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
 
-    auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, currentUser, newCondition)
+    auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition)
 
     return transform(newCondition)
   }
@@ -124,8 +118,6 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
 
     val submittedConditions =
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
@@ -157,7 +149,6 @@ class LicenceConditionService(
 
     auditService.recordAuditEventUpdateAdditionalConditions(
       licenceEntity,
-      currentUser,
       newConditions,
       removedConditions,
     )
@@ -208,8 +199,6 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
 
     val submittedConditions = request.conditions
 
@@ -238,7 +227,7 @@ class LicenceConditionService(
       )
     }
 
-    auditService.recordAuditEventUpdateBespokeConditions(licenceEntity, currentUser, newConditions, removedConditions)
+    auditService.recordAuditEventUpdateBespokeConditions(licenceEntity, newConditions, removedConditions)
   }
 
   private fun List<BespokeCondition>.getAddedBespokeConditions(
@@ -281,13 +270,11 @@ class LicenceConditionService(
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
 
     val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicence)
 
-    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, currentUser, updatedAdditionalCondition)
+    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition)
   }
 
   fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
@@ -304,8 +291,6 @@ class LicenceConditionService(
       return
     }
     val username = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
 
     // return all conditions except condition with submitted conditionIds
     val revisedAdditionalConditions =
@@ -337,9 +322,9 @@ class LicenceConditionService(
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
-    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, currentUser, removedAdditionalConditions)
-    auditService.recordAuditEventDeleteStandardConditions(licenceEntity, currentUser, removedStandardConditions)
-    auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, currentUser, removedBespokeConditions)
+    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions)
+    auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions)
+    auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions)
   }
 
   companion object {
