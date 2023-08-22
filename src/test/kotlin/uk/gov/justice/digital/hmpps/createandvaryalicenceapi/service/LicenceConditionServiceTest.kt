@@ -36,7 +36,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -52,7 +51,6 @@ class LicenceConditionServiceTest {
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val policyService = mock<LicencePolicyService>()
   private val conditionFormatter = mock<ConditionFormatter>()
-  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
   private val auditService = mock<AuditService>()
 
   private val service = LicenceConditionService(
@@ -62,7 +60,6 @@ class LicenceConditionServiceTest {
     additionalConditionUploadDetailRepository,
     conditionFormatter,
     policyService,
-    communityOffenderManagerRepository,
     auditService,
   )
 
@@ -82,7 +79,6 @@ class LicenceConditionServiceTest {
       additionalConditionRepository,
       bespokeConditionRepository,
       additionalConditionUploadDetailRepository,
-      communityOffenderManagerRepository,
     )
   }
 
@@ -91,7 +87,6 @@ class LicenceConditionServiceTest {
     @Test
     fun `update standard conditions for an individual licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(policyService.currentPolicy()).thenReturn(aPolicy)
 
       val APConditions = listOf(
@@ -114,7 +109,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateStandardCondition(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateStandardCondition(any(), any())
 
       assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
 
@@ -142,37 +137,6 @@ class LicenceConditionServiceTest {
         ),
       )
     }
-
-    @Test
-    fun `update standard conditions where staff name not found throws exception`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
-      whenever(policyService.currentPolicy()).thenReturn(aPolicy)
-
-      val APConditions = listOf(
-        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      )
-
-      val PSSConditions = listOf(
-        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-        StandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
-      )
-
-      val exception = assertThrows<RuntimeException> {
-        service.updateStandardConditions(
-          1,
-          UpdateStandardConditionDataRequest(
-            standardLicenceConditions = APConditions,
-            standardPssConditions = PSSConditions,
-          ),
-        )
-      }
-
-      assertThat(exception).isInstanceOf(RuntimeException::class.java)
-
-      verify(licenceRepository, times(1)).findById(1L)
-      verify(licenceRepository, times(0)).saveAndFlush(any())
-    }
   }
 
   @Nested
@@ -192,14 +156,12 @@ class LicenceConditionServiceTest {
           ),
         )
 
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
       service.deleteAdditionalCondition(1L, 2)
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -212,7 +174,6 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `delete multiple conditions`() {
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       val licenceEntity = aLicenceEntity.copy(
         additionalConditions = listOf(
           additionalCondition(1),
@@ -255,8 +216,6 @@ class LicenceConditionServiceTest {
 
     @Test
     fun `deleting multiple conditions is a noop if no conditions provided`() {
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
       service.deleteConditions(aLicenceEntity, emptyList(), emptyList(), emptyList())
 
       verifyNoInteractions(licenceRepository)
@@ -329,14 +288,12 @@ class LicenceConditionServiceTest {
         conditionType = "AP",
       )
 
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
       service.updateAdditionalConditions(1L, request)
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(
@@ -384,14 +341,13 @@ class LicenceConditionServiceTest {
         conditionType = "AP",
         expandedText = "Hello",
       )
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.addAdditionalCondition(1L, request)
 
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventAddAdditionalConditionOfSameType(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventAddAdditionalConditionOfSameType(any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).extracting("id", "conditionCode", "conditionSequence")
         .containsExactly(
@@ -436,15 +392,13 @@ class LicenceConditionServiceTest {
         whenever(bespokeConditionRepository.saveAndFlush(bespoke)).thenReturn(bespoke)
       }
 
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
       service.updateBespokeConditions(1L, someBespokeConditions)
 
       // Verify licence entity is updated with last contact info
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
 
       assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
       assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
@@ -471,18 +425,15 @@ class LicenceConditionServiceTest {
         ),
       )
 
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
       service.updateBespokeConditions(1L, BespokeConditionRequest())
       verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
       verify(licenceRepository, times(1)).saveAndFlush(any())
-      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
     }
 
     @Test
     fun `update bespoke conditions throws not found exception if licence not found`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val exception = assertThrows<EntityNotFoundException> {
         service.updateBespokeConditions(1L, someBespokeConditions)
@@ -589,15 +540,13 @@ class LicenceConditionServiceTest {
         ),
       )
 
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
       service.updateAdditionalConditionData(1L, 1L, request)
 
       val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditionData(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditionData(any(), any())
 
       verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
 
@@ -636,8 +585,6 @@ class LicenceConditionServiceTest {
             anAdditionalConditionEntity.copy(),
           ),
         )
-
-      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
@@ -777,14 +724,6 @@ class LicenceConditionServiceTest {
       standardConditions = StandardConditions(emptyList(), emptyList()),
       additionalConditions = AdditionalConditions(emptyList(), emptyList()),
       changeHints = emptyList(),
-    )
-
-    val aCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
     )
   }
 

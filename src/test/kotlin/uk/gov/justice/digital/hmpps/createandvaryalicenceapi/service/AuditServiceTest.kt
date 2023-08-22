@@ -11,6 +11,9 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
@@ -22,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -34,12 +38,21 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 class AuditServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
+  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
 
-  private val service = AuditService(auditEventRepository, licenceRepository)
+  private val service = AuditService(auditEventRepository, licenceRepository, communityOffenderManagerRepository)
 
   @BeforeEach
   fun reset() {
-    reset(auditEventRepository, licenceRepository)
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+    whenever(authentication.name).thenReturn("smills")
+    whenever(securityContext.authentication).thenReturn(authentication)
+
+    SecurityContextHolder.setContext(securityContext)
+
+    reset(auditEventRepository, licenceRepository, communityOffenderManagerRepository)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
   }
 
   @Test
@@ -127,7 +140,7 @@ class AuditServiceTest {
   inner class `audit events for licence conditions` {
     @Test
     fun `records an audit event when standard conditions are updated`() {
-      service.recordAuditEventUpdateStandardCondition(aLicenceEntity, aComEntity, aPolicy.version)
+      service.recordAuditEventUpdateStandardCondition(aLicenceEntity, aPolicy.version)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -157,7 +170,6 @@ class AuditServiceTest {
     fun `records an audit event when standard conditions are updated by removing existing conditions`() {
       service.recordAuditEventDeleteStandardConditions(
         aLicenceEntity,
-        aComEntity,
         someEntityStandardConditions,
       )
 
@@ -209,7 +221,6 @@ class AuditServiceTest {
     fun `records an audit event when bespoke conditions are deleted in PSS period`() {
       service.recordAuditEventDeleteBespokeConditions(
         aLicenceEntity,
-        aComEntity,
         someBespokeConditions,
       )
 
@@ -245,21 +256,21 @@ class AuditServiceTest {
 
     @Test
     fun `records no audit event when no standard conditions are removed`() {
-      service.recordAuditEventDeleteStandardConditions(aLicenceEntity, aComEntity, emptyList())
+      service.recordAuditEventDeleteStandardConditions(aLicenceEntity, emptyList())
 
       verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
     fun `records no audit event when no bespoke conditions are removed`() {
-      service.recordAuditEventDeleteBespokeConditions(aLicenceEntity, aComEntity, emptyList())
+      service.recordAuditEventDeleteBespokeConditions(aLicenceEntity, emptyList())
 
       verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
     fun `records an audit event when an additional condition of the same type is added`() {
-      service.recordAuditEventAddAdditionalConditionOfSameType(aLicenceEntity, aComEntity, anAdditionalConditionEntity)
+      service.recordAuditEventAddAdditionalConditionOfSameType(aLicenceEntity, anAdditionalConditionEntity)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -301,7 +312,7 @@ class AuditServiceTest {
         ),
       )
 
-      service.recordAuditEventDeleteAdditionalConditions(aLicenceEntity, aComEntity, aDeletedCondition)
+      service.recordAuditEventDeleteAdditionalConditions(aLicenceEntity, aDeletedCondition)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -350,7 +361,6 @@ class AuditServiceTest {
 
       service.recordAuditEventUpdateAdditionalConditions(
         aLicenceEntity,
-        aComEntity,
         anAddedAdditionalCondition,
         emptyList(),
       )
@@ -395,7 +405,6 @@ class AuditServiceTest {
 
       service.recordAuditEventUpdateAdditionalConditions(
         aLicenceEntity,
-        aComEntity,
         emptyList(),
         aRemovedAdditionalCondition,
       )
@@ -451,7 +460,6 @@ class AuditServiceTest {
 
       service.recordAuditEventUpdateAdditionalConditions(
         aLicenceEntity,
-        aComEntity,
         anAddedAddtionalCondition,
         aRemovedAdditionalCondition,
       )
@@ -496,14 +504,14 @@ class AuditServiceTest {
 
     @Test
     fun `does not record an audit event when no additional conditions are updated`() {
-      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, aComEntity, emptyList(), emptyList())
+      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, emptyList(), emptyList())
 
       verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
     fun `records an audit event when bespoke conditions are updated by adding new conditions`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, newBespokeConditions, emptyList())
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, newBespokeConditions, emptyList())
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -537,7 +545,7 @@ class AuditServiceTest {
 
     @Test
     fun `records an audit event when bespoke conditions are updated by removing existing conditions`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, emptyList(), newBespokeConditions)
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, emptyList(), newBespokeConditions)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -577,7 +585,6 @@ class AuditServiceTest {
 
       service.recordAuditEventUpdateBespokeConditions(
         aLicenceEntity,
-        aComEntity,
         anAddedBespokeCondition,
         newBespokeConditions,
       )
@@ -618,7 +625,7 @@ class AuditServiceTest {
 
     @Test
     fun `does not record an audit event when no bespoke conditions are updated`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, aComEntity, emptyList(), emptyList())
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, emptyList(), emptyList())
 
       verifyNoMoreInteractions(auditEventRepository)
     }
@@ -629,7 +636,7 @@ class AuditServiceTest {
         expandedConditionText = "updatedText",
       )
 
-      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, aComEntity, anAdditionalCondition)
+      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -661,6 +668,47 @@ class AuditServiceTest {
             ),
           ),
         )
+    }
+
+    @Test
+    fun `records an audit event with SYSTEM USER when the user is not staff member`() {
+      val anAdditionalCondition = anAdditionalConditionEntity.copy(
+        expandedConditionText = "updatedText",
+      )
+
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition)
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+      with(auditCaptor.value) {
+        assertThat(licenceId).isEqualTo(aLicenceEntity.id)
+        assertThat(username).isEqualTo("SYSTEM")
+        assertThat(summary)
+          .isEqualTo(
+            "Updated additional condition data for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          )
+        assertThat(detail)
+          .isEqualTo(
+            "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+              "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+          )
+        assertThat(changes)
+          .extracting("type", "changes")
+          .isEqualTo(
+            listOf(
+              "Updated additional condition data",
+              listOf(
+                mapOf(
+                  "type" to "ADDED",
+                  "conditionCode" to "code1",
+                  "conditionType" to "AP",
+                  "conditionText" to "updatedText",
+                ),
+              ),
+            ),
+          )
+      }
     }
   }
 
@@ -709,6 +757,14 @@ class AuditServiceTest {
       ),
     )
 
+    val aCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "smills",
+      email = "testemail@probation.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
     val aLicenceEntity = Licence(
       id = 1,
       typeCode = LicenceType.AP,
@@ -743,20 +799,8 @@ class AuditServiceTest {
       probationTeamDescription = "Cardiff South Team A",
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       standardConditions = someEntityStandardConditions,
-      responsibleCom = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "smills",
-        email = "testemail@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      ),
-      createdBy = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "smills",
-        email = "testemail@probation.gov.uk",
-        firstName = "X",
-        lastName = "Y",
-      ),
+      responsibleCom = aCom,
+      createdBy = aCom,
     )
 
     val someAdditionalConditionData = listOf(
@@ -794,14 +838,6 @@ class AuditServiceTest {
       standardConditions = StandardConditions(emptyList(), emptyList()),
       additionalConditions = AdditionalConditions(emptyList(), emptyList()),
       changeHints = emptyList(),
-    )
-
-    val aComEntity = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
     )
 
     val aListOfEntities = listOf(
