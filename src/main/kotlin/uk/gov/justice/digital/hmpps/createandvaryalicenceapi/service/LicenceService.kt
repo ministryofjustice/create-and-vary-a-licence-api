@@ -871,7 +871,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = newLicence.id,
-        eventType = LicenceEventType.VARIATION_CREATED,
+        eventType = if (newStatus == VARIATION_IN_PROGRESS) LicenceEventType.VARIATION_CREATED else LicenceEventType.VERSION_CREATED,
         username = username,
         forenames = createdBy.firstName,
         surname = createdBy.lastName,

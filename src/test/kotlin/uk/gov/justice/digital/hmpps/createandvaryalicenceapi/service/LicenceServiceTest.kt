@@ -1143,6 +1143,7 @@ class LicenceServiceTest {
     )
     whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
     service.createVariation(1L)
 
@@ -1154,6 +1155,8 @@ class LicenceServiceTest {
       assertThat(versionOfId).isNull()
       assertThat(licenceVersion).isEqualTo("2")
     }
+    verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
   }
 
   @Test
@@ -1244,6 +1247,7 @@ class LicenceServiceTest {
     }
 
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VERSION_CREATED)
     assertThat(licenceEventCaptor.value.eventDescription).isEqualTo("A new licence version was created for ${approvedLicence.forename} ${approvedLicence.surname} from ID ${approvedLicence.id}")
     verify(auditEventRepository).saveAndFlush(auditEventCaptor.capture())
     assertThat(auditEventCaptor.value.summary).isEqualTo("New licence version created for ${approvedLicence.forename} ${approvedLicence.surname}")
