@@ -782,14 +782,12 @@ class LicenceService(
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw IllegalStateException("Cannot find staff with username: $username")
 
-    if (licence.licenceVersion == null) {
-      throw IllegalStateException("Cannot create a copy of a licence that does not have a licence version, licence id: ${licence.id}")
-    }
+    val newLicenceVersion =
+      licence.licenceVersion?.let { getNextLicenceVersion(it, newStatus) }
 
-    val licenceCopy = licence.copyLicence(newStatus)
+    val licenceCopy = licence.copyLicence(newStatus, newLicenceVersion)
     licenceCopy.createdBy = createdBy
     licenceCopy.version = licencePolicyService.currentPolicy().version
-    licenceCopy.licenceVersion = getNextLicenceVersion(licenceCopy.licenceVersion!!, newStatus)
     if (newStatus == VARIATION_IN_PROGRESS) {
       licenceCopy.variationOfId = licence.id
     } else {
