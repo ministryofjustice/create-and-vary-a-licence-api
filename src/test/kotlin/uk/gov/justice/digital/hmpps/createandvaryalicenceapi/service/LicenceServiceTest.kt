@@ -739,7 +739,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `update licenceActivatedDate filed when licence status set to ACTIVE`() {
+  fun `update licenceActivatedDate field when licence status set to ACTIVE`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
     service.updateLicenceStatus(
@@ -770,6 +770,29 @@ class LicenceServiceTest {
           USER_EVENT,
         ),
       )
+  }
+
+  @Test
+  fun `licenceActivatedDate field should not be null if it already has value and status is not ACTIVE`() {
+    val licence = aLicenceEntity.copy(
+      licenceActivatedDate = LocalDate.now(),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(1L, LicenceStatus.APPROVED, "X", licence.licenceActivatedDate))
   }
 
   @Test
