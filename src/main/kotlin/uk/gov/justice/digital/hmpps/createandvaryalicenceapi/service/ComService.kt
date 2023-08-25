@@ -90,10 +90,9 @@ class ComService(
 //      ProbationSearchSortByRequest()
 //    }
 
-
     var entityProbationSearchResult: List<ProbationSearchResponseResult>
 
-    if (body.query.isEmpty()){
+    if (body.query.isEmpty()) {
       entityProbationSearchResult = emptyList()
     } else {
       entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
