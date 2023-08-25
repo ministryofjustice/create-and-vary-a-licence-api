@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Communit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
@@ -89,10 +90,18 @@ class ComService(
 //      ProbationSearchSortByRequest()
 //    }
 
-    val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
-      body.query,
-      communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
-    )
+
+    var entityProbationSearchResult: List<ProbationSearchResponseResult>
+
+    if (body.query.isEmpty()){
+      entityProbationSearchResult = emptyList()
+    } else {
+      entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
+        body.query,
+        communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
+      )
+    }
+
     val enrichedProbationSearchResults = entityProbationSearchResult.mapNotNull {
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
