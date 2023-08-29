@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class LicenceTest {
 
@@ -89,7 +90,7 @@ class LicenceTest {
     val testLicence = Licence(
       licenceExpiryDate = null,
       topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
@@ -101,7 +102,7 @@ class LicenceTest {
     val testLicence = Licence(
       licenceExpiryDate = LocalDate.now().plusDays(1),
       topupSupervisionExpiryDate = null,
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
@@ -137,7 +138,7 @@ class LicenceTest {
     val testLicence = Licence(
       licenceExpiryDate = LocalDate.now().plusDays(1),
       topupSupervisionExpiryDate = LocalDate.now().minusDays(1),
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
@@ -149,7 +150,7 @@ class LicenceTest {
     val testLicence = Licence(
       licenceExpiryDate = LocalDate.now().plusDays(1),
       topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
@@ -161,7 +162,7 @@ class LicenceTest {
     val testLicence = Licence(
       licenceExpiryDate = LocalDate.now().minusDays(1),
       topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()
@@ -173,7 +174,7 @@ class LicenceTest {
     val testLicence = Licence(
       licenceExpiryDate = LocalDate.now().minusDays(1),
       topupSupervisionExpiryDate = LocalDate.now(),
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
 
     val isActivatedInPssPeriod = testLicence.isActivatedInPssPeriod()

@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
@@ -775,7 +776,7 @@ class LicenceServiceTest {
   @Test
   fun `licenceActivatedDate field should not be null if it already has value and status is not ACTIVE`() {
     val licence = aLicenceEntity.copy(
-      licenceActivatedDate = LocalDate.now(),
+      licenceActivatedDate = LocalDateTime.now(),
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
 
@@ -946,19 +947,20 @@ class LicenceServiceTest {
 
   @Test
   fun `activate licences sets licence statuses to ACTIVE`() {
+    val licenceCaptor = argumentCaptor<List<Licence>>()
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
-    verify(licenceRepository, times(1)).saveAllAndFlush(
-      listOf(
-        aLicenceEntity.copy(
-          statusCode = LicenceStatus.ACTIVE,
-          licenceActivatedDate = LocalDate.now(),
+    verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("statusCode")
+      .isEqualTo(
+        listOf(
+          LicenceStatus.ACTIVE,
         ),
-      ),
-    )
+      )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
@@ -980,19 +982,20 @@ class LicenceServiceTest {
 
   @Test
   fun `activate licences sets licence statuses to ACTIVE and logs the provided reason`() {
+    val licenceCaptor = argumentCaptor<List<Licence>>()
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
 
-    verify(licenceRepository, times(1)).saveAllAndFlush(
-      listOf(
-        aLicenceEntity.copy(
-          statusCode = LicenceStatus.ACTIVE,
-          licenceActivatedDate = LocalDate.now(),
+    verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("statusCode")
+      .isEqualTo(
+        listOf(
+          LicenceStatus.ACTIVE,
         ),
-      ),
-    )
+      )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 

@@ -60,7 +60,7 @@ data class Licence(
   val sentenceEndDate: LocalDate? = null,
   val licenceStartDate: LocalDate? = null,
   val licenceExpiryDate: LocalDate? = null,
-  val licenceActivatedDate: LocalDate? = null,
+  val licenceActivatedDate: LocalDateTime? = null,
   val topupSupervisionStartDate: LocalDate? = null,
   val topupSupervisionExpiryDate: LocalDate? = null,
   val probationAreaCode: String? = null,
@@ -180,7 +180,7 @@ data class Licence(
     val lad = licenceActivatedDate
 
     if (lad != null && led != null && tused != null) {
-      return led.isBefore(lad) && !(tused.isBefore(lad))
+      return led.isBefore(lad.toLocalDate()) && !(tused.isBefore(lad.toLocalDate()))
     }
     return false
   }

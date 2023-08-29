@@ -228,7 +228,7 @@ class LicenceService(
 
       ACTIVE -> {
         supersededDate = null
-        licenceActivatedDate = LocalDate.now()
+        licenceActivatedDate = LocalDateTime.now()
       }
 
       else -> {
@@ -461,7 +461,7 @@ class LicenceService(
     val activatedLicences = licences.map {
       it.copy(
         statusCode = ACTIVE,
-        licenceActivatedDate = LocalDate.now(),
+        licenceActivatedDate = LocalDateTime.now(),
       )
     }
     if (activatedLicences.isNotEmpty()) {
