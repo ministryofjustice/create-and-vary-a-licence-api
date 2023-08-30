@@ -22,8 +22,8 @@ class IS91DeterminationService(
         resultCodes.contains(it.secondaryResultCode) ||
         it.offenceCode == offenceCode
     }
-    log.info("All offence histories: ${offenceHistories.toString()}")
-    log.info("IS91 offence histories: ${is91AndExtraditionOffenceHistories.toString()}")
+    log.info("All offence histories: $offenceHistories")
+    log.info("IS91 offence histories: $is91AndExtraditionOffenceHistories")
     return is91AndExtraditionOffenceHistories.map { it.bookingId }
   }
 }
