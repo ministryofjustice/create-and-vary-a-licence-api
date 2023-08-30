@@ -914,21 +914,14 @@ class LicenceService(
   private fun getNextLicenceVersion(currentVersion: String, status: LicenceStatus): String {
     val (majorVersion, minorVersion) = getVersionParts(currentVersion)
     return when (status) {
-      VARIATION_IN_PROGRESS -> (majorVersion + 1).toString()
+      VARIATION_IN_PROGRESS -> "${majorVersion + 1}.0"
       IN_PROGRESS -> "$majorVersion.${minorVersion + 1}"
       else -> throw IllegalStateException("Can only update licence version when editing an existing version or creating a variation")
     }
   }
 
-  private fun getVersionParts(version: String): Array<Int> {
+  private fun getVersionParts(version: String): Pair<Int, Int> {
     val parts = version.split(".")
-
-    val majorVersion = parts[0].toInt()
-    var minorVersion = 0
-    if (parts.size > 1) {
-      minorVersion = parts[1].toInt()
-    }
-
-    return arrayOf(majorVersion, minorVersion)
+    return Pair(parts[0].toInt(), parts[1].toInt())
   }
 }

@@ -428,7 +428,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(newLicence?.variationOf).isEqualTo(1)
-    assertThat(newLicence?.licenceVersion).isEqualTo("2")
+    assertThat(newLicence?.licenceVersion).isEqualTo("2.0")
   }
 
   @Test

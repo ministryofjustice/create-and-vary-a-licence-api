@@ -1179,7 +1179,7 @@ class LicenceServiceTest {
       assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
       assertThat(variationOfId).isEqualTo(1)
       assertThat(versionOfId).isNull()
-      assertThat(licenceVersion).isEqualTo("2")
+      assertThat(licenceVersion).isEqualTo("2.0")
     }
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
     assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
