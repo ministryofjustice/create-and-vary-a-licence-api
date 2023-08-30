@@ -120,8 +120,9 @@ data class Licence(
 
   var variationOfId: Long? = null,
   var versionOfId: Long? = null,
+  var licenceVersion: String? = "1.0",
 ) {
-  fun copyLicence(newStatus: LicenceStatus): Licence {
+  fun copyLicence(newStatus: LicenceStatus, newVersion: String?): Licence {
     return Licence(
       typeCode = this.typeCode,
       version = this.version,
@@ -161,6 +162,7 @@ data class Licence(
       appointmentContact = this.appointmentContact,
       responsibleCom = this.responsibleCom,
       dateCreated = LocalDateTime.now(),
+      licenceVersion = newVersion,
     )
   }
 

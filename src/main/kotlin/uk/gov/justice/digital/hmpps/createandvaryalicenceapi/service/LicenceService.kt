@@ -778,13 +778,15 @@ class LicenceService(
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw IllegalStateException("Cannot find staff with username: $username")
 
-    val licenceCopy = licence.copyLicence(newStatus)
+    val newLicenceVersion =
+      licence.licenceVersion?.let { getNextLicenceVersion(it, newStatus) }
+
+    val licenceCopy = licence.copyLicence(newStatus, newLicenceVersion)
     licenceCopy.createdBy = createdBy
     licenceCopy.version = licencePolicyService.currentPolicy().version
-
     if (newStatus == VARIATION_IN_PROGRESS) {
       licenceCopy.variationOfId = licence.id
-    } else if (newStatus == IN_PROGRESS) {
+    } else {
       licenceCopy.versionOfId = licence.id
     }
 
@@ -863,7 +865,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = newLicence.id,
-        eventType = LicenceEventType.VARIATION_CREATED,
+        eventType = if (newStatus == VARIATION_IN_PROGRESS) LicenceEventType.VARIATION_CREATED else LicenceEventType.VERSION_CREATED,
         username = username,
         forenames = createdBy.firstName,
         surname = createdBy.lastName,
@@ -907,5 +909,19 @@ class LicenceService(
         .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
     }
     return originalLicence
+  }
+
+  private fun getNextLicenceVersion(currentVersion: String, status: LicenceStatus): String {
+    val (majorVersion, minorVersion) = getVersionParts(currentVersion)
+    return when (status) {
+      VARIATION_IN_PROGRESS -> "${majorVersion + 1}.0"
+      IN_PROGRESS -> "$majorVersion.${minorVersion + 1}"
+      else -> throw IllegalStateException("Can only update licence version when editing an existing version or creating a variation")
+    }
+  }
+
+  private fun getVersionParts(version: String): Pair<Int, Int> {
+    val parts = version.split(".")
+    return Pair(parts[0].toInt(), parts[1].toInt())
   }
 }

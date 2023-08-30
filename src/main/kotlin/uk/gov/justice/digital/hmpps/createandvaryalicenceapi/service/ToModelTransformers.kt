@@ -123,6 +123,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
     isInPssPeriod = licence.isInPssPeriod(),
     isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
+    licenceVersion = licence.licenceVersion,
   )
 }
 

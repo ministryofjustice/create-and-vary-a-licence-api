@@ -428,6 +428,41 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(newLicence?.variationOf).isEqualTo(1)
+    assertThat(newLicence?.licenceVersion).isEqualTo("2.0")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-licence-1.sql",
+  )
+  fun `Edit an approved licence`() {
+    val result = webTestClient.post()
+      .uri("/licence/id/1/edit")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.licenceId).isGreaterThan(1)
+    assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
+    assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licenceRepository.count()).isEqualTo(2)
+
+    val newLicence = webTestClient.get()
+      .uri("/licence/id/${result?.licenceId}")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(newLicence?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(newLicence?.licenceVersion).isEqualTo("1.1")
   }
 
   @Test

@@ -95,11 +95,17 @@ data class Licence(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val licenceExpiryDate: LocalDate? = null,
 
-  @Schema(description = "The date when the post sentence supervision period starts, from prison services", example = "06/05/2023")
+  @Schema(
+    description = "The date when the post sentence supervision period starts, from prison services",
+    example = "06/05/2023",
+  )
   @JsonFormat(pattern = "dd/MM/yyyy")
   val topupSupervisionStartDate: LocalDate? = null,
 
-  @Schema(description = "The date when the post sentence supervision period ends, from prison services", example = "06/06/2023")
+  @Schema(
+    description = "The date when the post sentence supervision period ends, from prison services",
+    example = "06/06/2023",
+  )
   @JsonFormat(pattern = "dd/MM/yyyy")
   val topupSupervisionExpiryDate: LocalDate? = null,
 
@@ -149,7 +155,10 @@ data class Licence(
   )
   val appointmentAddress: String? = null,
 
-  @Schema(description = "The UK telephone number to contact the person the offender should meet for their initial meeting", example = "0114 2557665")
+  @Schema(
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "0114 2557665",
+  )
   val appointmentContact: String? = null,
 
   @Schema(description = "Have you have discussed this variation request with your SPO?", example = "Yes")
@@ -165,7 +174,10 @@ data class Licence(
   @Schema(description = "The username who approved the licence on behalf of the prison governor", example = "X33221")
   val approvedByUsername: String? = null,
 
-  @Schema(description = "The full name of the person who approved the licence on behalf of the prison governor", example = "John Smith")
+  @Schema(
+    description = "The full name of the person who approved the licence on behalf of the prison governor",
+    example = "John Smith",
+  )
   val approvedByName: String? = null,
 
   @Schema(
@@ -218,4 +230,7 @@ data class Licence(
 
   @Schema(description = "Is this licence activated in PSS period?(LED < LAD <= TUSED)")
   val isActivatedInPssPeriod: Boolean? = false,
+
+  @Schema(description = "The version number of this licence", example = "1.3")
+  val licenceVersion: String? = null,
 )
