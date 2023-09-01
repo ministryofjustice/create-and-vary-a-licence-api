@@ -831,6 +831,7 @@ class LicenceControllerTest {
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+      licenceVersion = "1.0",
     )
 
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
