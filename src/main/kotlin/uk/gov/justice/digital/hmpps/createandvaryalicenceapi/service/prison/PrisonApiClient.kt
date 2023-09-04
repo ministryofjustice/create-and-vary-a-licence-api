@@ -29,7 +29,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
   }
 
   fun getHdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
-    if (bookingIds.isEmpty()) return emptyList<PrisonerHdcStatus>()
+    if (bookingIds.isEmpty()) return emptyList()
     return prisonerApiWebClient
       .post()
       .uri("/offender-sentences/home-detention-curfews/latest")
@@ -38,7 +38,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .retrieve()
       .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
       .onErrorResume { webClientErrorHandler(it) }
-      .block() ?: emptyList<PrisonerHdcStatus>()
+      .block() ?: emptyList()
   }
 
   fun getOffenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory> {

@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.mode
 class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prisonerSearchApiWebClient: WebClient) {
 
   fun searchPrisonersByBookingIds(bookingIds: List<Long>): List<PrisonerSearchPrisoner> {
-    if (bookingIds.isEmpty()) return emptyList<PrisonerSearchPrisoner>()
+    if (bookingIds.isEmpty()) return emptyList()
     return prisonerSearchApiWebClient
       .post()
       .uri("/prisoner-search/booking-ids")
@@ -19,6 +19,6 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .bodyValue(PrisonerSearchByBookingIdsRequest(bookingIds))
       .retrieve()
       .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
-      .block() ?: emptyList<PrisonerSearchPrisoner>()
+      .block() ?: emptyList()
   }
 }

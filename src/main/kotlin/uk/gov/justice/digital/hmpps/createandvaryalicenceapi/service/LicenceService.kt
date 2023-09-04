@@ -229,6 +229,7 @@ class LicenceService(
       ACTIVE -> {
         supersededDate = null
         licenceActivatedDate = LocalDateTime.now()
+        deactivateInProgressLicenceVersions(licenceEntity)
       }
 
       else -> {
@@ -489,6 +490,8 @@ class LicenceService(
             eventDescription = "${reason ?: "Licence automatically activated"} for ${licence.forename} ${licence.surname}",
           ),
         )
+
+        deactivateInProgressLicenceVersions(licence)
       }
     }
   }
@@ -500,7 +503,11 @@ class LicenceService(
     activateLicences(matchingLicences)
   }
 
-  fun inactivateLicences(licences: List<EntityLicence>, reason: String? = null) {
+  fun inactivateLicences(
+    licences: List<EntityLicence>,
+    reason: String? = null,
+    deactivateInProgressVersions: Boolean = true,
+  ) {
     val inActivatedLicences = licences.map { it.copy(statusCode = INACTIVE) }
     if (inActivatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(inActivatedLicences)
@@ -527,6 +534,13 @@ class LicenceService(
             eventDescription = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
           ),
         )
+
+        if (deactivateInProgressVersions) {
+          deactivateInProgressLicenceVersions(
+            licence,
+            "Licence automatically deactivated as licence version ${licence.licenceVersion} was deactivated",
+          )
+        }
       }
     }
   }
@@ -923,5 +937,17 @@ class LicenceService(
   private fun getVersionParts(version: String): Pair<Int, Int> {
     val parts = version.split(".")
     return Pair(parts[0].toInt(), parts[1].toInt())
+  }
+
+  private fun deactivateInProgressLicenceVersions(licence: EntityLicence, reason: String? = null) {
+    val licencesToDeactivate =
+      licenceRepository.findAllByVersionOfIdAndStatusCodeIn(licence.id, listOf(IN_PROGRESS, SUBMITTED))
+    if (licencesToDeactivate.isNotEmpty()) {
+      inactivateLicences(
+        licencesToDeactivate,
+        reason ?: "Licence automatically inactivated as licence version ${licence.licenceVersion} was activated",
+        false,
+      )
+    }
   }
 }
