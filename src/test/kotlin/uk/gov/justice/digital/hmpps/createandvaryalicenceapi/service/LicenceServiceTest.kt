@@ -815,6 +815,59 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `updating licence status to INACTIVE deactivates any in progress version of the licence`() {
+    val inProgressLicenceVersion =
+      aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
+    whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(
+      licenceRepository.findAllByVersionOfIdAndStatusCodeIn(
+        aLicenceEntity.id,
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+      ),
+    ).thenReturn(listOf(inProgressLicenceVersion))
+
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "X", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val inProgressLicenceCaptor = argumentCaptor<List<EntityLicence>>()
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAllAndFlush(inProgressLicenceCaptor.capture())
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value).extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(aLicenceEntity.id, LicenceStatus.INACTIVE, "X", licenceCaptor.value.licenceActivatedDate))
+    assertThat(inProgressLicenceCaptor.firstValue[0]).extracting("id", "statusCode")
+      .isEqualTo(listOf(inProgressLicenceVersion.id, LicenceStatus.INACTIVE))
+
+    assertThat(auditCaptor.allValues[0]).extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          inProgressLicenceVersion.id,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically inactivated as licence version 1.0 was inactivated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
+          AuditEventType.SYSTEM_EVENT,
+        ),
+      )
+
+    assertThat(auditCaptor.allValues[1]).extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          1L,
+          "X",
+          "Y",
+          "Licence set to INACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
+
+  @Test
   fun `licenceActivatedDate field should not be null if it already has value and status is not ACTIVE`() {
     val licence = aLicenceEntity.copy(
       licenceActivatedDate = LocalDateTime.now(),
@@ -1195,7 +1248,7 @@ class LicenceServiceTest {
         inProgressLicenceVersion.id,
         "SYSTEM",
         "SYSTEM",
-        "Licence automatically deactivated as licence version 1.0 was deactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        "Licence automatically inactivated as licence version 1.0 was inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       ),
     )
 

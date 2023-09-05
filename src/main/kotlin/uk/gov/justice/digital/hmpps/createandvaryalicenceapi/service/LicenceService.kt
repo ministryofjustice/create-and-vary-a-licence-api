@@ -224,6 +224,10 @@ class LicenceService(
 
       INACTIVE -> {
         supersededDate = LocalDateTime.now()
+        deactivateInProgressLicenceVersions(
+          licenceEntity,
+          "Licence automatically inactivated as licence version ${licenceEntity.licenceVersion} was inactivated",
+        )
       }
 
       ACTIVE -> {
@@ -538,7 +542,7 @@ class LicenceService(
         if (deactivateInProgressVersions) {
           deactivateInProgressLicenceVersions(
             licence,
-            "Licence automatically deactivated as licence version ${licence.licenceVersion} was deactivated",
+            "Licence automatically inactivated as licence version ${licence.licenceVersion} was inactivated",
           )
         }
       }
