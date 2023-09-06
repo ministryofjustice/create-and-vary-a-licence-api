@@ -9,7 +9,6 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
   fun stubSearchPrisonersByBookingIds() {
     stubFor(
       post(urlEqualTo("/api/prisoner-search/booking-ids"))
-        // .withRequestBody(equalToJson(aLicenceCaseloadSearchRequest))
         .willReturn(
           aResponse().withHeader(
             "Content-Type",
