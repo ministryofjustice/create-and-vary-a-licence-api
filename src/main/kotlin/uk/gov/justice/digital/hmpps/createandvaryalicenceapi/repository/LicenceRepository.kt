@@ -14,7 +14,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
-  fun findAllByVersionOfIdAndStatusCodeIn(versionOfId: Long, status: List<LicenceStatus>): List<Licence>
+  fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<Licence>
 
   @Query(
     """

@@ -765,8 +765,8 @@ class LicenceServiceTest {
       aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = aLicenceEntity.id)
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
     whenever(
-      licenceRepository.findAllByVersionOfIdAndStatusCodeIn(
-        aLicenceEntity.id,
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(aLicenceEntity.id),
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
@@ -797,7 +797,7 @@ class LicenceServiceTest {
           inProgressLicenceVersion.id,
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated as licence version 1.0 was activated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
+          "Licence automatically inactivated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
           AuditEventType.SYSTEM_EVENT,
         ),
       )
@@ -820,8 +820,8 @@ class LicenceServiceTest {
       aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
     whenever(
-      licenceRepository.findAllByVersionOfIdAndStatusCodeIn(
-        aLicenceEntity.id,
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(aLicenceEntity.id),
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
@@ -850,7 +850,7 @@ class LicenceServiceTest {
           inProgressLicenceVersion.id,
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated as licence version 1.0 was inactivated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
+          "Licence automatically inactivated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
           AuditEventType.SYSTEM_EVENT,
         ),
       )
@@ -1100,8 +1100,8 @@ class LicenceServiceTest {
       versionOfId = approvedLicenceVersion.id,
     )
     whenever(
-      licenceRepository.findAllByVersionOfIdAndStatusCodeIn(
-        approvedLicenceVersion.id,
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(approvedLicenceVersion.id),
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressVersion))
@@ -1137,7 +1137,7 @@ class LicenceServiceTest {
         inProgressVersion.id,
         "SYSTEM",
         "SYSTEM",
-        "Licence automatically inactivated as licence version 1.0 was activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       ),
     )
     val eventCaptors = eventCaptor.allValues
@@ -1220,8 +1220,8 @@ class LicenceServiceTest {
     val inProgressLicenceVersion =
       aLicenceEntity.copy(id = 7843, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
     whenever(
-      licenceRepository.findAllByVersionOfIdAndStatusCodeIn(
-        aLicenceEntity.id,
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(aLicenceEntity.id),
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
@@ -1248,7 +1248,7 @@ class LicenceServiceTest {
         inProgressLicenceVersion.id,
         "SYSTEM",
         "SYSTEM",
-        "Licence automatically inactivated as licence version 1.0 was inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       ),
     )
 
