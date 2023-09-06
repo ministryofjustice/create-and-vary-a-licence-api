@@ -55,7 +55,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -775,6 +775,64 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `update licence status to ACTIVE deactivates any in progress version of licence`() {
+    val inProgressLicenceVersion =
+      aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
+
+    whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(aLicenceEntity.id),
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+      ),
+    ).thenReturn(listOf(inProgressLicenceVersion))
+
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "X", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val inProgressLicenceCaptor = argumentCaptor<List<EntityLicence>>()
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAllAndFlush(inProgressLicenceCaptor.capture())
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(1L, LicenceStatus.ACTIVE, "X", licenceCaptor.value.licenceActivatedDate))
+    assertThat(inProgressLicenceCaptor.firstValue[0])
+      .extracting("id", "statusCode")
+      .isEqualTo(listOf(inProgressLicenceVersion.id, LicenceStatus.INACTIVE))
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          inProgressLicenceVersion.id,
+          "SYSTEM",
+          "SYSTEM",
+          "Deactivating licence as the parent licence version was activated for Bob Mortimer",
+          SYSTEM_EVENT,
+        ),
+      )
+    assertThat(auditCaptor.allValues[1]).extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          aLicenceEntity.id,
+          "X",
+          "Y",
+          "Licence set to ACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
+
+  @Test
   fun `updating licence status to INACTIVE deactivates any in progress version of the licence`() {
     val inProgressLicenceVersion =
       aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
@@ -812,8 +870,8 @@ class LicenceServiceTest {
           inProgressLicenceVersion.id,
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
-          AuditEventType.SYSTEM_EVENT,
+          "Deactivating licence as the parent licence version was deactivated for ${inProgressLicenceVersion.forename} ${inProgressLicenceVersion.surname}",
+          SYSTEM_EVENT,
         ),
       )
 
@@ -1129,7 +1187,7 @@ class LicenceServiceTest {
           inProgressVersion.id,
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically inactivated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence automatically deactivated as the approved licence version was activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
     val eventCaptors = eventCaptor.allValues
