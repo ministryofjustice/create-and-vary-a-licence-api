@@ -16,7 +16,7 @@ hmpps:
       url: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
   prison:
     api:
-      url: "https://api-dev.prison.service.justice.gov.uk/api"
+      url: "https://prison-api-dev.prison.service.justice.gov.uk/api"
   prisonregister:
     api:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
