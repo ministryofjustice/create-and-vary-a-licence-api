@@ -1,0 +1,17 @@
+insert into licence (id,
+                     version,
+                     responsible_com_id,
+                     created_by_com_id,
+                     type_code,
+                     noms_id,
+                     status_code,
+                     booking_id,
+                     actual_release_date,
+                     conditional_release_date,
+                     licence_version,
+                     version_of_id)
+values (1, '1.0', 1, 1, 'AP', 'G7285UT', 'APPROVED', 456, current_date, current_date, '1.0', null),
+       (2, '1.0', 1, 1, 'AP', 'G5613GT', 'APPROVED', 789, current_date, current_date, '1.0', null),
+       (3, '1.0', 1, 1, 'AP', 'G4169UO', 'APPROVED', 432, current_date, current_date, '1.0', null),
+       (4, '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date, current_date, '1.1', 1),
+       (5, '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date, current_date, '1.1', 3);
