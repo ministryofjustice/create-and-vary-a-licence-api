@@ -61,7 +61,7 @@ hmpps:
       url: http://localhost:8094
   prisonersearch:
     api:
-      url: http://localhost:8095/api
+      url: http://localhost:8099/api
 
 notify:
   enabled: false

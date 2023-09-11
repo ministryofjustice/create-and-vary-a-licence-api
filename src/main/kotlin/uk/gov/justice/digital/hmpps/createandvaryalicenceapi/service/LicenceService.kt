@@ -224,11 +224,19 @@ class LicenceService(
 
       INACTIVE -> {
         supersededDate = LocalDateTime.now()
+        inactivateInProgressLicenceVersions(
+          listOf(licenceEntity),
+          "Deactivating licence as the parent licence version was deactivated",
+        )
       }
 
       ACTIVE -> {
         supersededDate = null
         licenceActivatedDate = LocalDateTime.now()
+        inactivateInProgressLicenceVersions(
+          listOf(licenceEntity),
+          "Deactivating licence as the parent licence version was activated",
+        )
       }
 
       else -> {
@@ -490,6 +498,10 @@ class LicenceService(
           ),
         )
       }
+      inactivateInProgressLicenceVersions(
+        activatedLicences,
+        "Licence automatically deactivated as the approved licence version was activated",
+      )
     }
   }
 
@@ -500,7 +512,11 @@ class LicenceService(
     activateLicences(matchingLicences)
   }
 
-  fun inactivateLicences(licences: List<EntityLicence>, reason: String? = null) {
+  fun inactivateLicences(
+    licences: List<EntityLicence>,
+    reason: String? = null,
+    deactivateInProgressVersions: Boolean? = true,
+  ) {
     val inActivatedLicences = licences.map { it.copy(statusCode = INACTIVE) }
     if (inActivatedLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(inActivatedLicences)
@@ -526,6 +542,11 @@ class LicenceService(
             surname = "SYSTEM",
             eventDescription = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
           ),
+        )
+      }
+      if (deactivateInProgressVersions == true) {
+        inactivateInProgressLicenceVersions(
+          inActivatedLicences,
         )
       }
     }
@@ -923,5 +944,18 @@ class LicenceService(
   private fun getVersionParts(version: String): Pair<Int, Int> {
     val parts = version.split(".")
     return Pair(parts[0].toInt(), parts[1].toInt())
+  }
+
+  private fun inactivateInProgressLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
+    val licenceIds = licences.map { it.id }
+    val licencesToDeactivate =
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(licenceIds, listOf(IN_PROGRESS, SUBMITTED))
+    if (licencesToDeactivate.isNotEmpty()) {
+      inactivateLicences(
+        licencesToDeactivate,
+        reason,
+        false,
+      )
+    }
   }
 }
