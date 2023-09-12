@@ -23,8 +23,10 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         JOIN l.submittedBy com
         WHERE (l.actualReleaseDate = CURRENT_DATE OR l.conditionalReleaseDate = CURRENT_DATE) 
         AND l.statusCode = 'SUBMITTED'
-        AND EXISTS 
-                (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')
+        AND (
+            (EXISTS (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')) 
+         OR (l.versionOfId IS NOT NULL) 
+        )
     """,
   )
   fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence>
