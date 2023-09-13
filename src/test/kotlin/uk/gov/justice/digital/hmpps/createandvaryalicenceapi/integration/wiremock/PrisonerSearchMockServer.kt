@@ -36,4 +36,35 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
         ),
     )
   }
+
+  fun stubSearchPrisonersByNomisIds() {
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            """[
+                {
+                  "prisonerNumber": "A1234AA",
+                  "bookingId": "123",
+                  "status": "INACTIVE"
+               },
+                               {
+                  "prisonerNumber": "A1234AB",
+                  "bookingId": "456",
+                  "status": "INACTIVE"
+               },
+                               {
+                  "prisonerNumber": "A1234AC",
+                  "bookingId": "789",
+                  "status": "INACTIVE"
+               }
+              ]
+            """.trimIndent(),
+          ).withStatus(200),
+        ),
+    )
+  }
 }
