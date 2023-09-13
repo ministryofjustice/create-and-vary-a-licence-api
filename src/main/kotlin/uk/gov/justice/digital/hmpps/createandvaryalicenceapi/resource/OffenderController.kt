@@ -23,9 +23,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 
 @RestController
+@Tag(name = Tags.OFFENDER)
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenderController(private val offenderService: OffenderService, private val comService: ComService) {
-  @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/crn/{crn}/responsible-com"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -68,7 +68,6 @@ class OffenderController(private val offenderService: OffenderService, private v
     this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
   }
 
-  @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/crn/{crn}/probation-team"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
