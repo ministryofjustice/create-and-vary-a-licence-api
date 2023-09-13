@@ -12,5 +12,6 @@ class Tags {
     const val LICENCE_VARIATIONS = "Licence Variations"
     const val LICENCE_POLICY = "Licence Policy"
     const val OMU_CONTACT_DETAILS = "OMU Contact details"
+    const val OFFENDER = "Offender"
   }
 }
