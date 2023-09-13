@@ -22,7 +22,7 @@ data class FoundProbationRecord(
   val nomisId: String? = "",
 
   @Schema(description = "The forename and surname of the COM")
-  val comName: String = "",
+  val comName: String? = "",
 
   @Schema(description = "The COM's staff code")
   val comStaffCode: String? = "",

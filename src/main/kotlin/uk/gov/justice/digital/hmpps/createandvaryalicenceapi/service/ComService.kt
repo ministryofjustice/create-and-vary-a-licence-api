@@ -9,11 +9,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -22,6 +25,7 @@ class ComService(
   private val licenceRepository: LicenceRepository,
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
 ) {
 
   companion object {
@@ -101,19 +105,67 @@ class ComService(
     )
 
     val enrichedProbationSearchResults = entityProbationSearchResult.mapNotNull {
+      println(it.manager.name?.forename)
+      println(it.manager.name?.surname)
+
+      val comName =
+        if (it.manager.name?.forename.isNullOrBlank() || it.manager.name?.surname.isNullOrBlank()) {
+          null
+        } else {
+          "${it.manager.name?.forename} ${it.manager.name?.surname}".convertToTitleCase()
+        }
+
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
 
-      // If an empty list has been returned, there are no relevant licences relating to search for the offender
+      /**
+       *  If an empty list has been returned, we do not have a licence for the person currently but still need to return
+       *  a result for the PP as they may want to create a licence for them
+       */
       if (licences.isEmpty()) {
-        null
+        val isNomisNumberPopulated = !it.identifiers.noms.isNullOrBlank()
+
+        if (isNomisNumberPopulated) {
+          val prisonerSearchResult = this.prisonerSearchApiClient.searchPrisonerByNomisId(it.identifiers.noms)
+
+          val licenceType = if (prisonerSearchResult?.licenceExpiryDate.isNullOrBlank()) {
+            LicenceType.PSS
+          } else if (prisonerSearchResult?.topUpSupervisionExpiryDate.isNullOrBlank() || LocalDate.parse(
+              prisonerSearchResult?.topUpSupervisionExpiryDate,
+            ) <= LocalDate.parse(prisonerSearchResult?.licenceExpiryDate)
+          ) {
+            LicenceType.AP
+          } else {
+            LicenceType.AP_PSS
+          }
+
+          // if both dates are null from the prisoner, we do not want to show the result as a licence cannot be created without them
+          if (prisonerSearchResult?.confirmedReleaseDate.isNullOrBlank() && prisonerSearchResult?.releaseDate.isNullOrBlank()) {
+            null
+          } else {
+            val releaseDate =
+              if (prisonerSearchResult?.confirmedReleaseDate.isNullOrBlank()) {
+                LocalDate.parse(prisonerSearchResult?.releaseDate)
+              } else {
+                LocalDate.parse(prisonerSearchResult?.confirmedReleaseDate)
+              }
+            it.transformToModelFoundProbationRecordWithoutLicence(
+              comName,
+              releaseDate,
+              licenceType,
+              LicenceStatus.NOT_STARTED,
+            )
+          }
+        } else {
+          null
+        }
       } else {
         val nonActiveLicenceStatuses = LicenceStatus.IN_FLIGHT_LICENCES - LicenceStatus.ACTIVE
 
         val currentLicence =
           if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
 
-        it.transformToModelFoundProbationRecord(currentLicence)
+        it.transformToModelFoundProbationRecord(comName, currentLicence)
       }
     }
 

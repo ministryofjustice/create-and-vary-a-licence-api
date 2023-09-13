@@ -7,6 +7,7 @@
     <ID>FunctionNaming:JPASpecificationDSL.kt$fun &lt;T, R : Any&gt; KProperty1&lt;T, R?&gt;.`in`(values: Collection&lt;R&gt;): Specification&lt;T&gt;</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>
+    <ID>LongMethod:ComService.kt$ComService$fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult</ID>
     <ID>LongMethod:LicenceService.kt$LicenceService$private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence</ID>
     <ID>LongMethod:ToModelTransformers.kt$fun transform(licence: EntityLicence): ModelLicence</ID>
     <ID>LongMethod:UpdateSentenceDateService.kt$UpdateSentenceDateService$@Transactional fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest)</ID>
@@ -49,6 +50,7 @@
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Can only update licence version when editing an existing version or creating a variation")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Cannot find staff with username: $username")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")</ID>
+    <ID>UseCheckOrError:PrisonerSearchApiClient.kt$PrisonerSearchApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
     <ID>UseCheckOrError:ProbationSearchApiClient.kt$ProbationSearchApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
     <ID>UtilityClassWithPublicConstructor:Tags.kt$Tags</ID>
   </CurrentIssues>

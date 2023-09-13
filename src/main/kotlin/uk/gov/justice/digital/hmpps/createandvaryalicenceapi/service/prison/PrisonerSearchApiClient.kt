@@ -21,4 +21,16 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
       .block() ?: emptyList<PrisonerSearchPrisoner>()
   }
+
+  fun searchPrisonerByNomisId(nomisId: String?): PrisonerSearchPrisoner? {
+    val prisonerSearchResponse = prisonerSearchApiWebClient
+      .get()
+      .uri("/prisoner/$nomisId")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(PrisonerSearchPrisoner::class.java)
+      .block()
+    return prisonerSearchResponse
+      ?: throw IllegalStateException("Unexpected null response from API")
+  }
 }
