@@ -71,6 +71,36 @@ data class LicenceSummary(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val actualReleaseDate: LocalDate?,
 
+  @Schema(description = "The sentence start date", example = "13/09/2019")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val sentenceStartDate: LocalDate? = null,
+
+  @Schema(description = "The sentence end date", example = "13/09/2022")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val sentenceEndDate: LocalDate? = null,
+
+  @Schema(description = "The date that the licence will start", example = "13/09/2022")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val licenceStartDate: LocalDate? = null,
+
+  @Schema(description = "The date that the licence will expire", example = "13/09/2024")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val licenceExpiryDate: LocalDate? = null,
+
+  @Schema(
+    description = "The date when the post sentence supervision period starts, from prison services",
+    example = "06/05/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val topupSupervisionStartDate: LocalDate? = null,
+
+  @Schema(
+    description = "The date when the post sentence supervision period ends, from prison services",
+    example = "06/06/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val topupSupervisionExpiryDate: LocalDate? = null,
+
   @Schema(
     description = "The case reference number (CRN) of this person, from either prison or probation service",
     example = "X12344",
