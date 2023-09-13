@@ -9,9 +9,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
@@ -23,6 +23,7 @@ class ComService(
   private val licenceRepository: LicenceRepository,
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
 ) {
 
   companion object {
@@ -95,21 +96,16 @@ class ComService(
       )
     }
 
-    var entityProbationSearchResult: List<ProbationSearchResponseResult>
-
-    if (body.query.isEmpty()) {
-      entityProbationSearchResult = emptyList()
-    } else {
-      entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
-        body.query,
-        communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
-        probationSearchApiSortBy,
-      )
-    }
+    val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
+      body.query,
+      communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
+      probationSearchApiSortBy,
+    )
 
     val enrichedProbationSearchResults = entityProbationSearchResult.mapNotNull {
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
+      val prisonerSearchResult = this.prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(it.identifiers.noms))
 
       // If an empty list has been returned, there are no relevant licences relating to search for the offender
       if (licences.isEmpty()) {
