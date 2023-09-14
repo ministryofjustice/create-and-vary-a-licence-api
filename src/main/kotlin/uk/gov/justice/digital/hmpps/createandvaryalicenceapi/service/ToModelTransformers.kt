@@ -241,12 +241,12 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?, comName: String?): ModelFoundProbationRecord {
+fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence?.crn,
     nomisId = licence?.nomsId,
-    comName = comName,
+    comName = if (manager.name?.forename.isNullOrBlank() || manager.name?.surname.isNullOrBlank()) null else "${manager.name?.forename} ${manager.name?.surname}".convertToTitleCase(),
     comStaffCode = manager.code,
     teamName = manager.team.description ?: licence?.probationTeamDescription,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
@@ -258,7 +258,6 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: 
 }
 
 fun ProbationSearchResponseResult.transformToModelFoundProbationRecordWithoutLicence(
-  comName: String?,
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,
@@ -267,7 +266,7 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecordWithoutLic
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = identifiers.crn,
     nomisId = identifiers.noms,
-    comName = comName,
+    comName = if (manager.name?.forename.isNullOrBlank() || manager.name?.surname.isNullOrBlank()) null else "${manager.name?.forename} ${manager.name?.surname}".convertToTitleCase(),
     comStaffCode = manager.code,
     teamName = manager.team.description,
     releaseDate = releaseDate,

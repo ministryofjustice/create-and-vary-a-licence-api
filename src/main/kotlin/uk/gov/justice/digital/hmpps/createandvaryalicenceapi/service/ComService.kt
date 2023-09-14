@@ -108,13 +108,6 @@ class ComService(
       val licences =
         licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
 
-      val comName =
-        if (it.manager.name?.forename.isNullOrBlank() || it.manager.name?.surname.isNullOrBlank()) {
-          null
-        } else {
-          "${it.manager.name?.forename} ${it.manager.name?.surname}".convertToTitleCase()
-        }
-
       /**
        *  If an empty list has been returned, we do not have a licence for the person currently but still need to return
        *  a result for the PP as they may want to create a licence for them
@@ -152,7 +145,6 @@ class ComService(
                   LocalDate.parse(prisonerSearchResult.confirmedReleaseDate)
                 }
               it.transformToModelFoundProbationRecordWithoutLicence(
-                comName,
                 releaseDate,
                 licenceType,
                 LicenceStatus.NOT_STARTED,
@@ -168,7 +160,7 @@ class ComService(
         val currentLicence =
           if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
 
-        it.transformToModelFoundProbationRecord(currentLicence, comName)
+        it.transformToModelFoundProbationRecord(currentLicence)
       }
     }
 
