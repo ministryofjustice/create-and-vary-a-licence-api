@@ -555,7 +555,7 @@ class LicenceService(
   @Transactional
   fun inActivateLicencesByIds(licenceIds: List<Long>) {
     val matchingLicences =
-      licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
+      licenceRepository.findAllById(licenceIds)
     inactivateLicences(matchingLicences)
   }
 
