@@ -26,7 +26,8 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                                 "middleName": ""
                             },
                             "identifiers": {
-                                "crn": "CRN1"
+                                "crn": "CRN1",
+                                "noms": "A1234AA"
                             },
                             "manager": {
                                 "code": "A01B02C",

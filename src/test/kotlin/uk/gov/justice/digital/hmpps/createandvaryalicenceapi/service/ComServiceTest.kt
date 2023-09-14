@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
@@ -39,13 +41,14 @@ class ComServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val communityApiClient = mock<CommunityApiClient>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
   private val service =
-    ComService(communityOffenderManagerRepository, licenceRepository, communityApiClient, probationSearchApiClient)
+    ComService(communityOffenderManagerRepository, licenceRepository, communityApiClient, probationSearchApiClient, prisonerSearchApiClient)
 
   @BeforeEach
   fun reset() {
-    reset(communityOffenderManagerRepository, licenceRepository, communityApiClient, probationSearchApiClient)
+    reset(communityOffenderManagerRepository, licenceRepository, communityApiClient, probationSearchApiClient, prisonerSearchApiClient)
   }
 
   @Test
@@ -259,7 +262,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456"),
+          Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -271,6 +274,16 @@ class ComServiceTest {
     )
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+        ),
+      ),
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -339,7 +352,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456"),
+          Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -351,6 +364,16 @@ class ComServiceTest {
     )
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+        ),
+      ),
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -394,7 +417,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456"),
+          Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -418,6 +441,16 @@ class ComServiceTest {
           )
           ),
       )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+        ),
+      ),
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -477,7 +510,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456"),
+          Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -492,6 +525,16 @@ class ComServiceTest {
       .thenReturn(
         emptyList(),
       )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+        ),
+      ),
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -525,7 +568,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456"),
+          Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -549,6 +592,16 @@ class ComServiceTest {
           )
           ),
       )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+        ),
+      ),
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -608,7 +661,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456"),
+          Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -634,6 +687,16 @@ class ComServiceTest {
           )
           ),
       )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+        ),
+      ),
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",

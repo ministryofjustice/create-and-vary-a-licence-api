@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
@@ -29,6 +30,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member and the teams they are in, search for offenders within their teams`() {
     communityApiMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -78,6 +80,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results`() {
     communityApiMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     val resultList = webTestClient.post()
       .uri("/com/case-search")
@@ -96,6 +99,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   private companion object {
     val communityApiMockServer = CommunityApiMockServer()
     val probationSearchApiMockServer = ProbationSearchMockServer()
+    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
@@ -118,6 +122,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     fun startMocks() {
       communityApiMockServer.start()
       probationSearchApiMockServer.start()
+      prisonerSearchApiMockServer.start()
     }
 
     @JvmStatic
@@ -125,6 +130,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       communityApiMockServer.stop()
       probationSearchApiMockServer.stop()
+      prisonerSearchApiMockServer.stop()
     }
   }
 }
