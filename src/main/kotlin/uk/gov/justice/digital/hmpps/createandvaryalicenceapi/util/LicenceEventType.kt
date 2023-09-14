@@ -16,4 +16,5 @@ enum class LicenceEventType {
   INACTIVE,
   RECALLED,
   VERSION_CREATED,
+  NOT_STARTED,
 }

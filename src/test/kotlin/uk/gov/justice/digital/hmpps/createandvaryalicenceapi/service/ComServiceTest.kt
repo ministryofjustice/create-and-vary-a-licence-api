@@ -10,6 +10,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -275,16 +276,6 @@ class ComServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        PrisonerSearchPrisoner(
-          "A1234AA",
-          "1234567",
-          "ACTIVE IN",
-        ),
-      ),
-    )
-
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -365,16 +356,6 @@ class ComServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        PrisonerSearchPrisoner(
-          "A1234AA",
-          "1234567",
-          "ACTIVE IN",
-        ),
-      ),
-    )
-
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -442,16 +423,6 @@ class ComServiceTest {
           ),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        PrisonerSearchPrisoner(
-          "A1234AA",
-          "1234567",
-          "ACTIVE IN",
-        ),
-      ),
-    )
-
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -500,64 +471,6 @@ class ComServiceTest {
   }
 
   @Test
-  fun `search for offenders on a staff member's caseload with an irrelevant licence`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
-      listOf(
-        "A01B02",
-      ),
-    )
-    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
-      listOf(
-        ProbationSearchResponseResult(
-          Name("Test", "Surname"),
-          Identifiers("A123456", "A1234AA"),
-          Manager(
-            "A01B02C",
-            Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
-          ),
-          "2023/05/24",
-        ),
-      ),
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        PrisonerSearchPrisoner(
-          "A1234AA",
-          "1234567",
-          "ACTIVE IN",
-        ),
-      ),
-    )
-
-    val request = ProbationUserSearchRequest(
-      "Test",
-      2000,
-    )
-
-    val result = service.searchForOffenderOnStaffCaseload(request)
-
-    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
-      request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
-    )
-
-    val resultsList = result.results
-    val inPrisonCount = result.inPrisonCount
-    val onProbationCount = result.onProbationCount
-
-    assertThat(resultsList).isEmpty()
-    assertThat(inPrisonCount).isEqualTo(0)
-    assertThat(onProbationCount).isEqualTo(0)
-  }
-
-  @Test
   fun `search for offenders on probation on a staff member's caseload with latest licence selected`() {
     whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
@@ -592,16 +505,6 @@ class ComServiceTest {
           )
           ),
       )
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        PrisonerSearchPrisoner(
-          "A1234AA",
-          "1234567",
-          "ACTIVE IN",
-        ),
-      ),
-    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -651,7 +554,7 @@ class ComServiceTest {
   }
 
   @Test
-  fun `search for offenders on probation on a staff member's caseload with no CRD`() {
+  fun `search for offenders on probation on a staff member's caseload with no CRD should use ARD`() {
     whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
@@ -687,16 +590,6 @@ class ComServiceTest {
           )
           ),
       )
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
-      listOf(
-        PrisonerSearchPrisoner(
-          "A1234AA",
-          "1234567",
-          "ACTIVE IN",
-        ),
-      ),
-    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -743,6 +636,255 @@ class ComServiceTest {
 
     assertThat(inPrisonCount).isEqualTo(0)
     assertThat(onProbationCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence (NOT_STARTED)`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+          "2024-09-14",
+          null,
+          "2023-09-14",
+          "2023-09-14",
+        ),
+      ),
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      listOf("A1234AA"),
+    )
+
+    val resultsList = result.results
+    val offender = resultsList.first()
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isNotEmpty
+    assertThat(resultsList.size).isEqualTo(1)
+
+    assertThat(offender)
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          "Test Surname",
+          "A123456",
+          "A1234AA",
+          "Staff Surname",
+          "A01B02C",
+          "Test Team",
+          LocalDate.parse("2023-09-14"),
+          null,
+          LicenceType.AP,
+          LicenceStatus.NOT_STARTED,
+          false,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(1)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence where NOMIS ID is not populated`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", null),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+          "2024-09-14",
+          null,
+          "2023-09-14",
+          "2023-09-14",
+        ),
+      ),
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verifyNoInteractions(prisonerSearchApiClient)
+
+    val resultsList = result.results
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isEmpty()
+    assertThat(resultsList.size).isEqualTo(0)
+    assertThat(inPrisonCount).isEqualTo(0)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence with no CRD should use release date`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+      listOf(
+        PrisonerSearchPrisoner(
+          "A1234AA",
+          "1234567",
+          "ACTIVE IN",
+          "2024-09-14",
+          null,
+          "2023-09-14",
+          null,
+        ),
+      ),
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      listOf("A1234AA"),
+    )
+
+    val resultsList = result.results
+    val offender = resultsList.first()
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isNotEmpty
+    assertThat(resultsList.size).isEqualTo(1)
+
+    assertThat(offender)
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          "Test Surname",
+          "A123456",
+          "A1234AA",
+          "Staff Surname",
+          "A01B02C",
+          "Test Team",
+          LocalDate.parse("2023-09-14"),
+          null,
+          LicenceType.AP,
+          LicenceStatus.NOT_STARTED,
+          false,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(1)
+    assertThat(onProbationCount).isEqualTo(0)
   }
 
   private companion object {

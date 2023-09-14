@@ -30,7 +30,6 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member and the teams they are in, search for offenders within their teams`() {
     communityApiMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -77,10 +76,79 @@ class ComIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Given a staff member and the teams they are in, search for offenders within their teams with no results`() {
+  fun `Given a staff member and the teams they are in, search for offenders within their teams where the offender does not already have a licence`() {
+    communityApiMockServer.stubGetTeamCodesForUser()
+    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    val resultObject = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(ProbationSearchResult::class.java)
+      .returnResult().responseBody
+
+    val resultsList = resultObject?.results
+    val offender = resultsList?.first()
+    val inPrisonCount = resultObject?.inPrisonCount
+    val onProbationCount = resultObject?.onProbationCount
+
+    assertThat(resultsList?.size).isEqualTo(1)
+    assertThat(offender)
+      .extracting {
+        tuple(
+          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
+          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
+        )
+      }
+      .isEqualTo(
+        tuple(
+          "Test Surname",
+          "CRN1",
+          "A1234AA",
+          "Staff Surname",
+          "A01B02C",
+          "Test Team",
+          LocalDate.parse("2023-09-14"),
+          null,
+          LicenceType.AP,
+          LicenceStatus.NOT_STARTED,
+          false,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(1)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
     communityApiMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    val resultList = webTestClient.post()
+      .uri("/com/case-search")
+      .bodyValue(aProbationUserSearchRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(ProbationSearchResult::class.java)
+      .returnResult().responseBody
+
+    assertThat(resultList?.results?.size).isEqualTo(0)
+  }
+
+  @Test
+  fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from prisoner search`() {
+    communityApiMockServer.stubGetTeamCodesForUser()
+    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
 
     val resultList = webTestClient.post()
       .uri("/com/case-search")

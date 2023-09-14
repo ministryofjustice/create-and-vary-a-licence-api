@@ -49,19 +49,46 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                 {
                   "prisonerNumber": "A1234AA",
                   "bookingId": "123",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "licenceExpiryDate": "2024-09-14",
+                  "topUpSupervisionExpiryDate": "2024-09-14",
+                  "releaseDate": "2023-09-14",
+                  "confirmedReleaseDate": "2023-09-14"
                },
                                {
                   "prisonerNumber": "A1234AB",
                   "bookingId": "456",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "licenceExpiryDate": "2024-09-14",
+                  "topUpSupervisionExpiryDate": "2024-09-14",
+                  "releaseDate": null,
+                  "confirmedReleaseDate": "2023-09-14"
                },
-                               {
+               {
                   "prisonerNumber": "A1234AC",
                   "bookingId": "789",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "licenceExpiryDate": null,
+                  "topUpSupervisionExpiryDate": null,
+                  "releaseDate": null,
+                  "confirmedReleaseDate": null
                }
               ]
+            """.trimIndent(),
+          ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubSearchPrisonersByNomisIdsNoResult() {
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            """[]
             """.trimIndent(),
           ).withStatus(200),
         ),
