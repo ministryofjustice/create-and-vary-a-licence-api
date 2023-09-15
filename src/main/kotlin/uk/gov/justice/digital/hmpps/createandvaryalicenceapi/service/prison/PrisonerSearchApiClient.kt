@@ -22,7 +22,7 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
       .block() ?: emptyList()
   }
-  fun searchPrisonersByNomisIds(nomisIds: List<String?>): List<PrisonerSearchPrisoner> {
+  fun searchPrisonersByNomisIds(nomisIds: List<String>): List<PrisonerSearchPrisoner> {
     if (nomisIds.isEmpty()) return emptyList()
     return prisonerSearchApiWebClient
       .post()
