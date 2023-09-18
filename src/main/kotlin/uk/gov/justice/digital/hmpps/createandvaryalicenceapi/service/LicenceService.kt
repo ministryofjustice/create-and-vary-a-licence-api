@@ -579,6 +579,12 @@ class LicenceService(
       throw ValidationException("Can only edit APPROVED licences")
     }
 
+    val inProgressVersions =
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(listOf(licenceId), listOf(IN_PROGRESS, SUBMITTED))
+    if (inProgressVersions.isNotEmpty()) {
+      return transformToLicenceSummary(inProgressVersions[0])
+    }
+
     val licenceCopy = copyLicenceAndConditions(licenceEntity, IN_PROGRESS)
     return transformToLicenceSummary(licenceCopy)
   }

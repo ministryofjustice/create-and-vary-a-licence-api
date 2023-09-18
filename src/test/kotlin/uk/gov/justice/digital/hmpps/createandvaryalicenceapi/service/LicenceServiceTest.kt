@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -1572,6 +1573,41 @@ class LicenceServiceTest {
     val exception = assertThrows<ValidationException> { service.editLicence(1L) }
     assertThat(exception).isInstanceOf(ValidationException::class.java)
     assertThat(exception).message().isEqualTo("Can only edit APPROVED licences")
+  }
+
+  @Test
+  fun `editing an approved licence which already has an in progress version returns that version`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val inProgressLicenceVersion =
+      approvedLicence.copy(id = 9032, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = approvedLicence.id)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+    whenever(
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(approvedLicence.id),
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+      ),
+    )
+      .thenReturn(
+        listOf(inProgressLicenceVersion),
+      )
+
+    val newLicenceVersion = service.editLicence(1L)
+    assertNotNull(newLicenceVersion)
+    assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
+
+    verify(licenceRepository, never()).save(any())
   }
 
   @Test
