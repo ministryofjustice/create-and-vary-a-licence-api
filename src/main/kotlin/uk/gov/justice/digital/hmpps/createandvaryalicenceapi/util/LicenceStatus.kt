@@ -12,6 +12,7 @@ enum class LicenceStatus {
   VARIATION_SUBMITTED,
   VARIATION_REJECTED,
   VARIATION_APPROVED,
+  NOT_STARTED,
   ;
 
   fun isOnProbation() = ON_PROBATION_STATUSES.contains(this)
@@ -30,6 +31,7 @@ enum class LicenceStatus {
         VARIATION_APPROVED -> LicenceEventType.VARIATION_APPROVED
         INACTIVE -> LicenceEventType.INACTIVE
         RECALLED -> LicenceEventType.RECALLED
+        NOT_STARTED -> LicenceEventType.NOT_STARTED
       }
     }
 

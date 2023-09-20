@@ -3,6 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 import java.util.Base64
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
@@ -243,7 +246,7 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: 
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence?.crn,
     nomisId = licence?.nomsId,
-    comName = "${manager.name?.forename} ${manager.name?.surname}".convertToTitleCase(),
+    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
     comStaffCode = manager.code,
     teamName = manager.team.description ?: licence?.probationTeamDescription,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
@@ -251,5 +254,25 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: 
     licenceType = licence?.typeCode,
     licenceStatus = licence?.statusCode,
     isOnProbation = licence?.statusCode?.isOnProbation(),
+  )
+}
+
+fun ProbationSearchResponseResult.transformToUnstartedRecord(
+  releaseDate: LocalDate?,
+  licenceType: LicenceType?,
+  licenceStatus: LicenceStatus?,
+): ModelFoundProbationRecord {
+  return ModelFoundProbationRecord(
+    name = "${name.forename} ${name.surname}".convertToTitleCase(),
+    crn = identifiers.crn,
+    nomisId = identifiers.noms,
+    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
+    comStaffCode = manager.code,
+    teamName = manager.team.description,
+    releaseDate = releaseDate,
+    licenceId = null,
+    licenceType = licenceType,
+    licenceStatus = licenceStatus,
+    isOnProbation = false,
   )
 }

@@ -46,7 +46,6 @@
     <ID>UnusedParameter:LicenceController.kt$LicenceController$@PathVariable conditionType: String</ID>
     <ID>UnusedParameter:OpenApiConfiguration.kt$OpenApiConfiguration$buildProperties: BuildProperties</ID>
     <ID>UnusedParameter:WebClientConfiguration.kt$WebClientConfiguration$authorizedClientManager: OAuth2AuthorizedClientManager</ID>
-    <ID>UnusedPrivateProperty:ComService.kt$ComService$val prisonerSearchResult = this.prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(it.identifiers.noms))</ID>
     <ID>UseCheckOrError:CommunityApiClient.kt$CommunityApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Can only update licence version when editing an existing version or creating a variation")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Cannot find staff with username: $username")</ID>

@@ -4,16 +4,20 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import java.time.LocalDateTime
 
@@ -89,44 +93,83 @@ class ComService(
   }
 
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
-    val probationSearchApiSortBy = body.sortBy.map {
+    val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
+      body.query,
+      communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
+      body.getSortBy(),
+    )
+
+    val resultsWithLicences: List<Pair<ProbationSearchResponseResult, Licence?>> =
+      teamCaseloadResult.map { it to getLicence(it) }
+
+    val resultsWithUnstartedLicences = findPrisonersForUnstartedRecords(resultsWithLicences)
+
+    val searchResults = resultsWithLicences.mapNotNull { (result, licence) ->
+      when (licence) {
+        null -> result.createUnstartedRecord(resultsWithUnstartedLicences[result.identifiers.noms])
+        else -> result.createRecord(licence)
+      }
+    }
+
+    val onProbationCount = searchResults.count { it.isOnProbation == true }
+    val inPrisonCount = searchResults.count { it.isOnProbation == false }
+
+    return ProbationSearchResult(
+      searchResults,
+      inPrisonCount,
+      onProbationCount,
+    )
+  }
+
+  private fun PrisonerSearchPrisoner.getLicenceType() = when {
+    this.licenceExpiryDate == null -> LicenceType.PSS
+    this.topUpSupervisionExpiryDate == null || topUpSupervisionExpiryDate <= licenceExpiryDate -> LicenceType.AP
+    else -> LicenceType.AP_PSS
+  }
+
+  private fun PrisonerSearchPrisoner.getReleaseDate() = confirmedReleaseDate ?: releaseDate
+
+  private fun getLicence(result: ProbationSearchResponseResult): Licence? {
+    val licences =
+      licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
+    return if (licences.isEmpty()) {
+      null
+    } else {
+      val nonActiveLicenceStatuses = LicenceStatus.IN_FLIGHT_LICENCES - LicenceStatus.ACTIVE
+      if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
+    }
+  }
+
+  private fun findPrisonersForUnstartedRecords(record: List<Pair<ProbationSearchResponseResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
+    val prisonNumbers = record
+      .filter { (_, licence) -> licence == null }
+      .mapNotNull { (result, _) -> result.identifiers.noms }
+    return this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
+  }
+
+  private fun ProbationSearchResponseResult.createUnstartedRecord(
+    prisoner: PrisonerSearchPrisoner?,
+  ) = when {
+    // no match for prisoner in Delius
+    prisoner == null -> null
+
+    // if both dates are null from the prisoner, we do not want to show the result as a licence cannot be created without them
+    prisoner.confirmedReleaseDate == null && prisoner.releaseDate == null -> null
+
+    else -> this.transformToUnstartedRecord(
+      releaseDate = prisoner.getReleaseDate(),
+      licenceType = prisoner.getLicenceType(),
+      LicenceStatus.NOT_STARTED,
+    )
+  }
+
+  private fun ProbationSearchResponseResult.createRecord(licence: Licence) = this.transformToModelFoundProbationRecord(licence)
+
+  private fun ProbationUserSearchRequest.getSortBy() =
+    this.sortBy.map {
       ProbationSearchSortByRequest(
         it.field.probationSearchApiSortType,
         if (it.direction == SearchDirection.ASC) "asc" else "desc",
       )
     }
-
-    val entityProbationSearchResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
-      body.query,
-      communityApiClient.getTeamsCodesForUser(body.staffIdentifier),
-      probationSearchApiSortBy,
-    )
-
-    val enrichedProbationSearchResults = entityProbationSearchResult.mapNotNull {
-      val licences =
-        licenceRepository.findAllByCrnAndStatusCodeIn(it.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
-      val prisonerSearchResult = this.prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(it.identifiers.noms))
-
-      // If an empty list has been returned, there are no relevant licences relating to search for the offender
-      if (licences.isEmpty()) {
-        null
-      } else {
-        val nonActiveLicenceStatuses = LicenceStatus.IN_FLIGHT_LICENCES - LicenceStatus.ACTIVE
-
-        val currentLicence =
-          if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
-
-        it.transformToModelFoundProbationRecord(currentLicence)
-      }
-    }
-
-    val onProbationCount = enrichedProbationSearchResults.count { it.isOnProbation == true }
-    val inPrisonCount = enrichedProbationSearchResults.count { it.isOnProbation == false }
-
-    return ProbationSearchResult(
-      enrichedProbationSearchResults,
-      inPrisonCount,
-      onProbationCount,
-    )
-  }
 }
