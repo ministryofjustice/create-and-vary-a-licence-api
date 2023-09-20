@@ -10,7 +10,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -767,7 +766,9 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
-    verifyNoInteractions(prisonerSearchApiClient)
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      emptyList(),
+    )
 
     val resultsList = result.results
     val inPrisonCount = result.inPrisonCount
@@ -981,8 +982,8 @@ class ComServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
-          licenceExpiryDate = "2024-09-15",
-          topUpSupervisionExpiryDate = "2024-09-14",
+          licenceExpiryDate = LocalDate.parse("2024-09-15"),
+          topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
         ),
       ),
     )
@@ -1068,7 +1069,7 @@ class ComServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
-          topUpSupervisionExpiryDate = "2024-10-14",
+          topUpSupervisionExpiryDate = LocalDate.parse("2024-10-14"),
         ),
       ),
     )
@@ -1352,10 +1353,10 @@ class ComServiceTest {
       "A1234AA",
       "1234567",
       "ACTIVE IN",
-      "2024-09-14",
-      "2024-09-14",
-      "2023-09-14",
-      "2023-09-14",
+      LocalDate.parse("2024-09-14"),
+      LocalDate.parse("2024-09-14"),
+      LocalDate.parse("2023-09-14"),
+      LocalDate.parse("2023-09-14"),
     )
   }
 }
