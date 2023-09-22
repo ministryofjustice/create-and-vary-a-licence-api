@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -11,30 +11,28 @@ import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UnapprovedLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveExpiredConditionsService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class UnapprovedLicenceController(private val unapprovedLicenceService: UnapprovedLicenceService) {
-  @PostMapping(value = ["/notify-probation-of-unapproved-licences"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @ResponseBody
+class JobController(
+  private val removeExpiredConditionsService: RemoveExpiredConditionsService,
+) {
+  @PostMapping(value = ["/run-remove-expired-conditions-job"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Send an email to probation practitioner of any previously approved licences that have been edited but not re-approved by prisoners release date",
-    description = "Send email to probation practioner. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    summary = "Job to remove AP conditions.",
+    description = "Triggers a job that removes AP conditions for all licences that are in PSS period and status equal to 'VARIATION_IN_PROGRESS' or 'VARIATION_SUBMITTED' or 'VARIATION_REJECTED' or 'VARIATION_APPROVED'. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Emails sent",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = UnapprovedLicence::class))],
+        description = "run-remove-ap-conditions-job",
       ),
       ApiResponse(
         responseCode = "401",
@@ -48,7 +46,7 @@ class UnapprovedLicenceController(private val unapprovedLicenceService: Unapprov
       ),
     ],
   )
-  fun notifyProbationOfUnapprovedLicences() {
-    return unapprovedLicenceService.sendEmailsToProbationPractitioner()
+  fun runRemoveExpiredConditionsJob() {
+    return removeExpiredConditionsService.removeExpiredConditions()
   }
 }

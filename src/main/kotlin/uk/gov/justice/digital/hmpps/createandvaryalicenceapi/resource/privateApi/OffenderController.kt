@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -7,82 +7,40 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOmuEmailRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OmuService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 
-@Tag(
-  name = Tags.OMU_CONTACT_DETAILS,
-  description = "CVL stores contact information for Offender Management Units (OMUs). These endpoints are responsible for retrieving and managing that information",
-)
 @RestController
-@RequestMapping("/omu/{prisonCode}/contact/email", produces = [MediaType.APPLICATION_JSON_VALUE])
-class OmuContactController(private val omuService: OmuService) {
-
-  @GetMapping
+@Tag(name = Tags.OFFENDER)
+@RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
+class OffenderController(private val offenderService: OffenderService, private val comService: ComService) {
+  @PutMapping(
+    value = ["/crn/{crn}/responsible-com"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Get OMU email address.",
-    description = "Obtain prison Offender Management Unit email address. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender.",
+    description = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The OMU was found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Not found, the OMU email was not found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String): OmuContact? {
-    val contact = this.omuService.getOmuContactEmail(prisonCode)
-    if (contact === null) {
-      throw EntityNotFoundException(prisonCode)
-    }
-    return contact
-  }
-
-  @PutMapping
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Updates the OMU email address.",
-    description = "Updates the OMU email address used to contact members of a prison OMU. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "The OMU was updated",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = OmuContact::class))],
+        description = "The responsible COM was updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -101,26 +59,35 @@ class OmuContactController(private val omuService: OmuService) {
       ),
     ],
   )
-  fun updateOmuEmail(
+  fun updateResponsibleCom(
+    @PathVariable crn: String,
     @Valid @RequestBody
-    body: UpdateOmuEmailRequest,
-    @PathVariable("prisonCode") prisonCode: String,
-  ): OmuContact {
-    return this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
+    body: UpdateComRequest,
+  ) {
+    val newCom = this.comService.updateComDetails(body)
+    this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
   }
 
+  @PutMapping(
+    value = ["/crn/{crn}/probation-team"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @DeleteMapping()
   @Operation(
-    summary = "Delete the OMU email address.",
-    description = "Delete prison Offender Management Unit email address. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Updates in-flight licences associated with an offender with a new probation team.",
+    description = "Updates in-flight licences associated with an offender with a new probation team. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The OMU email address was deleted",
+        description = "The probation team was updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -134,7 +101,49 @@ class OmuContactController(private val omuService: OmuService) {
       ),
     ],
   )
-  fun deleteOmuContactByPrisonCode(@PathVariable("prisonCode") prisonCode: String) {
-    this.omuService.deleteOmuEmail(prisonCode)
+  fun updateProbationTeam(
+    @PathVariable crn: String,
+    @Valid @RequestBody
+    body: UpdateProbationTeamRequest,
+  ) {
+    this.offenderService.updateProbationTeam(crn, body)
+  }
+
+  @PutMapping(value = ["nomisid/{nomsId}/update-offender-details"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Updates the offender's personal information on all of their licences.",
+    description = "Updates the name and date of birth stored on all licences associated with the given offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The offender details were updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun updateOffenderDetails(
+    @PathVariable nomsId: String,
+    @Valid @RequestBody
+    body: UpdateOffenderDetailsRequest,
+  ) {
+    this.offenderService.updateOffenderDetails(nomsId, body)
   }
 }
