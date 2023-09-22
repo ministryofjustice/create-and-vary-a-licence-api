@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 
 @RestController
 @RequestMapping("/public/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceController(
+class PublicLicenceController(
   private val licenceService: LicenceService,
 ) {
   @Tag(name = Tags.LICENCES)
