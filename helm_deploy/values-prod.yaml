@@ -11,6 +11,7 @@ generic-service:
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    GOV_UK_API_URL: "https://www.gov.uk"
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_COMMUNITY_API_URL: "https://community-api.probation.service.justice.gov.uk"

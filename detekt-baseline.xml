@@ -17,6 +17,7 @@
     <ID>LongParameterList:NotifyService.kt$NotifyService$( creatorEmail: String, creatorName: String, comEmail: String, comName: String, popName: String, licenceId: String, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( licenceId: String, emailAddress: String?, comFullName: String, offenderFullName: String, crn: String?, datesChanged: Map&lt;String, Boolean&gt;, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String)</ID>
+    <ID>LongParameterList:WebClientConfiguration.kt$WebClientConfiguration$( @Value("\${hmpps.auth.url}") private val oauthApiUrl: String, @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String, @Value("\${hmpps.prisonregister.api.url}") private val prisonRegisterApiUrl: String, @Value("\${hmpps.community.api.url}") private val communityApiUrl: String, @Value("\${hmpps.probationsearch.api.url}") private val probationSearchApiUrl: String, @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String, @Value("\${hmpps.govUk.api.url}") private val govUkApiUrl: String, )</ID>
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$100</ID>
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$50</ID>
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$500</ID>
@@ -47,6 +48,7 @@
     <ID>UnusedParameter:OpenApiConfiguration.kt$OpenApiConfiguration$buildProperties: BuildProperties</ID>
     <ID>UnusedParameter:WebClientConfiguration.kt$WebClientConfiguration$authorizedClientManager: OAuth2AuthorizedClientManager</ID>
     <ID>UseCheckOrError:CommunityApiClient.kt$CommunityApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
+    <ID>UseCheckOrError:GovUkApiClient.kt$GovUkApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Can only update licence version when editing an existing version or creating a variation")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Cannot find staff with username: $username")</ID>
     <ID>UseCheckOrError:LicenceService.kt$LicenceService$throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")</ID>

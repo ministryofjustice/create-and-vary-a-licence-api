@@ -14,6 +14,9 @@ hmpps:
   auth:
     token:
       url: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth/oauth/token"
+  govUk:
+    api:
+      url: "https://www.gov.uk"
   prison:
     api:
       url: "https://prison-api-dev.prison.service.justice.gov.uk/api"
@@ -29,3 +32,8 @@ hmpps:
   prisonersearch:
     api:
       url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
+
+cache:
+  evict:
+    bank-holidays:
+      cron: "0 45 23 * * ?"
