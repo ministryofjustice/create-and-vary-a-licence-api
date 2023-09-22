@@ -27,7 +27,7 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   @AfterEach
   fun clearCache() {
-    cacheManager.getCache("support-types")?.clear()
+    cacheManager.getCache("bank-holidays")?.clear()
   }
 
   @Test
