@@ -22,7 +22,7 @@ import java.time.LocalDate
 @RequestMapping("/", produces = [MediaType.APPLICATION_JSON_VALUE])
 class BankHolidayController(private val bankHolidayService: BankHolidayService) {
 
-  @Tag(name = Tags.LICENCES)
+  @Tag(name = Tags.ANCILLARY)
   @GetMapping(value = ["/bank-holidays"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
