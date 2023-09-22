@@ -4,5 +4,5 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Describes a licence within this service")
 data class Licence(
-  val id: Long = -1
+  val id: Long = -1,
 )

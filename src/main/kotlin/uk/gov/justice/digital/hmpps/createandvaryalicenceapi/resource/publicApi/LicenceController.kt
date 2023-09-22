@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.Tags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 
 @RestController
 @RequestMapping("/public/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class PublicLicenceController(
+class LicenceController(
   private val licenceService: LicenceService,
 ) {
   @Tag(name = Tags.LICENCES)
@@ -61,5 +61,4 @@ class PublicLicenceController(
   fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence? {
     return null
   }
-
 }
