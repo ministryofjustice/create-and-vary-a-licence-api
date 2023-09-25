@@ -10,8 +10,6 @@ EXIT_CODE=$?
 
 if [ $EXIT_CODE -ne 0 ]; then
    cat "$OUTPUT"
-   rm "$OUTPUT"
-
    echo "***********************************************"
    echo "                 detekt failed                 "
    echo " Please fix the above issues before committing "
@@ -19,8 +17,6 @@ if [ $EXIT_CODE -ne 0 ]; then
 
 else
    cat "$OUTPUT"
-   rm "$OUTPUT"
-
    echo "***********************************************"
    echo "                 detekt passed                 "
    echo "    No issues need fixing before committing    "
