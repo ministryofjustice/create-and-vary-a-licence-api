@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import jakarta.validation.Valid
 import org.assertj.core.api.Assertions.assertThat

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 class Tags {
   companion object {

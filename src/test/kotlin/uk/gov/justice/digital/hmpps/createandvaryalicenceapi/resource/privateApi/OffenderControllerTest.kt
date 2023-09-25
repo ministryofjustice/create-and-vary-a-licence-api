@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.OffenderController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import java.time.LocalDate

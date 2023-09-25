@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.BeforeEach
@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.AuditController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime

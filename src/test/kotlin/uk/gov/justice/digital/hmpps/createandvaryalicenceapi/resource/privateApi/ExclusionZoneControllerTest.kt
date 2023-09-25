@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import jakarta.validation.ValidationException
 import org.assertj.core.api.AssertionsForClassTypes
@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.ExclusionZoneController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
 
 @ExtendWith(SpringExtension::class)
