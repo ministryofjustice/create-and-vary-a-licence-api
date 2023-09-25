@@ -76,7 +76,7 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun prisonRegisterApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+  fun prisonRegisterApiWebClient(): WebClient {
     return WebClient.builder()
       .baseUrl(prisonRegisterApiUrl)
       .exchangeStrategies(

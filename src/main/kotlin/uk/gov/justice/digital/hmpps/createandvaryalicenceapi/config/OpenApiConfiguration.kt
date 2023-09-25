@@ -12,7 +12,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   private val version: String = buildProperties.version
 
   @Bean
-  fun customOpenAPI(buildProperties: BuildProperties): OpenAPI? = OpenAPI()
+  fun customOpenAPI(): OpenAPI? = OpenAPI()
     .info(
       Info()
         .title("Create and Vary a Licence API")
