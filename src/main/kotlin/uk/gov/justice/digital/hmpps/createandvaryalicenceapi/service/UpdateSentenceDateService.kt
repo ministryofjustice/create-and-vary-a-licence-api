@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -28,33 +29,7 @@ class UpdateSentenceDateService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    log.info(
-      buildString {
-        append("Licence dates - ID $licenceId ")
-        append("CRD ${licenceEntity?.conditionalReleaseDate} ")
-        append("ARD ${licenceEntity?.actualReleaseDate} ")
-        append("SSD ${licenceEntity?.sentenceStartDate} ")
-        append("SED ${licenceEntity?.sentenceEndDate} ")
-        append("LSD ${licenceEntity?.licenceStartDate} ")
-        append("LED ${licenceEntity?.licenceExpiryDate} ")
-        append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
-        append("TUSED ${licenceEntity?.topupSupervisionExpiryDate}")
-      },
-    )
-
-    log.info(
-      buildString {
-        append("Event dates - ID $licenceId ")
-        append("CRD ${sentenceDatesRequest.conditionalReleaseDate} ")
-        append("ARD ${sentenceDatesRequest.actualReleaseDate} ")
-        append("SSD ${sentenceDatesRequest.sentenceStartDate} ")
-        append("SED ${sentenceDatesRequest.sentenceEndDate} ")
-        append("LSD ${sentenceDatesRequest.licenceStartDate} ")
-        append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
-        append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
-        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
-      },
-    )
+    logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
 
     val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
 
@@ -97,9 +72,17 @@ class UpdateSentenceDateService(
       },
     )
 
-    if (!sentenceChanges.isMaterial) return
+    if (sentenceChanges.isMaterial) {
+      notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges)
+    }
+  }
 
-    // Notify the COM of any change to material dates on the licence
+  private fun notifyComOfUpdate(
+    updatedLicenceEntity: Licence,
+    licenceEntity: Licence,
+    licenceId: Long,
+    sentenceChanges: SentenceChanges,
+  ) {
     updatedLicenceEntity.bookingId?.let {
       prisonApiClient.hdcStatus(it).defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
         .filter { h -> h.approvalStatus != "APPROVED" }.subscribe {
@@ -121,6 +104,40 @@ class UpdateSentenceDateService(
           )
         }
     }
+  }
+
+  private fun logUpdate(
+    licenceId: Long,
+    licenceEntity: Licence?,
+    sentenceDatesRequest: UpdateSentenceDatesRequest,
+  ) {
+    log.info(
+      buildString {
+        append("Licence dates - ID $licenceId ")
+        append("CRD ${licenceEntity?.conditionalReleaseDate} ")
+        append("ARD ${licenceEntity?.actualReleaseDate} ")
+        append("SSD ${licenceEntity?.sentenceStartDate} ")
+        append("SED ${licenceEntity?.sentenceEndDate} ")
+        append("LSD ${licenceEntity?.licenceStartDate} ")
+        append("LED ${licenceEntity?.licenceExpiryDate} ")
+        append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
+        append("TUSED ${licenceEntity?.topupSupervisionExpiryDate}")
+      },
+    )
+
+    log.info(
+      buildString {
+        append("Event dates - ID $licenceId ")
+        append("CRD ${sentenceDatesRequest.conditionalReleaseDate} ")
+        append("ARD ${sentenceDatesRequest.actualReleaseDate} ")
+        append("SSD ${sentenceDatesRequest.sentenceStartDate} ")
+        append("SED ${sentenceDatesRequest.sentenceEndDate} ")
+        append("LSD ${sentenceDatesRequest.licenceStartDate} ")
+        append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
+        append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
+        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
+      },
+    )
   }
 
   companion object {
