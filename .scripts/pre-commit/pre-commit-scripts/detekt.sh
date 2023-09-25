@@ -17,9 +17,7 @@ if [ $EXIT_CODE -ne 0 ]; then
    echo " Please fix the above issues before committing "
    echo "***********************************************"
 
-   exit $EXIT_CODE
 else
-
    cat "$OUTPUT"
    rm "$OUTPUT"
 
@@ -27,8 +25,7 @@ else
    echo "                 detekt passed                 "
    echo "    No issues need fixing before committing    "
    echo "***********************************************"
-
-   exit $EXIT_CODE
 fi
 
 rm "$OUTPUT"
+exit $EXIT_CODE

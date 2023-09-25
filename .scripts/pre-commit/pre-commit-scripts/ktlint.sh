@@ -16,8 +16,6 @@ if [ $EXIT_CODE -ne 0 ]; then
    echo "                 ktlint failed                 "
    echo " Please fix the above issues before committing "
    echo "***********************************************"
-
-   exit $EXIT_CODE
 else
    cat "$OUTPUT"
    rm "$OUTPUT"
@@ -26,8 +24,7 @@ else
    echo "                 ktlint passed                 "
    echo "    No issues need fixing before committing    "
    echo "***********************************************"
-
-   exit $EXIT_CODE
 fi
 
 rm "$OUTPUT"
+exit $EXIT_CODE
