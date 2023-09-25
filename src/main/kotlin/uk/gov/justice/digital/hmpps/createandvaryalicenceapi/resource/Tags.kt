@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 class Tags {
   companion object {
     const val ADMIN = "Admin"
+    const val ANCILLARY = "Ancillary"
     const val COM = "Community Offender Manager"
     const val EVENTS = "Events"
     const val EXCLUSION_ZONES = "Exclusion zones"

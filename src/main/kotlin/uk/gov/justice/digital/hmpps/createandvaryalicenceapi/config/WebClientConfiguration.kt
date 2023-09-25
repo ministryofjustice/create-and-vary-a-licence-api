@@ -20,6 +20,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.community.api.url}") private val communityApiUrl: String,
   @Value("\${hmpps.probationsearch.api.url}") private val probationSearchApiUrl: String,
   @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String,
+  @Value("\${hmpps.govUk.api.url}") private val govUkApiUrl: String,
 ) {
 
   @Bean
@@ -124,5 +125,10 @@ class WebClientConfiguration(
           }
           .build(),
       ).build()
+  }
+
+  @Bean
+  fun govUkWebClient(): WebClient {
+    return WebClient.builder().baseUrl(govUkApiUrl).build()
   }
 }

@@ -47,6 +47,9 @@ hmpps:
     token:
       url: http://localhost:8090/auth/oauth/token
     url: http://localhost:8090/auth
+  govUk:
+    api:
+      url: http://localhost:8095
   prison:
     api:
       url: http://localhost:8091/api
@@ -71,3 +74,8 @@ oauth:
     id: client-id
     secret: clientsecret
     token-url: http://localhost:8090/auth
+
+cache:
+  evict:
+    bank-holidays:
+      cron: "0 45 23 * * ?"
