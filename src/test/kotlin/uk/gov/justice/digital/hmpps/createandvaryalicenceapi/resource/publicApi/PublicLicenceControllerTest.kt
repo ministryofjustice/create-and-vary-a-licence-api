@@ -29,25 +29,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 @WebAppConfiguration
 class PublicLicenceControllerTest {
 
-  @MockBean
-  private lateinit var licenceService: LicenceService
-
   @Autowired
   private lateinit var mvc: MockMvc
 
   @BeforeEach
   fun reset() {
-    reset(licenceService)
-
     mvc = MockMvcBuilders
-      .standaloneSetup(PublicLicenceController(licenceService))
+      .standaloneSetup(PublicLicenceController())
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
 
   @Test
   fun `get a licence by id`() {
-    val result = mvc.perform(get("/public/licence/id/1").accept(MediaType.APPLICATION_JSON))
+    val result = mvc.perform(get("/public/licence/id").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andReturn()
 

@@ -10,22 +10,18 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 
 @RestController
 @RequestMapping("/public/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class PublicLicenceController(
-  private val licenceService: LicenceService,
-) {
+class PublicLicenceController {
   @Tag(name = Tags.LICENCES)
-  @GetMapping(value = ["/id/{licenceId}"])
+  @GetMapping(value = ["/id"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
   @Operation(
@@ -58,7 +54,8 @@ class PublicLicenceController(
       ),
     ],
   )
-  fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence? {
-    return null
+  fun getLicenceById(): Licence? {
+    val licence: Licence? = null
+    return licence
   }
 }
