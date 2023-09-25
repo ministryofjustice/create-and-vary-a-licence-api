@@ -32,6 +32,6 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       .bodyToMono(ProbationSearchResponse::class.java)
       .block()
 
-    return probationOffenderSearchResponse?.content ?: throw IllegalStateException("Unexpected null response from API")
+    return probationOffenderSearchResponse?.content ?: error("Unexpected null response from API")
   }
 }

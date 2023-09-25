@@ -47,7 +47,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -80,7 +79,7 @@ class LicenceService(
       ?: throw ValidationException("Staff with staffIdentifier ${request.responsibleComStaffId} not found")
 
     val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw RuntimeException("Staff with username $username not found")
+      ?: error("Staff with username $username not found")
 
     val licence = transform(request)
 
@@ -431,7 +430,7 @@ class LicenceService(
         licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
       return transformToListOfSummaries(matchingLicences)
     } catch (e: PropertyReferenceException) {
-      throw ValidationException(e.message)
+      throw ValidationException(e.message, e)
     }
   }
 
@@ -454,7 +453,7 @@ class LicenceService(
       }
       return transformToListOfSummaries(recentlyApprovedLicences)
     } catch (e: PropertyReferenceException) {
-      throw ValidationException(e.message)
+      throw ValidationException(e.message, e)
     }
   }
 
@@ -803,7 +802,7 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: throw IllegalStateException("Cannot find staff with username: $username")
+      ?: error("Cannot find staff with username: $username")
 
     val newLicenceVersion =
       licence.licenceVersion?.let { getNextLicenceVersion(it, newStatus) }
@@ -885,9 +884,7 @@ class LicenceService(
     val licenceEventMessage = when (newStatus) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
       IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      else -> {
-        throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")
-      }
+      else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
@@ -903,9 +900,7 @@ class LicenceService(
     val auditEventSummary = when (newStatus) {
       VARIATION_IN_PROGRESS -> "Licence varied for ${newLicence.forename} ${newLicence.surname}"
       IN_PROGRESS -> "New licence version created for ${newLicence.forename} ${newLicence.surname}"
-      else -> {
-        throw IllegalStateException("Invalid new licence status of $newStatus when creating a licence copy ")
-      }
+      else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
     }
     auditEventRepository.saveAndFlush(
       AuditEvent(
@@ -943,13 +938,13 @@ class LicenceService(
     return when (status) {
       VARIATION_IN_PROGRESS -> "${majorVersion + 1}.0"
       IN_PROGRESS -> "$majorVersion.${minorVersion + 1}"
-      else -> throw IllegalStateException("Can only update licence version when editing an existing version or creating a variation")
+      else -> error("Can only update licence version when editing an existing version or creating a variation")
     }
   }
 
   private fun getVersionParts(version: String): Pair<Int, Int> {
     val parts = version.split(".")
-    return Pair(parts[0].toInt(), parts[1].toInt())
+    return parts[0].toInt() to parts[1].toInt()
   }
 
   private fun inactivateInProgressLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
