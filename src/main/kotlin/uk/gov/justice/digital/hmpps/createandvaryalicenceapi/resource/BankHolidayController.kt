@@ -51,7 +51,7 @@ class BankHolidayController(private val bankHolidayService: BankHolidayService) 
       ),
       ApiResponse(
         responseCode = "404",
-        description = "No bank holidays were not found.",
+        description = "Bank holidays were not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],

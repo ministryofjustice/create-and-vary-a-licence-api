@@ -32,8 +32,3 @@ hmpps:
   prisonersearch:
     api:
       url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
-
-cache:
-  evict:
-    bank-holidays:
-      cron: "0 45 23 * * ?"
