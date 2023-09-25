@@ -47,7 +47,7 @@ hmpps:
     token:
       url: http://localhost:8090/auth/oauth/token
     url: http://localhost:8090/auth
-  govUk:
+  govuk:
     api:
       url: http://localhost:8095
   prison:
