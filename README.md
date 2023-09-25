@@ -9,7 +9,7 @@ This service provices access to data stored in the licences database via API end
 The main client is the create-and-vary-a-licence (UI) service.
 It is built as  docker image and deployed to the MOJ Cloud Platform.
 
-# Building the project
+## Building the project
 
 Tools required:
 
@@ -18,33 +18,41 @@ Tools required:
 * docker
 * docker-compose
 
-## Install gradle
+### Install gradle
 
 `$ ./gradlew`
 
 `$ ./gradlew clean build`
 
-# Running the service
+## Running the service
 
 There is a script to help, which sets local profiles, port and DB connection properties to the 
 values required.
 
 `$ ./run-local.sh`
 
-# Running the unit tests
+## Running the unit tests
 
 Unit tests mock all external dependencies and can be run with no dependent containers.
 
 `$ ./gradlew test`
 
-# Running the integration tests
+## Running the integration tests
 
 Integration tests use Wiremock to stub any API calls required, and use a local H2 database 
 that is seeded with data specific to each test suite.
 
 `$ ./gradlew integrationTest`
 
-# Linting
+## Pre-commit hooks
+
+To install the pre-commit hooks run `./gradlew installLocalGitHook`
+
+This will install hooks for:
+* ktlint linter
+* Detekt static code analysis
+
+### Linting
 
 To locate any linting issues
 
@@ -54,7 +62,7 @@ To apply some fixes following linting
 
 `$ ./gradlew ktlintformat` 
 
-# Static Analysis
+### Static Code Analysis
 
 We use a tool called Detekt locally to provide code smell
 analysis for the project. A baseline currently exists with all the existing
@@ -71,7 +79,7 @@ To run Detekt:
 Detekt provides some helpful reports in HTML as well which can be opened in any
 browser. These are available at `build/reports/detekt`.
 
-# Dependencies
+## Dependencies
 
 List the dependency tree
 
@@ -82,12 +90,12 @@ Pull latest dependencies according to the `build.gradle.kts` file
 `$ ./gradlew dependencyUpdates`
 
 
-# OWASP vulnerability scanning
+## OWASP vulnerability scanning
 
 `$ ./gradlew dependencyCheckAnalyze`
 
 
-# Kotlin JPA specification
+## Kotlin JPA specification
 
 This project makes use of `https://github.com/consoleau/kotlin-jpa-specification-dsl` to wrap the JPA specification
 in fluent style Kotlin and make it much more readable when creating the JPA Specifications used in selecting licences
@@ -97,7 +105,7 @@ As this dependency is not available in the Maven central repository yet, and JCe
 services now, we have imported the single-file directly and kept the licence notification in the comments. 
 We can wait to see whether the dependency will soon become available in Maven central and import it from there.
 
-# Connecting to licences-db
+## Connecting to licences-db
 
 The licences-db container is the database that is used by the API. Once this is available, a final extra task would be 
 to manage the database locally using a SQL database manager application software of your choice (DBeaver, DataGrip etc).

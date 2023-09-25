@@ -17,6 +17,6 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
       .bodyToMono(User::class.java)
       .block()
     return communityApiResponse?.teams?.map { it.code }
-      ?: throw IllegalStateException("Unexpected null response from API")
+      ?: error("Unexpected null response from API")
   }
 }

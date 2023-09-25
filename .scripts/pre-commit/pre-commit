@@ -1,0 +1,11 @@
+#!/bin/bash
+
+for hook in "$(dirname "$0")/pre-commit-scripts"/*; do
+   "$hook"
+   RESULT=$?
+
+   if [ $RESULT -ne 0 ]; then
+       echo "pre-commit.d/$hook returned non-zero: $RESULT, abort commit"
+       exit $RESULT
+   fi
+done

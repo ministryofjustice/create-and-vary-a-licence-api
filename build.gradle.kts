@@ -17,6 +17,12 @@ val integrationTest = task<Test>("integrationTest") {
   shouldRunAfter("test")
 }
 
+tasks.register<Copy>("installLocalGitHook") {
+  from(File(rootProject.rootDir, ".scripts/pre-commit"))
+  into(File(rootProject.rootDir, ".git/hooks"))
+  fileMode = "755".toInt(radix = 8)
+}
+
 tasks.named<Test>("integrationTest") {
   useJUnitPlatform()
   filter {

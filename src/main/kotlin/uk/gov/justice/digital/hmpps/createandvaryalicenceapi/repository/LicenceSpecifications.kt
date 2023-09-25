@@ -35,19 +35,15 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
     query.restriction
   }
 
-fun LicenceQueryObject.getSort(): Sort {
-  if (sortBy == null) {
-    return Sort.unsorted()
-  }
-
-  if (sortOrder == null) {
-    return Sort.by(Sort.Direction.ASC, sortBy)
-  }
-
-  try {
-    return Sort.by(Sort.Direction.fromString(sortOrder), sortBy)
-  } catch (e: IllegalArgumentException) {
-    throw ValidationException(e.message)
+fun LicenceQueryObject.getSort(): Sort = when {
+  sortBy == null -> Sort.unsorted()
+  sortOrder == null -> Sort.by(Sort.Direction.ASC, sortBy)
+  else -> {
+    try {
+      Sort.by(Sort.Direction.fromString(sortOrder), sortBy)
+    } catch (e: IllegalArgumentException) {
+      throw ValidationException(e.message, e)
+    }
   }
 }
 

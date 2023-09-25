@@ -47,7 +47,7 @@ class ComService(
       comDetails.staffUsername,
     )
 
-    if (comResult == null || comResult.isEmpty()) {
+    if (comResult.isNullOrEmpty()) {
       return this.communityOffenderManagerRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
@@ -70,13 +70,7 @@ class ComService(
     val com = comResult.first()
 
     // only update entity if data is different
-    if (
-      (comDetails.firstName != com.firstName) ||
-      (comDetails.lastName != com.lastName) ||
-      (comDetails.staffEmail != com.email) ||
-      (!comDetails.staffUsername.equals(com.username, ignoreCase = true)) ||
-      (comDetails.staffIdentifier != com.staffIdentifier)
-    ) {
+    if (com.isUpdate(comDetails)) {
       return this.communityOffenderManagerRepository.saveAndFlush(
         com.copy(
           staffIdentifier = comDetails.staffIdentifier,
@@ -91,6 +85,12 @@ class ComService(
 
     return com
   }
+
+  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) = (comDetails.firstName != this.firstName) ||
+    (comDetails.lastName != this.lastName) ||
+    (comDetails.staffEmail != this.email) ||
+    (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
+    (comDetails.staffIdentifier != this.staffIdentifier)
 
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
