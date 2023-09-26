@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -14,6 +15,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.GovUkApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays.BankHolidayEvent
 import java.time.LocalDate
 
 class BankHolidaysIntegrationTest : IntegrationTestBase() {
@@ -40,18 +42,20 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LocalDate::class.java)
+      .expectBodyList(BankHolidayEvent::class.java)
       .returnResult().responseBody
 
-    assertThat(resultList.size).isEqualTo(4)
-    assertThat(resultList).isEqualTo(
-      listOf(
-        LocalDate.parse("2018-01-01"),
-        LocalDate.parse("2018-03-30"),
-        LocalDate.parse("2018-04-02"),
-        LocalDate.parse("2018-05-07"),
-      ),
-    )
+    assertThat(resultList?.size).isEqualTo(4)
+    assertThat(resultList)
+      .extracting<Tuple> {
+        Tuple.tuple(it.date)
+      }
+      .contains(
+        Tuple.tuple(LocalDate.parse("2018-01-01")),
+        Tuple.tuple(LocalDate.parse("2018-03-30")),
+        Tuple.tuple(LocalDate.parse("2018-04-02")),
+        Tuple.tuple(LocalDate.parse("2018-05-07")),
+      )
   }
 
   @Test
@@ -64,10 +68,10 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LocalDate::class.java)
+      .expectBodyList(BankHolidayEvent::class.java)
       .returnResult().responseBody
 
-    assertThat(resultList.size).isEqualTo(4)
+    assertThat(resultList?.size).isEqualTo(4)
 
     resultList = webTestClient.get()
       .uri("/bank-holidays")
@@ -76,10 +80,10 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LocalDate::class.java)
+      .expectBodyList(BankHolidayEvent::class.java)
       .returnResult().responseBody
 
-    assertThat(resultList.size).isEqualTo(4)
+    assertThat(resultList?.size).isEqualTo(4)
 
     verify(govUkApiClient, times(1)).getBankHolidaysForEnglandAndWales()
   }

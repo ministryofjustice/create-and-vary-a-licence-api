@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -8,6 +9,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.GovUkApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays.BankHolidayEvent
 import java.time.LocalDate
 
 class BankHolidayServiceTest {
@@ -24,7 +26,7 @@ class BankHolidayServiceTest {
   fun `retrieves bank holidays for England and Wales`() {
     whenever(govUkApiClient.getBankHolidaysForEnglandAndWales()).thenReturn(
       listOf(
-        LocalDate.parse("2024-09-21"),
+        BankHolidayEvent(date = LocalDate.parse("2024-09-21")),
       ),
     )
 
@@ -34,6 +36,12 @@ class BankHolidayServiceTest {
 
     assertThat(result).isNotEmpty
     assertThat(result.size).isEqualTo(1)
-    assertThat(result[0]).isEqualTo("2024-09-21")
+    assertThat(result[0])
+      .extracting {
+        Tuple.tuple(it.date)
+      }
+      .isEqualTo(
+        Tuple.tuple(LocalDate.parse("2024-09-21")),
+      )
   }
 }
