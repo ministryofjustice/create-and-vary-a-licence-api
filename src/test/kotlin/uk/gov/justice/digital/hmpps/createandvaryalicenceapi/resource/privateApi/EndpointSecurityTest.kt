@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -6,6 +6,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.PublicEndpoint
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 

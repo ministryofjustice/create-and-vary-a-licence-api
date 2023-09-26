@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -13,26 +13,27 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveExpiredConditionsService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceActivationController(
-  private val licenceActivationService: LicenceActivationService,
+class JobController(
+  private val removeExpiredConditionsService: RemoveExpiredConditionsService,
 ) {
-  @PostMapping(value = ["/run-activation-job"])
+  @PostMapping(value = ["/run-remove-expired-conditions-job"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Triggers the licence activation job.",
-    description = "Triggers a job that causes licences with a status of APPROVED, a CRD or ARD of today, and that are either IS91 cases or have an NOMIS status beginning with 'INACTIVE' to be activated. Deactivates offenders with approved HDC licences. Requires ROLE_CVL_ADMIN.",
+    summary = "Job to remove AP conditions.",
+    description = "Triggers a job that removes AP conditions for all licences that are in PSS period and status equal to 'VARIATION_IN_PROGRESS' or 'VARIATION_SUBMITTED' or 'VARIATION_REJECTED' or 'VARIATION_APPROVED'. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Activation job executed.",
+        description = "run-remove-ap-conditions-job",
       ),
       ApiResponse(
         responseCode = "401",
@@ -46,7 +47,7 @@ class LicenceActivationController(
       ),
     ],
   )
-  fun runLicenceActivationJob() {
-    return licenceActivationService.licenceActivationJob()
+  fun runRemoveExpiredConditionsJob() {
+    return removeExpiredConditionsService.removeExpiredConditions()
   }
 }

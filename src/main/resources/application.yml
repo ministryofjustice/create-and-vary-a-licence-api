@@ -126,6 +126,13 @@ internalEmailAddress: 'testemail@probation.gov.uk'
 self:
   link: "http://localhost:3000"
 
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+  swagger-ui:
+    urls-primary-name: "public"
+    
 cache:
   evict:
     bank-holidays:
