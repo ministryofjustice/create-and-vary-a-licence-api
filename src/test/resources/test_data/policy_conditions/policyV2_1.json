@@ -834,23 +834,69 @@
         "requiresInput": true,
         "inputs": [
           {
-            "type": "text",
-            "label": "Enter name or type of premises",
-            "name": "nameOfPremises",
+            "type": "radio",
+            "label": "Choose what information to enter",
+            "name": "nameTypeAndOrAddress",
             "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null
-          },
-          {
-            "type": "address",
-            "label": "Enter the address of the premises",
-            "name": "premisesAddress",
-            "listType": null,
-            "options": null,
+            "options": [
+              {
+                "value": "Just a name or type of premises",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Name or type of premises",
+                      "name": "nameOfPremises",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              },
+              {
+                "value": "Just an address",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "address",
+                      "label": "Enter the address of the premises",
+                      "name": "premisesAddress",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              },
+              {
+                "value": "A name or type of premises and an address",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "text",
+                      "label": "Name or type of premises",
+                      "name": "nameOfPremises",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "address",
+                      "label": "Enter the address of the premises",
+                      "name": "premisesAddress",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              }
+            ],
             "case": null,
             "handleIndefiniteArticle": null,
             "addAnother": null,
