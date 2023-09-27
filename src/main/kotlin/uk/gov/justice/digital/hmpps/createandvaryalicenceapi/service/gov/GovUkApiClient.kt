@@ -5,12 +5,12 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays.BankHoliday
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays.BankHolidayEvent
+import java.time.LocalDate
 
 @Service
 class GovUkApiClient(@Qualifier("govUkWebClient") val govUkApiClient: WebClient) {
 
-  fun getBankHolidaysForEnglandAndWales(): List<BankHolidayEvent> {
+  fun getBankHolidaysForEnglandAndWales(): List<LocalDate> {
     val response = govUkApiClient
       .get()
       .uri("/bank-holidays.json")
@@ -19,6 +19,7 @@ class GovUkApiClient(@Qualifier("govUkWebClient") val govUkApiClient: WebClient)
       .bodyToMono(BankHoliday::class.java)
       .block()
 
-    return response?.bankHolidayResult?.events ?: error("Unexpected null response from API")
+    return response?.bankHolidayResult?.events?.map { it.date }
+      ?: throw IllegalStateException("Unexpected null response from API")
   }
 }

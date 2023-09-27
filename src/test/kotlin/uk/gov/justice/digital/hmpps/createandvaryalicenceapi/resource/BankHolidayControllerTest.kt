@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.BankHolidayService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays.BankHolidayEvent
 import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
@@ -52,7 +51,7 @@ class BankHolidayControllerTest {
   @Test
   fun `retrieve bank holidays for England and Wales`() {
     val expectedBankHolidays = listOf(
-      BankHolidayEvent(date = LocalDate.parse("2023-09-21")),
+      LocalDate.parse("2023-09-21"),
     )
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(expectedBankHolidays)
 

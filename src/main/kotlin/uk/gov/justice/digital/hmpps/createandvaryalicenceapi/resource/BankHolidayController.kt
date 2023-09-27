@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.BankHolidayService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays.BankHolidayEvent
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -37,7 +37,7 @@ class BankHolidayController(private val bankHolidayService: BankHolidayService) 
       ApiResponse(
         responseCode = "200",
         description = "Bank Holidays retrieved",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = BankHolidayEvent::class)))],
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LocalDate::class)))],
       ),
       ApiResponse(
         responseCode = "401",
