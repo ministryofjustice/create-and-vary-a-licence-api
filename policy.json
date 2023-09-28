@@ -1,0 +1,39 @@
+{
+  "version": "2.1",
+  "conditions": {
+    "AP": {
+      "standard": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "text": "Be of good behaviour and not behave in a way which undermines the purpose of the licence period."
+        }
+      ],
+      "additional": [
+        {
+          "code": "5db26ab3-9b6f-4bee-b2aa-53aa3f3be7dd",
+          "category": "Residence at a specific place",
+          "categoryShort": null,
+          "text": "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
+          "requiresInput": true
+        }
+      ]
+    },
+    "PS": {
+      "standard": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "text": "Be of good behaviour and not behave in a way which undermines the purpose of the licence period."
+        }
+      ],
+      "additional": [
+        {
+          "code": "5db26ab3-9b6f-4bee-b2aa-53aa3f3be7dd",
+          "category": "Residence at a specific place",
+          "categoryShort": null,
+          "text": "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
+          "requiresInput": true
+        }
+      ]
+    }
+  }
+}
