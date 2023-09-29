@@ -31,4 +31,4 @@ hmpps:
       url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
   prisonersearch:
     api:
-      url: "https://prisoner-offender-search-dev.prison.service.justice.gov.uk"
+      url: "https://prisoner-search-dev.prison.service.justice.gov.uk"
