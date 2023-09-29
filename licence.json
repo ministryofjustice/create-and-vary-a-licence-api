@@ -1,143 +1,79 @@
 {
   "id": 99999,
-  "typeCode": "AP",
+  "type": "STD | HDC",
+  "subType": "AP | PSS | AP+PSS",
+  "policyVersion": "2.1",
   "version": "1.4",
-  "statusCode": "IN_PROGRESS",
+  "statusCode": "ACTIVE",
   "nomsId": "A9999AA",
-  "bookingNo": "F12333",
   "bookingId": 989898,
   "crn": "X12444",
-  "pnc": "2015/12444",
-  "cro": "A/12444",
-  "prisonCode": "LEI",
-  "prisonDescription": "Leeds (HMP)",
-  "prisonTelephone": "0161 234 4747",
-  "forename": "Michael",
-  "middleNames": "John Peter",
-  "surname": "Smith",
-  "dateOfBirth": "2023-09-27",
-  "conditionalReleaseDate": "2023-09-27",
-  "actualReleaseDate": "2023-09-27",
-  "sentenceStartDate": "2023-09-27",
-  "sentenceEndDate": "2023-09-27",
-  "licenceStartDate": "2023-09-27",
-  "licenceExpiryDate": "2023-09-27",
-  "topupSupervisionStartDate": "2023-09-27",
-  "topupSupervisionExpiryDate": "2023-09-27",
-  "comUsername": "X32122",
-  "comStaffId": 12345,
-  "comEmail": "jane.jones@nps.gov.uk",
-  "probationAreaCode": "N01",
-  "probationAreaDescription": "Wales",
-  "probationPduCode": "PDU01",
-  "probationPduDescription": "North Wales",
-  "probationLauCode": "LAU01",
-  "probationLauDescription": "North Wales",
-  "probationTeamCode": "Cardiff-A",
-  "probationTeamDescription": "Cardiff South",
-  "appointmentPerson": "Duty officer",
-  "appointmentTime": "2023-09-27T16:59:04.886Z",
-  "appointmentAddress": "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
-  "appointmentContact": "0114 2557665",
-  "spoDiscussion": "Yes",
-  "vloDiscussion": "Yes",
-  "approvedDate": "2023-09-27T16:59:04.886Z",
   "approvedByUsername": "X33221",
-  "approvedByName": "John Smith",
-  "supersededDate": "2023-09-27T16:59:04.886Z",
-  "dateCreated": "2023-09-27T16:59:04.886Z",
+  "approvedDate": "2023-09-27T16:59:04.886Z",
   "createdByUsername": "X12333",
-  "dateLastUpdated": "2023-09-27T16:59:04.886Z",
+  "createdDate": "2023-09-27T16:59:04.886Z",
   "updatedByUsername": "X34433",
-  "standardLicenceConditions": [
-    {
-      "id": 98987,
-      "code": "9ce9d594-e346-4785-9642-c87e764bee37",
-      "sequence": 1,
-      "text": "Be of generally good behaviour"
-    }
-  ],
-  "standardPssConditions": [
-    {
-      "id": 98987,
-      "code": "9ce9d594-e346-4785-9642-c87e764bee37",
-      "sequence": 1,
-      "text": "Be of generally good behaviour"
-    }
-  ],
-  "additionalLicenceConditions": [
-    {
-      "id": 98989,
-      "code": "meetingAddress",
-      "version": "2.1",
-      "category": "Freedom of movement",
-      "sequence": 1,
-      "text": "You must not enter the location [DESCRIPTION]",
-      "expandedText": "You must not enter the location Tesco Superstore",
-      "data": [
-        {
-          "id": 98989,
-          "field": "location",
-          "value": "Norfolk",
-          "sequence": 1
-        }
-      ],
-      "uploadSummary": [
-        {
-          "id": 98989,
-          "filename": "exclusion-zone.pdf",
-          "fileType": "application/pdf",
-          "fileSize": 27566,
-          "uploadedTime": "2023-09-27T16:59:04.886Z",
-          "description": "A description of the exclusion zone boundaries",
-          "thumbnailImage": "Base64 string",
-          "uploadDetailId": 9999
-        }
-      ]
-    }
-  ],
-  "additionalPssConditions": [
-    {
-      "id": 98989,
-      "code": "meetingAddress",
-      "version": "2.1",
-      "category": "Freedom of movement",
-      "sequence": 1,
-      "text": "You must not enter the location [DESCRIPTION]",
-      "expandedText": "You must not enter the location Tesco Superstore",
-      "data": [
-        {
-          "id": 98989,
-          "field": "location",
-          "value": "Norfolk",
-          "sequence": 1
-        }
-      ],
-      "uploadSummary": [
-        {
-          "id": 98989,
-          "filename": "exclusion-zone.pdf",
-          "fileType": "application/pdf",
-          "fileSize": 27566,
-          "uploadedTime": "2023-09-27T16:59:04.886Z",
-          "description": "A description of the exclusion zone boundaries",
-          "thumbnailImage": "Base64 string",
-          "uploadDetailId": 9999
-        }
-      ]
-    }
-  ],
-  "bespokeConditions": [
-    {
-      "id": 98989,
-      "sequence": 1,
-      "text": "You should not visit any music venues"
-    }
-  ],
-  "isVariation": true,
-  "variationOf": 0,
-  "createdByFullName": "Gordon Sumner",
+  "updatedDate": "2023-09-27T16:59:04.886Z",
   "isInPssPeriod": true,
-  "isActivatedInPssPeriod": true,
-  "licenceVersion": "1.3"
+  "appointment": {
+    "contact": "Duty officer",
+    "time": "2023-09-27T16:59:04.886Z",
+    "address": "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
+    "phoneNumber": "0114 2557665"
+  },
+  "conditions": {
+    "AP": {
+      "standard": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "text": "Be of generally good behaviour"
+        }
+      ],
+      "additional": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "category": "Freedom of movement",
+          "instances": [
+            {
+              "id": 1234,
+              "text": "You must not enter the location Tesco Superstore",
+              "hasUpload": true,
+              "variants": [
+                "ALCOHOL"
+              ]
+            }
+          ]
+        }
+      ],
+      "bespoke": [
+        {
+          "text": "You should not visit any music venues"
+        }
+      ]
+    },
+    "PSS": {
+      "standard": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "text": "Be of generally good behaviour"
+        }
+      ],
+      "additional": [
+        {
+          "code": "9ce9d594-e346-4785-9642-c87e764bee37",
+          "category": "Freedom of movement",
+          "instances": [
+            {
+              "id": 1234,
+              "text": "You must not enter the location Tesco Superstore",
+              "hasUpload": true,
+              "variants": [
+                "ALCOHOL"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
 }
