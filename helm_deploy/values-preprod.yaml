@@ -16,7 +16,7 @@ generic-service:
     HMPPS_COMMUNITY_API_URL: "https://community-api.pre-prod.delius.probation.hmpps.dsd.io"
     HMPPS_PRISON_API_URL: "https://api-preprod.prison.service.justice.gov.uk/api"
     HMPPS_PRISONREGISTER_API_URL: "https://prison-register-preprod.hmpps.service.justice.gov.uk"
-    HMPPS_PRISONERSEARCH_API_URL: "https://prisoner-offender-search-preprod.prison.service.justice.gov.uk"
+    HMPPS_PRISONERSEARCH_API_URL: "https://prisoner-search-preprod.prison.service.justice.gov.uk"
     HMPPS_PROBATIONSEARCH_API_URL: "https://probation-offender-search-preprod.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence-preprod.hmpps.service.justice.gov.uk"
 
