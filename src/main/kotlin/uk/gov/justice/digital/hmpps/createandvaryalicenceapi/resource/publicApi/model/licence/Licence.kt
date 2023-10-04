@@ -11,11 +11,11 @@ data class Licence(
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
 
-  @Schema(description = "The licence type", example = "STD | HDC")
-  val type: LicenceType,
+  @Schema(description = "The release type", example = "STD | HDC")
+  val releaseType: ReleaseType,
 
-  @Schema(description = "The licence sub type", example = "AP | PSS | AP_PSS")
-  val subType: LicenceSubType,
+  @Schema(description = "The licence type", example = "AP | PSS | AP_PSS")
+  val licenceType: LicenceType,
 
   @Schema(description = "The policy version number the licence is currently on", example = "2.1")
   val policyVersion: String,
@@ -41,9 +41,13 @@ data class Licence(
   )
   val approvedByUsername: String,
 
-  @Schema(description = "The date and time that the prison approved the licence", example = "24/08/2022 11:30:33")
+  @Schema(
+    description = "The date and time that the prison approved the licence, where licences approved before 01/04/2022 " +
+      "will not have an approved time",
+    example = "24/08/2022 11:30:33",
+  )
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val approvedDate: LocalDateTime,
+  val approvedDateTime: LocalDateTime,
 
   @Schema(description = "The username of the person who created the licence", example = "X12333")
   val createdByUsername: String,
@@ -61,9 +65,6 @@ data class Licence(
 
   @Schema(description = "Whether the licence in PSS period?(LED < TODAY <= TUSED)")
   val isInPssPeriod: Boolean,
-
-  @Schema(description = "The initial appointment details for the licence")
-  val appointment: Appointment,
 
   @Schema(description = "The AP and PSS conditions that form the licence")
   val conditions: ConditionType,
