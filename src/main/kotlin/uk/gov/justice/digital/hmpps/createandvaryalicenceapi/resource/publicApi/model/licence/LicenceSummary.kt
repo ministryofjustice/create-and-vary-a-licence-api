@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
-data class Licence(
+data class LicenceSummary(
 
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
@@ -65,6 +65,4 @@ data class Licence(
   @Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
   val isInPssPeriod: Boolean,
 
-  @Schema(description = "The AP and PSS conditions that form the licence")
-  val conditions: Conditions,
 )
