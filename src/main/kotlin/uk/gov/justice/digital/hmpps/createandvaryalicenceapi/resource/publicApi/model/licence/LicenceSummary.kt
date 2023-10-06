@@ -38,7 +38,7 @@ data class LicenceSummary(
     description = "The username of the person who approved the licence on behalf of the prison governor",
     example = "X33221",
   )
-  val approvedByUsername: String,
+  val approvedByUsername: String?,
 
   @Schema(
     description = "The date and time that the prison approved the licence, where licences approved before 01/04/2022 " +
@@ -46,7 +46,7 @@ data class LicenceSummary(
     example = "2022-08-24T10:30:33",
   )
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  val approvedDateTime: LocalDateTime,
+  val approvedDateTime: LocalDateTime?,
 
   @Schema(description = "The username of the person who created the licence", example = "X12333")
   val createdByUsername: String,
@@ -56,11 +56,11 @@ data class LicenceSummary(
   val createdDateTime: LocalDateTime,
 
   @Schema(description = "The username of the person who last updated the licence", example = "X34433")
-  val updatedByUsername: String,
+  val updatedByUsername: String?,
 
   @Schema(description = "The date and time that the licence was last updated", example = "2022-08-24T12:30:33")
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  val updatedDateTime: LocalDateTime,
+  val updatedDateTime: LocalDateTime?,
 
   @Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
   val isInPssPeriod: Boolean,
