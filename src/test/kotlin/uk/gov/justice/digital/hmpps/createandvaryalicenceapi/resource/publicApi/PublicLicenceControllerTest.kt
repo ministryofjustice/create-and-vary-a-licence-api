@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
@@ -39,11 +41,18 @@ class PublicLicenceControllerTest {
 
   @Test
   fun `get a licence by id`() {
-    val result = mvc.perform(get("/public/licence/id").accept(MediaType.APPLICATION_JSON))
+    val result = mvc.perform(get("/public/licences/id/1234").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andReturn()
 
     assertThat(result.response.contentAsString)
       .isEqualTo("")
+  }
+
+  @Test
+  fun `get licences by prison number`() {
+    mvc.perform(get("/public/licences/prison-number/A1234AA").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(jsonPath("$", `is`(emptyList<Any>())))
   }
 }

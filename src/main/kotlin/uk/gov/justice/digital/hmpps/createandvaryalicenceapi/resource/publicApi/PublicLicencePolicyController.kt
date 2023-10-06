@@ -18,17 +18,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy
 
 @RestController
+@Tag(name = Tags.LICENCE_POLICY)
+@PreAuthorize("hasAnyRole('VIEW_LICENCES')")
 @RequestMapping("/public/policy", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicencePolicyController {
-  @Tag(name = Tags.LICENCE_POLICY)
-  @GetMapping(value = ["/version"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @GetMapping(value = ["/latest"])
   @ResponseBody
   @Operation(
     summary = "Get a policy by its version number",
     description = "Returns a policy by its version number. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
   )
   @ApiResponses(
     value = [
@@ -54,7 +54,7 @@ class PublicLicencePolicyController {
       ),
     ],
   )
-  fun getPolicyByVersionNumber(): LicencePolicy? {
+  fun getLatestPolicy(): LicencePolicy? {
     return null
   }
 }

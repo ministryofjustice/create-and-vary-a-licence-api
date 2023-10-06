@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Describes a type of condition on a licence")
-data class ConditionType(
+data class Conditions(
 
   @JsonProperty("AP")
   @Schema(description = "The AP conditions that form the licence")

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Describes a type of condition on a licence policy")
-data class ConditionType(
+data class ConditionTypes(
 
   @JsonProperty("AP")
   @Schema(description = "The AP conditions that form part of the licence policy")
