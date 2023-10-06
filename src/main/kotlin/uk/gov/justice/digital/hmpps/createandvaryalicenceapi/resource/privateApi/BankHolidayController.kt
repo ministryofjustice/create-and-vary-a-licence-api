@@ -1,6 +1,7 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -15,18 +16,20 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.BankHolidayService
+import java.time.LocalDate
 
 @RestController
-@RequestMapping("/public/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class PublicLicenceController {
-  @Tag(name = Tags.LICENCES)
-  @GetMapping(value = ["/id"])
+@RequestMapping("/", produces = [MediaType.APPLICATION_JSON_VALUE])
+class BankHolidayController(private val bankHolidayService: BankHolidayService) {
+
+  @Tag(name = Tags.ANCILLARY)
+  @GetMapping(value = ["/bank-holidays"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
   @Operation(
-    summary = "Get a licence by its licence id",
-    description = "Returns a single licence detail by its unique identifier. " +
+    summary = "Get the bank holiday dates for England and Wales",
+    description = "Returns a list of bank holiday dates for England and Wales. " +
       "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
@@ -34,12 +37,12 @@ class PublicLicenceController {
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Licence found",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = Licence::class))],
+        description = "Bank Holidays retrieved",
+        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LocalDate::class)))],
       ),
       ApiResponse(
         responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
+        description = "Unauthorised",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
@@ -49,13 +52,10 @@ class PublicLicenceController {
       ),
       ApiResponse(
         responseCode = "404",
-        description = "The licence for this ID was not found.",
+        description = "Bank holidays were not found.",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
     ],
   )
-  fun getLicenceById(): Licence? {
-    val licence: Licence? = null
-    return licence
-  }
+  fun getBankHolidaysForEnglandAndWales() = this.bankHolidayService.getBankHolidaysForEnglandAndWales()
 }
