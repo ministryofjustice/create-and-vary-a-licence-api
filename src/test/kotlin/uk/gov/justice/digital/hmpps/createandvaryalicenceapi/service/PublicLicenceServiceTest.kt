@@ -171,7 +171,7 @@ class PublicLicenceServiceTest {
   }
 
   @Test
-  fun `service throws an error for null fields when querying a list of licence summaries by crn`() {
+  fun `service throws an error for null fields when querying for a list of licence summaries by crn`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
         aLicenceEntity.copy(createdBy = null),
@@ -188,6 +188,25 @@ class PublicLicenceServiceTest {
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
   }
+  @Test
+  fun `service throws an error for an unmapped field when querying a list of licence summaries by crn`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(statusCode = LicenceStatus.NOT_STARTED),
+      ),
+    )
+
+    val exception = assertThrows<IllegalStateException> {
+      service.getAllLicencesByCrn("A12345")
+    }
+
+    assertThat(exception)
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessage("No matching licence status found")
+
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
+  }
+
 
   private companion object {
 
