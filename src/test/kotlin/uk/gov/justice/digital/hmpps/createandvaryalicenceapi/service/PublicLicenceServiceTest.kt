@@ -188,6 +188,7 @@ class PublicLicenceServiceTest {
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
   }
+
   @Test
   fun `service throws an error for an unmapped field when querying a list of licence summaries by crn`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
@@ -206,7 +207,6 @@ class PublicLicenceServiceTest {
 
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
   }
-
 
   private companion object {
 
