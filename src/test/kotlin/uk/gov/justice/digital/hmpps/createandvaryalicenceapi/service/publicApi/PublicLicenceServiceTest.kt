@@ -208,6 +208,181 @@ class PublicLicenceServiceTest {
     verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
   }
 
+  @Test
+  fun `service returns a list of licence summaries by prison number`() {
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity,
+      ),
+    )
+
+    val licenceSummaries = service.getAllLicencesByPrisonerNumber("A1234BC")
+    val licenceSummary = licenceSummaries.first()
+
+    assertThat(licenceSummaries.size).isEqualTo(1)
+
+    assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+
+    assertThat(licenceSummary)
+      .extracting {
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
+
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
+  }
+
+  @Test
+  fun `service returns a list of licence summaries by prison number where approved username and approved date are not present`() {
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(approvedByUsername = null, approvedDate = null),
+      ),
+    )
+
+    val licenceSummaries = service.getAllLicencesByPrisonerNumber("A1234BC")
+    val licenceSummary = licenceSummaries.first()
+
+    assertThat(licenceSummaries.size).isEqualTo(1)
+
+    assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+
+    assertThat(licenceSummary)
+      .extracting {
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          null,
+          null,
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
+
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
+  }
+
+  @Test
+  fun `service returns a list of licence summaries by prison number where updated username and updated date are not present`() {
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(updatedByUsername = null, dateLastUpdated = null),
+      ),
+    )
+
+    val licenceSummaries = service.getAllLicencesByPrisonerNumber("A12345")
+    val licenceSummary = licenceSummaries.first()
+
+    assertThat(licenceSummaries.size).isEqualTo(1)
+
+    assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+
+    assertThat(licenceSummary)
+      .extracting {
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          null,
+          null,
+          false,
+        ),
+      )
+
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
+  }
+
+  @Test
+  fun `service throws an error for null fields when querying for a list of licence summaries by prison number`() {
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(licenceVersion = null),
+      ),
+    )
+
+    val exception = assertThrows<IllegalStateException> {
+      service.getAllLicencesByPrisonerNumber("A1234BC")
+    }
+
+    assertThat(exception)
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessage("Null field retrieved: policyVersion for licence 1")
+
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
+  }
+
+  @Test
+  fun `service throws an error for an unmapped field when querying a list of licence summaries by prison number`() {
+    whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(statusCode = LicenceStatus.NOT_STARTED),
+      ),
+    )
+
+    val exception = assertThrows<IllegalStateException> {
+      service.getAllLicencesByPrisonerNumber("A1234BC")
+    }
+
+    assertThat(exception)
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessage("No matching licence status found")
+
+    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
+  }
   private companion object {
 
     val aCom = CommunityOffenderManager(

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.hamcrest.Matchers.contains
-import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -73,9 +72,35 @@ class PublicLicenceControllerTest {
 
   @Test
   fun `get licences by prison number`() {
-    mvc.perform(get("/public/licences/prison-number/A1234AA").accept(MediaType.APPLICATION_JSON))
+    whenever(publicLicenceService.getAllLicencesByPrisonerNumber("A1234AA")).thenReturn(listOf(aLicenceSummary))
+
+    val result = mvc.perform(get("/public/licence-summaries/prison-number/A1234AA").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
-      .andExpect(jsonPath("$", `is`(emptyList<Any>())))
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(
+        jsonPath(
+          "\$..createdDateTime",
+          contains("2023-10-11T11:00:00"),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$..approvedDateTime",
+          contains("2023-10-11T12:00:00"),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$..updatedDateTime",
+          contains("2023-10-11T11:30:00"),
+        ),
+      )
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+
+    verify(publicLicenceService, times(1)).getAllLicencesByPrisonerNumber("A1234AA")
   }
 
   @Test
