@@ -96,7 +96,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     ],
   )
   fun getLicencesByPrisonNumber(@PathVariable("prisonNumber") prisonNumber: String) =
-    publicLicenceService.getAllLicencesByPrisonerNumber(prisonNumber)
+    publicLicenceService.getAllLicencesByPrisonNumber(prisonNumber)
 
   @GetMapping(value = ["/licence-summaries/crn/{crn}"])
   @ResponseBody

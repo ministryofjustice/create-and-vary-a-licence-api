@@ -72,7 +72,7 @@ class PublicLicenceControllerTest {
 
   @Test
   fun `get licences by prison number`() {
-    whenever(publicLicenceService.getAllLicencesByPrisonerNumber("A1234AA")).thenReturn(listOf(aLicenceSummary))
+    whenever(publicLicenceService.getAllLicencesByPrisonNumber("A1234AA")).thenReturn(listOf(aLicenceSummary))
 
     val result = mvc.perform(get("/public/licence-summaries/prison-number/A1234AA").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
@@ -100,7 +100,7 @@ class PublicLicenceControllerTest {
     assertThat(result.response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
 
-    verify(publicLicenceService, times(1)).getAllLicencesByPrisonerNumber("A1234AA")
+    verify(publicLicenceService, times(1)).getAllLicencesByPrisonNumber("A1234AA")
   }
 
   @Test

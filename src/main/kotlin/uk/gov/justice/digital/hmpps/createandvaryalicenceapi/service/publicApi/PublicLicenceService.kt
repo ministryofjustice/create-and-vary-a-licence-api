@@ -19,7 +19,7 @@ class PublicLicenceService(
   }
 
   @Transactional
-  fun getAllLicencesByPrisonerNumber(prisonNumber: String): List<LicenceSummary> {
+  fun getAllLicencesByPrisonNumber(prisonNumber: String): List<LicenceSummary> {
     val licences = licenceRepository.findAllByNomsIdAndStatusCodeIn(prisonNumber, LicenceStatus.IN_FLIGHT_LICENCES)
 
     return licences.map { it.transformToPublicLicenceSummary() }

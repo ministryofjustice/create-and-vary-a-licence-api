@@ -216,7 +216,7 @@ class PublicLicenceServiceTest {
       ),
     )
 
-    val licenceSummaries = service.getAllLicencesByPrisonerNumber("A1234BC")
+    val licenceSummaries = service.getAllLicencesByPrisonNumber("A1234BC")
     val licenceSummary = licenceSummaries.first()
 
     assertThat(licenceSummaries.size).isEqualTo(1)
@@ -262,7 +262,7 @@ class PublicLicenceServiceTest {
       ),
     )
 
-    val licenceSummaries = service.getAllLicencesByPrisonerNumber("A1234BC")
+    val licenceSummaries = service.getAllLicencesByPrisonNumber("A1234BC")
     val licenceSummary = licenceSummaries.first()
 
     assertThat(licenceSummaries.size).isEqualTo(1)
@@ -308,7 +308,7 @@ class PublicLicenceServiceTest {
       ),
     )
 
-    val licenceSummaries = service.getAllLicencesByPrisonerNumber("A12345")
+    val licenceSummaries = service.getAllLicencesByPrisonNumber("A12345")
     val licenceSummary = licenceSummaries.first()
 
     assertThat(licenceSummaries.size).isEqualTo(1)
@@ -355,7 +355,7 @@ class PublicLicenceServiceTest {
     )
 
     val exception = assertThrows<IllegalStateException> {
-      service.getAllLicencesByPrisonerNumber("A1234BC")
+      service.getAllLicencesByPrisonNumber("A1234BC")
     }
 
     assertThat(exception)
@@ -374,7 +374,7 @@ class PublicLicenceServiceTest {
     )
 
     val exception = assertThrows<IllegalStateException> {
-      service.getAllLicencesByPrisonerNumber("A1234BC")
+      service.getAllLicencesByPrisonNumber("A1234BC")
     }
 
     assertThat(exception)
