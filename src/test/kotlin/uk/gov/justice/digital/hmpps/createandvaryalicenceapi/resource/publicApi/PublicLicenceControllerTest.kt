@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
+import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -84,6 +85,24 @@ class PublicLicenceControllerTest {
     val result = mvc.perform(get("/public/licence-summaries/crn/A12345").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(
+        jsonPath(
+          "\$..createdDateTime",
+          contains("2023-10-11T11:00:00"),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$..approvedDateTime",
+          contains("2023-10-11T12:00:00"),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$..updatedDateTime",
+          contains("2023-10-11T11:30:00"),
+        ),
+      )
       .andReturn()
 
     assertThat(result.response.contentAsString)
