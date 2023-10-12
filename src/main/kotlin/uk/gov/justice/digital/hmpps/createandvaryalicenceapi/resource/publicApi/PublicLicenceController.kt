@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
@@ -18,13 +19,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
 
 @RestController
 @Tag(name = Tags.LICENCES)
 @PreAuthorize("hasAnyRole('VIEW_LICENCES')")
-@RequestMapping("/public/licences", produces = [MediaType.APPLICATION_JSON_VALUE])
-class PublicLicenceController {
-  @GetMapping(value = ["/id/{licenceId}"])
+@RequestMapping("/public", produces = [MediaType.APPLICATION_JSON_VALUE])
+class PublicLicenceController(private val publicLicenceService: PublicLicenceService) {
+  @GetMapping(value = ["/licences/id/{licenceId}"])
   @ResponseBody
   @Operation(
     summary = "Get a licence by its licence id",
@@ -61,7 +63,7 @@ class PublicLicenceController {
     return licence
   }
 
-  @GetMapping(value = ["/prison-number/{prisonNumber}"])
+  @GetMapping(value = ["/licences/prison-number/{prisonNumber}"])
   @ResponseBody
   @Operation(
     summary = "Get a list of licences by prison number",
@@ -96,4 +98,38 @@ class PublicLicenceController {
   fun getLicencesByPrisonNumber(): List<LicenceSummary>? {
     return emptyList()
   }
+
+  @GetMapping(value = ["/licence-summaries/crn/{crn}"])
+  @ResponseBody
+  @Operation(
+    summary = "Get a list of licences by CRN",
+    description = "Returns a list of licence summaries by a person's CRN. " +
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "A list of found licences",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getLicenceByCrn(@PathVariable("crn") crn: String) = publicLicenceService.getAllLicencesByCrn(crn)
 }
