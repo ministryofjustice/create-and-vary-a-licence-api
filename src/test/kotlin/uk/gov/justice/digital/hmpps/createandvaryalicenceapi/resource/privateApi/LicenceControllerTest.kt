@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
+import org.hamcrest.Matchers.contains
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
@@ -107,6 +109,18 @@ class LicenceControllerTest {
     val result = mvc.perform(get("/licence/id/1").accept(APPLICATION_JSON))
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
+      .andExpect(
+        jsonPath(
+          "\$.additionalLicenceConditions.[*].data[?(@.field == 'field1')].contributesToLicence",
+          contains(true),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$.additionalLicenceConditions.[*].data[?(@.field == 'numberOfCurfews')].contributesToLicence",
+          contains(false),
+        ),
+      )
       .andReturn()
 
     assertThat(result.response.contentAsString)
@@ -706,7 +720,7 @@ class LicenceControllerTest {
 
     val someAssociationData = listOf(
       AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 1),
-      AdditionalConditionData(id = 2, field = "field2", value = "value2", sequence = 2),
+      AdditionalConditionData(id = 2, field = "numberOfCurfews", value = "value2", sequence = 2),
     )
 
     val someAdditionalConditions = listOf(
