@@ -7,7 +7,7 @@ data class AdditionalCondition(
   @Schema(description = "The internal ID for this additional condition for this licence", example = "98989")
   val id: Long? = -1,
 
-  @Schema(description = "Coded value for the additional condition", example = "meetingAddress")
+  @Schema(description = "Coded value for the additional condition", required = true, example = "meetingAddress")
   val code: String? = null,
 
   @Schema(description = "Version number for condition", example = "2.1")
