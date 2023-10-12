@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PublicLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
 import java.time.LocalDateTime
 
 @ExtendWith(SpringExtension::class)

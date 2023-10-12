@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -19,7 +19,7 @@ class PublicLicenceService(
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, LicenceStatus.IN_FLIGHT_LICENCES)
 
     val modelLicenceSummary = licences.map {
-      transformToPublicLicenceSummary(it, it.typeCode.mapToPublicLicenceType(), it.statusCode.mapToPublicLicenceStatus())
+      it.transformToPublicLicenceSummary(it.typeCode.mapToPublicLicenceType(), it.statusCode.mapToPublicLicenceStatus())
     }
 
     return modelLicenceSummary

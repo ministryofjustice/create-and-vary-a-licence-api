@@ -24,9 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbatio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as ModelPublicLicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary as ModelPublicLicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as ModelPublicLicenceType
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -279,29 +276,3 @@ fun ProbationSearchResponseResult.transformToUnstartedRecord(
     isOnProbation = false,
   )
 }
-
-fun transformToPublicLicenceSummary(
-  entity: EntityLicence,
-  licenceType: ModelPublicLicenceType,
-  statusCode: ModelPublicLicenceStatus,
-): ModelPublicLicenceSummary {
-  return ModelPublicLicenceSummary(
-    id = entity.id,
-    licenceType = licenceType,
-    policyVersion = entity.licenceVersion ?: entity.valueNotPresent("policyVersion"),
-    version = entity.version ?: entity.valueNotPresent("version"),
-    statusCode = statusCode,
-    prisonNumber = entity.nomsId ?: entity.valueNotPresent("prisonNumber"),
-    bookingId = entity.bookingId ?: entity.valueNotPresent("bookingId"),
-    crn = entity.crn ?: entity.valueNotPresent("crn"),
-    approvedByUsername = entity.approvedByUsername,
-    approvedDateTime = entity.approvedDate,
-    createdByUsername = entity.createdBy?.username ?: entity.valueNotPresent("createdByUsername"),
-    createdDateTime = entity.dateCreated ?: entity.valueNotPresent("createdDateTime"),
-    updatedByUsername = entity.updatedByUsername,
-    updatedDateTime = entity.dateLastUpdated,
-    isInPssPeriod = entity.isInPssPeriod(),
-  )
-}
-
-private fun Licence.valueNotPresent(fieldName: String): Nothing = error("Null field retrieved: $fieldName for licence ${this.id}")

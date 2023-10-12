@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
