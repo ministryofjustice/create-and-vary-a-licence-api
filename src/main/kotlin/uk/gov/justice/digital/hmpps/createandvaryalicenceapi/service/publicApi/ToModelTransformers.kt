@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary as ModelPublicLicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
 
 /*
 ** Functions which transform JPA entity objects into their public API model equivalents.
@@ -34,22 +36,22 @@ private fun Licence.valueNotPresent(fieldName: String): Nothing = error("Null fi
 
 private fun LicenceType.mapToPublicLicenceType() =
   when {
-    this == LicenceType.AP -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType.AP
-    this == LicenceType.PSS -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType.PSS
-    this == LicenceType.AP_PSS -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType.AP_PSS
+    this == LicenceType.AP -> PublicLicenceType.AP
+    this == LicenceType.PSS -> PublicLicenceType.PSS
+    this == LicenceType.AP_PSS -> PublicLicenceType.AP_PSS
     else -> error("No matching licence type found")
   }
 
 private fun LicenceStatus.mapToPublicLicenceStatus() =
   when {
-    this == LicenceStatus.IN_PROGRESS -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.IN_PROGRESS
-    this == LicenceStatus.SUBMITTED -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.SUBMITTED
-    this == LicenceStatus.APPROVED -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.APPROVED
-    this == LicenceStatus.ACTIVE -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.ACTIVE
-    this == LicenceStatus.REJECTED -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.REJECTED
-    this == LicenceStatus.INACTIVE -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.INACTIVE
-    this == LicenceStatus.VARIATION_IN_PROGRESS -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.VARIATION_IN_PROGRESS
-    this == LicenceStatus.VARIATION_SUBMITTED -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.VARIATION_SUBMITTED
-    this == LicenceStatus.VARIATION_APPROVED -> uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.VARIATION_APPROVED
+    this == LicenceStatus.IN_PROGRESS -> PublicLicenceStatus.IN_PROGRESS
+    this == LicenceStatus.SUBMITTED -> PublicLicenceStatus.SUBMITTED
+    this == LicenceStatus.APPROVED -> PublicLicenceStatus.APPROVED
+    this == LicenceStatus.ACTIVE -> PublicLicenceStatus.ACTIVE
+    this == LicenceStatus.REJECTED -> PublicLicenceStatus.REJECTED
+    this == LicenceStatus.INACTIVE -> PublicLicenceStatus.INACTIVE
+    this == LicenceStatus.VARIATION_IN_PROGRESS -> PublicLicenceStatus.VARIATION_IN_PROGRESS
+    this == LicenceStatus.VARIATION_SUBMITTED -> PublicLicenceStatus.VARIATION_SUBMITTED
+    this == LicenceStatus.VARIATION_APPROVED -> PublicLicenceStatus.VARIATION_APPROVED
     else -> error("No matching licence status found")
   }
