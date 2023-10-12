@@ -164,6 +164,7 @@ workflows:
           filters:
             branches:
               only:
+                - main
                 - test2
   security:
     triggers:
