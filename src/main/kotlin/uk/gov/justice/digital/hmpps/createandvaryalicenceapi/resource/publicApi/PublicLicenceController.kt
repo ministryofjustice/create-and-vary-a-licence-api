@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -16,19 +17,20 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 
 @RestController
-@RequestMapping("/public/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
+@Tag(name = Tags.LICENCES)
+@PreAuthorize("hasAnyRole('VIEW_LICENCES')")
+@RequestMapping("/public/licences", produces = [MediaType.APPLICATION_JSON_VALUE])
 class PublicLicenceController {
-  @Tag(name = Tags.LICENCES)
-  @GetMapping(value = ["/id"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @GetMapping(value = ["/id/{licenceId}"])
   @ResponseBody
   @Operation(
     summary = "Get a licence by its licence id",
     description = "Returns a single licence detail by its unique identifier. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
   )
   @ApiResponses(
     value = [
@@ -57,5 +59,41 @@ class PublicLicenceController {
   fun getLicenceById(): Licence? {
     val licence: Licence? = null
     return licence
+  }
+
+  @GetMapping(value = ["/prison-number/{prisonNumber}"])
+  @ResponseBody
+  @Operation(
+    summary = "Get a list of licences by prison number",
+    description = "Returns a list of licence summaries by a person's prison number. " +
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "A list of found licences",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getLicencesByPrisonNumber(): List<LicenceSummary>? {
+    return emptyList()
   }
 }
