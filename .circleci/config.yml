@@ -101,7 +101,7 @@ workflows:
             branches:
               only:
                 - main
-                - test1
+                - /test.*/
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -153,6 +153,19 @@ workflows:
             branches:
               only:
                 - test1
+      - hmpps/deploy_env:
+          name: deploy_test2
+          env: "test2"
+          context:
+            - hmpps-common-vars
+            - create-and-vary-a-licence-test2
+          requires:
+            - build_docker
+          filters:
+            branches:
+              only:
+                - main
+                - test2
   security:
     triggers:
       - schedule:
