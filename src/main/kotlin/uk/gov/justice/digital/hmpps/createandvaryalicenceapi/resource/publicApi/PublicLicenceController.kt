@@ -63,7 +63,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     return licence
   }
 
-  @GetMapping(value = ["/licences/prison-number/{prisonNumber}"])
+  @GetMapping(value = ["/licence-summaries/prison-number/{prisonNumber}"])
   @ResponseBody
   @Operation(
     summary = "Get a list of licences by prison number",
@@ -95,9 +95,8 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
       ),
     ],
   )
-  fun getLicencesByPrisonNumber(): List<LicenceSummary>? {
-    return emptyList()
-  }
+  fun getLicencesByPrisonNumber(@PathVariable("prisonNumber") prisonNumber: String) =
+    publicLicenceService.getAllLicencesByPrisonNumber(prisonNumber)
 
   @GetMapping(value = ["/licence-summaries/crn/{crn}"])
   @ResponseBody
