@@ -64,6 +64,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     approvedByName = licence.approvedByName,
     approvedDate = licence.approvedDate,
     licenceVersion = licence.licenceVersion,
+    versionOf = licence.versionOfId,
   )
 }
 

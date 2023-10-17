@@ -136,4 +136,7 @@ data class LicenceSummary(
 
   @Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String? = null,
+
+  @Schema(description = "The licence Id which this licence is a version of", example = "86")
+  val versionOf: Long? = null,
 )
