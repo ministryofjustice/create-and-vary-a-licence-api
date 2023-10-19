@@ -10,19 +10,21 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicencePolicyService
 
 @RestController
 @Tag(name = Tags.LICENCE_POLICY)
 @PreAuthorize("hasAnyRole('VIEW_LICENCES')")
 @RequestMapping("/public/policy", produces = [MediaType.APPLICATION_JSON_VALUE])
-class PublicLicencePolicyController {
-  @GetMapping(value = ["/latest"])
+class PublicLicencePolicyController(private val publicLicencePolicyService: PublicLicencePolicyService) {
+  @GetMapping(value = ["/{version}"])
   @ResponseBody
   @Operation(
     summary = "Get a policy by its version number",
@@ -54,7 +56,5 @@ class PublicLicencePolicyController {
       ),
     ],
   )
-  fun getLatestPolicy(): LicencePolicy? {
-    return null
-  }
+  fun getLatestPolicy(@PathVariable("version") versionNumber: String) = publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
 }
