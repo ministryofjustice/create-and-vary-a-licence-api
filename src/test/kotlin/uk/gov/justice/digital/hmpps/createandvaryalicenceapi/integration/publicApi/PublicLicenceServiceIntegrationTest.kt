@@ -52,7 +52,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Get forbidden (403) when incorrect role is supplied`() {
+  fun `Get licences by CRN is role protected`() {
     val result = webTestClient.get()
       .uri("/public/licence-summaries/crn/CRN1")
       .accept(MediaType.APPLICATION_JSON)
@@ -93,5 +93,57 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.bookingId).isEqualTo(12345L)
     assertThat(result?.crn).isEqualTo("CRN1")
     assertThat(result?.createdByUsername).isEqualTo("test-client")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `Get licences by prisoner number is role protected`() {
+    val result = webTestClient.get()
+      .uri("/public/licence-summaries/prison-number/A1234AA")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+      .expectBody(ErrorResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.userMessage).contains("Access Denied")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/add-upload-to-licence-id-2.sql",
+  )
+  fun `Get exclusion zone image by condition ID`() {
+    val result = webTestClient.get()
+      .uri("/public/licences/2/conditions/1/image-upload")
+      .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(result.expectHeader().contentType(MediaType.IMAGE_JPEG)).isNotNull
+    assertThat(result.expectBody()).isNotNull
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/add-upload-to-licence-id-2.sql",
+  )
+  fun `Get exclusion zone image by condition ID is role-protected`() {
+    val result = webTestClient.get()
+      .uri("/public/licences/2/conditions/1/image-upload")
+      .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+      .expectBody(ErrorResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.userMessage).contains("Access Denied")
   }
 }
