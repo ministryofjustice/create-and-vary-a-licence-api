@@ -125,7 +125,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Get forbidden (403) when incorrect role is supplied`() {
+  fun `Get policy by version number is role protected`() {
     val result = webTestClient.get()
       .uri("/public/policy/2.1")
       .accept(MediaType.APPLICATION_JSON)
