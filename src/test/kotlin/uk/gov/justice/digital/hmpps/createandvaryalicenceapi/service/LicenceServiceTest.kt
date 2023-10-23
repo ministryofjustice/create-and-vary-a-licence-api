@@ -915,6 +915,29 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `updating licence status to submitted should set the submitted date`() {
+    val licence = aLicenceEntity.copy(
+      licenceActivatedDate = LocalDateTime.now(),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.SUBMITTED, username = "X", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value.submittedDate).isNotNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, "X"))
+  }
+
+  @Test
   fun `update licence status throws not found exception`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
@@ -969,6 +992,7 @@ class LicenceServiceTest {
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
+    assertThat(licenceCaptor.value.submittedDate).isNotNull()
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername")
       .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, "smills"))

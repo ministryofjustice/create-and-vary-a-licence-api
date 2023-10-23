@@ -134,6 +134,16 @@ data class LicenceSummary(
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val approvedDate: LocalDateTime? = null,
 
+  @Schema(
+    description = "The date and time that this licence was submitted for approval",
+    example = "24/08/2022 11:30:33",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+  val submittedDate: LocalDateTime? = null,
+
   @Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String? = null,
+
+  @Schema(description = "The licence Id which this licence is a version of", example = "86")
+  val versionOf: Long? = null,
 )

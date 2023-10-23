@@ -175,6 +175,13 @@ data class Licence(
   val approvedByUsername: String? = null,
 
   @Schema(
+    description = "The date and time that this licence was submitted for approval",
+    example = "24/08/2022 11:30:33",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+  val submittedDate: LocalDateTime? = null,
+
+  @Schema(
     description = "The full name of the person who approved the licence on behalf of the prison governor",
     example = "John Smith",
   )

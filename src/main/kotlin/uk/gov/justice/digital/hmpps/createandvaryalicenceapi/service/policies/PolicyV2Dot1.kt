@@ -525,14 +525,52 @@ val POLICY_V2_1 = LicencePolicy(
         code = "42f71b40-84cd-446d-8647-f00bbb6c079c",
         inputs = listOf(
           Input(
-            label = "Enter name or type of premises",
-            name = "nameOfPremises",
-            type = TEXT,
-          ),
-          Input(
-            label = "Enter the address of the premises",
-            name = "premisesAddress",
-            type = ADDRESS,
+            label = "Choose what information to enter",
+            name = "nameTypeAndOrAddress",
+            options = listOf(
+              Option(
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Name or type of premises",
+                      name = "nameOfPremises",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+                value = "Just a name or type of premises",
+              ),
+              Option(
+                value = "Just an address",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the address of the premises",
+                      name = "premisesAddress",
+                      type = ADDRESS,
+                    ),
+                  ),
+                ),
+              ),
+              Option(
+                value = "A name or type of premises and an address",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Name or type of premises",
+                      name = "nameOfPremises",
+                      type = TEXT,
+                    ),
+                    ConditionalInput(
+                      label = "Enter the address of the premises",
+                      name = "premisesAddress",
+                      type = ADDRESS,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
           ),
         ),
         requiresInput = true,

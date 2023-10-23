@@ -63,7 +63,9 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     dateCreated = licence.dateCreated,
     approvedByName = licence.approvedByName,
     approvedDate = licence.approvedDate,
+    submittedDate = licence.submittedDate,
     licenceVersion = licence.licenceVersion,
+    versionOf = licence.versionOfId,
   )
 }
 
@@ -118,6 +120,7 @@ fun transform(licence: EntityLicence, listOfBankHolidays: List<LocalDate>, worki
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,
+    submittedDate = licence.submittedDate,
     supersededDate = licence.supersededDate,
     dateCreated = licence.dateCreated,
     createdByUsername = licence.createdBy!!.username,

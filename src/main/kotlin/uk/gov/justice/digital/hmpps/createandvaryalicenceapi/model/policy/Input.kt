@@ -10,6 +10,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.formatAddre
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.formatUsing
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.startsWithVowel
 
+object Fields {
+  /**
+   * Some fields are only used for display purposes, e.g: expanding conditional inputs.
+   * These fields do not contribute to the licence and should not be played back to the user.
+   */
+  val NON_CONTRIBUTING_FIELDS = setOf("numberOfCurfews", "nameTypeAndOrAddress")
+}
+
 enum class InputType(@JsonValue val description: String) {
   RADIO("radio"),
   ADDRESS("address"),
