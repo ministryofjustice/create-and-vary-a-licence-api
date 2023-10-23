@@ -8,9 +8,9 @@ data class ConditionTypes(
 
   @JsonProperty("AP")
   @Schema(description = "The AP conditions that form part of the licence policy")
-  val apConditions: Conditions,
+  val apConditions: LicencePolicyConditions,
 
   @JsonProperty("PSS")
   @Schema(description = "The PSS conditions that form part of the licence policy")
-  val pssConditions: Conditions,
+  val pssConditions: LicencePolicyConditions,
 )
