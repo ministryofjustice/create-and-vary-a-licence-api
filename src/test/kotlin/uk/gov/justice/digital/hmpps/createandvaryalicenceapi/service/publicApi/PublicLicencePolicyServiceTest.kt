@@ -5,16 +5,27 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 
 class PublicLicencePolicyServiceTest {
+  private val licencePolicyService = mock<LicencePolicyService>()
 
-  private val service = PublicLicencePolicyService()
+  private val service = PublicLicencePolicyService(licencePolicyService)
 
   @Test
   fun `service returns a policy by version number`() {
+    whenever(licencePolicyService.allPolicies()).thenReturn(
+      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1),
+    )
+
     val policy = service.getLicencePolicyByVersionNumber("2.1")
 
     assertThat(policy).isExactlyInstanceOf(LicencePolicy::class.java)
@@ -88,6 +99,10 @@ class PublicLicencePolicyServiceTest {
 
   @Test
   fun `service throws an exception when policy version does not exist`() {
+    whenever(licencePolicyService.allPolicies()).thenReturn(
+      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1),
+    )
+
     val exception = assertThrows<EntityNotFoundException> {
       service.getLicencePolicyByVersionNumber("0")
     }
