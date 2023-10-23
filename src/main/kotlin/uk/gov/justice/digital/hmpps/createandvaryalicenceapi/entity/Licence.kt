@@ -1,18 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Entity
+import jakarta.persistence.*
 import jakarta.persistence.EnumType.STRING
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.OrderBy
-import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
@@ -20,8 +9,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+
 
 @Entity
 @Table(name = "licence")
@@ -185,5 +176,40 @@ data class Licence(
       return led.isBefore(lad.toLocalDate()) && !(tused.isBefore(lad.toLocalDate()))
     }
     return false
+  }
+
+  fun earliestReleaseDate(listOfBankHolidays: List<LocalDate>, workingDays: Int): LocalDate? {
+    val releaseDate = actualReleaseDate ?: conditionalReleaseDate
+    val possibleReleaseDates: MutableList<LocalDate> = mutableListOf()
+
+    if (releaseDate !== null && isBankHolidayOrWeekend(listOfBankHolidays, releaseDate)) {
+      return getEarliestReleaseDate(listOfBankHolidays, workingDays, releaseDate, possibleReleaseDates)
+    }
+    return releaseDate
+  }
+
+  /** Friday is also considered as weekend */
+  private fun isBankHolidayOrWeekend(listOfBankHolidays: List<LocalDate>, releaseDate: LocalDate?): Boolean {
+    val dayOfWeek = releaseDate?.dayOfWeek
+    if (dayOfWeek == DayOfWeek.FRIDAY || dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+      return true
+    }
+    return listOfBankHolidays.contains(releaseDate)
+  }
+
+  private fun getEarliestReleaseDate(
+    listOfBankHolidays: List<LocalDate>,
+    workingDays: Int,
+    normalReleaseDate: LocalDate?,
+    possibleReleaseDates: MutableList<LocalDate>,
+  ): LocalDate {
+    val earlyPossibleDate = normalReleaseDate?.minusDays(1)
+    if (possibleReleaseDates.size < workingDays) {
+      if (earlyPossibleDate !== null && !isBankHolidayOrWeekend(listOfBankHolidays, earlyPossibleDate)) {
+        possibleReleaseDates.add(earlyPossibleDate)
+      }
+      getEarliestReleaseDate(listOfBankHolidays, workingDays, earlyPossibleDate, possibleReleaseDates)
+    }
+    return possibleReleaseDates[workingDays - 1]
   }
 }

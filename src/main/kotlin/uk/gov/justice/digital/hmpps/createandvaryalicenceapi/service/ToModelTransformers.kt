@@ -71,7 +71,7 @@ fun transformToListOfSummaries(licences: List<EntityLicence>): List<LicenceSumma
   return licences.map { licence -> transformToLicenceSummary(licence) }
 }
 
-fun transform(licence: EntityLicence): ModelLicence {
+fun transform(licence: EntityLicence, listOfBankHolidays: List<LocalDate>, workingDays: Int): ModelLicence {
   return ModelLicence(
     id = licence.id,
     typeCode = licence.typeCode,
@@ -134,6 +134,7 @@ fun transform(licence: EntityLicence): ModelLicence {
     isInPssPeriod = licence.isInPssPeriod(),
     isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
     licenceVersion = licence.licenceVersion,
+    earliestReleaseDate = licence.earliestReleaseDate(listOfBankHolidays, workingDays),
   )
 }
 
