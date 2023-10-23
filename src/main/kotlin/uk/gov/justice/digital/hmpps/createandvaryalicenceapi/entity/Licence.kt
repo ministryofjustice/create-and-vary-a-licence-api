@@ -81,6 +81,7 @@ data class Licence(
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,
   val supersededDate: LocalDateTime? = null,
+  val submittedDate: LocalDateTime? = null,
   var dateCreated: LocalDateTime? = null,
   val dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
