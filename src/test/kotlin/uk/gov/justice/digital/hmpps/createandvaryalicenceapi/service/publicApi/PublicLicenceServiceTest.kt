@@ -421,7 +421,7 @@ class PublicLicenceServiceTest {
         ),
       )
 
-      val image = service.getExclusionZoneImageByConditionId(1L, 1L)
+      val image = service.getImageUpload(1L, 1L)
 
       assertThat(image).isEqualTo(ClassPathResource("test_map.jpg").inputStream.readAllBytes())
 
@@ -435,7 +435,7 @@ class PublicLicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
       val exception = assertThrows<EntityNotFoundException> {
-        service.getExclusionZoneImageByConditionId(1L, 1L)
+        service.getImageUpload(1L, 1L)
       }
 
       assertThat(exception)
@@ -453,7 +453,7 @@ class PublicLicenceServiceTest {
       whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
 
       val exception = assertThrows<EntityNotFoundException> {
-        service.getExclusionZoneImageByConditionId(1L, 1L)
+        service.getImageUpload(1L, 1L)
       }
 
       assertThat(exception)
@@ -471,7 +471,7 @@ class PublicLicenceServiceTest {
       whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithoutUpload))
 
       val exception = assertThrows<EntityNotFoundException> {
-        service.getExclusionZoneImageByConditionId(1L, 1L)
+        service.getImageUpload(1L, 1L)
       }
 
       assertThat(exception)
@@ -490,7 +490,7 @@ class PublicLicenceServiceTest {
       whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(Optional.empty())
 
       val exception = assertThrows<EntityNotFoundException> {
-        service.getExclusionZoneImageByConditionId(1L, 1L)
+        service.getImageUpload(1L, 1L)
       }
 
       assertThat(exception)

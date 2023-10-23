@@ -153,7 +153,7 @@ class PublicLicenceControllerTest {
 
   @Test
   fun `get a full-size image for an exclusion zone`() {
-    whenever(publicLicenceService.getExclusionZoneImageByConditionId(1, 1)).thenReturn(aFullSizeMapImage)
+    whenever(publicLicenceService.getImageUpload(1, 1)).thenReturn(aFullSizeMapImage)
 
     val result = mvc.perform(get("/public/licences/1/conditions/1/image-upload").accept(MediaType.IMAGE_JPEG))
       .andExpect(status().isOk)
@@ -162,7 +162,7 @@ class PublicLicenceControllerTest {
 
     assertThat(result.response.contentAsByteArray).isEqualTo(aFullSizeMapImage)
 
-    verify(publicLicenceService, times(1)).getExclusionZoneImageByConditionId(1, 1)
+    verify(publicLicenceService, times(1)).getImageUpload(1, 1)
   }
 
   private companion object {

@@ -31,7 +31,7 @@ class PublicLicenceService(
   }
 
   @Transactional
-  fun getExclusionZoneImageByConditionId(licenceId: Long, conditionId: Long): ByteArray? {
+  fun getImageUpload(licenceId: Long, conditionId: Long): ByteArray? {
     licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("Licence $licenceId not found") }

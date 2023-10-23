@@ -138,8 +138,8 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
   )
   @ResponseBody
   @Operation(
-    summary = "Get the exclusion zone map image for a specified licence and condition",
-    description = "Returns the exclusion zone map image for a specified licence and condition. " +
+    summary = "Get an associated image upload for a specific licence and condition",
+    description = "Returns an associated image upload for a specified licence and condition. " +
       "Requires ROLE_VIEW_LICENCES.",
     security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
   )
@@ -167,10 +167,10 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
       ),
     ],
   )
-  fun getExclusionZoneImageByConditionId(
+  fun getImageUpload(
     @PathVariable(name = "licenceId") licenceId: Long,
     @PathVariable(name = "conditionId") conditionId: Long,
   ): ByteArray? {
-    return publicLicenceService.getExclusionZoneImageByConditionId(licenceId, conditionId)
+    return publicLicenceService.getImageUpload(licenceId, conditionId)
   }
 }
