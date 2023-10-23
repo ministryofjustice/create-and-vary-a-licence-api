@@ -131,4 +131,46 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     ],
   )
   fun getLicenceByCrn(@PathVariable("crn") crn: String) = publicLicenceService.getAllLicencesByCrn(crn)
+
+  @GetMapping(
+    value = ["/licences/{licenceId}/conditions/{conditionId}/image-upload"],
+    produces = [MediaType.IMAGE_JPEG_VALUE],
+  )
+  @ResponseBody
+  @Operation(
+    summary = "Get an associated image upload for a specific licence and condition",
+    description = "Returns an associated image upload for a specified licence and condition. " +
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Image returned",
+        content = [Content(mediaType = "image/jpeg")],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "No image was found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getImageUpload(
+    @PathVariable(name = "licenceId") licenceId: Long,
+    @PathVariable(name = "conditionId") conditionId: Long,
+  ): ByteArray? {
+    return publicLicenceService.getImageUpload(licenceId, conditionId)
+  }
 }

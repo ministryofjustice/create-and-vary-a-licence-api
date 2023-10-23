@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
@@ -150,6 +151,20 @@ class PublicLicenceControllerTest {
     verify(publicLicenceService, times(1)).getAllLicencesByCrn("A12345")
   }
 
+  @Test
+  fun `get a full-size image for an exclusion zone`() {
+    whenever(publicLicenceService.getImageUpload(1, 1)).thenReturn(aFullSizeMapImage)
+
+    val result = mvc.perform(get("/public/licences/1/conditions/1/image-upload").accept(MediaType.IMAGE_JPEG))
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_JPEG))
+      .andReturn()
+
+    assertThat(result.response.contentAsByteArray).isEqualTo(aFullSizeMapImage)
+
+    verify(publicLicenceService, times(1)).getImageUpload(1, 1)
+  }
+
   private companion object {
     val aLicenceSummary = LicenceSummary(
       id = 1,
@@ -168,5 +183,7 @@ class PublicLicenceControllerTest {
       updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
       isInPssPeriod = false,
     )
+
+    val aFullSizeMapImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
   }
 }
