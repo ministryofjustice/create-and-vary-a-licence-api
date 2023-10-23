@@ -597,6 +597,8 @@ class LicenceService(
     }
 
     val licenceCopy = copyLicenceAndConditions(licenceEntity, IN_PROGRESS)
+    notifyReApprovalNeeded(licenceEntity)
+
     return transformToLicenceSummary(licenceCopy)
   }
 

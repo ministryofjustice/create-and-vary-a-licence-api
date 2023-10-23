@@ -1591,6 +1591,53 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `editing an approved licence creates and saves a new licence version and sends a reapproval email`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+
+    val approvedLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      additionalConditions = additionalConditions,
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+    whenever(omuService.getOmuContactEmail(any())).thenReturn(
+      OmuContact(
+        prisonCode = aLicenceEntity.prisonCode!!,
+        email = "test@OMU.testing.com",
+        dateCreated = LocalDateTime.now(),
+      ),
+    )
+    whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+
+    service.editLicence(1L)
+    verify(notifyService, times(1)).sendVariationForReApprovalEmail(
+      eq("test@OMU.testing.com"),
+      eq(aLicenceEntity.forename ?: "unknown"),
+      eq(aLicenceEntity.surname ?: "unknown"),
+      eq(aLicenceEntity.nomsId),
+      any(),
+    )
+  }
+
+  @Test
   fun `attempting to editing a licence with status other than approved results in validation exception `() {
     val activeLicence = aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
     whenever(licenceRepository.findById(1L)).thenReturn(
@@ -1635,6 +1682,39 @@ class LicenceServiceTest {
     assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
 
     verify(licenceRepository, never()).save(any())
+  }
+
+  @Test
+  fun `editing an approved licence which already has an in progress version does not send a reapproval email`() {
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val inProgressLicenceVersion =
+      approvedLicence.copy(id = 9032, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = approvedLicence.id)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+    whenever(
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(approvedLicence.id),
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+      ),
+    )
+      .thenReturn(
+        listOf(inProgressLicenceVersion),
+      )
+
+    service.editLicence(1L)
+
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
   }
 
   @Test
