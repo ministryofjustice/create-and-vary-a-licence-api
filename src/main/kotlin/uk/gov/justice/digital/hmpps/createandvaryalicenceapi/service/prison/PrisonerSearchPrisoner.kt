@@ -7,6 +7,7 @@ data class PrisonerSearchPrisoner(
   val prisonerNumber: String,
   val bookingId: String,
   val status: String? = null,
+  val mostSeriousOffence: String?,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   val licenceExpiryDate: LocalDate? = null,

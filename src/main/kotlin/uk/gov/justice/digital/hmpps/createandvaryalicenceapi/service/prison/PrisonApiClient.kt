@@ -50,7 +50,19 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .retrieve()
       .bodyToMono(typeReference<List<PrisonerOffenceHistory>>())
       .onErrorResume { webClientErrorHandler(it) }
-      .block() ?: emptyList<PrisonerOffenceHistory>()
+      .block() ?: emptyList()
+  }
+
+  fun getCourtEventOutcomes(bookingIds: List<Long>): List<CourtEventOutcome> {
+    return prisonerApiWebClient
+      .post()
+      .uri("/bookings/court-event-outcomes")
+      .bodyValue(bookingIds)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<CourtEventOutcome>>())
+      .onErrorResume { webClientErrorHandler(it) }
+      .block() ?: emptyList()
   }
 
   private fun <API_RESPONSE_BODY_TYPE> webClientErrorHandler(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
