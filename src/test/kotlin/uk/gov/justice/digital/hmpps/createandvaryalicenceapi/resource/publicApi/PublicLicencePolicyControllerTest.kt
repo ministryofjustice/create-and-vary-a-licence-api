@@ -84,8 +84,6 @@ class PublicLicencePolicyControllerTest {
       .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
       .andReturn()
 
-    print(result.response.contentAsString)
-
     assertThat(result.response.contentAsString).contains("Not found")
 
     verify(publicLicencePolicyService, times(1)).getLicencePolicyByVersionNumber("0")
