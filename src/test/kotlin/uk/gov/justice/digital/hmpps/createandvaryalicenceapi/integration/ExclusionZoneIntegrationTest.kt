@@ -174,7 +174,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     val body = result.expectBody(ErrorResponse::class.java).returnResult()
     assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
   }
-  
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
 
