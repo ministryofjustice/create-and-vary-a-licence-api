@@ -56,5 +56,5 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
       ),
     ],
   )
-  fun getLatestPolicy(@PathVariable("version") versionNumber: String) = publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
+  fun getPolicyByVersionNumber(@PathVariable("version") versionNumber: String) = publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
 }
