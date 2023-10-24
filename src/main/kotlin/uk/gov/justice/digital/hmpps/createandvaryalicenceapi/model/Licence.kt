@@ -242,5 +242,6 @@ data class Licence(
   val licenceVersion: String? = null,
 
   @Schema(description = "If CRD falls on Friday/Bank holiday/Weekend then it contains Earliest possible release date or CRD")
+  @JsonFormat(pattern = "dd/MM/yyyy")
   val earliestReleaseDate: LocalDate? = null,
 )
