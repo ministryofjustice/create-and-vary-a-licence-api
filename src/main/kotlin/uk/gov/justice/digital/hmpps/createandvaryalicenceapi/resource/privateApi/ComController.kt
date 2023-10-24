@@ -19,14 +19,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
 @RestController
 @RequestMapping("/com", produces = [MediaType.APPLICATION_JSON_VALUE])
-class ComController(private val comService: ComService, private val notifyService: NotifyService) {
+class ComController(private val comService: ComService) {
   @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/update"],
@@ -69,47 +67,6 @@ class ComController(private val comService: ComService, private val notifyServic
     this.comService.updateComDetails(body)
   }
 
-  @Tag(name = Tags.JOBS)
-  @PostMapping(
-    value = ["/prompt-licence-creation"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Notifies the COM of upcoming releases which they need to create a licence for.",
-    description = "Notifies the COM of upcoming releases which they need to create a licence for. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "The COM was notified",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun notifyOfUpcomingReleasesRequiringLicence(
-    @RequestBody @Valid
-    body: List<PromptLicenceCreationRequest>,
-  ) {
-    notifyService.sendInitialLicenceCreateEmails(body)
-  }
-
   @Tag(name = Tags.COM)
   @PostMapping(
     value = ["/case-search"],
@@ -126,7 +83,12 @@ class ComController(private val comService: ComService, private val notifyServic
       ApiResponse(
         responseCode = "200",
         description = "The query retrieved a set of enriched results",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ProbationSearchResult::class))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ProbationSearchResult::class),
+          ),
+        ],
       ),
       ApiResponse(
         responseCode = "400",
