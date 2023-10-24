@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -67,7 +66,6 @@ class LicenceService(
   private val notifyService: NotifyService,
   private val omuService: OmuService,
   private val bankHolidayService: BankHolidayService,
-  @Value("\${workingDays}") private val workingDays: Int,
 ) {
 
   @Transactional
@@ -125,11 +123,17 @@ class LicenceService(
 
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
-    val listOfBankHolidays = this.bankHolidayService.getBankHolidaysForEnglandAndWales()
     val entityLicence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    return transform(entityLicence, listOfBankHolidays, workingDays)
+    val releaseDate = entityLicence.actualReleaseDate ?: entityLicence.conditionalReleaseDate
+    val earliestReleaseDate =
+      if (releaseDate !== null && bankHolidayService.isBankHolidayOrWeekend(releaseDate)) {
+        bankHolidayService.getEarliestReleaseDate(releaseDate)
+      } else {
+        releaseDate
+      }
+    return transform(entityLicence, earliestReleaseDate)
   }
 
   @Transactional

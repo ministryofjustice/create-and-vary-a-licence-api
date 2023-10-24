@@ -99,7 +99,6 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       bankHolidayService,
-      workingDays,
     ),
   )
 
@@ -2016,6 +2015,5 @@ class LicenceServiceTest {
       ),
     )
 
-    const val workingDays = 3
   }
 }
