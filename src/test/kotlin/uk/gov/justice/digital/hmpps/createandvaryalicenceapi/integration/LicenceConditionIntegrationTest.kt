@@ -246,7 +246,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
         AdditionalConditionData(field = "gender", value = "women or men", sequence = 0),
       ),
     )
-    
+
     val govUkApiMockServer = GovUkMockServer()
 
     @JvmStatic

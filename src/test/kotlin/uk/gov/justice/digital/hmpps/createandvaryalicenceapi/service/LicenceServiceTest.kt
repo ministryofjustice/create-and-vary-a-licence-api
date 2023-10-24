@@ -2094,6 +2094,5 @@ class LicenceServiceTest {
         conditionType = "PSS",
       ),
     )
-
   }
 }
