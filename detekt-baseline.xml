@@ -3,7 +3,6 @@
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:LicenceService.kt$LicenceService$private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence</ID>
     <ID>FunctionNaming:JPASpecificationDSL.kt$fun &lt;T, R : Any&gt; KProperty1&lt;T, R?&gt;.`in`(values: Collection&lt;R&gt;): Specification&lt;T&gt;</ID>
-    <ID>FunctionOnlyReturningConstant:PublicLicencePolicyController.kt$PublicLicencePolicyController$@GetMapping(value = ["/latest"]) @ResponseBody @Operation( summary = "Get a policy by its version number", description = "Returns a policy by its version number. " + "Requires ROLE_VIEW_LICENCES.", security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")], ) @ApiResponses( value = [ ApiResponse( responseCode = "200", description = "Policy found", content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicy::class))], ), ApiResponse( responseCode = "401", description = "Unauthorised, requires a valid Oauth2 token", content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))], ), ApiResponse( responseCode = "403", description = "Forbidden, requires an appropriate role", content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))], ), ApiResponse( responseCode = "404", description = "The policy for this version was not found.", content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))], ), ], ) fun getLatestPolicy(): LicencePolicy?</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>
     <ID>LongMethod:LicenceService.kt$LicenceService$@Transactional fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest)</ID>
@@ -44,6 +43,7 @@
     <ID>TooManyFunctions:LicenceController.kt$LicenceController</ID>
     <ID>TooManyFunctions:LicenceService.kt$LicenceService</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
+    <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>UnusedParameter:LicenceController.kt$LicenceController$@PathVariable conditionType: String</ID>
     <ID>UseCheckOrError:GovUkApiClient.kt$GovUkApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
     <ID>UtilityClassWithPublicConstructor:Tags.kt$Tags</ID>
