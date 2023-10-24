@@ -12,7 +12,7 @@ class IS91DeterminationService(
 
   private companion object IS91Constants {
     const val OFFENCE_DESCRIPTION = "ILLEGAL IMMIGRANT/DETAINEE"
-    val resultCodes = setOf("5500", "4022")
+    val resultCodes = setOf("3006", "4022", "5500", "5502")
   }
 
   fun getIS91AndExtraditionBookingIds(bookingIds: List<Long>): List<Long> {
