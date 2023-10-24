@@ -20,7 +20,7 @@ class IS91DeterminationService(
     val (immigrationDetainees, nonImmigrationDetainees) = prisoners.partition { it.mostSeriousOffence == OFFENCE_DESCRIPTION }
     val immigrationDetaineeBookings = immigrationDetainees.map { it.bookingId.toLong() }
     val is91OutcomeBookings = bookingsWithIS91Outcomes(nonImmigrationDetainees.map { it.bookingId.toLong() })
-    return immigrationDetaineeBookings.plus(is91OutcomeBookings)
+    return immigrationDetaineeBookings + is91OutcomeBookings
   }
 
   private fun bookingsWithIS91Outcomes(bookingIds: List<Long>): List<Long> {
