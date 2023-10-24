@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.jobs
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -7,33 +7,44 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class LicenceActivationController(
-  private val licenceActivationService: LicenceActivationService,
+class SendLicenceCreationPromptsController(
+  private val notifyService: NotifyService,
 ) {
-  @PostMapping(value = ["/run-activation-job"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @PostMapping(
+    value = ["/com/prompt-licence-creation"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Triggers the licence activation job.",
-    description = "Triggers a job that causes licences with a status of APPROVED, a CRD or ARD of today, and that are either IS91 cases or have an NOMIS status beginning with 'INACTIVE' to be activated. Deactivates offenders with approved HDC licences. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    summary = "Notifies the COM of upcoming releases which they need to create a licence for.",
+    description = "Notifies the COM of upcoming releases which they need to create a licence for. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Activation job executed.",
+        description = "The COM was notified",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
       ApiResponse(
         responseCode = "401",
@@ -47,7 +58,10 @@ class LicenceActivationController(
       ),
     ],
   )
-  fun runLicenceActivationJob() {
-    return licenceActivationService.licenceActivationJob()
+  fun notifyOfUpcomingReleasesRequiringLicence(
+    @RequestBody @Valid
+    body: List<PromptLicenceCreationRequest>,
+  ) {
+    notifyService.sendInitialLicenceCreateEmails(body)
   }
 }
