@@ -62,7 +62,7 @@ class ComControllerTest {
     reset(comService, notifyService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(ComController(comService, notifyService))
+      .standaloneSetup(ComController(comService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
