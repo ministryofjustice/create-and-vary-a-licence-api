@@ -44,11 +44,23 @@ class ComServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
   private val service =
-    ComService(communityOffenderManagerRepository, licenceRepository, communityApiClient, probationSearchApiClient, prisonerSearchApiClient)
+    ComService(
+      communityOffenderManagerRepository,
+      licenceRepository,
+      communityApiClient,
+      probationSearchApiClient,
+      prisonerSearchApiClient,
+    )
 
   @BeforeEach
   fun reset() {
-    reset(communityOffenderManagerRepository, licenceRepository, communityApiClient, probationSearchApiClient, prisonerSearchApiClient)
+    reset(
+      communityOffenderManagerRepository,
+      licenceRepository,
+      communityApiClient,
+      probationSearchApiClient,
+      prisonerSearchApiClient,
+    )
   }
 
   @Test
@@ -1353,6 +1365,7 @@ class ComServiceTest {
       "A1234AA",
       "1234567",
       "ACTIVE IN",
+      mostSeriousOffence = "Robbery",
       LocalDate.parse("2024-09-14"),
       LocalDate.parse("2024-09-14"),
       LocalDate.parse("2023-09-14"),
