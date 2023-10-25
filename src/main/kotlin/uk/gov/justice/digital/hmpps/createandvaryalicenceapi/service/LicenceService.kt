@@ -65,6 +65,7 @@ class LicenceService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val omuService: OmuService,
+  private val bankHolidayService: BankHolidayService,
 ) {
 
   @Transactional
@@ -125,7 +126,14 @@ class LicenceService(
     val entityLicence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    return transform(entityLicence)
+    val releaseDate = entityLicence.actualReleaseDate ?: entityLicence.conditionalReleaseDate
+    val earliestReleaseDate =
+      if (releaseDate !== null && bankHolidayService.isBankHolidayOrWeekend(releaseDate)) {
+        bankHolidayService.getEarliestReleaseDate(releaseDate)
+      } else {
+        releaseDate
+      }
+    return transform(entityLicence, earliestReleaseDate)
   }
 
   @Transactional

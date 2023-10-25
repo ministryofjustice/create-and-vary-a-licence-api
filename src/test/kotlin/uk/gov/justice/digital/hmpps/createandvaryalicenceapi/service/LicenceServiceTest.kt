@@ -83,6 +83,7 @@ class LicenceServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
+  private val bankHolidayService = mock<BankHolidayService>()
 
   private val service = Mockito.spy(
     LicenceService(
@@ -97,6 +98,7 @@ class LicenceServiceTest {
       auditEventRepository,
       notifyService,
       omuService,
+      bankHolidayService,
     ),
   )
 

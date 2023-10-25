@@ -3,10 +3,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -134,6 +137,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )/**/
   fun `Update the bespoke conditions`() {
+    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     webTestClient.put()
       .uri("/licence/id/1/bespoke-conditions")
       .bodyValue(aBespokeConditionRequest)
@@ -242,5 +246,19 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
         AdditionalConditionData(field = "gender", value = "women or men", sequence = 0),
       ),
     )
+
+    val govUkApiMockServer = GovUkMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      govUkApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      govUkApiMockServer.stop()
+    }
   }
 }
