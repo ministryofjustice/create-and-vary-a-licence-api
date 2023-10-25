@@ -512,13 +512,6 @@ class LicenceService(
     }
   }
 
-  @Transactional
-  fun activateLicencesByIds(licenceIds: List<Long>) {
-    val matchingLicences =
-      licenceRepository.findAllById(licenceIds).filter { it.statusCode == APPROVED }
-    activateLicences(matchingLicences)
-  }
-
   fun inactivateLicences(
     licences: List<EntityLicence>,
     reason: String? = null,
@@ -593,6 +586,8 @@ class LicenceService(
     }
 
     val licenceCopy = copyLicenceAndConditions(licenceEntity, IN_PROGRESS)
+    notifyReApprovalNeeded(licenceEntity)
+
     return transformToLicenceSummary(licenceCopy)
   }
 

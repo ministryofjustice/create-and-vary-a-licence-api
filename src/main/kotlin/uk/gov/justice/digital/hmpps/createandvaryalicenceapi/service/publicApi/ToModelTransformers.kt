@@ -1,11 +1,21 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionPss
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionAp
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.ConditionTypes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary as ModelPublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy as ModelPublicLicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyAdditionalCondition as ModelPublicAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition as ModelPublicStandardCondition
 
 /*
 ** Functions which transform JPA entity objects into their public API model equivalents.
@@ -55,3 +65,85 @@ private fun LicenceStatus.mapToPublicLicenceStatus() =
     this == LicenceStatus.VARIATION_APPROVED -> PublicLicenceStatus.VARIATION_APPROVED
     else -> error("No matching licence status found")
   }
+
+fun LicencePolicy.transformToPublicLicencePolicy(): ModelPublicLicencePolicy {
+  return ModelPublicLicencePolicy(
+    version = this.version,
+    conditions = this.getAllConditions(),
+  )
+}
+
+private fun LicencePolicy.getAllConditions(): ConditionTypes {
+  return ConditionTypes(
+    this.getAllApConditions(),
+    this.getAllPssConditions(),
+  )
+}
+
+private fun LicencePolicy.getAllApConditions(): LicencePolicyConditions {
+  val standardConditionsAp = this.standardConditions.standardConditionsAp
+  val additionalConditionAp = this.additionalConditions.ap
+
+  val mappedStandardConditions = standardConditionsAp.transformToModelPublicApStandardCondition()
+  val mappedAdditionalConditions = additionalConditionAp.transformToModelPublicApAdditionalCondition()
+
+  return LicencePolicyConditions(
+    mappedStandardConditions,
+    mappedAdditionalConditions,
+  )
+}
+
+private fun LicencePolicy.getAllPssConditions(): LicencePolicyConditions {
+  val standardConditionsPss = this.standardConditions.standardConditionsPss
+  val additionalConditionPss = this.additionalConditions.pss
+
+  val mappedStandardConditions = standardConditionsPss.transformToModelPublicPssStandardCondition()
+  val mappedAdditionalConditions = additionalConditionPss.transformToModelPublicPssAdditionalCondition()
+
+  return LicencePolicyConditions(
+    mappedStandardConditions,
+    mappedAdditionalConditions,
+  )
+}
+
+private fun List<StandardConditionAp>.transformToModelPublicApStandardCondition(): List<ModelPublicStandardCondition> = map(::transform)
+
+private fun transform(entity: StandardConditionAp): ModelPublicStandardCondition {
+  return ModelPublicStandardCondition(
+    code = entity.code,
+    text = entity.text,
+  )
+}
+
+private fun List<AdditionalConditionAp>.transformToModelPublicApAdditionalCondition(): List<ModelPublicAdditionalCondition> = map(::transform)
+
+private fun transform(entity: AdditionalConditionAp): ModelPublicAdditionalCondition {
+  return ModelPublicAdditionalCondition(
+    code = entity.code,
+    text = entity.text,
+    category = entity.category,
+    categoryShort = entity.categoryShort,
+    requiresInput = entity.requiresInput,
+  )
+}
+
+private fun List<StandardConditionPss>.transformToModelPublicPssStandardCondition(): List<ModelPublicStandardCondition> = map(::transform)
+
+private fun transform(entity: StandardConditionPss): ModelPublicStandardCondition {
+  return ModelPublicStandardCondition(
+    code = entity.code,
+    text = entity.text,
+  )
+}
+
+private fun List<AdditionalConditionPss>.transformToModelPublicPssAdditionalCondition(): List<ModelPublicAdditionalCondition> = map(::transform)
+
+private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCondition {
+  return ModelPublicAdditionalCondition(
+    code = entity.code,
+    text = entity.text,
+    category = entity.category,
+    categoryShort = entity.categoryShort,
+    requiresInput = entity.requiresInput,
+  )
+}
