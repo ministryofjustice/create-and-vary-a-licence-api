@@ -1231,17 +1231,6 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `activateLicencesByIds calls activateLicences with the licences associated with the given IDs`() {
-    val licence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
-    whenever(licenceRepository.findAllById(listOf(1))).thenReturn(listOf(licence))
-
-    service.activateLicencesByIds(listOf(1))
-
-    verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(service, times(1)).activateLicences(listOf(licence))
-  }
-
-  @Test
   fun `inactivate licences sets licence statuses to INACTIVE`() {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)

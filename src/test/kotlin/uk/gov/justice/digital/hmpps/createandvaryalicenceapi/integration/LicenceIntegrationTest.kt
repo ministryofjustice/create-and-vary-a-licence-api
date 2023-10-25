@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -341,40 +340,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.appointmentAddress).isEqualTo(anAppointmentAddressRequest.appointmentAddress)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-approved-licences.sql",
-  )
-  fun `Activate licences in bulk`() {
-    webTestClient.post()
-      .uri("/licence/activate-licences")
-      .bodyValue(listOf(1, 2, 3))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.post()
-      .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.ACTIVE)))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.size).isEqualTo(3)
-    assertThat(result)
-      .extracting<Tuple> {
-        tuple(it.licenceId, it.licenceStatus)
-      }
-      .contains(
-        tuple(1L, LicenceStatus.ACTIVE),
-        tuple(2L, LicenceStatus.ACTIVE),
-        tuple(3L, LicenceStatus.ACTIVE),
-      )
   }
 
   @Test

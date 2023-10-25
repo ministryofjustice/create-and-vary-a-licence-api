@@ -20,15 +20,16 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.jobs.SendNeedsApprovalReminderController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UnapprovedLicenceService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = [UnapprovedLicenceController::class])
+@WebMvcTest(controllers = [SendNeedsApprovalReminderController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = [UnapprovedLicenceController::class])
+@ContextConfiguration(classes = [SendNeedsApprovalReminderController::class])
 @WebAppConfiguration
-class UnapprovedLicenceControllerTest {
+class SendNeedsApprovalReminderControllerTest {
   @MockBean
   private lateinit var unapprovedLicenceService: UnapprovedLicenceService
 
@@ -40,7 +41,7 @@ class UnapprovedLicenceControllerTest {
     reset(unapprovedLicenceService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(UnapprovedLicenceController(unapprovedLicenceService))
+      .standaloneSetup(SendNeedsApprovalReminderController(unapprovedLicenceService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
