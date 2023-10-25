@@ -16,6 +16,9 @@ data class PrisonerSearchPrisoner(
   val topUpSupervisionExpiryDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
+  val homeDetentionCurfewEligibilityDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
   val releaseDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")

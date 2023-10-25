@@ -8,14 +8,12 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.CourtEventOutcome
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.LocalDate
 
 class IS91DeterminationServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
-  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val service = IS91DeterminationService(prisonApiClient, prisonerSearchApiClient)
+  private val service = IS91DeterminationService(prisonApiClient)
 
   @BeforeEach
   fun reset() {
@@ -27,9 +25,8 @@ class IS91DeterminationServiceTest {
   @Test
   fun `Returns the booking IDs of licences with an illegal immigrant offence code`() {
     val expectedIS91s = listOf(54321L, 54322L)
-    val expectedNonIS91s = listOf(54325L, 54326L, 325653L, 93564L)
 
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(expectedIS91s + expectedNonIS91s)).thenReturn(
+    val prisoners =
       listOf(
         aPrisonerSearchResult.copy(bookingId = "54325", mostSeriousOffence = "offence 1"),
         aPrisonerSearchResult.copy(bookingId = "325653", mostSeriousOffence = "offence 2"),
@@ -37,10 +34,9 @@ class IS91DeterminationServiceTest {
         aPrisonerSearchResult.copy(bookingId = "54322", mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE"),
         aPrisonerSearchResult.copy(bookingId = "93564", mostSeriousOffence = "offence 4"),
         aPrisonerSearchResult.copy(bookingId = "54321", mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE"),
-      ),
-    )
+      )
 
-    val is91BookingIds = service.getIS91AndExtraditionBookingIds(expectedIS91s + expectedNonIS91s)
+    val is91BookingIds = service.getIS91AndExtraditionBookingIds(prisoners)
     assertThat(is91BookingIds).containsExactlyInAnyOrderElementsOf(expectedIS91s)
   }
 
@@ -49,13 +45,11 @@ class IS91DeterminationServiceTest {
     val expectedIS91s = listOf(84379L, 902322L)
     val expectedNonIS91s = listOf(43566L, 843793L)
 
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(expectedIS91s + expectedNonIS91s)).thenReturn(
-      listOf(
-        aPrisonerSearchResult.copy(bookingId = "84379", mostSeriousOffence = "offence 1"),
-        aPrisonerSearchResult.copy(bookingId = "902322", mostSeriousOffence = "offence 2"),
-        aPrisonerSearchResult.copy(bookingId = "43566", mostSeriousOffence = "offence 3"),
-        aPrisonerSearchResult.copy(bookingId = "843793", mostSeriousOffence = "offence 4"),
-      ),
+    val prisoners = listOf(
+      aPrisonerSearchResult.copy(bookingId = "84379", mostSeriousOffence = "offence 1"),
+      aPrisonerSearchResult.copy(bookingId = "902322", mostSeriousOffence = "offence 2"),
+      aPrisonerSearchResult.copy(bookingId = "43566", mostSeriousOffence = "offence 3"),
+      aPrisonerSearchResult.copy(bookingId = "843793", mostSeriousOffence = "offence 4"),
     )
 
     whenever(prisonApiClient.getCourtEventOutcomes(expectedIS91s + expectedNonIS91s)).thenReturn(
@@ -67,7 +61,7 @@ class IS91DeterminationServiceTest {
       ),
     )
 
-    assert(service.getIS91AndExtraditionBookingIds(expectedIS91s + expectedNonIS91s) == expectedIS91s)
+    assert(service.getIS91AndExtraditionBookingIds(prisoners) == expectedIS91s)
   }
 
   private val aPrisonerSearchResult = PrisonerSearchPrisoner(
