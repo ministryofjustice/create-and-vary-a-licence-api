@@ -437,14 +437,92 @@ val POLICY_V2_0 = LicencePolicy(
         code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
         inputs = listOf(
           Input(
-            label = "Enter the curfew start time",
-            name = "curfewStart",
-            type = TIME_PICKER,
-          ),
-          Input(
-            label = "Enter the curfew end time",
-            name = "curfewEnd",
-            type = TIME_PICKER,
+            label = "Select the number of curfews needed",
+            name = "numberOfCurfews",
+            options = listOf(
+              Option(
+                value = "One curfew",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the curfew start time",
+                      name = "curfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Enter the curfew end time",
+                      name = "curfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+              Option(
+                value = "Two curfews",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "First curfew – enter the start time",
+                      name = "curfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "First curfew – enter the end time",
+                      name = "curfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the start time",
+                      name = "curfewStart2",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the end time",
+                      name = "curfewEnd2",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+              Option(
+                value = "Three curfews",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "First curfew – enter the start time",
+                      name = "curfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "First curfew – enter the end time",
+                      name = "curfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the start time",
+                      name = "curfewStart2",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the end time",
+                      name = "curfewEnd2",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Third curfew – enter the start time",
+                      name = "curfewStart3",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Third curfew – enter the end time",
+                      name = "curfewEnd3",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
           ),
           Input(
             case = LOWER,
@@ -452,8 +530,12 @@ val POLICY_V2_0 = LicencePolicy(
             label = "Select a review period",
             name = "reviewPeriod",
             options = listOf(
-              Option("Weekly"),
-              Option("Monthly"),
+              Option(
+                value = "Weekly",
+              ),
+              Option(
+                value = "Monthly",
+              ),
               Option(
                 conditional = Conditional(
                   inputs = listOf(
