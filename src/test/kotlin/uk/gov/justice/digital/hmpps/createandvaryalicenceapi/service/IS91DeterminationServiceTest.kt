@@ -43,13 +43,14 @@ class IS91DeterminationServiceTest {
   @Test
   fun `Returns the booking IDs of prisoners with IS91 related court event outcome codes`() {
     val expectedIS91s = listOf(84379L, 902322L)
-    val expectedNonIS91s = listOf(43566L, 843793L)
+    val expectedNonIS91s = listOf(43566L, 843793L, 5387L)
 
     val prisoners = listOf(
       aPrisonerSearchResult.copy(bookingId = "84379", mostSeriousOffence = "offence 1"),
       aPrisonerSearchResult.copy(bookingId = "902322", mostSeriousOffence = "offence 2"),
       aPrisonerSearchResult.copy(bookingId = "43566", mostSeriousOffence = "offence 3"),
       aPrisonerSearchResult.copy(bookingId = "843793", mostSeriousOffence = "offence 4"),
+      aPrisonerSearchResult.copy(bookingId = "5387", mostSeriousOffence = "offence 5"),
     )
 
     whenever(prisonApiClient.getCourtEventOutcomes(expectedIS91s + expectedNonIS91s)).thenReturn(
@@ -57,7 +58,8 @@ class IS91DeterminationServiceTest {
         CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = "3692"),
         CourtEventOutcome(bookingId = 84379, eventId = 2, outcomeReasonCode = "5500"),
         CourtEventOutcome(bookingId = 843793, eventId = 3, outcomeReasonCode = "8922"),
-        CourtEventOutcome(bookingId = 902322, eventId = 3, outcomeReasonCode = "4022"),
+        CourtEventOutcome(bookingId = 902322, eventId = 4, outcomeReasonCode = "4022"),
+        CourtEventOutcome(bookingId = 5387, eventId = 5, outcomeReasonCode = null),
       ),
     )
 
