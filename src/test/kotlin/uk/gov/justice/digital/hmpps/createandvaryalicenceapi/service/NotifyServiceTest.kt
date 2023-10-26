@@ -54,7 +54,7 @@ class NotifyServiceTest {
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf("John Smith who is due to leave custody on 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to true,
+      "isEligibleForEarlyRelease" to "yes",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -74,7 +74,7 @@ class NotifyServiceTest {
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf("John Smith who is due to leave custody on 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to true,
+      "isEligibleForEarlyRelease" to "yes",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -100,7 +100,7 @@ class NotifyServiceTest {
         "Test2 who is due to leave custody on 11 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to true,
+      "isEligibleForEarlyRelease" to "yes",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -126,7 +126,7 @@ class NotifyServiceTest {
         "Test2 who is due to leave custody on 24 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to false,
+      "isEligibleForEarlyRelease" to "no",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -152,7 +152,7 @@ class NotifyServiceTest {
         "Test2 who is due to leave custody on 11 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to true,
+      "isEligibleForEarlyRelease" to "yes",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -178,7 +178,7 @@ class NotifyServiceTest {
         "Test2 who is due to leave custody on 24 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
-      "isEligibleForEarlyRelease" to false,
+      "isEligibleForEarlyRelease" to "no",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))

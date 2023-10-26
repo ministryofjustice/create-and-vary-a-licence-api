@@ -184,7 +184,7 @@ class NotifyService(
           "${prisoner.name} who is due to leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
-        "isEligibleForEarlyRelease" to cases.any { bankHolidayService.isBankHolidayOrWeekend(it.releaseDate) === true },
+        "isEligibleForEarlyRelease" to if (cases.any { bankHolidayService.isBankHolidayOrWeekend(it.releaseDate) }) "yes" else "no",
       ),
       null,
     )
