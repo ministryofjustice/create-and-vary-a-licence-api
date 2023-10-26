@@ -13,7 +13,7 @@ import java.time.LocalDate
 class BankHolidayServiceTest {
   private val govUkApiClient = mock<GovUkApiClient>()
 
-  private val service = BankHolidayService(govUkApiClient, workingDays)
+  private val service = BankHolidayService(govUkApiClient, maxNumberOfWorkingDaysAllowedForEarlyRelease)
 
   @BeforeEach
   fun reset() {
@@ -189,6 +189,6 @@ class BankHolidayServiceTest {
       LocalDate.parse("2018-12-03"),
       LocalDate.parse("2018-12-04"),
     )
-    const val workingDays = 3
+    const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
   }
 }
