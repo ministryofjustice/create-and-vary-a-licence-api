@@ -58,7 +58,7 @@ spring:
       validationTimeout: 500
 
   flyway:
-    locations: classpath:/migration/common
+    locations: classpath:/migration/common,classpath:/migration/postgres
     url: ${spring.datasource.url}
     user: ${DB_USER}
     password: ${DB_PASS}
@@ -134,7 +134,7 @@ springdoc:
       enabled: true
   swagger-ui:
     urls-primary-name: "public"
-    
+
 cache:
   evict:
     bank-holidays:
