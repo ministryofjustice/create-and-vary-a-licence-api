@@ -246,5 +246,5 @@ data class Licence(
   val earliestReleaseDate: LocalDate? = null,
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
-  val isEligibleForEarlyRelease: Boolean? = false,
+  val isEligibleForEarlyRelease: Boolean = false,
 )
