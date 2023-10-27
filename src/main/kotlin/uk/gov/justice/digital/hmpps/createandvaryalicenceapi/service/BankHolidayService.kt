@@ -10,7 +10,7 @@ import java.time.LocalDate
 @Service
 class BankHolidayService(
   private val govUkApiClient: GovUkApiClient,
-  @Value("\${workingDays}") private val workingDays: Int,
+  @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int,
 ) {
 
   @Cacheable("bank-holidays")
@@ -29,6 +29,6 @@ class BankHolidayService(
   fun getEarliestReleaseDate(releaseDate: LocalDate) =
     generateSequence(releaseDate) { it.minusDays(1) }
       .filterNot { isBankHolidayOrWeekend(it) }
-      .take(workingDays)
+      .take(maxNumberOfWorkingDaysAllowedForEarlyRelease)
       .last()
 }

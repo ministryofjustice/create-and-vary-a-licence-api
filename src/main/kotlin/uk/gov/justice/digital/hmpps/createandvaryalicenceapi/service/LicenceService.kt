@@ -127,13 +127,14 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     val releaseDate = entityLicence.actualReleaseDate ?: entityLicence.conditionalReleaseDate
+    val isEligibleForEarlyRelease = (releaseDate !== null && bankHolidayService.isBankHolidayOrWeekend(releaseDate))
     val earliestReleaseDate =
-      if (releaseDate !== null && bankHolidayService.isBankHolidayOrWeekend(releaseDate)) {
+      if (releaseDate !== null && isEligibleForEarlyRelease) {
         bankHolidayService.getEarliestReleaseDate(releaseDate)
       } else {
         releaseDate
       }
-    return transform(entityLicence, earliestReleaseDate)
+    return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease)
   }
 
   @Transactional
@@ -520,6 +521,7 @@ class LicenceService(
     }
   }
 
+  @Transactional
   fun inactivateLicences(
     licences: List<EntityLicence>,
     reason: String? = null,
@@ -599,6 +601,7 @@ class LicenceService(
     return transformToLicenceSummary(licenceCopy)
   }
 
+  @Transactional
   fun updateSpoDiscussion(licenceId: Long, spoDiscussionRequest: UpdateSpoDiscussionRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -615,6 +618,7 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicenceEntity)
   }
 
+  @Transactional
   fun updateVloDiscussion(licenceId: Long, vloDiscussionRequest: UpdateVloDiscussionRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -631,6 +635,7 @@ class LicenceService(
     licenceRepository.saveAndFlush(updatedLicenceEntity)
   }
 
+  @Transactional
   fun updateReasonForVariation(licenceId: Long, reasonForVariationRequest: UpdateReasonForVariationRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -958,16 +963,13 @@ class LicenceService(
     return parts[0].toInt() to parts[1].toInt()
   }
 
-  private fun inactivateInProgressLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
+  @Transactional
+  fun inactivateInProgressLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
     val licenceIds = licences.map { it.id }
     val licencesToDeactivate =
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(licenceIds, listOf(IN_PROGRESS, SUBMITTED))
     if (licencesToDeactivate.isNotEmpty()) {
-      inactivateLicences(
-        licencesToDeactivate,
-        reason,
-        false,
-      )
+      inactivateLicences(licencesToDeactivate, reason, false)
     }
   }
 }

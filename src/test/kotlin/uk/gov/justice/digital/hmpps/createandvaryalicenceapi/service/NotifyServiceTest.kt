@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.GovUkApiClient
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -20,6 +22,8 @@ import java.time.Month
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
+  private val govUkApiClient = Mockito.mock<GovUkApiClient>()
+  private val bankHolidayService = BankHolidayService(govUkApiClient, maxNumberOfWorkingDaysAllowedForEarlyRelease)
 
   private val notifyService = NotifyService(
     enabled = true,
@@ -34,6 +38,7 @@ class NotifyServiceTest {
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
+    bankHolidayService = bankHolidayService,
   )
 
   @Test
@@ -47,8 +52,9 @@ class NotifyServiceTest {
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf("John Smith who will leave custody on 20 November 2022"),
+      "prisonersForRelease" to listOf("John Smith who is due to leave custody on 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
+      "isEligibleForEarlyRelease" to "yes",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -66,8 +72,113 @@ class NotifyServiceTest {
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf("John Smith who will leave custody on 20 November 2022"),
+      "prisonersForRelease" to listOf("John Smith who is due to leave custody on 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
+      "isEligibleForEarlyRelease" to "yes",
+    )
+
+    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send licence initial licence create email with multiple cases among which one prisoner release date falls on Friday or Bank holiday or Weekend`() {
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
+      initialPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-11")),
+      ),
+    )
+    val expectedMap = mapOf(
+      "comName" to "Joe Bloggs",
+      "prisonersForRelease" to listOf(
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 11 November 2022",
+      ),
+      "createLicenceLink" to "http://somewhere/licence/create/caseload",
+      "isEligibleForEarlyRelease" to "yes",
+    )
+
+    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send licence initial licence create email with multiple cases among which no prisoner release date falls on Friday or Bank holiday or Weekend`() {
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
+      initialPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-24")),
+      ),
+    )
+    val expectedMap = mapOf(
+      "comName" to "Joe Bloggs",
+      "prisonersForRelease" to listOf(
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 24 November 2022",
+      ),
+      "createLicenceLink" to "http://somewhere/licence/create/caseload",
+      "isEligibleForEarlyRelease" to "no",
+    )
+
+    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send licence urgent licence create email with multiple cases among which one prisoner release date falls on Friday or Bank holiday or Weekend`() {
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
+      urgentPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-11")),
+      ),
+    )
+    val expectedMap = mapOf(
+      "comName" to "Joe Bloggs",
+      "prisonersForRelease" to listOf(
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 11 November 2022",
+      ),
+      "createLicenceLink" to "http://somewhere/licence/create/caseload",
+      "isEligibleForEarlyRelease" to "yes",
+    )
+
+    notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
+    verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Test
+  fun `send licence urgent licence create email with multiple cases among which no prisoner release date falls on Friday or Bank holiday or Weekend`() {
+    val comToEmail = PromptLicenceCreationRequest(
+      email = EMAIL_ADDRESS,
+      comName = "Joe Bloggs",
+      urgentPromptCases = listOf(
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-24")),
+      ),
+    )
+    val expectedMap = mapOf(
+      "comName" to "Joe Bloggs",
+      "prisonersForRelease" to listOf(
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 24 November 2022",
+      ),
+      "createLicenceLink" to "http://somewhere/licence/create/caseload",
+      "isEligibleForEarlyRelease" to "no",
     )
 
     notifyService.sendInitialLicenceCreateEmails(listOf(comToEmail))
@@ -225,6 +336,7 @@ class NotifyServiceTest {
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
+      bankHolidayService = bankHolidayService,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)
@@ -277,5 +389,6 @@ class NotifyServiceTest {
     const val EMAIL_ADDRESS2 = "joe.bloggs2@mail.com"
     const val REFERENCE = "licence-id"
     const val INTERNAL_EMAIL_ADDRESS = "testemail@probation.gov.uk"
+    const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
   }
 }
