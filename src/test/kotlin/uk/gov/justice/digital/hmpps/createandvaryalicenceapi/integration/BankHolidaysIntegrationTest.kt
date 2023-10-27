@@ -41,9 +41,8 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBodyList(LocalDate::class.java)
-      .returnResult().responseBody
+      .returnResult().responseBody!!
 
-    assertThat(resultList.size).isEqualTo(4)
     assertThat(resultList).isEqualTo(
       listOf(
         LocalDate.parse("2018-01-01"),
@@ -65,9 +64,9 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBodyList(LocalDate::class.java)
-      .returnResult().responseBody
+      .returnResult().responseBody!!
 
-    assertThat(resultList.size).isEqualTo(4)
+    assertThat(resultList).hasSize(4)
 
     resultList = webTestClient.get()
       .uri("/bank-holidays")
@@ -77,9 +76,9 @@ class BankHolidaysIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBodyList(LocalDate::class.java)
-      .returnResult().responseBody
+      .returnResult().responseBody!!
 
-    assertThat(resultList.size).isEqualTo(4)
+    assertThat(resultList).hasSize(4)
 
     verify(govUkApiClient, times(1)).getBankHolidaysForEnglandAndWales()
   }
