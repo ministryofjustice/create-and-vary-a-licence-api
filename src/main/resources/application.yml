@@ -122,7 +122,7 @@ notify:
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
 
-workingDays: 3
+maxNumberOfWorkingDaysAllowedForEarlyRelease: 3
 
 # Overridden in real environments
 self:

@@ -241,7 +241,10 @@ data class Licence(
   @Schema(description = "The version number of this licence", example = "1.3")
   val licenceVersion: String? = null,
 
-  @Schema(description = "If CRD falls on Friday/Bank holiday/Weekend then it contains Earliest possible release date or CRD")
+  @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it contains Earliest possible release date or ARD||CRD")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val earliestReleaseDate: LocalDate? = null,
+
+  @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
+  val isEligibleForEarlyRelease: Boolean = false,
 )
