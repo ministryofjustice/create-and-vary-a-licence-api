@@ -35,7 +35,7 @@ class JwtAuthHelper(private val keyPair: KeyPair) {
           .setSubject(subject)
           .addClaims(it.toMap())
           .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
-          .signWith(SignatureAlgorithm.RS256, keyPair.private)
+          .signWith(keyPair.private, SignatureAlgorithm.RS256)
           .compact()
       }
 }
