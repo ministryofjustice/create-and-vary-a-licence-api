@@ -84,7 +84,7 @@ class UpdateSentenceDateService(
     sentenceChanges: SentenceChanges,
   ) {
     updatedLicenceEntity.bookingId?.let {
-      prisonApiClient.hdcStatus(it).defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
+      prisonApiClient.getHdcStatus(it).defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
         .filter { h -> h.approvalStatus != "APPROVED" }.subscribe {
           log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
           notifyService.sendDatesChangedEmail(

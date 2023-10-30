@@ -62,7 +62,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -151,7 +151,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates still sends email if HDC licence is not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(Mono.empty())
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(Mono.empty())
 
     service.updateSentenceDates(
       1L,
@@ -173,7 +173,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates does not email if HDC licence is Approved`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -206,7 +206,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates does not email if Licence BookingId is missing`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(bookingId = null)))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -240,7 +240,7 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates persists the updated entity with null dates`() {
     val licence = aLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -322,7 +322,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -383,7 +383,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -444,7 +444,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should not set the license status to inactive if existing license is not active`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -506,7 +506,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,
@@ -568,7 +568,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.hdcStatus(any())).thenReturn(
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
           approvalStatusDate = null,

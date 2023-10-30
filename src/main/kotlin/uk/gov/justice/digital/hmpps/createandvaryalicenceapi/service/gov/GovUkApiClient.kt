@@ -20,6 +20,6 @@ class GovUkApiClient(@Qualifier("govUkWebClient") val govUkApiClient: WebClient)
       .block()
 
     return response?.bankHolidayResult?.events?.map { it.date }
-      ?: throw IllegalStateException("Unexpected null response from API")
+      ?: error("Unexpected null response from API")
   }
 }

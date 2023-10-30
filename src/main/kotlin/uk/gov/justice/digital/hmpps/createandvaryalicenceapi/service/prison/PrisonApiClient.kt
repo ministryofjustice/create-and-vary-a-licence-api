@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
@@ -18,14 +17,14 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun hdcStatus(bookingId: Long): Mono<PrisonerHdcStatus> {
+  fun getHdcStatus(bookingId: Long): Mono<PrisonerHdcStatus> {
     return prisonerApiWebClient
       .get()
       .uri("/offender-sentences/booking/$bookingId/home-detention-curfews/latest")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(PrisonerHdcStatus::class.java)
-      .onErrorResume { webClientErrorHandler(it) }
+      .onErrorResume { coerce404ResponseToNull(it) }
   }
 
   fun getHdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
@@ -37,19 +36,6 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .bodyValue(bookingIds)
       .retrieve()
       .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
-      .onErrorResume { webClientErrorHandler(it) }
-      .block() ?: emptyList()
-  }
-
-  fun getOffenceHistories(bookingIds: List<Long>): List<PrisonerOffenceHistory> {
-    return prisonerApiWebClient
-      .post()
-      .uri("/bookings/offence-history")
-      .bodyValue(bookingIds)
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono(typeReference<List<PrisonerOffenceHistory>>())
-      .onErrorResume { webClientErrorHandler(it) }
       .block() ?: emptyList()
   }
 
@@ -61,29 +47,18 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<CourtEventOutcome>>())
-      .onErrorResume { webClientErrorHandler(it) }
       .block() ?: emptyList()
   }
 
-  private fun <API_RESPONSE_BODY_TYPE> webClientErrorHandler(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
+  private fun <API_RESPONSE_BODY_TYPE> coerce404ResponseToNull(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
     with(exception) {
-      if (this is WebClientResponseException) {
-        val uriPath = request?.uri?.path
-        when (statusCode) {
-          FORBIDDEN -> {
-            log.error("Client token does not have correct role to call prisoner-api $uriPath")
-          }
-
-          NOT_FOUND -> {
-            log.info("No resource found when calling prisoner-api $uriPath")
-          }
-
-          else -> {
-            log.error("Failed to call prisoner-api $uriPath [statusCode: $statusCode, body: ${this.responseBodyAsString}]")
-          }
+      when {
+        this is WebClientResponseException && statusCode == NOT_FOUND -> {
+          log.info("No resource found when calling prisoner-api ${request?.uri?.path}")
+          Mono.empty()
         }
-      } else {
-        log.error("Failed to call prisoner-api", exception)
+
+        else -> Mono.error(exception)
       }
-    }.let { Mono.empty() }
+    }
 }

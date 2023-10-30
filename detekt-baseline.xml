@@ -36,7 +36,6 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>UnusedParameter:LicenceController.kt$LicenceController$@PathVariable conditionType: String</ID>
-    <ID>UseCheckOrError:GovUkApiClient.kt$GovUkApiClient$throw IllegalStateException("Unexpected null response from API")</ID>
     <ID>UtilityClassWithPublicConstructor:Tags.kt$Tags</ID>
   </CurrentIssues>
 </SmellBaseline>
