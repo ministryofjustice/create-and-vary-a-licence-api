@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.GovUkApiClient
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -22,8 +21,7 @@ import java.time.Month
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
-  private val govUkApiClient = Mockito.mock<GovUkApiClient>()
-  private val bankHolidayService = BankHolidayService(govUkApiClient, maxNumberOfWorkingDaysAllowedForEarlyRelease)
+  private val releaseDateService = Mockito.mock<ReleaseDateService>()
 
   private val notifyService = NotifyService(
     enabled = true,
@@ -38,11 +36,13 @@ class NotifyServiceTest {
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
-    bankHolidayService = bankHolidayService,
+    releaseDateService = releaseDateService,
   )
 
   @Test
   fun `send licence initial licence create email`() {
+    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
@@ -63,6 +63,8 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence urgent licence create email`() {
+    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
@@ -82,7 +84,9 @@ class NotifyServiceTest {
   }
 
   @Test
-  fun `send licence initial licence create email with multiple cases among which one prisoner release date falls on Friday or Bank holiday or Weekend`() {
+  fun `send licence initial licence create email with multiple cases among which one prisoner is eligible for early release`() {
+    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
@@ -108,7 +112,7 @@ class NotifyServiceTest {
   }
 
   @Test
-  fun `send licence initial licence create email with multiple cases among which no prisoner release date falls on Friday or Bank holiday or Weekend`() {
+  fun `send licence initial licence create email with multiple cases among which no prisoner is eligible for early release`() {
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
@@ -134,7 +138,9 @@ class NotifyServiceTest {
   }
 
   @Test
-  fun `send licence urgent licence create email with multiple cases among which one prisoner release date falls on Friday or Bank holiday or Weekend`() {
+  fun `send licence urgent licence create email with multiple cases among which one prisoner is eligible for early release`() {
+    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
@@ -160,7 +166,9 @@ class NotifyServiceTest {
   }
 
   @Test
-  fun `send licence urgent licence create email with multiple cases among which no prisoner release date falls on Friday or Bank holiday or Weekend`() {
+  fun `send licence urgent licence create email with multiple cases among which none are eligible for early release`() {
+    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(false)
+
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
@@ -336,7 +344,7 @@ class NotifyServiceTest {
       unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
       client = notificationClient,
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
-      bankHolidayService = bankHolidayService,
+      releaseDateService = releaseDateService,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)

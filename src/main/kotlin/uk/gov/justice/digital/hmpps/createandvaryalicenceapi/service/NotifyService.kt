@@ -26,7 +26,7 @@ class NotifyService(
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
-  private val bankHolidayService: BankHolidayService,
+  private val releaseDateService: ReleaseDateService,
 ) {
   fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
@@ -184,7 +184,7 @@ class NotifyService(
           "${prisoner.name} who is due to leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
-        "isEligibleForEarlyRelease" to if (cases.any { bankHolidayService.isBankHolidayOrWeekend(it.releaseDate) }) "yes" else "no",
+        "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.releaseDate) }) "yes" else "no",
       ),
       null,
     )
