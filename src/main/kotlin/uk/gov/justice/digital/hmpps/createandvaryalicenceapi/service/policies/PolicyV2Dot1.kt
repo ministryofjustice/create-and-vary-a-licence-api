@@ -573,7 +573,6 @@ val POLICY_V2_1 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        subtext = "You must have PPCS approval if the curfew time is longer than 12 hours.",
         text = "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         tpl = "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         type = "CurfewTerms",

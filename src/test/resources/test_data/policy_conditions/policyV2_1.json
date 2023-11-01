@@ -905,7 +905,7 @@
           }
         ],
         "categoryShort": null,
-        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
+        "subtext": null,
         "type": "CurfewTerms"
       },
       {
