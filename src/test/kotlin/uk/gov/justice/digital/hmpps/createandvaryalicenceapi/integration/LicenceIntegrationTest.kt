@@ -3,12 +3,16 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -43,6 +47,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
+
+  @BeforeEach
+  fun reset() {
+    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+  }
 
   @Test
   @Sql(
@@ -650,5 +659,19 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     )
 
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
+
+    val govUkApiMockServer = GovUkMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      govUkApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      govUkApiMockServer.stop()
+    }
   }
 }

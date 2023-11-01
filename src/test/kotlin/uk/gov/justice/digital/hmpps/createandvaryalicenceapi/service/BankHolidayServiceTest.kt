@@ -18,6 +18,7 @@ class BankHolidayServiceTest {
   @BeforeEach
   fun reset() {
     reset(govUkApiClient)
+    whenever(govUkApiClient.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 
   @Test
@@ -35,5 +36,22 @@ class BankHolidayServiceTest {
     assertThat(result).isNotEmpty
     assertThat(result.size).isEqualTo(1)
     assertThat(result[0]).isEqualTo("2024-09-21")
+  }
+
+  private companion object {
+    val bankHolidays = listOf(
+      LocalDate.parse("2018-01-01"),
+      LocalDate.parse("2018-03-26"),
+      LocalDate.parse("2018-03-30"),
+      LocalDate.parse("2018-04-02"),
+      LocalDate.parse("2018-05-02"),
+      LocalDate.parse("2018-05-07"),
+      LocalDate.parse("2018-06-01"),
+      LocalDate.parse("2018-06-04"),
+      LocalDate.parse("2018-08-07"),
+      LocalDate.parse("2018-10-03"),
+      LocalDate.parse("2018-12-03"),
+      LocalDate.parse("2018-12-04"),
+    )
   }
 }

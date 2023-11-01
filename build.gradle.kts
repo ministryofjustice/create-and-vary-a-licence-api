@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.4.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.7.0"
   kotlin("plugin.spring") version "1.9.0"
   kotlin("plugin.jpa") version "1.9.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.1"
@@ -60,7 +60,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
   implementation("com.google.code.gson:gson:2.10.1")
-  implementation("io.arrow-kt:arrow-core:1.2.0")
+  implementation("io.arrow-kt:arrow-core:1.2.1")
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.5.1")
 
   // OpenAPI
@@ -70,9 +70,9 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
-  testImplementation("io.jsonwebtoken:jjwt-api:0.11.5")
-  testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
-  testImplementation("io.jsonwebtoken:jjwt-orgjson:0.11.5")
+  testImplementation("io.jsonwebtoken:jjwt-api:0.12.3")
+  testImplementation("io.jsonwebtoken:jjwt-impl:0.12.3")
+  testImplementation("io.jsonwebtoken:jjwt-orgjson:0.12.3")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.0.0")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.16")
   testImplementation("org.mockito:mockito-inline:5.2.0")

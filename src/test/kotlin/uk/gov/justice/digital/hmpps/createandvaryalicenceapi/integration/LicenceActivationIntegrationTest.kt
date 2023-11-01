@@ -87,6 +87,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.start()
       prisonerSearchMockServer.start()
       prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
+      prisonApiMockServer.stubGetCourtOutcomes()
     }
 
     @JvmStatic

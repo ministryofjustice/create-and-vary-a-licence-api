@@ -26,6 +26,7 @@ class NotifyService(
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
+  private val releaseDateService: ReleaseDateService,
 ) {
   fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
@@ -180,9 +181,10 @@ class NotifyService(
       mapOf(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
-          "${prisoner.name} who will leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
+          "${prisoner.name} who is due to leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
+        "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.releaseDate) }) "yes" else "no",
       ),
       null,
     )
