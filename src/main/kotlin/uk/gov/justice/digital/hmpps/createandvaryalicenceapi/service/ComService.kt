@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -28,6 +30,7 @@ class ComService(
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val prisonApiClient: PrisonApiClient,
 ) {
 
   companion object {
@@ -144,7 +147,15 @@ class ComService(
     val prisonNumbers = record
       .filter { (_, licence) -> licence == null }
       .mapNotNull { (result, _) -> result.identifiers.noms }
-    return this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
+
+    val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
+
+    val eligibleForCvlPrisoners = prisoners
+      .filter {
+        it.isUnstartedRecordEligibleForCvl()
+      }
+
+    return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
 
   private fun ProbationSearchResponseResult.createUnstartedRecord(
@@ -172,4 +183,77 @@ class ComService(
         if (it.direction == SearchDirection.ASC) "asc" else "desc",
       )
     }
+
+  private fun PrisonerSearchPrisoner.isUnstartedRecordEligibleForCvl(): Boolean {
+    // Person is parole eligible - not eligible for CVL
+    if (this.paroleEligibilityDate != null) {
+      // Parole eligibility - must be set and in the future
+      if (this.paroleEligibilityDate.isAfter(LocalDate.now())) {
+        return false
+      }
+    }
+
+    // Person is dead - not eligible for CVL
+    if (this.legalStatus == "DEAD") {
+      return false
+    }
+
+    // Person is on an indeterminate sentence - not eligible for CVL
+    if (this.indeterminateSentence) {
+      return false
+    }
+
+    // Person does not have a CRD - not eligible for CVL
+    if (this.conditionalReleaseDate == null) {
+      return false
+    }
+
+    // Person is on an ineligible extended determinate sentence - not eligible for CVL
+    if (this.confirmedReleaseDate != null) {
+      // PED cannot be in the future
+      if (this.paroleEligibilityDate != null) {
+        if (this.paroleEligibilityDate.isAfter(LocalDate.now())) {
+          return false
+        }
+      }
+
+      val dateStart = this.conditionalReleaseDate.minusDays(4)
+      // ARD must be between CRD - 4 days and CRD - if outside this then not eligible
+      if (!(this.confirmedReleaseDate.isAfter(dateStart) && this.confirmedReleaseDate.isBefore(this.conditionalReleaseDate))) {
+        return false
+      }
+
+      // APD with a PED in the past means they were successful parole applicant on a later attempt
+      if (actualParoleDate != null) {
+        return false
+      }
+    }
+
+    // Person has a status other than ACTIVE x or INACTIVE TRN - not eligible for CVL
+    if (this.status != null) {
+      if (!(this.status.startsWith("ACTIVE") || this.status == "INACTIVE TRN")) {
+        return false
+      }
+    }
+
+    // Person's ARD or CRD is in the past - not eligible for CVL
+    if (this.confirmedReleaseDate != null) {
+      if (this.confirmedReleaseDate.isBefore(LocalDate.now()) || this.conditionalReleaseDate.isBefore(LocalDate.now())) {
+        return false
+      }
+    }
+
+    // Person has no CRD and a post recall release date - Recall case - not eligible for CVL
+    if (this.confirmedReleaseDate != null && this.conditionalReleaseDate != null && this.postRecallReleaseDate != null) {
+      return false
+    }
+
+    // Person is approved for HDC - not eligible for CVL
+    val hdcStatus = prisonApiClient.getHdcStatus(this.bookingId).block()
+    if (hdcStatus?.approvalStatus == "APPROVED" || this.homeDetentionCurfewEligibilityDate != null) {
+      return false
+    }
+
+    return true
+  }
 }
