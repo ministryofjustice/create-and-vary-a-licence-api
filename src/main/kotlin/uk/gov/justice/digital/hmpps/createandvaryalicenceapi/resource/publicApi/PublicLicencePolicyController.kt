@@ -86,5 +86,4 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
     ],
   )
   fun getLatestPolicy() = publicLicencePolicyService.getLatestLicencePolicy()
-
 }
