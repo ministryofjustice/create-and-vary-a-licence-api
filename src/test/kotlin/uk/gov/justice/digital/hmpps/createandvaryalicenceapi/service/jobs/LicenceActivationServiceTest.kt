@@ -379,10 +379,21 @@ class LicenceActivationServiceTest {
   )
 
   private val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(
-    prisonerNumber = "A1234AA",
-    bookingId = "54321",
-    status = "INACTIVE OUT",
+    "A1234AA",
+    "54321",
+    "ACTIVE IN",
     mostSeriousOffence = "Robbery",
+    LocalDate.now().plusYears(1),
+    LocalDate.now().plusYears(1),
+    null,
+    LocalDate.now().plusDays(1),
+    LocalDate.now().plusDays(1),
+    LocalDate.now().plusDays(1),
+    null,
+    null,
+    null,
+    "SENTENCED",
+    false,
   )
 
   val hdcLicence = aLicenceEntity

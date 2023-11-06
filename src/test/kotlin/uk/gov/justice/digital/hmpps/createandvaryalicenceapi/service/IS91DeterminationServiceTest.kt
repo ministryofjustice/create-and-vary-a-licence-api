@@ -68,12 +68,19 @@ class IS91DeterminationServiceTest {
 
   private val aPrisonerSearchResult = PrisonerSearchPrisoner(
     "A1234AA",
-    "1234567",
+    "54321",
     "ACTIVE IN",
     mostSeriousOffence = "Robbery",
-    LocalDate.parse("2024-09-14"),
-    LocalDate.parse("2024-09-14"),
-    LocalDate.parse("2023-09-14"),
-    LocalDate.parse("2023-09-14"),
+    LocalDate.now().plusYears(1),
+    LocalDate.now().plusYears(1),
+    null,
+    LocalDate.now().plusDays(1),
+    LocalDate.now().plusDays(1),
+    LocalDate.now().plusDays(1),
+    null,
+    null,
+    null,
+    "SENTENCED",
+    false,
   )
 }
