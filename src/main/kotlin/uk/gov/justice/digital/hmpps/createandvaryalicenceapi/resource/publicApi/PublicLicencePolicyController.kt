@@ -57,4 +57,34 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
     ],
   )
   fun getPolicyByVersionNumber(@PathVariable("version") versionNumber: String) = publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
+
+  @GetMapping(value = ["/latest"])
+  @ResponseBody
+  @Operation(
+    summary = "Get latest policy.",
+    description = "Returns latest policy." +
+      "Requires ROLE_VIEW_LICENCES.",
+    security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Policy found",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = LicencePolicy::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun getLatestPolicy() = publicLicencePolicyService.getLatestLicencePolicy()
+
 }
