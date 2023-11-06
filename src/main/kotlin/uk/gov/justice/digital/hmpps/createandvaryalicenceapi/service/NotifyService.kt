@@ -181,7 +181,13 @@ class NotifyService(
       mapOf(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
-          "${prisoner.name} who is due to leave custody on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}"
+          "${prisoner.name} (CRN: ${prisoner.crn}), who is due to leave custody on ${
+            prisoner.releaseDate.format(
+              DateTimeFormatter.ofPattern(
+                "dd LLLL yyyy",
+              ),
+            )
+          }"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
         "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.releaseDate) }) "yes" else "no",
