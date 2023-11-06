@@ -12,10 +12,6 @@ data class PrisonerForRelease(
   @field:NotBlank
   val name: String,
 
-  @Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
-  @field:NotBlank
-  val crn: String,
-
   @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
   @JsonFormat(pattern = "yyyy-MM-dd")
   @field:NotNull
