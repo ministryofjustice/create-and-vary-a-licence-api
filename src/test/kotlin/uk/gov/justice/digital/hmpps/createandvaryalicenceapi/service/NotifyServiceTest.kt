@@ -47,12 +47,12 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20")),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf("John Smith (CRN: X12444), who is due to leave custody on 20 November 2022"),
+      "prisonersForRelease" to listOf("John Smith who is due to leave custody on 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
     )
@@ -69,12 +69,12 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-20")),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "prisonersForRelease" to listOf("John Smith (CRN: X12444), who is due to leave custody on 20 November 2022"),
+      "prisonersForRelease" to listOf("John Smith who is due to leave custody on 20 November 2022"),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
     )
@@ -91,17 +91,17 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-11")),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 11 November 2022",
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 11 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
@@ -117,17 +117,17 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-24")),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 24 November 2022",
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 24 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "no",
@@ -145,17 +145,17 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-11")),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 11 November 2022",
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 11 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "yes",
@@ -173,17 +173,17 @@ class NotifyServiceTest {
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
+        PrisonerForRelease(name = "John Smith", releaseDate = LocalDate.parse("2022-11-09")),
+        PrisonerForRelease(name = "Test1", releaseDate = LocalDate.parse("2022-11-10")),
+        PrisonerForRelease(name = "Test2", releaseDate = LocalDate.parse("2022-11-24")),
       ),
     )
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
       "prisonersForRelease" to listOf(
-        "John Smith (CRN: X12444), who is due to leave custody on 09 November 2022",
-        "Test1 (CRN: X12444), who is due to leave custody on 10 November 2022",
-        "Test2 (CRN: X12444), who is due to leave custody on 24 November 2022",
+        "John Smith who is due to leave custody on 09 November 2022",
+        "Test1 who is due to leave custody on 10 November 2022",
+        "Test2 who is due to leave custody on 24 November 2022",
       ),
       "createLicenceLink" to "http://somewhere/licence/create/caseload",
       "isEligibleForEarlyRelease" to "no",
@@ -395,6 +395,8 @@ class NotifyServiceTest {
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
     const val EMAIL_ADDRESS = "joe.bloggs@mail.com"
     const val EMAIL_ADDRESS2 = "joe.bloggs2@mail.com"
+    const val REFERENCE = "licence-id"
     const val INTERNAL_EMAIL_ADDRESS = "testemail@probation.gov.uk"
+    const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
   }
 }

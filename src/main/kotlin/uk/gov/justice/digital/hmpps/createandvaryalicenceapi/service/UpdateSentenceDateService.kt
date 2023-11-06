@@ -94,11 +94,12 @@ class UpdateSentenceDateService(
             "${licenceEntity.forename} ${licenceEntity.surname}",
             licenceEntity.crn,
             mapOf(
-              "Release date has changed to ${updatedLicenceEntity.licenceStartDate}" to sentenceChanges.lsdChanged,
-              "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate}" to sentenceChanges.ledChanged,
-              "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate}" to sentenceChanges.sedChanged,
-              "Top up supervision start date has changed to ${updatedLicenceEntity.topupSupervisionStartDate}" to sentenceChanges.tussdChanged,
-              "Top up supervision end date has changed to ${updatedLicenceEntity.topupSupervisionExpiryDate}" to sentenceChanges.tusedChanged,
+              "Release date" to sentenceChanges.lsdChanged,
+              "Release date" to sentenceChanges.lsdChanged,
+              "Licence end date" to sentenceChanges.ledChanged,
+              "Sentence end date" to sentenceChanges.sedChanged,
+              "Top up supervision start date" to sentenceChanges.tussdChanged,
+              "Top up supervision end date" to sentenceChanges.tusedChanged,
             ),
           )
         }
