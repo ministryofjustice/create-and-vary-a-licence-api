@@ -379,21 +379,21 @@ class LicenceActivationServiceTest {
   )
 
   private val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(
-    "A1234AA",
-    "54321",
-    "ACTIVE IN",
+    prisonerNumber = "A1234AA",
+    bookingId = "54321",
+    status = "INACTIVE OUT",
     mostSeriousOffence = "Robbery",
-    LocalDate.now().plusYears(1),
-    LocalDate.now().plusYears(1),
-    null,
-    LocalDate.now().plusDays(1),
-    LocalDate.now().plusDays(1),
-    LocalDate.now().plusDays(1),
-    null,
-    null,
-    null,
-    "SENTENCED",
-    false,
+    licenceExpiryDate = LocalDate.parse("2024-09-14"),
+    topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+    homeDetentionCurfewEligibilityDate = null,
+    releaseDate = LocalDate.parse("2023-09-14"),
+    confirmedReleaseDate = LocalDate.parse("2023-09-14"),
+    conditionalReleaseDate = LocalDate.parse("2023-09-14"),
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
+    postRecallReleaseDate = null,
+    legalStatus = "SENTENCED",
+    indeterminateSentence = false,
   )
 
   val hdcLicence = aLicenceEntity

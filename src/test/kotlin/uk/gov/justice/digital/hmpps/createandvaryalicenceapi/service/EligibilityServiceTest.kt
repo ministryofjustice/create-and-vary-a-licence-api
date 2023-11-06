@@ -358,24 +358,24 @@ class EligibilityServiceTest {
   }
 
   private companion object {
-    val clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
+    val clock: Clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
-      "A1234AA",
-      "54321",
-      "ACTIVE IN",
+      prisonerNumber = "A1234AA",
+      bookingId = "54321",
+      status = "ACTIVE IN",
       mostSeriousOffence = "Robbery",
-      LocalDate.now(clock).plusYears(1),
-      LocalDate.now(clock).plusYears(1),
-      null,
-      LocalDate.now(clock).plusDays(1),
-      LocalDate.now(clock).plusDays(1),
-      LocalDate.now(clock).plusDays(1),
-      null,
-      null,
-      null,
-      "SENTENCED",
-      false,
+      licenceExpiryDate = LocalDate.now(clock).plusYears(1),
+      topUpSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
+      homeDetentionCurfewEligibilityDate = null,
+      releaseDate = LocalDate.now(clock).plusDays(1),
+      confirmedReleaseDate = LocalDate.now(clock).plusDays(1),
+      conditionalReleaseDate = LocalDate.now(clock).plusDays(1),
+      paroleEligibilityDate = null,
+      actualParoleDate = null,
+      postRecallReleaseDate = null,
+      legalStatus = "SENTENCED",
+      indeterminateSentence = false,
     )
 
     val aPrisonerHdcStatus = PrisonerHdcStatus(
