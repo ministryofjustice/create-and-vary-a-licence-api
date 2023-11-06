@@ -725,23 +725,141 @@
         "requiresInput": true,
         "inputs": [
           {
-            "type": "timePicker",
-            "label": "Enter the curfew start time",
-            "name": "curfewStart",
+            "type": "radio",
+            "label": "Select the number of curfews needed",
+            "name": "numberOfCurfews",
             "listType": null,
-            "options": null,
-            "case": null,
-            "handleIndefiniteArticle": null,
-            "addAnother": null,
-            "includeBefore": null,
-            "subtext": null
-          },
-          {
-            "type": "timePicker",
-            "label": "Enter the curfew end time",
-            "name": "curfewEnd",
-            "listType": null,
-            "options": null,
+            "options": [
+              {
+                "value": "One curfew",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the curfew start time",
+                      "name": "curfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Enter the curfew end time",
+                      "name": "curfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              },
+              {
+                "value": "Two curfews",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "First curfew – enter the start time",
+                      "name": "curfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "First curfew – enter the end time",
+                      "name": "curfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Second curfew – enter the start time",
+                      "name": "curfewStart2",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Second curfew – enter the end time",
+                      "name": "curfewEnd2",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              },
+              {
+                "value": "Three curfews",
+                "conditional": {
+                  "inputs": [
+                    {
+                      "type": "timePicker",
+                      "label": "First curfew – enter the start time",
+                      "name": "curfewStart",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "First curfew – enter the end time",
+                      "name": "curfewEnd",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Second curfew – enter the start time",
+                      "name": "curfewStart2",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Second curfew – enter the end time",
+                      "name": "curfewEnd2",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Third curfew – enter the start time",
+                      "name": "curfewStart3",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    },
+                    {
+                      "type": "timePicker",
+                      "label": "Third curfew – enter the end time",
+                      "name": "curfewEnd3",
+                      "case": null,
+                      "handleIndefiniteArticle": null,
+                      "includeBefore": null,
+                      "subtext": null
+                    }
+                  ]
+                }
+              }
+            ],
             "case": null,
             "handleIndefiniteArticle": null,
             "addAnother": null,
@@ -787,7 +905,7 @@
           }
         ],
         "categoryShort": null,
-        "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
+        "subtext": null,
         "type": "CurfewTerms"
       },
       {

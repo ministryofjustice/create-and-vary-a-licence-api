@@ -455,14 +455,92 @@ val POLICY_V2_1 = LicencePolicy(
         code = "0a370862-5426-49c1-b6d4-3d074d78a81a",
         inputs = listOf(
           Input(
-            label = "Enter the curfew start time",
-            name = "curfewStart",
-            type = TIME_PICKER,
-          ),
-          Input(
-            label = "Enter the curfew end time",
-            name = "curfewEnd",
-            type = TIME_PICKER,
+            label = "Select the number of curfews needed",
+            name = "numberOfCurfews",
+            options = listOf(
+              Option(
+                value = "One curfew",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter the curfew start time",
+                      name = "curfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Enter the curfew end time",
+                      name = "curfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+              Option(
+                value = "Two curfews",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "First curfew – enter the start time",
+                      name = "curfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "First curfew – enter the end time",
+                      name = "curfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the start time",
+                      name = "curfewStart2",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the end time",
+                      name = "curfewEnd2",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+              Option(
+                value = "Three curfews",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "First curfew – enter the start time",
+                      name = "curfewStart",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "First curfew – enter the end time",
+                      name = "curfewEnd",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the start time",
+                      name = "curfewStart2",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Second curfew – enter the end time",
+                      name = "curfewEnd2",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Third curfew – enter the start time",
+                      name = "curfewStart3",
+                      type = TIME_PICKER,
+                    ),
+                    ConditionalInput(
+                      label = "Third curfew – enter the end time",
+                      name = "curfewEnd3",
+                      type = TIME_PICKER,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
           ),
           Input(
             case = LOWER,
@@ -495,7 +573,6 @@ val POLICY_V2_1 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        subtext = "You must have PPCS approval if the curfew time is longer than 12 hours.",
         text = "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         tpl = "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         type = "CurfewTerms",
