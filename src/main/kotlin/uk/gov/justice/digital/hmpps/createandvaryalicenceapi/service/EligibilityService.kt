@@ -25,7 +25,7 @@ class EligibilityService(
       ) &&
       hasActivePrisonStatus(prisoner.status) &&
       hasEligibleReleaseDate(prisoner.confirmedReleaseDate, prisoner.conditionalReleaseDate) &&
-      !isRecallCase(prisoner.postRecallReleaseDate) &&
+      !isRecallCase(prisoner.conditionalReleaseDate, prisoner.postRecallReleaseDate) &&
       !isHomeDetentionCurfewCase(prisoner.bookingId, prisoner.homeDetentionCurfewEligibilityDate)
   }
 
@@ -92,8 +92,13 @@ class EligibilityService(
     return releaseDate!!.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 
-  private fun isRecallCase(postRecallReleaseDate: LocalDate?): Boolean {
-    return postRecallReleaseDate != null
+  private fun isRecallCase(conditionalReleaseDate: LocalDate?, postRecallReleaseDate: LocalDate?): Boolean {
+    // If a CRD but no PRRD it should NOT be treated as a recall
+    if (postRecallReleaseDate == null) {
+      return false
+    }
+    // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
+    return postRecallReleaseDate.isAfter(conditionalReleaseDate!!)
   }
 
   private fun isHomeDetentionCurfewCase(bookingId: String, homeDetentionCurfewEligibilityDate: LocalDate?): Boolean {

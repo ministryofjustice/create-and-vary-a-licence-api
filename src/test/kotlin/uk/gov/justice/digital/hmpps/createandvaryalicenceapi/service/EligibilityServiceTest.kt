@@ -220,11 +220,28 @@ class EligibilityServiceTest {
   }
 
   @Test
-  fun `Person is on recall - not eligible for CVL `() {
+  fun `Person is on recall with a post recall release date (PRRD) before CRD - eligible for CVL `() {
+    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
+      Mono.just(
+        aPrisonerHdcStatus,
+      ),
+    )
+
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
-        conditionalReleaseDate = null,
-        postRecallReleaseDate = LocalDate.now(clock).plusYears(1),
+        postRecallReleaseDate = LocalDate.now(clock).minusDays(1),
+      ),
+    )
+    verify(prisonApiClient).getHdcStatus(54321)
+
+    assertThat(result).isTrue()
+  }
+
+  @Test
+  fun `Person is on recall with a post recall release date (PRRD) after CRD - not eligible for CVL `() {
+    val result = service.isEligibleForCvl(
+      aPrisonerSearchResult.copy(
+        postRecallReleaseDate = LocalDate.now(clock).plusDays(2),
       ),
     )
     verifyNoInteractions(prisonApiClient)
