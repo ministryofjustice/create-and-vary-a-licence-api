@@ -1,4 +1,3 @@
----
 generic-service:
   nameOverride: create-and-vary-a-licence-api
 
@@ -6,12 +5,12 @@ generic-service:
 
   image:
     repository: quay.io/hmpps/create-and-vary-a-licence-api
-    tag: app_version    # override at deployment time
+    tag: app_version # override at deployment time
     port: 8080
 
   ingress:
     enabled: true
-    hosts: app-hostname.local    # override per environment
+    hosts: app-hostname.local # override per environment
     tlsSecretName: create-and-vary-a-licence-api-cert
     v1_2_enabled: true
     v0_47_enabled: false
@@ -45,14 +44,9 @@ generic-service:
       DB_PASS: "database_password"
 
   allowlist:
-    office: "217.33.148.210/32"
-    health-kick: "35.177.252.195/32"
-    mojvpn: "81.134.202.29/32"
-    moj-global-protect: "35.176.93.186/32"
-    cloudplatform-live1-1: "35.178.209.113/32"
-    cloudplatform-live1-2: "3.8.51.207/32"
-    cloudplatform-live1-3: "35.177.252.54/32"
-    approved-premises-team: "54.76.254.148/32"
+    dxw-vpn: 54.76.254.148/32
+    groups:
+      - internal
 
 generic-prometheus-alerts:
   targetApplication: create-and-vary-a-licence-api
