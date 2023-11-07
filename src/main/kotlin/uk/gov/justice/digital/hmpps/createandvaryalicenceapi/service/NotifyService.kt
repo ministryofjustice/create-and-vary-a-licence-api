@@ -202,9 +202,9 @@ class NotifyService(
       }
       log.info(
         "Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${
-          prisoner.releaseDate.format(
-            dateFormat,
-          )
+        prisoner.releaseDate.format(
+          dateFormat,
+        )
         }",
       )
     }
