@@ -157,4 +157,19 @@ class PublicLicencePolicyControllerTest {
       someConditionTypes,
     )
   }
+
+  @Test
+  fun `given a policy exist when get latest policy then return latest policy`() {
+    whenever(publicLicencePolicyService.getLatestLicencePolicy()).thenReturn(aLicencePolicy)
+
+    val result = mvc.perform(get("/public/policy/latest").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(aLicencePolicy))
+
+    verify(publicLicencePolicyService, times(1)).getLatestLicencePolicy()
+  }
 }

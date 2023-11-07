@@ -16,4 +16,8 @@ class PublicLicencePolicyService(
 
     return policy.transformToPublicLicencePolicy()
   }
+
+  fun getLatestLicencePolicy(): PublicLicencePolicy {
+    return licencePolicyService.currentPolicy().transformToPublicLicencePolicy()
+  }
 }
