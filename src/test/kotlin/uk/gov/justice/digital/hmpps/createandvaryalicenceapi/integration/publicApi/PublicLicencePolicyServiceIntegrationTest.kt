@@ -69,6 +69,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
 
       Assertions.assertThat(result?.userMessage).contains("Access Denied")
     }
+
     @Test
     fun `get latest policy is v2_1 `() {
       webTestClient.get()
@@ -81,6 +82,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectBody()
         .json(policy("V2_1"), true)
     }
+
     @Test
     fun `Get latest policy is role protected`() {
       val result = webTestClient.get()
