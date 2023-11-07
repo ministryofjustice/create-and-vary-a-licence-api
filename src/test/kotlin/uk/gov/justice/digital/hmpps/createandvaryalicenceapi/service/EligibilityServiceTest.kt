@@ -67,12 +67,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is parole eligible - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321L)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).plusYears(1),
@@ -85,12 +79,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has an incorrect legal status - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         legalStatus = "DEAD",
@@ -103,12 +91,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on an indeterminate sentence - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         indeterminateSentence = true,
@@ -121,12 +103,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person does not have a conditional release date - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = null,
@@ -139,12 +115,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - ARD is outside threshold in the past - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
@@ -157,14 +127,9 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - ARD is outside threshold in the future - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
+        paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
         confirmedReleaseDate = LocalDate.now(clock).plusDays(2),
       ),
     )
@@ -174,15 +139,10 @@ class EligibilityServiceTest {
   }
 
   @Test
-  fun `Person is on ineligible EDS - has a APD - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
+  fun `Person is on ineligible EDS - has a APD and a PED in the past - not eligible for CVL `() {
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
+        paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
         actualParoleDate = LocalDate.now(clock).plusDays(1),
       ),
     )
@@ -193,12 +153,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - has a APD with a PED in the past - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
@@ -230,12 +184,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person does not have an active prison status - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         status = "INACTIVE OUT",
@@ -248,12 +196,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has a confirmed release date (ARD) in the past - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = LocalDate.now(clock).minusDays(1),
@@ -266,12 +208,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has a conditional release date (CRD) in the past - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = LocalDate.now(clock).minusDays(1),
@@ -285,12 +221,6 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on recall - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = null,
@@ -340,16 +270,23 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has no ARD and a CRD in the past - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = null,
         conditionalReleaseDate = LocalDate.now(clock).minusDays(10),
+      ),
+    )
+    verifyNoInteractions(prisonApiClient)
+
+    assertThat(result).isFalse()
+  }
+
+  @Test
+  fun `Person has no ARD and no CRD - not eligible for CVL `() {
+    val result = service.isEligibleForCvl(
+      aPrisonerSearchResult.copy(
+        confirmedReleaseDate = null,
+        conditionalReleaseDate = null,
       ),
     )
     verifyNoInteractions(prisonApiClient)

@@ -13,26 +13,20 @@ class EligibilityService(
 ) {
 
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
-    val cvlCheck = listOf(
-      !isPersonParoleEligible(prisoner.paroleEligibilityDate),
-      hasCorrectLegalStatus(prisoner.legalStatus),
-      !isOnIndeterminateSentence(prisoner.indeterminateSentence),
-      hasConditionalReleaseDate(prisoner.conditionalReleaseDate),
+    return !isPersonParoleEligible(prisoner.paroleEligibilityDate) &&
+      hasCorrectLegalStatus(prisoner.legalStatus) &&
+      !isOnIndeterminateSentence(prisoner.indeterminateSentence) &&
+      hasConditionalReleaseDate(prisoner.conditionalReleaseDate) &&
       isOnEligibleExtendedDeterminateSentence(
+        prisoner.paroleEligibilityDate,
         prisoner.conditionalReleaseDate,
         prisoner.confirmedReleaseDate,
         prisoner.actualParoleDate,
-      ),
-      hasActivePrisonStatus(prisoner.status),
-      hasEligibleReleaseDate(prisoner.confirmedReleaseDate, prisoner.conditionalReleaseDate),
-      !isRecallCase(prisoner.conditionalReleaseDate, prisoner.postRecallReleaseDate),
-    ).all { it }
-
-    return if (!cvlCheck) {
-      false
-    } else {
-      return !isHomeDetentionCurfewCase(prisoner.bookingId, prisoner.homeDetentionCurfewEligibilityDate)
-    }
+      ) &&
+      hasActivePrisonStatus(prisoner.status) &&
+      hasEligibleReleaseDate(prisoner.confirmedReleaseDate, prisoner.conditionalReleaseDate) &&
+      !isRecallCase(prisoner.postRecallReleaseDate) &&
+      !isHomeDetentionCurfewCase(prisoner.bookingId, prisoner.homeDetentionCurfewEligibilityDate)
   }
 
   private fun isPersonParoleEligible(paroleEligibilityDate: LocalDate?): Boolean {
@@ -57,28 +51,19 @@ class EligibilityService(
   }
 
   private fun isOnEligibleExtendedDeterminateSentence(
+    paroleEligibilityDate: LocalDate?,
     conditionalReleaseDate: LocalDate?,
     actualReleaseDate: LocalDate?,
     actualParoleDate: LocalDate?,
   ): Boolean {
-    // TODO - If you don’t have a PED, you automatically pass this check as you’re not an EDS case - already checked in isPersonParoleEligible
-//    if (paroleEligibilityDate == null) {
-//      return true
-//    }
-
-    // TODO - If you don't have a CRD, you are ineligible for CVL - covered by previous hasConditionalReleaseDate
-//    if (conditionalReleaseDate == null) {
-//      return false
-//    }
-
-    // TODO - duplicated check as already checking for this in isPersonParoleEligible
-//    if (paroleEligibilityDate.isAfter(LocalDate.now())) {
-//      return false
-//    }
+    // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
+    if (paroleEligibilityDate == null) {
+      return true
+    }
 
     // if ARD is not between CRD - 4 days and CRD inclusive (to account for bank holidays and weekends), not eligible
-    if (actualReleaseDate != null && conditionalReleaseDate != null) {
-      val dateStart = conditionalReleaseDate.minusDays(4)
+    if (actualReleaseDate != null) {
+      val dateStart = conditionalReleaseDate!!.minusDays(4)
       if (!(actualReleaseDate.isAfter(dateStart) && (actualReleaseDate.isBefore(conditionalReleaseDate) || actualReleaseDate.isEqual(conditionalReleaseDate)))) {
         return false
       }
@@ -102,25 +87,13 @@ class EligibilityService(
   }
 
   private fun hasEligibleReleaseDate(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate?): Boolean {
-    // TODO - according to the build create caseload - if the release date is before today, filtered out - is that correct?
-//    if (actualReleaseDate == null){
-//      if (conditionalReleaseDate != null){
-//        return conditionalReleaseDate.isBefore(LocalDate.now())
-//      }
-//    }
-
-    // TODO - if they have no confirmed release date and a CRD in the past should they be eligible?
-
     val releaseDate = actualReleaseDate ?: conditionalReleaseDate
 
-    if (releaseDate != null) {
-      return releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
-    }
-    return false
+    return releaseDate!!.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 
-  private fun isRecallCase(conditionalReleaseDate: LocalDate?, postRecallReleaseDate: LocalDate?): Boolean {
-    return conditionalReleaseDate == null && postRecallReleaseDate != null
+  private fun isRecallCase(postRecallReleaseDate: LocalDate?): Boolean {
+    return postRecallReleaseDate != null
   }
 
   private fun isHomeDetentionCurfewCase(bookingId: String, homeDetentionCurfewEligibilityDate: LocalDate?): Boolean {
