@@ -111,4 +111,13 @@ class PublicLicencePolicyServiceTest {
       .isInstanceOf(EntityNotFoundException::class.java)
       .hasMessage("Policy version 0 not found")
   }
+
+  @Test
+  fun `given policies when get latest policy then return latest policy`() {
+    whenever(licencePolicyService.currentPolicy()).thenReturn(POLICY_V2_1)
+
+    val policy = service.getLatestLicencePolicy()
+
+    assertThat(policy.version).isEqualTo(POLICY_V2_1.version)
+  }
 }

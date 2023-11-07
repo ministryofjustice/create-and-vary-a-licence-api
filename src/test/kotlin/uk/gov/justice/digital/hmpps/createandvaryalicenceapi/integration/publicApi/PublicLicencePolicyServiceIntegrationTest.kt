@@ -69,5 +69,32 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
 
       Assertions.assertThat(result?.userMessage).contains("Access Denied")
     }
+
+    @Test
+    fun `get latest policy is v2_1 `() {
+      webTestClient.get()
+        .uri("/public/policy/latest")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody()
+        .json(policy("V2_1"), true)
+    }
+
+    @Test
+    fun `Get latest policy is role protected`() {
+      val result = webTestClient.get()
+        .uri("/public/policy/latest")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      Assertions.assertThat(result?.userMessage).contains("Access Denied")
+    }
   }
 }
