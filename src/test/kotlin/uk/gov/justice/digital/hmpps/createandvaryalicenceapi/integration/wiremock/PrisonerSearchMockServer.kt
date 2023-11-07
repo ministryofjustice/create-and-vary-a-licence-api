@@ -19,17 +19,23 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                 {
                   "prisonerNumber": "G7285UT",
                   "bookingId": "456",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false
                },
                                {
                   "prisonerNumber": "G5613GT",
                   "bookingId": "789",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false
                },
                                {
                   "prisonerNumber": "G4169UO",
                   "bookingId": "432",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false
                }
               ]
             """.trimIndent(),
