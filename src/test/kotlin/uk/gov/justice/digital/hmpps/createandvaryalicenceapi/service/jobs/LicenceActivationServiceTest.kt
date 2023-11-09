@@ -394,6 +394,7 @@ class LicenceActivationServiceTest {
     postRecallReleaseDate = null,
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
+    recall = false,
   )
 
   val hdcLicence = aLicenceEntity

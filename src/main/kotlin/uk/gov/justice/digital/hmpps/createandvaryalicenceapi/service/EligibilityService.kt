@@ -1,109 +1,98 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
 import java.time.LocalDate
 
 @Service
 class EligibilityService(
-  private val prisonApiClient: PrisonApiClient,
   private val clock: Clock,
 ) {
 
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
-    return !isPersonParoleEligible(prisoner.paroleEligibilityDate) &&
-      hasCorrectLegalStatus(prisoner.legalStatus) &&
-      !isOnIndeterminateSentence(prisoner.indeterminateSentence) &&
-      hasConditionalReleaseDate(prisoner.conditionalReleaseDate) &&
-      isOnEligibleExtendedDeterminateSentence(
-        prisoner.paroleEligibilityDate,
-        prisoner.conditionalReleaseDate,
-        prisoner.confirmedReleaseDate,
-        prisoner.actualParoleDate,
-      ) &&
-      hasActivePrisonStatus(prisoner.status) &&
-      hasEligibleReleaseDate(prisoner.confirmedReleaseDate, prisoner.conditionalReleaseDate) &&
-      !isRecallCase(prisoner.conditionalReleaseDate, prisoner.postRecallReleaseDate) &&
-      !isHomeDetentionCurfewCase(prisoner.bookingId, prisoner.homeDetentionCurfewEligibilityDate)
+    return !prisoner.isPersonParoleEligible() &&
+      prisoner.hasCorrectLegalStatus() &&
+      !prisoner.isOnIndeterminateSentence() &&
+      prisoner.hasConditionalReleaseDate() &&
+      prisoner.isOnEligibleExtendedDeterminateSentence() &&
+      prisoner.hasActivePrisonStatus() &&
+      prisoner.hasEligibleReleaseDate() &&
+      !prisoner.isRecallCase()
   }
 
-  private fun isPersonParoleEligible(paroleEligibilityDate: LocalDate?): Boolean {
-    if (paroleEligibilityDate != null) {
-      if (paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
+  private fun PrisonerSearchPrisoner.isPersonParoleEligible(): Boolean {
+    if (this.paroleEligibilityDate != null) {
+      if (this.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
         return true
       }
     }
     return false
   }
 
-  private fun hasCorrectLegalStatus(legalStatus: String): Boolean {
-    return legalStatus != "DEAD"
+  private fun PrisonerSearchPrisoner.hasCorrectLegalStatus(): Boolean {
+    return this.legalStatus != "DEAD"
   }
 
-  private fun isOnIndeterminateSentence(isOnIndeterminateSentence: Boolean): Boolean {
-    return isOnIndeterminateSentence
+  private fun PrisonerSearchPrisoner.isOnIndeterminateSentence(): Boolean {
+    return this.indeterminateSentence
   }
 
-  private fun hasConditionalReleaseDate(conditionalReleaseDate: LocalDate?): Boolean {
-    return conditionalReleaseDate != null
+  private fun PrisonerSearchPrisoner.hasConditionalReleaseDate(): Boolean {
+    return this.conditionalReleaseDate != null
   }
 
-  private fun isOnEligibleExtendedDeterminateSentence(
-    paroleEligibilityDate: LocalDate?,
-    conditionalReleaseDate: LocalDate?,
-    actualReleaseDate: LocalDate?,
-    actualParoleDate: LocalDate?,
-  ): Boolean {
+  private fun PrisonerSearchPrisoner.isOnEligibleExtendedDeterminateSentence(): Boolean {
     // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
-    if (paroleEligibilityDate == null) {
+    if (this.paroleEligibilityDate == null) {
       return true
     }
 
     // if ARD is not between CRD - 4 days and CRD inclusive (to account for bank holidays and weekends), not eligible
-    if (actualReleaseDate != null) {
-      val dateStart = conditionalReleaseDate!!.minusDays(4)
-      if (!(actualReleaseDate.isAfter(dateStart) && (actualReleaseDate.isBefore(conditionalReleaseDate) || actualReleaseDate.isEqual(conditionalReleaseDate)))) {
+    if (this.confirmedReleaseDate != null) {
+      val dateStart = this.conditionalReleaseDate!!.minusDays(4)
+      if (!(
+        this.confirmedReleaseDate.isAfter(dateStart) &&
+          (
+            this.confirmedReleaseDate.isBefore(this.conditionalReleaseDate) ||
+              this.confirmedReleaseDate.isEqual(this.conditionalReleaseDate)
+            )
+        )
+      ) {
         return false
       }
     }
 
     // an APD with a PED in the past means they were a successful parole applicant on a later attempt, so not eligible
-    if (actualParoleDate != null) {
+    if (this.actualParoleDate != null) {
       return false
     }
 
     return true
   }
 
-  private fun hasActivePrisonStatus(status: String?): Boolean {
-    if (status != null) {
-      if (status.startsWith("ACTIVE") || status == "INACTIVE TRN") {
-        return true
-      }
-    }
-    return false
-  }
+  private fun PrisonerSearchPrisoner.hasActivePrisonStatus() = status?.let {
+    it.startsWith("ACTIVE") || it == "INACTIVE TRN"
+  } ?: false
 
-  private fun hasEligibleReleaseDate(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate?): Boolean {
-    val releaseDate = actualReleaseDate ?: conditionalReleaseDate
+  private fun PrisonerSearchPrisoner.hasEligibleReleaseDate(): Boolean {
+    val releaseDate = this.confirmedReleaseDate ?: this.conditionalReleaseDate
 
     return releaseDate!!.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 
-  private fun isRecallCase(conditionalReleaseDate: LocalDate?, postRecallReleaseDate: LocalDate?): Boolean {
+  private fun PrisonerSearchPrisoner.isRecallCase(): Boolean {
     // If a CRD but no PRRD it should NOT be treated as a recall
-    if (postRecallReleaseDate == null) {
+    if (this.conditionalReleaseDate != null && this.postRecallReleaseDate == null) {
       return false
     }
-    // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
-    return postRecallReleaseDate.isAfter(conditionalReleaseDate!!)
-  }
 
-  private fun isHomeDetentionCurfewCase(bookingId: String, homeDetentionCurfewEligibilityDate: LocalDate?): Boolean {
-    val bookingIdRequest = bookingId.toLong()
-    val hdcStatus = prisonApiClient.getHdcStatus(bookingIdRequest).block()
-    return (hdcStatus?.approvalStatus == "APPROVED" || homeDetentionCurfewEligibilityDate != null)
+    if (this.conditionalReleaseDate != null && this.postRecallReleaseDate != null) {
+      // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
+      return this.postRecallReleaseDate.isAfter(this.conditionalReleaseDate)
+    }
+
+    // Trust the Nomis recall flag as a fallback position - the above rules should always override
+    return this.recall
   }
 }

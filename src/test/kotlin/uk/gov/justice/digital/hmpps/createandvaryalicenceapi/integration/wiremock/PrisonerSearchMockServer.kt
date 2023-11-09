@@ -68,7 +68,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "actualParoleDate" : null,
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
-                  "indeterminateSentence": false
+                  "indeterminateSentence": false,
+                  "recall" = false,
                },
                {
                   "prisonerNumber": "A1234AB",
@@ -85,7 +86,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "actualParoleDate" : null,
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
-                  "indeterminateSentence": false
+                  "indeterminateSentence": false,
+                  "recall" = false,
                },
                {
                   "prisonerNumber": "A1234AC",
@@ -102,7 +104,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "actualParoleDate" : null,
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
-                  "indeterminateSentence": false
+                  "indeterminateSentence": false,
+                  "recall" = false,
                }
               ]
             """.trimIndent(),

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
@@ -28,6 +29,7 @@ class ComService(
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
 ) {
 
@@ -112,7 +114,6 @@ class ComService(
         else -> result.createRecord(licence)
       }
     }
-
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
 
@@ -149,10 +150,18 @@ class ComService(
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
 
-    val eligibleForCvlPrisoners = prisoners
+    if (prisoners.isEmpty()) {
+      return emptyMap()
+    }
+
+    val initialCvlEligiblePrisoners = prisoners
       .filter {
         eligibilityService.isEligibleForCvl(it)
       }
+
+    val prisonerBookingsWithHdc = initialCvlEligiblePrisoners.findBookingsWithHdc()
+
+    val eligibleForCvlPrisoners = initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
 
     return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
@@ -182,4 +191,12 @@ class ComService(
         if (it.direction == SearchDirection.ASC) "asc" else "desc",
       )
     }
+
+  private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
+    val bookingsWithHdc = this
+      .filter { it.homeDetentionCurfewEligibilityDate != null }
+      .map { it.bookingId.toLong() }
+    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
+    return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
+  }
 }

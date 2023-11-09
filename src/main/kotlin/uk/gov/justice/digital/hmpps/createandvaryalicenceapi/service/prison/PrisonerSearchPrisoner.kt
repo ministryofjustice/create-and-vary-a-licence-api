@@ -39,4 +39,6 @@ data class PrisonerSearchPrisoner(
   val legalStatus: String,
 
   val indeterminateSentence: Boolean,
+
+  val recall: Boolean,
 )

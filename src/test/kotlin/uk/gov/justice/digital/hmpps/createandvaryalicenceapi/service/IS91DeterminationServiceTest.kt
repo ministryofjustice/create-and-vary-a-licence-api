@@ -82,5 +82,6 @@ class IS91DeterminationServiceTest {
     postRecallReleaseDate = null,
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
+    recall = false,
   )
 }

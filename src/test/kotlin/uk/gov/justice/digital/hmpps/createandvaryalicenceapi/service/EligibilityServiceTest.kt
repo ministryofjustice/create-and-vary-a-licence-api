@@ -1,16 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.reset
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
-import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
 import java.time.Instant
@@ -18,50 +9,25 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 class EligibilityServiceTest {
-  private val prisonApiClient = mock<PrisonApiClient>()
 
   private val service =
     EligibilityService(
-      prisonApiClient,
       clock,
     )
 
-  @BeforeEach
-  fun reset() {
-    reset(
-      prisonApiClient,
-    )
-  }
-
   @Test
   fun `Person is eligible for CVL`() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(aPrisonerSearchResult)
-    verify(prisonApiClient).getHdcStatus(54321)
-
     assertThat(result).isTrue()
   }
 
   @Test
   fun `Person is parole eligible but parole eligibility date is in the past - eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
       ),
     )
-    verify(prisonApiClient).getHdcStatus(54321L)
-
     assertThat(result).isTrue()
   }
 
@@ -72,8 +38,6 @@ class EligibilityServiceTest {
         paroleEligibilityDate = LocalDate.now(clock).plusYears(1),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -84,8 +48,6 @@ class EligibilityServiceTest {
         legalStatus = "DEAD",
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -96,8 +58,6 @@ class EligibilityServiceTest {
         indeterminateSentence = true,
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -108,8 +68,6 @@ class EligibilityServiceTest {
         conditionalReleaseDate = null,
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -120,8 +78,6 @@ class EligibilityServiceTest {
         confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -133,8 +89,6 @@ class EligibilityServiceTest {
         confirmedReleaseDate = LocalDate.now(clock).plusDays(2),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -146,8 +100,6 @@ class EligibilityServiceTest {
         actualParoleDate = LocalDate.now(clock).plusDays(1),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -159,26 +111,16 @@ class EligibilityServiceTest {
         actualParoleDate = LocalDate.now(clock).plusDays(1),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
   @Test
   fun `Person is an inactive transfer - eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         status = "INACTIVE TRN",
       ),
     )
-    verify(prisonApiClient).getHdcStatus(54321)
-
     assertThat(result).isTrue()
   }
 
@@ -189,8 +131,6 @@ class EligibilityServiceTest {
         status = "INACTIVE OUT",
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -201,8 +141,6 @@ class EligibilityServiceTest {
         confirmedReleaseDate = LocalDate.now(clock).minusDays(1),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -214,26 +152,16 @@ class EligibilityServiceTest {
         confirmedReleaseDate = null,
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
   @Test
   fun `Person is on recall with a post recall release date (PRRD) before CRD - eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         postRecallReleaseDate = LocalDate.now(clock).minusDays(1),
       ),
     )
-    verify(prisonApiClient).getHdcStatus(54321)
-
     assertThat(result).isTrue()
   }
 
@@ -244,44 +172,6 @@ class EligibilityServiceTest {
         postRecallReleaseDate = LocalDate.now(clock).plusDays(2),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
-    assertThat(result).isFalse()
-  }
-
-  @Test
-  fun `Person is on HDC - approved HDC status - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus.copy(
-          approvalStatus = "APPROVED",
-        ),
-      ),
-    )
-
-    val result = service.isEligibleForCvl(
-      aPrisonerSearchResult,
-    )
-    verify(prisonApiClient).getHdcStatus(54321)
-
-    assertThat(result).isFalse()
-  }
-
-  @Test
-  fun `Person is on HDC - has a HDCED - not eligible for CVL `() {
-    whenever(prisonApiClient.getHdcStatus(54321)).thenReturn(
-      Mono.just(
-        aPrisonerHdcStatus,
-      ),
-    )
-
-    val result = service.isEligibleForCvl(
-      aPrisonerSearchResult.copy(
-        homeDetentionCurfewEligibilityDate = LocalDate.now(clock).plusYears(1),
-      ),
-    )
-    verify(prisonApiClient).getHdcStatus(54321)
-
     assertThat(result).isFalse()
   }
 
@@ -293,8 +183,6 @@ class EligibilityServiceTest {
         conditionalReleaseDate = LocalDate.now(clock).minusDays(10),
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -306,8 +194,6 @@ class EligibilityServiceTest {
         conditionalReleaseDate = null,
       ),
     )
-    verifyNoInteractions(prisonApiClient)
-
     assertThat(result).isFalse()
   }
 
@@ -330,15 +216,7 @@ class EligibilityServiceTest {
       postRecallReleaseDate = null,
       legalStatus = "SENTENCED",
       indeterminateSentence = false,
-    )
-
-    val aPrisonerHdcStatus = PrisonerHdcStatus(
-      approvalStatusDate = null,
-      approvalStatus = "REJECTED",
-      refusedReason = null,
-      checksPassedDate = null,
-      bookingId = 54321,
-      passed = true,
+      recall = false,
     )
   }
 }
