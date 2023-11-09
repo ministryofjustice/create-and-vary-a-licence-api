@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 class UpdateSentenceDateService(
@@ -22,6 +23,7 @@ class UpdateSentenceDateService(
   private val notifyService: NotifyService,
   private val prisonApiClient: PrisonApiClient,
 ) {
+  val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
   @Transactional
   fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
@@ -94,11 +96,19 @@ class UpdateSentenceDateService(
             "${licenceEntity.forename} ${licenceEntity.surname}",
             licenceEntity.crn,
             mapOf(
-              "Release date has changed to ${updatedLicenceEntity.licenceStartDate}" to sentenceChanges.lsdChanged,
-              "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate}" to sentenceChanges.ledChanged,
-              "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate}" to sentenceChanges.sedChanged,
-              "Top up supervision start date has changed to ${updatedLicenceEntity.topupSupervisionStartDate}" to sentenceChanges.tussdChanged,
-              "Top up supervision end date has changed to ${updatedLicenceEntity.topupSupervisionExpiryDate}" to sentenceChanges.tusedChanged,
+              "Release date has changed to ${updatedLicenceEntity.licenceStartDate?.format(dateFormat)}" to sentenceChanges.lsdChanged,
+              "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate?.format(dateFormat)}" to sentenceChanges.ledChanged,
+              "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate?.format(dateFormat)}" to sentenceChanges.sedChanged,
+              "Top up supervision start date has changed to ${
+              updatedLicenceEntity.topupSupervisionStartDate?.format(
+                dateFormat,
+              )
+              }" to sentenceChanges.tussdChanged,
+              "Top up supervision end date has changed to ${
+              updatedLicenceEntity.topupSupervisionExpiryDate?.format(
+                dateFormat,
+              )
+              }" to sentenceChanges.tusedChanged,
             ),
           )
         }
