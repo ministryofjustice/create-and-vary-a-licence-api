@@ -139,11 +139,11 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
-        "Top up supervision end date has changed to 2025-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
+        "Top up supervision end date has changed to 11 September 2025" to true,
       ),
     )
   }
@@ -310,10 +310,10 @@ class UpdateSentenceDateServiceTest {
       "${licence.forename} ${licence.surname}",
       licence.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
       ),
     )
@@ -371,10 +371,10 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
       ),
     )
@@ -432,10 +432,10 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
       ),
     )
@@ -494,10 +494,10 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
       ),
     )
@@ -556,10 +556,10 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
       ),
     )
@@ -619,10 +619,10 @@ class UpdateSentenceDateServiceTest {
       "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
       aLicenceEntity.crn,
       mapOf(
-        "Release date has changed to 2023-09-11" to true,
-        "Licence end date has changed to 2024-09-11" to true,
-        "Sentence end date has changed to 2024-09-11" to true,
-        "Top up supervision start date has changed to 2024-09-11" to true,
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
       ),
     )
