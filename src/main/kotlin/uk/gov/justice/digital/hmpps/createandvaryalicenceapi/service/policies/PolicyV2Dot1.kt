@@ -273,13 +273,6 @@ val POLICY_V2_1 = LicencePolicy(
         type = "NamedOrganisation",
       ),
       AdditionalConditionAp(
-        category = "Making or maintaining contact with a person",
-        categoryShort = "Contact with a person",
-        code = "d5998ca1-62a2-4409-88cd-3137d893c2a0",
-        requiresInput = false,
-        text = "Not to approach or communicate with any victims of your main offences without the prior approval of your supervising officer.",
-      ),
-      AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
         categoryShort = "Programmes or activities",
         code = "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
