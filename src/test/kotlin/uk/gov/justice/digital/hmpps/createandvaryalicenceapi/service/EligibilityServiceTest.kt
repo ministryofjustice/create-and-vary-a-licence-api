@@ -104,10 +104,21 @@ class EligibilityServiceTest {
   }
 
   @Test
-  fun `Person is on ineligible EDS - has a APD with a PED in the past - not eligible for CVL `() {
+  fun `Person is on ineligible EDS - has a APD with a PED today - not eligible for CVL `() {
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
-        paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
+        paroleEligibilityDate = LocalDate.now(clock),
+        actualParoleDate = LocalDate.now(clock),
+      ),
+    )
+    assertThat(result).isFalse()
+  }
+
+  @Test
+  fun `Person is on ineligible EDS - has a APD with a PED in the future - not eligible for CVL `() {
+    val result = service.isEligibleForCvl(
+      aPrisonerSearchResult.copy(
+        paroleEligibilityDate = LocalDate.now(clock).plusDays(1),
         actualParoleDate = LocalDate.now(clock).plusDays(1),
       ),
     )
@@ -170,6 +181,17 @@ class EligibilityServiceTest {
     val result = service.isEligibleForCvl(
       aPrisonerSearchResult.copy(
         postRecallReleaseDate = LocalDate.now(clock).plusDays(2),
+      ),
+    )
+    assertThat(result).isFalse()
+  }
+
+  @Test
+  fun `Person is on recall with a recall flag - not eligible for CVL `() {
+    val result = service.isEligibleForCvl(
+      aPrisonerSearchResult.copy(
+        conditionalReleaseDate = null,
+        recall = true,
       ),
     )
     assertThat(result).isFalse()
