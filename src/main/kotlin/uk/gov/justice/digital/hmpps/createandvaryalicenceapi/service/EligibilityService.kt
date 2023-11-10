@@ -15,7 +15,7 @@ class EligibilityService(
       prisoner.hasCorrectLegalStatus() &&
       !prisoner.isOnIndeterminateSentence() &&
       prisoner.hasConditionalReleaseDate() &&
-      prisoner.isOnEligibleExtendedDeterminateSentence() &&
+      prisoner.isEligibleIfOnAnExtendedDeterminateSentence() &&
       prisoner.hasActivePrisonStatus() &&
       prisoner.hasEligibleReleaseDate() &&
       !prisoner.isRecallCase()
@@ -42,7 +42,7 @@ class EligibilityService(
     return this.conditionalReleaseDate != null
   }
 
-  private fun PrisonerSearchPrisoner.isOnEligibleExtendedDeterminateSentence(): Boolean {
+  private fun PrisonerSearchPrisoner.isEligibleIfOnAnExtendedDeterminateSentence(): Boolean {
     // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
     if (this.paroleEligibilityDate == null) {
       return true
