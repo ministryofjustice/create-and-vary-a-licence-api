@@ -53,7 +53,7 @@ data class Licence(
 
   @Schema(description = "The date and time that the licence was first created", example = "2022-08-24T11:30:33")
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  val createdDateTime: LocalDateTime,
+  val createdDateTime: LocalDateTime?,
 
   @Schema(description = "The username of the person who last updated the licence", example = "X34433")
   val updatedByUsername: String?,
@@ -62,7 +62,8 @@ data class Licence(
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   val updatedDateTime: LocalDateTime?,
 
-  @Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
+  @Schema(description =
+  "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
   val isInPssPeriod: Boolean,
 
   @Schema(description = "The AP and PSS conditions that form the licence")

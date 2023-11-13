@@ -36,3 +36,4 @@ data class MultipleExclusionZoneAdditionalCondition(
   ) val hasImageUpload: Boolean,
 
 ) : AdditionalCondition
+const val CT_CODE_MEZ = "0f9a20f4-35c7-4c77-8af8-f200f153fa11"

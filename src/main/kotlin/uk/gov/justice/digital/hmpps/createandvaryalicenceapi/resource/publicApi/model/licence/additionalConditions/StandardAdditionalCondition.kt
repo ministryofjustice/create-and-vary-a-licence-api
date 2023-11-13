@@ -30,3 +30,5 @@ data class StandardAdditionalCondition(
   override val text: String,
 
 ) : AdditionalCondition
+
+const val CT_CODE_STD = "5a105297-dce1-4d18-b9ea-4195b46b7594"

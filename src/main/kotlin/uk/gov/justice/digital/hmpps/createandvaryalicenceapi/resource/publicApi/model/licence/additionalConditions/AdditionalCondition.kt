@@ -47,4 +47,5 @@ sealed interface AdditionalCondition {
 
   @get:Schema(description = "The inputted text for the instance", example = "You must not enter the location X")
   val text: String
+
 }
