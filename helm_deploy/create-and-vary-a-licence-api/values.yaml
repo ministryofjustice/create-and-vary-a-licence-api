@@ -45,8 +45,8 @@ generic-service:
 
   allowlist:
     dxw-vpn: 54.76.254.148/32
-    groups:
-      - internal
+    undefined: internal/32
+    groups: []
 
 generic-prometheus-alerts:
   targetApplication: create-and-vary-a-licence-api
