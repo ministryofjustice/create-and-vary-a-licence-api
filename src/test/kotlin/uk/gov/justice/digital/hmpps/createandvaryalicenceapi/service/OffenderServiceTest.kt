@@ -30,7 +30,14 @@ class OffenderServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
 
   private val service =
-    OffenderService(licenceRepository, auditEventRepository, notifyService, releaseDateService, TEMPLATE_ID)
+    OffenderService(
+      licenceRepository,
+      auditEventRepository,
+      notifyService,
+      releaseDateService,
+      TEMPLATE_ID,
+      maxNumberOfWorkingDaysAllowedToTriggerEmail,
+    )
 
   @BeforeEach
   fun reset() {
@@ -359,5 +366,6 @@ class OffenderServiceTest {
     )
 
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
+    const val maxNumberOfWorkingDaysAllowedToTriggerEmail = 5
   }
 }
