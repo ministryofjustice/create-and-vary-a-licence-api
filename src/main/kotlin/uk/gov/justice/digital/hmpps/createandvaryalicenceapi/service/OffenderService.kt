@@ -22,7 +22,7 @@ OffenderService(
   private val notifyService: NotifyService,
   private val releaseDateService: ReleaseDateService,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
-  @Value("\${notify.templates.maxNumberOfWorkingDaysAllowedToTriggerEmail}") private val maxNumberOfWorkingDaysAllowedToTriggerEmail: Int,
+  @Value("\${maxNumberOfWorkingDaysAllowedToTriggerEmail}") private val maxNumberOfWorkingDaysAllowedToTriggerEmail: Int,
 ) {
 
   @Transactional
