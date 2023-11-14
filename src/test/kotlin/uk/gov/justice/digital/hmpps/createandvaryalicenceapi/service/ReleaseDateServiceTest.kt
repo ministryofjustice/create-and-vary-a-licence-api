@@ -155,6 +155,22 @@ class ReleaseDateServiceTest {
     assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-03"))
   }
 
+  @Test
+  fun `earliestReleaseDate should return (2018-06-28) if CRD is (2018-07-08) as it is not a bank holiday or weekend`() {
+    val actualReleaseDate = LocalDate.parse("2018-07-08")
+
+    val earliestPossibleReleaseDate = service.getEarliestReleaseDate(actualReleaseDate, 5)
+    assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-06-28"))
+  }
+
+  @Test
+  fun `earliestReleaseDate should return (2018-07-03) if CRD is (2018-07-06) as it is not a bank holiday or weekend`() {
+    val actualReleaseDate = LocalDate.parse("2018-07-06")
+
+    val earliestPossibleReleaseDate = service.getEarliestReleaseDate(actualReleaseDate, 3)
+    assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-03"))
+  }
+
   private companion object {
     val bankHolidays = listOf(
       LocalDate.parse("2018-01-01"),

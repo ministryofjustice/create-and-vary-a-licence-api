@@ -21,9 +21,9 @@ class ReleaseDateService(
     return listOfBankHolidays.contains(releaseDate)
   }
 
-  fun getEarliestReleaseDate(releaseDate: LocalDate) =
+  fun getEarliestReleaseDate(releaseDate: LocalDate, days: Int? = null) =
     generateSequence(releaseDate) { it.minusDays(1) }
       .filterNot { isEligibleForEarlyRelease(it) }
-      .take(maxNumberOfWorkingDaysAllowedForEarlyRelease)
+      .take(days ?: maxNumberOfWorkingDaysAllowedForEarlyRelease)
       .last()
 }
