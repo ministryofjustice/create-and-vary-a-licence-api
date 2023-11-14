@@ -383,6 +383,18 @@ class LicenceActivationServiceTest {
     bookingId = "54321",
     status = "INACTIVE OUT",
     mostSeriousOffence = "Robbery",
+    licenceExpiryDate = LocalDate.parse("2024-09-14"),
+    topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+    homeDetentionCurfewEligibilityDate = null,
+    releaseDate = LocalDate.parse("2023-09-14"),
+    confirmedReleaseDate = LocalDate.parse("2023-09-14"),
+    conditionalReleaseDate = LocalDate.parse("2023-09-14"),
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
+    postRecallReleaseDate = null,
+    legalStatus = "SENTENCED",
+    indeterminateSentence = false,
+    recall = false,
   )
 
   val hdcLicence = aLicenceEntity
