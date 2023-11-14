@@ -22,7 +22,7 @@ OffenderService(
   private val notifyService: NotifyService,
   private val releaseDateService: ReleaseDateService,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
-  @Value("\${maxNumberOfWorkingDaysAllowedToTriggerEmail}") private val maxNumberOfWorkingDaysAllowedToTriggerEmail: Int,
+  @Value("\${maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore}") private val maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore: Int,
 ) {
 
   @Transactional
@@ -50,7 +50,7 @@ OffenderService(
       val releaseDate = offenderLicences[0].actualReleaseDate ?: offenderLicences[0].conditionalReleaseDate
       if (LocalDate.now() >= this.releaseDateService.getEarliestReleaseDate(
           releaseDate!!,
-          maxNumberOfWorkingDaysAllowedToTriggerEmail,
+          maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore,
         )
       ) {
         val prisoner = listOf(

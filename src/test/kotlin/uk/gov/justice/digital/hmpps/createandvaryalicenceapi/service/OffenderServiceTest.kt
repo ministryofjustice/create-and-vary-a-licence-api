@@ -36,7 +36,7 @@ class OffenderServiceTest {
       notifyService,
       releaseDateService,
       TEMPLATE_ID,
-      maxNumberOfWorkingDaysAllowedToTriggerEmail,
+      maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore,
     )
 
   @BeforeEach
@@ -366,6 +366,6 @@ class OffenderServiceTest {
     )
 
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
-    const val maxNumberOfWorkingDaysAllowedToTriggerEmail = 5
+    const val maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore = 5
   }
 }
