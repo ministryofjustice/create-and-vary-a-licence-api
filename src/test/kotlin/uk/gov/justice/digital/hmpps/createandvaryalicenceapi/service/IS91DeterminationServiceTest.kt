@@ -67,13 +67,21 @@ class IS91DeterminationServiceTest {
   }
 
   private val aPrisonerSearchResult = PrisonerSearchPrisoner(
-    "A1234AA",
-    "1234567",
-    "ACTIVE IN",
+    prisonerNumber = "A1234AA",
+    bookingId = "1234567",
+    status = "ACTIVE IN",
     mostSeriousOffence = "Robbery",
-    LocalDate.parse("2024-09-14"),
-    LocalDate.parse("2024-09-14"),
-    LocalDate.parse("2023-09-14"),
-    LocalDate.parse("2023-09-14"),
+    licenceExpiryDate = LocalDate.parse("2024-09-14"),
+    topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+    homeDetentionCurfewEligibilityDate = null,
+    releaseDate = LocalDate.parse("2023-09-14"),
+    confirmedReleaseDate = LocalDate.parse("2023-09-14"),
+    conditionalReleaseDate = LocalDate.parse("2023-09-14"),
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
+    postRecallReleaseDate = null,
+    legalStatus = "SENTENCED",
+    indeterminateSentence = false,
+    recall = false,
   )
 }

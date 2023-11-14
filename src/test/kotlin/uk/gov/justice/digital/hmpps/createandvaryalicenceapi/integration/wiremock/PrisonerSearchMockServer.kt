@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import java.time.LocalDate
 
 class PrisonerSearchMockServer : WireMockServer(8099) {
   fun stubSearchPrisonersByBookingIds() {
@@ -18,17 +19,23 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                 {
                   "prisonerNumber": "G7285UT",
                   "bookingId": "456",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false
                },
                                {
                   "prisonerNumber": "G5613GT",
                   "bookingId": "789",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false
                },
                                {
                   "prisonerNumber": "G4169UO",
                   "bookingId": "432",
-                  "status": "INACTIVE"
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false
                }
               ]
             """.trimIndent(),
@@ -49,29 +56,56 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                 {
                   "prisonerNumber": "A1234AA",
                   "bookingId": "123",
-                  "status": "INACTIVE",
-                  "licenceExpiryDate": "2024-09-14",
-                  "topUpSupervisionExpiryDate": "2024-09-14",
-                  "releaseDate": "2023-09-14",
-                  "confirmedReleaseDate": "2023-09-14"
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false
                },
-                               {
+               {
                   "prisonerNumber": "A1234AB",
                   "bookingId": "456",
-                  "status": "INACTIVE",
-                  "licenceExpiryDate": "2024-09-14",
-                  "topUpSupervisionExpiryDate": "2024-09-14",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
                   "releaseDate": null,
-                  "confirmedReleaseDate": "2023-09-14"
+                  "confirmedReleaseDate": null,
+                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false
                },
                {
                   "prisonerNumber": "A1234AC",
                   "bookingId": "789",
                   "status": "INACTIVE",
+                  "mostSeriousOffence": "Robbery",
                   "licenceExpiryDate": null,
                   "topUpSupervisionExpiryDate": null,
+                  "homeDetentionCurfewEligibilityDate": null,
                   "releaseDate": null,
-                  "confirmedReleaseDate": null
+                  "confirmedReleaseDate": null,
+                  "conditionalReleaseDate": null,
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false
                }
               ]
             """.trimIndent(),

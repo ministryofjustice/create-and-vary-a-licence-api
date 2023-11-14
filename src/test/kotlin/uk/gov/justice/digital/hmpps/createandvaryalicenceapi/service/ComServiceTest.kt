@@ -10,6 +10,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -18,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
@@ -42,6 +45,8 @@ class ComServiceTest {
   private val communityApiClient = mock<CommunityApiClient>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
+  private val prisonApiClient = mock<PrisonApiClient>()
+  private val eligibilityService = mock<EligibilityService>()
 
   private val service =
     ComService(
@@ -50,6 +55,8 @@ class ComServiceTest {
       communityApiClient,
       probationSearchApiClient,
       prisonerSearchApiClient,
+      prisonApiClient,
+      eligibilityService,
     )
 
   @BeforeEach
@@ -60,6 +67,8 @@ class ComServiceTest {
       communityApiClient,
       probationSearchApiClient,
       prisonerSearchApiClient,
+      prisonApiClient,
+      eligibilityService,
     )
   }
 
@@ -299,6 +308,9 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
+
     val resultsList = result.results
     val offender = resultsList.first()
     val inPrisonCount = result.inPrisonCount
@@ -387,6 +399,9 @@ class ComServiceTest {
       ),
     )
 
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
+
     val resultsList = result.results
     val offender = resultsList.first()
 
@@ -445,6 +460,9 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
+
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -528,6 +546,9 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
+
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -614,6 +635,9 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
+
     val resultsList = result.results
     val offender = resultsList.first()
     val inPrisonCount = result.inPrisonCount
@@ -676,10 +700,14 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult,
       ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
+      true,
     )
 
     val request = ProbationUserSearchRequest(
@@ -695,7 +723,15 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      aPrisonerSearchResult,
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -760,7 +796,7 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult,
       ),
@@ -781,6 +817,9 @@ class ComServiceTest {
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
       emptyList(),
     )
+
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val inPrisonCount = result.inPrisonCount
@@ -819,12 +858,16 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
           licenceExpiryDate = null,
         ),
       ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
     )
 
     val request = ProbationUserSearchRequest(
@@ -840,7 +883,12 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(any())
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -905,12 +953,16 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
           topUpSupervisionExpiryDate = null,
         ),
       ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
     )
 
     val request = ProbationUserSearchRequest(
@@ -926,7 +978,15 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -991,13 +1051,17 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
           licenceExpiryDate = LocalDate.parse("2024-09-15"),
           topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
         ),
       ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
     )
 
     val request = ProbationUserSearchRequest(
@@ -1013,7 +1077,15 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -1078,12 +1150,17 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
+          licenceExpiryDate = LocalDate.parse("2024-09-15"),
           topUpSupervisionExpiryDate = LocalDate.parse("2024-10-14"),
         ),
       ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
     )
 
     val request = ProbationUserSearchRequest(
@@ -1099,7 +1176,15 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -1164,13 +1249,17 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
           releaseDate = null,
           confirmedReleaseDate = null,
         ),
       ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
+      false,
     )
 
     val request = ProbationUserSearchRequest(
@@ -1186,7 +1275,15 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -1226,10 +1323,295 @@ class ComServiceTest {
         emptyList(),
       )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
           confirmedReleaseDate = null,
+        ),
+      ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
+    )
+
+    val resultsList = result.results
+    val offender = resultsList.first()
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isNotEmpty
+    assertThat(resultsList.size).isEqualTo(1)
+
+    assertThat(offender)
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          "Test Surname",
+          "A123456",
+          "A1234AA",
+          "Staff Surname",
+          "A01B02C",
+          "Test Team",
+          LocalDate.parse("2023-09-14"),
+          null,
+          LicenceType.AP,
+          LicenceStatus.NOT_STARTED,
+          false,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(1)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence and ineligible for CVL`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
+      false,
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      aPrisonerSearchResult,
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
+    )
+
+    val resultsList = result.results
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isEmpty()
+    assertThat(resultsList.size).isEqualTo(0)
+    assertThat(inPrisonCount).isEqualTo(0)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence, eligible for CVL and is a non approved HDC case`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult.copy(
+          homeDetentionCurfewEligibilityDate = LocalDate.parse("2023-09-14"),
+        ),
+      ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
+    )
+
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+      listOf(
+        aPrisonerHdcStatus,
+      ),
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      listOf(aPrisonerSearchResult.bookingId.toLong()),
+    )
+
+    val resultsList = result.results
+    val offender = resultsList.first()
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isNotEmpty
+    assertThat(resultsList.size).isEqualTo(1)
+
+    assertThat(offender)
+      .extracting {
+        Tuple.tuple(
+          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
+        )
+      }
+      .isEqualTo(
+        Tuple.tuple(
+          "Test Surname",
+          "A123456",
+          "A1234AA",
+          "Staff Surname",
+          "A01B02C",
+          "Test Team",
+          LocalDate.parse("2023-09-14"),
+          null,
+          LicenceType.AP,
+          LicenceStatus.NOT_STARTED,
+          false,
+        ),
+      )
+
+    assertThat(inPrisonCount).isEqualTo(1)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence, eligible for CVL and is an approved HDC case`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult.copy(
+          homeDetentionCurfewEligibilityDate = LocalDate.parse("2023-09-14"),
+        ),
+      ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
+    )
+
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+      listOf(
+        aPrisonerHdcStatus.copy(
+          approvalStatus = "APPROVED",
         ),
       ),
     )
@@ -1247,7 +1629,86 @@ class ComServiceTest {
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      listOf("A1234AA"),
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      any(),
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      any(),
+    )
+
+    val resultsList = result.results
+    val inPrisonCount = result.inPrisonCount
+    val onProbationCount = result.onProbationCount
+
+    assertThat(resultsList).isEmpty()
+    assertThat(resultsList.size).isEqualTo(0)
+    assertThat(inPrisonCount).isEqualTo(0)
+    assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `search for offenders in prison on a staff member's caseload without a licence, eligible for CVL, HDC case but without HDCED`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        ProbationSearchResponseResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Team("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        emptyList(),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
+    )
+
+    val request = ProbationUserSearchRequest(
+      "Test",
+      2000,
+    )
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
+      request.query,
+      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+    )
+
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      listOf(aPrisonerSearchResult.prisonerNumber),
+    )
+
+    verify(eligibilityService).isEligibleForCvl(
+      aPrisonerSearchResult,
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
     )
 
     val resultsList = result.results
@@ -1286,7 +1747,6 @@ class ComServiceTest {
   }
 
   private companion object {
-
     val someEntityStandardConditions = listOf(
       StandardCondition(
         id = 1,
@@ -1362,14 +1822,31 @@ class ComServiceTest {
     )
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
-      "A1234AA",
-      "1234567",
-      "ACTIVE IN",
+      prisonerNumber = "A1234AA",
+      bookingId = "123456",
+      status = "ACTIVE IN",
       mostSeriousOffence = "Robbery",
-      LocalDate.parse("2024-09-14"),
-      LocalDate.parse("2024-09-14"),
-      LocalDate.parse("2023-09-14"),
-      LocalDate.parse("2023-09-14"),
+      licenceExpiryDate = LocalDate.parse("2024-09-14"),
+      topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+      homeDetentionCurfewEligibilityDate = null,
+      releaseDate = LocalDate.parse("2023-09-14"),
+      confirmedReleaseDate = LocalDate.parse("2023-09-14"),
+      conditionalReleaseDate = LocalDate.parse("2023-09-14"),
+      paroleEligibilityDate = null,
+      actualParoleDate = null,
+      postRecallReleaseDate = null,
+      legalStatus = "SENTENCED",
+      indeterminateSentence = false,
+      recall = false,
+    )
+
+    val aPrisonerHdcStatus = PrisonerHdcStatus(
+      approvalStatusDate = null,
+      approvalStatus = "REJECTED",
+      refusedReason = null,
+      checksPassedDate = null,
+      bookingId = 123456,
+      passed = true,
     )
   }
 }
