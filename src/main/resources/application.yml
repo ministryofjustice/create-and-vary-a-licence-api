@@ -124,7 +124,7 @@ internalEmailAddress: 'testemail@probation.gov.uk'
 
 maxNumberOfWorkingDaysAllowedForEarlyRelease: 3
 
-maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore: 5
+maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore: 6
 
 # Overridden in real environments
 self:

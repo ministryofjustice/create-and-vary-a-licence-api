@@ -50,6 +50,7 @@ OffenderService(
       val releaseDate = offenderLicences[0].actualReleaseDate ?: offenderLicences[0].conditionalReleaseDate
       if (LocalDate.now() >= this.releaseDateService.getEarliestReleaseDate(
           releaseDate!!,
+          false,
           maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore,
         )
       ) {
