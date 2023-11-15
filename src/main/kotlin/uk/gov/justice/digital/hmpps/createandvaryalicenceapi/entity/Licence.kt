@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -168,6 +169,9 @@ data class Licence(
   }
 
   fun isInPssPeriod(): Boolean {
+    if (typeCode === PSS) {
+      return true
+    }
     val led = licenceExpiryDate
     val tused = topupSupervisionExpiryDate
 
