@@ -3,10 +3,21 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class LicenceTest {
+
+  @Test
+  fun `isInPssPeriod should return true if Licence type is PSS`() {
+    val testLicence = Licence(
+      typeCode = LicenceType.PSS,
+    )
+
+    val isInPssPeriod = testLicence.isInPssPeriod()
+    assertTrue(isInPssPeriod)
+  }
 
   @Test
   fun `isInPssPeriod should return false if LED is null`() {
