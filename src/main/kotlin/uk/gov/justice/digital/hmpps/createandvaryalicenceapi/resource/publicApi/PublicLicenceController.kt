@@ -11,11 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.constraints.Min
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
@@ -61,8 +57,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
   )
 
   fun getLicenceById(@PathVariable("licenceId")  @Min(1) licenceId: Long): Licence? {
-    val licence: Licence? = null
-    return licence
+    return publicLicenceService.getLicenceById(licenceId)
   }
 
   @GetMapping(value = ["/licence-summaries/prison-number/{prisonNumber}"])

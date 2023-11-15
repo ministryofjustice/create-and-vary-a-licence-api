@@ -3,8 +3,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 
-enum class ElectronicMonitoringType(value: String) {
-  EXCLUSION_ZONE("exclusion zone"), CURFEW("curfew"), LOCATION_MONITORING("location monitoring"), ATTENDANCE_AT_APPOINTMENTS("attendance at appointments"), ALCOHOL_MONITORING("alcohol monitoring"), ALCOHOL_ABSTINENCE("alcohol abstinence"),
+enum class ElectronicMonitoringType(val value: String) {
+  EXCLUSION_ZONE("exclusion zone"), CURFEW("curfew"), LOCATION_MONITORING("location monitoring"), ATTENDANCE_AT_APPOINTMENTS("attendance at appointments"), ALCOHOL_MONITORING("alcohol monitoring"), ALCOHOL_ABSTINENCE("alcohol abstinence");
+  companion object {
+    fun find(value: String): ElectronicMonitoringType ?= entries.find { it.value == value }
+  }
 }
 
 @JsonTypeName(ConditionTypes.ELECTRONIC_MONITORING)
