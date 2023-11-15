@@ -47,7 +47,7 @@ class OffenderServiceTest {
   @Test
   fun `updates all in-flight licences associated with an offender with COM details`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any())).thenReturn(LocalDate.now())
+    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now())
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -89,7 +89,7 @@ class OffenderServiceTest {
   @Test
   fun `send licence create email when update offender with new offender manager equal to 5 days to release`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any())).thenReturn(LocalDate.now())
+    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now())
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -121,7 +121,7 @@ class OffenderServiceTest {
   @Test
   fun `send licence create email when update offender with new offender manager less than 5 days to release`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any())).thenReturn(LocalDate.now().minusDays(5))
+    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now().minusDays(5))
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -153,7 +153,7 @@ class OffenderServiceTest {
   @Test
   fun `don't send licence create email when update offender with new offender manager more than 5 days to release`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any())).thenReturn(LocalDate.now().plusDays(6))
+    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now().plusDays(6))
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
