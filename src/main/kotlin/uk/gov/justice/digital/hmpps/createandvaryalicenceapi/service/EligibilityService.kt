@@ -26,10 +26,10 @@ class EligibilityService(
   )
 
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
-    return getIneligiblityReasons(prisoner).isEmpty()
+    return getIneligibilityReasons(prisoner).isEmpty()
   }
 
-  fun getIneligiblityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
     return checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
   }
 
@@ -55,8 +55,8 @@ class EligibilityService(
     }
 
     // if ARD is not between CRD - 4 days and CRD inclusive (to account for bank holidays and weekends), not eligible
-    if (it.confirmedReleaseDate != null) {
-      val dateStart = it.conditionalReleaseDate!!.minusDays(4)
+    if (it.confirmedReleaseDate != null && it.conditionalReleaseDate != null) {
+      val dateStart = it.conditionalReleaseDate.minusDays(4)
       if (it.confirmedReleaseDate.isBefore(dateStart) || it.confirmedReleaseDate.isAfter(it.conditionalReleaseDate)) {
         return@early false
       }
@@ -77,7 +77,7 @@ class EligibilityService(
   }
 
   private fun hasReleaseDateInTheFuture(): EligibilityCheck = early@{
-    val releaseDate = it.confirmedReleaseDate ?: it.conditionalReleaseDate ?: return@early false
+    val releaseDate = it.confirmedReleaseDate ?: it.conditionalReleaseDate ?: return@early true
     releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 
