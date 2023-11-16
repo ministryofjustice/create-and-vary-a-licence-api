@@ -77,7 +77,7 @@ class EligibilityService(
   }
 
   private fun hasReleaseDateInTheFuture(): EligibilityCheck = early@{
-    val releaseDate = it.confirmedReleaseDate ?: it.conditionalReleaseDate ?: return@early false
+    val releaseDate = it.confirmedReleaseDate ?: it.conditionalReleaseDate ?: return@early true
     releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 

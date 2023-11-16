@@ -213,7 +213,7 @@ class EligibilityServiceTest {
         conditionalReleaseDate = null,
       ),
     )
-    assertThat(result).containsExactly("has no conditional release date", "release date in past")
+    assertThat(result).containsExactly("has no conditional release date")
   }
 
   private companion object {
