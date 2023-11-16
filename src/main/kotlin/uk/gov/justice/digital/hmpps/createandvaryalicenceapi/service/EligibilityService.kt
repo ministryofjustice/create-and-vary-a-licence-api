@@ -26,10 +26,10 @@ class EligibilityService(
   )
 
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
-    return getIneligiblityReasons(prisoner).isEmpty()
+    return getIneligibilityReasons(prisoner).isEmpty()
   }
 
-  fun getIneligiblityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
     return checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
   }
 

@@ -129,7 +129,7 @@ class ComService(
     if (prisoners.size != 1) {
       error("Found ${prisoners.size} prisoners for: $prisonNumber")
     }
-    val reasons = eligibilityService.getIneligiblityReasons(prisoners.first())
+    val reasons = eligibilityService.getIneligibilityReasons(prisoners.first())
     val hdcReasonIfPresent = if (prisoners.findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
     return reasons + hdcReasonIfPresent
   }
