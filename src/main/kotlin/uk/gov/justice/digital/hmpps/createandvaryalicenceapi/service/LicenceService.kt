@@ -129,10 +129,10 @@ class LicenceService(
 
     val releaseDate = entityLicence.actualReleaseDate ?: entityLicence.conditionalReleaseDate
     val isEligibleForEarlyRelease =
-      releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate, true)
+      releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate)
 
     val earliestReleaseDate = when {
-      isEligibleForEarlyRelease -> releaseDateService.getEarliestReleaseDate(releaseDate!!, true)
+      isEligibleForEarlyRelease -> releaseDateService.getEarliestReleaseDate(releaseDate!!)
       else -> releaseDate
     }
 

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -21,22 +22,26 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 class OffenderServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
-  private val releaseDateService = mock<ReleaseDateService>()
+  private val bankHolidayService = mock<BankHolidayService>()
 
   private val service =
     OffenderService(
       licenceRepository,
       auditEventRepository,
       notifyService,
-      releaseDateService,
+      bankHolidayService,
+      clock,
       TEMPLATE_ID,
-      maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore,
+      maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
     )
 
   @BeforeEach
@@ -47,7 +52,6 @@ class OffenderServiceTest {
   @Test
   fun `updates all in-flight licences associated with an offender with COM details`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now())
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -89,7 +93,6 @@ class OffenderServiceTest {
   @Test
   fun `send licence create email when update offender with new offender manager equal to 5 days to release`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now())
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -120,9 +123,15 @@ class OffenderServiceTest {
 
   @Test
   fun `send licence create email when update offender with new offender manager less than 5 days to release`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now().minusDays(5))
-    val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          actualReleaseDate = LocalDate.parse("2023-11-14"),
+        ),
+      ),
+    )
+    val expectedUpdatedLicences =
+      listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-14"), responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
@@ -152,9 +161,15 @@ class OffenderServiceTest {
 
   @Test
   fun `don't send licence create email when update offender with new offender manager more than 5 days to release`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
-    whenever(releaseDateService.getEarliestReleaseDate(any(), any(), any())).thenReturn(LocalDate.now().plusDays(6))
-    val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          actualReleaseDate = LocalDate.parse("2023-11-20"),
+        ),
+      ),
+    )
+    val expectedUpdatedLicences =
+      listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-20"), responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
 
@@ -311,10 +326,35 @@ class OffenderServiceTest {
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(
         listOf(
-          Tuple(1L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
-          Tuple(2L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
+          Tuple(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01",
+          ),
+          Tuple(
+            2L,
+            "SYSTEM",
+            "SYSTEM",
+            "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01",
+          ),
         ),
       )
+  }
+
+  @Test
+  fun `should return true if releaseDate is on 2023-11-17 and maxNumberOfWorkingDaysToTriggerAllocationWarningEmail is 6`() {
+    Assertions.assertTrue(service.isXWorkingDaysBefore(6, LocalDate.parse("2023-11-17")))
+  }
+
+  @Test
+  fun `should return false if releaseDate is on 2023-11-20 and maxNumberOfWorkingDaysToTriggerAllocationWarningEmail is 6`() {
+    Assertions.assertFalse(service.isXWorkingDaysBefore(6, LocalDate.parse("2023-11-20")))
+  }
+
+  @Test
+  fun `should return false1 if releaseDate is null`() {
+    Assertions.assertFalse(service.isXWorkingDaysBefore(6, null))
   }
 
   private companion object {
@@ -366,6 +406,7 @@ class OffenderServiceTest {
     )
 
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
-    const val maxNumberOfWorkingDaysAllowedToTriggerEmailIfPPIsModifiedOrAllocatedBefore = 5
+    const val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail = 6
+    val clock: Clock = Clock.fixed(Instant.parse("2023-11-10T00:00:00Z"), ZoneId.systemDefault())
   }
 }

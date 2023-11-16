@@ -197,10 +197,7 @@ class NotifyService(
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
         "isEligibleForEarlyRelease" to if (cases.any {
-          releaseDateService.isEligibleForEarlyRelease(
-              it.releaseDate,
-              true,
-            )
+          releaseDateService.isEligibleForEarlyRelease(it.releaseDate)
         }
         ) {
           "yes"
