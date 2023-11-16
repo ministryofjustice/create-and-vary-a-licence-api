@@ -198,6 +198,51 @@ class OffenderServiceTest {
   }
 
   @Test
+  fun `don't send licence create email when licence status is neither NOT_STARTED or IN_PROGRESS`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.SUBMITTED,
+          actualReleaseDate = LocalDate.parse("2023-11-14"),
+        ),
+      ),
+    )
+    val expectedUpdatedLicences =
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.SUBMITTED,
+          actualReleaseDate = LocalDate.parse("2023-11-14"),
+          responsibleCom = comDetails,
+        ),
+      )
+
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
+
+    verify(licenceRepository, times(1))
+      .findAllByCrnAndStatusCodeIn(
+        "exampleCrn",
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE,
+        ),
+      )
+
+    verify(licenceRepository, times(1))
+      .saveAllAndFlush(expectedUpdatedLicences)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
+  }
+
+  @Test
   fun `updates all in-flight licences associated with an offender with new probation region`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
     val expectedUpdatedLicences = listOf(
