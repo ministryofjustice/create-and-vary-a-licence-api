@@ -55,8 +55,8 @@ class EligibilityService(
     }
 
     // if ARD is not between CRD - 4 days and CRD inclusive (to account for bank holidays and weekends), not eligible
-    if (it.confirmedReleaseDate != null) {
-      val dateStart = it.conditionalReleaseDate!!.minusDays(4)
+    if (it.confirmedReleaseDate != null && it.conditionalReleaseDate != null) {
+      val dateStart = it.conditionalReleaseDate.minusDays(4)
       if (it.confirmedReleaseDate.isBefore(dateStart) || it.confirmedReleaseDate.isAfter(it.conditionalReleaseDate)) {
         return@early false
       }
