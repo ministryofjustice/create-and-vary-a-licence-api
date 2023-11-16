@@ -128,8 +128,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val releaseDate = entityLicence.actualReleaseDate ?: entityLicence.conditionalReleaseDate
-    val isEligibleForEarlyRelease =
-      releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate)
+    val isEligibleForEarlyRelease = releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate)
 
     val earliestReleaseDate = when {
       isEligibleForEarlyRelease -> releaseDateService.getEarliestReleaseDate(releaseDate!!)
