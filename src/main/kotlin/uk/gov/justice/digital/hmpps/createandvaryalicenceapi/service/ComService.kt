@@ -150,8 +150,6 @@ class ComService(
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
 
-    println(prisoners)
-
     if (prisoners.isEmpty()) {
       return emptyMap()
     }
@@ -162,8 +160,6 @@ class ComService(
       }
 
     val prisonerBookingsWithHdc = initialCvlEligiblePrisoners.findBookingsWithHdc()
-
-    println(prisonerBookingsWithHdc)
 
     val eligibleForCvlPrisoners = initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
 
