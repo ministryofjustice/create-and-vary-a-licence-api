@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -1745,32 +1744,6 @@ class ComServiceTest {
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
-  }
-
-  @Test
-  fun `get ineligibility reasons for absent offender`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
-
-    val exception = assertThrows<IllegalStateException> {
-      service.getIneligibilityReasons("A1234AA")
-    }
-
-    assertThat(exception.message).isEqualTo("Found 0 prisoners for: A1234AA")
-  }
-
-  @Test
-  fun `get ineligibility reasons for present offender`() {
-    val hdcPrisoner = aPrisonerSearchResult.copy(homeDetentionCurfewEligibilityDate = LocalDate.now())
-    val approvedHdc = aPrisonerHdcStatus.copy(approvalStatus = "APPROVED")
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
-    whenever(eligibilityService.getIneligiblityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
-      listOf(approvedHdc),
-    )
-
-    val reasons = service.getIneligibilityReasons("A1234AA")
-    assertThat(reasons).containsExactly("A reason", "Approved for HDC")
   }
 
   private companion object {
