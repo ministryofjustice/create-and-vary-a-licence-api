@@ -7,7 +7,7 @@ import java.time.LocalDate
 
 typealias EligibilityCheck = (PrisonerSearchPrisoner) -> Boolean
 operator fun EligibilityCheck.not(): EligibilityCheck = { !this(it) }
-infix fun  EligibilityCheck.describedAs(message: String): Pair<EligibilityCheck, String> = this to message
+infix fun EligibilityCheck.describedAs(message: String): Pair<EligibilityCheck, String> = this to message
 
 @Service
 class EligibilityService(
@@ -33,7 +33,6 @@ class EligibilityService(
     return checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
   }
 
-
   private fun isPersonParoleEligible(): EligibilityCheck = early@{
     if (it.paroleEligibilityDate != null) {
       if (it.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
@@ -42,7 +41,6 @@ class EligibilityService(
     }
     return@early false
   }
-
 
   private fun hasCorrectLegalStatus(): EligibilityCheck = { it.legalStatus != "DEAD" }
 
@@ -83,7 +81,7 @@ class EligibilityService(
     releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 
-  private fun isRecallCase(): EligibilityCheck =  early@{
+  private fun isRecallCase(): EligibilityCheck = early@{
     // If a CRD but no PRRD it should NOT be treated as a recall
     if (it.conditionalReleaseDate != null && it.postRecallReleaseDate == null) {
       return@early false
