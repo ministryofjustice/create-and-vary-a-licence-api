@@ -123,7 +123,7 @@ class OffenderControllerTest {
   fun `get ineligibility reasons`() {
     whenever(comService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
 
-    val request = get("/offender/nomisid/A1234AA/ineligiblity-reasons")
+    val request = get("/offender/nomisid/A1234AA/ineligibility-reasons")
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON)
 

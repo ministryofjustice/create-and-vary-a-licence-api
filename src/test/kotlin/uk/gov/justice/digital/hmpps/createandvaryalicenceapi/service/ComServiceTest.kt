@@ -1764,7 +1764,7 @@ class ComServiceTest {
     val approvedHdc = aPrisonerHdcStatus.copy(approvalStatus = "APPROVED")
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
-    whenever(eligibilityService.getIneligiblityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
+    whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
     whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
       listOf(approvedHdc),
     )

@@ -20,7 +20,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is parole eligible but parole eligibility date is in the past - eligible for CVL `() {
-    val reasons = service.getIneligiblityReasons(
+    val reasons = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
       ),
@@ -30,7 +30,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is parole eligible - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).plusYears(1),
       ),
@@ -40,7 +40,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has an incorrect legal status - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         legalStatus = "DEAD",
       ),
@@ -50,7 +50,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on an indeterminate sentence - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         indeterminateSentence = true,
       ),
@@ -60,7 +60,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person does not have a conditional release date - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = null,
       ),
@@ -70,7 +70,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - ARD is outside threshold in the past - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
       ),
@@ -80,7 +80,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - ARD is outside threshold in the future - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
         confirmedReleaseDate = LocalDate.now(clock).plusDays(2),
@@ -91,7 +91,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - has a APD and a PED in the past - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).minusDays(1),
         actualParoleDate = LocalDate.now(clock).plusDays(1),
@@ -102,7 +102,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - has a APD with a PED today - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock),
         actualParoleDate = LocalDate.now(clock),
@@ -113,7 +113,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - has a APD with a PED in the future - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         paroleEligibilityDate = LocalDate.now(clock).plusDays(1),
         actualParoleDate = LocalDate.now(clock).plusDays(1),
@@ -124,7 +124,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is an inactive transfer - eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         status = "INACTIVE TRN",
       ),
@@ -134,7 +134,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person does not have an active prison status - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         status = "INACTIVE OUT",
       ),
@@ -144,7 +144,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has a confirmed release date (ARD) in the past - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = LocalDate.now(clock).minusDays(1),
       ),
@@ -154,7 +154,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has a conditional release date (CRD) in the past - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = LocalDate.now(clock).minusDays(1),
         confirmedReleaseDate = null,
@@ -165,7 +165,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on recall with a post recall release date (PRRD) before CRD - eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         postRecallReleaseDate = LocalDate.now(clock).minusDays(1),
       ),
@@ -175,7 +175,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on recall with a post recall release date (PRRD) after CRD - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         postRecallReleaseDate = LocalDate.now(clock).plusDays(2),
       ),
@@ -185,7 +185,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on recall with a recall flag - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = null,
         recall = true,
@@ -196,7 +196,7 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has no ARD and a CRD in the past - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = null,
         conditionalReleaseDate = LocalDate.now(clock).minusDays(10),
@@ -207,13 +207,13 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person has no ARD and no CRD - not eligible for CVL `() {
-    val result = service.getIneligiblityReasons(
+    val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = null,
         conditionalReleaseDate = null,
       ),
     )
-    assertThat(result).containsExactly("has no conditional release date", "release date in past")
+    assertThat(result).containsExactly("has no conditional release date")
   }
 
   private companion object {

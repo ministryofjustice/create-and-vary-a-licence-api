@@ -151,7 +151,7 @@ class OffenderController(private val offenderService: OffenderService, private v
 
   @Tag(name = Tags.OFFENDER)
   @GetMapping(
-    value = ["/nomisid/{nomsId}/ineligiblity-reasons"],
+    value = ["/nomisid/{nomsId}/ineligibility-reasons"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
