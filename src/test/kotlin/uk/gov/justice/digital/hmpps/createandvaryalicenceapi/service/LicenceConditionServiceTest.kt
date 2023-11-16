@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
@@ -333,6 +334,15 @@ class LicenceConditionServiceTest {
           ),
         )
 
+      whenever(policyService.policyByVersion(any())).thenReturn(
+        aPolicy.copy(
+          additionalConditions = AdditionalConditions(
+            listOf(policyApCondition),
+            emptyList(),
+          ),
+        ),
+      )
+
       val request = AddAdditionalConditionRequest(
         conditionCode = "code",
         conditionCategory = "category",
@@ -604,7 +614,6 @@ class LicenceConditionServiceTest {
       verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
     }
   }
-
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
 
@@ -724,6 +733,13 @@ class LicenceConditionServiceTest {
       standardConditions = StandardConditions(emptyList(), emptyList()),
       additionalConditions = AdditionalConditions(emptyList(), emptyList()),
       changeHints = emptyList(),
+    )
+
+    val policyApCondition = AdditionalConditionAp(
+      code = "code",
+      category = "category",
+      text = "text",
+      requiresInput = false,
     )
   }
 

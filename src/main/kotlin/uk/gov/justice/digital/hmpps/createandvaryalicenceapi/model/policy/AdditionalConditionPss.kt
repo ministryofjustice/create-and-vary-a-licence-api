@@ -10,4 +10,5 @@ data class AdditionalConditionPss(
   val pssDates: Boolean? = null,
   override val inputs: List<Input>? = null,
   override val type: String? = null,
+  override val skipable: Boolean? = null,
 ) : IAdditionalCondition
