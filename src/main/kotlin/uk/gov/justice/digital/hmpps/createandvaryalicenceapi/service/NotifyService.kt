@@ -28,6 +28,7 @@ class NotifyService(
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
 ) {
+  val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
   fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
@@ -51,7 +52,7 @@ class NotifyService(
         "prisonerFirstName" to firstName,
         "prisonerLastName" to lastName,
         "prisonerNumber" to (prisonerNumber ?: "unknown"),
-        "crd" to crd.format(DateTimeFormatter.ofPattern("dd LLLL yyyy")),
+        "crd" to crd.format(dateFormat),
       )
       sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
       log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
@@ -199,7 +200,13 @@ class NotifyService(
       if (templateId == initialLicencePromptTemplateId) {
         promptType = "INITIAL PROMPT"
       }
-      log.info("Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${prisoner.releaseDate.format(DateTimeFormatter.ofPattern("dd LLLL yyyy"))}")
+      log.info(
+        "Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${
+        prisoner.releaseDate.format(
+          dateFormat,
+        )
+        }",
+      )
     }
   }
 

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
@@ -28,6 +29,8 @@ class ComService(
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val prisonApiClient: PrisonApiClient,
+  private val eligibilityService: EligibilityService,
 ) {
 
   companion object {
@@ -86,11 +89,12 @@ class ComService(
     return com
   }
 
-  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) = (comDetails.firstName != this.firstName) ||
-    (comDetails.lastName != this.lastName) ||
-    (comDetails.staffEmail != this.email) ||
-    (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
-    (comDetails.staffIdentifier != this.staffIdentifier)
+  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) =
+    (comDetails.firstName != this.firstName) ||
+      (comDetails.lastName != this.lastName) ||
+      (comDetails.staffEmail != this.email) ||
+      (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
+      (comDetails.staffIdentifier != this.staffIdentifier)
 
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -110,7 +114,6 @@ class ComService(
         else -> result.createRecord(licence)
       }
     }
-
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
 
@@ -119,6 +122,16 @@ class ComService(
       inPrisonCount,
       onProbationCount,
     )
+  }
+
+  fun getIneligibilityReasons(prisonNumber: String): List<String> {
+    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber))
+    if (prisoners.size != 1) {
+      error("Found ${prisoners.size} prisoners for: $prisonNumber")
+    }
+    val reasons = eligibilityService.getIneligibilityReasons(prisoners.first())
+    val hdcReasonIfPresent = if (prisoners.findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
+    return reasons + hdcReasonIfPresent
   }
 
   private fun PrisonerSearchPrisoner.getLicenceType() = when {
@@ -144,7 +157,24 @@ class ComService(
     val prisonNumbers = record
       .filter { (_, licence) -> licence == null }
       .mapNotNull { (result, _) -> result.identifiers.noms }
-    return this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers).associateBy { it.prisonerNumber }
+
+    val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
+
+    if (prisoners.isEmpty()) {
+      return emptyMap()
+    }
+
+    val initialCvlEligiblePrisoners = prisoners
+      .filter {
+        eligibilityService.isEligibleForCvl(it)
+      }
+
+    val prisonerBookingsWithHdc = initialCvlEligiblePrisoners.findBookingsWithHdc()
+
+    val eligibleForCvlPrisoners =
+      initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
+
+    return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
 
   private fun ProbationSearchResponseResult.createUnstartedRecord(
@@ -163,7 +193,8 @@ class ComService(
     )
   }
 
-  private fun ProbationSearchResponseResult.createRecord(licence: Licence) = this.transformToModelFoundProbationRecord(licence)
+  private fun ProbationSearchResponseResult.createRecord(licence: Licence) =
+    this.transformToModelFoundProbationRecord(licence)
 
   private fun ProbationUserSearchRequest.getSortBy() =
     this.sortBy.map {
@@ -172,4 +203,12 @@ class ComService(
         if (it.direction == SearchDirection.ASC) "asc" else "desc",
       )
     }
+
+  private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
+    val bookingsWithHdc = this
+      .filter { it.homeDetentionCurfewEligibilityDate != null }
+      .map { it.bookingId.toLong() }
+    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
+    return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
+  }
 }
