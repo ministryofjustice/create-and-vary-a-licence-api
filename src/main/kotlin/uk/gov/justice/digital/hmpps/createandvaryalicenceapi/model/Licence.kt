@@ -287,7 +287,6 @@ data class Licence(
       updatedDateTime = this.dateLastUpdated,
       isInPssPeriod = this.isInPssPeriod ?: false,
       conditions = licenseConditions,
-
       )
   }
 }
