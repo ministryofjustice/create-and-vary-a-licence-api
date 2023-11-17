@@ -12,9 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.Clock
-import java.time.DayOfWeek
-import java.time.LocalDate
 
 @Service
 class
@@ -22,10 +19,8 @@ OffenderService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
-  private val bankHolidayService: BankHolidayService,
-  private val clock: Clock,
+  private val releaseDateService: ReleaseDateService,
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
-  @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int,
 ) {
 
   @Transactional
@@ -51,7 +46,7 @@ OffenderService(
     }
     ) {
       val releaseDate = offenderLicences[0].actualReleaseDate ?: offenderLicences[0].conditionalReleaseDate
-      if (isXWorkingDaysBefore(maxNumberOfWorkingDaysToTriggerAllocationWarningEmail, releaseDate)) {
+      if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
         val prisoner = listOf(
           PrisonerForRelease(
             "${offenderLicences[0].forename} ${offenderLicences[0].surname}",
@@ -81,27 +76,6 @@ OffenderService(
       )
     }
   }
-
-  fun isXWorkingDaysBefore(days: Int, releaseDate: LocalDate?): Boolean {
-    if (releaseDate === null) return false
-    val dateBeforeXWorkingDays = getEarliestReleaseDate(days, releaseDate)
-    return LocalDate.now(clock).isEqual(dateBeforeXWorkingDays) || LocalDate.now(clock).isAfter(dateBeforeXWorkingDays)
-  }
-
-  private fun isEligibleForEarlyRelease(releaseDate: LocalDate?): Boolean {
-    val dayOfWeek = releaseDate?.dayOfWeek
-    if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-      return true
-    }
-    val listOfBankHolidays: List<LocalDate> = bankHolidayService.getBankHolidaysForEnglandAndWales()
-    return listOfBankHolidays.contains(releaseDate)
-  }
-
-  private fun getEarliestReleaseDate(days: Int, releaseDate: LocalDate) =
-    generateSequence(releaseDate) { it.minusDays(1) }
-      .filterNot { isEligibleForEarlyRelease(it) }
-      .take(days)
-      .last()
 
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {

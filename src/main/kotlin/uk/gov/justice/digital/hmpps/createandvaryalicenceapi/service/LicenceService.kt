@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -66,6 +67,7 @@ class LicenceService(
   private val notifyService: NotifyService,
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
+  @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int,
 ) {
 
   @Transactional
@@ -131,7 +133,12 @@ class LicenceService(
     val isEligibleForEarlyRelease = releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate)
 
     val earliestReleaseDate = when {
-      isEligibleForEarlyRelease -> releaseDateService.getEarliestReleaseDate(releaseDate!!)
+      isEligibleForEarlyRelease -> releaseDateService.getEarliestDateBefore(
+        maxNumberOfWorkingDaysAllowedForEarlyRelease,
+        releaseDate!!,
+        releaseDateService::isEligibleForEarlyRelease,
+      )
+
       else -> releaseDate
     }
 

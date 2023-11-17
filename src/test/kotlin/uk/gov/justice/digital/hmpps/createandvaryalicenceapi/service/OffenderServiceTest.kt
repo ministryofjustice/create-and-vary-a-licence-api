@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -22,26 +21,21 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 
 class OffenderServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
-  private val bankHolidayService = mock<BankHolidayService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val service =
     OffenderService(
       licenceRepository,
       auditEventRepository,
       notifyService,
-      bankHolidayService,
-      clock,
+      releaseDateService,
       TEMPLATE_ID,
-      maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
     )
 
   @BeforeEach
@@ -91,8 +85,9 @@ class OffenderServiceTest {
   }
 
   @Test
-  fun `send licence create email when update offender with new offender manager equal to 5 days to release`() {
+  fun `send licence create email when isLateAllocationWarningRequired returns true`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+    whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(true)
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
@@ -122,45 +117,7 @@ class OffenderServiceTest {
   }
 
   @Test
-  fun `send licence create email when update offender with new offender manager less than 5 days to release`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-      listOf(
-        aLicenceEntity.copy(
-          actualReleaseDate = LocalDate.parse("2023-11-14"),
-        ),
-      ),
-    )
-    val expectedUpdatedLicences =
-      listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-14"), responsibleCom = comDetails))
-
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
-    service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
-
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
-
-    verify(licenceRepository, times(1))
-      .saveAllAndFlush(expectedUpdatedLicences)
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, times(1)).sendLicenceCreateEmail(any(), any(), any(), any())
-  }
-
-  @Test
-  fun `don't send licence create email when update offender with new offender manager more than 5 days to release`() {
+  fun `don't send licence create email when isLateAllocationWarningRequired returns false`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
         aLicenceEntity.copy(
@@ -168,6 +125,7 @@ class OffenderServiceTest {
         ),
       ),
     )
+    whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
     val expectedUpdatedLicences =
       listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-20"), responsibleCom = comDetails))
 
@@ -198,7 +156,7 @@ class OffenderServiceTest {
   }
 
   @Test
-  fun `don't send licence create email when licence status is neither NOT_STARTED or IN_PROGRESS`() {
+  fun `don't send licence create email when licence status is neither NOT_STARTED or IN_PROGRESS even isLateAllocationWarningRequired returns true`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
       listOf(
         aLicenceEntity.copy(
@@ -207,6 +165,7 @@ class OffenderServiceTest {
         ),
       ),
     )
+    whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
     val expectedUpdatedLicences =
       listOf(
         aLicenceEntity.copy(
@@ -387,21 +346,6 @@ class OffenderServiceTest {
       )
   }
 
-  @Test
-  fun `should return true if releaseDate is on 2023-11-17 and maxNumberOfWorkingDaysToTriggerAllocationWarningEmail is 6`() {
-    Assertions.assertTrue(service.isXWorkingDaysBefore(6, LocalDate.parse("2023-11-17")))
-  }
-
-  @Test
-  fun `should return false if releaseDate is on 2023-11-20 and maxNumberOfWorkingDaysToTriggerAllocationWarningEmail is 6`() {
-    Assertions.assertFalse(service.isXWorkingDaysBefore(6, LocalDate.parse("2023-11-20")))
-  }
-
-  @Test
-  fun `should return false1 if releaseDate is null`() {
-    Assertions.assertFalse(service.isXWorkingDaysBefore(6, null))
-  }
-
   private companion object {
     val aLicenceEntity = Licence(
       id = 1L,
@@ -451,7 +395,5 @@ class OffenderServiceTest {
     )
 
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
-    const val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail = 6
-    val clock: Clock = Clock.fixed(Instant.parse("2023-11-10T00:00:00Z"), ZoneId.systemDefault())
   }
 }
