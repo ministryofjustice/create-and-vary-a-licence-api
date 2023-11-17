@@ -521,6 +521,7 @@ class PublicLicenceServiceTest {
     }
   }
 
+  /****************/
   private companion object {
 
     val aCom = CommunityOffenderManager(
@@ -656,8 +657,6 @@ class PublicLicenceServiceTest {
 
     )
   }
-
-  /****************/
 
   @Nested
   inner class `Get licence by id` {
