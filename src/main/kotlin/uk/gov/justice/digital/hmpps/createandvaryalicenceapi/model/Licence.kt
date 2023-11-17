@@ -254,7 +254,7 @@ data class Licence(
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   val isEligibleForEarlyRelease: Boolean = false,
-){
+) {
   fun transformToPublicLicence(): uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence {
     val licenseConditions = Conditions(
       apConditions = ApConditions(
@@ -272,10 +272,7 @@ data class Licence(
       licenceType = this.typeCode.mapToPublicLicenceType(),
       policyVersion = this.version.orEmpty(),
       version = this.licenceVersion.orEmpty(),
-      statusCode = PublicLicenceStatus.valueOf(
-        statusCode.toString()
-      ),
-
+      statusCode = PublicLicenceStatus.valueOf(statusCode.toString()),
       prisonNumber = this.nomsId.orEmpty(),
       bookingId = this.bookingId ?: 0,
       crn = this.crn.orEmpty(),
@@ -287,6 +284,6 @@ data class Licence(
       updatedDateTime = this.dateLastUpdated,
       isInPssPeriod = this.isInPssPeriod ?: false,
       conditions = licenseConditions,
-      )
+    )
   }
 }

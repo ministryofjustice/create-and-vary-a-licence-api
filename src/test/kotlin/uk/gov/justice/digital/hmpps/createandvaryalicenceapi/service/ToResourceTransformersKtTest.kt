@@ -168,7 +168,5 @@ class ToResourceTransformersKtTest {
   fun transformToPublicLicence() {
     val actualLicence = modelLicence.transformToPublicLicence()
     assertThat(actualLicence).isEqualTo(publicLicence)
-
   }
-
 }

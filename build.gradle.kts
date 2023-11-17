@@ -3,6 +3,7 @@ plugins {
   kotlin("plugin.spring") version "1.9.0"
   kotlin("plugin.jpa") version "1.9.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.1"
+  id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
 }
 
 configurations {
@@ -65,6 +66,7 @@ dependencies {
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+  implementation("org.jlleitschuh.gradle:ktlint-gradle:7.1.0")
 
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")

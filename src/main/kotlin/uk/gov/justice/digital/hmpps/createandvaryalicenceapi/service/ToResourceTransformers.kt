@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
@@ -53,7 +53,6 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
 }
 
 fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalCondition {
-
   return ElectronicMonitoringAdditionalCondition(
     category = model.category.orEmpty(),
     type = ConditionTypes.ELECTRONIC_MONITORING,
@@ -76,11 +75,9 @@ fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): Multip
   )
 }
 
-
 typealias PublicStandardAdditionalCondition = ModelStandardAdditionalCondition
 
 fun standardAdditionalCondition(model: AdditionalCondition): PublicStandardAdditionalCondition {
-
   return PublicStandardAdditionalCondition(
     category = model.category.orEmpty(),
     type = ConditionTypes.STANDARD,

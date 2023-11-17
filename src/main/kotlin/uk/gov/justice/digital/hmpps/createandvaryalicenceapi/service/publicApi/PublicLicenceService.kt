@@ -16,7 +16,7 @@ class PublicLicenceService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
-  private val licenceService: LicenceService
+  private val licenceService: LicenceService,
 ) {
 
   @Transactional
@@ -58,5 +58,4 @@ class PublicLicenceService(
   fun getLicenceById(id: Long): Licence {
     return licenceService.getLicenceById(id).transformToPublicLicence()
   }
-
 }

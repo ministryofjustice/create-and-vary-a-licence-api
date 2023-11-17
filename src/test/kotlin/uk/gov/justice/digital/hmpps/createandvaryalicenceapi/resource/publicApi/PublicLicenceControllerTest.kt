@@ -28,7 +28,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
@@ -165,7 +172,6 @@ class PublicLicenceControllerTest {
     verify(publicLicenceService, times(1)).getImageUpload(1, 1)
   }
 
-
   @Test
   fun `get licence by licence id`() {
     val id: Long = 12345
@@ -201,7 +207,7 @@ class PublicLicenceControllerTest {
   }
 
   private companion object {
-    private val bespokeCondition = listOf( BespokeCondition ( "You should not visit Y"))
+    private val bespokeCondition = listOf(BespokeCondition("You should not visit Y"))
     private val standardConditions = listOf(StandardCondition("fda24aa9-a2b0-4d49-9c87-23b0a7be4013", " as reasonably required by your supervisor, to give a sample of oral fluid"))
     private val additionalConditions = listOf(
       StandardAdditionalCondition(
@@ -211,15 +217,17 @@ class PublicLicenceControllerTest {
         code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
         text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
 
-        ),
+      ),
     )
     private val pssConditions = PssConditions(standardConditions, additionalConditions)
-    private val apConditions = ApConditions ( standard = standardConditions,
+    private val apConditions = ApConditions(
+      standard = standardConditions,
       additional = additionalConditions,
-      bespoke = bespokeCondition
+      bespoke = bespokeCondition,
     )
     val licenceConditions = Conditions(
-      apConditions, pssConditions,
+      apConditions,
+      pssConditions,
     )
 
     val aLicenceSummary = LicenceSummary(
@@ -259,6 +267,6 @@ class PublicLicenceControllerTest {
       isInPssPeriod = false,
       conditions = licenceConditions,
 
-      )
+    )
   }
 }

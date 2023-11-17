@@ -7,7 +7,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.core.io.ClassPathResource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
@@ -55,7 +61,7 @@ class PublicLicenceServiceTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       licenceService,
-      modelLicenceMock
+      modelLicenceMock,
     )
   }
 
@@ -617,7 +623,7 @@ class PublicLicenceServiceTest {
         code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
         text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
 
-        ),
+      ),
     )
     private val pssConditions = PssConditions(standardConditions, additionalConditions)
     private val apConditions = ApConditions(
@@ -626,7 +632,8 @@ class PublicLicenceServiceTest {
       bespoke = bespokeCondition,
     )
     val licenceConditions = Conditions(
-      apConditions, pssConditions,
+      apConditions,
+      pssConditions,
     )
 
     val pubLicence = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence(
@@ -647,9 +654,7 @@ class PublicLicenceServiceTest {
       isInPssPeriod = false,
       conditions = licenceConditions,
 
-      )
-
-
+    )
   }
 
   /****************/
@@ -797,5 +802,4 @@ class PublicLicenceServiceTest {
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
   }
-
 }
