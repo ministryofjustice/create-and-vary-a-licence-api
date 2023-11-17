@@ -23,4 +23,22 @@ data class PrisonerSearchPrisoner(
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   val confirmedReleaseDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val conditionalReleaseDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val paroleEligibilityDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val actualParoleDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val postRecallReleaseDate: LocalDate? = null,
+
+  val legalStatus: String,
+
+  val indeterminateSentence: Boolean,
+
+  val recall: Boolean,
 )

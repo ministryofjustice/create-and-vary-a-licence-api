@@ -9,6 +9,7 @@
     <ID>LongMethod:LicenceService.kt$LicenceService$@Transactional fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest)</ID>
     <ID>LongMethod:LicenceService.kt$LicenceService$private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence</ID>
     <ID>LongMethod:ToModelTransformers.kt$fun transform( licence: EntityLicence, earliestReleaseDate: LocalDate?, isEligibleForEarlyRelease: Boolean, ): ModelLicence</ID>
+    <ID>LongParameterList:ComService.kt$ComService$( private val communityOffenderManagerRepository: CommunityOffenderManagerRepository, private val licenceRepository: LicenceRepository, private val communityApiClient: CommunityApiClient, private val probationSearchApiClient: ProbationSearchApiClient, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val prisonApiClient: PrisonApiClient, private val eligibilityService: EligibilityService, )</ID>
     <ID>LongParameterList:LicenceConditionService.kt$LicenceConditionService$( private val licenceRepository: LicenceRepository, private val additionalConditionRepository: AdditionalConditionRepository, private val bespokeConditionRepository: BespokeConditionRepository, private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository, private val conditionFormatter: ConditionFormatter, private val licencePolicyService: LicencePolicyService, private val auditService: AuditService, )</ID>
     <ID>LongParameterList:LicenceService.kt$LicenceService$( private val licenceRepository: LicenceRepository, private val communityOffenderManagerRepository: CommunityOffenderManagerRepository, private val standardConditionRepository: StandardConditionRepository, private val additionalConditionRepository: AdditionalConditionRepository, private val bespokeConditionRepository: BespokeConditionRepository, private val licenceEventRepository: LicenceEventRepository, private val licencePolicyService: LicencePolicyService, private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository, private val auditEventRepository: AuditEventRepository, private val notifyService: NotifyService, private val omuService: OmuService, private val releaseDateService: ReleaseDateService, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( @Value("\${notify.enabled}") private val enabled: Boolean, @Value("\${self.link}") private val selfLink: String, @Value("\${notify.templates.variationForApproval}") private val variationForApprovalTemplateId: String, @Value("\${notify.templates.variationReApproval}") private val variationForReApprovalTemplateId: String, @Value("\${notify.templates.initialLicencePrompt}") private val initialLicencePromptTemplateId: String, @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String, @Value("\${notify.templates.datesChanged}") private val datesChangedTemplateId: String, @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String, @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String, @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String, @Value("\${internalEmailAddress}") private val internalEmailAddress: String, private val client: NotificationClient, private val releaseDateService: ReleaseDateService, )</ID>
@@ -16,19 +17,24 @@
     <ID>LongParameterList:NotifyService.kt$NotifyService$( licenceId: String, emailAddress: String?, comFullName: String, offenderFullName: String, crn: String?, datesChanged: Map&lt;String, Boolean&gt;, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String)</ID>
     <ID>LongParameterList:WebClientConfiguration.kt$WebClientConfiguration$( @Value("\${hmpps.auth.url}") private val oauthApiUrl: String, @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String, @Value("\${hmpps.prisonregister.api.url}") private val prisonRegisterApiUrl: String, @Value("\${hmpps.community.api.url}") private val communityApiUrl: String, @Value("\${hmpps.probationsearch.api.url}") private val probationSearchApiUrl: String, @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String, @Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String, )</ID>
+    <ID>MagicNumber:EligibilityService.kt$EligibilityService$4</ID>
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$100</ID>
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$50</ID>
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$500</ID>
     <ID>MagicNumber:LicenceActivationService.kt$LicenceActivationService$4</ID>
     <ID>MagicNumber:LicenceService.kt$LicenceService$14L</ID>
+    <ID>MagicNumber:ProbationSearchApiClient.kt$ProbationSearchApiClient$2000</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>ReturnCount:ComService.kt$ComService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
+    <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun PrisonerSearchPrisoner.isEligibleIfOnAnExtendedDeterminateSentence(): Boolean</ID>
+    <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun PrisonerSearchPrisoner.isRecallCase(): Boolean</ID>
     <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>SwallowedException:EventService.kt$EventService$e: PropertyReferenceException</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
+    <ID>TooManyFunctions:ComService.kt$ComService</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:LicenceConditionService.kt$LicenceConditionService</ID>
     <ID>TooManyFunctions:LicenceController.kt$LicenceController</ID>
