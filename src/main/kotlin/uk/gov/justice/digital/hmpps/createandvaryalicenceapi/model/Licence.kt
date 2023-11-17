@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 @Schema(description = "Describes a licence within this service")
 data class Licence(
 
@@ -272,7 +272,7 @@ data class Licence(
       licenceType = this.typeCode.mapToPublicLicenceType(),
       policyVersion = this.version.orEmpty(),
       version = this.licenceVersion.orEmpty(),
-      statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.valueOf(
+      statusCode = PublicLicenceStatus.valueOf(
         statusCode.toString()
       ),
 
