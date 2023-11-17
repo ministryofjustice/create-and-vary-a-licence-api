@@ -2,6 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceBespoke
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -247,4 +254,40 @@ data class Licence(
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   val isEligibleForEarlyRelease: Boolean = false,
-)
+){
+  fun transformToPublicLicence(): uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence {
+    val licenseConditions = Conditions(
+      apConditions = ApConditions(
+        this.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
+        this.additionalLicenceConditions.transformToResourceAdditional(),
+        this.bespokeConditions.transformToResourceBespoke(),
+      ),
+      pssConditions = PssConditions(
+        this.standardPssConditions?.transformToResourceStandard().orEmpty(),
+        this.additionalPssConditions.transformToResourceAdditional(),
+      ),
+    )
+    return uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence(
+      id = this.id,
+      licenceType = this.typeCode.mapToPublicLicenceType(),
+      policyVersion = this.version.orEmpty(),
+      version = this.licenceVersion.orEmpty(),
+      statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.valueOf(
+        statusCode.toString()
+      ),
+
+      prisonNumber = this.nomsId.orEmpty(),
+      bookingId = this.bookingId ?: 0,
+      crn = this.crn.orEmpty(),
+      approvedByUsername = this.approvedByUsername,
+      approvedDateTime = this.approvedDate,
+      createdByUsername = this.createdByUsername.orEmpty(),
+      createdDateTime = this.dateCreated,
+      updatedByUsername = this.updatedByUsername,
+      updatedDateTime = this.dateLastUpdated,
+      isInPssPeriod = this.isInPssPeriod ?: false,
+      conditions = licenseConditions,
+
+      )
+  }
+}

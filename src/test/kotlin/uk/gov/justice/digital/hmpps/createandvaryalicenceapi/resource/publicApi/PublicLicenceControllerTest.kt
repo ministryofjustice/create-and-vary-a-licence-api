@@ -28,9 +28,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
 import java.time.LocalDateTime
 
@@ -62,7 +62,7 @@ class PublicLicenceControllerTest {
   }
 
   @Test
-  fun `get a licence by id`() {
+  fun `get a licence by id returns ok and have a response`() {
     val result = mvc.perform(get("/public/licences/id/1234").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andReturn()
@@ -165,7 +165,63 @@ class PublicLicenceControllerTest {
     verify(publicLicenceService, times(1)).getImageUpload(1, 1)
   }
 
+
+  @Test
+  fun `get licence by licence id`() {
+    val id: Long = 12345
+    whenever(publicLicenceService.getLicenceById(id)).thenReturn(licence)
+
+    val result = mvc.perform(get("/public/licences/id/12345").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andExpect(
+        jsonPath(
+          "\$..createdDateTime",
+          contains("2023-10-11T11:00:00"),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$..approvedDateTime",
+          contains("2023-10-11T12:00:00"),
+        ),
+      )
+      .andExpect(
+        jsonPath(
+          "\$..updatedDateTime",
+          contains("2023-10-11T11:30:00"),
+        ),
+      )
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(licence))
+
+    verify(publicLicenceService, times(1)).getLicenceById(12345)
+  }
+
   private companion object {
+    private val bespokeCondition = listOf( BespokeCondition ( "You should not visit Y"))
+    private val standardConditions = listOf(StandardCondition("fda24aa9-a2b0-4d49-9c87-23b0a7be4013", " as reasonably required by your supervisor, to give a sample of oral fluid"))
+    private val additionalConditions = listOf(
+      StandardAdditionalCondition(
+        type = "STANDARD",
+        id = 3568,
+        category = "Drug testing",
+        code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
+        text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
+
+        ),
+    )
+    private val pssConditions = PssConditions(standardConditions, additionalConditions)
+    private val apConditions = ApConditions ( standard = standardConditions,
+      additional = additionalConditions,
+      bespoke = bespokeCondition
+    )
+    val licenceConditions = Conditions(
+      apConditions, pssConditions,
+    )
+
     val aLicenceSummary = LicenceSummary(
       id = 1,
       licenceType = LicenceType.AP,
@@ -185,5 +241,24 @@ class PublicLicenceControllerTest {
     )
 
     val aFullSizeMapImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
+    val licence = Licence(
+      id = 1,
+      licenceType = LicenceType.AP,
+      policyVersion = "2.1",
+      version = "1.4",
+      statusCode = LicenceStatus.IN_PROGRESS,
+      prisonNumber = "A1234AA",
+      bookingId = 987654L,
+      crn = "A12345",
+      approvedByUsername = "TestApprover",
+      approvedDateTime = LocalDateTime.of(2023, 10, 11, 12, 0, 0),
+      createdByUsername = "TestCreator",
+      createdDateTime = LocalDateTime.of(2023, 10, 11, 11, 0, 0),
+      updatedByUsername = "TestUpdater",
+      updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
+      isInPssPeriod = false,
+      conditions = licenceConditions,
+
+      )
   }
 }

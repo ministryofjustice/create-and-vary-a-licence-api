@@ -18,41 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
-fun uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence.transformToPublicLicence(): Licence {
-  val licenseConditions = Conditions(
-    apConditions = ApConditions(
-      this.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
-      this.additionalLicenceConditions.transformToResourceAdditional(),
-      this.bespokeConditions.transformToResourceBespoke(),
-    ),
-    pssConditions = PssConditions(
-      this.standardPssConditions?.transformToResourceStandard().orEmpty(),
-      this.additionalPssConditions.transformToResourceAdditional(),
-    ),
-  )
-  return Licence(
-    id = this.id,
-    licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = this.version.orEmpty(),
-    version = this.licenceVersion.orEmpty(),
-    statusCode = LicenceStatus.valueOf(statusCode.toString()),
 
-    prisonNumber = this.nomsId.orEmpty(),
-    bookingId = this.bookingId ?: 0,
-    crn = this.crn.orEmpty(),
-    approvedByUsername = this.approvedByUsername,
-    approvedDateTime = this.approvedDate,
-    createdByUsername = this.createdByUsername.orEmpty(),
-    createdDateTime = this.dateCreated,
-    updatedByUsername = this.updatedByUsername,
-    updatedDateTime = this.dateLastUpdated,
-    isInPssPeriod = this.isInPssPeriod ?: false,
-    conditions = licenseConditions,
-
-    )
-}
-
-private fun uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.mapToPublicLicenceType() = when {
+fun uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.mapToPublicLicenceType() = when {
   this == uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP -> LicenceType.AP
   this == uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS -> LicenceType.PSS
   this == uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS -> LicenceType.AP_PSS
