@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.checkConditionsReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
@@ -101,10 +100,10 @@ class LicenceConditionService(
 
     auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition)
 
-    val readyToSubmit = checkConditionsReadyToSubmit(
-      listOf(newCondition),
-      licencePolicyService.policyByVersion(licenceEntity.version!!).additionalConditions,
-    )[newCondition.conditionCode]!!
+    val readyToSubmit = checkConditionReadyToSubmit(
+      newCondition,
+      licencePolicyService.policyByVersion(licenceEntity.version!!).allAdditionalConditions(),
+    )
 
     return transform(newCondition, readyToSubmit)
   }

@@ -13,6 +13,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AdditionalConditionWithConfig
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.checkConditionReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.checkConditionsReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapConditionsToConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -27,7 +31,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         mapConditionsToConfig(
           listOf(anAdditionalConditionEntity),
-          aPolicy.additionalConditions,
+          aPolicy.allAdditionalConditions(),
         ),
       ).containsExactly(
         AdditionalConditionWithConfig(anAdditionalConditionEntity, policyApCondition),
@@ -42,7 +46,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         checkConditionsReadyToSubmit(
           emptyList(),
-          aPolicy.additionalConditions,
+          aPolicy.allAdditionalConditions(),
         ),
       ).isEqualTo(
         emptyMap<String, Boolean>(),
@@ -54,7 +58,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         checkConditionsReadyToSubmit(
           listOf(anAdditionalConditionEntity, anAdditionalConditionEntity.copy(conditionCode = "code2")),
-          aPolicy.additionalConditions,
+          aPolicy.allAdditionalConditions(),
         ),
       ).isEqualTo(
         mapOf(
@@ -69,7 +73,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         checkConditionsReadyToSubmit(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList()), anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList())),
-          aPolicy.additionalConditions,
+          aPolicy.allAdditionalConditions(),
         ),
       ).isEqualTo(
         mapOf(
@@ -84,13 +88,46 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         checkConditionsReadyToSubmit(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList())),
-          aPolicy.additionalConditions.copy(ap = listOf(policyConditionWithoutInput)),
+          aPolicyWithoutInputs.allAdditionalConditions(),
         ),
       ).isEqualTo(
         mapOf(
           "code" to true,
         ),
       )
+    }
+  }
+
+  @Nested
+  inner class `checkConditionReadyToSubmit` {
+    @Test
+    fun `returns true for a condition that has inputs`() {
+      assertThat(
+        checkConditionReadyToSubmit(
+          anAdditionalConditionEntity,
+          aPolicy.allAdditionalConditions(),
+        ),
+      ).isTrue()
+    }
+
+    @Test
+    fun `returns false for a condition that is missing inputs`() {
+      assertThat(
+        checkConditionReadyToSubmit(
+          anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
+          aPolicy.allAdditionalConditions(),
+        ),
+      ).isFalse()
+    }
+
+    @Test
+    fun `returns true for a condition that doesn't need inputs`() {
+      assertThat(
+        checkConditionReadyToSubmit(
+          anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
+          aPolicyWithoutInputs.allAdditionalConditions(),
+        ),
+      ).isTrue()
     }
   }
 
@@ -167,10 +204,15 @@ class AdditionalConditionWithConfigTest {
     )
 
     val aPolicy = LicencePolicy(
-      "2.1",
+      version = "2.1",
       standardConditions = StandardConditions(emptyList(), emptyList()),
       additionalConditions = AdditionalConditions(listOf(policyApCondition, policyApCondition.copy(code = "code2")), emptyList()),
-      changeHints = emptyList(),
+    )
+
+    val aPolicyWithoutInputs = LicencePolicy(
+      version = "2.1",
+      standardConditions = StandardConditions(emptyList(), emptyList()),
+      additionalConditions = AdditionalConditions(listOf(policyConditionWithoutInput), emptyList()),
     )
 
     val someAdditionalConditionData = AdditionalConditionData(

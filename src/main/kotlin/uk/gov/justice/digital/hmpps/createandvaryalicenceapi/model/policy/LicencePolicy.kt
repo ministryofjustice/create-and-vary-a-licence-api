@@ -15,7 +15,7 @@ interface IAdditionalCondition : ILicenceCondition, HasInputs {
   val type: String?
   val requiresInput: Boolean
   val categoryShort: String?
-  val skipable: Boolean?
+  val skippable: Boolean?
   override fun getConditionInputs() = inputs
 }
 

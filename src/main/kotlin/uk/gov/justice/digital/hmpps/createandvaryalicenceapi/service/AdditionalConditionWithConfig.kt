@@ -1,7 +1,6 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 
 data class AdditionalConditionWithConfig(
@@ -9,16 +8,14 @@ data class AdditionalConditionWithConfig(
   val config: IAdditionalCondition,
 )
 
-fun mapConditionsToConfig(licenceConditions: List<AdditionalCondition>, policy: AdditionalConditions): List<AdditionalConditionWithConfig> {
-  val policyAdditionalConditions = policy.ap + policy.pss
+fun mapConditionsToConfig(licenceConditions: List<AdditionalCondition>, policy: Set<IAdditionalCondition>): List<AdditionalConditionWithConfig> {
   return licenceConditions.map {
-    val policyCondition = policyAdditionalConditions.find { pc -> it.conditionCode == pc.code }!!
+    val policyCondition = policy.find { pc -> it.conditionCode == pc.code }!!
     AdditionalConditionWithConfig(it, policyCondition)
   }
 }
 
-fun checkConditionsReadyToSubmit(licenceConditions: List<AdditionalCondition>, policy: AdditionalConditions): Map<String, Boolean> {
-  if (licenceConditions.isEmpty()) { return emptyMap() }
+fun checkConditionsReadyToSubmit(licenceConditions: List<AdditionalCondition>, policy: Set<IAdditionalCondition>): Map<String, Boolean> {
   val conditionsWithConfig = mapConditionsToConfig(licenceConditions, policy)
   return conditionsWithConfig.associate {
     val enteredFields = it.additionalCondition.additionalConditionData.map { data -> data.dataField }
@@ -30,4 +27,8 @@ fun checkConditionsReadyToSubmit(licenceConditions: List<AdditionalCondition>, p
       }
     Pair(it.additionalCondition.conditionCode!!, inputEntered)
   }
+}
+
+fun checkConditionReadyToSubmit(licenceCondition: AdditionalCondition, policy: Set<IAdditionalCondition>): Boolean {
+  return checkConditionsReadyToSubmit(listOf(licenceCondition), policy)[licenceCondition.conditionCode]!!
 }

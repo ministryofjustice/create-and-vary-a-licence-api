@@ -10,5 +10,5 @@ data class AdditionalConditionAp(
   override val categoryShort: String? = null,
   val subtext: String? = null,
   override val type: String? = null,
-  override val skipable: Boolean? = null,
+  override val skippable: Boolean? = false,
 ) : IAdditionalCondition
