@@ -279,7 +279,7 @@ data class Licence(
       approvedByUsername = this.approvedByUsername,
       approvedDateTime = this.approvedDate,
       createdByUsername = this.createdByUsername.orEmpty(),
-      createdDateTime = this.dateCreated,
+      createdDateTime = this.dateCreated!!,
       updatedByUsername = this.updatedByUsername,
       updatedDateTime = this.dateLastUpdated,
       isInPssPeriod = this.isInPssPeriod ?: false,

@@ -156,7 +156,7 @@ class ToResourceTransformersKtTest {
       approvedByUsername = modelLicence.approvedByUsername,
       approvedDateTime = modelLicence.approvedDate,
       createdByUsername = modelLicence.createdByUsername.orEmpty(),
-      createdDateTime = modelLicence.dateCreated,
+      createdDateTime = modelLicence.dateCreated!!,
       updatedByUsername = modelLicence.updatedByUsername,
       updatedDateTime = modelLicence.dateLastUpdated,
       isInPssPeriod = modelLicence.isInPssPeriod ?: false,
