@@ -31,11 +31,7 @@ class ReleaseDateServiceTest {
   }
 
   private fun getEarliestDate(actualReleaseDate: LocalDate): LocalDate {
-    return service.getEarliestDateBefore(
-      maxNumberOfWorkingDaysAllowedForEarlyRelease,
-      actualReleaseDate,
-      service::isEligibleForEarlyRelease,
-    )
+    return service.getEarliestReleaseDate(actualReleaseDate)
   }
 
   @Test
@@ -175,17 +171,17 @@ class ReleaseDateServiceTest {
   }
 
   @Test
-  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is equal to 5 days`() {
+  fun `The day after the limit`() {
     assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-17")))
   }
 
   @Test
-  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is less than 5 days`() {
+  fun `The day at the limit`() {
     assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-14")))
   }
 
   @Test
-  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is more than 5 days`() {
+  fun `The day before the limit`() {
     assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-20")))
   }
 
