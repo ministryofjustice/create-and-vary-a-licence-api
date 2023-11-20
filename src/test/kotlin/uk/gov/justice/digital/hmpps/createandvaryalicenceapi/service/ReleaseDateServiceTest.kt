@@ -172,16 +172,6 @@ class ReleaseDateServiceTest {
   }
 
   @Test
-  fun `isLateAllocationWarningRequired should return false if the difference between release date and modified date is equal to 8 days`() {
-    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-22")))
-  }
-
-  @Test
-  fun `isLateAllocationWarningRequired should return false if the difference between release date and modified date is equal to 7 days`() {
-    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-21")))
-  }
-
-  @Test
   fun `isLateAllocationWarningRequired should return false if the difference between release date and modified date is equal to 6 days`() {
     assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-20T00:01", formatter)))
   }
@@ -195,20 +185,20 @@ class ReleaseDateServiceTest {
   fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 4 days`() {
     assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-16")))
   }
-
-  @Test
-  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 3 days`() {
-    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-15")))
-  }
-
-  @Test
-  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 2 days`() {
-    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-14")))
-  }
-
+  
   @Test
   fun `isLateAllocationWarningRequired should return false if the release date is before modified date`() {
     assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-01")))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return false if the release date is on modified date`() {
+    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-10")))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return true if the release date is after modified date`() {
+    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-13")))
   }
 
   @Test
