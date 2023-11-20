@@ -21,6 +21,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       teamCodes,
       query,
       sortOptions,
+      2000,
     )
 
     val probationOffenderSearchResponse = probationSearchApiClient
