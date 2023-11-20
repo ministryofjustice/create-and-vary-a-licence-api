@@ -185,15 +185,15 @@ class ReleaseDateServiceTest {
   fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 4 days`() {
     assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-16")))
   }
-  
+
   @Test
   fun `isLateAllocationWarningRequired should return false if the release date is before modified date`() {
     assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-01")))
   }
 
   @Test
-  fun `isLateAllocationWarningRequired should return false if the release date is on modified date`() {
-    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-10")))
+  fun `isLateAllocationWarningRequired should return true if the release date is on modified date`() {
+    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-10")))
   }
 
   @Test
