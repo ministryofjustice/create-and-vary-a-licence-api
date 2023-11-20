@@ -19,7 +19,7 @@ class ReleaseDateService(
   }
 
   fun isLateAllocationWarningRequired(releaseDate: LocalDate?): Boolean {
-    if (releaseDate === null) return false
+    if (releaseDate === null || releaseDate.isBefore(LocalDate.now(clock))) return false
     val dateBeforeXWorkingDays = getEarliestDateBefore(
       maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
       releaseDate,

@@ -12,6 +12,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class ReleaseDateServiceTest {
   private val bankHolidayService = mock<BankHolidayService>()
@@ -171,18 +172,43 @@ class ReleaseDateServiceTest {
   }
 
   @Test
-  fun `The day after the limit`() {
-    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-17")))
+  fun `isLateAllocationWarningRequired should return false if the difference between release date and modified date is equal to 8 days`() {
+    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-22")))
   }
 
   @Test
-  fun `The day at the limit`() {
+  fun `isLateAllocationWarningRequired should return false if the difference between release date and modified date is equal to 7 days`() {
+    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-21")))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return false if the difference between release date and modified date is equal to 6 days`() {
+    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-20T00:01", formatter)))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is equal to 5 days`() {
+    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-17T00:01", formatter)))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 4 days`() {
+    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-16")))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 3 days`() {
+    assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-15")))
+  }
+
+  @Test
+  fun `isLateAllocationWarningRequired should return true if the difference between release date and modified date is 2 days`() {
     assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-14")))
   }
 
   @Test
-  fun `The day before the limit`() {
-    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-20")))
+  fun `isLateAllocationWarningRequired should return false if the release date is before modified date`() {
+    assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-01")))
   }
 
   @Test
@@ -208,5 +234,6 @@ class ReleaseDateServiceTest {
     const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
     const val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail = 6
     val clock: Clock = Clock.fixed(Instant.parse("2023-11-10T00:00:00Z"), ZoneId.systemDefault())
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd['T'HH:mm]")
   }
 }
