@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
@@ -15,10 +16,9 @@ data class Licence(
 
   @Schema(
     description = "The policy version number the licence is currently on",
-    example = "2.1",
-    allowableValues = ["1.0", "2.0", "2.1"],
+    example = "V2_1",
   )
-  val policyVersion: String,
+  val policyVersion: PolicyVersion,
 
   @Schema(
     description = "The version of this specific licence, this is unique within the context of a booking",
@@ -29,10 +29,6 @@ data class Licence(
   @Schema(
     description = "The current status code for the licence. This is non exhaustive and subject to change",
     example = "IN_PROGRESS",
-    allowableValues = [
-      "IN_PROGRESS", "SUBMITTED", "APPROVED", "ACTIVE", "VARIATION_IN_PROGRESS",
-      "VARIATION_SUBMITTED", "VARIATION_APPROVED",
-    ],
   )
   val statusCode: LicenceStatus,
 

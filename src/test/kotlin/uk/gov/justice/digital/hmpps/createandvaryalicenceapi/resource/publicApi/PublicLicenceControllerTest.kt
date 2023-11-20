@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 import java.time.LocalDateTime
 
 @ExtendWith(SpringExtension::class)
@@ -169,7 +170,7 @@ class PublicLicenceControllerTest {
     val aLicenceSummary = LicenceSummary(
       id = 1,
       licenceType = LicenceType.AP,
-      policyVersion = "2.1",
+      policyVersion = PolicyVersion.V2_0,
       version = "1.4",
       statusCode = LicenceStatus.IN_PROGRESS,
       prisonNumber = "A1234AA",

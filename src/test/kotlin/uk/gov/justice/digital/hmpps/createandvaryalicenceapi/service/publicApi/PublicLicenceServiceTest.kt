@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -80,7 +81,7 @@ class PublicLicenceServiceTest {
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
-            "1.0",
+            PolicyVersion.V1_0,
             "1.4",
             PublicLicenceStatus.IN_PROGRESS,
             "A1234BC",
@@ -126,7 +127,7 @@ class PublicLicenceServiceTest {
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
-            "1.0",
+            PolicyVersion.V1_0,
             "1.4",
             PublicLicenceStatus.IN_PROGRESS,
             "A1234BC",
@@ -172,7 +173,7 @@ class PublicLicenceServiceTest {
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
-            "1.0",
+            PolicyVersion.V1_0,
             "1.4",
             PublicLicenceStatus.IN_PROGRESS,
             "A1234BC",
@@ -259,7 +260,7 @@ class PublicLicenceServiceTest {
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
-            "1.0",
+            PolicyVersion.V1_0,
             "1.4",
             PublicLicenceStatus.IN_PROGRESS,
             "A1234BC",
@@ -305,7 +306,7 @@ class PublicLicenceServiceTest {
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
-            "1.0",
+            PolicyVersion.V1_0,
             "1.4",
             PublicLicenceStatus.IN_PROGRESS,
             "A1234BC",
@@ -351,7 +352,7 @@ class PublicLicenceServiceTest {
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
-            "1.0",
+            PolicyVersion.V1_0,
             "1.4",
             PublicLicenceStatus.IN_PROGRESS,
             "A1234BC",

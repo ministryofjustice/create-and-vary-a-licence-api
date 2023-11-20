@@ -23,7 +23,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
       VARIATION_REJECTED]
       - Condition data is different dependent on the type of condition: 
           - Standard conditions have static text
-          - Additional conditions have a combination of template and inputted text
+          - Additional conditions have a combination of static and inputted text
           - Bespoke conditions are purely inputted text
           
     """.trimIndent()
