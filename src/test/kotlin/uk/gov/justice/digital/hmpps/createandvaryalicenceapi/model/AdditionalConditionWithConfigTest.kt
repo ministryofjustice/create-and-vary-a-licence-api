@@ -214,8 +214,7 @@ class AdditionalConditionWithConfigTest {
       code = "code",
       category = "category",
       text = "text",
-      inputs = listOf(anInput),
-      requiresInput = true,
+      requiresInput = false,
     )
 
     val aPolicyConditionWithMultipleInputs = AdditionalConditionAp(
