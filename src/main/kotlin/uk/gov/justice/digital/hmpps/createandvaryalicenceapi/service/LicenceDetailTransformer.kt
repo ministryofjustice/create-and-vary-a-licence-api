@@ -13,8 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ELECTRONIC_TAG_COND_CODE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.EXCLUSION_ZONE_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition as ModelStandardAdditionalCondition
@@ -48,7 +48,8 @@ fun transformModelToPublicLicence(modelLicence: uk.gov.justice.digital.hmpps.cre
     approvedByUsername = modelLicence.approvedByUsername,
     approvedDateTime = modelLicence.approvedDate,
     createdByUsername = modelLicence.createdByUsername.orEmpty(),
-    createdDateTime = modelLicence.dateCreated!!,
+    createdDateTime = modelLicence.dateCreated
+      ?: error("Licence creation date should not be null for licence id:" + modelLicence.id),
     updatedByUsername = modelLicence.updatedByUsername,
     updatedDateTime = modelLicence.dateLastUpdated,
     isInPssPeriod = modelLicence.isInPssPeriod ?: false,
@@ -83,6 +84,7 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
       else -> standardAdditionalCondition(it)
     }
   }
+
 fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalCondition {
   return ElectronicMonitoringAdditionalCondition(
     category = model.category.orEmpty(),
@@ -91,7 +93,10 @@ fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitor
     code = model.code.orEmpty(),
     text = model.text.orEmpty(),
     electronicMonitoringTypes = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }
-      .map { data -> ElectronicMonitoringType.find(data.value.orEmpty())!! },
+      .map { data ->
+        ElectronicMonitoringType.find(data.value.orEmpty())
+          ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
+      },
   )
 }
 

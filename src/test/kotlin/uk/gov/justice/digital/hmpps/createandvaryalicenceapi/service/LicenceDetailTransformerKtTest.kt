@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 
-class ToResourceTransformersKtTest {
+class LicenceDetailTransformerKtTest {
   private companion object {
     val someStandardConditions = listOf(
       ModelStandardCondition(

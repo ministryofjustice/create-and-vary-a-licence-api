@@ -12,19 +12,19 @@
 # Server port - avoid clash with prison-api
 export SERVER_PORT=8089
 
-# Client id/secret to access local container-hosted services
+# Client id/secret to access container-hosted services
 # Matches with the seeded client details in hmpps-auth for its dev profile
 export SYSTEM_CLIENT_ID=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.SYSTEM_CLIENT_ID | @base64d')
 export SYSTEM_CLIENT_SECRET=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.SYSTEM_CLIENT_SECRET | @base64d')
 
-# Provide the DB connection details to local container-hosted Postgresql DB
+# Provide the DB connection details to dev container-hosted Postgresql DB
 # Match with the credentials set in create-and-vary-a-licence/docker-compose.yml
 export DB_SERVER=localhost
 export DB_NAME=$(kubectl -n create-and-vary-a-licence-api-dev get secret rds-instance-output -o json | jq -r '.data.database_name | @base64d')
 export DB_USER=$(kubectl -n create-and-vary-a-licence-api-dev get secret rds-instance-output -o json | jq -r '.data.database_username | @base64d')
 export DB_PASS=$(kubectl -n create-and-vary-a-licence-api-dev get secret rds-instance-output -o json | jq -r '.data.database_password | @base64d')
 
-# Provide URLs to other local container-based dependent services
+# Provide URLs to other dev container-based dependent services
 # Match with ports defined in docker-compose.yml
 export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
