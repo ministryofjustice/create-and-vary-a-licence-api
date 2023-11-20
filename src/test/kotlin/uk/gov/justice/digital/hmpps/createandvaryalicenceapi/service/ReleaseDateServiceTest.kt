@@ -17,7 +17,12 @@ class ReleaseDateServiceTest {
   private val bankHolidayService = mock<BankHolidayService>()
 
   private val service =
-    ReleaseDateService(bankHolidayService, clock, maxNumberOfWorkingDaysToTriggerAllocationWarningEmail)
+    ReleaseDateService(
+      bankHolidayService,
+      clock,
+      maxNumberOfWorkingDaysAllowedForEarlyRelease,
+      maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
+    )
 
   @BeforeEach
   fun reset() {

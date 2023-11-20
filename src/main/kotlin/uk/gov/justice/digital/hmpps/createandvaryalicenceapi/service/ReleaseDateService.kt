@@ -10,8 +10,14 @@ import java.time.LocalDate
 class ReleaseDateService(
   private val bankHolidayService: BankHolidayService,
   private val clock: Clock,
+  @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int,
   @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:6}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int,
 ) {
+
+  fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
+    return getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate, ::isEligibleForEarlyRelease)
+  }
+
   fun isLateAllocationWarningRequired(releaseDate: LocalDate?): Boolean {
     if (releaseDate === null) return false
     val dateBeforeXWorkingDays = getEarliestDateBefore(

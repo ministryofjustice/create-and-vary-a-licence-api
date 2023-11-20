@@ -99,7 +99,6 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
-      maxNumberOfWorkingDaysAllowedForEarlyRelease,
     ),
   )
 
@@ -2084,7 +2083,5 @@ class LicenceServiceTest {
         conditionType = "PSS",
       ),
     )
-
-    const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
   }
 }
