@@ -98,7 +98,7 @@
         "category": "Residence at a specific place",
         "text": "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
         "tpl": "You must reside overnight within {probationRegion} probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
@@ -171,7 +171,7 @@
         "category": "Restriction of residency",
         "text": "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
         "tpl": "Not to reside (not even to stay for one night) in the same household as {gender} child under the age of {age} without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
@@ -229,7 +229,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
@@ -240,7 +240,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Receive home visits from a Mental Health Worker.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
@@ -251,7 +251,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Attend appointments, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
@@ -262,7 +262,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Should you return to the UK and Islands before the expiry date of your licence then your licence conditions will be in force and you must report within two working days to your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
@@ -273,7 +273,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Not to seek to approach or communicate with [INSERT NAME OF VICTIM AND / OR FAMILY MEMBERS] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT].",
         "tpl": "Not to seek to approach or communicate with {name} without the prior approval of your supervising officer{socialServicesDepartment}.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -311,7 +311,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
         "tpl": "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer{socialServicesDepartment} except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
@@ -381,7 +381,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Not to contact or associate with [NAMED OFFENDER(S) / NAMED INDIVIDUAL(S)] without the prior approval of your supervising officer.",
         "tpl": "Not to contact or associate with {nameOfIndividual} without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -407,7 +407,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Not to contact or associate with a known sex offender other than when compelled by attendance at a Treatment Programme or when residing at Approved Premises without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
@@ -418,7 +418,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Not to contact directly or indirectly any person who is a serving or remand prisoner or detained in State custody, without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
@@ -429,7 +429,7 @@
         "category": "Making or maintaining contact with a person",
         "text": "Not to associate with any person currently or formerly associated with [NAMES OF SPECIFIC GROUPS OR ORGANISATIONS] without the prior approval of your supervising officer.",
         "tpl": "Not to associate with any person currently or formerly associated with {nameOfOrganisation} without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -455,7 +455,7 @@
         "category": "Participation in, or co-operation with, a programme or set of activities",
         "text": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
         "tpl": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "check",
@@ -520,7 +520,7 @@
         "category": "Participation in, or co-operation with, a programme or set of activities",
         "text": "Not to undertake work or other organised activity which will involve a person under the age of [INSERT AGE], either on a paid or unpaid basis without the prior approval of your supervising officer.",
         "tpl": "Not to undertake work or other organised activity which will involve a person under the age of {age}, either on a paid or unpaid basis without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
@@ -553,7 +553,7 @@
         "category": "Participation in, or co-operation with, a programme or set of activities",
         "text": "To engage with the Integrated Offender Management Team, and follow their instructions.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Programmes or activities",
         "subtext": null,
@@ -564,7 +564,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -575,7 +575,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "Not to own or possess a mobile phone with a photographic function without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -586,7 +586,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "Not to own or use a camera without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -597,7 +597,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection upon request.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -608,7 +608,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "To surrender your passport(s) to your supervising officer and to notify your supervising officer of any intention to apply for a new passport.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -619,7 +619,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "Not to use or access any computer or device which is internet enabled without the prior approval of your supervising officer; and only for the purpose, and only at a specific location, as specified by that officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -630,7 +630,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
@@ -641,7 +641,7 @@
         "category": "Possession, ownership, control or inspection of specified items or documents",
         "text": "Not to own or possess a [SPECIFIED ITEM] without the prior approval of your supervising officer.",
         "tpl": "Not to own or possess {item} without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -667,7 +667,7 @@
         "category": "Disclosure of information",
         "text": "Provide your supervising officer with details (such as make, model, colour, registration) of any vehicle you own, hire for more than a short journey or have regular use of, prior to any journey taking place.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -678,7 +678,7 @@
         "category": "Disclosure of information",
         "text": "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -689,7 +689,7 @@
         "category": "Disclosure of information",
         "text": "Notify your supervising officer of any developing personal relationships, whether intimate or not, with any person you know or believe to be resident in a household containing children under the age of 18. This includes persons known to you prior to your time in custody with whom you are renewing or developing a personal relationship with.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -700,7 +700,7 @@
         "category": "Disclosure of information",
         "text": "To notify your supervising officer of the details of any passport that you possess (including passport number), and of any intention to apply for a new passport.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -711,7 +711,7 @@
         "category": "Disclosure of information",
         "text": "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -722,7 +722,7 @@
         "category": "Curfew arrangement",
         "text": "Confine yourself to an address approved by your supervising officer between the hours of [TIME] and [TIME] daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
         "tpl": "Confine yourself to an address approved by your supervising officer between the hours of {curfewStart} and {curfewEnd} daily unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
@@ -913,7 +913,7 @@
         "category": "Freedom of movement",
         "text": "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
         "tpl": "Not to enter the area of {outOfBoundArea}, as defined by the attached map, without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -949,7 +949,7 @@
         "category": "Freedom of movement",
         "text": "Not to enter [NAME / TYPE OF PREMISES / ADDRESS / ROAD] without the prior approval of your supervising officer.",
         "tpl": "Not to enter {nameOfPremises} {premisesAddress} without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "radio",
@@ -1031,7 +1031,7 @@
         "category": "Freedom of movement",
         "text": "Not to enter or remain in sight of any [CHILDREN'S PLAY AREA, SWIMMING BATHS, SCHOOL ETC] without the prior approval of your supervising officer.",
         "tpl": "Not to enter or remain in sight of any {typeOfPremises} without the prior approval of your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -1055,7 +1055,7 @@
         "category": "Freedom of movement",
         "text": "On release to be escorted by police to Approved Premises.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1066,7 +1066,7 @@
         "category": "Freedom of movement",
         "text": "To only attend places of worship which have been previously agreed with your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1077,7 +1077,7 @@
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         "text": "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "tpl": "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -1229,7 +1229,7 @@
         "category": "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
         "text": "Report to staff at [NAME OF POLICE STATION] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         "tpl": "Report to staff at {policeStation} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "text",
@@ -1381,7 +1381,7 @@
         "category": "Restriction of specified conduct or specified acts",
         "text": "Not to participate directly or indirectly in organising and/or contributing to any demonstration, meeting, gathering or website without the prior approval of your supervising officer. This condition will be reviewed on a monthly basis and may be amended or removed if your risk is assessed as having changed.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": "Restriction of conduct or acts",
         "subtext": null,
@@ -1392,7 +1392,7 @@
         "category": "Extremism",
         "text": "Not to contact directly or indirectly any person whom you know or believe to have been charged or convicted of any extremist related offence, without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1403,7 +1403,7 @@
         "category": "Extremism",
         "text": "Not to attend or organise any meetings or gatherings other than those convened solely for the purposes of worship without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1414,7 +1414,7 @@
         "category": "Extremism",
         "text": "Not to give or engage in the delivery of any lecture, talk, or sermon whether part of an act of worship or not, without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1425,7 +1425,7 @@
         "category": "Extremism",
         "text": "Not to engage in any discussion or act to promote grooming or influencing of an individual or a group for the purpose of extremism or radicalisation.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1436,7 +1436,7 @@
         "category": "Extremism",
         "text": "Not to have in your possession any printed or electronically recorded material or handwritten notes which contain encoded information or that promote the destruction of or hatred for any religious or ethnic group or that celebrates, justifies or promotes acts of violence, or that contain information about military or paramilitary technology, weapons, techniques or tactics without the prior approval of your supervising officer.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1447,7 +1447,7 @@
         "category": "Polygraph",
         "text": "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1458,7 +1458,7 @@
         "category": "Drug testing",
         "text": "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1469,7 +1469,7 @@
         "category": "Electronic monitoring",
         "text": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
         "tpl": "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "check",
@@ -1518,7 +1518,7 @@
         "category": "Electronic monitoring",
         "text": "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
         "tpl": "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on {endDate}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "datePicker",
@@ -1542,7 +1542,7 @@
         "category": "Electronic monitoring",
         "text": "You must stay at [APPROVED ADDRESS] between 5pm and midnight every day until your electronic tag is installed unless otherwise authorised by your supervising officer.",
         "tpl": "You must stay at {approvedAddress} between 5pm and midnight every day until your electronic tag is installed unless otherwise authorised by your supervising officer.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "address",
@@ -1566,7 +1566,7 @@
         "category": "Electronic monitoring",
         "text": "You must not drink any alcohol until [END DATE] unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
         "tpl": "You must not drink any alcohol until {endDate} unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "datePicker",
@@ -1590,7 +1590,7 @@
         "category": "Electronic monitoring",
         "text": "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
         "tpl": "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "inputs": [
           {
             "type": "datePicker",
@@ -1614,7 +1614,7 @@
         "category": "Terrorist personal search",
         "text": "You must let the police search you if they ask. You must also let them search a vehicle you are with, like a car or a motorbike.",
         "tpl": null,
-        "requiresUserInput": false,
+        "requiresInput": false,
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
@@ -1627,7 +1627,7 @@
         "category": "Drug appointment",
         "text": "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
         "tpl": "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "categoryShort": null,
         "pssDates": true,
         "inputs": [
@@ -1675,7 +1675,7 @@
         "category": "Drug testing",
         "text": "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
         "tpl": "Attend {name} {address}, as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-        "requiresUserInput": true,
+        "requiresInput": true,
         "categoryShort": null,
         "pssDates": null,
         "inputs": [
