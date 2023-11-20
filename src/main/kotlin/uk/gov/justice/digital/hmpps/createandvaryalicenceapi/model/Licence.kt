@@ -252,6 +252,4 @@ data class Licence(
   fun transformToPublicLicence(): uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence {
     return transformModelToPublicLicence(this)
   }
-
-
 }
