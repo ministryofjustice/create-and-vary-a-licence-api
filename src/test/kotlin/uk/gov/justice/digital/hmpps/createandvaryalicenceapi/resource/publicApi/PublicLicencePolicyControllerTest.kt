@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -153,7 +154,7 @@ class PublicLicencePolicyControllerTest {
     )
 
     val aLicencePolicy = LicencePolicy(
-      "2.1",
+      PolicyVersion.V2_1,
       someConditionTypes,
     )
   }

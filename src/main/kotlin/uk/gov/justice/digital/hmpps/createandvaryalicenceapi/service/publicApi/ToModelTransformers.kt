@@ -67,7 +67,7 @@ private fun LicenceStatus.mapToPublicLicenceStatus() =
 
 fun LicencePolicy.transformToPublicLicencePolicy(): ModelPublicLicencePolicy {
   return ModelPublicLicencePolicy(
-    version = this.version,
+    version = this.version.getPolicyVersion(),
     conditions = this.getAllConditions(),
   )
 }
