@@ -98,16 +98,16 @@ class AdditionalConditionWithConfigTest {
     }
 
     @Test
-    fun `maps conditions that have optional fields based on the presence of required fields`(){
+    fun `maps conditions that have optional fields based on the presence of required fields`() {
       assertThat(
         isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity),
-          aPolicyWithMultipleInputs.allAdditionalConditions()
-        )
+          aPolicyWithMultipleInputs.allAdditionalConditions(),
+        ),
       ).isEqualTo(
         mapOf(
           "code" to true,
-        )
+        ),
       )
     }
   }
@@ -224,7 +224,7 @@ class AdditionalConditionWithConfigTest {
       text = "text",
       inputs = listOf(
         anInput,
-        anInput.copy(label="Label (Optional)")
+        anInput.copy(label = "Label (Optional)"),
       ),
       requiresInput = true,
     )
