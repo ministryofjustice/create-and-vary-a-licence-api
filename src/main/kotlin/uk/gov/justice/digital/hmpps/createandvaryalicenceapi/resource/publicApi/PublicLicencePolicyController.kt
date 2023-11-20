@@ -62,7 +62,7 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
     @Parameter(
       name = "version",
       description = "The version of the licence policy",
-      example = "2.1",
+      example = "V2_1",
     )
     versionNumber: String,
   ) =
