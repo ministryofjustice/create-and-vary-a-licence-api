@@ -1,8 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
@@ -19,6 +24,37 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
+fun transformModelToPublicLicence(modelLicence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence): Licence {
+  val licenseConditions = Conditions(
+    apConditions = ApConditions(
+      modelLicence.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
+      modelLicence.additionalLicenceConditions.transformToResourceAdditional(),
+      modelLicence.bespokeConditions.transformToResourceBespoke(),
+    ),
+    pssConditions = PssConditions(
+      modelLicence.standardPssConditions?.transformToResourceStandard().orEmpty(),
+      modelLicence.additionalPssConditions.transformToResourceAdditional(),
+    ),
+  )
+  return Licence(
+    id = modelLicence.id,
+    licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
+    policyVersion = modelLicence.version.orEmpty(),
+    version = modelLicence.licenceVersion.orEmpty(),
+    statusCode = LicenceStatus.valueOf(modelLicence.statusCode.toString()),
+    prisonNumber = modelLicence.nomsId.orEmpty(),
+    bookingId = modelLicence.bookingId ?: 0,
+    crn = modelLicence.crn.orEmpty(),
+    approvedByUsername = modelLicence.approvedByUsername,
+    approvedDateTime = modelLicence.approvedDate,
+    createdByUsername = modelLicence.createdByUsername.orEmpty(),
+    createdDateTime = modelLicence.dateCreated!!,
+    updatedByUsername = modelLicence.updatedByUsername,
+    updatedDateTime = modelLicence.dateLastUpdated,
+    isInPssPeriod = modelLicence.isInPssPeriod ?: false,
+    conditions = licenseConditions,
+  )
+}
 
 fun uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.mapToPublicLicenceType() = when {
   this == uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP -> LicenceType.AP
@@ -39,19 +75,14 @@ fun transform(condition: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.m
 }
 
 // Transform a list of model additional conditions to resource additional conditions
-fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> {
-  val electronicMonitoringConditions =
-    filter { condition -> condition.code == ELECTRONIC_TAG_COND_CODE }.map(::transformElectronicMonitoring)
-  val multipleExclusionZoneAdditionalConditions =
-    filter { condition -> condition.code == EXCLUSION_ZONE_COND_CODE }.map(::transformMultipleExclusionZonesCondition)
-  val stdConditions =
-    filter { condition -> condition.code != ELECTRONIC_TAG_COND_CODE && condition.code != EXCLUSION_ZONE_COND_CODE }.map(
-      ::standardAdditionalCondition,
-    )
-
-  return electronicMonitoringConditions + multipleExclusionZoneAdditionalConditions + stdConditions
-}
-
+fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> =
+  map {
+    when (it.code) {
+      ELECTRONIC_TAG_COND_CODE -> transformElectronicMonitoring(it)
+      EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
+      else -> standardAdditionalCondition(it)
+    }
+  }
 fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalCondition {
   return ElectronicMonitoringAdditionalCondition(
     category = model.category.orEmpty(),
