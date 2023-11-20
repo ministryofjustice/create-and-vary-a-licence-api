@@ -14,8 +14,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AdditionalConditionWithConfig
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.checkConditionReadyToSubmit
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.checkConditionsReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.isConditionReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.isLicenceReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapConditionsToConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -44,7 +44,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `returns if there are no conditions on the licence`() {
       assertThat(
-        checkConditionsReadyToSubmit(
+        isLicenceReadyToSubmit(
           emptyList(),
           aPolicy.allAdditionalConditions(),
         ),
@@ -56,7 +56,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `maps conditions with inputs to true`() {
       assertThat(
-        checkConditionsReadyToSubmit(
+        isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity, anAdditionalConditionEntity.copy(conditionCode = "code2")),
           aPolicy.allAdditionalConditions(),
         ),
@@ -71,7 +71,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `maps conditions with missing inputs to false`() {
       assertThat(
-        checkConditionsReadyToSubmit(
+        isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList()), anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList())),
           aPolicy.allAdditionalConditions(),
         ),
@@ -86,7 +86,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `maps conditions that do not need inputs to true`() {
       assertThat(
-        checkConditionsReadyToSubmit(
+        isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList())),
           aPolicyWithoutInputs.allAdditionalConditions(),
         ),
@@ -96,6 +96,20 @@ class AdditionalConditionWithConfigTest {
         ),
       )
     }
+
+    @Test
+    fun `maps conditions that have optional fields based on the presence of required fields`(){
+      assertThat(
+        isLicenceReadyToSubmit(
+          listOf(anAdditionalConditionEntity),
+          aPolicyWithMultipleInputs.allAdditionalConditions()
+        )
+      ).isEqualTo(
+        mapOf(
+          "code" to true,
+        )
+      )
+    }
   }
 
   @Nested
@@ -103,7 +117,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `returns true for a condition that has inputs`() {
       assertThat(
-        checkConditionReadyToSubmit(
+        isConditionReadyToSubmit(
           anAdditionalConditionEntity,
           aPolicy.allAdditionalConditions(),
         ),
@@ -113,7 +127,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `returns false for a condition that is missing inputs`() {
       assertThat(
-        checkConditionReadyToSubmit(
+        isConditionReadyToSubmit(
           anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
           aPolicy.allAdditionalConditions(),
         ),
@@ -123,7 +137,7 @@ class AdditionalConditionWithConfigTest {
     @Test
     fun `returns true for a condition that doesn't need inputs`() {
       assertThat(
-        checkConditionReadyToSubmit(
+        isConditionReadyToSubmit(
           anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
           aPolicyWithoutInputs.allAdditionalConditions(),
         ),
@@ -200,7 +214,19 @@ class AdditionalConditionWithConfigTest {
       code = "code",
       category = "category",
       text = "text",
-      requiresInput = false,
+      inputs = listOf(anInput),
+      requiresInput = true,
+    )
+
+    val aPolicyConditionWithMultipleInputs = AdditionalConditionAp(
+      code = "code",
+      category = "category",
+      text = "text",
+      inputs = listOf(
+        anInput,
+        anInput.copy(label="Label (Optional)")
+      ),
+      requiresInput = true,
     )
 
     val aPolicy = LicencePolicy(
@@ -213,6 +239,12 @@ class AdditionalConditionWithConfigTest {
       version = "2.1",
       standardConditions = StandardConditions(emptyList(), emptyList()),
       additionalConditions = AdditionalConditions(listOf(policyConditionWithoutInput), emptyList()),
+    )
+
+    val aPolicyWithMultipleInputs = LicencePolicy(
+      version = "2.1",
+      standardConditions = StandardConditions(emptyList(), emptyList()),
+      additionalConditions = AdditionalConditions(listOf(aPolicyConditionWithMultipleInputs), emptyList()),
     )
 
     val someAdditionalConditionData = AdditionalConditionData(

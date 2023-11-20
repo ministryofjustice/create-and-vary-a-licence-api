@@ -100,7 +100,7 @@ class LicenceConditionService(
 
     auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition)
 
-    val readyToSubmit = checkConditionReadyToSubmit(
+    val readyToSubmit = isConditionReadyToSubmit(
       newCondition,
       licencePolicyService.policyByVersion(licenceEntity.version!!).allAdditionalConditions(),
     )
