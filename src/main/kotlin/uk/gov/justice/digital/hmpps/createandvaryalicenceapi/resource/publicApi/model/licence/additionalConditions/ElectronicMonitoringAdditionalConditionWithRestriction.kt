@@ -11,7 +11,7 @@ enum class ElectronicMonitoringType {
 @Schema(
   description = "Describes an instance of the electronic monitoring condition on the licence",
 )
-data class ElectronicMonitoringAdditionalCondition(
+data class ElectronicMonitoringAdditionalConditionWithRestriction(
   @Schema(description = "The ID of the condition", example = "123456") override val id: Long,
 
   @get:Schema(
@@ -37,6 +37,7 @@ data class ElectronicMonitoringAdditionalCondition(
   @Schema(
     description = "The type of electronic monitoring that is included by this condition",
     example = "['ALCOHOL']",
-  ) val electronicMonitoringTypes: List<ElectronicMonitoringType>,
+    implementation = ElectronicMonitoringType::class,
+  ) val restrictions: List<ElectronicMonitoringType>,
 
 ) : AdditionalCondition

@@ -55,7 +55,7 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(anApAdditionalCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresInput)
+        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
       }
       .isEqualTo(
         Tuple.tuple(
@@ -84,7 +84,7 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(aPssAdditionalCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresInput)
+        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
       }
       .isEqualTo(
         Tuple.tuple(

@@ -123,7 +123,7 @@ private fun transform(entity: AdditionalConditionAp): ModelPublicAdditionalCondi
     text = entity.text,
     category = entity.category,
     categoryShort = entity.categoryShort,
-    requiresInput = entity.requiresInput,
+    requiresUserInput = entity.requiresInput,
   )
 }
 
@@ -144,6 +144,6 @@ private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCond
     text = entity.text,
     category = entity.category,
     categoryShort = entity.categoryShort,
-    requiresInput = entity.requiresInput,
+    requiresUserInput = entity.requiresInput,
   )
 }

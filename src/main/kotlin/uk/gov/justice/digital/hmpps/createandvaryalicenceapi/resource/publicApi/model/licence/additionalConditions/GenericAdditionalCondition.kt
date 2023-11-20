@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(
   description = "Describes an instance of a additional condition on the licence",
 )
-data class StandardAdditionalCondition(
+data class GenericAdditionalCondition(
   @Schema(description = "The ID of the condition", example = "123456")
   override val id: Long,
 
@@ -26,7 +26,7 @@ data class StandardAdditionalCondition(
   )
   override val code: String,
 
-  @get:Schema(description = "The inputted text for the instance", example = "You must not enter the location X")
+  @get:Schema(description = "A combination of inputted text and template text including any user input", example = "You must not enter the location X")
   override val text: String,
 
 ) : AdditionalCondition

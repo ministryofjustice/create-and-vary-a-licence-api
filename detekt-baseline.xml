@@ -28,8 +28,6 @@
     <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>ReturnCount:ComService.kt$ComService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
-    <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun PrisonerSearchPrisoner.isEligibleIfOnAnExtendedDeterminateSentence(): Boolean</ID>
-    <ID>ReturnCount:EligibilityService.kt$EligibilityService$private fun PrisonerSearchPrisoner.isRecallCase(): Boolean</ID>
     <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>SwallowedException:EventService.kt$EventService$e: PropertyReferenceException</ID>
@@ -42,6 +40,7 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>UnusedParameter:LicenceController.kt$LicenceController$@PathVariable conditionType: String</ID>
+    <ID>UnusedParameter:PublicLicenceController.kt$PublicLicenceController$@PathVariable(name = "licenceId") @Parameter(name = "licenceId", description = "This is the identifier for a licence") licenceId: Long</ID>
     <ID>UtilityClassWithPublicConstructor:Tags.kt$Tags</ID>
   </CurrentIssues>
 </SmellBaseline>
