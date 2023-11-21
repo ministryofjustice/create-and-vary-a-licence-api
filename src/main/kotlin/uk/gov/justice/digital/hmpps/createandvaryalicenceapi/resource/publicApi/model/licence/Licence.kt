@@ -62,7 +62,10 @@ data class Licence(
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   val updatedDateTime: LocalDateTime?,
 
-  @Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
+  @Schema(
+    description =
+    "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)",
+  )
   val isInPssPeriod: Boolean,
 
   @Schema(description = "The AP and PSS conditions that form the licence")
