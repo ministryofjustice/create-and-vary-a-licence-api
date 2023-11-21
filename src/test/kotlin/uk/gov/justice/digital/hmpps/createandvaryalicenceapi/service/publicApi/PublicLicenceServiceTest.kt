@@ -83,30 +83,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            "testapprover",
-            LocalDateTime.parse("2023-10-11T13:00"),
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            "testupdater",
-            LocalDateTime.parse("2023-10-11T12:00"),
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -127,30 +127,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            null,
-            null,
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            "testupdater",
-            LocalDateTime.parse("2023-10-11T12:00"),
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          null,
+          null,
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -171,30 +171,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            "testapprover",
-            LocalDateTime.parse("2023-10-11T13:00"),
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            null,
-            null,
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          null,
+          null,
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -254,30 +254,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            "testapprover",
-            LocalDateTime.parse("2023-10-11T13:00"),
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            "testupdater",
-            LocalDateTime.parse("2023-10-11T12:00"),
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
@@ -298,30 +298,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            null,
-            null,
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            "testupdater",
-            LocalDateTime.parse("2023-10-11T12:00"),
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          null,
+          null,
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
@@ -342,30 +342,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            "testapprover",
-            LocalDateTime.parse("2023-10-11T13:00"),
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            null,
-            null,
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          null,
+          null,
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
@@ -698,8 +698,6 @@ class PublicLicenceServiceTest {
       additionalConditionUploadSummary = emptyList(),
     )
 
-
-
     val publicLicenseConditions = Conditions(
       apConditions = ApConditions(
         modelLicence.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
@@ -762,30 +760,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            null,
-            null,
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            "testupdater",
-            LocalDateTime.parse("2023-10-11T12:00"),
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          null,
+          null,
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -806,30 +804,30 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-          Tuple.tuple(
-            it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-            it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-            it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-          )
-        }.isEqualTo(
-          Tuple.tuple(
-            1L,
-            PublicLicenceType.AP,
-            "1.0",
-            "1.4",
-            PublicLicenceStatus.IN_PROGRESS,
-            "A1234BC",
-            987654L,
-            "A12345",
-            "testapprover",
-            LocalDateTime.parse("2023-10-11T13:00"),
-            "testcom",
-            LocalDateTime.parse("2023-10-11T11:00"),
-            null,
-            null,
-            false,
-          ),
+        Tuple.tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
+      }.isEqualTo(
+        Tuple.tuple(
+          1L,
+          PublicLicenceType.AP,
+          "1.0",
+          "1.4",
+          PublicLicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          null,
+          null,
+          false,
+        ),
+      )
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
