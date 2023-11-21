@@ -36,9 +36,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.GenericAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 import java.time.LocalDateTime
 
 @ExtendWith(SpringExtension::class)
@@ -210,7 +211,7 @@ class PublicLicenceControllerTest {
     private val bespokeCondition = listOf(BespokeCondition("You should not visit Y"))
     private val standardConditions = listOf(StandardCondition("fda24aa9-a2b0-4d49-9c87-23b0a7be4013", " as reasonably required by your supervisor, to give a sample of oral fluid"))
     private val additionalConditions = listOf(
-      StandardAdditionalCondition(
+      GenericAdditionalCondition(
         type = "STANDARD",
         id = 3568,
         category = "Drug testing",
@@ -233,7 +234,7 @@ class PublicLicenceControllerTest {
     val aLicenceSummary = LicenceSummary(
       id = 1,
       licenceType = LicenceType.AP,
-      policyVersion = "2.1",
+      policyVersion = PolicyVersion.V2_0,
       version = "1.4",
       statusCode = LicenceStatus.IN_PROGRESS,
       prisonNumber = "A1234AA",
@@ -252,7 +253,7 @@ class PublicLicenceControllerTest {
     val licence = Licence(
       id = 1,
       licenceType = LicenceType.AP,
-      policyVersion = "2.1",
+      policyVersion = PolicyVersion.V1_0,
       version = "1.4",
       statusCode = LicenceStatus.IN_PROGRESS,
       prisonNumber = "A1234AA",

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 
 class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
@@ -42,8 +43,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
       assertThat(result?.id).isEqualTo(1L)
       assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
-      assertThat(result?.policyVersion).isEqualTo("1.0")
-      assertThat(result?.version).isEqualTo("1.0")
+      assertThat(result?.policyVersion).isEqualTo(PolicyVersion.V1_0)
       assertThat(result?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
       assertThat(result?.prisonNumber).isEqualTo("A1234AA")
       assertThat(result?.bookingId).isEqualTo(12345L)
@@ -92,7 +92,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
 
       assertThat(result?.id).isEqualTo(1L)
       assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
-      assertThat(result?.policyVersion).isEqualTo("1.0")
+      assertThat(result?.policyVersion).isEqualTo(PolicyVersion.V1_0)
       assertThat(result?.version).isEqualTo("1.0")
       assertThat(result?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
       assertThat(result?.prisonNumber).isEqualTo("A1234AA")

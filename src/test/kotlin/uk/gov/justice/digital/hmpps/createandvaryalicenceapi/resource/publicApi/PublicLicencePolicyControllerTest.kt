@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -103,14 +104,14 @@ class PublicLicencePolicyControllerTest {
         text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
         category = "Maintaining contact with a person",
         categoryShort = "Contact with a person",
-        requiresInput = true,
+        requiresUserInput = true,
       ),
       LicencePolicyAdditionalCondition(
         code = "code2",
         text = "Engage with Integrated Offender Management team",
         category = "Participate in activities",
         categoryShort = "Programmes or activities",
-        requiresInput = false,
+        requiresUserInput = false,
       ),
     )
 
@@ -126,14 +127,14 @@ class PublicLicencePolicyControllerTest {
         text = "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS]",
         category = "Appointment",
         categoryShort = null,
-        requiresInput = true,
+        requiresUserInput = true,
       ),
       LicencePolicyAdditionalCondition(
         code = "code2",
         text = "Attend [INSERT NAME AND ADDRESS] as reasonably required by your supervisor",
         category = "Testing",
         categoryShort = null,
-        requiresInput = true,
+        requiresUserInput = true,
       ),
     )
 
@@ -153,7 +154,7 @@ class PublicLicencePolicyControllerTest {
     )
 
     val aLicencePolicy = LicencePolicy(
-      "2.1",
+      PolicyVersion.V2_1,
       someConditionTypes,
     )
   }

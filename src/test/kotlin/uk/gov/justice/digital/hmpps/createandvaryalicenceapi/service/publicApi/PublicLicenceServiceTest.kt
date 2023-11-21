@@ -33,9 +33,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformTo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary as ModelPublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
@@ -45,7 +48,7 @@ class PublicLicenceServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val licenceService = mock<LicenceService>()
-  private val modelLicenceMock = mock<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence>()
+  private val modelLicenceMock = mock<ModelLicence>()
 
   private val service = PublicLicenceService(
     licenceRepository,
@@ -92,7 +95,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -136,7 +139,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -180,7 +183,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -263,7 +266,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -307,7 +310,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -351,7 +354,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -562,7 +565,7 @@ class PublicLicenceServiceTest {
       ),
     )
 
-    val modelLicence = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence(
+    val modelLicence = ModelLicence(
       id = 1,
       typeCode = LicenceType.AP,
       version = "2.1",
@@ -709,10 +712,10 @@ class PublicLicenceServiceTest {
         modelLicence.additionalPssConditions.transformToResourceAdditional(),
       ),
     )
-    val publicLicence = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence(
+    val publicLicence = PublicLicence(
       id = modelLicence.id,
       licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
-      policyVersion = modelLicence.version.orEmpty(),
+      policyVersion = modelLicence.version!!.getPolicyVersion(),
       version = modelLicence.licenceVersion.orEmpty(),
       statusCode = PublicLicenceStatus.valueOf(
         modelLicence.statusCode.toString(),
@@ -769,7 +772,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",
@@ -813,7 +816,7 @@ class PublicLicenceServiceTest {
         Tuple.tuple(
           1L,
           PublicLicenceType.AP,
-          "1.0",
+          PolicyVersion.V1_0,
           "1.4",
           PublicLicenceStatus.IN_PROGRESS,
           "A1234BC",

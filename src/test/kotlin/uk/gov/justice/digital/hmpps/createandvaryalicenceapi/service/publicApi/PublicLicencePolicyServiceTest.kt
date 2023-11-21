@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePoli
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 
 class PublicLicencePolicyServiceTest {
   private val licencePolicyService = mock<LicencePolicyService>()
@@ -30,7 +31,7 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(policy).isExactlyInstanceOf(LicencePolicy::class.java)
 
-    assertThat(policy.version).isEqualTo("2.1")
+    assertThat(policy.version).isEqualTo(PolicyVersion.V2_1)
 
     assertThat(policy.conditions).isExactlyInstanceOf(ConditionTypes::class.java)
 
@@ -55,7 +56,7 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(anApAdditionalCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresInput)
+        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
       }
       .isEqualTo(
         Tuple.tuple(
@@ -84,7 +85,7 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(aPssAdditionalCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresInput)
+        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
       }
       .isEqualTo(
         Tuple.tuple(
@@ -118,6 +119,6 @@ class PublicLicencePolicyServiceTest {
 
     val policy = service.getLatestLicencePolicy()
 
-    assertThat(policy.version).isEqualTo(POLICY_V2_1.version)
+    assertThat(policy.version).isEqualTo(PolicyVersion.V2_1)
   }
 }
