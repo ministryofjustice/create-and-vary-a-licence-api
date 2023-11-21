@@ -138,7 +138,7 @@ fun transform(
     isVariation = licence.variationOfId != null,
     variationOf = licence.variationOfId,
     createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
-    isInPssPeriod = licence.isInPssPeriod(),
+    isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
     isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
     licenceVersion = licence.licenceVersion,
     earliestReleaseDate = earliestReleaseDate,
