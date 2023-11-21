@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition as ModelStandardAdditionalCondition
 
@@ -24,35 +25,37 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
-fun transformModelToPublicLicence(modelLicence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence): Licence {
+
+fun ModelLicence.transformToPublicLicence(): Licence {
+
   val licenseConditions = Conditions(
     apConditions = ApConditions(
-      modelLicence.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
-      modelLicence.additionalLicenceConditions.transformToResourceAdditional(),
-      modelLicence.bespokeConditions.transformToResourceBespoke(),
+      this.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
+      this.additionalLicenceConditions.transformToResourceAdditional(),
+      this.bespokeConditions.transformToResourceBespoke(),
     ),
     pssConditions = PssConditions(
-      modelLicence.standardPssConditions?.transformToResourceStandard().orEmpty(),
-      modelLicence.additionalPssConditions.transformToResourceAdditional(),
+      this.standardPssConditions?.transformToResourceStandard().orEmpty(),
+      this.additionalPssConditions.transformToResourceAdditional(),
     ),
   )
   return Licence(
-    id = modelLicence.id,
-    licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
-    policyVersion = modelLicence.version.orEmpty(),
-    version = modelLicence.licenceVersion.orEmpty(),
-    statusCode = LicenceStatus.valueOf(modelLicence.statusCode.toString()),
-    prisonNumber = modelLicence.nomsId.orEmpty(),
-    bookingId = modelLicence.bookingId ?: 0,
-    crn = modelLicence.crn.orEmpty(),
-    approvedByUsername = modelLicence.approvedByUsername,
-    approvedDateTime = modelLicence.approvedDate,
-    createdByUsername = modelLicence.createdByUsername.orEmpty(),
-    createdDateTime = modelLicence.dateCreated
-      ?: error("Licence creation date should not be null for licence id:" + modelLicence.id),
-    updatedByUsername = modelLicence.updatedByUsername,
-    updatedDateTime = modelLicence.dateLastUpdated,
-    isInPssPeriod = modelLicence.isInPssPeriod ?: false,
+    id = this.id,
+    licenceType = this.typeCode.mapToPublicLicenceType(),
+    policyVersion = this.version.orEmpty(),
+    version = this.licenceVersion.orEmpty(),
+    statusCode = LicenceStatus.valueOf(this.statusCode.toString()),
+    prisonNumber = this.nomsId.orEmpty(),
+    bookingId = this.bookingId ?: 0,
+    crn = this.crn.orEmpty(),
+    approvedByUsername = this.approvedByUsername,
+    approvedDateTime = this.approvedDate,
+    createdByUsername = this.createdByUsername.orEmpty(),
+    createdDateTime = this.dateCreated
+      ?: error("Licence creation date should not be null for licence id:" + this.id),
+    updatedByUsername = this.updatedByUsername,
+    updatedDateTime = this.dateLastUpdated,
+    isInPssPeriod = this.isInPssPeriod ?: false,
     conditions = licenseConditions,
   )
 }
@@ -76,14 +79,13 @@ fun transform(condition: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.m
 }
 
 // Transform a list of model additional conditions to resource additional conditions
-fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> =
-  map {
-    when (it.code) {
-      ELECTRONIC_TAG_COND_CODE -> transformElectronicMonitoring(it)
-      EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
-      else -> standardAdditionalCondition(it)
-    }
+fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> = map {
+  when (it.code) {
+    ELECTRONIC_TAG_COND_CODE -> transformElectronicMonitoring(it)
+    EXCLUSION_ZONE_COND_CODE -> transformMultipleExclusionZonesCondition(it)
+    else -> standardAdditionalCondition(it)
   }
+}
 
 fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalCondition {
   return ElectronicMonitoringAdditionalCondition(
@@ -92,11 +94,10 @@ fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitor
     id = model.id ?: 0,
     code = model.code.orEmpty(),
     text = model.text.orEmpty(),
-    electronicMonitoringTypes = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }
-      .map { data ->
-        ElectronicMonitoringType.find(data.value.orEmpty())
-          ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
-      },
+    electronicMonitoringTypes = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }.map { data ->
+      ElectronicMonitoringType.find(data.value.orEmpty())
+        ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
+    },
   )
 }
 
