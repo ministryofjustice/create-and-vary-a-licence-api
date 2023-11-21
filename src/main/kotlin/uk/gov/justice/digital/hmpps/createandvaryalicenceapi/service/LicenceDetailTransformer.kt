@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 private const val ELECTRONIC_MONITORING_TYPES = "electronicMonitoringTypes"
 
 fun ModelLicence.transformToPublicLicence(): Licence {
-
   val licenseConditions = Conditions(
     apConditions = ApConditions(
       this.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
