@@ -4,4 +4,5 @@ data class LicenceCaseloadSearchRequest(
   val teamCodes: List<String>,
   val query: String,
   val sortBy: List<ProbationSearchSortByRequest>,
+  val pageSize: Int,
 )

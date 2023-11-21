@@ -26,8 +26,17 @@ import java.time.LocalDate
 class OffenderServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
+  private val notifyService = mock<NotifyService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service = OffenderService(licenceRepository, auditEventRepository)
+  private val service =
+    OffenderService(
+      licenceRepository,
+      auditEventRepository,
+      notifyService,
+      releaseDateService,
+      TEMPLATE_ID,
+    )
 
   @BeforeEach
   fun reset() {
@@ -65,7 +74,131 @@ class OffenderServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "COM updated to X Y on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "COM updated to X Y on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+  }
+
+  @Test
+  fun `send licence create email when isLateAllocationWarningRequired returns true`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+    whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(true)
+    val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
+
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
+
+    verify(licenceRepository, times(1))
+      .findAllByCrnAndStatusCodeIn(
+        "exampleCrn",
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE,
+        ),
+      )
+
+    verify(licenceRepository, times(1))
+      .saveAllAndFlush(expectedUpdatedLicences)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, times(1)).sendLicenceCreateEmail(any(), any(), any(), any())
+  }
+
+  @Test
+  fun `don't send licence create email when isLateAllocationWarningRequired returns false`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          actualReleaseDate = LocalDate.parse("2023-11-20"),
+        ),
+      ),
+    )
+    whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
+    val expectedUpdatedLicences =
+      listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-20"), responsibleCom = comDetails))
+
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
+
+    verify(licenceRepository, times(1))
+      .findAllByCrnAndStatusCodeIn(
+        "exampleCrn",
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE,
+        ),
+      )
+
+    verify(licenceRepository, times(1))
+      .saveAllAndFlush(expectedUpdatedLicences)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
+  }
+
+  @Test
+  fun `don't send licence create email when licence status is neither NOT_STARTED or IN_PROGRESS even isLateAllocationWarningRequired returns true`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.SUBMITTED,
+          actualReleaseDate = LocalDate.parse("2023-11-14"),
+        ),
+      ),
+    )
+    whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
+    val expectedUpdatedLicences =
+      listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.SUBMITTED,
+          actualReleaseDate = LocalDate.parse("2023-11-14"),
+          responsibleCom = comDetails,
+        ),
+      )
+
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
+
+    verify(licenceRepository, times(1))
+      .findAllByCrnAndStatusCodeIn(
+        "exampleCrn",
+        listOf(
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+          LicenceStatus.ACTIVE,
+        ),
+      )
+
+    verify(licenceRepository, times(1))
+      .saveAllAndFlush(expectedUpdatedLicences)
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
   @Test
@@ -197,8 +330,18 @@ class OffenderServiceTest {
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(
         listOf(
-          Tuple(1L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
-          Tuple(2L, "SYSTEM", "SYSTEM", "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01"),
+          Tuple(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01",
+          ),
+          Tuple(
+            2L,
+            "SYSTEM",
+            "SYSTEM",
+            "Offender details updated to forename: Peter, middleNames: Robin, surname: Smith, date of birth: 1970-02-01",
+          ),
         ),
       )
   }
@@ -222,6 +365,7 @@ class OffenderServiceTest {
       probationLauDescription = "LAU1 Lau",
       probationTeamCode = "TEAM1",
       probationTeamDescription = "TEAM1 probation team",
+      actualReleaseDate = LocalDate.parse("2023-11-17"),
     )
 
     val comDetails = CommunityOffenderManager(
@@ -249,5 +393,7 @@ class OffenderServiceTest {
       surname = "Smith",
       dateOfBirth = LocalDate.parse("1970-02-01"),
     )
+
+    const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
   }
 }

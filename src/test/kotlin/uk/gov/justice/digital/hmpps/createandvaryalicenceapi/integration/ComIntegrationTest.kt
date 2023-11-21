@@ -186,6 +186,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       listOf(
         ProbationSearchSortByRequest("name.forename", "asc"),
       ),
+      2000,
     )
 
     @JvmStatic

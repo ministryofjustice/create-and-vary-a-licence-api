@@ -124,6 +124,16 @@ class ComService(
     )
   }
 
+  fun getIneligibilityReasons(prisonNumber: String): List<String> {
+    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber))
+    if (prisoners.size != 1) {
+      error("Found ${prisoners.size} prisoners for: $prisonNumber")
+    }
+    val reasons = eligibilityService.getIneligibilityReasons(prisoners.first())
+    val hdcReasonIfPresent = if (prisoners.findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
+    return reasons + hdcReasonIfPresent
+  }
+
   private fun PrisonerSearchPrisoner.getLicenceType() = when {
     this.licenceExpiryDate == null -> LicenceType.PSS
     this.topUpSupervisionExpiryDate == null || topUpSupervisionExpiryDate <= licenceExpiryDate -> LicenceType.AP
@@ -150,8 +160,6 @@ class ComService(
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
 
-    println(prisoners)
-
     if (prisoners.isEmpty()) {
       return emptyMap()
     }
@@ -163,9 +171,8 @@ class ComService(
 
     val prisonerBookingsWithHdc = initialCvlEligiblePrisoners.findBookingsWithHdc()
 
-    println(prisonerBookingsWithHdc)
-
-    val eligibleForCvlPrisoners = initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
+    val eligibleForCvlPrisoners =
+      initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
 
     return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
@@ -186,7 +193,8 @@ class ComService(
     )
   }
 
-  private fun ProbationSearchResponseResult.createRecord(licence: Licence) = this.transformToModelFoundProbationRecord(licence)
+  private fun ProbationSearchResponseResult.createRecord(licence: Licence) =
+    this.transformToModelFoundProbationRecord(licence)
 
   private fun ProbationUserSearchRequest.getSortBy() =
     this.sortBy.map {
