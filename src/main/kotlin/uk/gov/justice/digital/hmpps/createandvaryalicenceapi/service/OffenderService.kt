@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -16,6 +18,9 @@ class
 OffenderService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
+  private val notifyService: NotifyService,
+  private val releaseDateService: ReleaseDateService,
+  @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
 ) {
 
   @Transactional
@@ -35,6 +40,28 @@ OffenderService(
     // Update the in-flight licences for this person on probation
     offenderLicences = offenderLicences.map { it.copy(responsibleCom = newCom) }
     this.licenceRepository.saveAllAndFlush(offenderLicences)
+
+    if (offenderLicences.any {
+      it.statusCode === LicenceStatus.NOT_STARTED || it.statusCode === LicenceStatus.IN_PROGRESS
+    }
+    ) {
+      val releaseDate = offenderLicences[0].actualReleaseDate ?: offenderLicences[0].conditionalReleaseDate
+      if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
+        val prisoner = listOf(
+          PrisonerForRelease(
+            "${offenderLicences[0].forename} ${offenderLicences[0].surname}",
+            offenderLicences[0].crn!!,
+            releaseDate!!,
+          ),
+        )
+        this.notifyService.sendLicenceCreateEmail(
+          urgentLicencePromptTemplateId,
+          newCom.email!!,
+          "${newCom.firstName} ${newCom.lastName}",
+          prisoner,
+        )
+      }
+    }
 
     // Create an audit event for each of the licences updated
     offenderLicences.map {

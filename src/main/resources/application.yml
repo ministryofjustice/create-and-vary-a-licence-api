@@ -122,8 +122,6 @@ notify:
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
 
-maxNumberOfWorkingDaysAllowedForEarlyRelease: 3
-
 # Overridden in real environments
 self:
   link: "http://localhost:3000"
