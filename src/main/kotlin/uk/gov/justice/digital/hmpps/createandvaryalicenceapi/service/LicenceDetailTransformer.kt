@@ -42,7 +42,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
   return Licence(
     id = this.id,
     licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = this.version!!.getPolicyVersion(),
+    policyVersion = this.version?.getPolicyVersion() ?: error("Policy version should not be null for licence id:" + this.id),
     version = this.licenceVersion.orEmpty(),
     statusCode = LicenceStatus.valueOf(this.statusCode.toString()),
     prisonNumber = this.nomsId.orEmpty(),

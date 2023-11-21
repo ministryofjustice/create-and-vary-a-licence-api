@@ -33,10 +33,6 @@ data class LicenceSummary(
   @Schema(
     description = "The current status code for the licence. This is non exhaustive and subject to change",
     example = "IN_PROGRESS",
-    allowableValues = [
-      "IN_PROGRESS", "SUBMITTED", "APPROVED", "ACTIVE", "VARIATION_IN_PROGRESS",
-      "VARIATION_SUBMITTED", "VARIATION_APPROVED",
-    ],
   )
   val statusCode: LicenceStatus,
 
