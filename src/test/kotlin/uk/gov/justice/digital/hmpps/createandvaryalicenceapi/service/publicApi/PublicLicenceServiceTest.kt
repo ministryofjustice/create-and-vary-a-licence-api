@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -25,12 +24,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceBespoke
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -82,15 +82,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -128,15 +126,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -174,15 +170,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -217,8 +211,7 @@ class PublicLicenceServiceTest {
         service.getAllLicencesByCrn("A12345")
       }
 
-      assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Null field retrieved: createdByUsername for licence 1")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
@@ -236,8 +229,7 @@ class PublicLicenceServiceTest {
         service.getAllLicencesByCrn("A12345")
       }
 
-      assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("No matching licence status found")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
@@ -261,15 +253,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -307,15 +297,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -353,15 +341,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -396,8 +382,7 @@ class PublicLicenceServiceTest {
         service.getAllLicencesByPrisonNumber("A1234BC")
       }
 
-      assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Null field retrieved: policyVersion for licence 1")
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
@@ -415,8 +400,7 @@ class PublicLicenceServiceTest {
         service.getAllLicencesByPrisonNumber("A1234BC")
       }
 
-      assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("No matching licence status found")
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
@@ -452,9 +436,7 @@ class PublicLicenceServiceTest {
         service.getImageUpload(1L, 1L)
       }
 
-      assertThat(exception)
-        .isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessage("Licence 1 not found")
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java).hasMessage("Licence 1 not found")
 
       verify(licenceRepository, times(1)).findById(1L)
       verify(additionalConditionRepository, times(0)).findById(1L)
@@ -470,9 +452,7 @@ class PublicLicenceServiceTest {
         service.getImageUpload(1L, 1L)
       }
 
-      assertThat(exception)
-        .isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessage("Condition 1 not found")
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java).hasMessage("Condition 1 not found")
 
       verify(licenceRepository, times(1)).findById(1L)
       verify(additionalConditionRepository, times(1)).findById(1L)
@@ -492,8 +472,7 @@ class PublicLicenceServiceTest {
         service.getImageUpload(1L, 1L)
       }
 
-      assertThat(exception)
-        .isInstanceOf(EntityNotFoundException::class.java)
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
         .hasMessage("Condition 1 upload details not found")
 
       verify(licenceRepository, times(1)).findById(1L)
@@ -511,8 +490,7 @@ class PublicLicenceServiceTest {
         service.getImageUpload(1L, 1L)
       }
 
-      assertThat(exception)
-        .isInstanceOf(EntityNotFoundException::class.java)
+      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
         .hasMessage("Condition 1 upload details not found")
 
       verify(licenceRepository, times(1)).findById(1L)
@@ -523,6 +501,117 @@ class PublicLicenceServiceTest {
 
   /****************/
   private companion object {
+
+    val someStandardConditions = listOf(
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+        id = 1,
+        code = "goodBehaviour",
+        sequence = 1,
+        text = "Be of good behaviour",
+      ),
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+        id = 2,
+        code = "notBreakLaw",
+        sequence = 1,
+        text = "Do not break any law",
+      ),
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition(
+        id = 3,
+        code = "attendMeetings",
+        sequence = 1,
+        text = "Attend meetings",
+      ),
+    )
+
+    val someAssociationData = listOf(
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+        id = 1,
+        field = "field1",
+        value = "value1",
+        sequence = 1,
+      ),
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+        id = 2,
+        field = "numberOfCurfews",
+        value = "value2",
+        sequence = 2,
+      ),
+    )
+
+    val someAdditionalConditions = listOf(
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition(
+        id = 1,
+        code = "associateWith",
+        sequence = 1,
+        text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
+        expandedText = "Do not associate with value1 for a period of value2",
+        data = someAssociationData,
+      ),
+    )
+
+    val someBespokeConditions = listOf(
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+        id = 1,
+        sequence = 1,
+        text = "Bespoke one text",
+      ),
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition(
+        id = 2,
+        sequence = 2,
+        text = "Bespoke two text",
+      ),
+    )
+
+    val modelLicence = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence(
+      id = 1,
+      typeCode = LicenceType.AP,
+      version = "2.1",
+      statusCode = LicenceStatus.IN_PROGRESS,
+      nomsId = "A1234AA",
+      bookingNo = "123456",
+      bookingId = 987654,
+      crn = "A12345",
+      pnc = "2019/123445",
+      cro = "12345",
+      prisonCode = "MDI",
+      prisonDescription = "Moorland (HMP)",
+      forename = "Bob",
+      surname = "Mortimer",
+      approvedByUsername = "TestApprover",
+      approvedDate = LocalDateTime.of(2023, 10, 11, 12, 0),
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      actualReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceStartDate = LocalDate.of(2018, 10, 22),
+      sentenceEndDate = LocalDate.of(2021, 10, 22),
+      licenceStartDate = LocalDate.of(2021, 10, 22),
+      licenceExpiryDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      dateCreated = LocalDateTime.of(2023, 10, 11, 11, 30),
+      dateLastUpdated = LocalDateTime.of(2023, 10, 11, 11, 30),
+
+      comUsername = "X12345",
+      comStaffId = 12345,
+      comEmail = "stephen.mills@nps.gov.uk",
+      probationAreaCode = "N01",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
+      createdByUsername = "TestCreator",
+      standardLicenceConditions = someStandardConditions,
+      standardPssConditions = someStandardConditions,
+      additionalLicenceConditions = someAdditionalConditions,
+      additionalPssConditions = someAdditionalConditions,
+      bespokeConditions = someBespokeConditions,
+      licenceVersion = "1.4",
+      isVariation = false,
+      updatedByUsername = "TestUpdater",
+    )
 
     val aCom = CommunityOffenderManager(
       staffIdentifier = 2000,
@@ -609,52 +698,39 @@ class PublicLicenceServiceTest {
       additionalConditionUploadSummary = emptyList(),
     )
 
-    private val bespokeCondition = listOf(BespokeCondition("You should not visit Y"))
-    private val standardConditions = listOf(
-      StandardCondition(
-        "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
-        " as reasonably required by your supervisor, to give a sample of oral fluid",
+
+
+    val publicLicenseConditions = Conditions(
+      apConditions = ApConditions(
+        modelLicence.standardLicenceConditions?.transformToResourceStandard().orEmpty(),
+        modelLicence.additionalLicenceConditions.transformToResourceAdditional(),
+        modelLicence.bespokeConditions.transformToResourceBespoke(),
+      ),
+      pssConditions = PssConditions(
+        modelLicence.standardPssConditions?.transformToResourceStandard().orEmpty(),
+        modelLicence.additionalPssConditions.transformToResourceAdditional(),
       ),
     )
-    private val additionalConditions = listOf(
-      StandardAdditionalCondition(
-        type = "STANDARD",
-        id = 3568,
-        category = "Drug testing",
-        code = "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
-        text = "Attend [INSERT NAME AND ADDRESS], as reasonably required by your supervisor, to give a sample of oral fluid / urine in order to test whether you have any specified Class A or specified Class B drugs in your body, for the purpose of ensuring that you are complying with the requirement of your supervision period requiring you to be of good behaviour.",
-
+    val publicLicence = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence(
+      id = modelLicence.id,
+      licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
+      policyVersion = modelLicence.version.orEmpty(),
+      version = modelLicence.licenceVersion.orEmpty(),
+      statusCode = PublicLicenceStatus.valueOf(
+        modelLicence.statusCode.toString(),
       ),
-    )
-    private val pssConditions = PssConditions(standardConditions, additionalConditions)
-    private val apConditions = ApConditions(
-      standard = standardConditions,
-      additional = additionalConditions,
-      bespoke = bespokeCondition,
-    )
-    val licenceConditions = Conditions(
-      apConditions,
-      pssConditions,
-    )
 
-    val pubLicence = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence(
-      id = 1,
-      licenceType = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType.AP,
-      policyVersion = "2.1",
-      version = "1.4",
-      statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus.IN_PROGRESS,
-      prisonNumber = "A1234AA",
-      bookingId = 987654L,
-      crn = "A12345",
-      approvedByUsername = "TestApprover",
-      approvedDateTime = LocalDateTime.of(2023, 10, 11, 12, 0, 0),
-      createdByUsername = "TestCreator",
-      createdDateTime = LocalDateTime.of(2023, 10, 11, 11, 0, 0),
-      updatedByUsername = "TestUpdater",
-      updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
-      isInPssPeriod = false,
-      conditions = licenceConditions,
-
+      prisonNumber = modelLicence.nomsId.orEmpty(),
+      bookingId = modelLicence.bookingId ?: 0,
+      crn = modelLicence.crn.orEmpty(),
+      approvedByUsername = modelLicence.approvedByUsername,
+      approvedDateTime = modelLicence.approvedDate,
+      createdByUsername = modelLicence.createdByUsername.orEmpty(),
+      createdDateTime = modelLicence.dateCreated!!,
+      updatedByUsername = modelLicence.updatedByUsername,
+      updatedDateTime = modelLicence.dateLastUpdated,
+      isInPssPeriod = modelLicence.isInPssPeriod ?: false,
+      conditions = publicLicenseConditions,
     )
   }
 
@@ -664,11 +740,10 @@ class PublicLicenceServiceTest {
     fun `service returns a licence by id`() {
       val licenceId: Long
       licenceId = 12345
-      doReturn(pubLicence).whenever(modelLicenceMock).transformToPublicLicence()
-      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicenceMock)
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
       val actualLicence = service.getLicenceById(licenceId)
 
-      assertThat(actualLicence).isEqualTo(pubLicence)
+      assertThat(actualLicence).isEqualTo(publicLicence)
     }
 
     @Test
@@ -686,15 +761,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -732,15 +805,13 @@ class PublicLicenceServiceTest {
 
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
-      assertThat(licenceSummary)
-        .extracting {
+      assertThat(licenceSummary).extracting {
           Tuple.tuple(
             it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
             it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
             it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
           )
-        }
-        .isEqualTo(
+        }.isEqualTo(
           Tuple.tuple(
             1L,
             PublicLicenceType.AP,
@@ -775,8 +846,7 @@ class PublicLicenceServiceTest {
         service.getAllLicencesByCrn("A12345")
       }
 
-      assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Null field retrieved: createdByUsername for licence 1")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
@@ -794,8 +864,7 @@ class PublicLicenceServiceTest {
         service.getAllLicencesByCrn("A12345")
       }
 
-      assertThat(exception)
-        .isInstanceOf(IllegalStateException::class.java)
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("No matching licence status found")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
