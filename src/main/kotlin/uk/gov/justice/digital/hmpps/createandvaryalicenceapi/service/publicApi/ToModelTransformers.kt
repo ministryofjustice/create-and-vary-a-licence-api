@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
@@ -26,8 +27,8 @@ fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary {
   return ModelPublicLicenceSummary(
     id = this.id,
     licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = this.licenceVersion ?: this.valueNotPresent("policyVersion"),
-    version = this.version ?: this.valueNotPresent("version"),
+    policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: this.valueNotPresent("policyVersion"),
+    version = this.licenceVersion ?: this.valueNotPresent("version"),
     statusCode = this.statusCode.mapToPublicLicenceStatus(),
     prisonNumber = this.nomsId ?: this.valueNotPresent("prisonNumber"),
     bookingId = this.bookingId ?: this.valueNotPresent("bookingId"),
@@ -58,8 +59,6 @@ private fun LicenceStatus.mapToPublicLicenceStatus() =
     this == LicenceStatus.SUBMITTED -> PublicLicenceStatus.SUBMITTED
     this == LicenceStatus.APPROVED -> PublicLicenceStatus.APPROVED
     this == LicenceStatus.ACTIVE -> PublicLicenceStatus.ACTIVE
-    this == LicenceStatus.REJECTED -> PublicLicenceStatus.REJECTED
-    this == LicenceStatus.INACTIVE -> PublicLicenceStatus.INACTIVE
     this == LicenceStatus.VARIATION_IN_PROGRESS -> PublicLicenceStatus.VARIATION_IN_PROGRESS
     this == LicenceStatus.VARIATION_SUBMITTED -> PublicLicenceStatus.VARIATION_SUBMITTED
     this == LicenceStatus.VARIATION_APPROVED -> PublicLicenceStatus.VARIATION_APPROVED
@@ -68,7 +67,7 @@ private fun LicenceStatus.mapToPublicLicenceStatus() =
 
 fun LicencePolicy.transformToPublicLicencePolicy(): ModelPublicLicencePolicy {
   return ModelPublicLicencePolicy(
-    version = this.version,
+    version = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy ${this.version} not found"),
     conditions = this.getAllConditions(),
   )
 }
@@ -123,7 +122,7 @@ private fun transform(entity: AdditionalConditionAp): ModelPublicAdditionalCondi
     text = entity.text,
     category = entity.category,
     categoryShort = entity.categoryShort,
-    requiresInput = entity.requiresInput,
+    requiresUserInput = entity.requiresInput,
   )
 }
 
@@ -144,6 +143,6 @@ private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCond
     text = entity.text,
     category = entity.category,
     categoryShort = entity.categoryShort,
-    requiresInput = entity.requiresInput,
+    requiresUserInput = entity.requiresInput,
   )
 }

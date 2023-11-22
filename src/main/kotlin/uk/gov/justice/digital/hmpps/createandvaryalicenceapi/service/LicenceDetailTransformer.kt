@@ -9,16 +9,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringAdditionalConditionWithRestriction
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ElectronicMonitoringType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.MultipleExclusionZoneAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ExclusionZoneAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition as ModelAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.StandardAdditionalCondition as ModelStandardAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.GenericAdditionalCondition as ModelStandardAdditionalCondition
 
 /*
 ** Functions which transform JPA model objects into their API model equivalents.
@@ -41,7 +42,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
   return Licence(
     id = this.id,
     licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = this.version.orEmpty(),
+    policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy version not found for licence id:" + this.id),
     version = this.licenceVersion.orEmpty(),
     statusCode = LicenceStatus.valueOf(this.statusCode.toString()),
     prisonNumber = this.nomsId.orEmpty(),
@@ -86,22 +87,22 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
   }
 }
 
-fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalCondition {
-  return ElectronicMonitoringAdditionalCondition(
+fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalConditionWithRestriction {
+  return ElectronicMonitoringAdditionalConditionWithRestriction(
     category = model.category.orEmpty(),
     type = ConditionTypes.ELECTRONIC_MONITORING,
     id = model.id ?: 0,
     code = model.code.orEmpty(),
     text = model.text.orEmpty(),
-    electronicMonitoringTypes = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }.map { data ->
+    restrictions = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }.map { data ->
       ElectronicMonitoringType.find(data.value.orEmpty())
         ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
     },
   )
 }
 
-fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): MultipleExclusionZoneAdditionalCondition {
-  return MultipleExclusionZoneAdditionalCondition(
+fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): ExclusionZoneAdditionalCondition {
+  return ExclusionZoneAdditionalCondition(
     category = model.category.orEmpty(),
     type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
     id = model.id ?: 0,
