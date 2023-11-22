@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 enum class PolicyVersion(val version: String) {
   V1_0("1.0"),
