@@ -85,6 +85,9 @@ data class Licence(
   var dateCreated: LocalDateTime? = null,
   val dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
+  var paroleEligibilityDate: LocalDate? = null,
+  var nonParoleDate: LocalDate? = null,
+  var postRecallReleaseDate: LocalDate? = null,
 
   @OneToMany(
     mappedBy = "licence",

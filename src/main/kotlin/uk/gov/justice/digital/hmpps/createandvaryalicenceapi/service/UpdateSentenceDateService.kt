@@ -45,6 +45,9 @@ class UpdateSentenceDateService(
       licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
+      postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
+      paroleEligibilityDate = sentenceDatesRequest.paroleEligibilityDate,
+      nonParoleDate = sentenceDatesRequest.nonParoleDate,
       dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
@@ -70,6 +73,9 @@ class UpdateSentenceDateService(
         append("SED ${sentenceChanges.sedChanged} ")
         append("TUSSD ${sentenceChanges.tussdChanged} ")
         append("TUSED ${sentenceChanges.tusedChanged} ")
+        append("PRRD ${sentenceChanges.prrdChanged} ")
+        append("PED ${sentenceChanges.pedChanged} ")
+        append("NPD ${sentenceChanges.npdChanged} ")
         append("isMaterial ${sentenceChanges.isMaterial}")
       },
     )
@@ -100,15 +106,18 @@ class UpdateSentenceDateService(
               "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate?.format(dateFormat)}" to sentenceChanges.ledChanged,
               "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate?.format(dateFormat)}" to sentenceChanges.sedChanged,
               "Top up supervision start date has changed to ${
-              updatedLicenceEntity.topupSupervisionStartDate?.format(
-                dateFormat,
-              )
+                updatedLicenceEntity.topupSupervisionStartDate?.format(
+                  dateFormat,
+                )
               }" to sentenceChanges.tussdChanged,
               "Top up supervision end date has changed to ${
-              updatedLicenceEntity.topupSupervisionExpiryDate?.format(
-                dateFormat,
-              )
+                updatedLicenceEntity.topupSupervisionExpiryDate?.format(
+                  dateFormat,
+                )
               }" to sentenceChanges.tusedChanged,
+              "Post recall release date has changed to ${updatedLicenceEntity.postRecallReleaseDate?.format(dateFormat)}" to sentenceChanges.prrdChanged,
+              "Parole eligibility date has changed to ${updatedLicenceEntity.paroleEligibilityDate?.format(dateFormat)}" to sentenceChanges.pedChanged,
+              "Non parole date has changed to ${updatedLicenceEntity.nonParoleDate?.format(dateFormat)}" to sentenceChanges.npdChanged,
             ),
           )
         }
@@ -131,6 +140,9 @@ class UpdateSentenceDateService(
         append("LED ${licenceEntity?.licenceExpiryDate} ")
         append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
         append("TUSED ${licenceEntity?.topupSupervisionExpiryDate}")
+        append("PED ${licenceEntity?.paroleEligibilityDate}")
+        append("NPD ${licenceEntity?.nonParoleDate}")
+        append("PRRD ${licenceEntity?.postRecallReleaseDate}")
       },
     )
 
@@ -145,6 +157,9 @@ class UpdateSentenceDateService(
         append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
         append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
         append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
+        append("PED ${sentenceDatesRequest.paroleEligibilityDate}")
+        append("NPD ${sentenceDatesRequest.nonParoleDate}")
+        append("PRRD ${sentenceDatesRequest.postRecallReleaseDate}")
       },
     )
   }

@@ -45,6 +45,9 @@ class LicenceFunctionsKtTest {
         sedChanged = false,
         tussdChanged = false,
         tusedChanged = false,
+        pedChanged = false,
+        npdChanged = false,
+        prrdChanged = false,
         isMaterial = true,
       ),
     )
@@ -63,6 +66,9 @@ class LicenceFunctionsKtTest {
         sedChanged = true,
         tussdChanged = false,
         tusedChanged = false,
+        pedChanged = false,
+        npdChanged = false,
+        prrdChanged = false,
         isMaterial = false,
       ),
     )
@@ -83,6 +89,78 @@ class LicenceFunctionsKtTest {
         sedChanged = true,
         tussdChanged = false,
         tusedChanged = false,
+        pedChanged = false,
+        npdChanged = false,
+        prrdChanged = false,
+        isMaterial = true,
+      ),
+    )
+  }
+
+  @Test
+  fun `Sentence Changes should return material change for SED when paroleEligibilityDate is updated`() {
+    val licence = testLicence.copy(statusCode = LicenceStatus.APPROVED)
+
+    Assertions.assertThat(
+      licence.getSentenceChanges(
+        testSentenceChanges.copy(paroleEligibilityDate = fourDaysAgo),
+      ),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = false,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        pedChanged = true,
+        npdChanged = false,
+        prrdChanged = false,
+        isMaterial = true,
+      ),
+    )
+  }
+
+  @Test
+  fun `Sentence Changes should return material change for SED when nonParoleDate is updated`() {
+    val licence = testLicence.copy(statusCode = LicenceStatus.APPROVED)
+
+    Assertions.assertThat(
+      licence.getSentenceChanges(
+        testSentenceChanges.copy(nonParoleDate = fourDaysAgo),
+      ),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = false,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        pedChanged = false,
+        npdChanged = true,
+        prrdChanged = false,
+        isMaterial = true,
+      ),
+    )
+  }
+
+  @Test
+  fun `Sentence Changes should return material change for SED when postRecallReleaseDate is updated`() {
+    val licence = testLicence.copy(statusCode = LicenceStatus.APPROVED)
+
+    Assertions.assertThat(
+      licence.getSentenceChanges(
+        testSentenceChanges.copy(postRecallReleaseDate = fourDaysAgo),
+      ),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = false,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        pedChanged = false,
+        npdChanged = false,
+        prrdChanged = true,
         isMaterial = true,
       ),
     )

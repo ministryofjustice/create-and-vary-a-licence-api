@@ -12,6 +12,9 @@ data class SentenceChanges(
   val sedChanged: Boolean,
   val tussdChanged: Boolean,
   val tusedChanged: Boolean,
+  val pedChanged: Boolean,
+  val npdChanged: Boolean,
+  val prrdChanged: Boolean,
   val isMaterial: Boolean,
 )
 
@@ -23,10 +26,24 @@ fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest): Sentenc
     nullableDatesDiffer(newSentence.topupSupervisionStartDate, this.topupSupervisionStartDate)
   val tusedChanged =
     nullableDatesDiffer(newSentence.topupSupervisionExpiryDate, this.topupSupervisionExpiryDate)
+  val pedChanged = nullableDatesDiffer(newSentence.paroleEligibilityDate, this.paroleEligibilityDate)
+  val npdChanged = nullableDatesDiffer(newSentence.nonParoleDate, this.nonParoleDate)
+  val prrdChanged = nullableDatesDiffer(newSentence.postRecallReleaseDate, this.postRecallReleaseDate)
 
-  val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || (sedChanged && this.statusCode == LicenceStatus.APPROVED))
+  val isMaterial =
+    (lsdChanged || ledChanged || tussdChanged || tusedChanged || pedChanged || npdChanged || prrdChanged || (sedChanged && this.statusCode == LicenceStatus.APPROVED))
 
-  return SentenceChanges(lsdChanged, ledChanged, sedChanged, tussdChanged, tusedChanged, isMaterial)
+  return SentenceChanges(
+    lsdChanged,
+    ledChanged,
+    sedChanged,
+    tussdChanged,
+    tusedChanged,
+    pedChanged,
+    npdChanged,
+    prrdChanged,
+    isMaterial,
+  )
 }
 
 /**

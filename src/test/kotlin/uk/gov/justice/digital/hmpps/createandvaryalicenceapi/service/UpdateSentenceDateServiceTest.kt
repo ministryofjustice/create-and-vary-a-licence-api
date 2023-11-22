@@ -86,6 +86,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2026-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2027-09-11"),
+        nonParoleDate = LocalDate.parse("2028-09-11"),
       ),
     )
 
@@ -105,6 +108,9 @@ class UpdateSentenceDateServiceTest {
         "licenceExpiryDate",
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
+        "paroleEligibilityDate",
+        "nonParoleDate",
         "updatedByUsername",
       )
       .isEqualTo(
@@ -117,6 +123,9 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2025-09-11"),
+          LocalDate.parse("2026-09-11"),
+          LocalDate.parse("2027-09-11"),
+          LocalDate.parse("2028-09-11"),
           "smills",
         ),
       )
@@ -144,6 +153,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to 11 September 2025" to true,
+        "Post recall release date has changed to 11 September 2026" to true,
+        "Parole eligibility date has changed to 11 September 2027" to true,
+        "Non parole date has changed to 11 September 2028" to true,
       ),
     )
   }
@@ -164,6 +176,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2026-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2027-09-11"),
+        nonParoleDate = LocalDate.parse("2028-09-11"),
       ),
     )
 
@@ -197,6 +212,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2026-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2027-09-11"),
+        nonParoleDate = LocalDate.parse("2028-09-11"),
       ),
     )
 
@@ -230,6 +248,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2026-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2027-09-11"),
+        nonParoleDate = LocalDate.parse("2028-09-11"),
       ),
     )
 
@@ -238,7 +259,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `update sentence dates persists the updated entity with null dates`() {
-    val licence = aLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
+    val licence = aLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null, postRecallReleaseDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
@@ -264,6 +285,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.parse("2024-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2024-09-11"),
+        nonParoleDate = null,
       ),
     )
 
@@ -283,6 +307,9 @@ class UpdateSentenceDateServiceTest {
         "licenceExpiryDate",
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
+        "paroleEligibilityDate",
+        "nonParoleDate",
         "updatedByUsername",
       )
       .isEqualTo(
@@ -292,6 +319,9 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2018-10-22"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          null,
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
           null,
@@ -315,6 +345,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to 11 September 2024" to true,
+        "Parole eligibility date has changed to 11 September 2024" to true,
+        "Non parole date has changed to null" to true,
       ),
     )
   }
@@ -345,6 +378,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2026-09-11"),
+        nonParoleDate = LocalDate.parse("2027-09-11"),
       ),
     )
 
@@ -376,6 +412,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to 11 September 2025" to true,
+        "Parole eligibility date has changed to 11 September 2026" to true,
+        "Non parole date has changed to 11 September 2027" to true,
       ),
     )
   }
@@ -406,6 +445,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2026-09-11"),
+        nonParoleDate = LocalDate.parse("2027-09-11"),
       ),
     )
 
@@ -437,6 +479,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to 11 September 2025" to true,
+        "Parole eligibility date has changed to 11 September 2026" to true,
+        "Non parole date has changed to 11 September 2027" to true,
       ),
     )
   }
@@ -467,6 +512,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2026-09-11"),
+        nonParoleDate = LocalDate.parse("2027-09-11"),
       ),
     )
 
@@ -499,6 +547,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to 11 September 2025" to true,
+        "Parole eligibility date has changed to 11 September 2026" to true,
+        "Non parole date has changed to 11 September 2027" to true,
       ),
     )
   }
@@ -529,6 +580,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2026-09-11"),
+        nonParoleDate = LocalDate.parse("2027-09-11"),
       ),
     )
 
@@ -561,6 +615,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to 11 September 2025" to true,
+        "Parole eligibility date has changed to 11 September 2026" to true,
+        "Non parole date has changed to 11 September 2027" to true,
       ),
     )
   }
@@ -592,6 +649,9 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        paroleEligibilityDate = LocalDate.parse("2026-09-11"),
+        nonParoleDate = LocalDate.parse("2027-09-11"),
       ),
     )
 
@@ -624,6 +684,9 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to 11 September 2025" to true,
+        "Parole eligibility date has changed to 11 September 2026" to true,
+        "Non parole date has changed to 11 September 2027" to true,
       ),
     )
   }
@@ -677,6 +740,9 @@ class UpdateSentenceDateServiceTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      postRecallReleaseDate = LocalDate.of(2021, 10, 22),
+      paroleEligibilityDate = LocalDate.of(2021, 10, 22),
+      nonParoleDate = LocalDate.of(2021, 10, 22),
       probationAreaCode = "N01",
       probationAreaDescription = "Wales",
       probationPduCode = "N01A",
