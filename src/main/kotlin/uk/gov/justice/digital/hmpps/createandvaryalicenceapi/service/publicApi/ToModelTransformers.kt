@@ -27,8 +27,8 @@ fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary {
   return ModelPublicLicenceSummary(
     id = this.id,
     licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = this.licenceVersion?.getPolicyVersion() ?: this.valueNotPresent("policyVersion"),
-    version = this.version ?: this.valueNotPresent("version"),
+    policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: this.valueNotPresent("policyVersion"),
+    version = this.licenceVersion ?: this.valueNotPresent("version"),
     statusCode = this.statusCode.mapToPublicLicenceStatus(),
     prisonNumber = this.nomsId ?: this.valueNotPresent("prisonNumber"),
     bookingId = this.bookingId ?: this.valueNotPresent("bookingId"),
@@ -67,7 +67,7 @@ private fun LicenceStatus.mapToPublicLicenceStatus() =
 
 fun LicencePolicy.transformToPublicLicencePolicy(): ModelPublicLicencePolicy {
   return ModelPublicLicencePolicy(
-    version = this.version.getPolicyVersion(),
+    version = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy ${this.version} not found"),
     conditions = this.getAllConditions(),
   )
 }
@@ -146,11 +146,3 @@ private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCond
     requiresUserInput = entity.requiresInput,
   )
 }
-
-fun String.getPolicyVersion() =
-  when {
-    this == "1.0" -> PolicyVersion.V1_0
-    this == "2.0" -> PolicyVersion.V2_0
-    this == "2.1" -> PolicyVersion.V2_1
-    else -> error("No matching policy found")
-  }

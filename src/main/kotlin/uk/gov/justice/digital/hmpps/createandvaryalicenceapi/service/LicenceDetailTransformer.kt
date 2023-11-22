@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ELECTRONIC_TAG_COND_CODE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.EXCLUSION_ZONE_COND_CODE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.getPolicyVersion
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.AdditionalCondition as ModelAdditionalCondition
@@ -42,7 +42,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
   return Licence(
     id = this.id,
     licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = this.version?.getPolicyVersion() ?: error("Policy version should not be null for licence id:" + this.id),
+    policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy version not found for licence id:" + this.id),
     version = this.licenceVersion.orEmpty(),
     statusCode = LicenceStatus.valueOf(this.statusCode.toString()),
     prisonNumber = this.nomsId.orEmpty(),

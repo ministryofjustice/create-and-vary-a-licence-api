@@ -17,15 +17,17 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
       API for access to licence data.
       
       Please note:
-      - Variations and edits to licences are classed as new licences
-      - In flight licences are licences with the following status:
-        - [ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, VARIATION_IN_PROGRESS, VARIATION_SUBMITTED, VARIATION_APPROVED &
-      VARIATION_REJECTED]
-      - Condition data is different dependent on the type of condition: 
+        - Edits of approved licences (pre-release) or variations of licence (post-release) create new licence records within the database. 
+        Previously-approved and pre-variation licence records can still be found if they have not been made INACTIVE. If historic INACTIVE 
+        licence information is required, please contact the CVL team.
+        - In flight licences are those that have a non-INACTIVE status code. This represents licences that are either ACTIVE or 
+        have the potential to become ACTIVE, and includes the following status codes:
+          - [ACTIVE, IN_PROGRESS, SUBMITTED, APPROVED, VARIATION_IN_PROGRESS, VARIATION_SUBMITTED, VARIATION_APPROVED & VARIATION_REJECTED]
+        - Condition data is different dependent on the type of condition:
           - Standard conditions have static text
-          - Additional conditions have a combination of static and inputted text
+          - Additional conditions may be static text or have a combination of static and inputted text
           - Bespoke conditions are purely inputted text
-          
+        - The list of status codes currently used by CVL is subject to change as new features may require additional codes to be added.
     """.trimIndent()
 
   @Bean

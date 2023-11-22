@@ -48,7 +48,6 @@ class PublicLicenceServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val licenceService = mock<LicenceService>()
-  private val modelLicenceMock = mock<ModelLicence>()
 
   private val service = PublicLicenceService(
     licenceRepository,
@@ -64,7 +63,6 @@ class PublicLicenceServiceTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       licenceService,
-      modelLicenceMock,
     )
   }
 
@@ -386,7 +384,7 @@ class PublicLicenceServiceTest {
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("Null field retrieved: policyVersion for licence 1")
+        .hasMessage("Null field retrieved: version for licence 1")
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
@@ -628,13 +626,14 @@ class PublicLicenceServiceTest {
       id = 1L,
       crn = "A12345",
       nomsId = "A1234BC",
+      version = "1.0",
       bookingId = 987654,
       forename = "Test",
       surname = "Person",
       dateOfBirth = LocalDate.parse("1985-01-01"),
       typeCode = LicenceType.AP,
       statusCode = LicenceStatus.IN_PROGRESS,
-      version = "1.4",
+      licenceVersion = "1.4",
       approvedByUsername = "testapprover",
       approvedByName = "Test Approver",
       approvedDate = LocalDateTime.of(2023, 10, 11, 13, 0, 0),
@@ -715,7 +714,7 @@ class PublicLicenceServiceTest {
     val publicLicence = PublicLicence(
       id = modelLicence.id,
       licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
-      policyVersion = modelLicence.version!!.getPolicyVersion(),
+      policyVersion = PolicyVersion.entries.find { it.version == modelLicence.version }!!,
       version = modelLicence.licenceVersion.orEmpty(),
       statusCode = PublicLicenceStatus.valueOf(
         modelLicence.statusCode.toString(),
