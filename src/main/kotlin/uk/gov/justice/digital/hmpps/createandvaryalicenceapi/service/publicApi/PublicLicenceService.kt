@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToPublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
@@ -14,6 +17,7 @@ class PublicLicenceService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val licenceService: LicenceService,
 ) {
 
   @Transactional
@@ -50,5 +54,9 @@ class PublicLicenceService(
       .orElseThrow { EntityNotFoundException("Condition $conditionId upload details not found") }
 
     return upload.fullSizeImage
+  }
+
+  fun getLicenceById(id: Long): Licence {
+    return licenceService.getLicenceById(id).transformToPublicLicence()
   }
 }

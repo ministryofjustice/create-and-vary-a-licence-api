@@ -14,14 +14,14 @@ object ConditionTypes {
   description = "Describes each additional condition on the licence, A discriminator exists to allow specific types of conditions to contain additional info",
   discriminatorProperty = "type",
   discriminatorMapping = [
-    DiscriminatorMapping(value = ConditionTypes.STANDARD, schema = StandardAdditionalCondition::class),
+    DiscriminatorMapping(value = ConditionTypes.STANDARD, schema = GenericAdditionalCondition::class),
     DiscriminatorMapping(
       value = ConditionTypes.ELECTRONIC_MONITORING,
-      schema = ElectronicMonitoringAdditionalCondition::class,
+      schema = ElectronicMonitoringAdditionalConditionWithRestriction::class,
     ),
     DiscriminatorMapping(
       value = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
-      schema = MultipleExclusionZoneAdditionalCondition::class,
+      schema = ExclusionZoneAdditionalCondition::class,
     ),
   ],
 )

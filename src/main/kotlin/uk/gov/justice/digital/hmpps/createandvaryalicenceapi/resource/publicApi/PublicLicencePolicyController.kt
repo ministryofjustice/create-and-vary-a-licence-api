@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -56,13 +57,22 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
       ),
     ],
   )
-  fun getPolicyByVersionNumber(@PathVariable("version") versionNumber: String) = publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
+  fun getPolicyByVersionNumber(
+    @PathVariable("version")
+    @Parameter(
+      name = "version",
+      description = "The version of the licence policy",
+      example = "2.1",
+    )
+    versionNumber: String,
+  ) =
+    publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
 
   @GetMapping(value = ["/latest"])
   @ResponseBody
   @Operation(
     summary = "Get latest policy.",
-    description = "Returns latest policy." +
+    description = "Returns latest policy. " +
       "Requires ROLE_VIEW_LICENCES.",
     security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
   )
