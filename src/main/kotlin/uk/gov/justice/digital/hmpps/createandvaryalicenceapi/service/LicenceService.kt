@@ -36,16 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -479,6 +470,43 @@ class LicenceService(
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
     return transformToListOfSummaries(matchingLicences)
+  }
+
+  @Transactional
+  fun timedOutLicences(licences: List<EntityLicence>, reason: String? = null) {
+    val timedOutLicences = licences.map {
+      it.copy(
+        statusCode = TIME_OUT,
+        licenceActivatedDate = LocalDateTime.now(),
+      )
+    }
+    if (timedOutLicences.isNotEmpty()) {
+      licenceRepository.saveAllAndFlush(timedOutLicences)
+
+      timedOutLicences.map { licence ->
+        auditEventRepository.saveAndFlush(
+          AuditEvent(
+            licenceId = licence.id,
+            username = "SYSTEM",
+            fullName = "SYSTEM",
+            eventType = AuditEventType.SYSTEM_EVENT,
+            summary = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
+            detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+          ),
+        )
+
+        licenceEventRepository.saveAndFlush(
+          EntityLicenceEvent(
+            licenceId = licence.id,
+            eventType = LicenceEventType.TIME_OUT,
+            username = "SYSTEM",
+            forenames = "SYSTEM",
+            surname = "SYSTEM",
+            eventDescription = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
+          ),
+        )
+      }
+    }
   }
 
   @Transactional
