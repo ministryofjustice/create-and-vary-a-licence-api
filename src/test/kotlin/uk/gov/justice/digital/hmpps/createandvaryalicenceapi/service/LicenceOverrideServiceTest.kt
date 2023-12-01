@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -251,6 +252,7 @@ class LicenceOverrideServiceTest {
   private companion object {
     val inactiveLicenceA = Licence(
       id = 1L,
+      kind = LicenceKind.CRD,
       crn = "exampleCrn",
       forename = "Robin",
       surname = "Smith",
@@ -268,6 +270,7 @@ class LicenceOverrideServiceTest {
     )
     val inactiveLicenceB = Licence(
       id = 2L,
+      kind = LicenceKind.CRD,
       crn = "exampleCrn",
       forename = "Robin",
       surname = "Smith",
@@ -285,6 +288,7 @@ class LicenceOverrideServiceTest {
     )
     val approvedLicenceA = Licence(
       id = 3L,
+      kind = LicenceKind.CRD,
       crn = "exampleCrn",
       forename = "Robin",
       surname = "Smith",
@@ -302,6 +306,7 @@ class LicenceOverrideServiceTest {
     )
     val approvedLicenceB = Licence(
       id = 4L,
+      kind = LicenceKind.CRD,
       crn = "exampleCrn",
       forename = "Robin",
       surname = "Smith",

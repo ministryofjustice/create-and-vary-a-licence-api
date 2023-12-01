@@ -1,5 +1,6 @@
 insert into licence (
     id,
+    kind,
     type_code,
     version,
     status_code,
@@ -30,6 +31,7 @@ insert into licence (
 )
 values (
     3,
+    'CRD',
     'AP_PSS',
     '1.0',
     'VARIATION_IN_PROGRESS',
@@ -60,6 +62,7 @@ values (
  ),
    (
        4,
+       'VARIATION',
        'AP_PSS',
        '1.0',
        'VARIATION_IN_PROGRESS',
@@ -88,6 +91,7 @@ values (
        1,
        1),
        (5,
+        'VARIATION',
         'AP_PSS',
         '1.0',
         'VARIATION_IN_PROGRESS',
@@ -116,6 +120,7 @@ values (
         1,
         1),
        (6,
+        'CRD',
         'AP_PSS',
         '1.0',
         'ACTIVE',

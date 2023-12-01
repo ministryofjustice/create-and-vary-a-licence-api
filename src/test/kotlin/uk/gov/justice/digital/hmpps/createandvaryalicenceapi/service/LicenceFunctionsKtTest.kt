@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -16,6 +17,7 @@ class LicenceFunctionsKtTest {
 
   private val testLicence = Licence(
     statusCode = LicenceStatus.APPROVED,
+    kind = LicenceKind.CRD,
     licenceStartDate = fiveDaysAgo,
     licenceExpiryDate = fiveDaysAgo,
     sentenceEndDate = fiveDaysAgo,

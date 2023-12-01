@@ -35,6 +35,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -576,7 +579,7 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val licenceVariation = copyLicenceAndConditions(licenceEntity, VARIATION_IN_PROGRESS)
+    val licenceVariation = copyLicenceAndConditions(VARIATION, licenceEntity)
     return transformToLicenceSummary(licenceVariation)
   }
 
@@ -596,7 +599,7 @@ class LicenceService(
       return transformToLicenceSummary(inProgressVersions[0])
     }
 
-    val licenceCopy = copyLicenceAndConditions(licenceEntity, IN_PROGRESS)
+    val licenceCopy = copyLicenceAndConditions(CRD, licenceEntity)
     notifyReApprovalNeeded(licenceEntity)
 
     return transformToLicenceSummary(licenceCopy)
@@ -814,8 +817,9 @@ class LicenceService(
     return inFlight.isNotEmpty()
   }
 
-  private fun copyLicenceAndConditions(licence: EntityLicence, newStatus: LicenceStatus): EntityLicence {
-    require(newStatus == IN_PROGRESS || newStatus == VARIATION_IN_PROGRESS) { "newStatus must be IN_PROGRESS or VARIATION_IN_PROGRESS was $newStatus" }
+  private fun copyLicenceAndConditions(kind: LicenceKind, licence: EntityLicence): EntityLicence {
+    val isVariation = kind == VARIATION
+    val newStatus = if (isVariation) VARIATION_IN_PROGRESS else IN_PROGRESS
 
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
@@ -824,10 +828,10 @@ class LicenceService(
     val newLicenceVersion =
       licence.licenceVersion?.let { getNextLicenceVersion(it, newStatus) }
 
-    val licenceCopy = licence.copyLicence(newStatus, newLicenceVersion)
+    val licenceCopy = licence.copyLicence(kind, newStatus, newLicenceVersion)
     licenceCopy.createdBy = createdBy
     licenceCopy.version = licencePolicyService.currentPolicy().version
-    if (newStatus == VARIATION_IN_PROGRESS) {
+    if (isVariation) {
       licenceCopy.variationOfId = licence.id
     } else {
       licenceCopy.versionOfId = licence.id
@@ -846,7 +850,7 @@ class LicenceService(
     standardConditionRepository.saveAll(standardConditions)
 
     val blockConditions =
-      newStatus == VARIATION_IN_PROGRESS && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
+      isVariation && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
 
     if (!blockConditions) {
       bespokeConditionRepository.saveAll(bespokeConditions)
