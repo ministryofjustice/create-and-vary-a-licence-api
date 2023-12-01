@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
 import java.security.KeyPair
@@ -31,11 +30,11 @@ class JwtAuthHelper(private val keyPair: KeyPair) {
       .also { scope?.let { scope -> it["scope"] = scope } }
       .let {
         Jwts.builder()
-          .setId(jwtId)
-          .setSubject(subject)
-          .addClaims(it.toMap())
-          .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
-          .signWith(keyPair.private, SignatureAlgorithm.RS256)
+          .id(jwtId)
+          .subject(subject)
+          .claims(it.toMap())
+          .expiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
+          .signWith(keyPair.private, Jwts.SIG.RS256)
           .compact()
       }
 }

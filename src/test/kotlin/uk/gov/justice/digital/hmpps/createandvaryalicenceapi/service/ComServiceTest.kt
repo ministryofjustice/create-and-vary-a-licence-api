@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -14,7 +14,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
@@ -32,14 +31,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class ComServiceTest {
   private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
@@ -285,7 +282,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456", "A1234AA"),
+          Identifiers("X12345", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -323,15 +320,15 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
-          "A123456",
+          "X12345",
           "A1234AA",
           "Staff Surname",
           "A01B02C",
@@ -409,9 +406,9 @@ class ComServiceTest {
 
     assertThat(resultsList.size).isEqualTo(1)
     assertThat(offender)
-      .extracting { Tuple.tuple(it.name, it.comName, it.teamName) }
+      .extracting { tuple(it.name, it.comName, it.teamName) }
       .isEqualTo(
-        Tuple.tuple("Test Surname", "Staff Surname", "Test Team"),
+        tuple("Test Surname", "Staff Surname", "Test Team"),
       )
   }
 
@@ -476,15 +473,15 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
-          "A123456",
+          "X12345",
           "A1234AA",
           "Staff Surname",
           "A01B02C",
@@ -512,7 +509,7 @@ class ComServiceTest {
       listOf(
         ProbationSearchResponseResult(
           Name("Test", "Surname"),
-          Identifiers("A123456", "A1234AA"),
+          Identifiers("X12345", "A1234AA"),
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
@@ -562,15 +559,15 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
-          "A123456",
+          "X12345",
           "A1234AA",
           "Staff Surname",
           "A01B02C",
@@ -650,15 +647,15 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
-          "A123456",
+          "X12345",
           "A1234AA",
           "Staff Surname",
           "A01B02C",
@@ -746,13 +743,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -903,13 +900,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1001,13 +998,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1100,13 +1097,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1199,13 +1196,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1371,13 +1368,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1546,13 +1543,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1723,13 +1720,13 @@ class ComServiceTest {
 
     assertThat(offender)
       .extracting {
-        Tuple.tuple(
+        tuple(
           it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
           it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
         )
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "Test Surname",
           "A123456",
           "A1234AA",
@@ -1799,56 +1796,7 @@ class ComServiceTest {
       ),
     )
 
-    val aLicenceEntity = Licence(
-      id = 1,
-      kind = LicenceKind.CRD,
-      typeCode = LicenceType.AP,
-      version = "1.1",
-      statusCode = LicenceStatus.IN_PROGRESS,
-      nomsId = "A1234AA",
-      bookingNo = "123456",
-      bookingId = 54321,
-      crn = "A123456",
-      pnc = "2019/123445",
-      cro = "12345",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Test",
-      surname = "Surname",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "A01B02",
-      probationTeamDescription = "Test Team",
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      standardConditions = someEntityStandardConditions,
-      responsibleCom = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "ssurname",
-        email = "testemail@probation.gov.uk",
-        firstName = "Staff",
-        lastName = "Surname",
-      ),
-      createdBy = CommunityOffenderManager(
-        staffIdentifier = 2000,
-        username = "ssurname",
-        email = "testemail@probation.gov.uk",
-        firstName = "Staff",
-        lastName = "Surname",
-      ),
-    )
+    val aLicenceEntity = TestData.createCrdLicence()
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
       prisonerNumber = "A1234AA",

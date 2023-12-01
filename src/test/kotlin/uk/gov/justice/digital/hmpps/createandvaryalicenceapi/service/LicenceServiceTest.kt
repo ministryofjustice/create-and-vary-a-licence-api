@@ -1963,9 +1963,8 @@ class LicenceServiceTest {
       responsibleComStaffId = 2000,
     )
 
-    val aLicenceEntity = EntityLicence(
+    val aLicenceEntity = TestData.createCrdLicence().copy(
       id = 1,
-      kind = LicenceKind.CRD,
       typeCode = LicenceType.AP,
       version = "1.1",
       statusCode = LicenceStatus.IN_PROGRESS,
