@@ -14,14 +14,11 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 class OffenderServiceTest {
@@ -241,12 +238,32 @@ class OffenderServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "SYSTEM", "SYSTEM", "Probation team updated to TEAM2 probation team at N02 Region on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Probation team updated to TEAM2 probation team at N02 Region on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
   }
 
   @Test
   fun `does not update licences with probation region if it has not changed`() {
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          probationAreaCode = "N01",
+          probationAreaDescription = "N01 Region",
+          probationPduCode = "PDU1",
+          probationPduDescription = "PDU1 Pdu",
+          probationLauCode = "LAU1",
+          probationLauDescription = "LAU1 Lau",
+          probationTeamCode = "TEAM1",
+          probationTeamDescription = "TEAM1 probation team",
+        ),
+      ),
+    )
 
     service.updateProbationTeam(
       "exampleCrn",
@@ -348,27 +365,7 @@ class OffenderServiceTest {
   }
 
   private companion object {
-    val aLicenceEntity = Licence(
-      id = 1L,
-      kind = LicenceKind.CRD,
-      crn = "exampleCrn",
-      nomsId = "A1234AB",
-      forename = "Robin",
-      surname = "Smith",
-      dateOfBirth = LocalDate.parse("1970-01-01"),
-      typeCode = LicenceType.AP,
-      statusCode = LicenceStatus.IN_PROGRESS,
-      version = "1.0",
-      probationAreaCode = "N01",
-      probationAreaDescription = "N01 Region",
-      probationPduCode = "PDU1",
-      probationPduDescription = "PDU1 Pdu",
-      probationLauCode = "LAU1",
-      probationLauDescription = "LAU1 Lau",
-      probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team",
-      actualReleaseDate = LocalDate.parse("2023-11-17"),
-    )
+    val aLicenceEntity = TestData.createCrdLicence().copy()
 
     val comDetails = CommunityOffenderManager(
       staffIdentifier = 2000,
