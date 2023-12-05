@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
@@ -1800,6 +1801,7 @@ class ComServiceTest {
 
     val aLicenceEntity = Licence(
       id = 1,
+      kind = LicenceKind.CRD,
       typeCode = LicenceType.AP,
       version = "1.1",
       statusCode = LicenceStatus.IN_PROGRESS,

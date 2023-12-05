@@ -59,6 +59,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -186,6 +187,7 @@ class LicenceServiceTest {
 
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     val createResponse = service.createLicence(aCreateLicenceRequest)
 
@@ -193,9 +195,18 @@ class LicenceServiceTest {
     assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
 
     verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
-    verify(licenceRepository, times(1)).saveAndFlush(any())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    with(licenceCaptor.value) {
+      assertThat(kind).isEqualTo(LicenceKind.CRD)
+      assertThat(version).isEqualTo("1.4")
+      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(variationOfId).isNull()
+      assertThat(versionOfId).isNull()
+      assertThat(licenceVersion).isEqualTo("1.0")
+    }
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1435,6 +1446,7 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
     with(licenceCaptor.value) {
+      assertThat(kind).isEqualTo(LicenceKind.VARIATION)
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
       assertThat(variationOfId).isEqualTo(1)
@@ -1953,6 +1965,7 @@ class LicenceServiceTest {
 
     val aLicenceEntity = EntityLicence(
       id = 1,
+      kind = LicenceKind.CRD,
       typeCode = LicenceType.AP,
       version = "1.1",
       statusCode = LicenceStatus.IN_PROGRESS,

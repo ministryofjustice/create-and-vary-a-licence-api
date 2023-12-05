@@ -16,6 +16,7 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -31,6 +32,10 @@ class Licence(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
   val id: Long = -1,
+
+  @NotNull
+  @Enumerated(STRING)
+  val kind: LicenceKind,
 
   @NotNull
   @Enumerated(STRING)
@@ -124,8 +129,9 @@ class Licence(
   var versionOfId: Long? = null,
   var licenceVersion: String? = "1.0",
 ) {
-  fun copyLicence(newStatus: LicenceStatus, newVersion: String?): Licence {
+  fun copyLicence(kind: LicenceKind, newStatus: LicenceStatus, newVersion: String?): Licence {
     return Licence(
+      kind = kind,
       typeCode = this.typeCode,
       version = this.version,
       statusCode = newStatus,
@@ -190,10 +196,11 @@ class Licence(
   }
 
   fun copy(
-    id: @NotNull Long = this.id,
-    typeCode: @NotNull LicenceType = this.typeCode,
+    id: Long = this.id,
+    kind: LicenceKind = this.kind,
+    typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
-    statusCode: @NotNull LicenceStatus = this.statusCode,
+    statusCode: LicenceStatus = this.statusCode,
     nomsId: String? = this.nomsId,
     bookingNo: String? = this.bookingNo,
     bookingId: Long? = this.bookingId,
@@ -250,6 +257,7 @@ class Licence(
   ): Licence {
     return Licence(
       id,
+      kind,
       typeCode,
       version,
       statusCode,
@@ -316,6 +324,7 @@ class Licence(
     other as Licence
 
     if (id != other.id) return false
+    if (kind != other.kind) return false
     if (typeCode != other.typeCode) return false
     if (version != other.version) return false
     if (statusCode != other.statusCode) return false
@@ -379,6 +388,7 @@ class Licence(
   override fun hashCode(): Int {
     return Objects.hash(
       id,
+      kind,
       typeCode,
       version,
       statusCode,
@@ -441,6 +451,7 @@ class Licence(
   override fun toString(): String {
     return "Licence(" +
       "id=$id, " +
+      "kind=$kind, " +
       "typeCode=$typeCode, " +
       "version=$version, " +
       "statusCode=$statusCode, " +

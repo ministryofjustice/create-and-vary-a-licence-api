@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveExpiredConditionsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -198,6 +199,7 @@ class RemoveExpiredConditionsServiceTest {
 
     val aLicenceEntity = EntityLicence(
       id = 1,
+      kind = LicenceKind.CRD,
       typeCode = LicenceType.AP,
       version = "1.1",
       statusCode = LicenceStatus.IN_PROGRESS,

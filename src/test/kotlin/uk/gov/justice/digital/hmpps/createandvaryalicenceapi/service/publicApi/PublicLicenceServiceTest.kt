@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Po
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceBespoke
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceStandard
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -624,6 +625,7 @@ class PublicLicenceServiceTest {
 
     val aLicenceEntity = Licence(
       id = 1L,
+      kind = LicenceKind.CRD,
       crn = "A12345",
       nomsId = "A1234BC",
       version = "1.0",

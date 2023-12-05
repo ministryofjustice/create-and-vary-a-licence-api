@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
@@ -1013,6 +1014,7 @@ class ConditionFormatterTest {
 
   val licence = Licence(
     id = 2L,
+    kind = LicenceKind.CRD,
     crn = "exampleCrn",
     forename = "Robin",
     surname = "Smith",
