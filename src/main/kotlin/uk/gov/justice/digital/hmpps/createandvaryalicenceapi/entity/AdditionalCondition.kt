@@ -44,4 +44,21 @@ data class AdditionalCondition(
   @Fetch(FetchMode.SUBSELECT)
   @OrderBy("id")
   val additionalConditionUploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
-)
+) {
+
+  override fun toString(): String {
+    return "AdditionalCondition(" +
+      "id=$id, " +
+      "licence=${licence.id}, " +
+      "conditionVersion='$conditionVersion', " +
+      "conditionCode=$conditionCode, " +
+      "conditionCategory=$conditionCategory, " +
+      "conditionSequence=$conditionSequence, " +
+      "conditionText=$conditionText, " +
+      "expandedConditionText=$expandedConditionText, " +
+      "conditionType=$conditionType, " +
+      "additionalConditionData=$additionalConditionData, " +
+      "additionalConditionUploadSummary=$additionalConditionUploadSummary" +
+      ")"
+  }
+}

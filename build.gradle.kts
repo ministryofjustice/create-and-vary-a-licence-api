@@ -115,3 +115,7 @@ tasks {
     )
   }
 }
+
+allOpen {
+  annotation("jakarta.persistence.Entity")
+}

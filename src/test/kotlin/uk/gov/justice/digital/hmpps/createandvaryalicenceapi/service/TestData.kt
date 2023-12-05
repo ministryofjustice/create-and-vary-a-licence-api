@@ -2,9 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -36,9 +35,8 @@ object TestData {
     ),
   )
 
-  fun createCrdLicence() = Licence(
+  fun createCrdLicence() = CrdLicence(
     id = 1,
-    kind = LicenceKind.CRD,
     typeCode = LicenceType.AP,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,

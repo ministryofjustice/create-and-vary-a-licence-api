@@ -1,13 +1,18 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
 import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorColumn
+import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType.STRING
+import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Inheritance
+import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -18,34 +23,35 @@ import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Objects
 
 @Entity
 @Table(name = "licence")
-class Licence(
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "kind", discriminatorType = DiscriminatorType.STRING)
+abstract class Licence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
-  val id: Long = -1,
+  var id: Long = -1,
 
   @NotNull
-  @Enumerated(STRING)
-  val kind: LicenceKind,
+  @Enumerated(EnumType.STRING)
+  @Column(name = "kind", insertable = false, updatable = false)
+  var kind: LicenceKind,
 
   @NotNull
-  @Enumerated(STRING)
-  val typeCode: LicenceType = AP,
+  @Enumerated(EnumType.STRING)
+  val typeCode: LicenceType = LicenceType.AP,
 
   var version: String? = null,
 
   @NotNull
-  @Enumerated(STRING)
-  var statusCode: LicenceStatus = IN_PROGRESS,
+  @Enumerated(EnumType.STRING)
+  var statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
 
   val nomsId: String? = null,
   val bookingNo: String? = null,
@@ -113,7 +119,7 @@ class Licence(
   @OrderBy("conditionSequence")
   val bespokeConditions: List<BespokeCondition> = emptyList(),
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   var responsibleCom: CommunityOffenderManager? = null,
 
@@ -129,50 +135,6 @@ class Licence(
   var versionOfId: Long? = null,
   var licenceVersion: String? = "1.0",
 ) {
-  fun copyLicence(kind: LicenceKind, newStatus: LicenceStatus, newVersion: String?): Licence {
-    return Licence(
-      kind = kind,
-      typeCode = this.typeCode,
-      version = this.version,
-      statusCode = newStatus,
-      nomsId = this.nomsId,
-      bookingNo = this.bookingNo,
-      bookingId = this.bookingId,
-      crn = this.crn,
-      pnc = this.pnc,
-      cro = this.cro,
-      prisonCode = this.prisonCode,
-      prisonDescription = this.prisonDescription,
-      prisonTelephone = this.prisonTelephone,
-      forename = this.forename,
-      middleNames = this.middleNames,
-      surname = this.surname,
-      dateOfBirth = this.dateOfBirth,
-      conditionalReleaseDate = this.conditionalReleaseDate,
-      actualReleaseDate = this.actualReleaseDate,
-      sentenceStartDate = this.sentenceStartDate,
-      sentenceEndDate = this.sentenceEndDate,
-      licenceStartDate = this.licenceStartDate,
-      licenceExpiryDate = this.licenceExpiryDate,
-      topupSupervisionStartDate = this.topupSupervisionStartDate,
-      topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
-      probationAreaCode = this.probationAreaCode,
-      probationAreaDescription = this.probationAreaDescription,
-      probationPduCode = this.probationPduCode,
-      probationPduDescription = this.probationPduDescription,
-      probationLauCode = this.probationLauCode,
-      probationLauDescription = this.probationLauDescription,
-      probationTeamCode = this.probationTeamCode,
-      probationTeamDescription = this.probationTeamDescription,
-      appointmentPerson = this.appointmentPerson,
-      appointmentTime = this.appointmentTime,
-      appointmentAddress = this.appointmentAddress,
-      appointmentContact = this.appointmentContact,
-      responsibleCom = this.responsibleCom,
-      dateCreated = LocalDateTime.now(),
-      licenceVersion = newVersion,
-    )
-  }
 
   fun isInPssPeriod(): Boolean {
     val led = licenceExpiryDate
@@ -195,9 +157,8 @@ class Licence(
     return false
   }
 
-  fun copy(
+  abstract fun copy(
     id: Long = this.id,
-    kind: LicenceKind = this.kind,
     typeCode: LicenceType = this.typeCode,
     version: String? = this.version,
     statusCode: LicenceStatus = this.statusCode,
@@ -254,260 +215,16 @@ class Licence(
     variationOfId: Long? = this.variationOfId,
     versionOfId: Long? = this.versionOfId,
     licenceVersion: String? = this.licenceVersion,
-  ): Licence {
-    return Licence(
-      id,
-      kind,
-      typeCode,
-      version,
-      statusCode,
-      nomsId,
-      bookingNo,
-      bookingId,
-      crn,
-      pnc,
-      cro,
-      prisonCode,
-      prisonDescription,
-      prisonTelephone,
-      forename,
-      middleNames,
-      surname,
-      dateOfBirth,
-      conditionalReleaseDate,
-      actualReleaseDate,
-      sentenceStartDate,
-      sentenceEndDate,
-      licenceStartDate,
-      licenceExpiryDate,
-      licenceActivatedDate,
-      topupSupervisionStartDate,
-      topupSupervisionExpiryDate,
-      probationAreaCode,
-      probationAreaDescription,
-      probationPduCode,
-      probationPduDescription,
-      probationLauCode,
-      probationLauDescription,
-      probationTeamCode,
-      probationTeamDescription,
-      appointmentPerson,
-      appointmentTime,
-      appointmentAddress,
-      appointmentContact,
-      spoDiscussion,
-      vloDiscussion,
-      approvedDate,
-      approvedByUsername,
-      approvedByName,
-      supersededDate,
-      submittedDate,
-      dateCreated,
-      dateLastUpdated,
-      updatedByUsername,
-      standardConditions,
-      additionalConditions,
-      bespokeConditions,
-      responsibleCom,
-      submittedBy,
-      createdBy,
-      variationOfId,
-      versionOfId,
-      licenceVersion,
-    )
-  }
+  ): Licence
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-
-    other as Licence
-
+    if (other !is Licence) return false
     if (id != other.id) return false
-    if (kind != other.kind) return false
-    if (typeCode != other.typeCode) return false
-    if (version != other.version) return false
-    if (statusCode != other.statusCode) return false
-    if (nomsId != other.nomsId) return false
-    if (bookingNo != other.bookingNo) return false
-    if (bookingId != other.bookingId) return false
-    if (crn != other.crn) return false
-    if (pnc != other.pnc) return false
-    if (cro != other.cro) return false
-    if (prisonCode != other.prisonCode) return false
-    if (prisonDescription != other.prisonDescription) return false
-    if (prisonTelephone != other.prisonTelephone) return false
-    if (forename != other.forename) return false
-    if (middleNames != other.middleNames) return false
-    if (surname != other.surname) return false
-    if (dateOfBirth != other.dateOfBirth) return false
-    if (conditionalReleaseDate != other.conditionalReleaseDate) return false
-    if (actualReleaseDate != other.actualReleaseDate) return false
-    if (sentenceStartDate != other.sentenceStartDate) return false
-    if (sentenceEndDate != other.sentenceEndDate) return false
-    if (licenceStartDate != other.licenceStartDate) return false
-    if (licenceExpiryDate != other.licenceExpiryDate) return false
-    if (licenceActivatedDate != other.licenceActivatedDate) return false
-    if (topupSupervisionStartDate != other.topupSupervisionStartDate) return false
-    if (topupSupervisionExpiryDate != other.topupSupervisionExpiryDate) return false
-    if (probationAreaCode != other.probationAreaCode) return false
-    if (probationAreaDescription != other.probationAreaDescription) return false
-    if (probationPduCode != other.probationPduCode) return false
-    if (probationPduDescription != other.probationPduDescription) return false
-    if (probationLauCode != other.probationLauCode) return false
-    if (probationLauDescription != other.probationLauDescription) return false
-    if (probationTeamCode != other.probationTeamCode) return false
-    if (probationTeamDescription != other.probationTeamDescription) return false
-    if (appointmentPerson != other.appointmentPerson) return false
-    if (appointmentTime != other.appointmentTime) return false
-    if (appointmentAddress != other.appointmentAddress) return false
-    if (appointmentContact != other.appointmentContact) return false
-    if (spoDiscussion != other.spoDiscussion) return false
-    if (vloDiscussion != other.vloDiscussion) return false
-    if (approvedDate != other.approvedDate) return false
-    if (approvedByUsername != other.approvedByUsername) return false
-    if (approvedByName != other.approvedByName) return false
-    if (supersededDate != other.supersededDate) return false
-    if (submittedDate != other.submittedDate) return false
-    if (dateCreated != other.dateCreated) return false
-    if (dateLastUpdated != other.dateLastUpdated) return false
-    if (updatedByUsername != other.updatedByUsername) return false
-    if (standardConditions != other.standardConditions) return false
-    if (additionalConditions != other.additionalConditions) return false
-    if (bespokeConditions != other.bespokeConditions) return false
-    if (responsibleCom != other.responsibleCom) return false
-    if (submittedBy != other.submittedBy) return false
-    if (createdBy != other.createdBy) return false
-    if (variationOfId != other.variationOfId) return false
-    if (versionOfId != other.versionOfId) return false
-    if (licenceVersion != other.licenceVersion) return false
-
     return true
   }
 
   override fun hashCode(): Int {
-    return Objects.hash(
-      id,
-      kind,
-      typeCode,
-      version,
-      statusCode,
-      nomsId,
-      bookingNo,
-      bookingId,
-      crn,
-      pnc,
-      cro,
-      prisonCode,
-      prisonDescription,
-      prisonTelephone,
-      forename,
-      middleNames,
-      surname,
-      dateOfBirth,
-      conditionalReleaseDate,
-      actualReleaseDate,
-      sentenceStartDate,
-      sentenceEndDate,
-      licenceStartDate,
-      licenceExpiryDate,
-      licenceActivatedDate,
-      topupSupervisionStartDate,
-      topupSupervisionExpiryDate,
-      probationAreaCode,
-      probationAreaDescription,
-      probationPduCode,
-      probationPduDescription,
-      probationLauCode,
-      probationLauDescription,
-      probationTeamCode,
-      probationTeamDescription,
-      appointmentPerson,
-      appointmentTime,
-      appointmentAddress,
-      appointmentContact,
-      spoDiscussion,
-      vloDiscussion,
-      approvedDate,
-      approvedByUsername,
-      approvedByName,
-      supersededDate,
-      submittedDate,
-      dateCreated,
-      dateLastUpdated,
-      updatedByUsername,
-      standardConditions,
-      additionalConditions,
-      bespokeConditions,
-      responsibleCom,
-      submittedBy,
-      createdBy,
-      variationOfId,
-      versionOfId,
-      licenceVersion,
-    )
-  }
-
-  override fun toString(): String {
-    return "Licence(" +
-      "id=$id, " +
-      "kind=$kind, " +
-      "typeCode=$typeCode, " +
-      "version=$version, " +
-      "statusCode=$statusCode, " +
-      "nomsId=$nomsId, " +
-      "bookingNo=$bookingNo, " +
-      "bookingId=$bookingId, " +
-      "crn=$crn, " +
-      "pnc=$pnc, " +
-      "cro=$cro, " +
-      "prisonCode=$prisonCode, " +
-      "prisonDescription=$prisonDescription, " +
-      "prisonTelephone=$prisonTelephone, " +
-      "forename=$forename, " +
-      "middleNames=$middleNames, " +
-      "surname=$surname, " +
-      "dateOfBirth=$dateOfBirth, " +
-      "conditionalReleaseDate=$conditionalReleaseDate, " +
-      "actualReleaseDate=$actualReleaseDate, " +
-      "sentenceStartDate=$sentenceStartDate, " +
-      "sentenceEndDate=$sentenceEndDate, " +
-      "licenceStartDate=$licenceStartDate, " +
-      "licenceExpiryDate=$licenceExpiryDate, " +
-      "licenceActivatedDate=$licenceActivatedDate, " +
-      "topupSupervisionStartDate=$topupSupervisionStartDate, " +
-      "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
-      "probationAreaCode=$probationAreaCode, " +
-      "probationAreaDescription=$probationAreaDescription, " +
-      "probationPduCode=$probationPduCode, " +
-      "probationPduDescription=$probationPduDescription, " +
-      "probationLauCode=$probationLauCode, " +
-      "probationLauDescription=$probationLauDescription, " +
-      "probationTeamCode=$probationTeamCode, " +
-      "probationTeamDescription=$probationTeamDescription, " +
-      "appointmentPerson=$appointmentPerson, " +
-      "appointmentTime=$appointmentTime, " +
-      "appointmentAddress=$appointmentAddress, " +
-      "appointmentContact=$appointmentContact, " +
-      "spoDiscussion=$spoDiscussion, " +
-      "vloDiscussion=$vloDiscussion, " +
-      "approvedDate=$approvedDate, " +
-      "approvedByUsername=$approvedByUsername, " +
-      "approvedByName=$approvedByName, " +
-      "supersededDate=$supersededDate, " +
-      "submittedDate=$submittedDate, " +
-      "dateCreated=$dateCreated, " +
-      "dateLastUpdated=$dateLastUpdated, " +
-      "updatedByUsername=$updatedByUsername, " +
-      "standardConditions=$standardConditions, " +
-      "additionalConditions=$additionalConditions, " +
-      "bespokeConditions=$bespokeConditions, " +
-      "responsibleCom=$responsibleCom, " +
-      "submittedBy=$submittedBy, " +
-      "createdBy=$createdBy, " +
-      "variationOfId=$variationOfId, " +
-      "versionOfId=$versionOfId, " +
-      "licenceVersion=$licenceVersion" +
-      ")"
+    return Objects.hash(id)
   }
 }

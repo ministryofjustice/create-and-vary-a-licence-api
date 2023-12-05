@@ -38,7 +38,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -455,6 +454,7 @@ class LicenceService(
     }
   }
 
+  @Transactional
   fun findRecentlyApprovedLicences(
     prisonCodes: List<String>,
   ): List<LicenceSummary> {
@@ -575,21 +575,22 @@ class LicenceService(
 
   @Transactional
   fun createVariation(licenceId: Long): LicenceSummary {
-    val licenceEntity = licenceRepository
+    val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val licenceVariation = copyLicenceAndConditions(VARIATION, licenceEntity)
+    val licenceCopy = LicenceCreation.createVariation(licence)
+    val licenceVariation = copyConditions(VARIATION, licence, licenceCopy)
     return transformToLicenceSummary(licenceVariation)
   }
 
   @Transactional
   fun editLicence(licenceId: Long): LicenceSummary {
-    val licenceEntity = licenceRepository
+    val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    if (licenceEntity.statusCode != APPROVED) {
+    if (licence.statusCode != APPROVED) {
       throw ValidationException("Can only edit APPROVED licences")
     }
 
@@ -599,10 +600,11 @@ class LicenceService(
       return transformToLicenceSummary(inProgressVersions[0])
     }
 
-    val licenceCopy = copyLicenceAndConditions(CRD, licenceEntity)
-    notifyReApprovalNeeded(licenceEntity)
+    val licenceCopy = LicenceCreation.createCopy(licence)
+    val result = copyConditions(CRD, licence, licenceCopy)
+    notifyReApprovalNeeded(licence)
 
-    return transformToLicenceSummary(licenceCopy)
+    return transformToLicenceSummary(result)
   }
 
   @Transactional
@@ -817,18 +819,14 @@ class LicenceService(
     return inFlight.isNotEmpty()
   }
 
-  private fun copyLicenceAndConditions(kind: LicenceKind, licence: EntityLicence): EntityLicence {
+  private fun copyConditions(kind: LicenceKind, licence: EntityLicence, licenceCopy: EntityLicence): EntityLicence {
     val isVariation = kind == VARIATION
-    val newStatus = if (isVariation) VARIATION_IN_PROGRESS else IN_PROGRESS
+    val newStatus = kind.initialStatus
 
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: error("Cannot find staff with username: $username")
 
-    val newLicenceVersion =
-      licence.licenceVersion?.let { getNextLicenceVersion(it, newStatus) }
-
-    val licenceCopy = licence.copyLicence(kind, newStatus, newLicenceVersion)
     licenceCopy.createdBy = createdBy
     licenceCopy.version = licencePolicyService.currentPolicy().version
     if (isVariation) {
@@ -902,10 +900,10 @@ class LicenceService(
 
     additionalConditionRepository.saveAll(newAdditionalConditions)
 
-    val licenceEventMessage = when (newStatus) {
+    val licenceEventMessage = when (licenceCopy.statusCode) {
       VARIATION_IN_PROGRESS -> "A variation was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
       IN_PROGRESS -> "A new licence version was created for ${newLicence.forename} ${newLicence.surname} from ID ${licence.id}"
-      else -> error("Invalid new licence status of $newStatus when creating a licence copy ")
+      else -> error("Invalid new licence status of ${licenceCopy.statusCode} when creating a licence copy ")
     }
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
@@ -952,20 +950,6 @@ class LicenceService(
         .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
     }
     return originalLicence
-  }
-
-  private fun getNextLicenceVersion(currentVersion: String, status: LicenceStatus): String {
-    val (majorVersion, minorVersion) = getVersionParts(currentVersion)
-    return when (status) {
-      VARIATION_IN_PROGRESS -> "${majorVersion + 1}.0"
-      IN_PROGRESS -> "$majorVersion.${minorVersion + 1}"
-      else -> error("Can only update licence version when editing an existing version or creating a variation")
-    }
-  }
-
-  private fun getVersionParts(version: String): Pair<Int, Int> {
-    val parts = version.split(".")
-    return parts[0].toInt() to parts[1].toInt()
   }
 
   @Transactional
