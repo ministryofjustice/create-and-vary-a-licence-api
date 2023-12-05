@@ -320,6 +320,7 @@ class LicenceActivationServiceTest {
   }
 
   private val aLicenceEntity = createCrdLicence().copy(
+    kind = LicenceKind.CRD,
     statusCode = LicenceStatus.APPROVED,
     dateOfBirth = LocalDate.of(1985, 12, 28),
     conditionalReleaseDate = LocalDate.of(2021, 10, 22),
