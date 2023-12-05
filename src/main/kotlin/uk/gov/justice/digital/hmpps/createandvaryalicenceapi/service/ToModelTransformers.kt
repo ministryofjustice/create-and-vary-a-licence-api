@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -250,7 +250,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
+fun CaseloadResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence?.crn,
@@ -266,7 +266,7 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: 
   )
 }
 
-fun ProbationSearchResponseResult.transformToUnstartedRecord(
+fun CaseloadResult.transformToUnstartedRecord(
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,

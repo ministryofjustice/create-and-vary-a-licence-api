@@ -14,7 +14,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
     query: String,
     teamCodes: List<String>,
     sortBy: List<ProbationSearchSortByRequest> = emptyList(),
-  ): List<ProbationSearchResponseResult> {
+  ): List<CaseloadResult> {
     val sortOptions = sortBy.ifEmpty { listOf(ProbationSearchSortByRequest()) }
 
     val licenceCaseLoadRequestBody = LicenceCaseloadSearchRequest(
@@ -30,7 +30,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       .bodyValue(licenceCaseLoadRequestBody)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(ProbationSearchResponse::class.java)
+      .bodyToMono(CaseloadResponse::class.java)
       .block()
 
     return probationOffenderSearchResponse?.content ?: error("Unexpected null response from API")
