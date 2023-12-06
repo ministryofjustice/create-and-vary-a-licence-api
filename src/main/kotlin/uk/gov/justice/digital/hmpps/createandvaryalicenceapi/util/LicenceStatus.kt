@@ -27,6 +27,7 @@ enum class LicenceStatus {
         ACTIVE -> LicenceEventType.ACTIVATED
         REJECTED -> LicenceEventType.VARIATION_REFERRED
         VARIATION_REJECTED -> LicenceEventType.VARIATION_REFERRED
+        RECALLED -> LicenceEventType.RECALLED
         else -> LicenceEventType.valueOf(status.toString())
       }
     }
@@ -50,10 +51,6 @@ enum class LicenceStatus {
       IN_PROGRESS,
       SUBMITTED,
       APPROVED,
-      VARIATION_IN_PROGRESS,
-      VARIATION_SUBMITTED,
-      VARIATION_REJECTED,
-      VARIATION_APPROVED,
     )
 
     val ON_PROBATION_STATUSES = setOf(

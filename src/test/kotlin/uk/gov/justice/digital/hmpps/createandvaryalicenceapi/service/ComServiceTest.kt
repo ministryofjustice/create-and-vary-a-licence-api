@@ -628,6 +628,14 @@ class ComServiceTest {
       "Test",
       2000,
     )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
+      true,
+    )
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
@@ -635,10 +643,9 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
-
-    verifyNoInteractions(eligibilityService)
-    verifyNoInteractions(prisonApiClient)
-
+    verify(eligibilityService, times(2)).isEligibleForCvl(
+      aPrisonerSearchResult,
+    )
     val resultsList = result.results
     val offender = resultsList.first()
     val inPrisonCount = result.inPrisonCount

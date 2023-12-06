@@ -162,7 +162,11 @@ class ComService(
     eligiblePrisonersList: List<PrisonerSearchPrisoner>,
     record: List<Pair<ProbationSearchResponseResult, Licence?>>,
   ): Map<String, PrisonerSearchPrisoner> {
-    val eligiblePrisoners = eligiblePrisonersList.filter { prisoner -> !isLicencePresent(prisoner, record) }
+    val eligiblePrisoners =
+      eligiblePrisonersList.filter { prisoner ->
+        !record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.DRAFT_LICENCES)
+          || record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.ON_PROBATION_STATUSES.toList())
+      }
 
     if (eligiblePrisoners.isEmpty()) {
       return emptyMap()
@@ -176,13 +180,13 @@ class ComService(
     return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun isLicencePresent(
-    prisoner: PrisonerSearchPrisoner,
-    record: List<Pair<ProbationSearchResponseResult, Licence?>>,
+  private fun List<Pair<ProbationSearchResponseResult, Licence?>>.isLicenceInGivenStatusPresent(
+    prisonerNumber: String,
+    status: List<LicenceStatus>,
   ) =
-    record.any { (probationSearchResult, licence) ->
-      probationSearchResult.identifiers.noms == prisoner.prisonerNumber &&
-        licence != null && licence.statusCode in LicenceStatus.DRAFT_LICENCES
+    any { (probationSearchResult, licence) ->
+      probationSearchResult.identifiers.noms == prisonerNumber &&
+        licence != null && licence.statusCode in status
     }
 
   private fun findPrisonersEligibleToCreateLicence(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<PrisonerSearchPrisoner> {
@@ -190,7 +194,8 @@ class ComService(
       .mapNotNull { (result, _) -> result.identifiers.noms }
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
-      .filter { prisoner -> eligibilityService.isEligibleForCvl(prisoner) }
+      .filter { prisoner -> eligibilityService.isEligibleForCvl(prisoner)
+        || record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, listOf(LicenceStatus.ACTIVE)) }
 
     if (prisoners.isEmpty()) {
       return emptyList()
@@ -204,7 +209,7 @@ class ComService(
   }
 
   private fun filterPrisonersWithNonDraftLicences(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<Pair<ProbationSearchResponseResult, Licence?>> =
-    record.filter { (_, licence) -> licence == null || licence.statusCode in LicenceStatus.DRAFT_LICENCES }
+    record.filter { (_, licence) -> licence == null || licence.statusCode in LicenceStatus.DRAFT_LICENCES || licence.statusCode in LicenceStatus.ON_PROBATION_STATUSES.toList()}
 
   private fun ProbationSearchResponseResult.createNotStartedRecord(
     prisoner: PrisonerSearchPrisoner?,
