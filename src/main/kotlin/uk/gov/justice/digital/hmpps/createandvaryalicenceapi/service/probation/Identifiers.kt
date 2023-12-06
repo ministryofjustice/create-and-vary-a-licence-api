@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
-class Identifiers(
+data class Identifiers(
   val crn: String,
   val noms: String?,
 )
