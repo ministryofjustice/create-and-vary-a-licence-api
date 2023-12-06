@@ -164,8 +164,8 @@ class ComService(
   ): Map<String, PrisonerSearchPrisoner> {
     val eligiblePrisoners =
       eligiblePrisonersList.filter { prisoner ->
-        !record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.DRAFT_LICENCES)
-          || record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.ON_PROBATION_STATUSES.toList())
+        !record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.DRAFT_LICENCES) ||
+          record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.ON_PROBATION_STATUSES.toList())
       }
 
     if (eligiblePrisoners.isEmpty()) {
@@ -194,8 +194,10 @@ class ComService(
       .mapNotNull { (result, _) -> result.identifiers.noms }
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
-      .filter { prisoner -> eligibilityService.isEligibleForCvl(prisoner)
-        || record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, listOf(LicenceStatus.ACTIVE)) }
+      .filter { prisoner ->
+        eligibilityService.isEligibleForCvl(prisoner) ||
+          record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, listOf(LicenceStatus.ACTIVE))
+      }
 
     if (prisoners.isEmpty()) {
       return emptyList()
@@ -209,7 +211,7 @@ class ComService(
   }
 
   private fun filterPrisonersWithNonDraftLicences(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<Pair<ProbationSearchResponseResult, Licence?>> =
-    record.filter { (_, licence) -> licence == null || licence.statusCode in LicenceStatus.DRAFT_LICENCES || licence.statusCode in LicenceStatus.ON_PROBATION_STATUSES.toList()}
+    record.filter { (_, licence) -> licence == null || licence.statusCode in LicenceStatus.DRAFT_LICENCES || licence.statusCode in LicenceStatus.ON_PROBATION_STATUSES.toList() }
 
   private fun ProbationSearchResponseResult.createNotStartedRecord(
     prisoner: PrisonerSearchPrisoner?,
