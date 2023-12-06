@@ -72,17 +72,17 @@ class LicenceActivationService(
   }
 
   private fun Licence.isPassedIS91ReleaseDate(): Boolean {
-    if (this.conditionalReleaseDate == null) {
-      return false
-    }
+    val actualReleaseDate = this.actualReleaseDate
+    val conditionalReleaseDate = this.conditionalReleaseDate ?: return false
+
     // If ARD within CRD minus 4 days and CRD (inclusive), use ARD
-    val releaseDate = if (this.actualReleaseDate != null &&
-      !this.actualReleaseDate.isBefore(this.conditionalReleaseDate.minusDays(4)) &&
-      !this.actualReleaseDate.isAfter(this.conditionalReleaseDate)
+    val releaseDate = if (actualReleaseDate != null &&
+      !actualReleaseDate.isBefore(conditionalReleaseDate.minusDays(4)) &&
+      !actualReleaseDate.isAfter(conditionalReleaseDate)
     ) {
-      this.actualReleaseDate
+      actualReleaseDate
     } else {
-      this.conditionalReleaseDate
+      conditionalReleaseDate
     }
 
     return releaseDate <= LocalDate.now()
@@ -91,7 +91,7 @@ class LicenceActivationService(
   private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean {
     return (
       licence.actualReleaseDate != null &&
-        licence.actualReleaseDate <= LocalDate.now() &&
+        licence.actualReleaseDate!! <= LocalDate.now() &&
         prisoner.status?.startsWith("INACTIVE") == true
       )
   }

@@ -31,7 +31,7 @@ insert into licence (
 )
 values (
     3,
-    'CRD',
+    'VARIATION',
     'AP_PSS',
     '1.0',
     'VARIATION_IN_PROGRESS',

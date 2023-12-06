@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -321,7 +320,6 @@ class LicenceActivationServiceTest {
   }
 
   private val aLicenceEntity = createCrdLicence().copy(
-    kind = LicenceKind.CRD,
     statusCode = LicenceStatus.APPROVED,
     dateOfBirth = LocalDate.of(1985, 12, 28),
     conditionalReleaseDate = LocalDate.of(2021, 10, 22),
