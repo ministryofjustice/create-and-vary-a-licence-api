@@ -727,7 +727,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       aPrisonerSearchResult,
     )
 
@@ -887,7 +887,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(any())
+    verify(eligibilityService, times(2)).isEligibleForCvl(any())
     verify(prisonApiClient).getHdcStatuses(
       emptyList(),
     )
@@ -982,7 +982,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       any(),
     )
 
@@ -1081,7 +1081,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       any(),
     )
 
@@ -1180,7 +1180,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       any(),
     )
 
@@ -1283,10 +1283,6 @@ class ComServiceTest {
       any(),
     )
 
-    verify(prisonApiClient).getHdcStatuses(
-      emptyList(),
-    )
-
     val resultsList = result.results
     val inPrisonCount = result.inPrisonCount
     val onProbationCount = result.onProbationCount
@@ -1352,7 +1348,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       any(),
     )
 
@@ -1452,10 +1448,6 @@ class ComServiceTest {
       aPrisonerSearchResult,
     )
 
-    verify(prisonApiClient).getHdcStatuses(
-      emptyList(),
-    )
-
     val resultsList = result.results
     val inPrisonCount = result.inPrisonCount
     val onProbationCount = result.onProbationCount
@@ -1527,7 +1519,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       any(),
     )
 
@@ -1633,7 +1625,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       any(),
     )
 
@@ -1704,7 +1696,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService).isEligibleForCvl(
+    verify(eligibilityService, times(2)).isEligibleForCvl(
       aPrisonerSearchResult,
     )
 

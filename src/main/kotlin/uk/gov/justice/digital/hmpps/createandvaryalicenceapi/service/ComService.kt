@@ -103,14 +103,19 @@ class ComService(
       body.getSortBy(),
     )
 
-    val resultsWithLicences: List<Pair<ProbationSearchResponseResult, Licence?>> =
+    val prisonersPlusLicencesList: List<Pair<ProbationSearchResponseResult, Licence?>> =
       teamCaseloadResult.map { it to getLicence(it) }
 
-    val resultsWithUnstartedLicences = findPrisonersForUnstartedRecords(resultsWithLicences)
+    val eligiblePrisonersList = findPrisonersEligibleToCreateLicence(prisonersPlusLicencesList)
 
-    val searchResults = resultsWithLicences.mapNotNull { (result, licence) ->
+    val eligiblePrisonersWithoutDraftLicences =
+      findPrisonersWithoutDraftLicences(eligiblePrisonersList, prisonersPlusLicencesList)
+
+    val eligiblePrisonersForLicenceCreation = filterPrisonersWithNonDraftLicences(prisonersPlusLicencesList)
+
+    val searchResults = eligiblePrisonersForLicenceCreation.mapNotNull { (result, licence) ->
       when (licence) {
-        null -> result.createUnstartedRecord(resultsWithUnstartedLicences[result.identifiers.noms])
+        null -> result.createNotStartedRecord(eligiblePrisonersWithoutDraftLicences[result.identifiers.noms])
         else -> result.createRecord(licence)
       }
     }
@@ -153,31 +158,55 @@ class ComService(
     }
   }
 
-  private fun findPrisonersForUnstartedRecords(record: List<Pair<ProbationSearchResponseResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
+  private fun findPrisonersWithoutDraftLicences(
+    eligiblePrisonersList: List<PrisonerSearchPrisoner>,
+    record: List<Pair<ProbationSearchResponseResult, Licence?>>,
+  ): Map<String, PrisonerSearchPrisoner> {
+    val eligiblePrisoners = eligiblePrisonersList.filter { prisoner -> !isLicencePresent(prisoner, record) }
+
+    if (eligiblePrisoners.isEmpty()) {
+      return emptyMap()
+    }
+
+    val prisonerBookingsWithHdc = eligiblePrisoners.findBookingsWithHdc()
+
+    val eligibleForCvlPrisoners =
+      eligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
+
+    return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
+  }
+
+  private fun isLicencePresent(
+    prisoner: PrisonerSearchPrisoner,
+    record: List<Pair<ProbationSearchResponseResult, Licence?>>,
+  ) =
+    record.any { (probationSearchResult, licence) ->
+      probationSearchResult.identifiers.noms == prisoner.prisonerNumber &&
+        licence != null && licence.statusCode in LicenceStatus.DRAFT_LICENCES
+    }
+
+  private fun findPrisonersEligibleToCreateLicence(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<PrisonerSearchPrisoner> {
     val prisonNumbers = record
-      .filter { (_, licence) -> licence == null }
       .mapNotNull { (result, _) -> result.identifiers.noms }
 
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
+      .filter { prisoner -> eligibilityService.isEligibleForCvl(prisoner) }
 
     if (prisoners.isEmpty()) {
-      return emptyMap()
+      return emptyList()
     }
 
     val initialCvlEligiblePrisoners = prisoners
       .filter {
         eligibilityService.isEligibleForCvl(it)
       }
-
-    val prisonerBookingsWithHdc = initialCvlEligiblePrisoners.findBookingsWithHdc()
-
-    val eligibleForCvlPrisoners =
-      initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
-
-    return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
+    return initialCvlEligiblePrisoners
   }
 
-  private fun ProbationSearchResponseResult.createUnstartedRecord(
+  private fun filterPrisonersWithNonDraftLicences(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<Pair<ProbationSearchResponseResult, Licence?>> =
+    record.filter { (_, licence) -> licence == null || licence.statusCode in LicenceStatus.DRAFT_LICENCES }
+
+  private fun ProbationSearchResponseResult.createNotStartedRecord(
     prisoner: PrisonerSearchPrisoner?,
   ) = when {
     // no match for prisoner in Delius
