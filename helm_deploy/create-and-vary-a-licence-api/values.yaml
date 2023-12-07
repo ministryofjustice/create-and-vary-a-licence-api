@@ -51,4 +51,8 @@ generic-service:
 generic-prometheus-alerts:
   targetApplication: create-and-vary-a-licence-api
 
-dataExtractorEnabled: true
+generic-data-analytics-extractor:
+  enabled: false
+  serviceAccountName: "create-and-vary-a-licence-api-to-ap-s3"
+  databaseSecretName: "rds-instance-output"
+  destinationS3SecretName: "analytical-platform-reporting-s3-bucket"
