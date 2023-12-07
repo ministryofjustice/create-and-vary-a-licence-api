@@ -292,5 +292,6 @@ class PolicyFunctionsTest {
     category = "removedCategory",
     text = "removedText",
     data = emptyList(),
+    readyToSubmit = true,
   )
 }
