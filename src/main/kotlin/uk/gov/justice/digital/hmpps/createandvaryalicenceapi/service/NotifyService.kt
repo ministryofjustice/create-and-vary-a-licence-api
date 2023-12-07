@@ -175,7 +175,12 @@ class NotifyService(
     }
   }
 
-  private fun sendLicenceCreateEmail(templateId: String, emailAddress: String, comName: String, cases: List<PrisonerForRelease>) {
+  internal fun sendLicenceCreateEmail(
+    templateId: String,
+    emailAddress: String,
+    comName: String,
+    cases: List<PrisonerForRelease>,
+  ) {
     sendEmail(
       templateId,
       emailAddress,

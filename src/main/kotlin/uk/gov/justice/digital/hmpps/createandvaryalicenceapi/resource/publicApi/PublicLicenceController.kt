@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.constraints.Min
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -58,15 +60,19 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
       ),
     ],
   )
-  fun getLicenceById(): Licence? {
-    val licence: Licence? = null
-    return licence
+  fun getLicenceById(
+    @PathVariable(name = "licenceId")
+    @Parameter(name = "licenceId", description = "This is the identifier for a licence")
+    @Min(1)
+    licenceId: Long,
+  ): Licence? {
+    return publicLicenceService.getLicenceById(licenceId)
   }
 
   @GetMapping(value = ["/licence-summaries/prison-number/{prisonNumber}"])
   @ResponseBody
   @Operation(
-    summary = "Get a list of licences by prison number",
+    summary = "Get a list of in flight licences by prison number",
     description = "Returns a list of licence summaries by a person's prison number. " +
       "Requires ROLE_VIEW_LICENCES.",
     security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
@@ -75,7 +81,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "A list of found licences",
+        description = "A list of found licence summaries",
         content = [
           Content(
             mediaType = "application/json",
@@ -95,13 +101,20 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
       ),
     ],
   )
-  fun getLicencesByPrisonNumber(@PathVariable("prisonNumber") prisonNumber: String) =
-    publicLicenceService.getAllLicencesByPrisonNumber(prisonNumber)
+  fun getLicencesByPrisonNumber(
+    @PathVariable("prisonNumber")
+    @Parameter(
+      name = "prisonNumber",
+      description = "The prison identifier for the person on the licence (also known as NOMS id)",
+      example = "A1234BC",
+    )
+    prisonNumber: String,
+  ) = publicLicenceService.getAllLicencesByPrisonNumber(prisonNumber)
 
   @GetMapping(value = ["/licence-summaries/crn/{crn}"])
   @ResponseBody
   @Operation(
-    summary = "Get a list of licences by CRN",
+    summary = "Get a list of in flight licences by CRN",
     description = "Returns a list of licence summaries by a person's CRN. " +
       "Requires ROLE_VIEW_LICENCES.",
     security = [SecurityRequirement(name = "ROLE_VIEW_LICENCES")],
@@ -110,7 +123,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "A list of found licences",
+        description = "A list of found licence summaries",
         content = [
           Content(
             mediaType = "application/json",
@@ -130,7 +143,15 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
       ),
     ],
   )
-  fun getLicenceByCrn(@PathVariable("crn") crn: String) = publicLicenceService.getAllLicencesByCrn(crn)
+  fun getLicenceByCrn(
+    @PathVariable("crn")
+    @Parameter(
+      name = "crn",
+      description = "The case reference number (CRN) for the person on the licence",
+      example = "A123456",
+    )
+    crn: String,
+  ) = publicLicenceService.getAllLicencesByCrn(crn)
 
   @GetMapping(
     value = ["/licences/{licenceId}/conditions/{conditionId}/image-upload"],
@@ -168,8 +189,18 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     ],
   )
   fun getImageUpload(
-    @PathVariable(name = "licenceId") licenceId: Long,
-    @PathVariable(name = "conditionId") conditionId: Long,
+    @PathVariable(name = "licenceId")
+    @Parameter(
+      name = "licenceId",
+      description = "This is the identifier for a licence",
+    )
+    licenceId: Long,
+    @PathVariable(name = "conditionId")
+    @Parameter(
+      name = "conditionId",
+      description = "This is the internal identifier for a condition",
+    )
+    conditionId: Long,
   ): ByteArray? {
     return publicLicenceService.getImageUpload(licenceId, conditionId)
   }

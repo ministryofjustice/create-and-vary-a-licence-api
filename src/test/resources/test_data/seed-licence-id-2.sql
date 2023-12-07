@@ -1,5 +1,6 @@
 insert into licence (
     id,
+    kind,
     type_code,
     version,
     status_code,
@@ -29,6 +30,7 @@ insert into licence (
 )
 values (
     2,
+    'CRD',
     'AP',
     '1.0',
     'IN_PROGRESS',

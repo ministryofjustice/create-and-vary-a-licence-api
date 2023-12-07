@@ -13,9 +13,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -103,7 +103,7 @@ class ComService(
       body.getSortBy(),
     )
 
-    val resultsWithLicences: List<Pair<ProbationSearchResponseResult, Licence?>> =
+    val resultsWithLicences: List<Pair<CaseloadResult, Licence?>> =
       teamCaseloadResult.map { it to getLicence(it) }
 
     val resultsWithUnstartedLicences = findPrisonersForUnstartedRecords(resultsWithLicences)
@@ -142,7 +142,7 @@ class ComService(
 
   private fun PrisonerSearchPrisoner.getReleaseDate() = confirmedReleaseDate ?: releaseDate
 
-  private fun getLicence(result: ProbationSearchResponseResult): Licence? {
+  private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
       licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
     return if (licences.isEmpty()) {
@@ -153,7 +153,7 @@ class ComService(
     }
   }
 
-  private fun findPrisonersForUnstartedRecords(record: List<Pair<ProbationSearchResponseResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
+  private fun findPrisonersForUnstartedRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
     val prisonNumbers = record
       .filter { (_, licence) -> licence == null }
       .mapNotNull { (result, _) -> result.identifiers.noms }
@@ -177,7 +177,7 @@ class ComService(
     return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun ProbationSearchResponseResult.createUnstartedRecord(
+  private fun CaseloadResult.createUnstartedRecord(
     prisoner: PrisonerSearchPrisoner?,
   ) = when {
     // no match for prisoner in Delius
@@ -193,7 +193,7 @@ class ComService(
     )
   }
 
-  private fun ProbationSearchResponseResult.createRecord(licence: Licence) =
+  private fun CaseloadResult.createRecord(licence: Licence) =
     this.transformToModelFoundProbationRecord(licence)
 
   private fun ProbationUserSearchRequest.getSortBy() =

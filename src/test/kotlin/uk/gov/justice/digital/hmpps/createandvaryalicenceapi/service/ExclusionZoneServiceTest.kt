@@ -17,14 +17,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.Optional
 
 class ExclusionZoneServiceTest {
@@ -111,52 +106,7 @@ class ExclusionZoneServiceTest {
   }
 
   private companion object {
-
-    val someEntityStandardConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        licence = mock(),
-      ),
-    )
-
-    val aLicenceEntity = Licence(
-      id = 1,
-      typeCode = LicenceType.AP,
-      version = "1.1",
-      statusCode = LicenceStatus.IN_PROGRESS,
-      nomsId = "A1234AA",
-      bookingNo = "123456",
-      bookingId = 54321,
-      crn = "X12345",
-      pnc = "2019/123445",
-      cro = "12345",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Bob",
-      surname = "Mortimer",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      dateCreated = LocalDateTime.now(),
-      standardConditions = someEntityStandardConditions,
-    )
+    val aLicenceEntity = TestData.createCrdLicence()
 
     val someAdditionalConditionData = listOf(
       AdditionalConditionData(

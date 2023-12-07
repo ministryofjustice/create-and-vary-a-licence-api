@@ -3,15 +3,22 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 
-enum class ElectronicMonitoringType {
-  EXCLUSION_ZONE, CURFEW, LOCATION_MONITORING, ATTENDANCE_AT_APPOINTMENTS, ALCOHOL_MONITORING, ALCOHOL_ABSTINENCE,
+enum class ElectronicMonitoringType(val value: String) {
+  EXCLUSION_ZONE("exclusion zone"), CURFEW("curfew"), LOCATION_MONITORING("location monitoring"), ATTENDANCE_AT_APPOINTMENTS(
+    "attendance at appointments",
+  ),
+  ALCOHOL_MONITORING("alcohol monitoring"), ALCOHOL_ABSTINENCE("alcohol abstinence");
+
+  companion object {
+    fun find(value: String): ElectronicMonitoringType? = entries.find { it.value == value }
+  }
 }
 
 @JsonTypeName(ConditionTypes.ELECTRONIC_MONITORING)
 @Schema(
   description = "Describes an instance of the electronic monitoring condition on the licence",
 )
-data class ElectronicMonitoringAdditionalCondition(
+data class ElectronicMonitoringAdditionalConditionWithRestriction(
   @Schema(description = "The ID of the condition", example = "123456") override val id: Long,
 
   @get:Schema(
@@ -37,6 +44,7 @@ data class ElectronicMonitoringAdditionalCondition(
   @Schema(
     description = "The type of electronic monitoring that is included by this condition",
     example = "['ALCOHOL']",
-  ) val electronicMonitoringTypes: List<ElectronicMonitoringType>,
+    implementation = ElectronicMonitoringType::class,
+  ) val restrictions: List<ElectronicMonitoringType>,
 
 ) : AdditionalCondition

@@ -17,6 +17,6 @@ data class LicencePolicyAdditionalCondition(
   @Schema(description = "The shorthand version of the category to which the additional condition belongs", example = "Residence")
   val categoryShort: String?,
 
-  @Schema(description = "Indicates whether the code requires any user input", example = "true")
-  val requiresInput: Boolean,
+  @Schema(description = "Indicates whether the condition requires any user input", example = "true")
+  val requiresUserInput: Boolean,
 )
