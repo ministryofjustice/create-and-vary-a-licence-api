@@ -50,6 +50,19 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .block() ?: emptyList()
   }
 
+  fun getPrisonInformation(prisonId: String): Prison {
+    val prisonerApiResponse = prisonerApiWebClient
+      .get()
+      .uri("/agencies/prison/$prisonId")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(Prison::class.java)
+      .block()
+
+    return prisonerApiResponse
+      ?: error("Unexpected null response from Prison API")
+  }
+
   private fun <API_RESPONSE_BODY_TYPE> coerce404ResponseToNull(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
     with(exception) {
       when {
