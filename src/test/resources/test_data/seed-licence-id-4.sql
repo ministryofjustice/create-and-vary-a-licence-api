@@ -186,59 +186,59 @@ values (6, 'attendMeetings', 1, 'Attend meetings', 'PSS');
 -- Create the AP and PSS additional condition
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (1, 3, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (1, 3, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (2, 3, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (2, 3, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'PSS');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (3, 3, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (3, 3, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (4, 3, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (4, 3, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'PSS');
 
 
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (5, 3, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (5, 3, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (6, 4, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (6, 4, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (7, 4, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (7, 4, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'PSS');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (8, 5, '1.0', 'Freedom of movement', 'code-1', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (8, 5, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (9, 5, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (9, 5, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'PSS');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (10, 6, '1.0', 'Freedom of movement', 'code-1', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (10, 6, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 3, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
 
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (11, 6, '1.0', 'Freedom of movement', 'code-1', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (11, 6, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 2, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'PSS');
 
 -- Create the data for the exclusion zone condition

@@ -56,6 +56,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -111,6 +112,7 @@ class LicenceServiceTest {
     whenever(authentication.name).thenReturn("smills")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
+    whenever(licencePolicyService.policyByVersion(any())).thenReturn(POLICY_V2_1)
 
     reset(
       licenceRepository,

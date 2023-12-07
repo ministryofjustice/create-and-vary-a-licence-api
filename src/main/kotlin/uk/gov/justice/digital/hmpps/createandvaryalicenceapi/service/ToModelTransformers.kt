@@ -77,6 +77,7 @@ fun transform(
   licence: EntityLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
+  conditionSubmissionStatus: Map<String, Boolean>,
 ): ModelLicence {
   return ModelLicence(
     id = licence.id,
@@ -132,8 +133,8 @@ fun transform(
     updatedByUsername = licence.updatedByUsername,
     standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
     standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
-    additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP"),
-    additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS"),
+    additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
+    additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
     bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
     isVariation = licence.variationOfId != null,
     variationOf = licence.variationOfId,
@@ -160,10 +161,10 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
 }
 
 // Transform a list of entity additional conditions to model additional conditions
-fun List<EntityAdditionalCondition>.transformToModelAdditional(conditionType: String): List<ModelAdditionalCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map(::transform)
+fun List<EntityAdditionalCondition>.transformToModelAdditional(conditionType: String, conditionSubmissionStatus: Map<String, Boolean>): List<ModelAdditionalCondition> =
+  filter { condition -> condition.conditionType == conditionType }.map { transform(it, conditionSubmissionStatus[it.conditionCode]!!) }
 
-fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition {
   return ModelAdditionalCondition(
     id = entity.id,
     code = entity.conditionCode,
@@ -174,6 +175,7 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
     expandedText = entity.expandedConditionText,
     data = entity.additionalConditionData.transformToModelAdditionalData(),
     uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
+    readyToSubmit = readyToSubmit,
   )
 }
 
