@@ -547,6 +547,7 @@ class PublicLicenceServiceTest {
         text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
         expandedText = "Do not associate with value1 for a period of value2",
         data = someAssociationData,
+        readyToSubmit = true,
       ),
     )
 
