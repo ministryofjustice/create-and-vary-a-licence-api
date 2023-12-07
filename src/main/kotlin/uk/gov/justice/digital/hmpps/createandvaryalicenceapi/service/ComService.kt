@@ -13,9 +13,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -103,7 +103,7 @@ class ComService(
       body.getSortBy(),
     )
 
-    val prisonersPlusLicencesList: List<Pair<ProbationSearchResponseResult, Licence?>> =
+    val prisonersPlusLicencesList: List<Pair<CaseloadResult, Licence?>> =
       teamCaseloadResult.map { it to getLicence(it) }
 
     val eligiblePrisonersList = findPrisonersEligibleToCreateLicence(prisonersPlusLicencesList)
@@ -147,7 +147,7 @@ class ComService(
 
   private fun PrisonerSearchPrisoner.getReleaseDate() = confirmedReleaseDate ?: releaseDate
 
-  private fun getLicence(result: ProbationSearchResponseResult): Licence? {
+  private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
       licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
     return if (licences.isEmpty()) {
@@ -160,7 +160,7 @@ class ComService(
 
   private fun findPrisonersWithoutDraftLicences(
     eligiblePrisonersList: List<PrisonerSearchPrisoner>,
-    record: List<Pair<ProbationSearchResponseResult, Licence?>>,
+    record: List<Pair<CaseloadResult, Licence?>>,
   ): Map<String, PrisonerSearchPrisoner> {
     val eligiblePrisoners =
       eligiblePrisonersList.filter { prisoner ->
@@ -180,7 +180,7 @@ class ComService(
     return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun List<Pair<ProbationSearchResponseResult, Licence?>>.isLicenceInGivenStatusPresent(
+  private fun List<Pair<CaseloadResult, Licence?>>.isLicenceInGivenStatusPresent(
     prisonerNumber: String,
     status: List<LicenceStatus>,
   ) =
@@ -189,7 +189,7 @@ class ComService(
         licence != null && licence.statusCode in status
     }
 
-  private fun findPrisonersEligibleToCreateLicence(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<PrisonerSearchPrisoner> {
+  private fun findPrisonersEligibleToCreateLicence(record: List<Pair<CaseloadResult, Licence?>>): List<PrisonerSearchPrisoner> {
     val prisonNumbers = record
       .mapNotNull { (result, _) -> result.identifiers.noms }
 
@@ -210,10 +210,10 @@ class ComService(
     return initialCvlEligiblePrisoners
   }
 
-  private fun filterPrisonersWithNonDraftLicences(record: List<Pair<ProbationSearchResponseResult, Licence?>>): List<Pair<ProbationSearchResponseResult, Licence?>> =
+  private fun filterPrisonersWithNonDraftLicences(record: List<Pair<CaseloadResult, Licence?>>): List<Pair<CaseloadResult, Licence?>> =
     record.filter { (_, licence) -> licence == null || licence.statusCode in LicenceStatus.DRAFT_LICENCES || licence.statusCode in LicenceStatus.ON_PROBATION_STATUSES.toList() }
 
-  private fun ProbationSearchResponseResult.createNotStartedRecord(
+  private fun CaseloadResult.createNotStartedRecord(
     prisoner: PrisonerSearchPrisoner?,
   ) = when {
     // no match for prisoner in Delius
@@ -229,7 +229,7 @@ class ComService(
     )
   }
 
-  private fun ProbationSearchResponseResult.createRecord(licence: Licence) =
+  private fun CaseloadResult.createRecord(licence: Licence) =
     this.transformToModelFoundProbationRecord(licence)
 
   private fun ProbationUserSearchRequest.getSortBy() =

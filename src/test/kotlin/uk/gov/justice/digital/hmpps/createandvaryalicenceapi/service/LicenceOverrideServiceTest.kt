@@ -22,10 +22,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import java.time.LocalDate
 import java.util.Optional
 
@@ -58,11 +61,11 @@ class LicenceOverrideServiceTest {
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
 
     val exception = assertThrows<ValidationException> {
-      licenceOverrideService.changeStatus(approvedLicenceB.id, LicenceStatus.APPROVED, "Test Exception")
+      licenceOverrideService.changeStatus(approvedLicenceB.id, APPROVED, "Test Exception")
     }
 
     assertThat(exception).isInstanceOf(ValidationException::class.java)
-    assertThat(exception.message).isEqualTo("${LicenceStatus.APPROVED} is already in use for this offender on another licence")
+    assertThat(exception.message).isEqualTo("$APPROVED is already in use for this offender on another licence")
   }
 
   @Test
@@ -73,11 +76,11 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
 
-    val reasonForChange = "Test override from ${LicenceStatus.APPROVED} to ${LicenceStatus.INACTIVE}"
+    val reasonForChange = "Test override from $APPROVED to $INACTIVE"
 
     licenceOverrideService.changeStatus(
       approvedLicenceB.id,
-      LicenceStatus.INACTIVE,
+      INACTIVE,
       reasonForChange,
     )
 
@@ -91,7 +94,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(LicenceStatus.INACTIVE, "smills", null))
+      .isEqualTo(listOf(INACTIVE, "smills", null))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
@@ -99,7 +102,7 @@ class LicenceOverrideServiceTest {
           approvedLicenceB.id,
           "smills",
           AuditEventType.USER_EVENT,
-          "Licence status overridden to ${LicenceStatus.INACTIVE} for Robin Smith: $reasonForChange",
+          "Licence status overridden to $INACTIVE for John Smith: $reasonForChange",
         ),
       )
 
@@ -116,11 +119,11 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
-    val reasonForChange = "Test override from ${LicenceStatus.APPROVED} to ${LicenceStatus.SUBMITTED}"
+    val reasonForChange = "Test override from $APPROVED to $SUBMITTED"
 
     licenceOverrideService.changeStatus(
       approvedLicenceA.id,
-      LicenceStatus.SUBMITTED,
+      SUBMITTED,
       reasonForChange,
     )
 
@@ -134,7 +137,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(LicenceStatus.SUBMITTED, "smills", null))
+      .isEqualTo(listOf(SUBMITTED, "smills", null))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
@@ -142,7 +145,7 @@ class LicenceOverrideServiceTest {
           approvedLicenceA.id,
           "smills",
           AuditEventType.USER_EVENT,
-          "Licence status overridden to ${LicenceStatus.SUBMITTED} for Robin Smith: $reasonForChange",
+          "Licence status overridden to $SUBMITTED for John Smith: $reasonForChange",
         ),
       )
 
@@ -159,11 +162,11 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
-    val reasonForChange = "Test licenceActivatedDate when licence is made ${LicenceStatus.ACTIVE}"
+    val reasonForChange = "Test licenceActivatedDate when licence is made $ACTIVE"
 
     licenceOverrideService.changeStatus(
       approvedLicenceA.id,
-      LicenceStatus.ACTIVE,
+      ACTIVE,
       reasonForChange,
     )
 
@@ -179,7 +182,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(LicenceStatus.ACTIVE, "smills", licenceCaptor.value.licenceActivatedDate))
+      .isEqualTo(listOf(ACTIVE, "smills", licenceCaptor.value.licenceActivatedDate))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
@@ -187,7 +190,7 @@ class LicenceOverrideServiceTest {
           approvedLicenceA.id,
           "smills",
           AuditEventType.USER_EVENT,
-          "Licence status overridden to ${LicenceStatus.ACTIVE} for Robin Smith: $reasonForChange",
+          "Licence status overridden to $ACTIVE for John Smith: $reasonForChange",
         ),
       )
 
@@ -243,79 +246,23 @@ class LicenceOverrideServiceTest {
           approvedLicenceA.id,
           "smills",
           AuditEventType.USER_EVENT,
-          "Sentence dates overridden for Robin Smith: ${request.reason}",
+          "Sentence dates overridden for John Smith: ${request.reason}",
         ),
       )
   }
 
   private companion object {
-    val inactiveLicenceA = Licence(
-      id = 1L,
-      crn = "exampleCrn",
-      forename = "Robin",
-      surname = "Smith",
-      typeCode = LicenceType.AP,
-      statusCode = LicenceStatus.INACTIVE,
-      version = "1.0",
-      probationAreaCode = "N01",
-      probationAreaDescription = "N01 Region",
-      probationPduCode = "PDU1",
-      probationPduDescription = "PDU1 Pdu",
-      probationLauCode = "LAU1",
-      probationLauDescription = "LAU1 Lau",
-      probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team",
+    val inactiveLicenceA = createCrdLicence().copy(
+      statusCode = INACTIVE,
     )
-    val inactiveLicenceB = Licence(
-      id = 2L,
-      crn = "exampleCrn",
-      forename = "Robin",
-      surname = "Smith",
-      typeCode = LicenceType.AP,
-      statusCode = LicenceStatus.INACTIVE,
-      version = "1.0",
-      probationAreaCode = "N01",
-      probationAreaDescription = "N01 Region",
-      probationPduCode = "PDU1",
-      probationPduDescription = "PDU1 Pdu",
-      probationLauCode = "LAU1",
-      probationLauDescription = "LAU1 Lau",
-      probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team",
+    val inactiveLicenceB = createCrdLicence().copy(
+      statusCode = INACTIVE,
     )
-    val approvedLicenceA = Licence(
-      id = 3L,
-      crn = "exampleCrn",
-      forename = "Robin",
-      surname = "Smith",
-      typeCode = LicenceType.AP,
-      statusCode = LicenceStatus.APPROVED,
-      version = "1.0",
-      probationAreaCode = "N01",
-      probationAreaDescription = "N01 Region",
-      probationPduCode = "PDU1",
-      probationPduDescription = "PDU1 Pdu",
-      probationLauCode = "LAU1",
-      probationLauDescription = "LAU1 Lau",
-      probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team",
+    val approvedLicenceA = createCrdLicence().copy(
+      statusCode = APPROVED,
     )
-    val approvedLicenceB = Licence(
-      id = 4L,
-      crn = "exampleCrn",
-      forename = "Robin",
-      surname = "Smith",
-      typeCode = LicenceType.AP,
-      statusCode = LicenceStatus.APPROVED,
-      version = "1.0",
-      probationAreaCode = "N01",
-      probationAreaDescription = "N01 Region",
-      probationPduCode = "PDU1",
-      probationPduDescription = "PDU1 Pdu",
-      probationLauCode = "LAU1",
-      probationLauDescription = "LAU1 Lau",
-      probationTeamCode = "TEAM1",
-      probationTeamDescription = "TEAM1 probation team",
+    val approvedLicenceB = createCrdLicence().copy(
+      statusCode = APPROVED,
     )
   }
 }
