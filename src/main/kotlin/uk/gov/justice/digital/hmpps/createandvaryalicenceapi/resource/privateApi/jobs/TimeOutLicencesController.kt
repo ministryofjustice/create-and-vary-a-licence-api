@@ -14,26 +14,26 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.TimedOutLicencesService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.TimeOutLicencesService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class TimedOutLicencesController(
-  private val timedOutLicencesService: TimedOutLicencesService,
+class TimeOutLicencesController(
+  private val timeOutLicencesService: TimeOutLicencesService,
 ) {
-  @PostMapping(value = ["/run-timed-out-job"])
+  @PostMapping(value = ["/run-time-out-job"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Triggers the timed out licence job.",
-    description = "Triggers a job that causes licences with a status of IN_PROGRESS and a CRD or ARD less than two working days to be updated to TIMED_OUT. Requires ROLE_CVL_ADMIN.",
+    summary = "Triggers the time out licence job.",
+    description = "Triggers a job that causes licences with a status of IN_PROGRESS and a CRD or ARD less than two working days to be updated to TIME_OUT. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Timed out job executed.",
+        description = "Time out job executed.",
       ),
       ApiResponse(
         responseCode = "401",
@@ -47,7 +47,7 @@ class TimedOutLicencesController(
       ),
     ],
   )
-  fun runTimedOutLicencesServiceJob() {
-    return timedOutLicencesService.timedOutLicencesJob()
+  fun runTimeOutLicencesServiceJob() {
+    return timeOutLicencesService.timeOutLicencesJob()
   }
 }

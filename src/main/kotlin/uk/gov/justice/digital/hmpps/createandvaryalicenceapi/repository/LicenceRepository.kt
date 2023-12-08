@@ -78,6 +78,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
       FROM Licence l
       WHERE (l.actualReleaseDate <= :timeOutDate OR l.conditionalReleaseDate <= :timeOutDate)
       AND l.statusCode = 'IN_PROGRESS'
+      AND l.statusCode <> 'TIME_OUT'
   """,
   )
   fun getAllLicencesToBeTimedOut(timeOutDate: LocalDate): List<Licence>
