@@ -12,13 +12,13 @@ class ReleaseDateService(
   private val clock: Clock,
   @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int,
   @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:6}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int,
-  @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimedOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimedOutStatus: Int,
+  @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int,
 ) {
 
   fun getCutOffDateForLicenceTimeOut(jobExecutionDate: LocalDate): LocalDate {
     return generateSequence(jobExecutionDate) { it.plusDays(1) }
       .filterNot { excludeBankHolidaysAndWeekends(it) }
-      .take(maxNumberOfWorkingDaysToUpdateLicenceTimedOutStatus)
+      .take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus)
       .last()
   }
 

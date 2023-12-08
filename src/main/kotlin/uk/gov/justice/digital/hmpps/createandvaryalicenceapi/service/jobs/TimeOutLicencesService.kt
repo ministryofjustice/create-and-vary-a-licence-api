@@ -30,14 +30,14 @@ class TimeOutLicencesService(
 
   @Transactional
   fun timeOutLicencesJob() {
-    log.info("Job to runTimedOutLicencesService started")
+    log.info("Job to runTimeOutLicencesService started")
     val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now())
-    val licencesToBeTimedOut = licenceRepository.getAllLicencesToBeTimedOut(timeOutDate)
-    if (licencesToBeTimedOut.isEmpty()) {
+    val licencesToBeTimeOut = licenceRepository.getAllLicencesToBeTimeOut(timeOutDate)
+    if (licencesToBeTimeOut.isEmpty()) {
       return
     }
-    updateLicencesStatus(licencesToBeTimedOut)
-    log.info("TimedOutLicencesServiceJob updated status TIME_OUT on ${licencesToBeTimedOut.size} licences")
+    updateLicencesStatus(licencesToBeTimeOut)
+    log.info("TimedOutLicencesServiceJob updated status TIME_OUT on ${licencesToBeTimeOut.size} licences")
   }
 
   @Transactional
