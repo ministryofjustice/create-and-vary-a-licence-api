@@ -39,5 +39,4 @@ generic-service:
 generic-prometheus-alerts:
   alertSeverity: cvl-alerts
 
-generic-data-analytics-extractor:
-  enabled: true
+dataExtractorEnabled: true
