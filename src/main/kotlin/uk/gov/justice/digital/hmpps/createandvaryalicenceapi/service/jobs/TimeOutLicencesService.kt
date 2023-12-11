@@ -31,28 +31,32 @@ class TimeOutLicencesService(
   @Transactional
   fun timeOutLicencesJob() {
     log.info("Job to runTimeOutLicencesService started")
-    val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now())
+    val jobExecutionDate = LocalDate.now()
+    if (releaseDateService.excludeBankHolidaysAndWeekends(jobExecutionDate)) {
+      return
+    }
+    val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut(jobExecutionDate)
     val licencesToBeTimeOut = licenceRepository.getAllLicencesToBeTimeOut(timeOutDate)
     if (licencesToBeTimeOut.isEmpty()) {
       return
     }
     updateLicencesStatus(licencesToBeTimeOut)
-    log.info("TimedOutLicencesServiceJob updated status TIME_OUT on ${licencesToBeTimeOut.size} licences")
+    log.info("TimeOutLicencesServiceJob updated status TIME_OUT on ${licencesToBeTimeOut.size} licences")
   }
 
   @Transactional
   fun updateLicencesStatus(licences: List<Licence>, reason: String? = null) {
-    val timedOutLicences = licences.map {
+    val timeOutLicences = licences.map {
       it.copy(
         statusCode = LicenceStatus.TIME_OUT,
         dateLastUpdated = LocalDateTime.now(),
         updatedByUsername = "SYSTEM",
       )
     }
-    if (timedOutLicences.isNotEmpty()) {
-      licenceRepository.saveAllAndFlush(timedOutLicences)
+    if (timeOutLicences.isNotEmpty()) {
+      licenceRepository.saveAllAndFlush(timeOutLicences)
 
-      timedOutLicences.map { licence ->
+      timeOutLicences.map { licence ->
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,

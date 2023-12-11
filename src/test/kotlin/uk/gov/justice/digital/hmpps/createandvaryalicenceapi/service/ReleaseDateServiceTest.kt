@@ -23,6 +23,7 @@ class ReleaseDateServiceTest {
       clock,
       maxNumberOfWorkingDaysAllowedForEarlyRelease,
       maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
+      maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus,
     )
 
   @BeforeEach
@@ -206,6 +207,27 @@ class ReleaseDateServiceTest {
     assertFalse(service.isLateAllocationWarningRequired(null))
   }
 
+  @Test
+  fun `should return cut-off date as 2018-03-14 when job execution date is 2018-03-12`() {
+    val jobExecutionDate = LocalDate.parse("2018-03-12")
+    val cutOffDate = service.getCutOffDateForLicenceTimeOut(jobExecutionDate)
+    assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-14")))
+  }
+
+  @Test
+  fun `should return cut-off date as 2018-03-19 when job execution date is 2018-03-20`() {
+    val jobExecutionDate = LocalDate.parse("2018-03-16")
+    val cutOffDate = service.getCutOffDateForLicenceTimeOut(jobExecutionDate)
+    assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-20")))
+  }
+
+  @Test
+  fun `should return cut-off date as 2018-03-28 when job execution date is 2018-03-23`() {
+    val jobExecutionDate = LocalDate.parse("2018-03-23")
+    val cutOffDate = service.getCutOffDateForLicenceTimeOut(jobExecutionDate)
+    assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-28")))
+  }
+
   private companion object {
     val bankHolidays = listOf(
       LocalDate.parse("2018-01-01"),
@@ -223,6 +245,7 @@ class ReleaseDateServiceTest {
     )
     const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
     const val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail = 6
+    const val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus = 3
     val clock: Clock = Clock.fixed(Instant.parse("2023-11-10T00:00:00Z"), ZoneId.systemDefault())
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd['T'HH:mm]")
   }

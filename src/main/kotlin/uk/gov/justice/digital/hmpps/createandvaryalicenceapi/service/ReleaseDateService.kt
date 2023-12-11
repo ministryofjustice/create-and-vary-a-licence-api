@@ -37,7 +37,7 @@ class ReleaseDateService(
   }
 
   /** Friday is not considered as weekend */
-  private fun excludeBankHolidaysAndWeekends(releaseDate: LocalDate?): Boolean {
+  fun excludeBankHolidaysAndWeekends(releaseDate: LocalDate?): Boolean {
     val dayOfWeek = releaseDate?.dayOfWeek
     if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
       return true
