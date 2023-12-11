@@ -202,12 +202,7 @@ class ComService(
     if (prisoners.isEmpty()) {
       return emptyList()
     }
-
-    val initialCvlEligiblePrisoners = prisoners
-      .filter {
-        eligibilityService.isEligibleForCvl(it)
-      }
-    return initialCvlEligiblePrisoners
+    return prisoners
   }
 
   private fun filterPrisonersWithNonDraftLicences(record: List<Pair<CaseloadResult, Licence?>>): List<Pair<CaseloadResult, Licence?>> =

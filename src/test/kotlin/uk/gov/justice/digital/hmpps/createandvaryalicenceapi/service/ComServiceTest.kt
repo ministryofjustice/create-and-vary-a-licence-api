@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,7 +14,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
@@ -482,9 +480,9 @@ class ComServiceTest {
 
     assertThat(resultsList.size).isEqualTo(1)
     assertThat(offender)
-      .extracting { Tuple.tuple(it.name, it.comName, it.teamName) }
+      .extracting { tuple(it.name, it.comName, it.teamName) }
       .isEqualTo(
-        Tuple.tuple("Test Surname", "Staff Surname", "Test Team"),
+        tuple("Test Surname", "Staff Surname", "Test Team"),
       )
   }
 
@@ -717,7 +715,7 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       aPrisonerSearchResult,
     )
     val resultsList = result.results
@@ -808,7 +806,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       aPrisonerSearchResult,
     )
 
@@ -968,7 +966,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(any())
+    verify(eligibilityService, times(1)).isEligibleForCvl(any())
     verify(prisonApiClient).getHdcStatuses(
       emptyList(),
     )
@@ -1063,7 +1061,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       any(),
     )
 
@@ -1162,7 +1160,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       any(),
     )
 
@@ -1261,7 +1259,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       any(),
     )
 
@@ -1645,7 +1643,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       any(),
     )
 
@@ -1816,7 +1814,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       any(),
     )
 
@@ -1922,7 +1920,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       any(),
     )
 
@@ -1993,7 +1991,7 @@ class ComServiceTest {
       listOf(aPrisonerSearchResult.prisonerNumber),
     )
 
-    verify(eligibilityService, times(2)).isEligibleForCvl(
+    verify(eligibilityService, times(1)).isEligibleForCvl(
       aPrisonerSearchResult,
     )
 
@@ -2063,29 +2061,6 @@ class ComServiceTest {
   }
 
   private companion object {
-    val someEntityStandardConditions = listOf(
-      StandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        licence = mock(),
-      ),
-      StandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        licence = mock(),
-      ),
-      StandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        licence = mock(),
-      ),
-    )
 
     val aLicenceEntity = TestData.createCrdLicence()
 

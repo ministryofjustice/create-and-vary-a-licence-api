@@ -106,6 +106,42 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "legalStatus": "SENTENCED",
                   "indeterminateSentence": false,
                   "recall": false
+               },
+               {
+                  "prisonerNumber": "A1234AD",
+                  "bookingId": "123",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false
+               },
+               {
+                  "prisonerNumber": "A1234AE",
+                  "bookingId": "123",
+                  "status": "INACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().minusYears(1)}",
+                  "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now().minusYears(1)}",
+                  "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false
                }
               ]
             """.trimIndent(),
