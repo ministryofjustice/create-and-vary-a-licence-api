@@ -87,8 +87,6 @@ abstract class Licence(
   val appointmentTime: LocalDateTime? = null,
   val appointmentAddress: String? = null,
   val appointmentContact: String? = null,
-  val spoDiscussion: String? = null,
-  val vloDiscussion: String? = null,
   val approvedDate: LocalDateTime? = null,
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,
@@ -97,6 +95,7 @@ abstract class Licence(
   var dateCreated: LocalDateTime? = null,
   val dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
+  var licenceVersion: String? = "1.0",
 
   @OneToMany(
     mappedBy = "licence",
@@ -130,10 +129,6 @@ abstract class Licence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
-
-  var variationOfId: Long? = null,
-  var versionOfId: Long? = null,
-  var licenceVersion: String? = "1.0",
 ) {
 
   fun isInPssPeriod(): Boolean {
@@ -146,6 +141,79 @@ abstract class Licence(
     return false
   }
 
+  abstract fun activate(): Licence
+  abstract fun deactivate(): Licence
+  abstract fun submit(submittedBy: CommunityOffenderManager): Licence
+
+  abstract fun updatePrisonInfo(
+    prisonCode: String,
+    prisonDescription: String,
+    prisonTelephone: String?,
+    updatedByUsername: String?,
+  ): Licence
+
+  abstract fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?): Licence
+  abstract fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?): Licence
+  abstract fun updateAppointmentTime(appointmentTime: LocalDateTime, updatedByUsername: String?): Licence
+  abstract fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?): Licence
+
+  abstract fun updateStatus(
+    statusCode: LicenceStatus,
+    updatedByUsername: String,
+    approvedByUsername: String?,
+    approvedByName: String?,
+    approvedDate: LocalDateTime?,
+    supersededDate: LocalDateTime?,
+    submittedDate: LocalDateTime?,
+    licenceActivatedDate: LocalDateTime?,
+  ): Licence
+
+  abstract fun overrideStatus(
+    statusCode: LicenceStatus,
+    updatedByUsername: String?,
+    licenceActivatedDate: LocalDateTime?,
+  ): Licence
+
+  abstract fun updateConditions(
+    updatedAdditionalConditions: List<AdditionalCondition>? = null,
+    updatedStandardConditions: List<StandardCondition>? = null,
+    updatedBespokeConditions: List<BespokeCondition>? = null,
+    updatedByUsername: String?,
+  ): Licence
+
+  abstract fun updateLicenceDates(
+    status: LicenceStatus? = null,
+    conditionalReleaseDate: LocalDate?,
+    actualReleaseDate: LocalDate?,
+    sentenceStartDate: LocalDate?,
+    sentenceEndDate: LocalDate?,
+    licenceStartDate: LocalDate?,
+    licenceExpiryDate: LocalDate?,
+    topupSupervisionStartDate: LocalDate?,
+    topupSupervisionExpiryDate: LocalDate?,
+    updatedByUsername: String?,
+  ): Licence
+
+  abstract fun updateOffenderDetails(
+    forename: String?,
+    middleNames: String?,
+    surname: String?,
+    dateOfBirth: LocalDate?,
+  ): Licence
+
+  abstract fun updateProbationTeam(
+    probationAreaCode: String?,
+    probationAreaDescription: String?,
+    probationPduCode: String?,
+    probationPduDescription: String?,
+    probationLauCode: String?,
+    probationLauDescription: String?,
+    probationTeamCode: String?,
+    probationTeamDescription: String?,
+  ): Licence
+
+  abstract fun updateRepsonsibleCom(responsibleCom: CommunityOffenderManager): Licence
+
   fun isActivatedInPssPeriod(): Boolean {
     val led = licenceExpiryDate
     val tused = topupSupervisionExpiryDate
@@ -156,66 +224,6 @@ abstract class Licence(
     }
     return false
   }
-
-  abstract fun copy(
-    id: Long = this.id,
-    typeCode: LicenceType = this.typeCode,
-    version: String? = this.version,
-    statusCode: LicenceStatus = this.statusCode,
-    nomsId: String? = this.nomsId,
-    bookingNo: String? = this.bookingNo,
-    bookingId: Long? = this.bookingId,
-    crn: String? = this.crn,
-    pnc: String? = this.pnc,
-    cro: String? = this.cro,
-    prisonCode: String? = this.prisonCode,
-    prisonDescription: String? = this.prisonDescription,
-    prisonTelephone: String? = this.prisonTelephone,
-    forename: String? = this.forename,
-    middleNames: String? = this.middleNames,
-    surname: String? = this.surname,
-    dateOfBirth: LocalDate? = this.dateOfBirth,
-    conditionalReleaseDate: LocalDate? = this.conditionalReleaseDate,
-    actualReleaseDate: LocalDate? = this.actualReleaseDate,
-    sentenceStartDate: LocalDate? = this.sentenceStartDate,
-    sentenceEndDate: LocalDate? = this.sentenceEndDate,
-    licenceStartDate: LocalDate? = this.licenceStartDate,
-    licenceExpiryDate: LocalDate? = this.licenceExpiryDate,
-    licenceActivatedDate: LocalDateTime? = this.licenceActivatedDate,
-    topupSupervisionStartDate: LocalDate? = this.topupSupervisionStartDate,
-    topupSupervisionExpiryDate: LocalDate? = this.topupSupervisionExpiryDate,
-    probationAreaCode: String? = this.probationAreaCode,
-    probationAreaDescription: String? = this.probationAreaDescription,
-    probationPduCode: String? = this.probationPduCode,
-    probationPduDescription: String? = this.probationPduDescription,
-    probationLauCode: String? = this.probationLauCode,
-    probationLauDescription: String? = this.probationLauDescription,
-    probationTeamCode: String? = this.probationTeamCode,
-    probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentPerson: String? = this.appointmentPerson,
-    appointmentTime: LocalDateTime? = this.appointmentTime,
-    appointmentAddress: String? = this.appointmentAddress,
-    appointmentContact: String? = this.appointmentContact,
-    spoDiscussion: String? = this.spoDiscussion,
-    vloDiscussion: String? = this.vloDiscussion,
-    approvedDate: LocalDateTime? = this.approvedDate,
-    approvedByUsername: String? = this.approvedByUsername,
-    approvedByName: String? = this.approvedByName,
-    supersededDate: LocalDateTime? = this.supersededDate,
-    submittedDate: LocalDateTime? = this.submittedDate,
-    dateCreated: LocalDateTime? = this.dateCreated,
-    dateLastUpdated: LocalDateTime? = this.dateLastUpdated,
-    updatedByUsername: String? = this.updatedByUsername,
-    standardConditions: List<StandardCondition> = this.standardConditions,
-    additionalConditions: List<AdditionalCondition> = this.additionalConditions,
-    bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager? = this.responsibleCom,
-    submittedBy: CommunityOffenderManager? = this.submittedBy,
-    createdBy: CommunityOffenderManager? = this.createdBy,
-    variationOfId: Long? = this.variationOfId,
-    versionOfId: Long? = this.versionOfId,
-    licenceVersion: String? = this.licenceVersion,
-  ): Licence
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

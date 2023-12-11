@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -7,13 +8,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import java.time.LocalDateTime
 
 object LicenceCreation {
-  fun createCopy(licence: Licence): Licence {
+  fun createCopyToEdit(licence: CrdLicence): Licence {
     with(licence) {
       return licence.copy(
         id = -1,
         dateCreated = LocalDateTime.now(),
         statusCode = IN_PROGRESS,
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
+        versionOfId = licence.id,
       )
     }
   }
@@ -25,6 +27,7 @@ object LicenceCreation {
         typeCode = this.typeCode,
         version = this.version,
         statusCode = VARIATION_IN_PROGRESS,
+        variationOfId = licence.id,
         nomsId = this.nomsId,
         bookingNo = this.bookingNo,
         bookingId = this.bookingId,
