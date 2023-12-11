@@ -168,32 +168,6 @@ class RemoveExpiredConditionsServiceTest {
   }
 
   private companion object {
-    val someEntityStandardConditions = listOf(
-      EntityStandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        conditionType = "AP",
-        licence = mock(),
-      ),
-      EntityStandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        conditionType = "AP",
-        licence = mock(),
-      ),
-      EntityStandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        conditionType = "PSS",
-        licence = mock(),
-      ),
-    )
 
     val aLicenceEntity = createCrdLicence().copy(
       typeCode = LicenceType.AP,
@@ -207,8 +181,36 @@ class RemoveExpiredConditionsServiceTest {
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      standardConditions = someEntityStandardConditions,
-    )
+    ).let {
+      it.copy(
+        standardConditions = listOf(
+          EntityStandardCondition(
+            id = 1,
+            conditionCode = "goodBehaviour",
+            conditionSequence = 1,
+            conditionText = "Be of good behaviour",
+            conditionType = "AP",
+            licence = it,
+          ),
+          EntityStandardCondition(
+            id = 2,
+            conditionCode = "notBreakLaw",
+            conditionSequence = 2,
+            conditionText = "Do not break any law",
+            conditionType = "AP",
+            licence = it,
+          ),
+          EntityStandardCondition(
+            id = 3,
+            conditionCode = "attendMeetings",
+            conditionSequence = 3,
+            conditionText = "Attend meetings",
+            conditionType = "PSS",
+            licence = it,
+          ),
+        ),
+      )
+    }
 
     val someAdditionalConditionData = listOf(
       AdditionalConditionData(

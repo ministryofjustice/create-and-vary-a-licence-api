@@ -62,10 +62,9 @@ class LicenceOverrideService(
     }
 
     licenceRepository.saveAndFlush(
-      licence.copy(
+      licence.overrideStatus(
         statusCode = newStatus,
         updatedByUsername = username,
-        dateLastUpdated = LocalDateTime.now(),
         licenceActivatedDate = licenceActivatedDate,
       ),
     )
@@ -126,7 +125,7 @@ class LicenceOverrideService(
       },
     )
 
-    val updatedLicenceEntity = licence.copy(
+    val updatedLicenceEntity = licence.updateLicenceDates(
       conditionalReleaseDate = request.conditionalReleaseDate,
       actualReleaseDate = request.actualReleaseDate,
       sentenceStartDate = request.sentenceStartDate,
@@ -135,7 +134,6 @@ class LicenceOverrideService(
       licenceExpiryDate = request.licenceExpiryDate,
       topupSupervisionStartDate = request.topupSupervisionStartDate,
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
-      dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
 

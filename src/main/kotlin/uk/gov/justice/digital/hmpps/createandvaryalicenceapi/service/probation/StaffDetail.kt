@@ -1,5 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
-class StaffDetail(
+data class StaffDetail(
   val code: String,
 )
