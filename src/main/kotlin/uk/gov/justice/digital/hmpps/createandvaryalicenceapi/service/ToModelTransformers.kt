@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -65,7 +67,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     approvedDate = licence.approvedDate,
     submittedDate = licence.submittedDate,
     licenceVersion = licence.licenceVersion,
-    versionOf = licence.versionOfId,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
   )
 }
 
@@ -120,8 +122,8 @@ fun transform(
     appointmentTime = licence.appointmentTime,
     appointmentAddress = licence.appointmentAddress,
     appointmentContact = licence.appointmentContact,
-    spoDiscussion = licence.spoDiscussion,
-    vloDiscussion = licence.vloDiscussion,
+    spoDiscussion = if (licence is VariationLicence) licence.spoDiscussion else null,
+    vloDiscussion = if (licence is VariationLicence) licence.vloDiscussion else null,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,
@@ -136,8 +138,8 @@ fun transform(
     additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
     additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
     bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
-    isVariation = licence.variationOfId != null,
-    variationOf = licence.variationOfId,
+    isVariation = licence is VariationLicence,
+    variationOf = if (licence is VariationLicence) licence.variationOfId else null,
     createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
     isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
     isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),

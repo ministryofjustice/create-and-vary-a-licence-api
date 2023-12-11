@@ -166,7 +166,7 @@ class AuditServiceTest {
     fun `records an audit event when standard conditions are updated by removing existing conditions`() {
       service.recordAuditEventDeleteStandardConditions(
         aLicenceEntity,
-        someEntityStandardConditions,
+        aLicenceEntity.standardConditions,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -724,33 +724,6 @@ class AuditServiceTest {
       licenceId = 1L,
       startTime = LocalDateTime.now().minusMonths(1),
       endTime = LocalDateTime.now(),
-    )
-
-    val someEntityStandardConditions = listOf(
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        conditionType = "AP",
-        licence = mock(),
-      ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        conditionType = "AP",
-        licence = mock(),
-      ),
-      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        conditionType = "AP",
-        licence = mock(),
-      ),
     )
 
     val aCom = CommunityOffenderManager(

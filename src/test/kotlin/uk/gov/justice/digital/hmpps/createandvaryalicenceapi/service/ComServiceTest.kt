@@ -14,7 +14,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
@@ -1772,30 +1771,6 @@ class ComServiceTest {
   }
 
   private companion object {
-    val someEntityStandardConditions = listOf(
-      StandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        licence = mock(),
-      ),
-      StandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        licence = mock(),
-      ),
-      StandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        licence = mock(),
-      ),
-    )
-
     val aLicenceEntity = TestData.createCrdLicence()
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
