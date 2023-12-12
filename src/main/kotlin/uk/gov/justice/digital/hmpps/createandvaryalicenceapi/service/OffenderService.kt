@@ -38,7 +38,7 @@ OffenderService(
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
     // Update the in-flight licences for this person on probation
-    offenderLicences = offenderLicences.map { it.copy(responsibleCom = newCom) }
+    offenderLicences = offenderLicences.map { it.updateRepsonsibleCom(responsibleCom = newCom) }
     this.licenceRepository.saveAllAndFlush(offenderLicences)
 
     if (offenderLicences.any {
@@ -98,7 +98,7 @@ OffenderService(
       if (it.probationTeamCode !== request.probationTeamCode) {
         probationRegionChanged = true
       }
-      it.copy(
+      it.updateProbationTeam(
         probationAreaCode = request.probationAreaCode,
         probationAreaDescription = request.probationAreaDescription,
         probationPduCode = request.probationPduCode,
@@ -145,7 +145,7 @@ OffenderService(
     }
     if (licencesToChange.isNotEmpty()) {
       val updatedLicences = licencesToChange.map {
-        it.copy(
+        it.updateOffenderDetails(
           forename = request.forename,
           middleNames = request.middleNames,
           surname = request.surname,
