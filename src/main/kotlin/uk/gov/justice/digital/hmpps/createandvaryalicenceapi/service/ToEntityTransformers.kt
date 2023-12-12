@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-fun transform(createRequest: CreateLicenceRequest): EntityLicence {
+fun transform(createRequest: CreateLicenceRequest): CrdLicence {
   return CrdLicence(
     typeCode = createRequest.typeCode,
     version = createRequest.version,

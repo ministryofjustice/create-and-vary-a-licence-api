@@ -213,7 +213,7 @@ class PublicLicenceServiceTest {
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("Null field retrieved: createdByUsername for licence 1")
+        .hasMessage("licence: 1 has no COM/creator")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -848,7 +848,7 @@ class PublicLicenceServiceTest {
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("Null field retrieved: createdByUsername for licence 1")
+        .hasMessage("licence: 1 has no COM/creator")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
