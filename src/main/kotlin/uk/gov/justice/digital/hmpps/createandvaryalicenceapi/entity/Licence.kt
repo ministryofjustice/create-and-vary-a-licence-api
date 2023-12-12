@@ -121,14 +121,6 @@ abstract class Licence(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   var responsibleCom: CommunityOffenderManager? = null,
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "submitted_by_com_id", nullable = true)
-  var submittedBy: CommunityOffenderManager? = null,
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "created_by_com_id", nullable = false)
-  var createdBy: CommunityOffenderManager? = null,
 ) {
 
   fun isInPssPeriod(): Boolean {
@@ -212,7 +204,9 @@ abstract class Licence(
     probationTeamDescription: String?,
   ): Licence
 
-  abstract fun updateRepsonsibleCom(responsibleCom: CommunityOffenderManager): Licence
+  abstract fun updateResponsibleCom(responsibleCom: CommunityOffenderManager): Licence
+
+  abstract fun getCreator(): Creator
 
   fun isActivatedInPssPeriod(): Boolean {
     val led = licenceExpiryDate

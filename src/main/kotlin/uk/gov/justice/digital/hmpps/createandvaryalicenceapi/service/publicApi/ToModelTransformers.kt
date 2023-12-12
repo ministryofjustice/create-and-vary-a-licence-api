@@ -35,7 +35,7 @@ fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary {
     crn = this.crn ?: this.valueNotPresent("crn"),
     approvedByUsername = this.approvedByUsername,
     approvedDateTime = this.approvedDate,
-    createdByUsername = this.createdBy?.username ?: this.valueNotPresent("createdByUsername"),
+    createdByUsername = this.getCreator().username,
     createdDateTime = this.dateCreated ?: this.valueNotPresent("createdDateTime"),
     updatedByUsername = this.updatedByUsername,
     updatedDateTime = this.dateLastUpdated,

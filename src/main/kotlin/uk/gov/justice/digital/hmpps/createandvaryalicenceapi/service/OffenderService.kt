@@ -38,7 +38,7 @@ OffenderService(
     var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
 
     // Update the in-flight licences for this person on probation
-    offenderLicences = offenderLicences.map { it.updateRepsonsibleCom(responsibleCom = newCom) }
+    offenderLicences = offenderLicences.map { it.updateResponsibleCom(responsibleCom = newCom) }
     this.licenceRepository.saveAllAndFlush(offenderLicences)
 
     if (offenderLicences.any {
