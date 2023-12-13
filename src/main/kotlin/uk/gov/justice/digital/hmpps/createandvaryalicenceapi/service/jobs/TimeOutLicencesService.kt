@@ -38,41 +38,40 @@ class TimeOutLicencesService(
     val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut(jobExecutionDate)
     val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut(timeOutDate)
     if (licencesToTimeOut.isEmpty()) {
+      log.info("Job to runTimeOutLicencesService has no licences to time out")
       return
     }
     updateLicencesStatus(licencesToTimeOut)
     log.info("TimeOutLicencesServiceJob updated status TIME_OUT on ${licencesToTimeOut.size} licences")
   }
 
-  @Transactional
-  fun updateLicencesStatus(licences: List<CrdLicence>, reason: String? = null) {
+  private fun updateLicencesStatus(licences: List<CrdLicence>, reason: String? = null) {
     val timeOutLicences = licences.map { it.timeOut() }
-    if (timeOutLicences.isNotEmpty()) {
-      licenceRepository.saveAllAndFlush(timeOutLicences)
 
-      timeOutLicences.map { licence ->
-        auditEventRepository.saveAndFlush(
-          AuditEvent(
-            licenceId = licence.id,
-            username = "SYSTEM",
-            fullName = "SYSTEM",
-            eventType = AuditEventType.SYSTEM_EVENT,
-            summary = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
-            detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-          ),
-        )
+    licenceRepository.saveAllAndFlush(timeOutLicences)
 
-        licenceEventRepository.saveAndFlush(
-          LicenceEvent(
-            licenceId = licence.id,
-            eventType = LicenceEventType.TIME_OUT,
-            username = "SYSTEM",
-            forenames = "SYSTEM",
-            surname = "SYSTEM",
-            eventDescription = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
-          ),
-        )
-      }
+    timeOutLicences.map { licence ->
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = licence.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
+          detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+        ),
+      )
+
+      licenceEventRepository.saveAndFlush(
+        LicenceEvent(
+          licenceId = licence.id,
+          eventType = LicenceEventType.TIME_OUT,
+          username = "SYSTEM",
+          forenames = "SYSTEM",
+          surname = "SYSTEM",
+          eventDescription = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
+        ),
+      )
     }
   }
 }

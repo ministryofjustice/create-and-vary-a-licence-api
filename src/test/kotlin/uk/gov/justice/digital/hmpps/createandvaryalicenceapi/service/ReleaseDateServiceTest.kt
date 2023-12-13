@@ -215,14 +215,14 @@ class ReleaseDateServiceTest {
   }
 
   @Test
-  fun `should return cut-off date as 2018-03-19 when job execution date is 2018-03-20`() {
+  fun `should return cut-off date as 2018-03-20 when job execution date is 2018-03-16 as weekend comes in between`() {
     val jobExecutionDate = LocalDate.parse("2018-03-16")
     val cutOffDate = service.getCutOffDateForLicenceTimeOut(jobExecutionDate)
     assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-20")))
   }
 
   @Test
-  fun `should return cut-off date as 2018-03-28 when job execution date is 2018-03-23`() {
+  fun `should return cut-off date as 2018-03-28 when job execution date is 2018-03-23 as weekend and one bank holiday comes in between`() {
     val jobExecutionDate = LocalDate.parse("2018-03-23")
     val cutOffDate = service.getCutOffDateForLicenceTimeOut(jobExecutionDate)
     assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-28")))
