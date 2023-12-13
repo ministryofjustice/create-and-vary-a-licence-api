@@ -126,7 +126,6 @@ object TestData {
     probationTeamDescription = "Cardiff South Team A",
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
     standardConditions = emptyList(),
-    standardConditions = someEntityStandardConditions,
     responsibleCom = CommunityOffenderManager(
       staffIdentifier = 2000,
       username = "smills",
@@ -141,7 +140,6 @@ object TestData {
       firstName = "X",
       lastName = "Y",
     ),
-  )
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
