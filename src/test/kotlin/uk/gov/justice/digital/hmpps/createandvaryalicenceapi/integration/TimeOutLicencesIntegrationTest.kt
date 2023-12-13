@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Match
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.Duration
 
 class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
 
@@ -27,6 +28,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setupClient() {
+    webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
