@@ -1,33 +1,62 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.validation.constraints.NotNull
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "community_offender_manager")
-data class CommunityOffenderManager(
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @NotNull
-  val id: Long = -1,
-
-  @Column(unique = true)
+@DiscriminatorValue(value = "COMMUNITY_OFFENDER_MANAGER")
+class CommunityOffenderManager(
+  id: Long? = -1,
   val staffIdentifier: Long,
+  username: String,
+  email: String?,
+  firstName: String?,
+  lastName: String?,
+  lastUpdatedTimestamp: LocalDateTime? = null,
+) : Creator, Staff(
+  id = id,
+  kind = StaffKind.COMMUNITY_OFFENDER_MANAGER,
+  username = username,
+  email = email,
+  firstName = firstName,
+  lastName = lastName,
+  lastUpdatedTimestamp = lastUpdatedTimestamp,
+) {
+  fun copy(
+    id: Long? = this.id,
+    staffIdentifier: Long = this.staffIdentifier,
+    username: String = this.username,
+    email: String? = this.email,
+    firstName: String? = this.firstName,
+    lastName: String? = this.lastName,
+    lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp,
+  ) = CommunityOffenderManager(
+    id = id,
+    staffIdentifier = staffIdentifier,
+    username = username,
+    email = email,
+    firstName = firstName,
+    lastName = lastName,
+    lastUpdatedTimestamp = lastUpdatedTimestamp,
+  )
 
-  @Column(unique = true)
-  override val username: String,
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is CommunityOffenderManager) return false
+    if (!super.equals(other)) return false
+    return true
+  }
 
-  val email: String?,
+  override fun hashCode(): Int {
+    return super.hashCode()
+  }
 
-  override val firstName: String?,
-
-  override val lastName: String?,
-
-  val lastUpdatedTimestamp: LocalDateTime? = null,
-) : Creator
+  override fun toString(): String {
+    return "CommunityOffenderManager(" +
+      "staffIdentifier=$staffIdentifier" +
+      ")" +
+      " ${super.toString()}"
+  }
+}
