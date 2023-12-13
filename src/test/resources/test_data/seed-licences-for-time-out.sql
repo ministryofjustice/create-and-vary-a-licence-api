@@ -1,4 +1,5 @@
 insert into licence (id,
+                     kind,
                      version,
                      responsible_com_id,
                      created_by_com_id,
@@ -10,8 +11,8 @@ insert into licence (id,
                      conditional_release_date,
                      licence_version,
                      version_of_id)
-values (1, '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date, current_date, '1.0', null),
-       (2, '1.0', 1, 1, 'AP', 'G5613GT', 'IN_PROGRESS', 789, current_date, current_date, '1.0', null),
-       (3, '1.0', 1, 1, 'AP', 'G4169UO', 'ACTIVE', 432, current_date, current_date, '1.0', null),
-       (4, '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date, current_date, '1.1', 1),
-       (5, '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date, current_date, '1.1', 3);
+values (1, 'CRD', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date, current_date, '1.0', null),
+       (2, 'CRD', '1.0', 1, 1, 'AP', 'G5613GT', 'IN_PROGRESS', 789, current_date, current_date, '1.0', null),
+       (3, 'CRD', '1.0', 1, 1, 'AP', 'G4169UO', 'ACTIVE', 432, current_date, current_date, '1.0', null),
+       (4, 'CRD', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date, current_date, '1.1', 1),
+       (5, 'CRD', '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date, current_date, '1.1', 3);

@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -12,10 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Clock
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Service
 class TimeOutLicencesService(
@@ -38,23 +36,17 @@ class TimeOutLicencesService(
       return
     }
     val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut(jobExecutionDate)
-    val licencesToBeTimeOut = licenceRepository.getAllLicencesToBeTimeOut(timeOutDate)
-    if (licencesToBeTimeOut.isEmpty()) {
+    val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut(timeOutDate)
+    if (licencesToTimeOut.isEmpty()) {
       return
     }
-    updateLicencesStatus(licencesToBeTimeOut)
-    log.info("TimeOutLicencesServiceJob updated status TIME_OUT on ${licencesToBeTimeOut.size} licences")
+    updateLicencesStatus(licencesToTimeOut)
+    log.info("TimeOutLicencesServiceJob updated status TIME_OUT on ${licencesToTimeOut.size} licences")
   }
 
   @Transactional
-  fun updateLicencesStatus(licences: List<Licence>, reason: String? = null) {
-    val timeOutLicences = licences.map {
-      it.copy(
-        statusCode = LicenceStatus.TIME_OUT,
-        dateLastUpdated = LocalDateTime.now(clock),
-        updatedByUsername = "SYSTEM",
-      )
-    }
+  fun updateLicencesStatus(licences: List<CrdLicence>, reason: String? = null) {
+    val timeOutLicences = licences.map { it.timeOut() }
     if (timeOutLicences.isNotEmpty()) {
       licenceRepository.saveAllAndFlush(timeOutLicences)
 

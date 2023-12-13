@@ -76,13 +76,12 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   @Query(
     """
       SELECT l
-      FROM Licence l
-      WHERE (l.actualReleaseDate <= :timeOutDate OR l.conditionalReleaseDate <= :timeOutDate)
+      FROM CrdLicence l
+      WHERE COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) <= :timeOutDate
       AND l.statusCode = 'IN_PROGRESS'
-      AND l.statusCode <> 'TIME_OUT'
   """,
   )
-  fun getAllLicencesToBeTimeOut(timeOutDate: LocalDate): List<Licence>
+  fun getAllLicencesToTimeOut(timeOutDate: LocalDate): List<CrdLicence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

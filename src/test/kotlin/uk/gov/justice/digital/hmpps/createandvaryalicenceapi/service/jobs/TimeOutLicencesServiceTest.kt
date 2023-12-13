@@ -14,10 +14,8 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -31,7 +29,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 
 class TimeOutLicencesServiceTest {
@@ -76,14 +73,14 @@ class TimeOutLicencesServiceTest {
     val cutOffDateCaptor = argumentCaptor<LocalDate>()
 
     verify(releaseDateService, times(0)).getCutOffDateForLicenceTimeOut(cutOffDateCaptor.capture())
-    verify(licenceRepository, times(0)).getAllLicencesToBeTimeOut(cutOffDateCaptor.capture())
+    verify(licenceRepository, times(0)).getAllLicencesToTimeOut(cutOffDateCaptor.capture())
   }
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
     whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(false)
     whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now(clock))).thenReturn(LocalDate.parse("2023-12-07"))
-    whenever(licenceRepository.getAllLicencesToBeTimeOut(LocalDate.now(clock))).thenReturn(emptyList())
+    whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock))).thenReturn(emptyList())
 
     service.timeOutLicencesJob()
 
@@ -93,7 +90,7 @@ class TimeOutLicencesServiceTest {
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
     verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(jobExecutionDateCaptor.capture())
-    verify(licenceRepository, times(1)).getAllLicencesToBeTimeOut(cutOffDateCaptor.capture())
+    verify(licenceRepository, times(1)).getAllLicencesToTimeOut(cutOffDateCaptor.capture())
 
     assertThat(jobExecutionDateCaptor.firstValue).isEqualTo(LocalDate.parse("2023-12-05"))
     assertThat(cutOffDateCaptor.firstValue).isEqualTo(LocalDate.now(clock).plusDays(2))
@@ -110,9 +107,9 @@ class TimeOutLicencesServiceTest {
     whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now(clock))).thenReturn(
       LocalDate.now(clock).plusDays(2),
     )
-    whenever(licenceRepository.getAllLicencesToBeTimeOut(LocalDate.now(clock).plusDays(2))).thenReturn(
+    whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock).plusDays(2))).thenReturn(
       listOf(
-        aLicenceEntity,
+        aCrdLicenceEntity,
       ),
     )
 
@@ -125,7 +122,7 @@ class TimeOutLicencesServiceTest {
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
     verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(jobExecutionDateCaptor.capture())
-    verify(licenceRepository, times(1)).getAllLicencesToBeTimeOut(cutOffDateCaptor.capture())
+    verify(licenceRepository, times(1)).getAllLicencesToTimeOut(cutOffDateCaptor.capture())
 
     assertThat(jobExecutionDateCaptor.firstValue).isEqualTo(LocalDate.parse("2023-12-05"))
     assertThat(cutOffDateCaptor.firstValue).isEqualTo(LocalDate.now(clock).plusDays(2))
@@ -147,8 +144,8 @@ class TimeOutLicencesServiceTest {
           "SYSTEM",
           "SYSTEM",
           AuditEventType.SYSTEM_EVENT,
-          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.TIME_OUT} version ${aLicenceEntity.version}",
+          "Licence automatically timed out for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+          "ID ${aCrdLicenceEntity.id} type ${aCrdLicenceEntity.typeCode} status ${LicenceStatus.TIME_OUT} version ${aCrdLicenceEntity.version}",
         ),
       )
 
@@ -161,7 +158,7 @@ class TimeOutLicencesServiceTest {
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence automatically timed out for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
   }
@@ -195,7 +192,7 @@ class TimeOutLicencesServiceTest {
       ),
     )
 
-    val aLicenceEntity = EntityLicence(
+    val aCrdLicenceEntity = CrdLicence(
       id = 1,
       typeCode = LicenceType.AP,
       version = "1.1",
