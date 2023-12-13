@@ -17,5 +17,5 @@ enum class LicenceEventType {
   RECALLED,
   VERSION_CREATED,
   NOT_STARTED,
-  TIME_OUT,
+  TIMED_OUT,
 }

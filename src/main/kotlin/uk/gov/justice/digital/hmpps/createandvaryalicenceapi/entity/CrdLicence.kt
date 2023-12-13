@@ -251,7 +251,7 @@ class CrdLicence(
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
 
   fun timeOut() = copy(
-    statusCode = LicenceStatus.TIME_OUT,
+    statusCode = LicenceStatus.TIMED_OUT,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = "SYSTEM",
   )

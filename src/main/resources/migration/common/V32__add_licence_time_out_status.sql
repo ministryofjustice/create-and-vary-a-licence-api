@@ -1,2 +1,2 @@
 insert into licence_status (status_code, description)
-values ('TIME_OUT', 'Time Out');
+values ('TIMED_OUT', 'Time Out');

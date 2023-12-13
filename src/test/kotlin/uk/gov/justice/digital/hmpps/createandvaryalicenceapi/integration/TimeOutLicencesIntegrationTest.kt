@@ -46,7 +46,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
 
     val timedOutLicences = webTestClient.post()
       .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.TIME_OUT)))
+      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.TIMED_OUT)))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -59,9 +59,9 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        tuple(1L, LicenceStatus.TIME_OUT),
-        tuple(2L, LicenceStatus.TIME_OUT),
-        tuple(4L, LicenceStatus.TIME_OUT),
+        tuple(1L, LicenceStatus.TIMED_OUT),
+        tuple(2L, LicenceStatus.TIMED_OUT),
+        tuple(4L, LicenceStatus.TIMED_OUT),
       )
   }
 

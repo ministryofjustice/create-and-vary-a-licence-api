@@ -42,7 +42,7 @@ class TimeOutLicencesService(
       return
     }
     updateLicencesStatus(licencesToTimeOut)
-    log.info("TimeOutLicencesServiceJob updated status TIME_OUT on ${licencesToTimeOut.size} licences")
+    log.info("TimeOutLicencesServiceJob updated status TIMED_OUT on ${licencesToTimeOut.size} licences")
   }
 
   private fun updateLicencesStatus(licences: List<CrdLicence>, reason: String? = null) {
@@ -65,7 +65,7 @@ class TimeOutLicencesService(
       licenceEventRepository.saveAndFlush(
         LicenceEvent(
           licenceId = licence.id,
-          eventType = LicenceEventType.TIME_OUT,
+          eventType = LicenceEventType.TIMED_OUT,
           username = "SYSTEM",
           forenames = "SYSTEM",
           surname = "SYSTEM",

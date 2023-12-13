@@ -26,7 +26,7 @@ class TimeOutLicencesController(
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Triggers the time out licence job.",
-    description = "Triggers a job that causes licences with a status of IN_PROGRESS and a CRD or ARD less than two working days to be updated to TIME_OUT. Requires ROLE_CVL_ADMIN.",
+    description = "Triggers a job that causes licences with a status of IN_PROGRESS and a CRD or ARD less than two working days to be updated to TIMED_OUT. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(

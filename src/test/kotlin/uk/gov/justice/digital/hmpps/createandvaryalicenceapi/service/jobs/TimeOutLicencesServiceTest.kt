@@ -115,7 +115,7 @@ class TimeOutLicencesServiceTest {
 
     assertThat(licenceCaptor.firstValue[0])
       .extracting("statusCode", "updatedByUsername")
-      .isEqualTo(listOf(LicenceStatus.TIME_OUT, "SYSTEM"))
+      .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
@@ -129,7 +129,7 @@ class TimeOutLicencesServiceTest {
           "SYSTEM",
           AuditEventType.SYSTEM_EVENT,
           "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.TIME_OUT} version ${aLicenceEntity.version}",
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.TIMED_OUT} version ${aLicenceEntity.version}",
         ),
       )
 
@@ -138,7 +138,7 @@ class TimeOutLicencesServiceTest {
       .isEqualTo(
         listOf(
           1L,
-          LicenceEventType.TIME_OUT,
+          LicenceEventType.TIMED_OUT,
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
