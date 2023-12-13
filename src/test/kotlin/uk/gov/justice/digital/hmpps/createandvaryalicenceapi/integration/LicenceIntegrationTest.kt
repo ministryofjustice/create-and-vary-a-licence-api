@@ -477,6 +477,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.spoDiscussion).isEqualTo("Yes")
+    assertThat(result?.id).isEqualTo(2)
+    assertThat(result?.variationOf).isEqualTo(1)
   }
 
   @Test
