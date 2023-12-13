@@ -18,6 +18,4 @@ enum class LicenceEventType {
   OOS_RECALL,
   VERSION_CREATED,
   NOT_STARTED,
-  OOS_BOTUS,
-  NOT_IN_PILOT,
 }

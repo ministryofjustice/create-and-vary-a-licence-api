@@ -199,9 +199,6 @@ class ComService(
           record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, listOf(LicenceStatus.ACTIVE))
       }
 
-    if (prisoners.isEmpty()) {
-      return emptyList()
-    }
     return prisoners
   }
 
