@@ -180,7 +180,7 @@ class VariationLicence(
     dateCreated: LocalDateTime? = this.dateCreated,
     dateLastUpdated: LocalDateTime? = this.dateLastUpdated,
     updatedByUsername: String? = this.updatedByUsername,
-    variationOfId: Long? = this.id,
+    variationOfId: Long? = this.variationOfId,
     licenceVersion: String? = this.licenceVersion,
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
