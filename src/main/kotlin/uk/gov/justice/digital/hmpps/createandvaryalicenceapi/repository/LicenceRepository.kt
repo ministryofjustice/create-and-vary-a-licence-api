@@ -77,7 +77,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
       SELECT l
       FROM CrdLicence l
-      WHERE (l.actualReleaseDate <= :timeOutDate or l.conditionalReleaseDate <= :timeOutDate)
+      WHERE COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) <= :timeOutDate
       AND l.statusCode = 'IN_PROGRESS'
   """,
   )
