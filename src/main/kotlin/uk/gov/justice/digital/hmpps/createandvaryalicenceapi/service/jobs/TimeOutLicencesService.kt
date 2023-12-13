@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -22,6 +23,7 @@ class TimeOutLicencesService(
   private val releaseDateService: ReleaseDateService,
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
+  private val clock: Clock,
 ) {
 
   companion object {
@@ -31,7 +33,7 @@ class TimeOutLicencesService(
   @Transactional
   fun timeOutLicencesJob() {
     log.info("Job to runTimeOutLicencesService started")
-    val jobExecutionDate = LocalDate.now()
+    val jobExecutionDate = LocalDate.now(clock)
     if (releaseDateService.excludeBankHolidaysAndWeekends(jobExecutionDate)) {
       return
     }
@@ -49,7 +51,7 @@ class TimeOutLicencesService(
     val timeOutLicences = licences.map {
       it.copy(
         statusCode = LicenceStatus.TIME_OUT,
-        dateLastUpdated = LocalDateTime.now(),
+        dateLastUpdated = LocalDateTime.now(clock),
         updatedByUsername = "SYSTEM",
       )
     }

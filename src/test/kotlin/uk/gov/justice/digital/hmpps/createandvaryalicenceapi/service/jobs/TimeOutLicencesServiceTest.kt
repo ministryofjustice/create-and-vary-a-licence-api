@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -13,16 +14,23 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.TimeOutLicencesService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 
@@ -38,6 +46,7 @@ class TimeOutLicencesServiceTest {
       releaseDateService,
       auditEventRepository,
       licenceEventRepository,
+      clock,
     ),
   )
 
@@ -60,7 +69,7 @@ class TimeOutLicencesServiceTest {
 
   @Test
   fun `return if job execution date is on bank holiday or weekend`() {
-    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now())).thenReturn(true)
+    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(true)
 
     service.timeOutLicencesJob()
 
@@ -72,52 +81,93 @@ class TimeOutLicencesServiceTest {
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
-    val jobExecutionDate = LocalDate.parse("2024-01-02")
-    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now())).thenReturn(false)
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now())).thenReturn(jobExecutionDate.plusDays(2))
-    whenever(licenceRepository.getAllLicencesToBeTimeOut(LocalDate.now())).thenReturn(emptyList())
+    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(false)
+    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now(clock))).thenReturn(LocalDate.parse("2023-12-07"))
+    whenever(licenceRepository.getAllLicencesToBeTimeOut(LocalDate.now(clock))).thenReturn(emptyList())
 
     service.timeOutLicencesJob()
 
     val jobExecutionDateCaptor = argumentCaptor<LocalDate>()
     val cutOffDateCaptor = argumentCaptor<LocalDate>()
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
     verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(jobExecutionDateCaptor.capture())
     verify(licenceRepository, times(1)).getAllLicencesToBeTimeOut(cutOffDateCaptor.capture())
 
-    assertThat(jobExecutionDateCaptor.firstValue).isEqualTo(LocalDate.now())
-    assertThat(cutOffDateCaptor.firstValue).isEqualTo(jobExecutionDate.plusDays(2))
+    assertThat(jobExecutionDateCaptor.firstValue).isEqualTo(LocalDate.parse("2023-12-05"))
+    assertThat(cutOffDateCaptor.firstValue).isEqualTo(LocalDate.now(clock).plusDays(2))
 
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
+
+    verify(auditEventRepository, times(0)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(0)).saveAndFlush(eventCaptor.capture())
   }
 
   @Test
   fun `should update licences status if there are eligible licences`() {
-    val jobExecutionDate = LocalDate.parse("2024-01-02")
-    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now())).thenReturn(false)
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now())).thenReturn(jobExecutionDate.plusDays(2))
-    whenever(licenceRepository.getAllLicencesToBeTimeOut(jobExecutionDate.plusDays(2))).thenReturn(listOf(aLicenceEntity))
+    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(false)
+    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now(clock))).thenReturn(
+      LocalDate.now(clock).plusDays(2),
+    )
+    whenever(licenceRepository.getAllLicencesToBeTimeOut(LocalDate.now(clock).plusDays(2))).thenReturn(
+      listOf(
+        aLicenceEntity,
+      ),
+    )
 
     service.timeOutLicencesJob()
 
     val jobExecutionDateCaptor = argumentCaptor<LocalDate>()
     val cutOffDateCaptor = argumentCaptor<LocalDate>()
     val licenceCaptor = argumentCaptor<List<Licence>>()
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
     verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(jobExecutionDateCaptor.capture())
     verify(licenceRepository, times(1)).getAllLicencesToBeTimeOut(cutOffDateCaptor.capture())
 
-    assertThat(jobExecutionDateCaptor.firstValue).isEqualTo(LocalDate.now())
-    assertThat(cutOffDateCaptor.firstValue).isEqualTo(jobExecutionDate.plusDays(2))
+    assertThat(jobExecutionDateCaptor.firstValue).isEqualTo(LocalDate.parse("2023-12-05"))
+    assertThat(cutOffDateCaptor.firstValue).isEqualTo(LocalDate.now(clock).plusDays(2))
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.firstValue[0])
       .extracting("statusCode", "updatedByUsername")
       .isEqualTo(listOf(LicenceStatus.TIME_OUT, "SYSTEM"))
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          AuditEventType.SYSTEM_EVENT,
+          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.TIME_OUT} version ${aLicenceEntity.version}",
+        ),
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.TIME_OUT,
+          "SYSTEM",
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
   }
 
   private companion object {
+    val clock: Clock = Clock.fixed(Instant.parse("2023-12-05T00:00:00Z"), ZoneId.systemDefault())
     val someEntityStandardConditions = listOf(
       EntityStandardCondition(
         id = 1,
