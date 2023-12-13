@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -63,10 +66,16 @@ class VariationLicence(
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
-  submittedBy: CommunityOffenderManager? = null,
-  createdBy: CommunityOffenderManager? = null,
   val variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "submitted_by_com_id", nullable = true)
+  var submittedBy: CommunityOffenderManager? = null,
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "created_by_com_id", nullable = false)
+  var createdBy: CommunityOffenderManager? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,
@@ -120,8 +129,6 @@ class VariationLicence(
   additionalConditions = additionalConditions,
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
-  submittedBy = submittedBy,
-  createdBy = createdBy,
 ) {
 
   fun copy(
@@ -395,9 +402,11 @@ class VariationLicence(
     probationTeamDescription = probationTeamDescription,
   )
 
-  override fun updateRepsonsibleCom(responsibleCom: CommunityOffenderManager) = copy(
+  override fun updateResponsibleCom(responsibleCom: CommunityOffenderManager) = copy(
     responsibleCom = responsibleCom,
   )
+
+  override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
   override fun toString(): String {
     return "VariationLicence(" +

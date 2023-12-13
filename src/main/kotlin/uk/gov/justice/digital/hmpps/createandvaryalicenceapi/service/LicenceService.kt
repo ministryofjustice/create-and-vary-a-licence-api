@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
@@ -559,8 +560,9 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val licenceCopy = LicenceCreation.createVariation(licence)
-    val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy)
+    val creator = getCommunityOffenderManagerForCurrentUser()
+    val licenceCopy = LicenceCreation.createVariation(licence, creator)
+    val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
     return transformToLicenceSummary(licenceVariation)
   }
 
@@ -581,8 +583,9 @@ class LicenceService(
       return transformToLicenceSummary(inProgressVersions[0])
     }
 
-    val copyToEdit = LicenceCreation.createCopyToEdit(licence)
-    val licenceCopy = populateCopyAndAudit(CRD, licence, copyToEdit)
+    val creator = getCommunityOffenderManagerForCurrentUser()
+    val copyToEdit = LicenceCreation.createCopyToEdit(licence, creator)
+    val licenceCopy = populateCopyAndAudit(CRD, licence, copyToEdit, creator)
     notifyReApprovalNeeded(licence)
 
     return transformToLicenceSummary(licenceCopy)
@@ -807,17 +810,12 @@ class LicenceService(
     kind: LicenceKind,
     licence: EntityLicence,
     licenceCopy: EntityLicence,
+    creator: CommunityOffenderManager,
   ): EntityLicence {
     val isVariation = kind == VARIATION
     val newStatus = kind.initialStatus
 
-    val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
-      ?: error("Cannot find staff with username: $username")
-
-    licenceCopy.createdBy = createdBy
     licenceCopy.version = licencePolicyService.currentPolicy().version
-
     val newLicence = licenceRepository.save(licenceCopy)
 
     val standardConditions = licence.standardConditions.map {
@@ -884,9 +882,9 @@ class LicenceService(
       EntityLicenceEvent(
         licenceId = newLicence.id,
         eventType = kind.copyEventType,
-        username = createdBy.username,
-        forenames = createdBy.firstName,
-        surname = createdBy.lastName,
+        username = creator.username,
+        forenames = creator.firstName,
+        surname = creator.lastName,
         eventDescription = licenceEventMessage,
       ),
     )
@@ -899,14 +897,22 @@ class LicenceService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licence.id,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
+        username = creator.username,
+        fullName = "${creator.firstName} ${creator.lastName}",
         summary = auditEventSummary,
         detail = "Old ID ${licence.id}, new ID ${newLicence.id} type ${newLicence.typeCode} status ${newLicence.statusCode.name} version ${newLicence.version}",
       ),
     )
 
     return newLicence
+  }
+
+  private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
+    val username = SecurityContextHolder.getContext().authentication.name
+    return (
+      this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
+        ?: error("Cannot find staff with username: $username")
+      )
   }
 
   private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType!!) != LicenceType.AP
