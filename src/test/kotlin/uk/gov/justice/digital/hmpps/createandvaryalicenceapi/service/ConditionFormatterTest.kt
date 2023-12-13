@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ConditionalInput
@@ -18,8 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 class ConditionFormatterTest {
   private val conditionFormatter = ConditionFormatter()
@@ -1011,23 +1008,7 @@ class ConditionFormatterTest {
     )
   }
 
-  val licence = Licence(
-    id = 2L,
-    crn = "exampleCrn",
-    forename = "Robin",
-    surname = "Smith",
-    typeCode = LicenceType.AP,
-    statusCode = LicenceStatus.ACTIVE,
-    version = "1.0",
-    probationAreaCode = "N01",
-    probationAreaDescription = "N01 Region",
-    probationPduCode = "PDU1",
-    probationPduDescription = "PDU1 Pdu",
-    probationLauCode = "LAU1",
-    probationLauDescription = "LAU1 Lau",
-    probationTeamCode = "TEAM1",
-    probationTeamDescription = "TEAM1 probation team",
-  )
+  val licence = TestData.createCrdLicence()
 
   val condition = AdditionalCondition(
     id = 1,

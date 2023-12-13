@@ -28,9 +28,11 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -56,9 +58,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -110,6 +114,7 @@ class LicenceServiceTest {
     whenever(authentication.name).thenReturn("smills")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
+    whenever(licencePolicyService.policyByVersion(any())).thenReturn(POLICY_V2_1)
 
     reset(
       licenceRepository,
@@ -179,13 +184,14 @@ class LicenceServiceTest {
       lastName = "Y",
     )
 
-    whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(someEntityStandardConditions)
+    whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(aLicenceEntity.standardConditions)
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
     whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
     val createResponse = service.createLicence(aCreateLicenceRequest)
 
@@ -193,9 +199,17 @@ class LicenceServiceTest {
     assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
 
     verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
-    verify(licenceRepository, times(1)).saveAndFlush(any())
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    with(licenceCaptor.value as CrdLicence) {
+      assertThat(kind).isEqualTo(LicenceKind.CRD)
+      assertThat(version).isEqualTo("1.4")
+      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(versionOfId).isNull()
+      assertThat(licenceVersion).isEqualTo("1.0")
+    }
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -476,13 +490,21 @@ class LicenceServiceTest {
 
   @Test
   fun `find recently approved licences matching criteria - returns the original licence for an active variation`() {
-    val activeVariationLicence = aRecentlyApprovedLicence.copy(
+    val aRecentlyApprovedLicence = TestData.createCrdLicence().copy(
+      id = 1,
+      actualReleaseDate = LocalDate.now().minusDays(1),
+      conditionalReleaseDate = LocalDate.now(),
+      approvedByName = "jim smith",
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+    )
+
+    val activeVariationLicence = TestData.createVariationLicence().copy(
       id = aRecentlyApprovedLicence.id + 1,
       statusCode = LicenceStatus.ACTIVE,
       variationOfId = aRecentlyApprovedLicence.id,
     )
 
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aRecentlyApprovedLicence))
+    whenever(licenceRepository.findById(aRecentlyApprovedLicence.id)).thenReturn(Optional.of(aRecentlyApprovedLicence))
     whenever(
       licenceRepository.getRecentlyApprovedLicences(
         anyList(),
@@ -496,7 +518,14 @@ class LicenceServiceTest {
 
     val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
 
-    assertThat(licenceSummaries).isEqualTo(listOf(aRecentlyApprovedLicenceSummary))
+    assertThat(licenceSummaries).isEqualTo(
+      listOf(
+        aRecentlyApprovedLicenceSummary.copy(
+          surname = activeVariationLicence.surname,
+          forename = activeVariationLicence.forename,
+        ),
+      ),
+    )
     verify(licenceRepository, times(1)).getRecentlyApprovedLicences(anyList(), any<LocalDate>())
   }
 
@@ -1027,7 +1056,7 @@ class LicenceServiceTest {
       firstName = "X",
       lastName = "Y",
     )
-    val licence = aLicenceEntity.copy(
+    val variation = TestData.createVariationLicence().copy(
       variationOfId = 1,
       submittedBy = CommunityOffenderManager(
         staffIdentifier = 2000,
@@ -1038,7 +1067,7 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
@@ -1053,11 +1082,11 @@ class LicenceServiceTest {
     verify(notifyService, times(2))
       .sendVariationForApprovalEmail(
         any(),
-        eq(licence.id.toString()),
-        eq(aLicenceEntity.forename!!),
-        eq(aLicenceEntity.surname!!),
-        eq(aLicenceEntity.crn!!),
-        eq(licence.submittedBy?.username!!),
+        eq(variation.id.toString()),
+        eq(variation.forename!!),
+        eq(variation.surname!!),
+        eq(variation.crn!!),
+        eq(variation.submittedBy?.username!!),
       )
 
     assertThat(licenceCaptor.value)
@@ -1070,7 +1099,7 @@ class LicenceServiceTest {
         listOf(
           1L,
           LicenceEventType.VARIATION_SUBMITTED,
-          "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence submitted for approval for ${variation.forename} ${variation.surname}",
         ),
       )
 
@@ -1081,7 +1110,7 @@ class LicenceServiceTest {
           1L,
           "smills",
           "X Y",
-          "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence submitted for approval for ${variation.forename} ${variation.surname}",
         ),
       )
   }
@@ -1359,7 +1388,8 @@ class LicenceServiceTest {
 
   @Test
   fun `update spo discussion persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    val variation = TestData.createVariationLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
 
     service.updateSpoDiscussion(1L, UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
 
@@ -1373,7 +1403,8 @@ class LicenceServiceTest {
 
   @Test
   fun `update vlo discussion persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    val variation = TestData.createVariationLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
 
     service.updateVloDiscussion(1L, UpdateVloDiscussionRequest(vloDiscussion = "Yes"))
 
@@ -1387,7 +1418,8 @@ class LicenceServiceTest {
 
   @Test
   fun `update reason for variation creates a licence event containing the reason`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    val variation = TestData.createVariationLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -1434,11 +1466,11 @@ class LicenceServiceTest {
     service.createVariation(1L)
 
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
-    with(licenceCaptor.value) {
+    with(licenceCaptor.value as VariationLicence) {
+      assertThat(kind).isEqualTo(LicenceKind.VARIATION)
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
       assertThat(variationOfId).isEqualTo(1)
-      assertThat(versionOfId).isNull()
       assertThat(licenceVersion).isEqualTo("2.0")
     }
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
@@ -1524,11 +1556,10 @@ class LicenceServiceTest {
     service.editLicence(1L)
 
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
-    with(licenceCaptor.value) {
+    with(licenceCaptor.value as CrdLicence) {
       assertThat(version).isEqualTo("2.1")
       assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
       assertThat(versionOfId).isEqualTo(1)
-      assertThat(variationOfId).isNull()
       assertThat(licenceVersion).isEqualTo("1.1")
     }
 
@@ -1781,7 +1812,8 @@ class LicenceServiceTest {
       firstName = "X",
       lastName = "Y",
     )
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    val variation = TestData.createVariationLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1810,16 +1842,16 @@ class LicenceServiceTest {
           1L,
           "smills",
           "X Y",
-          "Licence variation rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence variation rejected for ${variation.forename} ${variation.surname}",
         ),
       )
 
     verify(notifyService, times(1)).sendVariationReferredEmail(
-      aLicenceEntity.createdBy?.email ?: "",
-      "${aLicenceEntity.createdBy?.firstName} ${aLicenceEntity.createdBy?.lastName}",
-      aLicenceEntity.responsibleCom?.email ?: "",
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      variation.createdBy?.email ?: "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
+      variation.responsibleCom?.email ?: "",
+      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      "${variation.forename} ${variation.surname}",
       "1",
     )
   }
@@ -1834,7 +1866,8 @@ class LicenceServiceTest {
       lastName = "Y",
     )
 
-    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(aLicenceEntity.copy(id = 2, variationOfId = 1L)))
+    val variation = TestData.createVariationLicence().copy(id = 2, variationOfId = 1L)
+    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
     whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1870,16 +1903,16 @@ class LicenceServiceTest {
           2L,
           "smills",
           "X Y",
-          "Licence variation approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence variation approved for ${variation.forename} ${variation.surname}",
         ),
       )
 
     verify(notifyService, times(1)).sendVariationApprovedEmail(
-      aLicenceEntity.createdBy?.email ?: "",
-      "${aLicenceEntity.createdBy?.firstName} ${aLicenceEntity.createdBy?.lastName}",
-      aLicenceEntity.responsibleCom?.email ?: "",
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      variation.createdBy?.email ?: "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
+      variation.responsibleCom?.email ?: "",
+      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      "${variation.forename} ${variation.surname}",
       "2",
     )
   }
@@ -1890,30 +1923,6 @@ class LicenceServiceTest {
       ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       ModelStandardCondition(id = 2, code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
       ModelStandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
-    )
-
-    val someEntityStandardConditions = listOf(
-      EntityStandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        licence = mock(),
-      ),
-      EntityStandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        licence = mock(),
-      ),
-      EntityStandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        licence = mock(),
-      ),
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
@@ -1951,7 +1960,7 @@ class LicenceServiceTest {
       responsibleComStaffId = 2000,
     )
 
-    val aLicenceEntity = EntityLicence(
+    val aLicenceEntity = TestData.createCrdLicence().copy(
       id = 1,
       typeCode = LicenceType.AP,
       version = "1.1",
@@ -1984,7 +1993,7 @@ class LicenceServiceTest {
       probationTeamCode = "NA01A2-A",
       probationTeamDescription = "Cardiff South Team A",
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      standardConditions = someEntityStandardConditions,
+      standardConditions = emptyList(),
       responsibleCom = CommunityOffenderManager(
         staffIdentifier = 2000,
         username = "smills",
@@ -2001,7 +2010,33 @@ class LicenceServiceTest {
       ),
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-    )
+    ).let {
+      it.copy(
+        standardConditions = listOf(
+          EntityStandardCondition(
+            id = 1,
+            conditionCode = "goodBehaviour",
+            conditionSequence = 1,
+            conditionText = "Be of good behaviour",
+            licence = it,
+          ),
+          EntityStandardCondition(
+            id = 2,
+            conditionCode = "notBreakLaw",
+            conditionSequence = 2,
+            conditionText = "Do not break any law",
+            licence = it,
+          ),
+          EntityStandardCondition(
+            id = 3,
+            conditionCode = "attendMeetings",
+            conditionSequence = 3,
+            conditionText = "Attend meetings",
+            licence = it,
+          ),
+        ),
+      )
+    }
 
     val aRecentlyApprovedLicence = aLicenceEntity.copy(
       actualReleaseDate = LocalDate.now().minusDays(1),

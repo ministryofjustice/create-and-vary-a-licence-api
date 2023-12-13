@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -27,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToResourceAdditional
@@ -36,7 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
@@ -84,13 +84,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -128,13 +128,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -172,13 +172,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -213,7 +213,7 @@ class PublicLicenceServiceTest {
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("Null field retrieved: createdByUsername for licence 1")
+        .hasMessage("licence: 1 has no COM/creator")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -255,13 +255,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -299,13 +299,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -343,13 +343,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -547,6 +547,7 @@ class PublicLicenceServiceTest {
         text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
         expandedText = "Do not associate with value1 for a period of value2",
         data = someAssociationData,
+        readyToSubmit = true,
       ),
     )
 
@@ -622,7 +623,7 @@ class PublicLicenceServiceTest {
       lastName = "Com",
     )
 
-    val aLicenceEntity = Licence(
+    val aLicenceEntity = createCrdLicence().copy(
       id = 1L,
       crn = "A12345",
       nomsId = "A1234BC",
@@ -762,13 +763,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -806,13 +807,13 @@ class PublicLicenceServiceTest {
       assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
 
       assertThat(licenceSummary).extracting {
-        Tuple.tuple(
+        tuple(
           it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
           it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
           it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
         )
       }.isEqualTo(
-        Tuple.tuple(
+        tuple(
           1L,
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
@@ -847,7 +848,7 @@ class PublicLicenceServiceTest {
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("Null field retrieved: createdByUsername for licence 1")
+        .hasMessage("licence: 1 has no COM/creator")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }

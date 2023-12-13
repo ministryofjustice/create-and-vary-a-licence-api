@@ -1,5 +1,6 @@
 insert into licence (
     id,
+    kind,
     type_code,
     version,
     status_code,
@@ -29,6 +30,7 @@ insert into licence (
 )
 values (
     2,
+    'CRD',
     'AP',
     '1.0',
     'IN_PROGRESS',
@@ -68,7 +70,7 @@ values (3, 2, 'std-3', 3, 'Attend meetings', 'AP');
 
 -- Create the exclusion zone additional condition
 insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code, condition_sequence, condition_text, condition_type)
-values (1, 2, '1.0', 'Freedom of movement', 'code-1', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
+values (1, 2, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]', 'AP');
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)

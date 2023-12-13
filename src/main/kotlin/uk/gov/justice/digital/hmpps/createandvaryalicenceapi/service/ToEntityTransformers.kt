@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -17,8 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-fun transform(createRequest: CreateLicenceRequest): EntityLicence {
-  return EntityLicence(
+fun transform(createRequest: CreateLicenceRequest): CrdLicence {
+  return CrdLicence(
     typeCode = createRequest.typeCode,
     version = createRequest.version,
     statusCode = LicenceStatus.IN_PROGRESS,

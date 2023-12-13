@@ -125,9 +125,9 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .containsAll(
         listOf(
           tuple(CONDITION_CODE, "category", "text", 0),
-          tuple("code2", "category", "text", 1),
-          tuple("code3", "category", "text", 2),
-          tuple("code4", "category", "text", 3),
+          tuple(CONDITION_CODE, "category", "text", 1),
+          tuple(CONDITION_CODE, "category", "text", 2),
+          tuple(CONDITION_CODE, "category", "text", 3),
         ),
       )
   }
@@ -219,7 +219,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     )
 
     val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
-      conditionCode = "code",
+      conditionCode = CONDITION_CODE,
       conditionType = "AP",
       conditionCategory = "category",
       sequence = 4,
@@ -234,9 +234,9 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(
         AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 0, text = "text"),
-        AdditionalConditionRequest(code = "code2", category = "category", sequence = 1, text = "text"),
-        AdditionalConditionRequest(code = "code3", category = "category", sequence = 2, text = "text"),
-        AdditionalConditionRequest(code = "code4", category = "category", sequence = 3, text = "text"),
+        AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 1, text = "text"),
+        AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 2, text = "text"),
+        AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 3, text = "text"),
       ),
       conditionType = "AP",
     )
