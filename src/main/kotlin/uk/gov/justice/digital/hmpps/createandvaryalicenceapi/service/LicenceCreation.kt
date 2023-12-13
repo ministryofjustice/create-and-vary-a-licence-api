@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
@@ -8,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import java.time.LocalDateTime
 
 object LicenceCreation {
-  fun createCopyToEdit(licence: CrdLicence): Licence {
+  fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
         id = -1,
@@ -16,11 +17,12 @@ object LicenceCreation {
         statusCode = IN_PROGRESS,
         licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
         versionOfId = licence.id,
+        createdBy = creator,
       )
     }
   }
 
-  fun createVariation(licence: Licence): Licence {
+  fun createVariation(licence: Licence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return VariationLicence(
         id = -1,
@@ -28,12 +30,14 @@ object LicenceCreation {
         version = this.version,
         statusCode = VARIATION_IN_PROGRESS,
         variationOfId = licence.id,
+        createdBy = creator,
         nomsId = this.nomsId,
         bookingNo = this.bookingNo,
         bookingId = this.bookingId,
         crn = this.crn,
         pnc = this.pnc,
         cro = this.cro,
+
         prisonCode = this.prisonCode,
         prisonDescription = this.prisonDescription,
         prisonTelephone = this.prisonTelephone,

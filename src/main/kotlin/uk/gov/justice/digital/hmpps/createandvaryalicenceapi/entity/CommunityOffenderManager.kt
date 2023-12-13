@@ -21,13 +21,13 @@ data class CommunityOffenderManager(
   val staffIdentifier: Long,
 
   @Column(unique = true)
-  val username: String,
+  override val username: String,
 
   val email: String?,
 
-  val firstName: String?,
+  override val firstName: String?,
 
-  val lastName: String?,
+  override val lastName: String?,
 
   val lastUpdatedTimestamp: LocalDateTime? = null,
-)
+) : Creator
