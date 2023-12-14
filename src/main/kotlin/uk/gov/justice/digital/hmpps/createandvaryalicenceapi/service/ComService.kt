@@ -8,8 +8,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 
 @Service
 class ComService(
-  private val staffRepository: StaffRepository,
+  private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
   private val licenceRepository: LicenceRepository,
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
@@ -45,13 +45,13 @@ class ComService(
    */
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    val comResult = this.staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+    val comResult = this.communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
       comDetails.staffIdentifier,
       comDetails.staffUsername,
     )
 
     if (comResult.isNullOrEmpty()) {
-      return this.staffRepository.saveAndFlush(
+      return this.communityOffenderManagerRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
@@ -74,7 +74,7 @@ class ComService(
 
     // only update entity if data is different
     if (com.isUpdate(comDetails)) {
-      return this.staffRepository.saveAndFlush(
+      return this.communityOffenderManagerRepository.saveAndFlush(
         com.copy(
           staffIdentifier = comDetails.staffIdentifier,
           username = comDetails.staffUsername.uppercase(),

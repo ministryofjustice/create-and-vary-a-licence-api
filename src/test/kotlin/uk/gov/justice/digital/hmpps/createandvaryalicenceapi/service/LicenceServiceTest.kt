@@ -53,10 +53,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -80,7 +80,7 @@ class LicenceServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
-  private val staffRepository = mock<StaffRepository>()
+  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val licencePolicyService = mock<LicencePolicyService>()
@@ -92,7 +92,7 @@ class LicenceServiceTest {
   private val service = Mockito.spy(
     LicenceService(
       licenceRepository,
-      staffRepository,
+      communityOffenderManagerRepository,
       standardConditionRepository,
       additionalConditionRepository,
       bespokeConditionRepository,
@@ -186,8 +186,8 @@ class LicenceServiceTest {
 
     whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(aLicenceEntity.standardConditions)
     whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
-    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -1008,7 +1008,7 @@ class LicenceServiceTest {
     )
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     service.submitLicence(1L, emptyList())
 
@@ -1068,7 +1068,7 @@ class LicenceServiceTest {
     )
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
 
@@ -1438,7 +1438,7 @@ class LicenceServiceTest {
 
   @Test
   fun `creating a variation`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1479,7 +1479,7 @@ class LicenceServiceTest {
 
   @Test
   fun `creating a variation not PSS period should not delete AP conditions`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1527,7 +1527,7 @@ class LicenceServiceTest {
 
   @Test
   fun `editing an approved licence creates and saves a new licence version`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1572,7 +1572,7 @@ class LicenceServiceTest {
 
   @Test
   fun `editing an approved licence creates and saves a new licence version returns all conditions`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1611,7 +1611,7 @@ class LicenceServiceTest {
 
   @Test
   fun `editing an approved licence creates and saves a new licence version and sends a reapproval email`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1670,7 +1670,7 @@ class LicenceServiceTest {
 
   @Test
   fun `editing an approved licence which already has an in progress version returns that version`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1705,7 +1705,7 @@ class LicenceServiceTest {
 
   @Test
   fun `editing an approved licence which already has an in progress version does not send a reapproval email`() {
-    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
         -1,
         1,
@@ -1746,7 +1746,7 @@ class LicenceServiceTest {
       lastName = "Y",
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
@@ -1814,7 +1814,7 @@ class LicenceServiceTest {
     )
     val variation = TestData.createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -1868,7 +1868,7 @@ class LicenceServiceTest {
 
     val variation = TestData.createVariationLicence().copy(id = 2, variationOfId = 1L)
     whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)

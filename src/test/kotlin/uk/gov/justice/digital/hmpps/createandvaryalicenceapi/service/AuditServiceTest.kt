@@ -24,8 +24,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 import java.util.Optional
@@ -34,9 +34,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 class AuditServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
-  private val staffRepository = mock<StaffRepository>()
+  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
 
-  private val service = AuditService(auditEventRepository, licenceRepository, staffRepository)
+  private val service = AuditService(auditEventRepository, licenceRepository, communityOffenderManagerRepository)
 
   @BeforeEach
   fun reset() {
@@ -47,8 +47,8 @@ class AuditServiceTest {
 
     SecurityContextHolder.setContext(securityContext)
 
-    reset(auditEventRepository, licenceRepository, staffRepository)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    reset(auditEventRepository, licenceRepository, communityOffenderManagerRepository)
+    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
   }
 
   @Test
@@ -672,7 +672,7 @@ class AuditServiceTest {
         expandedConditionText = "updatedText",
       )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
       service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)

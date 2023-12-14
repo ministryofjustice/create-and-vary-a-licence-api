@@ -16,8 +16,8 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
 
 class ComServiceTest {
-  private val staffRepository = mock<StaffRepository>()
+  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val communityApiClient = mock<CommunityApiClient>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
@@ -48,7 +48,7 @@ class ComServiceTest {
 
   private val service =
     ComService(
-      staffRepository,
+      communityOffenderManagerRepository,
       licenceRepository,
       communityApiClient,
       probationSearchApiClient,
@@ -60,7 +60,7 @@ class ComServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      staffRepository,
+      communityOffenderManagerRepository,
       licenceRepository,
       communityApiClient,
       probationSearchApiClient,
@@ -82,7 +82,7 @@ class ComServiceTest {
 
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
-    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -95,7 +95,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 3000,
@@ -107,8 +107,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
-    verify(staffRepository, times(1)).saveAndFlush(comCaptor.capture())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
@@ -123,7 +123,7 @@ class ComServiceTest {
       lastName = "Y",
     )
 
-    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -136,7 +136,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2000,
@@ -148,8 +148,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "JOEBLOGGS")
-    verify(staffRepository, times(0)).saveAndFlush(any())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "JOEBLOGGS")
+    verify(communityOffenderManagerRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -163,12 +163,12 @@ class ComServiceTest {
     )
 
     whenever(
-      staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+      communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
         any(),
         any(),
       ),
     ).thenReturn(null)
-    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 3000,
@@ -180,8 +180,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
-    verify(staffRepository, times(1)).saveAndFlush(expectedCom)
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(expectedCom)
   }
 
   @Test
@@ -196,7 +196,7 @@ class ComServiceTest {
 
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
-    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -209,7 +209,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2000,
@@ -221,8 +221,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "jbloggsnew1")
-    verify(staffRepository, times(1)).saveAndFlush(comCaptor.capture())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "jbloggsnew1")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
@@ -239,7 +239,7 @@ class ComServiceTest {
 
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
-    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -252,7 +252,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2001,
@@ -264,8 +264,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2001, "JOEBLOGGS")
-    verify(staffRepository, times(1)).saveAndFlush(comCaptor.capture())
+    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2001, "JOEBLOGGS")
+    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }

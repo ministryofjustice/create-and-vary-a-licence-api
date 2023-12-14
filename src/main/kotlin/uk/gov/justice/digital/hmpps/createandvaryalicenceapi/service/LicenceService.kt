@@ -30,10 +30,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
@@ -61,7 +61,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
-  private val staffRepository: StaffRepository,
+  private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
   private val standardConditionRepository: StandardConditionRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val bespokeConditionRepository: BespokeConditionRepository,
@@ -82,10 +82,10 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(request.responsibleComStaffId)
+    val responsibleCom = communityOffenderManagerRepository.findByStaffIdentifier(request.responsibleComStaffId)
       ?: throw ValidationException("Staff with staffIdentifier ${request.responsibleComStaffId} not found")
 
-    val createdBy = staffRepository.findByUsernameIgnoreCase(username)
+    val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: error("Staff with username $username not found")
 
     val licence = transform(request)
@@ -389,7 +389,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val submitter = staffRepository.findByUsernameIgnoreCase(username)
+    val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
     val updatedLicence = when (licenceEntity) {
@@ -641,7 +641,7 @@ class LicenceService(
     if (licenceEntity !is VariationLicence) error("Trying to update variation reason for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.staffRepository.findByUsernameIgnoreCase(username)
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -665,7 +665,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
     if (licenceEntity !is VariationLicence) error("Trying to reject non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.staffRepository.findByUsernameIgnoreCase(username)
+    val createdBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = VARIATION_REJECTED,
@@ -711,7 +711,7 @@ class LicenceService(
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     if (licenceEntity !is VariationLicence) error("Trying to approve non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
-    val user = this.staffRepository.findByUsernameIgnoreCase(username)
+    val user = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = VARIATION_APPROVED,
@@ -762,7 +762,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val discardedBy = this.staffRepository.findByUsernameIgnoreCase(username)
+    val discardedBy = this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
@@ -916,7 +916,7 @@ class LicenceService(
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
     val username = SecurityContextHolder.getContext().authentication.name
     return (
-      this.staffRepository.findByUsernameIgnoreCase(username)
+      this.communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
         ?: error("Cannot find staff with username: $username")
       )
   }
