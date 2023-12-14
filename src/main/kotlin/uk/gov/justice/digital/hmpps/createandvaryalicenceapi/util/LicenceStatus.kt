@@ -13,9 +13,6 @@ enum class LicenceStatus {
   VARIATION_REJECTED,
   VARIATION_APPROVED,
   NOT_STARTED,
-  OOS_RECALL,
-  OOS_BOTUS,
-  NOT_IN_PILOT,
   ;
 
   fun isOnProbation() = ON_PROBATION_STATUSES.contains(this)
@@ -44,9 +41,6 @@ enum class LicenceStatus {
     )
 
     val DRAFT_LICENCES = listOf(
-      OOS_RECALL,
-      OOS_BOTUS,
-      NOT_IN_PILOT,
       NOT_STARTED,
       IN_PROGRESS,
       SUBMITTED,
