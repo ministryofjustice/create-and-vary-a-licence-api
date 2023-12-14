@@ -15,7 +15,6 @@ enum class LicenceEventType {
   VARIATION_APPROVED,
   INACTIVE,
   RECALLED,
-  OOS_RECALL,
   VERSION_CREATED,
   NOT_STARTED,
 }
