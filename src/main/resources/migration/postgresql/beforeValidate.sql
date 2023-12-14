@@ -13,6 +13,14 @@ Postgres generates sensible defaults whereas H2 generates random names.
 We have modified the original script to retrospectively name the constraints the same as postgres would have called them.
 This has no practical effect in production but enables us to write migrations that can be run in dev to modify the constraints by name.
 */
- UPDATE flyway_schema_history
- SET checksum = -1711289223
- WHERE (version, checksum) = ('10', -2012135289);
+DO
+language plpgsql
+$$
+BEGIN
+    IF EXISTS (select 1 from pg_class where relname='flyway_schema_history') THEN
+        UPDATE flyway_schema_history
+        SET checksum = -1711289223
+        WHERE (version, checksum) = ('10', -2012135289);
+    END IF;
+END;
+$$
