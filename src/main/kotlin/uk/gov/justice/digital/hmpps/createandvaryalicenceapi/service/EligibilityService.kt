@@ -43,7 +43,7 @@ class EligibilityService(
   }
 
   fun getIneligibilityReasonsForExistingLicence(prisoner: PrisonerSearchPrisoner): List<String> {
-    return existingLicenceChecks.mapNotNull { (test, message) -> if(!test(prisoner)) message else null}
+    return existingLicenceChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
   }
 
   private fun isPersonParoleEligible(): EligibilityCheck = early@{

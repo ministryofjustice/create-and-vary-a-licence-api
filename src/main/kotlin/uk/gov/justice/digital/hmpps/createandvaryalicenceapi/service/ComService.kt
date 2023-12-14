@@ -160,6 +160,11 @@ class ComService(
       .filter { (_, licence) -> licence == null || !licence.statusCode.isOnProbation() }
       .mapNotNull { (result, _) -> result.identifiers.noms }
 
+    if (prisonNumbers.isEmpty()) {
+      return emptyMap()
+    }
+
+    // we gather further data from prisoner search if there is no licence or a create licence
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
 
     return prisoners.associateBy { it.prisonerNumber }
@@ -180,7 +185,7 @@ class ComService(
     }
   }
 
-  private fun createRecord(deliusOffender: CaseloadResult, licence: Licence, prisonOffender: PrisonerSearchPrisoner?):FoundProbationRecord? =
+  private fun createRecord(deliusOffender: CaseloadResult, licence: Licence, prisonOffender: PrisonerSearchPrisoner?): FoundProbationRecord? =
     when {
       prisonOffender == null -> null
 
@@ -208,10 +213,10 @@ class ComService(
   }
 
   private fun List<FoundProbationRecord>.filterOutHdc(prisonerRecords: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {
-    val prisonersForHdcCheck = this.filter { it.licenceStatus == LicenceStatus.NOT_STARTED }.mapNotNull{ prisonerRecords[it.nomisId] }
+    val prisonersForHdcCheck = this.filter { it.licenceStatus == LicenceStatus.NOT_STARTED }.mapNotNull { prisonerRecords[it.nomisId] }
     val bookingIdsWithHdc = prisonersForHdcCheck.findBookingsWithHdc()
 
-    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId.toLong())}
-    return this.filter { prisonersWithoutHdc.any {prisoner -> prisoner.prisonerNumber == it.nomisId } }
+    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId.toLong()) }
+    return this.filter { prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
   }
 }
