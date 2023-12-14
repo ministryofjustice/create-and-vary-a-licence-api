@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
-data class User(
-  val teams: List<Detail>,
+data class ProbationAreaDetail(
+  val code: String,
+  val description: String?,
 )
