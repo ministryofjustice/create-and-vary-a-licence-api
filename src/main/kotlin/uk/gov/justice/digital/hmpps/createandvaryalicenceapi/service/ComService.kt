@@ -103,19 +103,19 @@ class ComService(
       body.getSortBy(),
     )
 
-    val prisonersPlusLicencesList: List<Pair<CaseloadResult, Licence?>> =
+    val offenderAndLicences: List<Pair<CaseloadResult, Licence?>> =
       teamCaseloadResult.map { it to getLicence(it) }
 
-    val eligiblePrisonersList = findPrisonersEligibleToCreateLicence(prisonersPlusLicencesList)
+    val eligibleOffendersList = findPrisonersEligibleToCreateLicence(offenderAndLicences)
 
-    val eligiblePrisonersWithoutDraftLicences =
-      findPrisonersWithoutDraftLicences(eligiblePrisonersList, prisonersPlusLicencesList)
+    val eligibleOffendersWithoutDraftLicences =
+      findOffendersWithoutDraftLicences(eligibleOffendersList, offenderAndLicences)
 
-    val eligiblePrisonersForLicenceCreation = filterPrisonersWithNonDraftLicences(prisonersPlusLicencesList)
+    val eligibleOffendersForLicenceCreation = filterPrisonersWithNonDraftLicences(offenderAndLicences)
 
-    val searchResults = eligiblePrisonersForLicenceCreation.mapNotNull { (result, licence) ->
+    val searchResults = eligibleOffendersForLicenceCreation.mapNotNull { (result, licence) ->
       when (licence) {
-        null -> result.createNotStartedRecord(eligiblePrisonersWithoutDraftLicences[result.identifiers.noms])
+        null -> result.createNotStartedRecord(eligibleOffendersWithoutDraftLicences[result.identifiers.noms])
         else -> result.createRecord(licence)
       }
     }
@@ -158,14 +158,13 @@ class ComService(
     }
   }
 
-  private fun findPrisonersWithoutDraftLicences(
-    eligiblePrisonersList: List<PrisonerSearchPrisoner>,
+  private fun findOffendersWithoutDraftLicences(
+    eligibleOffendersList: List<PrisonerSearchPrisoner>,
     record: List<Pair<CaseloadResult, Licence?>>,
   ): Map<String, PrisonerSearchPrisoner> {
     val eligiblePrisoners =
-      eligiblePrisonersList.filter { prisoner ->
-        !record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.DRAFT_LICENCES) ||
-          record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.ON_PROBATION_STATUSES.toList())
+      eligibleOffendersList.filter { prisoner ->
+        !record.isLicenceInGivenStatusPresent(prisoner.prisonerNumber, LicenceStatus.DRAFT_LICENCES)
       }
 
     if (eligiblePrisoners.isEmpty()) {
