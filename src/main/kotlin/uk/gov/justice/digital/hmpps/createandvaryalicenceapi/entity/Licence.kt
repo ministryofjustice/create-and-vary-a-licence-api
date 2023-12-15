@@ -135,7 +135,6 @@ abstract class Licence(
 
   abstract fun activate(): Licence
   abstract fun deactivate(): Licence
-  abstract fun submit(submittedBy: CommunityOffenderManager): Licence
 
   abstract fun updatePrisonInfo(
     prisonCode: String,
