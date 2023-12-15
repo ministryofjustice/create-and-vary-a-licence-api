@@ -187,11 +187,8 @@ class ComService(
 
   private fun createRecord(deliusOffender: CaseloadResult, licence: Licence, prisonOffender: PrisonerSearchPrisoner?): FoundProbationRecord? =
     when {
-      prisonOffender == null -> null
-
       licence.statusCode.isOnProbation() -> deliusOffender.transformToModelFoundProbationRecord(licence)
-
-      eligibilityService.isExistingLicenceEligible(prisonOffender) -> deliusOffender.transformToModelFoundProbationRecord(licence)
+      prisonOffender != null && eligibilityService.isExistingLicenceEligible(prisonOffender) -> deliusOffender.transformToModelFoundProbationRecord(licence)
 
       else -> null
     }
@@ -213,10 +210,13 @@ class ComService(
   }
 
   private fun List<FoundProbationRecord>.filterOutHdc(prisonerRecords: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {
+    if (prisonerRecords.isEmpty()) {
+      return this
+    }
     val prisonersForHdcCheck = this.filter { it.licenceStatus == LicenceStatus.NOT_STARTED }.mapNotNull { prisonerRecords[it.nomisId] }
     val bookingIdsWithHdc = prisonersForHdcCheck.findBookingsWithHdc()
 
     val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId.toLong()) }
-    return this.filter { prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
+    return this.filter { it.isOnProbation == true || prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
   }
 }
