@@ -250,7 +250,7 @@ class CrdLicence(
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
 
-  override fun submit(submittedBy: CommunityOffenderManager) = copy(
+  fun submit(submittedBy: CommunityOffenderManager) = copy(
     statusCode = LicenceStatus.SUBMITTED,
     submittedBy = submittedBy,
     updatedByUsername = submittedBy.username,

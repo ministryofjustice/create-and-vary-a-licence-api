@@ -1,8 +1,8 @@
 CREATE TABLE community_offender_manager
 (
-    id SERIAL NOT NULL PRIMARY KEY,
-    staff_identifier INTEGER NOT NULL UNIQUE,
-    username VARCHAR(40) NOT NULL UNIQUE,
+    id SERIAL NOT NULL constraint community_offender_manager_key PRIMARY KEY,
+    staff_identifier INTEGER NOT NULL CONSTRAINT community_offender_manager_staff_identifier_key UNIQUE,
+    username VARCHAR(40) NOT NULL CONSTRAINT community_offender_manager_username_key UNIQUE,
     email VARCHAR(200),
     first_name VARCHAR(60),
     last_name VARCHAR(60),

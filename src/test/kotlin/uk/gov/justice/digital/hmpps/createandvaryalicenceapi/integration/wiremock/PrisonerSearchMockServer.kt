@@ -21,21 +21,39 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "bookingId": "456",
                   "status": "INACTIVE",
                   "legalStatus": "SENTENCED",
-                  "indeterminateSentence": false
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "12345A",
+                  "firstName": "Test1",
+                  "lastName": "Person1",
+                  "dateOfBirth": "1985-01-01"
                },
-                               {
+               {
                   "prisonerNumber": "G5613GT",
                   "bookingId": "789",
                   "status": "INACTIVE",
                   "legalStatus": "SENTENCED",
-                  "indeterminateSentence": false
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "DEF",
+                  "bookNumber": "67890B",
+                  "firstName": "Test2",
+                  "lastName": "Person2",
+                  "dateOfBirth": "1986-01-01"
                },
-                               {
+               {
                   "prisonerNumber": "G4169UO",
                   "bookingId": "432",
                   "status": "INACTIVE",
                   "legalStatus": "SENTENCED",
-                  "indeterminateSentence": false
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "12345C",
+                  "firstName": "Test3",
+                  "lastName": "Person3",
+                  "dateOfBirth": "1987-01-01"
                }
               ]
             """.trimIndent(),
@@ -69,7 +87,12 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
                   "indeterminateSentence": false,
-                  "recall": false
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "12345A",
+                  "firstName": "Test1",
+                  "lastName": "Person1",
+                  "dateOfBirth": "1985-01-01"
                },
                {
                   "prisonerNumber": "A1234AB",
@@ -87,7 +110,12 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
                   "indeterminateSentence": false,
-                  "recall": false
+                  "recall": false,
+                  "prisonId": "DEF",
+                  "bookNumber": "67890B",
+                  "firstName": "Test2",
+                  "lastName": "Person2",
+                  "dateOfBirth": "1986-01-01"
                },
                {
                   "prisonerNumber": "A1234AC",
@@ -105,7 +133,12 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
                   "indeterminateSentence": false,
-                  "recall": false
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "12345C",
+                  "firstName": "Test3",
+                  "lastName": "Person3",
+                  "dateOfBirth": "1987-01-01"
                },
                {
                   "prisonerNumber": "A1234AD",
@@ -123,7 +156,12 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
                   "indeterminateSentence": false,
-                  "recall": false
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "12345C",
+                  "firstName": "Test3",
+                  "lastName": "Person3",
+                  "dateOfBirth": "1987-01-01"
                },
                {
                   "prisonerNumber": "A1234AE",
@@ -141,7 +179,12 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "postRecallReleaseDate": null,
                   "legalStatus": "SENTENCED",
                   "indeterminateSentence": false,
-                  "recall": false
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "12345C",
+                  "firstName": "Test3",
+                  "lastName": "Person3",
+                  "dateOfBirth": "1987-01-01"
                }
               ]
             """.trimIndent(),

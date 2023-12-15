@@ -83,5 +83,16 @@ class IS91DeterminationServiceTest {
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
     recall = false,
+    prisonId = "ABC",
+    bookNumber = "12345A",
+    firstName = "Jane",
+    middleNames = null,
+    lastName = "Doe",
+    dateOfBirth = LocalDate.parse("1985-01-01"),
+    conditionalReleaseDateOverrideDate = null,
+    sentenceStartDate = LocalDate.parse("2023-09-14"),
+    sentenceExpiryDate = LocalDate.parse("2024-09-14"),
+    topUpSupervisionStartDate = null,
+    croNumber = null,
   )
 }
