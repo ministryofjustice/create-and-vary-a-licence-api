@@ -24,11 +24,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Team
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -285,7 +285,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -368,7 +368,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -426,7 +426,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -512,7 +512,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -598,7 +598,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -686,7 +686,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -782,7 +782,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -844,7 +844,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -939,7 +939,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1037,7 +1037,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1136,7 +1136,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1235,7 +1235,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1309,7 +1309,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1407,7 +1407,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1478,7 +1478,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1582,7 +1582,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1663,7 +1663,7 @@ class ComServiceTest {
           Manager(
             "A01B02C",
             Name("Staff", "Surname"),
-            Team("A01B02", "Test Team"),
+            Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
         ),
@@ -1790,6 +1790,17 @@ class ComServiceTest {
       legalStatus = "SENTENCED",
       indeterminateSentence = false,
       recall = false,
+      prisonId = "ABC",
+      bookNumber = "12345A",
+      firstName = "Jane",
+      middleNames = null,
+      lastName = "Doe",
+      dateOfBirth = LocalDate.parse("1985-01-01"),
+      conditionalReleaseDateOverrideDate = null,
+      sentenceStartDate = LocalDate.parse("2023-09-14"),
+      sentenceExpiryDate = LocalDate.parse("2024-09-14"),
+      topUpSupervisionStartDate = null,
+      croNumber = null,
     )
 
     val aPrisonerHdcStatus = PrisonerHdcStatus(

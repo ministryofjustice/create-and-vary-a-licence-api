@@ -12,8 +12,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@DiscriminatorValue(value = "VARIATION")
-class VariationLicence(
+@DiscriminatorValue(value = "HARDSTOP")
+class HardStopLicence(
   id: Long = -1L,
   typeCode: LicenceType,
   version: String? = null,
@@ -52,8 +52,6 @@ class VariationLicence(
   appointmentTime: LocalDateTime? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
-  val spoDiscussion: String? = null,
-  val vloDiscussion: String? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -62,23 +60,25 @@ class VariationLicence(
   dateCreated: LocalDateTime? = null,
   dateLastUpdated: LocalDateTime? = null,
   updatedByUsername: String? = null,
+  licenceVersion: String? = "1.0",
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
-  val variationOfId: Long? = null,
-  licenceVersion: String? = "1.0",
+
+  var reviewDate: LocalDate? = null,
+  var substituteOfId: Long? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "submitted_by_com_id", nullable = true)
-  var submittedBy: CommunityOffenderManager? = null,
+  @JoinColumn(name = "created_by_ca_id", nullable = false)
+  var createdBy: PrisonCaseAdministrator? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "created_by_com_id", nullable = false)
-  var createdBy: CommunityOffenderManager? = null,
+  @JoinColumn(name = "submitted_by_ca_id", nullable = true)
+  var submittedBy: PrisonCaseAdministrator? = null,
 ) : Licence(
   id = id,
-  kind = LicenceKind.VARIATION,
+  kind = LicenceKind.HARDSTOP,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -170,8 +170,6 @@ class VariationLicence(
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentAddress: String? = this.appointmentAddress,
     appointmentContact: String? = this.appointmentContact,
-    spoDiscussion: String? = this.spoDiscussion,
-    vloDiscussion: String? = this.vloDiscussion,
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
     approvedByName: String? = this.approvedByName,
@@ -180,16 +178,17 @@ class VariationLicence(
     dateCreated: LocalDateTime? = this.dateCreated,
     dateLastUpdated: LocalDateTime? = this.dateLastUpdated,
     updatedByUsername: String? = this.updatedByUsername,
-    variationOfId: Long? = this.variationOfId,
-    licenceVersion: String? = this.licenceVersion,
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager? = this.responsibleCom,
-    submittedBy: CommunityOffenderManager? = this.submittedBy,
-    createdBy: CommunityOffenderManager? = this.createdBy,
-  ): VariationLicence {
-    return VariationLicence(
+    submittedBy: PrisonCaseAdministrator? = this.submittedBy,
+    createdBy: PrisonCaseAdministrator? = this.createdBy,
+    substituteOfId: Long? = this.substituteOfId,
+    reviewDate: LocalDate? = this.reviewDate,
+    licenceVersion: String? = this.licenceVersion,
+  ): HardStopLicence {
+    return HardStopLicence(
       id = id,
       typeCode = typeCode,
       version = version,
@@ -228,8 +227,6 @@ class VariationLicence(
       appointmentTime = appointmentTime,
       appointmentAddress = appointmentAddress,
       appointmentContact = appointmentContact,
-      spoDiscussion = spoDiscussion,
-      vloDiscussion = vloDiscussion,
       approvedDate = approvedDate,
       approvedByUsername = approvedByUsername,
       approvedByName = approvedByName,
@@ -244,19 +241,21 @@ class VariationLicence(
       responsibleCom = responsibleCom,
       submittedBy = submittedBy,
       createdBy = createdBy,
-      variationOfId = variationOfId,
+      substituteOfId = substituteOfId,
+      reviewDate = reviewDate,
+      licenceVersion = licenceVersion,
     )
   }
 
-  override fun activate(): Licence = copy(
+  override fun activate() = copy(
     statusCode = LicenceStatus.ACTIVE,
     licenceActivatedDate = LocalDateTime.now(),
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.VARIATION_SUBMITTED,
+  fun submit(submittedBy: PrisonCaseAdministrator) = copy(
+    statusCode = LicenceStatus.SUBMITTED,
     submittedBy = submittedBy,
     updatedByUsername = submittedBy.username,
     submittedDate = LocalDateTime.now(),
@@ -409,7 +408,7 @@ class VariationLicence(
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
   override fun toString(): String {
-    return "VariationLicence(" +
+    return "HardStopLicence(" +
       "id=$id, " +
       "kind=$kind, " +
       "typeCode=$typeCode, " +
@@ -449,8 +448,6 @@ class VariationLicence(
       "appointmentTime=$appointmentTime, " +
       "appointmentAddress=$appointmentAddress, " +
       "appointmentContact=$appointmentContact, " +
-      "spoDiscussion=$spoDiscussion, " +
-      "vloDiscussion=$vloDiscussion, " +
       "approvedDate=$approvedDate, " +
       "approvedByUsername=$approvedByUsername, " +
       "approvedByName=$approvedByName, " +
@@ -466,14 +463,15 @@ class VariationLicence(
       "submittedBy=$submittedBy, " +
       "createdBy=$createdBy, " +
       "createdBy=$createdBy, " +
-      "variationOfId=$variationOfId, " +
+      "substituteOfId=$substituteOfId, " +
+      "reviewDate=$reviewDate, " +
       "licenceVersion=$licenceVersion" +
       ")"
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is VariationLicence) return false
+    if (other !is HardStopLicence) return false
     if (!super.equals(other)) return false
     return true
   }

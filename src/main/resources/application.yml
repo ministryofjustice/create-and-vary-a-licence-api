@@ -58,7 +58,7 @@ spring:
       validationTimeout: 500
 
   flyway:
-    locations: classpath:/migration/common
+    locations: classpath:/migration/common,/migration/{vendor}
     url: ${spring.datasource.url}
     user: ${DB_USER}
     password: ${DB_PASS}
