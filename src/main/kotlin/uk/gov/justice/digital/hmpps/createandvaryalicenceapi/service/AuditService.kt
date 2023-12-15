@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as
 class AuditService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceRepository: LicenceRepository,
-  private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
+  private val staffRepository: StaffRepository,
 ) {
 
   fun recordAuditEvent(auditEvent: ModelAuditEvent) {
@@ -271,7 +271,7 @@ class AuditService(
     changes: Map<String, Any>,
   ): AuditEvent {
     val authUsername = SecurityContextHolder.getContext().authentication.name
-    val currentUser = communityOffenderManagerRepository.findByUsernameIgnoreCase(authUsername)
+    val currentUser = staffRepository.findByUsernameIgnoreCase(authUsername)
 
     return AuditEvent(
       licenceId = licence.id,

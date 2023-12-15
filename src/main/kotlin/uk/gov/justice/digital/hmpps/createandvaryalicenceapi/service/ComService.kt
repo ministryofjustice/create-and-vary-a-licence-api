@@ -8,8 +8,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 
 @Service
 class ComService(
-  private val communityOffenderManagerRepository: CommunityOffenderManagerRepository,
+  private val staffRepository: StaffRepository,
   private val licenceRepository: LicenceRepository,
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
@@ -42,16 +42,18 @@ class ComService(
    * Check if the username and staffId do not match. This should not happen, unless a Delius account is updated to point
    * at another linked account using the staffId. In this scenario, we should update the existing record to reflect
    * the new username and or staffId.
+   *
    */
+  @Deprecated("This can be removed after get in next caseload changes in, we can then rename this to a caseload service")
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    val comResult = this.communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+    val comResult = this.staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
       comDetails.staffIdentifier,
       comDetails.staffUsername,
     )
 
     if (comResult.isNullOrEmpty()) {
-      return this.communityOffenderManagerRepository.saveAndFlush(
+      return this.staffRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
@@ -74,7 +76,7 @@ class ComService(
 
     // only update entity if data is different
     if (com.isUpdate(comDetails)) {
-      return this.communityOffenderManagerRepository.saveAndFlush(
+      return this.staffRepository.saveAndFlush(
         com.copy(
           staffIdentifier = comDetails.staffIdentifier,
           username = comDetails.staffUsername.uppercase(),
