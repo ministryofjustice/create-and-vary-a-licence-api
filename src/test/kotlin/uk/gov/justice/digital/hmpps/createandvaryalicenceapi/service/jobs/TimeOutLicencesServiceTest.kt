@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -36,14 +35,12 @@ class TimeOutLicencesServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
 
-  private val service = Mockito.spy(
-    TimeOutLicencesService(
-      licenceRepository,
-      releaseDateService,
-      auditEventRepository,
-      licenceEventRepository,
-      clock,
-    ),
+  private val service = TimeOutLicencesService(
+    licenceRepository,
+    releaseDateService,
+    auditEventRepository,
+    licenceEventRepository,
+    clock,
   )
 
   @BeforeEach
