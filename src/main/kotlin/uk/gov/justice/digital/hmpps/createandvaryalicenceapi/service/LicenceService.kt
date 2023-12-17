@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
@@ -391,7 +392,12 @@ class LicenceService(
     val submitter = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val updatedLicence = licenceEntity.submit(submitter)
+    val updatedLicence = when (licenceEntity) {
+      is CrdLicence -> licenceEntity.submit(submitter)
+      is VariationLicence -> licenceEntity.submit(submitter)
+      is HardStopLicence -> TODO("Submitting hard stop licences not supported yet")
+      else -> error("Unexpected licence type: $licenceEntity")
+    }
 
     licenceRepository.saveAndFlush(updatedLicence)
 

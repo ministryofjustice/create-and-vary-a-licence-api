@@ -41,4 +41,31 @@ data class PrisonerSearchPrisoner(
   val indeterminateSentence: Boolean,
 
   val recall: Boolean,
+
+  val prisonId: String,
+
+  val bookNumber: String,
+
+  val firstName: String,
+
+  val middleNames: String? = null,
+
+  val lastName: String,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val dateOfBirth: LocalDate,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val conditionalReleaseDateOverrideDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val sentenceStartDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val sentenceExpiryDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val topUpSupervisionStartDate: LocalDate? = null,
+
+  val croNumber: String? = null,
 )

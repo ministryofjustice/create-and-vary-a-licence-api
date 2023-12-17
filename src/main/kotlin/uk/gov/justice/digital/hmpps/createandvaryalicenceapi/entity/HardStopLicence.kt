@@ -12,8 +12,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@DiscriminatorValue(value = "CRD")
-class CrdLicence(
+@DiscriminatorValue(value = "HARDSTOP")
+class HardStopLicence(
   id: Long = -1L,
   typeCode: LicenceType,
   version: String? = null,
@@ -60,23 +60,25 @@ class CrdLicence(
   dateCreated: LocalDateTime? = null,
   dateLastUpdated: LocalDateTime? = null,
   updatedByUsername: String? = null,
-  val versionOfId: Long? = null,
   licenceVersion: String? = "1.0",
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "submitted_by_com_id", nullable = true)
-  var submittedBy: CommunityOffenderManager? = null,
+  var reviewDate: LocalDate? = null,
+  var substituteOfId: Long? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "created_by_com_id", nullable = false)
-  var createdBy: CommunityOffenderManager? = null,
+  @JoinColumn(name = "created_by_ca_id", nullable = false)
+  var createdBy: PrisonCaseAdministrator? = null,
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "submitted_by_ca_id", nullable = true)
+  var submittedBy: PrisonCaseAdministrator? = null,
 ) : Licence(
   id = id,
-  kind = LicenceKind.CRD,
+  kind = LicenceKind.HARDSTOP,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -180,12 +182,13 @@ class CrdLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager? = this.responsibleCom,
-    submittedBy: CommunityOffenderManager? = this.submittedBy,
-    createdBy: CommunityOffenderManager? = this.createdBy,
-    versionOfId: Long? = this.versionOfId,
+    submittedBy: PrisonCaseAdministrator? = this.submittedBy,
+    createdBy: PrisonCaseAdministrator? = this.createdBy,
+    substituteOfId: Long? = this.substituteOfId,
+    reviewDate: LocalDate? = this.reviewDate,
     licenceVersion: String? = this.licenceVersion,
-  ): CrdLicence {
-    return CrdLicence(
+  ): HardStopLicence {
+    return HardStopLicence(
       id = id,
       typeCode = typeCode,
       version = version,
@@ -238,7 +241,8 @@ class CrdLicence(
       responsibleCom = responsibleCom,
       submittedBy = submittedBy,
       createdBy = createdBy,
-      versionOfId = versionOfId,
+      substituteOfId = substituteOfId,
+      reviewDate = reviewDate,
       licenceVersion = licenceVersion,
     )
   }
@@ -250,13 +254,7 @@ class CrdLicence(
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
 
-  fun timeOut() = copy(
-    statusCode = LicenceStatus.TIMED_OUT,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = "SYSTEM",
-  )
-
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
+  fun submit(submittedBy: PrisonCaseAdministrator) = copy(
     statusCode = LicenceStatus.SUBMITTED,
     submittedBy = submittedBy,
     updatedByUsername = submittedBy.username,
@@ -410,7 +408,7 @@ class CrdLicence(
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
   override fun toString(): String {
-    return "CrdLicence(" +
+    return "HardStopLicence(" +
       "id=$id, " +
       "kind=$kind, " +
       "typeCode=$typeCode, " +
@@ -465,14 +463,15 @@ class CrdLicence(
       "submittedBy=$submittedBy, " +
       "createdBy=$createdBy, " +
       "createdBy=$createdBy, " +
-      "versionOfId=$versionOfId, " +
+      "substituteOfId=$substituteOfId, " +
+      "reviewDate=$reviewDate, " +
       "licenceVersion=$licenceVersion" +
       ")"
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is CrdLicence) return false
+    if (other !is HardStopLicence) return false
     if (!super.equals(other)) return false
     return true
   }
