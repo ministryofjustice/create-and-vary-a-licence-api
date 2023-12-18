@@ -331,7 +331,7 @@ class LicenceConditionServiceTest {
         )
 
       whenever(policyService.getAllAdditionalConditions()).thenReturn(
-        AllAdditionalConditions(mapOf("1.0" to mapOf(policyApCondition.code to policyApCondition)))
+        AllAdditionalConditions(mapOf("1.0" to mapOf(policyApCondition.code to policyApCondition))),
       )
 
       val request = AddAdditionalConditionRequest(

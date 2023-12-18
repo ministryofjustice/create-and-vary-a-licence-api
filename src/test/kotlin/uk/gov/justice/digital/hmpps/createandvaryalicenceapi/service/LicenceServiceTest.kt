@@ -133,7 +133,7 @@ class LicenceServiceTest {
   fun `service returns a licence by ID`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
-      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition)))
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
     )
 
     val licence = service.getLicenceById(1L)
@@ -147,7 +147,7 @@ class LicenceServiceTest {
   fun `service returns a licence with the full name of the user who created it`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
-      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition)))
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
     )
 
     val licence = service.getLicenceById(1L)
@@ -159,7 +159,7 @@ class LicenceServiceTest {
   fun `service transforms key fields of a licence object correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
-      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition)))
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
     )
 
     val licence = service.getLicenceById(1L)
