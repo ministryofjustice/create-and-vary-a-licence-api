@@ -6,11 +6,9 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AdditionalConditionWithConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.isConditionReadyToSubmit
@@ -26,7 +24,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         mapConditionsToConfig(
           listOf(anAdditionalConditionEntity),
-          aPolicy.allAdditionalConditions(),
+          aMappedPolicy,
         ),
       ).containsExactly(
         AdditionalConditionWithConfig(anAdditionalConditionEntity, policyApCondition),
@@ -41,7 +39,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isLicenceReadyToSubmit(
           emptyList(),
-          aPolicy.allAdditionalConditions(),
+          aMappedPolicy,
         ),
       ).isEqualTo(
         emptyMap<String, Boolean>(),
@@ -53,7 +51,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity, anAdditionalConditionEntity.copy(conditionCode = "code2")),
-          aPolicy.allAdditionalConditions(),
+          aMappedPolicy,
         ),
       ).isEqualTo(
         mapOf(
@@ -68,7 +66,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList()), anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList())),
-          aPolicy.allAdditionalConditions(),
+          aMappedPolicy,
         ),
       ).isEqualTo(
         mapOf(
@@ -83,7 +81,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList())),
-          aPolicyWithoutInputs.allAdditionalConditions(),
+          aMappedPolicyWithoutInputs,
         ),
       ).isEqualTo(
         mapOf(
@@ -97,12 +95,38 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isLicenceReadyToSubmit(
           listOf(anAdditionalConditionEntity),
-          aPolicyWithMultipleInputs.allAdditionalConditions(),
+          aMappedPolicyWithMultipleInputs,
         ),
       ).isEqualTo(
         mapOf(
           "code" to true,
         ),
+      )
+    }
+
+    @Test
+    fun `when a condition changes between policy versions, checks the policy version that matches the condition version`() {
+      assertThat(
+        isLicenceReadyToSubmit(
+          listOf(anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList())),
+          aMappedPolicyWithMultipleVersions,
+        ),
+      ).isEqualTo(
+        mapOf(
+          "code2" to true,
+        ),
+      )
+    }
+
+    @Test
+    fun `checks submission status based on condition policy version, not licence policy version`() {
+      assertThat(
+        isLicenceReadyToSubmit(
+          listOf(anAdditionalConditionEntity.copy(conditionVersion = "2.1", licence = aLicenceEntity.copy(version = "2.0"))),
+          aMappedPolicyWithMultipleVersions,
+        ),
+      ).isEqualTo(
+        mapOf("code" to true),
       )
     }
   }
@@ -114,7 +138,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isConditionReadyToSubmit(
           anAdditionalConditionEntity,
-          aPolicy.allAdditionalConditions(),
+          aMappedPolicy,
         ),
       ).isTrue()
     }
@@ -124,7 +148,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isConditionReadyToSubmit(
           anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
-          aPolicy.allAdditionalConditions(),
+          aMappedPolicy,
         ),
       ).isFalse()
     }
@@ -134,7 +158,7 @@ class AdditionalConditionWithConfigTest {
       assertThat(
         isConditionReadyToSubmit(
           anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
-          aPolicyWithoutInputs.allAdditionalConditions(),
+          aMappedPolicyWithoutInputs,
         ),
       ).isTrue()
     }
@@ -175,24 +199,6 @@ class AdditionalConditionWithConfigTest {
       requiresInput = true,
     )
 
-    val aPolicy = LicencePolicy(
-      version = "2.1",
-      standardConditions = StandardConditions(emptyList(), emptyList()),
-      additionalConditions = AdditionalConditions(listOf(policyApCondition, policyApCondition.copy(code = "code2")), emptyList()),
-    )
-
-    val aPolicyWithoutInputs = LicencePolicy(
-      version = "2.1",
-      standardConditions = StandardConditions(emptyList(), emptyList()),
-      additionalConditions = AdditionalConditions(listOf(policyConditionWithoutInput), emptyList()),
-    )
-
-    val aPolicyWithMultipleInputs = LicencePolicy(
-      version = "2.1",
-      standardConditions = StandardConditions(emptyList(), emptyList()),
-      additionalConditions = AdditionalConditions(listOf(aPolicyConditionWithMultipleInputs), emptyList()),
-    )
-
     val someAdditionalConditionData = AdditionalConditionData(
       additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "2.1"),
       dataField = "name",
@@ -209,6 +215,43 @@ class AdditionalConditionWithConfigTest {
       additionalConditionData = listOf(someAdditionalConditionData),
       additionalConditionUploadSummary = emptyList(),
       conditionType = "AP",
+    )
+
+    val aMappedPolicy = AllAdditionalConditions(
+      mapOf(
+        "2.1" to mapOf(
+          policyApCondition.code to policyApCondition,
+          policyApCondition.copy(code = "code2").code to policyApCondition.copy(code = "code2"),
+        ),
+      ),
+    )
+
+    val aMappedPolicyWithoutInputs = AllAdditionalConditions(
+      mapOf(
+        "2.1" to mapOf(
+          policyConditionWithoutInput.code to policyConditionWithoutInput,
+        ),
+      ),
+    )
+
+    val aMappedPolicyWithMultipleInputs = AllAdditionalConditions(
+      mapOf(
+        "2.1" to mapOf(
+          aPolicyConditionWithMultipleInputs.code to aPolicyConditionWithMultipleInputs,
+        ),
+      ),
+    )
+
+    val aMappedPolicyWithMultipleVersions = AllAdditionalConditions(
+      mapOf(
+        "2.0" to mapOf(
+          policyApCondition.copy(code = "code2").code to policyApCondition.copy(code = "code2"),
+        ),
+        "2.1" to mapOf(
+          policyApCondition.code to policyApCondition,
+          policyConditionWithoutInput.copy(code = "code2").code to policyConditionWithoutInput.copy(code = "code2"),
+        ),
+      ),
     )
   }
 }
