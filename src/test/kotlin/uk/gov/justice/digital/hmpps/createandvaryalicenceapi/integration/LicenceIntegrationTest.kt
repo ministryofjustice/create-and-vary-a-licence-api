@@ -455,11 +455,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-variation-licence.sql",
   )
   fun `Update spo discussion`() {
     webTestClient.put()
-      .uri("/licence/id/1/spo-discussion")
+      .uri("/licence/id/2/spo-discussion")
       .bodyValue(UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -467,7 +467,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     val result = webTestClient.get()
-      .uri("/licence/id/1")
+      .uri("/licence/id/2")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -477,15 +477,17 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.spoDiscussion).isEqualTo("Yes")
+    assertThat(result?.id).isEqualTo(2)
+    assertThat(result?.variationOf).isEqualTo(1)
   }
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-variation-licence.sql",
   )
   fun `Update vlo discussion`() {
     webTestClient.put()
-      .uri("/licence/id/1/vlo-discussion")
+      .uri("/licence/id/2/vlo-discussion")
       .bodyValue(UpdateVloDiscussionRequest(vloDiscussion = "Not applicable"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -493,7 +495,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     val result = webTestClient.get()
-      .uri("/licence/id/1")
+      .uri("/licence/id/2")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -507,11 +509,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-variation-licence.sql",
   )
   fun `Update reason for variation`() {
     webTestClient.put()
-      .uri("/licence/id/1/reason-for-variation")
+      .uri("/licence/id/2/reason-for-variation")
       .bodyValue(UpdateReasonForVariationRequest(reasonForVariation = "reason"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
@@ -519,7 +521,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     val result = webTestClient.get()
-      .uri("/events/match?licenceId=1&eventType=VARIATION_SUBMITTED_REASON")
+      .uri("/events/match?licenceId=2&eventType=VARIATION_SUBMITTED_REASON")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()

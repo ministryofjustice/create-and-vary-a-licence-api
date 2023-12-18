@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -35,8 +34,8 @@ class UpdateSentenceDateService(
 
     val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
 
-    val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = licenceEntity.calculateStatusCode(sentenceDatesRequest),
+    val updatedLicenceEntity = licenceEntity.updateLicenceDates(
+      status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
       conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
       sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
@@ -45,7 +44,6 @@ class UpdateSentenceDateService(
       licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
-      dateLastUpdated = LocalDateTime.now(),
       updatedByUsername = username,
     )
 

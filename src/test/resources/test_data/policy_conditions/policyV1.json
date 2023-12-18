@@ -154,7 +154,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "RegionOfResidence"
+        "type": "RegionOfResidence",
+        "skippable": false
       },
       {
         "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
@@ -212,7 +213,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "RestrictionOfResidency"
+        "type": "RestrictionOfResidency",
+        "skippable": false
       },
       {
         "code": "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
@@ -249,7 +251,8 @@
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "MedicalAppointmentType"
+        "type": "MedicalAppointmentType",
+        "skippable": false
       },
       {
         "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
@@ -260,7 +263,8 @@
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
@@ -308,7 +312,8 @@
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "AppointmentTimeAndPlace"
+        "type": "AppointmentTimeAndPlace",
+        "skippable": false
       },
       {
         "code": "75a6aac6-02a7-4414-af14-942be6736892",
@@ -319,7 +324,8 @@
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "4858cd8b-bca6-4f11-b6ee-439e27216d7d",
@@ -357,7 +363,8 @@
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "NoContactWithVictim"
+        "type": "NoContactWithVictim",
+        "skippable": false
       },
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
@@ -427,7 +434,8 @@
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "UnsupervisedContact"
+        "type": "UnsupervisedContact",
+        "skippable": false
       },
       {
         "code": "355700a9-6184-40c0-9759-0dfed1994e1e",
@@ -453,7 +461,8 @@
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "NamedIndividuals"
+        "type": "NamedIndividuals",
+        "skippable": false
       },
       {
         "code": "0aa669bf-db8a-4b8e-b8ba-ca82fc245b94",
@@ -464,7 +473,8 @@
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "cc80d02b-0b62-4940-bac6-0bcd374c725e",
@@ -475,7 +485,8 @@
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "18b69f61-800f-46b2-95c4-2019d33e34d6",
@@ -501,7 +512,8 @@
         ],
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": "NamedOrganisation"
+        "type": "NamedOrganisation",
+        "skippable": false
       },
       {
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
@@ -578,7 +590,8 @@
         ],
         "categoryShort": "Programmes or activities",
         "subtext": null,
-        "type": "BehaviourProblems"
+        "type": "BehaviourProblems",
+        "skippable": false
       },
       {
         "code": "9da214a3-c6ae-45e1-a465-12e22adf7c87",
@@ -611,7 +624,8 @@
         ],
         "categoryShort": "Programmes or activities",
         "subtext": null,
-        "type": "WorkingWithChildren"
+        "type": "WorkingWithChildren",
+        "skippable": false
       },
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
@@ -622,7 +636,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "72d281c3-b194-43ab-812d-fea0683ada65",
@@ -633,7 +648,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "ed607a91-fe3a-4816-8eb9-b447c945935c",
@@ -644,7 +660,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
@@ -655,7 +672,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "5fa04bbf-6b7c-4b65-9388-a0115cd365a6",
@@ -666,7 +684,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "bfbc693c-ab65-4042-920e-ddb085bc7aba",
@@ -677,7 +696,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
@@ -688,7 +708,8 @@
         "inputs": null,
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
@@ -714,7 +735,8 @@
         ],
         "categoryShort": "Items and documents",
         "subtext": null,
-        "type": "SpecifiedItem"
+        "type": "SpecifiedItem",
+        "skippable": false
       },
       {
         "code": "2a93b784-b8cb-49ed-95e2-a0df60723cda",
@@ -725,7 +747,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
@@ -762,7 +785,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "IntimateRelationshipWithGender"
+        "type": "IntimateRelationshipWithGender",
+        "skippable": false
       },
       {
         "code": "c5e91330-748d-46f3-93f6-bbe5ea8324ce",
@@ -773,7 +797,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "79ac033f-9d7a-4dab-8344-475106e58b71",
@@ -784,7 +809,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "8686a815-b7f0-43b6-9886-f01df6a48773",
@@ -795,7 +821,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
@@ -986,7 +1013,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "CurfewTerms"
+        "type": "CurfewTerms",
+        "skippable": false
       },
       {
         "code": "c2435d4a-20a0-47de-b080-e1e740d1514c",
@@ -1034,7 +1062,8 @@
         ],
         "categoryShort": null,
         "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
-        "type": "CurfewAddress"
+        "type": "CurfewAddress",
+        "skippable": false
       },
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
@@ -1070,7 +1099,8 @@
         ],
         "categoryShort": null,
         "subtext": "If you need to upload more than one map, add one here and then email all maps directly to the prison OMU. Make sure the names of areas shown on all maps are entered here as a list. For example, Bridgend, Porthcawl and Port Talbot.",
-        "type": "OutOfBoundsRegion"
+        "type": "OutOfBoundsRegion",
+        "skippable": false
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
@@ -1106,7 +1136,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "OutOfBoundsPremises"
+        "type": "OutOfBoundsPremises",
+        "skippable": false
       },
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
@@ -1130,7 +1161,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "OutOfBoundsPremisesType"
+        "type": "OutOfBoundsPremisesType",
+        "skippable": false
       },
       {
         "code": "bb401b88-2137-4154-be4a-5e05c168638a",
@@ -1141,7 +1173,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "5d0416a9-a4ce-4b2c-8636-0b7abaa3680a",
@@ -1152,7 +1185,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
@@ -1225,7 +1259,8 @@
         ],
         "categoryShort": "Supervision in the community",
         "subtext": null,
-        "type": "ReportToApprovedPremisesPolicyV2_0"
+        "type": "ReportToApprovedPremisesPolicyV2_0",
+        "skippable": false
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
@@ -1298,7 +1333,8 @@
         ],
         "categoryShort": "Supervision in the community",
         "subtext": null,
-        "type": "ReportToPoliceStationPolicyV2_0"
+        "type": "ReportToPoliceStationPolicyV2_0",
+        "skippable": false
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
@@ -1309,7 +1345,8 @@
         "inputs": null,
         "categoryShort": "Restriction of conduct or acts",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
@@ -1320,7 +1357,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "9785d8f8-31a9-4c32-a06d-eff049ecebcd",
@@ -1331,7 +1369,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "9efba199-87d4-468e-a5a1-1c0945571afa",
@@ -1342,7 +1381,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "3d771cc6-b85f-47e4-9e13-75bfb80706f4",
@@ -1353,7 +1393,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "e0421c22-1be7-4d06-aba7-3c17822b0c1c",
@@ -1364,7 +1405,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "1dc7ee29-df47-48a8-90b6-69e286692d8a",
@@ -1375,7 +1417,8 @@
         "inputs": null,
         "categoryShort": null,
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
@@ -1411,7 +1454,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "DrugTestLocation"
+        "type": "DrugTestLocation",
+        "skippable": false
       },
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
@@ -1460,7 +1504,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "ElectronicMonitoringTypes"
+        "type": "ElectronicMonitoringTypes",
+        "skippable": false
       },
       {
         "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -1484,7 +1529,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "ElectronicMonitoringPeriod"
+        "type": "ElectronicMonitoringPeriod",
+        "skippable": false
       },
       {
         "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
@@ -1508,7 +1554,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "ApprovedAddress"
+        "type": "ApprovedAddress",
+        "skippable": false
       },
       {
         "code": "599bdcae-d545-461c-b1a9-02cb3d4ba268",
@@ -1544,7 +1591,8 @@
         ],
         "categoryShort": null,
         "subtext": null,
-        "type": "AlcoholMonitoringPeriod"
+        "type": "AlcoholMonitoringPeriod",
+        "skippable": false
       }
     ],
     "PSS": [
@@ -1594,7 +1642,8 @@
             "subtext": null
           }
         ],
-        "type": "AppointmentTimeAndPlaceDuringPss"
+        "type": "AppointmentTimeAndPlaceDuringPss",
+        "skippable": false
       },
       {
         "code": "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
@@ -1630,7 +1679,8 @@
             "subtext": null
           }
         ],
-        "type": "DrugTestLocation"
+        "type": "DrugTestLocation",
+        "skippable": false
       }
     ]
   },

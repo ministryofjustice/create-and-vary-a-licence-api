@@ -1007,6 +1007,7 @@ val POLICY_V2_1 = LicencePolicy(
         text = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on [INSERT END DATE], and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
         tpl = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on {endDate}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
         type = "ElectronicMonitoringPeriod",
+        skippable = true,
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1037,6 +1038,7 @@ val POLICY_V2_1 = LicencePolicy(
         text = "You must not drink any alcohol until [END DATE] unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
         tpl = "You must not drink any alcohol until {endDate} unless your probation officer says you can. You will need to wear an electronic tag all the time so we can check this.",
         type = "AlcoholRestrictionPeriod",
+        skippable = true,
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1052,6 +1054,7 @@ val POLICY_V2_1 = LicencePolicy(
         text = "You will need to wear an electronic tag all the time until [END DATE] so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
         tpl = "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
         type = "ElectronicTagPeriod",
+        skippable = true,
       ),
       AdditionalConditionAp(
         category = "Terrorist personal search",
@@ -1088,6 +1091,7 @@ val POLICY_V2_1 = LicencePolicy(
         text = "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
         tpl = "Attend {appointmentAddress}{appointmentDate}{appointmentTime}, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
         type = "AppointmentTimeAndPlaceDuringPss",
+        skippable = true,
       ),
       AdditionalConditionPss(
         category = "Drug testing",

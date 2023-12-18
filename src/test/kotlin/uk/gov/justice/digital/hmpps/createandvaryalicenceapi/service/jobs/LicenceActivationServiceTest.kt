@@ -10,11 +10,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder.setContext
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.IS91_LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
@@ -23,9 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class LicenceActivationServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -322,21 +319,8 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
   }
 
-  private val aLicenceEntity = Licence(
-    id = 1,
-    typeCode = LicenceType.AP,
-    version = "1.1",
+  private val aLicenceEntity = createCrdLicence().copy(
     statusCode = LicenceStatus.APPROVED,
-    nomsId = "A1234AA",
-    bookingNo = "123456",
-    bookingId = 54321,
-    crn = "X12345",
-    pnc = "2019/123445",
-    cro = "12345",
-    prisonCode = "MDI",
-    prisonDescription = "Moorland (HMP)",
-    forename = "Bob",
-    surname = "Mortimer",
     dateOfBirth = LocalDate.of(1985, 12, 28),
     conditionalReleaseDate = LocalDate.of(2021, 10, 22),
     actualReleaseDate = LocalDate.now(),
@@ -346,30 +330,6 @@ class LicenceActivationServiceTest {
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-    probationAreaCode = "N01",
-    probationAreaDescription = "Wales",
-    probationPduCode = "N01A",
-    probationPduDescription = "Cardiff",
-    probationLauCode = "N01A2",
-    probationLauDescription = "Cardiff South",
-    probationTeamCode = "NA01A2-A",
-    probationTeamDescription = "Cardiff South Team A",
-    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-    standardConditions = emptyList(),
-    responsibleCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
   )
 
   private val anHdcStatus = PrisonerHdcStatus(
@@ -395,6 +355,17 @@ class LicenceActivationServiceTest {
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
     recall = false,
+    prisonId = "ABC",
+    bookNumber = "12345A",
+    firstName = "Jane",
+    middleNames = null,
+    lastName = "Doe",
+    dateOfBirth = LocalDate.parse("1985-01-01"),
+    conditionalReleaseDateOverrideDate = null,
+    sentenceStartDate = LocalDate.parse("2023-09-14"),
+    sentenceExpiryDate = LocalDate.parse("2024-09-14"),
+    topUpSupervisionStartDate = null,
+    croNumber = null,
   )
 
   val hdcLicence = aLicenceEntity

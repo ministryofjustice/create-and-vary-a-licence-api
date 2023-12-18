@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -14,12 +15,12 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
-  fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<Licence>
+  fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<CrdLicence>
 
   @Query(
     """
     SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence( l.crn, l.forename, l.surname, com.firstName , com.lastName , com.email)
-        FROM Licence l 
+        FROM CrdLicence l 
         JOIN l.submittedBy com
         WHERE (l.actualReleaseDate = CURRENT_DATE OR l.conditionalReleaseDate = CURRENT_DATE) 
         AND l.statusCode = 'SUBMITTED'
@@ -59,7 +60,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   @Query(
     """
       SELECT l
-      FROM Licence l
+      FROM VariationLicence l
       WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
       AND l.typeCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS))
       AND l.statusCode IN (

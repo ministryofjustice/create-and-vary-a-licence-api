@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 
 @Service
@@ -45,9 +44,8 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val updatedLicence = licenceEntity.copy(
-      standardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
-      dateLastUpdated = LocalDateTime.now(),
+    val updatedLicence = licenceEntity.updateConditions(
+      updatedStandardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
       updatedByUsername = username,
     )
 
@@ -86,9 +84,8 @@ class LicenceConditionService(
       ),
     )
 
-    val updatedLicence = licenceEntity.copy(
-      additionalConditions = newConditions,
-      dateLastUpdated = LocalDateTime.now(),
+    val updatedLicence = licenceEntity.updateConditions(
+      updatedAdditionalConditions = newConditions,
       updatedByUsername = username,
     )
 
@@ -100,7 +97,12 @@ class LicenceConditionService(
 
     auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition)
 
-    return transform(newCondition)
+    val readyToSubmit = isConditionReadyToSubmit(
+      newCondition,
+      licencePolicyService.policyByVersion(licenceEntity.version!!).allAdditionalConditions(),
+    )
+
+    return transform(newCondition, readyToSubmit)
   }
 
   @Transactional
@@ -130,9 +132,8 @@ class LicenceConditionService(
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
-    val updatedLicence = licenceEntity.copy(
-      additionalConditions = (newConditions + updatedConditions),
-      dateLastUpdated = LocalDateTime.now(),
+    val updatedLicence = licenceEntity.updateConditions(
+      updatedAdditionalConditions = (newConditions + updatedConditions),
       updatedByUsername = username,
     )
 
@@ -213,9 +214,8 @@ class LicenceConditionService(
       return
     }
 
-    val updatedLicence = licenceEntity.copy(
-      bespokeConditions = emptyList(),
-      dateLastUpdated = LocalDateTime.now(),
+    val updatedLicence = licenceEntity.updateConditions(
+      updatedBespokeConditions = emptyList(),
       updatedByUsername = username,
     )
     licenceRepository.saveAndFlush(updatedLicence)
@@ -271,7 +271,7 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val updatedLicence = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicence = licenceEntity.updateConditions(updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicence)
 
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition)
@@ -313,11 +313,10 @@ class LicenceConditionService(
     val removedBespokeConditions =
       licenceEntity.bespokeConditions.filter { bespokeConditionIds.contains(it.id) }
 
-    val updatedLicence = licenceEntity.copy(
-      additionalConditions = revisedAdditionalConditions,
-      standardConditions = revisedStandardConditions,
-      bespokeConditions = revisedBespokeConditions,
-      dateLastUpdated = LocalDateTime.now(),
+    val updatedLicence = licenceEntity.updateConditions(
+      updatedAdditionalConditions = revisedAdditionalConditions,
+      updatedStandardConditions = revisedStandardConditions,
+      updatedBespokeConditions = revisedBespokeConditions,
       updatedByUsername = username,
     )
     licenceRepository.saveAndFlush(updatedLicence)

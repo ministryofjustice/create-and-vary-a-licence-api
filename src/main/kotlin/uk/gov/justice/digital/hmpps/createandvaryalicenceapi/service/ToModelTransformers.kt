@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchResponseResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -65,7 +67,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     approvedDate = licence.approvedDate,
     submittedDate = licence.submittedDate,
     licenceVersion = licence.licenceVersion,
-    versionOf = licence.versionOfId,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
   )
 }
 
@@ -77,6 +79,7 @@ fun transform(
   licence: EntityLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
+  conditionSubmissionStatus: Map<String, Boolean>,
 ): ModelLicence {
   return ModelLicence(
     id = licence.id,
@@ -119,25 +122,25 @@ fun transform(
     appointmentTime = licence.appointmentTime,
     appointmentAddress = licence.appointmentAddress,
     appointmentContact = licence.appointmentContact,
-    spoDiscussion = licence.spoDiscussion,
-    vloDiscussion = licence.vloDiscussion,
+    spoDiscussion = if (licence is VariationLicence) licence.spoDiscussion else null,
+    vloDiscussion = if (licence is VariationLicence) licence.vloDiscussion else null,
     approvedDate = licence.approvedDate,
     approvedByUsername = licence.approvedByUsername,
     approvedByName = licence.approvedByName,
     submittedDate = licence.submittedDate,
     supersededDate = licence.supersededDate,
     dateCreated = licence.dateCreated,
-    createdByUsername = licence.createdBy!!.username,
+    createdByUsername = licence.getCreator().username,
     dateLastUpdated = licence.dateLastUpdated,
     updatedByUsername = licence.updatedByUsername,
     standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
     standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
-    additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP"),
-    additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS"),
+    additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
+    additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
     bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
-    isVariation = licence.variationOfId != null,
-    variationOf = licence.variationOfId,
-    createdByFullName = "${licence.createdBy?.firstName} ${licence.createdBy?.lastName}",
+    isVariation = licence is VariationLicence,
+    variationOf = if (licence is VariationLicence) licence.variationOfId else null,
+    createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
     isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
     isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
     licenceVersion = licence.licenceVersion,
@@ -160,10 +163,10 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
 }
 
 // Transform a list of entity additional conditions to model additional conditions
-fun List<EntityAdditionalCondition>.transformToModelAdditional(conditionType: String): List<ModelAdditionalCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map(::transform)
+fun List<EntityAdditionalCondition>.transformToModelAdditional(conditionType: String, conditionSubmissionStatus: Map<String, Boolean>): List<ModelAdditionalCondition> =
+  filter { condition -> condition.conditionType == conditionType }.map { transform(it, conditionSubmissionStatus[it.conditionCode]!!) }
 
-fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition {
   return ModelAdditionalCondition(
     id = entity.id,
     code = entity.conditionCode,
@@ -174,6 +177,7 @@ fun transform(entity: EntityAdditionalCondition): ModelAdditionalCondition {
     expandedText = entity.expandedConditionText,
     data = entity.additionalConditionData.transformToModelAdditionalData(),
     uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
+    readyToSubmit = readyToSubmit,
   )
 }
 
@@ -250,7 +254,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
+fun CaseloadResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence?.crn,
@@ -266,7 +270,7 @@ fun ProbationSearchResponseResult.transformToModelFoundProbationRecord(licence: 
   )
 }
 
-fun ProbationSearchResponseResult.transformToUnstartedRecord(
+fun CaseloadResult.transformToUnstartedRecord(
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,

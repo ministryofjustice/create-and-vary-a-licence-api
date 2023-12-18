@@ -30,4 +30,7 @@ data class AdditionalCondition(
 
   @Schema(description = "The list of file upload summary for this additional condition")
   val uploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
+
+  @Schema(description = "Whether the condition is ready to submit for approval")
+  val readyToSubmit: Boolean?,
 )
