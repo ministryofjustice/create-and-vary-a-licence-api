@@ -130,7 +130,7 @@
           "text": "Not to approach or communicate with any victims of your offences without the prior approval of your supervising officer.",
           "category": "Making or maintaining contact with a person",
           "categoryShort": "Contact with a person",
-          "requiresInput": false
+          "requiresUserInput": false
         },
         {
           "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",

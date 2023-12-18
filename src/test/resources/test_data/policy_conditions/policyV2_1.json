@@ -471,7 +471,8 @@
         "inputs": null,
         "categoryShort": "Contact with a person",
         "subtext": null,
-        "type": null
+        "type": null,
+        "skippable": false
       },
       {
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
