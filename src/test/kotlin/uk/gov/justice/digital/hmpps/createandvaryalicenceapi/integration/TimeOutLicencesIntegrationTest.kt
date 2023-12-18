@@ -15,8 +15,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
+import java.time.LocalDate
 
 class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
 
@@ -25,6 +27,9 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
+
+  @Autowired
+  lateinit var releaseDateService: ReleaseDateService
 
   @BeforeEach
   fun setupClient() {
@@ -53,15 +58,24 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(timedOutLicences?.size).isEqualTo(3)
+    val jobExecutionDate = LocalDate.now()
+    val isOnBankHolidayOrWeekEnd = releaseDateService.excludeBankHolidaysAndWeekends(jobExecutionDate)
+
+    assertThat(timedOutLicences?.size).isEqualTo(if (isOnBankHolidayOrWeekEnd) 0 else 3)
     assertThat(timedOutLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        tuple(1L, LicenceStatus.TIMED_OUT),
-        tuple(2L, LicenceStatus.TIMED_OUT),
-        tuple(4L, LicenceStatus.TIMED_OUT),
+        if (isOnBankHolidayOrWeekEnd) {
+          tuple(1L, LicenceStatus.IN_PROGRESS)
+          tuple(2L, LicenceStatus.IN_PROGRESS)
+          tuple(4L, LicenceStatus.IN_PROGRESS)
+        } else {
+          tuple(1L, LicenceStatus.TIMED_OUT)
+          tuple(2L, LicenceStatus.TIMED_OUT)
+          tuple(4L, LicenceStatus.TIMED_OUT)
+        },
       )
   }
 
