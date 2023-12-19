@@ -41,6 +41,7 @@ class TimeOutLicencesService(
       log.info("Job to runTimeOutLicencesService has no licences to time out")
       return
     }
+    log.info("TimeOutLicencesServiceJob is updating status TIMED_OUT on ${licencesToTimeOut.size} licences")
     updateLicencesStatus(licencesToTimeOut)
     log.info("TimeOutLicencesServiceJob updated status TIMED_OUT on ${licencesToTimeOut.size} licences")
   }
