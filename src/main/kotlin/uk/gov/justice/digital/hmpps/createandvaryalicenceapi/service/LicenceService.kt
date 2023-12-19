@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.slf4j.LoggerFactory
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -37,6 +38,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -53,6 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -72,23 +78,88 @@ class LicenceService(
   private val notifyService: NotifyService,
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
+  private val probationSearchApiClient: ProbationSearchApiClient,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val prisonApiClient: PrisonApiClient,
+  private val communityApiClient: CommunityApiClient,
 ) {
+
+  companion object {
+    private val log = LoggerFactory.getLogger(LicenceService::class.java)
+  }
 
   @Transactional
   fun createLicence(request: CreateLicenceRequest): LicenceSummary {
-    if (offenderHasLicenceInFlight(request.nomsId!!)) {
+    val nomsId = request.nomsId!!
+
+    if (offenderHasLicenceInFlight(nomsId)) {
       throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val responsibleCom = communityOffenderManagerRepository.findByStaffIdentifier(request.responsibleComStaffId)
-      ?: throw ValidationException("Staff with staffIdentifier ${request.responsibleComStaffId} not found")
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomsId)).first()
+    val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(nomsId)
+    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId)
+    val offenderManagers = communityApiClient.getAllOffenderManagers(deliusRecord.otherIds.crn)
+
+    val currentActiveOffenderManager = deliusRecord.offenderManagers.find { it.active } ?: error(
+      "No active offender manager found for $nomsId",
+    )
+    val currentResponsibleOfficerDetails = offenderManagers.find {
+      it.staffCode == currentActiveOffenderManager.staffDetail.code
+    } ?: error("No responsible officer details found for $nomsId")
+
+    val responsibleCom = communityOffenderManagerRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
+      ?: error("Staff with staffIdentifier ${currentResponsibleOfficerDetails.staffId} not found")
 
     val createdBy = communityOffenderManagerRepository.findByUsernameIgnoreCase(username)
       ?: error("Staff with username $username not found")
 
-    val licence = transform(request)
+    val licenceType = getLicenceType(nomisRecord)
+
+    val createLicenceRequest = CreateLicenceRequest(
+      typeCode = licenceType,
+      version = licencePolicyService.currentPolicy().version,
+      nomsId = nomsId,
+      bookingNo = nomisRecord.bookNumber,
+      bookingId = nomisRecord.bookingId.toLong(),
+      prisonCode = nomisRecord.prisonId,
+      forename = nomisRecord.firstName.convertToTitleCase(),
+      middleNames = nomisRecord.middleNames?.convertToTitleCase() ?: "",
+      surname = nomisRecord.lastName.convertToTitleCase(),
+      dateOfBirth = nomisRecord.dateOfBirth,
+      conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
+      actualReleaseDate = nomisRecord.confirmedReleaseDate,
+      sentenceStartDate = nomisRecord.sentenceStartDate,
+      sentenceEndDate = nomisRecord.sentenceExpiryDate,
+      licenceStartDate = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate,
+      licenceExpiryDate = nomisRecord.licenceExpiryDate,
+      topupSupervisionStartDate = nomisRecord.topUpSupervisionStartDate,
+      topupSupervisionExpiryDate = nomisRecord.topUpSupervisionExpiryDate,
+      prisonDescription = prisonInformation.description,
+      prisonTelephone = prisonInformation.getPrisonContactNumber(),
+      probationAreaCode = currentResponsibleOfficerDetails.probationArea.code,
+      probationAreaDescription = currentResponsibleOfficerDetails.probationArea.description,
+      probationPduCode = currentResponsibleOfficerDetails.team.borough.code,
+      probationPduDescription = currentResponsibleOfficerDetails.team.borough.description,
+      probationLauCode = currentResponsibleOfficerDetails.team.district.code,
+      probationLauDescription = currentResponsibleOfficerDetails.team.district.description,
+      probationTeamCode = currentResponsibleOfficerDetails.team.code,
+      probationTeamDescription = currentResponsibleOfficerDetails.team.description,
+      crn = deliusRecord.otherIds.crn,
+      pnc = deliusRecord.otherIds.pncNumber,
+      cro = deliusRecord.otherIds.croNumber ?: nomisRecord.croNumber,
+      standardLicenceConditions = licencePolicyService.getStandardApConditions(licenceType),
+      standardPssConditions = licencePolicyService.getStandardPssConditions(licenceType),
+      responsibleComStaffId = currentResponsibleOfficerDetails.staffId,
+    )
+
+    val licenceEqualityCheck = checkCreatedLicence(request, createLicenceRequest)
+      .filter { (test, _) -> !test }
+      .map { (_, field) -> field }
+
+    val licence = transform(createLicenceRequest)
 
     licence.dateCreated = LocalDateTime.now()
     licence.responsibleCom = responsibleCom
@@ -99,8 +170,8 @@ class LicenceService(
     val createLicenceResponse = transformToLicenceSummary(licenceEntity)
 
     val entityStandardLicenceConditions =
-      request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
-    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
+      createLicenceRequest.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
+    val entityStandardPssConditions = createLicenceRequest.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
     standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
 
     auditEventRepository.saveAndFlush(
@@ -108,7 +179,7 @@ class LicenceService(
         licenceId = createLicenceResponse.licenceId,
         username = username,
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Licence created for ${request.forename} ${request.surname}",
+        summary = "Licence created for ${createLicenceRequest.forename} ${createLicenceRequest.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
@@ -123,6 +194,12 @@ class LicenceService(
         eventDescription = "Licence created for ${licenceEntity.forename} ${licenceEntity.surname}",
       ),
     )
+
+    if (licenceEqualityCheck.isNotEmpty()) {
+      log.warn("Licence inconsistency for ${licenceEntity.id} with the following differences: $licenceEqualityCheck")
+    } else {
+      log.info("Licence request and creation are identical")
+    }
 
     return createLicenceResponse
   }
@@ -953,5 +1030,44 @@ class LicenceService(
     if (licencesToDeactivate.isNotEmpty()) {
       inactivateLicences(licencesToDeactivate, reason, false)
     }
+  }
+
+  fun checkCreatedLicence(frontendRequest: CreateLicenceRequest, backendRequest: CreateLicenceRequest): List<Pair<Boolean, String>> {
+    return listOf(
+      (frontendRequest.typeCode == backendRequest.typeCode) to "type code",
+      (frontendRequest.version == backendRequest.version) to "version",
+      (frontendRequest.nomsId == backendRequest.nomsId) to "nomsId",
+      (frontendRequest.bookingNo == backendRequest.bookingNo) to "bookingNo",
+      (frontendRequest.bookingId == backendRequest.bookingId) to "bookingId",
+      (frontendRequest.prisonCode == backendRequest.prisonCode) to "prisonCode",
+      (frontendRequest.forename == backendRequest.forename) to "forename",
+      (frontendRequest.middleNames == backendRequest.middleNames) to "middleNames",
+      (frontendRequest.surname == backendRequest.surname) to "surname",
+      (frontendRequest.dateOfBirth == backendRequest.dateOfBirth) to "dateOfBirth",
+      (frontendRequest.conditionalReleaseDate == backendRequest.conditionalReleaseDate) to "conditionalReleaseDate",
+      (frontendRequest.actualReleaseDate == backendRequest.actualReleaseDate) to "actualReleaseDate",
+      (frontendRequest.sentenceStartDate == backendRequest.sentenceStartDate) to "sentenceStartDate",
+      (frontendRequest.sentenceEndDate == backendRequest.sentenceEndDate) to "sentenceEndDate",
+      (frontendRequest.licenceStartDate == backendRequest.licenceStartDate) to "licenceStartDate",
+      (frontendRequest.licenceExpiryDate == backendRequest.licenceExpiryDate) to "licenceExpiryDate",
+      (frontendRequest.topupSupervisionStartDate == backendRequest.topupSupervisionStartDate) to "topupSupervisionStartDate",
+      (frontendRequest.topupSupervisionExpiryDate == backendRequest.topupSupervisionExpiryDate) to "topupSupervisionExpiryDate",
+      (frontendRequest.prisonDescription == backendRequest.prisonDescription) to "prisonDescription",
+      (frontendRequest.prisonTelephone == backendRequest.prisonTelephone) to "prisonTelephone",
+      (frontendRequest.probationAreaCode == backendRequest.probationAreaCode) to "probationAreaCode",
+      (frontendRequest.probationAreaDescription == backendRequest.probationAreaDescription) to "probationAreaDescription",
+      (frontendRequest.probationPduCode == backendRequest.probationPduCode) to "probationPduCode",
+      (frontendRequest.probationPduDescription == backendRequest.probationPduDescription) to "probationPduDescription",
+      (frontendRequest.probationLauCode == backendRequest.probationLauCode) to "probationLauCode",
+      (frontendRequest.probationLauDescription == backendRequest.probationLauDescription) to "probationLauDescription",
+      (frontendRequest.probationTeamCode == backendRequest.probationTeamCode) to "probationTeamCode",
+      (frontendRequest.probationTeamDescription == backendRequest.probationTeamDescription) to "probationTeamDescription",
+      (frontendRequest.crn == backendRequest.crn) to "crn",
+      (frontendRequest.pnc == backendRequest.pnc) to "pnc",
+      (frontendRequest.cro == backendRequest.cro) to "cro",
+      (frontendRequest.standardLicenceConditions == backendRequest.standardLicenceConditions) to "standardLicenceConditions",
+      (frontendRequest.standardPssConditions == backendRequest.standardPssConditions) to "standardPssConditions",
+      (frontendRequest.responsibleComStaffId == backendRequest.responsibleComStaffId) to "responsibleComStaffId",
+    )
   }
 }

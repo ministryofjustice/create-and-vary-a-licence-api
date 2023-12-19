@@ -136,12 +136,6 @@ class ComService(
     return reasons + hdcReasonIfPresent
   }
 
-  private fun PrisonerSearchPrisoner.getLicenceType() = when {
-    this.licenceExpiryDate == null -> LicenceType.PSS
-    this.topUpSupervisionExpiryDate == null || topUpSupervisionExpiryDate <= licenceExpiryDate -> LicenceType.AP
-    else -> LicenceType.AP_PSS
-  }
-
   private fun PrisonerSearchPrisoner.getReleaseDate() = confirmedReleaseDate ?: releaseDate
 
   private fun getLicence(result: CaseloadResult): Licence? {
@@ -179,7 +173,7 @@ class ComService(
     else -> {
       deliusOffender.transformToUnstartedRecord(
         releaseDate = prisonOffender.getReleaseDate(),
-        licenceType = prisonOffender.getLicenceType(),
+        licenceType = LicenceType.getLicenceType(prisonOffender),
         LicenceStatus.NOT_STARTED,
       )
     }

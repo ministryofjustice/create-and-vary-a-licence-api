@@ -5,6 +5,7 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
@@ -59,6 +60,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -88,6 +103,10 @@ class LicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
+  private val prisonApiClient = mock<PrisonApiClient>()
+  private val communityApiClient = mock<CommunityApiClient>()
 
   private val service = Mockito.spy(
     LicenceService(
@@ -103,6 +122,10 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
+      probationSearchApiClient,
+      prisonerSearchApiClient,
+      prisonApiClient,
+      communityApiClient,
     ),
   )
 
@@ -174,90 +197,106 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).findById(1L)
   }
 
-  @Test
-  fun `service creates a licence with standard conditions`() {
-    val expectedCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    )
+  @Nested
+  inner class `Create licence` {
+    @Test
+    fun `service creates a licence with standard conditions`() {
+      val expectedCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      )
 
-    whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(aLicenceEntity.standardConditions)
-    whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
-    whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
-    whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
+      whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(aLicenceEntity.standardConditions)
+      whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
+      whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    val createResponse = service.createLicence(aCreateLicenceRequest)
-
-    assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
-
-    verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-
-    with(licenceCaptor.value as CrdLicence) {
-      assertThat(kind).isEqualTo(LicenceKind.CRD)
-      assertThat(version).isEqualTo("1.4")
-      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-      assertThat(versionOfId).isNull()
-      assertThat(licenceVersion).isEqualTo("1.0")
-    }
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
-        listOf(
-          1L,
-          "smills",
-          "X Y",
-          "Licence created for ${aCreateLicenceRequest.forename} ${aCreateLicenceRequest.surname}",
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(aPrisonerSearchResult)
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+      whenever(licencePolicyService.currentPolicy()).thenReturn(
+        LicencePolicy(
+          "2.1",
+          standardConditions = StandardConditions(emptyList(), emptyList()),
+          additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+          changeHints = emptyList(),
         ),
       )
 
-    assertThat(eventCaptor.value)
-      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
-      .isEqualTo(
-        listOf(
-          1L,
-          LicenceEventType.CREATED,
-          "smills",
-          "X",
-          "Y",
-          "Licence created for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-        ),
-      )
-  }
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
-  @Test
-  fun `service throws a validation exception if an in progress licence exists for this person`() {
-    whenever(
-      licenceRepository
-        .findAllByNomsIdAndStatusCodeIn(
-          aCreateLicenceRequest.nomsId!!,
-          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
-        ),
-    ).thenReturn(listOf(aLicenceEntity))
+      val createResponse = service.createLicence(aCreateLicenceRequest)
 
-    val exception = assertThrows<ValidationException> {
-      service.createLicence(aCreateLicenceRequest)
+      assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
+
+      verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      with(licenceCaptor.value as CrdLicence) {
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(versionOfId).isNull()
+        assertThat(licenceVersion).isEqualTo("1.0")
+      }
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            1L,
+            "smills",
+            "X Y",
+            "Licence created for ${aPrisonerSearchResult.first().firstName} ${aPrisonerSearchResult.first().lastName}",
+          ),
+        )
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            1L,
+            LicenceEventType.CREATED,
+            "smills",
+            "X",
+            "Y",
+            "Licence created for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          ),
+        )
     }
 
-    assertThat(exception)
-      .isInstanceOf(ValidationException::class.java)
-      .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+    @Test
+    fun `service throws a validation exception if an in progress licence exists for this person`() {
+      whenever(
+        licenceRepository
+          .findAllByNomsIdAndStatusCodeIn(
+            aCreateLicenceRequest.nomsId!!,
+            listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
+          ),
+      ).thenReturn(listOf(aLicenceEntity))
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      val exception = assertThrows<ValidationException> {
+        service.createLicence(aCreateLicenceRequest)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(ValidationException::class.java)
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
   }
 
   @Test
@@ -2116,6 +2155,97 @@ class LicenceServiceTest {
         additionalConditionData = someAdditionalConditionData,
         licence = aLicenceEntity,
         conditionType = "PSS",
+      ),
+    )
+
+    val aPrisonerSearchResult = listOf(
+      PrisonerSearchPrisoner(
+        prisonerNumber = "A1234AA",
+        bookingId = "123456",
+        status = "ACTIVE IN",
+        mostSeriousOffence = "Robbery",
+        licenceExpiryDate = LocalDate.of(2021, 10, 22),
+        topUpSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+        homeDetentionCurfewEligibilityDate = null,
+        releaseDate = LocalDate.of(2021, 10, 22),
+        confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+        conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+        paroleEligibilityDate = null,
+        actualParoleDate = null,
+        postRecallReleaseDate = null,
+        legalStatus = "SENTENCED",
+        indeterminateSentence = false,
+        recall = false,
+        prisonId = "MDI",
+        bookNumber = "12345A",
+        firstName = "Bob",
+        middleNames = null,
+        lastName = "Mortimar",
+        dateOfBirth = LocalDate.of(1985, 12, 28),
+        conditionalReleaseDateOverrideDate = null,
+        sentenceStartDate = LocalDate.of(2018, 10, 22),
+        sentenceExpiryDate = LocalDate.of(2021, 10, 22),
+        topUpSupervisionStartDate = null,
+        croNumber = null,
+      ),
+    )
+
+    val anOffenderDetailResult = OffenderDetail(
+      offenderId = 1L,
+      otherIds = OtherIds(
+        crn = "X12345",
+        croNumber = "AB01/234567C",
+        pncNumber = null,
+      ),
+      offenderManagers = listOf(
+        OffenderManager(
+          staffDetail = StaffDetail(
+            code = "AB012C",
+          ),
+          active = true,
+        ),
+      ),
+    )
+
+    val somePrisonInformation = Prison(
+      prisonId = "MDI",
+      description = "Moorland (HMP)",
+      phoneDetails = listOf(
+        PhoneDetail(
+          phoneId = 1,
+          number = "0123 456 7890",
+          type = "BUS",
+          ext = null,
+        ),
+        PhoneDetail(
+          phoneId = 2,
+          number = "0800 123 4567",
+          type = "FAX",
+          ext = null,
+        ),
+      ),
+    )
+
+    val aCommunityOrPrisonOffenderManager = listOf(
+      CommunityOrPrisonOffenderManager(
+        staffCode = "AB012C",
+        staffId = 2000L,
+        team = TeamDetail(
+          code = "NA01A2-A",
+          description = "Cardiff South Team A",
+          borough = Detail(
+            code = "N01A",
+            description = "Cardiff",
+          ),
+          district = Detail(
+            code = "N01A2",
+            description = "Cardiff South",
+          ),
+        ),
+        probationArea = Detail(
+          code = "N01",
+          description = "Wales",
+        ),
       ),
     )
   }
