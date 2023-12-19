@@ -113,7 +113,7 @@ tasks {
     this.setDependsOn(
       this.dependsOn.filterNot {
         it is TaskProvider<*> && it.name == "detekt"
-      },
+      }
     )
   }
 }
