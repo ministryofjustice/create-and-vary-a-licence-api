@@ -62,7 +62,8 @@ dependencies {
   implementation("com.google.code.gson:gson:2.10.1")
   implementation("io.arrow-kt:arrow-core:1.2.1")
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.5.1")
-
+  implementation("org.json:json:20231013")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
@@ -111,7 +112,7 @@ tasks {
     this.setDependsOn(
       this.dependsOn.filterNot {
         it is TaskProvider<*> && it.name == "detekt"
-      }
+      },
     )
   }
 }
