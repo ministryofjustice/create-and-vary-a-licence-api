@@ -63,9 +63,10 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.1")
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.5.1")
   implementation("org.json:json:20231013")
-  implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+  implementation("com.fasterxml.jackson.core:jackson-core:2.16.0")
+
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
   // Test dependencies
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
@@ -75,7 +76,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-impl:0.12.3")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.12.3")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.0.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.16")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.19")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
