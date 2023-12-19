@@ -64,6 +64,8 @@ dependencies {
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.5.1")
   implementation("org.json:json:20231013")
   implementation("com.fasterxml.jackson.core:jackson-core:2.16.0")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+  implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
