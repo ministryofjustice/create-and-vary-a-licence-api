@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Entity
 @DiscriminatorValue(value = "PRISON_CASE_ADMIN")
 class PrisonCaseAdministrator(
-  id: Long = -1,
+  id: Long? = -1,
   username: String,
   email: String?,
   firstName: String?,
@@ -23,6 +23,21 @@ class PrisonCaseAdministrator(
   lastName = lastName,
   lastUpdatedTimestamp = lastUpdatedTimestamp,
 ) {
+  fun copy(
+    id: Long? = this.id,
+    username: String = this.username,
+    email: String? = this.email,
+    firstName: String? = this.firstName,
+    lastName: String? = this.lastName,
+    lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp,
+  ) = PrisonCaseAdministrator(
+    id = id,
+    username = username,
+    email = email,
+    firstName = firstName,
+    lastName = lastName,
+    lastUpdatedTimestamp = lastUpdatedTimestamp,
+  )
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
