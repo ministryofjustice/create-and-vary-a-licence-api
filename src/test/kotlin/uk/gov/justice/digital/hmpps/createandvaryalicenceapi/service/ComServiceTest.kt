@@ -294,6 +294,16 @@ class ComServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
 
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
+      true,
+    )
+
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -306,8 +316,13 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
-    verifyNoInteractions(eligibilityService)
-    verifyNoInteractions(prisonApiClient)
+    verify(eligibilityService).isExistingLicenceEligible(
+      aPrisonerSearchResult,
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
+    )
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -377,6 +392,16 @@ class ComServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
 
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
+      true,
+    )
+
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -397,8 +422,13 @@ class ComServiceTest {
       ),
     )
 
-    verifyNoInteractions(eligibilityService)
-    verifyNoInteractions(prisonApiClient)
+    verify(eligibilityService).isExistingLicenceEligible(
+      aPrisonerSearchResult,
+    )
+
+    verify(prisonApiClient).getHdcStatuses(
+      emptyList(),
+    )
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -446,6 +476,14 @@ class ComServiceTest {
           )
           ),
       )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+    whenever(eligibilityService.isExistingLicenceEligible(any())).thenReturn(
+      true,
+    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -458,10 +496,6 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
-
-    verifyNoInteractions(eligibilityService)
-    verifyNoInteractions(prisonApiClient)
-
     val resultsList = result.results
     val offender = resultsList.first()
     val inPrisonCount = result.inPrisonCount
@@ -533,6 +567,10 @@ class ComServiceTest {
           ),
       )
 
+    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
+      true,
+    )
+
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -544,9 +582,9 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
-
-    verifyNoInteractions(eligibilityService)
     verifyNoInteractions(prisonApiClient)
+    verifyNoInteractions(prisonerSearchApiClient)
+    verifyNoInteractions(eligibilityService)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -634,7 +672,6 @@ class ComServiceTest {
     )
 
     verifyNoInteractions(eligibilityService)
-    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -812,10 +849,7 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
-    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
-      emptyList(),
-    )
-
+    verifyNoInteractions(prisonerSearchApiClient)
     verifyNoInteractions(eligibilityService)
     verifyNoInteractions(prisonApiClient)
 
