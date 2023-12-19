@@ -33,23 +33,27 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = [ComController::class])
+@WebMvcTest(controllers = [StaffController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = [ComController::class])
+@ContextConfiguration(classes = [StaffController::class])
 @WebAppConfiguration
-class ComControllerTest {
+class StaffControllerTest {
 
   @MockBean
   private lateinit var notifyService: NotifyService
 
   @MockBean
   private lateinit var comService: ComService
+
+  @MockBean
+  private lateinit var staffService: StaffService
 
   @Autowired
   private lateinit var mvc: MockMvc
@@ -62,7 +66,7 @@ class ComControllerTest {
     reset(comService, notifyService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(ComController(comService))
+      .standaloneSetup(StaffController(comService, staffService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -84,7 +88,7 @@ class ComControllerTest {
       firstName = "Joseph",
       lastName = "Bloggs",
     )
-    whenever(comService.updateComDetails(any())).thenReturn(expectedCom)
+    whenever(staffService.updateComDetails(any())).thenReturn(expectedCom)
 
     val request = put("/com/update")
       .accept(MediaType.APPLICATION_JSON)
@@ -93,7 +97,7 @@ class ComControllerTest {
 
     mvc.perform(request).andExpect(status().isOk)
 
-    verify(comService, times(1)).updateComDetails(body)
+    verify(staffService, times(1)).updateComDetails(body)
   }
 
   @Test

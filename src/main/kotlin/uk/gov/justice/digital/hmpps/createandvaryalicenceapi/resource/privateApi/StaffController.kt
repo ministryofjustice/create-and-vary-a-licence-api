@@ -18,29 +18,31 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 
 @RestController
-@RequestMapping("/com", produces = [MediaType.APPLICATION_JSON_VALUE])
-class ComController(private val comService: ComService) {
+@RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
+class StaffController(private val comService: ComService, private val staffService: StaffService) {
   @Tag(name = Tags.COM)
   @PutMapping(
-    value = ["/update"],
+    value = ["/com/update"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Updates the details of a community offender manager.",
-    description = "Updates the details of a community offender manager (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Create/updates the details of a community offender manager.",
+    description = "Create/updates the details of a community offender manager (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The COM was updated",
+        description = "The COM was create/updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -64,12 +66,54 @@ class ComController(private val comService: ComService) {
     @RequestBody
     body: UpdateComRequest,
   ) {
-    this.comService.updateComDetails(body)
+    this.staffService.updateComDetails(body)
+  }
+
+  @Tag(name = Tags.COM)
+  @PutMapping(
+    value = ["/prison-case-administrator/update"],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Create/updates the details of a prison case administrator.",
+    description = "Create/updates the details of a prison case administrator (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "The Case Administrator was created/updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun updateCaDetails(
+    @Valid
+    @RequestBody
+    body: UpdatePrisonCaseAdminRequest,
+  ) {
+    this.staffService.updatePrisonCaseAdmin(body)
   }
 
   @Tag(name = Tags.COM)
   @PostMapping(
-    value = ["/case-search"],
+    value = ["/com/case-search"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
