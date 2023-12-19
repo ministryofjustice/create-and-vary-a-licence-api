@@ -75,6 +75,16 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
 
   @Query(
     """
+      SELECT l
+      FROM CrdLicence l
+      WHERE COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) <= :timeOutDate
+      AND l.statusCode = 'IN_PROGRESS'
+  """,
+  )
+  fun getAllLicencesToTimeOut(timeOutDate: LocalDate): List<CrdLicence>
+
+  @Query(
+    """
     SELECT l
         FROM Licence l
         WHERE l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
