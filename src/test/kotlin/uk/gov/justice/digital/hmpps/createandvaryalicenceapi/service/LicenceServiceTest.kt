@@ -147,6 +147,12 @@ class LicenceServiceTest {
       additionalConditionUploadDetailRepository,
       auditEventRepository,
       notifyService,
+      omuService,
+      releaseDateService,
+      probationSearchApiClient,
+      prisonerSearchApiClient,
+      prisonApiClient,
+      communityApiClient,
     )
   }
 
@@ -297,6 +303,132 @@ class LicenceServiceTest {
       verify(auditEventRepository, times(0)).saveAndFlush(any())
       verify(licenceEventRepository, times(0)).saveAndFlush(any())
     }
+
+    @Test
+    fun `service throws an error if no active offender manager found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(aPrisonerSearchResult)
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          offenderManagers = listOf(
+            OffenderManager(
+              staffDetail = StaffDetail(
+                code = "AB012C",
+              ),
+              active = false,
+            ),
+          ),
+        ),
+      )
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(aCreateLicenceRequest)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No active offender manager found for NOMSID")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(aPrisonerSearchResult)
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          offenderManagers = listOf(
+            OffenderManager(
+              staffDetail = StaffDetail(
+                code = "XXXXXX",
+              ),
+              active = true,
+            ),
+          ),
+        ),
+      )
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(aCreateLicenceRequest)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No responsible officer details found for NOMSID")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no responsible COM found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(aPrisonerSearchResult)
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+
+      whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(aCreateLicenceRequest)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("Staff with staffIdentifier 2000 not found")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no user found for this person`() {
+      val expectedCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(aPrisonerSearchResult)
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+
+      whenever(communityOffenderManagerRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
+      whenever(communityOffenderManagerRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(aCreateLicenceRequest)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("Staff with username smills not found")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    /**
+     * TODO remaining tests - there are several tests in licenceService.test.ts which we would like to retain for test coverage
+     * not all are needed (such as exist type tests) but we need to test all functions within the new create function such as getting licence type
+     * Tests around the middle name being set or unset, the correct standard conditions based on licence, the licence start date, prison telephone,
+     * the conditional release date and the cro number are all variants that need testing
+     */
   }
 
   @Test
