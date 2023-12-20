@@ -39,7 +39,18 @@ data class Input(
   val addAnother: AddAnother? = null,
   override val includeBefore: String? = null,
   val subtext: String? = null,
-) : FormattingRule
+) : FormattingRule {
+  fun getAllFieldNames(): List<String> {
+    val conditionalInputFields: List<String> = options?.mapNotNull {
+      it.conditional?.inputs?.map { c -> c.name }
+    }?.flatten() ?: emptyList()
+    return if (conditionalInputFields.isNotEmpty()) {
+      conditionalInputFields + name
+    } else {
+      listOf(name)
+    }
+  }
+}
 
 interface FormattingRule {
   val type: InputType
