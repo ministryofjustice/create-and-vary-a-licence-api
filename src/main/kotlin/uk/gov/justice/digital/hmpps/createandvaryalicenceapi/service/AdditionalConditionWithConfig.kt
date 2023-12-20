@@ -28,7 +28,7 @@ fun isLicenceReadyToSubmit(licenceConditions: List<AdditionalCondition>, policy:
       if (!it.config.requiresInput) {
         true
       } else {
-        val policyInputs = it.config.getConditionInputs()!!.map { input -> input.getAllFieldNames() }.flatten()
+        val policyInputs = it.config.getConditionInputs()!!.flatMap { input -> input.getAllFieldNames() }
         policyInputs.any { name -> enteredFields.contains(name) }
       }
     Pair(it.additionalCondition.conditionCode!!, readyToSubmit)
