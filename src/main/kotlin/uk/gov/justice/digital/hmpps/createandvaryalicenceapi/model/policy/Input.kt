@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.ADDRESS
@@ -40,6 +41,8 @@ data class Input(
   override val includeBefore: String? = null,
   val subtext: String? = null,
 ) : FormattingRule {
+
+  @JsonIgnore
   fun getAllFieldNames(): List<String> {
     val conditionalInputFields: List<String> = options?.mapNotNull {
       it.conditional?.inputs?.map { c -> c.name }
