@@ -63,6 +63,7 @@ object LicenceCreation {
         probationTeamDescription = this.probationTeamDescription,
         appointmentPerson = this.appointmentPerson,
         appointmentTime = this.appointmentTime,
+        appointmentTimeType = this.appointmentTimeType,
         appointmentAddress = this.appointmentAddress,
         appointmentContact = this.appointmentContact,
         responsibleCom = this.responsibleCom,

@@ -63,6 +63,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -861,10 +862,12 @@ class LicenceControllerTest {
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES),
+      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
     )
 
     val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
+      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
     )
 
     val aContactNumberRequest = ContactNumberRequest(
