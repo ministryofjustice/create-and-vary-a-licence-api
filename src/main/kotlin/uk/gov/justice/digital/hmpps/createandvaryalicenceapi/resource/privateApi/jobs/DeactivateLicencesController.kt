@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Deacti
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class DeactivateLicencesController(
-  private val timeOutLicencesService: DeactivateLicencesService,
+  private val deactivateLicencesService: DeactivateLicencesService,
 ) {
   @PatchMapping(value = ["/deactivate-licences-past-crd"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -48,6 +48,6 @@ class DeactivateLicencesController(
     ],
   )
   fun runTimeOutLicencesServiceJob() {
-    return timeOutLicencesService.deactivateLicencesJob()
+    return deactivateLicencesService.deactivateLicencesJob()
   }
 }

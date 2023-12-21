@@ -29,7 +29,6 @@ class DeactivateLicencesTest : IntegrationTestBase() {
   @BeforeEach
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
   }
 
   @Test
