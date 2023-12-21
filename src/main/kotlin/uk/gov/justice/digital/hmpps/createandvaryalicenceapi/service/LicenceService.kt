@@ -164,13 +164,12 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-      println(licenceEntity)
+
     val updatedLicence = licenceEntity.updateAppointmentTime(
       appointmentTime = request.appointmentTime,
       appointmentTimeType = request.appointmentTimeType,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
-    println(updatedLicence)
     licenceRepository.saveAndFlush(updatedLicence)
   }
 
