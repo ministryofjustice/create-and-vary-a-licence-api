@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -650,6 +651,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(10),
+      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
     )
 
     val aContactNumberRequest = ContactNumberRequest(

@@ -59,6 +59,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -291,7 +292,13 @@ class LicenceServiceTest {
   fun `update initial appointment time persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateAppointmentTime(1L, AppointmentTimeRequest(appointmentTime = tenDaysFromNow))
+    service.updateAppointmentTime(
+      1L,
+      AppointmentTimeRequest(
+        appointmentTime = tenDaysFromNow,
+        appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+      ),
+    )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -306,7 +313,13 @@ class LicenceServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAppointmentTime(1L, AppointmentTimeRequest(appointmentTime = tenDaysFromNow))
+      service.updateAppointmentTime(
+        1L,
+        AppointmentTimeRequest(
+          appointmentTime = tenDaysFromNow,
+          appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
+        ),
+      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
