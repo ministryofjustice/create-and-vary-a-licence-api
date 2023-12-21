@@ -12,6 +12,14 @@ import java.time.LocalDateTime
 
 object TestData {
 
+  fun com() = CommunityOffenderManager(
+    staffIdentifier = 2000,
+    username = "smills",
+    email = "testemail@probation.gov.uk",
+    firstName = "X",
+    lastName = "Y",
+  )
+
   fun someEntityStandardConditions(licence: Licence) =
     listOf(
       StandardCondition(
@@ -133,13 +141,7 @@ object TestData {
       firstName = "X",
       lastName = "Y",
     ),
-    createdBy = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    ),
+    createdBy = com(),
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
