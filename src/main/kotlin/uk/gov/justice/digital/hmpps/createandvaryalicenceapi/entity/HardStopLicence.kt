@@ -253,6 +253,10 @@ class HardStopLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
+  override fun deactivate(updatedByUsername: String) = copy(
+    statusCode = LicenceStatus.INACTIVE,
+    updatedByUsername = updatedByUsername,
+  )
 
   fun submit(submittedBy: PrisonCaseAdministrator) = copy(
     statusCode = LicenceStatus.SUBMITTED,

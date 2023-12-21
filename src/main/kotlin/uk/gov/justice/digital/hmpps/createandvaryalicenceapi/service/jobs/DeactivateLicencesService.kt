@@ -40,14 +40,14 @@ class DeactivateLicencesService(
   }
 
   private fun updateLicencesStatus(licences: List<Licence>, reason: String? = null) {
-    val deactivateLicences = licences.map { it.deactivate() }
-
-    licenceRepository.saveAllAndFlush(deactivateLicences)
     var userName = "SYSTEM"
     val authentication: Authentication = SecurityContextHolder.getContext().authentication
     if (authentication !is AnonymousAuthenticationToken) {
       userName = authentication.getName()
     }
+    val deactivateLicences = licences.map { it.deactivate(userName) }
+
+    licenceRepository.saveAllAndFlush(deactivateLicences)
 
     deactivateLicences.map { licence ->
       auditEventRepository.saveAndFlush(
@@ -64,7 +64,7 @@ class DeactivateLicencesService(
       licenceEventRepository.saveAndFlush(
         LicenceEvent(
           licenceId = licence.id,
-          eventType = LicenceEventType.TIMED_OUT,
+          eventType = LicenceEventType.INACTIVE,
           username = userName,
           forenames = userName,
           surname = userName,

@@ -255,6 +255,10 @@ class VariationLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
+  override fun deactivate(updatedByUsername: String) = copy(
+    statusCode = LicenceStatus.INACTIVE,
+    updatedByUsername = updatedByUsername,
+  )
 
   fun submit(submittedBy: CommunityOffenderManager) = copy(
     statusCode = LicenceStatus.VARIATION_SUBMITTED,
