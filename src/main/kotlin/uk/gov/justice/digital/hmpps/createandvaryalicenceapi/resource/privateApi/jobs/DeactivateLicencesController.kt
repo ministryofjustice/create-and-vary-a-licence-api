@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Deacti
 class DeactivateLicencesController(
   private val timeOutLicencesService: DeactivateLicencesService,
 ) {
-  @PatchMapping(value = ["/deactivate-post-crd"])
+  @PatchMapping(value = ["/deactivate-licences-past-crd"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Deactivate licences which are past CRD date.",
