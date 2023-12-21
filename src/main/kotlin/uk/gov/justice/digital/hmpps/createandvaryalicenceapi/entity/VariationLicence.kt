@@ -250,6 +250,7 @@ class VariationLicence(
       submittedBy = submittedBy,
       createdBy = createdBy,
       variationOfId = variationOfId,
+      licenceVersion = licenceVersion,
     )
   }
 

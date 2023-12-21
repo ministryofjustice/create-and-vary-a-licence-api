@@ -7,9 +7,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ConditionalInput
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AdditionalConditionWithConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
@@ -105,6 +108,20 @@ class AdditionalConditionWithConfigTest {
         ),
       )
     }
+
+    @Test
+    fun `checks for conditional inputs when determining submission status`() {
+      assertThat(
+        isLicenceReadyToSubmit(
+          listOf(anAdditionalConditionEntity.copy(additionalConditionData = listOf(conditionalAdditionalConditionData))),
+          aPolicyWithConditionalInputs.allAdditionalConditions(),
+        ),
+      ).isEqualTo(
+        mapOf(
+          "code" to true,
+        ),
+      )
+    }
   }
 
   @Nested
@@ -149,6 +166,27 @@ class AdditionalConditionWithConfigTest {
       name = "name",
     )
 
+    val anInputWithConditionalInputs = Input(
+      type = TEXT,
+      label = "Label",
+      name = "name",
+      options = listOf(
+        Option(
+          value = "value",
+          conditional = Conditional(
+            inputs = listOf(
+              ConditionalInput(
+                type = TEXT,
+                label = "Label",
+                name = "conditionalName",
+              ),
+            ),
+
+          ),
+        ),
+      ),
+    )
+
     val policyApCondition = AdditionalConditionAp(
       code = "code",
       category = "category",
@@ -175,6 +213,16 @@ class AdditionalConditionWithConfigTest {
       requiresInput = true,
     )
 
+    val aPolicyConditionWithConditionalInputs = AdditionalConditionAp(
+      code = "code",
+      category = "category",
+      text = "text",
+      inputs = listOf(
+        anInputWithConditionalInputs,
+      ),
+      requiresInput = true,
+    )
+
     val aPolicy = LicencePolicy(
       version = "2.1",
       standardConditions = StandardConditions(emptyList(), emptyList()),
@@ -193,9 +241,20 @@ class AdditionalConditionWithConfigTest {
       additionalConditions = AdditionalConditions(listOf(aPolicyConditionWithMultipleInputs), emptyList()),
     )
 
+    val aPolicyWithConditionalInputs = LicencePolicy(
+      version = "2.1",
+      standardConditions = StandardConditions(emptyList(), emptyList()),
+      additionalConditions = AdditionalConditions(listOf(aPolicyConditionWithConditionalInputs), emptyList()),
+    )
+
     val someAdditionalConditionData = AdditionalConditionData(
       additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "2.1"),
       dataField = "name",
+    )
+
+    val conditionalAdditionalConditionData = AdditionalConditionData(
+      additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "2.1"),
+      dataField = "conditionalName",
     )
 
     val anAdditionalConditionEntity = AdditionalCondition(
