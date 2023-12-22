@@ -7,14 +7,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Conditional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ConditionalInput
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AdditionalConditionWithConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.isConditionReadyToSubmit
@@ -314,8 +311,8 @@ class AdditionalConditionWithConfigTest {
       mapOf(
         "2.1" to mapOf(
           aPolicyConditionWithConditionalInputs.code to aPolicyConditionWithConditionalInputs,
-        )
-      )
+        ),
+      ),
     )
   }
 }
