@@ -12,7 +12,15 @@ class ReleaseDateService(
   private val clock: Clock,
   @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int,
   @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:6}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int,
+  @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int,
 ) {
+
+  fun getCutOffDateForLicenceTimeOut(jobExecutionDate: LocalDate): LocalDate {
+    return generateSequence(jobExecutionDate) { it.plusDays(1) }
+      .filterNot { excludeBankHolidaysAndWeekends(it) }
+      .take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus)
+      .last()
+  }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
     return getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate, ::isEligibleForEarlyRelease)
@@ -29,7 +37,7 @@ class ReleaseDateService(
   }
 
   /** Friday is not considered as weekend */
-  private fun excludeBankHolidaysAndWeekends(releaseDate: LocalDate?): Boolean {
+  fun excludeBankHolidaysAndWeekends(releaseDate: LocalDate?): Boolean {
     val dayOfWeek = releaseDate?.dayOfWeek
     if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
       return true

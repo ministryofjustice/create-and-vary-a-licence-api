@@ -16,8 +16,8 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CommunityOffenderManagerRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
 
 class ComServiceTest {
-  private val communityOffenderManagerRepository = mock<CommunityOffenderManagerRepository>()
+  private val staffRepository = mock<StaffRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val communityApiClient = mock<CommunityApiClient>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
@@ -48,7 +48,7 @@ class ComServiceTest {
 
   private val service =
     ComService(
-      communityOffenderManagerRepository,
+      staffRepository,
       licenceRepository,
       communityApiClient,
       probationSearchApiClient,
@@ -60,7 +60,7 @@ class ComServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      communityOffenderManagerRepository,
+      staffRepository,
       licenceRepository,
       communityApiClient,
       probationSearchApiClient,
@@ -82,7 +82,7 @@ class ComServiceTest {
 
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -95,7 +95,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 3000,
@@ -107,8 +107,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
+    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+    verify(staffRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
@@ -123,7 +123,7 @@ class ComServiceTest {
       lastName = "Y",
     )
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -136,7 +136,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2000,
@@ -148,8 +148,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "JOEBLOGGS")
-    verify(communityOffenderManagerRepository, times(0)).saveAndFlush(any())
+    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "JOEBLOGGS")
+    verify(staffRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -163,12 +163,12 @@ class ComServiceTest {
     )
 
     whenever(
-      communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+      staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
         any(),
         any(),
       ),
     ).thenReturn(null)
-    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 3000,
@@ -180,8 +180,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(expectedCom)
+    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+    verify(staffRepository, times(1)).saveAndFlush(expectedCom)
   }
 
   @Test
@@ -196,7 +196,7 @@ class ComServiceTest {
 
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -209,7 +209,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2000,
@@ -221,8 +221,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "jbloggsnew1")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
+    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "jbloggsnew1")
+    verify(staffRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
@@ -239,7 +239,7 @@ class ComServiceTest {
 
     val comCaptor = ArgumentCaptor.forClass(CommunityOffenderManager::class.java)
 
-    whenever(communityOffenderManagerRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+    whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
       .thenReturn(
         listOf(
           CommunityOffenderManager(
@@ -252,7 +252,7 @@ class ComServiceTest {
         ),
       )
 
-    whenever(communityOffenderManagerRepository.saveAndFlush(any())).thenReturn(expectedCom)
+    whenever(staffRepository.saveAndFlush(any())).thenReturn(expectedCom)
 
     val comDetails = UpdateComRequest(
       staffIdentifier = 2001,
@@ -264,8 +264,8 @@ class ComServiceTest {
 
     service.updateComDetails(comDetails)
 
-    verify(communityOffenderManagerRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2001, "JOEBLOGGS")
-    verify(communityOffenderManagerRepository, times(1)).saveAndFlush(comCaptor.capture())
+    verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2001, "JOEBLOGGS")
+    verify(staffRepository, times(1)).saveAndFlush(comCaptor.capture())
 
     assertThat(comCaptor.value).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp").isEqualTo(expectedCom)
   }
@@ -294,16 +294,6 @@ class ComServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-
-    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
-      true,
-    )
-
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -316,13 +306,8 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
-    verify(eligibilityService).isExistingLicenceEligible(
-      aPrisonerSearchResult,
-    )
-
-    verify(prisonApiClient).getHdcStatuses(
-      emptyList(),
-    )
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -392,16 +377,6 @@ class ComServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-
-    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
-      true,
-    )
-
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -422,13 +397,8 @@ class ComServiceTest {
       ),
     )
 
-    verify(eligibilityService).isExistingLicenceEligible(
-      aPrisonerSearchResult,
-    )
-
-    verify(prisonApiClient).getHdcStatuses(
-      emptyList(),
-    )
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -476,14 +446,6 @@ class ComServiceTest {
           )
           ),
       )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
-      listOf(
-        aPrisonerSearchResult,
-      ),
-    )
-    whenever(eligibilityService.isExistingLicenceEligible(any())).thenReturn(
-      true,
-    )
 
     val request = ProbationUserSearchRequest(
       "Test",
@@ -496,6 +458,10 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
+
+    verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
+
     val resultsList = result.results
     val offender = resultsList.first()
     val inPrisonCount = result.inPrisonCount
@@ -567,10 +533,6 @@ class ComServiceTest {
           ),
       )
 
-    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
-      true,
-    )
-
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -582,9 +544,9 @@ class ComServiceTest {
       request.query,
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
-    verifyNoInteractions(prisonApiClient)
-    verifyNoInteractions(prisonerSearchApiClient)
+
     verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -672,6 +634,7 @@ class ComServiceTest {
     )
 
     verifyNoInteractions(eligibilityService)
+    verifyNoInteractions(prisonApiClient)
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -849,7 +812,10 @@ class ComServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
-    verifyNoInteractions(prisonerSearchApiClient)
+    verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
+      emptyList(),
+    )
+
     verifyNoInteractions(eligibilityService)
     verifyNoInteractions(prisonApiClient)
 

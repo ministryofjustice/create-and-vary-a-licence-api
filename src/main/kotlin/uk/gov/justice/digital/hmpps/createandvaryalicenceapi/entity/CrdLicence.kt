@@ -250,6 +250,12 @@ class CrdLicence(
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
 
+  fun timeOut() = copy(
+    statusCode = LicenceStatus.TIMED_OUT,
+    dateLastUpdated = LocalDateTime.now(),
+    updatedByUsername = "SYSTEM",
+  )
+
   fun submit(submittedBy: CommunityOffenderManager) = copy(
     statusCode = LicenceStatus.SUBMITTED,
     submittedBy = submittedBy,

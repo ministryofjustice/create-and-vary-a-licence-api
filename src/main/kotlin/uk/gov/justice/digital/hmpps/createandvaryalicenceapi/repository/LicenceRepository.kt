@@ -72,6 +72,26 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   """,
   )
   fun getAllVariedLicencesInPSSPeriod(): List<Licence>
+
+  @Query(
+    """
+      SELECT l
+      FROM CrdLicence l
+      WHERE COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) <= :timeOutDate
+      AND l.statusCode = 'IN_PROGRESS'
+  """,
+  )
+  fun getAllLicencesToTimeOut(timeOutDate: LocalDate): List<CrdLicence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l
+        WHERE l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
+        AND COALESCE(l.topupSupervisionExpiryDate, l.licenceExpiryDate) < CURRENT_DATE
+    """,
+  )
+  fun getLicencesPassedExpiryDate(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
