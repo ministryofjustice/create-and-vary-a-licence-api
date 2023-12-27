@@ -72,7 +72,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 class LicenceServiceTest {
@@ -133,7 +133,7 @@ class LicenceServiceTest {
 
     val licence = service.getLicenceById(1L)
 
-    assertThat(licence).isExactlyInstanceOf(ModelLicence::class.java)
+    assertThat(licence).isExactlyInstanceOf(ModelCrdLicence::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
   }
@@ -2044,6 +2044,7 @@ class LicenceServiceTest {
     )
 
     val aLicenceSummary = LicenceSummary(
+      kind = LicenceKind.CRD,
       licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
