@@ -78,7 +78,7 @@ class HardStopLicence(
   var submittedBy: PrisonCaseAdministrator? = null,
 ) : Licence(
   id = id,
-  kind = LicenceKind.HARDSTOP,
+  kind = LicenceKind.HARD_STOP,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,

@@ -152,15 +152,16 @@ class LicencePolicyController(
     val currentLicence = licenceService.getLicenceById(licenceId)
     val currentPolicy = licencePolicyService.policyByVersion(version)
 
-    if (currentLicence !is VariationLicence) {
-      return emptyList()
+    return when {
+      currentLicence !is VariationLicence -> emptyList()
+      else -> getPreviousPolicy(currentLicence)?.let {
+        licencePolicyService.compareLicenceWithPolicy(currentLicence, it, currentPolicy)
+      } ?: emptyList()
     }
+  }
 
+  private fun getPreviousPolicy(currentLicence: VariationLicence): LicencePolicy? {
     val previousLicence = currentLicence.variationOf?.let { licenceService.getLicenceById(it) }?.version
-    val previousPolicy = previousLicence?.let { licencePolicyService.policyByVersion(it) }
-
-    if (previousPolicy == null) return emptyList()
-
-    return licencePolicyService.compareLicenceWithPolicy(currentLicence, previousPolicy, currentPolicy)
+    return previousLicence?.let { licencePolicyService.policyByVersion(it) }
   }
 }

@@ -10,10 +10,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
-@JsonTypeName(LicenceTypes.VARIATION)
+@JsonTypeName(LicenceKinds.VARIATION)
 data class VariationLicence(
-  @Schema(description = "Type of this licence", example = "VARIATION")
-  override val kind: LicenceKind = LicenceKind.VARIATION,
+  @Schema(description = "Type of this licence", example = LicenceKinds.VARIATION, allowableValues = [LicenceKinds.VARIATION])
+  override val kind: String = LicenceKinds.VARIATION,
 
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   override val id: Long = -1,
@@ -249,4 +249,4 @@ data class VariationLicence(
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   override val isEligibleForEarlyRelease: Boolean = false,
-): Licence
+) : Licence

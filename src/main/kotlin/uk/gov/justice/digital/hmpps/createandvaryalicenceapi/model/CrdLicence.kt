@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -11,10 +10,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a CRD licence within this service")
-@JsonTypeName(LicenceTypes.CRD)
+@JsonTypeName(LicenceKinds.CRD)
 data class CrdLicence(
-  @Schema(description = "Type of this licence", example = "CRD")
-  override val kind: LicenceKind = LicenceKind.CRD,
+  @Schema(description = "Type of this licence", example = LicenceKinds.CRD, allowableValues = [LicenceKinds.CRD])
+  override val kind: String = LicenceKinds.CRD,
 
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   override val id: Long = -1,
@@ -166,7 +165,7 @@ data class CrdLicence(
     example = "0114 2557665",
   )
   override val appointmentContact: String? = null,
-  
+
   @Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   override val approvedDate: LocalDateTime? = null,
@@ -241,4 +240,4 @@ data class CrdLicence(
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   override val isEligibleForEarlyRelease: Boolean = false,
-): Licence
+) : Licence

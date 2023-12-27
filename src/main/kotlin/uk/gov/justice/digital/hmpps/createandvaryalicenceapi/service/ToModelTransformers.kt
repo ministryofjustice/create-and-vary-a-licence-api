@@ -2,10 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence as EntityCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence as EntityHardstopLicence
-
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -19,22 +15,24 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence as EntityCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence as EntityHardstopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicence as ModelHardstopLicence
-
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -90,20 +88,20 @@ fun transform(
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
-): ModelLicence
-   = when(licence) {
-     is EntityCrdLicence -> toCrd(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
-  is EntityVariationLicence -> toVariation(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
-  is EntityHardstopLicence -> toHardstop(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
-  else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
-}
+): ModelLicence =
+  when (licence) {
+    is EntityCrdLicence -> toCrd(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
+    is EntityVariationLicence -> toVariation(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
+    is EntityHardstopLicence -> toHardstop(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
+    else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
+  }
 
 fun toHardstop(
   licence: HardStopLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>
-)= ModelHardstopLicence(
+  conditionSubmissionStatus: Map<String, Boolean>,
+) = ModelHardstopLicence(
   id = licence.id,
   typeCode = licence.typeCode,
   version = licence.version,
@@ -170,8 +168,8 @@ fun toVariation(
   licence: VariationLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>
-):ModelVariationLicence = ModelVariationLicence(
+  conditionSubmissionStatus: Map<String, Boolean>,
+): ModelVariationLicence = ModelVariationLicence(
   id = licence.id,
   typeCode = licence.typeCode,
   version = licence.version,
@@ -212,8 +210,8 @@ fun toVariation(
   appointmentTime = licence.appointmentTime,
   appointmentAddress = licence.appointmentAddress,
   appointmentContact = licence.appointmentContact,
-  spoDiscussion =licence.spoDiscussion,
-  vloDiscussion = licence.vloDiscussion  ,
+  spoDiscussion = licence.spoDiscussion,
+  vloDiscussion = licence.vloDiscussion,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
   approvedByName = licence.approvedByName,
@@ -241,7 +239,7 @@ fun toCrd(
   licence: CrdLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>
+  conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelCrdLicence(
   id = licence.id,
   typeCode = licence.typeCode,

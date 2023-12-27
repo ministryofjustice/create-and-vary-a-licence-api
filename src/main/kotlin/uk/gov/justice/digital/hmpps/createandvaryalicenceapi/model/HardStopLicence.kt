@@ -10,10 +10,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence that was created by a prison")
-@JsonTypeName(LicenceTypes.HARD_STOP)
+@JsonTypeName(LicenceKinds.HARD_STOP)
 data class HardStopLicence(
-  @Schema(description = "Type of this licence", example = "HARDSTOP")
-  override val kind: LicenceKind = LicenceKind.HARDSTOP,
+  @Schema(description = "Type of this licence", example = LicenceKinds.HARD_STOP, allowableValues = [LicenceKinds.HARD_STOP])
+  override val kind: String = LicenceKinds.HARD_STOP,
 
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   override val id: Long = -1,

@@ -10,7 +10,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
-object LicenceTypes {
+object LicenceKinds {
   const val CRD = "CRD"
   const val VARIATION = "VARIATION"
   const val HARD_STOP = "HARD_STOP"
@@ -18,17 +18,18 @@ object LicenceTypes {
 
 @Schema(
   description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence",
+  oneOf = [CrdLicence::class, VariationLicence::class, HardStopLicence::class],
   discriminatorProperty = "kind",
   discriminatorMapping = [
-    DiscriminatorMapping(value = LicenceTypes.CRD, schema = CrdLicence::class),
-    DiscriminatorMapping(value = LicenceTypes.VARIATION, schema = VariationLicence::class),
-    DiscriminatorMapping(value = LicenceTypes.HARD_STOP, schema = HardStopLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.CRD, schema = CrdLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.VARIATION, schema = VariationLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
   ],
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")
 sealed interface Licence {
   @get:Schema(description = "Type of this licence", example = "CRD")
-  val kind: LicenceKind
+  val kind: String
 
   @get:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long
