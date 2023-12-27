@@ -12,7 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@DiscriminatorValue(value = "HARDSTOP")
+@DiscriminatorValue(value = "HARD_STOP")
 class HardStopLicence(
   id: Long = -1L,
   typeCode: LicenceType,

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
@@ -81,7 +82,7 @@ class LicenceDetailTransformerKtTest {
       ),
     )
 
-    val modelLicence = ModelLicence(
+    val modelLicence = CrdLicence(
       id = 1,
       typeCode = LicenceType.AP,
       version = "2.1",
@@ -128,7 +129,6 @@ class LicenceDetailTransformerKtTest {
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
       licenceVersion = "1.4",
-      isVariation = false,
       updatedByUsername = "TestUpdater",
     )
 

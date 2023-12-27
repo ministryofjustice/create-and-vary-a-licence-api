@@ -1,250 +1,251 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
-import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
-data class Licence(
+object LicenceTypes {
+  const val CRD = "CRD"
+  const val VARIATION = "VARIATION"
+  const val HARD_STOP = "HARD_STOP"
+}
 
-  @Schema(description = "Unique identifier for this licence within the service", example = "99999")
-  val id: Long = -1,
+@Schema(
+  description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence",
+  discriminatorProperty = "kind",
+  discriminatorMapping = [
+    DiscriminatorMapping(value = LicenceTypes.CRD, schema = CrdLicence::class),
+    DiscriminatorMapping(value = LicenceTypes.VARIATION, schema = VariationLicence::class),
+    DiscriminatorMapping(value = LicenceTypes.HARD_STOP, schema = HardStopLicence::class),
+  ],
+)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")
+sealed interface Licence {
+  @get:Schema(description = "Type of this licence", example = "CRD")
+  val kind: LicenceKind
 
-  @Schema(description = "The licence type code", example = "AP")
-  val typeCode: LicenceType,
+  @get:Schema(description = "Unique identifier for this licence within the service", example = "99999")
+  val id: Long
 
-  @Schema(description = "The version number used for standard and additional conditions", example = "1.4")
-  val version: String? = null,
+  @get:Schema(description = "The licence type code", example = "AP")
+  val typeCode: LicenceType
 
-  @Schema(
+  @get:Schema(description = "The version number used for standard and additional conditions", example = "1.4")
+  val version: String?
+
+  @get:Schema(
     description = "The current status code for this licence",
     example = "IN_PROGRESS",
   )
-  val statusCode: LicenceStatus?,
+  val statusCode: LicenceStatus?
 
-  @Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
-  val nomsId: String? = null,
+  @get:Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
+  val nomsId: String?
 
-  @Schema(description = "The prison booking number for the person on this licence", example = "F12333")
-  val bookingNo: String? = null,
+  @get:Schema(description = "The prison booking number for the person on this licence", example = "F12333")
+  val bookingNo: String?
 
-  @Schema(description = "The prison internal booking ID for the person on this licence", example = "989898")
-  val bookingId: Long? = null,
+  @get:Schema(description = "The prison internal booking ID for the person on this licence", example = "989898")
+  val bookingId: Long?
 
-  @Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
-  val crn: String? = null,
+  @get:Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")
+  val crn: String?
 
-  @Schema(
+  @get:Schema(
     description = "The police national computer number (PNC) for the person on this licence",
     example = "2015/12444",
   )
-  val pnc: String? = null,
+  val pnc: String?
 
-  @Schema(
+  @get:Schema(
     description = "The criminal records office number (CRO) for the person on this licence",
     example = "A/12444",
   )
-  val cro: String? = null,
+  val cro: String?
 
-  @Schema(description = "The agency code of the detaining prison", example = "LEI")
-  val prisonCode: String? = null,
+  @get:Schema(description = "The agency code of the detaining prison", example = "LEI")
+  val prisonCode: String?
 
-  @Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
-  val prisonDescription: String? = null,
+  @get:Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
+  val prisonDescription: String?
 
-  @Schema(description = "The telephone number to contact the prison", example = "0161 234 4747")
-  val prisonTelephone: String? = null,
+  @get:Schema(description = "The telephone number to contact the prison", example = "0161 234 4747")
+  val prisonTelephone: String?
 
-  @Schema(description = "The first name of the person on licence", example = "Michael")
-  val forename: String? = null,
+  @get:Schema(description = "The first name of the person on licence", example = "Michael")
+  val forename: String?
 
-  @Schema(description = "The middle names of the person on licence", example = "John Peter")
-  val middleNames: String? = null,
+  @get:Schema(description = "The middle names of the person on licence", example = "John Peter")
+  val middleNames: String?
 
-  @Schema(description = "The family name of the person on licence", example = "Smith")
-  val surname: String? = null,
+  @get:Schema(description = "The family name of the person on licence", example = "Smith")
+  val surname: String?
 
-  @Schema(description = "The date of birth of the person on licence", example = "12/05/1987")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val dateOfBirth: LocalDate? = null,
+  @get:Schema(description = "The date of birth of the person on licence", example = "12/05/1987")
+  val dateOfBirth: LocalDate?
 
-  @Schema(description = "The earliest conditional release date of the person on licence", example = "13/08/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val conditionalReleaseDate: LocalDate? = null,
+  @get:Schema(description = "The earliest conditional release date of the person on licence", example = "13/08/2022")
+  val conditionalReleaseDate: LocalDate?
 
-  @Schema(description = "The actual release date (if set)", example = "13/09/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val actualReleaseDate: LocalDate? = null,
+  @get:Schema(description = "The actual release date (if set)", example = "13/09/2022")
+  val actualReleaseDate: LocalDate?
 
-  @Schema(description = "The sentence start date", example = "13/09/2019")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val sentenceStartDate: LocalDate? = null,
+  @get:Schema(description = "The sentence start date", example = "13/09/2019")
+  val sentenceStartDate: LocalDate?
 
-  @Schema(description = "The sentence end date", example = "13/09/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val sentenceEndDate: LocalDate? = null,
+  @get:Schema(description = "The sentence end date", example = "13/09/2022")
+  val sentenceEndDate: LocalDate?
 
-  @Schema(description = "The date that the licence will start", example = "13/09/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val licenceStartDate: LocalDate? = null,
+  @get:Schema(description = "The date that the licence will start", example = "13/09/2022")
+  val licenceStartDate: LocalDate?
 
-  @Schema(description = "The date that the licence will expire", example = "13/09/2024")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val licenceExpiryDate: LocalDate? = null,
+  @get:Schema(description = "The date that the licence will expire", example = "13/09/2024")
+  val licenceExpiryDate: LocalDate?
 
-  @Schema(
+  @get:Schema(
     description = "The date when the post sentence supervision period starts, from prison services",
     example = "06/05/2023",
   )
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val topupSupervisionStartDate: LocalDate? = null,
+  val topupSupervisionStartDate: LocalDate?
 
-  @Schema(
+  @get:Schema(
     description = "The date when the post sentence supervision period ends, from prison services",
     example = "06/06/2023",
   )
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val topupSupervisionExpiryDate: LocalDate? = null,
+  val topupSupervisionExpiryDate: LocalDate?
 
-  @Schema(description = "The nDELIUS user name for the supervising probation officer", example = "X32122")
-  val comUsername: String? = null,
+  @get:Schema(description = "The nDELIUS user name for the supervising probation officer", example = "X32122")
+  val comUsername: String?
 
-  @Schema(description = "The nDELIUS staff identifier for the supervising probation officer", example = "12345")
-  val comStaffId: Long? = null,
+  @get:Schema(description = "The nDELIUS staff identifier for the supervising probation officer", example = "12345")
+  val comStaffId: Long?
 
-  @Schema(description = "The email address for the supervising probation officer", example = "jane.jones@nps.gov.uk")
-  val comEmail: String? = null,
+  @get:Schema(
+    description = "The email address for the supervising probation officer",
+    example = "jane.jones@nps.gov.uk",
+  )
+  val comEmail: String?
 
-  @Schema(description = "The probation area code where this licence is supervised from", example = "N01")
-  val probationAreaCode: String? = null,
+  @get:Schema(description = "The probation area code where this licence is supervised from", example = "N01")
+  val probationAreaCode: String?
 
-  @Schema(description = "The probation area description", example = "Wales")
-  val probationAreaDescription: String? = null,
+  @get:Schema(description = "The probation area description", example = "Wales")
+  val probationAreaDescription: String?
 
-  @Schema(description = "The Probation Delivery Unit (PDU or borough) supervising this licence", example = "PDU01")
-  val probationPduCode: String? = null,
+  @get:Schema(description = "The Probation Delivery Unit (PDU or borough) supervising this licence", example = "PDU01")
+  val probationPduCode: String?
 
-  @Schema(description = "The description for the PDU", example = "North Wales")
-  val probationPduDescription: String? = null,
+  @get:Schema(description = "The description for the PDU", example = "North Wales")
+  val probationPduDescription: String?
 
-  @Schema(description = "The Local Administrative Unit (LAU or district) supervising this licence", example = "LAU01")
-  val probationLauCode: String? = null,
+  @get:Schema(
+    description = "The Local Administrative Unit (LAU or district) supervising this licence",
+    example = "LAU01",
+  )
+  val probationLauCode: String?
 
-  @Schema(description = "The LAU description", example = "North Wales")
-  val probationLauDescription: String? = null,
+  @get:Schema(description = "The LAU description", example = "North Wales")
+  val probationLauDescription: String?
 
-  @Schema(description = "The team code that is supervising this licence", example = "Cardiff-A")
-  val probationTeamCode: String? = null,
+  @get:Schema(description = "The team code that is supervising this licence", example = "Cardiff-A")
+  val probationTeamCode: String?
 
-  @Schema(description = "The team description", example = "Cardiff South")
-  val probationTeamDescription: String? = null,
+  @get:Schema(description = "The team description", example = "Cardiff South")
+  val probationTeamDescription: String?
 
-  @Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
-  val appointmentPerson: String? = null,
+  @get:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
+  val appointmentPerson: String?
 
-  @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-  val appointmentTime: LocalDateTime? = null,
+  @get:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
+  val appointmentTime: LocalDateTime?
 
-  @Schema(
+  @get:Schema(
     description = "The address of initial appointment",
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
   )
-  val appointmentAddress: String? = null,
+  val appointmentAddress: String?
 
-  @Schema(
+  @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
     example = "0114 2557665",
   )
-  val appointmentContact: String? = null,
+  val appointmentContact: String?
 
-  @Schema(description = "Have you have discussed this variation request with your SPO?", example = "Yes")
-  val spoDiscussion: String? = null,
+  @get:Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
+  val approvedDate: LocalDateTime?
 
-  @Schema(description = "Have you consulted with the victim liaison officer (VLO) for this case?", example = "Yes")
-  val vloDiscussion: String? = null,
+  @get:Schema(
+    description = "The username who approved the licence on behalf of the prison governor",
+    example = "X33221",
+  )
+  val approvedByUsername: String?
 
-  @Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val approvedDate: LocalDateTime? = null,
-
-  @Schema(description = "The username who approved the licence on behalf of the prison governor", example = "X33221")
-  val approvedByUsername: String? = null,
-
-  @Schema(
+  @get:Schema(
     description = "The date and time that this licence was submitted for approval",
     example = "24/08/2022 11:30:33",
   )
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val submittedDate: LocalDateTime? = null,
+  val submittedDate: LocalDateTime?
 
-  @Schema(
+  @get:Schema(
     description = "The full name of the person who approved the licence on behalf of the prison governor",
     example = "John Smith",
   )
-  val approvedByName: String? = null,
+  val approvedByName: String?
 
-  @Schema(
+  @get:Schema(
     description = "The date and time that this licence was superseded by a new variant",
     example = "24/08/2022 11:30:33",
   )
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val supersededDate: LocalDateTime? = null,
+  val supersededDate: LocalDateTime?
 
-  @Schema(description = "The date and time that this licence was first created", example = "24/08/2022 09:30:33")
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val dateCreated: LocalDateTime? = null,
+  @get:Schema(description = "The date and time that this licence was first created", example = "24/08/2022 09:30:33")
+  val dateCreated: LocalDateTime?
 
-  @Schema(description = "The username which created this licence", example = "X12333")
-  val createdByUsername: String? = null,
+  @get:Schema(description = "The username which created this licence", example = "X12333")
+  val createdByUsername: String?
 
-  @Schema(description = "The date and time that this licence was last updated", example = "24/08/2022 09:30:33")
-  @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val dateLastUpdated: LocalDateTime? = null,
+  @get:Schema(description = "The date and time that this licence was last updated", example = "24/08/2022 09:30:33")
+  val dateLastUpdated: LocalDateTime?
 
-  @Schema(description = "The username of the person who last updated this licence", example = "X34433")
-  val updatedByUsername: String? = null,
+  @get:Schema(description = "The username of the person who last updated this licence", example = "X34433")
+  val updatedByUsername: String?
 
-  @Schema(description = "The list of standard licence conditions on this licence")
-  val standardLicenceConditions: List<StandardCondition>? = emptyList(),
+  @get:Schema(description = "The list of standard licence conditions on this licence")
+  val standardLicenceConditions: List<StandardCondition>?
 
-  @Schema(description = "The list of standard post sentence supervision conditions on this licence")
-  val standardPssConditions: List<StandardCondition>? = emptyList(),
+  @get:Schema(description = "The list of standard post sentence supervision conditions on this licence")
+  val standardPssConditions: List<StandardCondition>?
 
-  @Schema(description = "The list of additional licence conditions on this licence")
-  val additionalLicenceConditions: List<AdditionalCondition> = emptyList(),
+  @get:Schema(description = "The list of additional licence conditions on this licence")
+  val additionalLicenceConditions: List<AdditionalCondition>
 
-  @Schema(description = "The list of additional post sentence supervision conditions on this licence")
-  val additionalPssConditions: List<AdditionalCondition> = emptyList(),
+  @get:Schema(description = "The list of additional post sentence supervision conditions on this licence")
+  val additionalPssConditions: List<AdditionalCondition>
 
-  @Schema(description = "The list of bespoke conditions on this licence")
-  val bespokeConditions: List<BespokeCondition> = emptyList(),
+  @get:Schema(description = "The list of bespoke conditions on this licence")
+  val bespokeConditions: List<BespokeCondition>
 
-  @Schema(description = "Is this licence a variation of another licence?")
-  val isVariation: Boolean,
+  @get:Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  val createdByFullName: String?
 
-  @Schema(description = "The licence Id which this licence is a variation of")
-  val variationOf: Long? = null,
+  @get:Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
+  val isInPssPeriod: Boolean?
 
-  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
-  val createdByFullName: String? = null,
+  @get:Schema(description = "Is this licence activated in PSS period?(LED < LAD <= TUSED)")
+  val isActivatedInPssPeriod: Boolean?
 
-  @Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
-  val isInPssPeriod: Boolean? = false,
+  @get:Schema(description = "The version number of this licence", example = "1.3")
+  val licenceVersion: String?
 
-  @Schema(description = "Is this licence activated in PSS period?(LED < LAD <= TUSED)")
-  val isActivatedInPssPeriod: Boolean? = false,
+  @get:Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it contains Earliest possible release date or ARD||CRD")
+  val earliestReleaseDate: LocalDate?
 
-  @Schema(description = "The version number of this licence", example = "1.3")
-  val licenceVersion: String? = null,
-
-  @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it contains Earliest possible release date or ARD||CRD")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val earliestReleaseDate: LocalDate? = null,
-
-  @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
-  val isEligibleForEarlyRelease: Boolean = false,
-)
+  @get:Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
+  val isEligibleForEarlyRelease: Boolean
+}

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionChanges
@@ -150,6 +151,10 @@ class LicencePolicyController(
   ): List<LicenceConditionChanges>? {
     val currentLicence = licenceService.getLicenceById(licenceId)
     val currentPolicy = licencePolicyService.policyByVersion(version)
+
+    if (currentLicence !is VariationLicence) {
+      return emptyList()
+    }
 
     val previousLicence = currentLicence.variationOf?.let { licenceService.getLicenceById(it) }?.version
     val previousPolicy = previousLicence?.let { licencePolicyService.policyByVersion(it) }
