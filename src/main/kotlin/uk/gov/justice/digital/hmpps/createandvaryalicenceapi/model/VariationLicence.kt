@@ -14,6 +14,8 @@ data class VariationLicence(
   @Schema(description = "Type of this licence", example = LicenceKinds.VARIATION, allowableValues = [LicenceKinds.VARIATION])
   override val kind: String = LicenceKinds.VARIATION,
 
+  override val isVariation: Boolean = true,
+
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   override val id: Long = -1,
 

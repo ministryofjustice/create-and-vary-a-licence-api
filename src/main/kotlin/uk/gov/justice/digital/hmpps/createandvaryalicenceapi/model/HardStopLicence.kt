@@ -14,6 +14,8 @@ data class HardStopLicence(
   @Schema(description = "Type of this licence", example = LicenceKinds.HARD_STOP, allowableValues = [LicenceKinds.HARD_STOP])
   override val kind: String = LicenceKinds.HARD_STOP,
 
+  override val isVariation: Boolean = false,
+
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   override val id: Long = -1,
 

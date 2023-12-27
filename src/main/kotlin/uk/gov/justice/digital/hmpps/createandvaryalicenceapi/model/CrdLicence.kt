@@ -14,6 +14,8 @@ data class CrdLicence(
   @Schema(description = "Type of this licence", example = LicenceKinds.CRD, allowableValues = [LicenceKinds.CRD])
   override val kind: String = LicenceKinds.CRD,
 
+  override val isVariation: Boolean = false,
+
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   override val id: Long = -1,
 

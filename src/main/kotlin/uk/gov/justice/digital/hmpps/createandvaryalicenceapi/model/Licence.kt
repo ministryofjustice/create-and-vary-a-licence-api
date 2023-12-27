@@ -29,6 +29,9 @@ object LicenceKinds {
 sealed interface Licence {
   val kind: String
 
+  @get:Deprecated("Soon to be removed, supports backward compatibility, should use kind to determine")
+  val isVariation: Boolean
+
   @get:Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long
 
