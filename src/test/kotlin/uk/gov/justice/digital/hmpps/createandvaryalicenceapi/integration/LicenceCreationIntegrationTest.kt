@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -44,6 +45,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
+    communityApiMockServer.stubGetAllOffenderManagers()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -67,7 +69,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(1)
-    assertThat(standardConditionRepository.count()).isEqualTo(6)
+    assertThat(licenceRepository.findAll().first().responsibleCom!!.username).isEqualTo("AAA")
+    assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -147,6 +150,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
+    val communityApiMockServer = CommunityApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -155,6 +159,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.start()
       prisonerSearchMockServer.start()
       probationSearchMockServer.start()
+      communityApiMockServer.start()
     }
 
     @JvmStatic
@@ -163,7 +168,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stop()
       govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
-      probationSearchMockServer.start()
+      probationSearchMockServer.stop()
+      communityApiMockServer.stop()
     }
   }
 }

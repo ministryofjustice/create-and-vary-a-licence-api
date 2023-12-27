@@ -145,7 +145,7 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                  "offenderManagers": [
                     {
                      "active": true,
-                     "staff": { "code": "CODE-1"}
+                     "staff": { "code": "staff-code-1"}
                     } 
                  ]
                 }
