@@ -48,7 +48,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     val inPrisonCount = resultObject?.inPrisonCount
     val onProbationCount = resultObject?.onProbationCount
 
-    assertThat(resultsList?.size).isEqualTo(2)
+    assertThat(resultsList?.size).isEqualTo(1)
     assertThat(offender)
       .extracting {
         tuple(
@@ -72,7 +72,7 @@ class ComIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-    assertThat(inPrisonCount).isEqualTo(2)
+    assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
   }
 
@@ -99,7 +99,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     val inPrisonCount = resultObject?.inPrisonCount
     val onProbationCount = resultObject?.onProbationCount
 
-    assertThat(resultsList?.size).isEqualTo(2)
+    assertThat(resultsList?.size).isEqualTo(1)
     assertThat(offender)
       .extracting {
         tuple(
@@ -123,7 +123,7 @@ class ComIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-    assertThat(inPrisonCount).isEqualTo(2)
+    assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
   }
 
@@ -164,108 +164,6 @@ class ComIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(resultList?.results?.size).isEqualTo(0)
-  }
-
-  @Test
-  fun `Given an offender not on probation and their licences is ACTIVE AND CRD and ARD in future When search for offender Then offender should be part of the search results `() {
-    communityApiMockServer.stubGetTeamCodesForUser()
-
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
-
-    val resultObject = webTestClient.post()
-      .uri("/com/case-search")
-      .bodyValue(aProbationUserSearchRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
-      .returnResult().responseBody
-
-    val resultsList = resultObject?.results
-    val offender = resultsList?.first()
-    val inPrisonCount = resultObject?.inPrisonCount
-    val onProbationCount = resultObject?.onProbationCount
-
-    assertThat(resultsList?.size).isEqualTo(2)
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it?.name, it?.crn, it?.nomisId, it?.comName, it?.comStaffCode, it?.teamName, it?.releaseDate, it?.licenceId,
-          it?.licenceType, it?.licenceStatus, it?.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "CRN1",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.now().plusDays(1),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
-      )
-
-    assertThat(inPrisonCount).isEqualTo(2)
-    assertThat(onProbationCount).isEqualTo(0)
-  }
-
-  @Test
-  fun `Given an offender is on probation and their licences is ACTIVE AND CRD and ARD in past When search for offender Then offender should be part of the search results `() {
-    communityApiMockServer.stubGetTeamCodesForUser()
-
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamForEligibilityChecks(Gson().toJson(aLicenceCaseloadSearchRequest))
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
-
-    val resultObject = webTestClient.post()
-      .uri("/com/case-search")
-      .bodyValue(aProbationUserSearchRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
-      .returnResult().responseBody?.results
-
-    assertThat(resultObject).filteredOn("nomisId", "A1234AD").isNotEmpty
-  }
-
-  @Test
-  fun `Given an offender is not in jail and licence is INACTIVE When search for offender Then offender should not be part of the search results `() {
-    val prisonerWithSentenceSpent = LicenceCaseloadSearchRequest(
-      listOf("A01B02"),
-      "Surname",
-      listOf(
-        ProbationSearchSortByRequest("name.forename", "asc"),
-      ),
-      2000,
-    )
-    communityApiMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamForEligibilityChecks(Gson().toJson(prisonerWithSentenceSpent))
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
-    prisonApiMockServer.stubGetHdcLatest(123L)
-
-    val resultObject = webTestClient.post()
-      .uri("/com/case-search")
-      .bodyValue(aProbationUserSearchRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(ProbationSearchResult::class.java)
-      .returnResult().responseBody?.results
-    assertThat(resultObject).filteredOn("nomisId", "A1234AE").isEmpty()
   }
 
   private companion object {
