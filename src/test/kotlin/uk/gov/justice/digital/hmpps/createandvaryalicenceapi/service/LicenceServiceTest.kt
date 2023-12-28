@@ -57,10 +57,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -89,10 +85,6 @@ class LicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
-  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val prisonApiClient = mock<PrisonApiClient>()
-  private val communityApiClient = mock<CommunityApiClient>()
 
   private val service =
     LicenceService(
@@ -130,10 +122,6 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
-      probationSearchApiClient,
-      prisonerSearchApiClient,
-      prisonApiClient,
-      communityApiClient,
     )
   }
 
