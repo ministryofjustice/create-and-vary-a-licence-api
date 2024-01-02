@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
@@ -77,4 +78,12 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       .allAdditionalConditions()
       .find { it.code == conditionCode }
       ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
+
+  fun getAllAdditionalConditions(): AllAdditionalConditions {
+    return AllAdditionalConditions(
+      policies.associate {
+        it.version to it.allAdditionalConditions().associateBy { condition -> condition.code }
+      },
+    )
+  }
 }
