@@ -344,7 +344,7 @@ class LicenceActivationServiceTest {
     status = "INACTIVE OUT",
     mostSeriousOffence = "Robbery",
     licenceExpiryDate = LocalDate.parse("2024-09-14"),
-    topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+    topupSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
     homeDetentionCurfewEligibilityDate = null,
     releaseDate = LocalDate.parse("2023-09-14"),
     confirmedReleaseDate = LocalDate.parse("2023-09-14"),
@@ -364,7 +364,7 @@ class LicenceActivationServiceTest {
     conditionalReleaseDateOverrideDate = null,
     sentenceStartDate = LocalDate.parse("2023-09-14"),
     sentenceExpiryDate = LocalDate.parse("2024-09-14"),
-    topUpSupervisionStartDate = null,
+    topupSupervisionStartDate = null,
     croNumber = null,
   )
 
