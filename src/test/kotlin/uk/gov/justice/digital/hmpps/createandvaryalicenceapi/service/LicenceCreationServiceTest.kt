@@ -74,11 +74,11 @@ class LicenceCreationServiceTest {
     prisonerSearchApiClient,
     prisonApiClient,
     communityApiClient,
-    frontendPayloadTakesPriority = false,
   )
 
   @BeforeEach
   fun reset() {
+    LicenceCreationService.FRONTEND_PAYLOAD_TAKES_PRIORITY = false
     reset(
       licenceRepository,
       licenceEventRepository,

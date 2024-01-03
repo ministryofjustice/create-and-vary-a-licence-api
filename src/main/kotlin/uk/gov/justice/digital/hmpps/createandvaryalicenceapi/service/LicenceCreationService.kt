@@ -43,11 +43,11 @@ class LicenceCreationService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val communityApiClient: CommunityApiClient,
-  private val frontendPayloadTakesPriority: Boolean = true,
 ) {
 
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
+    var FRONTEND_PAYLOAD_TAKES_PRIORITY = true
   }
 
   @Transactional
@@ -158,7 +158,7 @@ class LicenceCreationService(
       .filter { (test, _) -> !test }
       .map { (_, field) -> field }
 
-    val requestToSave = if (frontendPayloadTakesPriority) request else createLicenceRequest
+    val requestToSave = if (LicenceCreationService.FRONTEND_PAYLOAD_TAKES_PRIORITY) request else createLicenceRequest
     return Pair(requestToSave, licenceEqualityCheck)
   }
 
