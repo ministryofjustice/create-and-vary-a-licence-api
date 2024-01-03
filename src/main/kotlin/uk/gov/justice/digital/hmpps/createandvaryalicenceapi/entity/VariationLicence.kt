@@ -18,7 +18,7 @@ class VariationLicence(
   id: Long = -1L,
   typeCode: LicenceType,
   version: String? = null,
-  statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
+  statusCode: LicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
   nomsId: String? = null,
   bookingNo: String? = null,
   bookingId: Long? = null,

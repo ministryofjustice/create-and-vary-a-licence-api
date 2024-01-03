@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -76,59 +75,6 @@ class LicenceService(
 ) {
 
   @Transactional
-  fun createLicence(request: CreateLicenceRequest): LicenceSummary {
-    if (offenderHasLicenceInFlight(request.nomsId!!)) {
-      throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
-    }
-
-    val username = SecurityContextHolder.getContext().authentication.name
-
-    val responsibleCom = staffRepository.findByStaffIdentifier(request.responsibleComStaffId)
-      ?: throw ValidationException("Staff with staffIdentifier ${request.responsibleComStaffId} not found")
-
-    val createdBy = staffRepository.findByUsernameIgnoreCase(username)
-      ?: error("Staff with username $username not found")
-
-    val licence = transform(request)
-
-    licence.dateCreated = LocalDateTime.now()
-    licence.responsibleCom = responsibleCom
-    licence.createdBy = createdBy
-    licence.updatedByUsername = username
-
-    val licenceEntity = licenceRepository.saveAndFlush(licence)
-    val createLicenceResponse = transformToLicenceSummary(licenceEntity)
-
-    val entityStandardLicenceConditions =
-      request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
-    val entityStandardPssConditions = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
-    standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
-
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = createLicenceResponse.licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Licence created for ${request.forename} ${request.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
-      ),
-    )
-
-    licenceEventRepository.saveAndFlush(
-      EntityLicenceEvent(
-        licenceId = createLicenceResponse.licenceId,
-        eventType = LicenceEventType.CREATED,
-        username = username,
-        forenames = createdBy.firstName,
-        surname = createdBy.lastName,
-        eventDescription = "Licence created for ${licenceEntity.forename} ${licenceEntity.surname}",
-      ),
-    )
-
-    return createLicenceResponse
-  }
-
-  @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = licenceRepository
       .findById(licenceId)
@@ -142,7 +88,7 @@ class LicenceService(
       else -> releaseDate
     }
 
-    val conditionsSubmissionStatus = isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.policyByVersion(entityLicence.version!!).allAdditionalConditions())
+    val conditionsSubmissionStatus = isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
 
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
   }
@@ -574,7 +520,7 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
-    val licenceCopy = LicenceCreation.createVariation(licence, creator)
+    val licenceCopy = LicenceFactory.createVariation(licence, creator)
     val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
     return transformToLicenceSummary(licenceVariation)
   }
@@ -597,7 +543,7 @@ class LicenceService(
     }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
-    val copyToEdit = LicenceCreation.createCopyToEdit(licence, creator)
+    val copyToEdit = LicenceFactory.createCopyToEdit(licence, creator)
     val licenceCopy = populateCopyAndAudit(CRD, licence, copyToEdit, creator)
     notifyReApprovalNeeded(licence)
 
@@ -811,12 +757,6 @@ class LicenceService(
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
       ),
     )
-  }
-
-  private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
-    val inFlight =
-      licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
-    return inFlight.isNotEmpty()
   }
 
   private fun populateCopyAndAudit(

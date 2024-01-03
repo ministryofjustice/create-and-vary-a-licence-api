@@ -50,6 +50,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 
@@ -59,6 +60,7 @@ class LicenceController(
   private val licenceService: LicenceService,
   private val updateSentenceDateService: UpdateSentenceDateService,
   private val licenceConditionService: LicenceConditionService,
+  private val licenceCreationService: LicenceCreationService,
 ) {
 
   @Tag(name = Tags.LICENCES)
@@ -96,7 +98,7 @@ class LicenceController(
     @RequestBody @Valid
     request: CreateLicenceRequest,
   ): LicenceSummary {
-    return licenceService.createLicence(request)
+    return licenceCreationService.createLicence(request)
   }
 
   @Tag(name = Tags.LICENCES)

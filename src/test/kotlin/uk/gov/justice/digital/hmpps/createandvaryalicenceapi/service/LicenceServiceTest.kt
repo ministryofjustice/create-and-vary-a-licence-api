@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
-import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
@@ -39,10 +38,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -73,8 +73,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
@@ -90,7 +89,7 @@ class LicenceServiceTest {
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service = Mockito.spy(
+  private val service =
     LicenceService(
       licenceRepository,
       staffRepository,
@@ -104,8 +103,7 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
-    ),
-  )
+    )
 
   @BeforeEach
   fun reset() {
@@ -125,16 +123,21 @@ class LicenceServiceTest {
       additionalConditionUploadDetailRepository,
       auditEventRepository,
       notifyService,
+      omuService,
+      releaseDateService,
     )
   }
 
   @Test
   fun `service returns a licence by ID`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
 
     val licence = service.getLicenceById(1L)
 
-    assertThat(licence).isExactlyInstanceOf(ModelLicence::class.java)
+    assertThat(licence).isExactlyInstanceOf(ModelCrdLicence::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
   }
@@ -142,6 +145,9 @@ class LicenceServiceTest {
   @Test
   fun `service returns a licence with the full name of the user who created it`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
 
     val licence = service.getLicenceById(1L)
 
@@ -151,6 +157,9 @@ class LicenceServiceTest {
   @Test
   fun `service transforms key fields of a licence object correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
 
     val licence = service.getLicenceById(1L)
 
@@ -173,92 +182,6 @@ class LicenceServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
-  }
-
-  @Test
-  fun `service creates a licence with standard conditions`() {
-    val expectedCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    )
-
-    whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenReturn(aLicenceEntity.standardConditions)
-    whenever(licenceRepository.saveAndFlush(any())).thenReturn(aLicenceEntity)
-    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
-
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-
-    val createResponse = service.createLicence(aCreateLicenceRequest)
-
-    assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
-
-    verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-
-    with(licenceCaptor.value as CrdLicence) {
-      assertThat(kind).isEqualTo(LicenceKind.CRD)
-      assertThat(version).isEqualTo("1.4")
-      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-      assertThat(versionOfId).isNull()
-      assertThat(licenceVersion).isEqualTo("1.0")
-    }
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
-        listOf(
-          1L,
-          "smills",
-          "X Y",
-          "Licence created for ${aCreateLicenceRequest.forename} ${aCreateLicenceRequest.surname}",
-        ),
-      )
-
-    assertThat(eventCaptor.value)
-      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
-      .isEqualTo(
-        listOf(
-          1L,
-          LicenceEventType.CREATED,
-          "smills",
-          "X",
-          "Y",
-          "Licence created for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-        ),
-      )
-  }
-
-  @Test
-  fun `service throws a validation exception if an in progress licence exists for this person`() {
-    whenever(
-      licenceRepository
-        .findAllByNomsIdAndStatusCodeIn(
-          aCreateLicenceRequest.nomsId!!,
-          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
-        ),
-    ).thenReturn(listOf(aLicenceEntity))
-
-    val exception = assertThrows<ValidationException> {
-      service.createLicence(aCreateLicenceRequest)
-    }
-
-    assertThat(exception)
-      .isInstanceOf(ValidationException::class.java)
-      .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
-
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
@@ -1396,7 +1319,10 @@ class LicenceServiceTest {
     service.inActivateLicencesByIds(listOf(1))
 
     verify(licenceRepository, times(1)).findAllById(listOf(1L))
-    verify(service, times(1)).inactivateLicences(listOf(licence))
+    verify(
+      licenceRepository,
+      times(1),
+    ).saveAllAndFlush(listOf(licence.copy(statusCode = LicenceStatus.INACTIVE)))
   }
 
   @Test
@@ -1932,45 +1858,12 @@ class LicenceServiceTest {
 
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
-    val someStandardConditions = listOf(
-      ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      ModelStandardCondition(id = 2, code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
-      ModelStandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
-    )
 
-    val aCreateLicenceRequest = CreateLicenceRequest(
-      typeCode = LicenceType.AP,
-      version = "1.4",
-      nomsId = "NOMSID",
-      bookingNo = "BOOKINGNO",
-      bookingId = 1L,
-      crn = "CRN1",
-      pnc = "PNC1",
-      cro = "CRO1",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Mike",
-      surname = "Myers",
-      dateOfBirth = LocalDate.of(2001, 10, 1),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      standardLicenceConditions = someStandardConditions,
-      standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000,
+    val anAdditionalCondition = AdditionalConditionAp(
+      code = "code",
+      category = "category",
+      text = "text",
+      requiresInput = false,
     )
 
     val aLicenceEntity = TestData.createCrdLicence().copy(
@@ -2057,6 +1950,7 @@ class LicenceServiceTest {
     )
 
     val aLicenceSummary = LicenceSummary(
+      kind = LicenceKind.CRD,
       licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,

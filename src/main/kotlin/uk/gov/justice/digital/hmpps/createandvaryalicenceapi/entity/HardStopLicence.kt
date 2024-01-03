@@ -13,7 +13,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@DiscriminatorValue(value = "HARDSTOP")
+@DiscriminatorValue(value = "HARD_STOP")
 class HardStopLicence(
   id: Long = -1L,
   typeCode: LicenceType,
@@ -68,7 +68,7 @@ class HardStopLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
 
-  var reviewDate: LocalDate? = null,
+  var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -80,7 +80,7 @@ class HardStopLicence(
   var submittedBy: PrisonCaseAdministrator? = null,
 ) : Licence(
   id = id,
-  kind = LicenceKind.HARDSTOP,
+  kind = LicenceKind.HARD_STOP,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -189,7 +189,7 @@ class HardStopLicence(
     submittedBy: PrisonCaseAdministrator? = this.submittedBy,
     createdBy: PrisonCaseAdministrator? = this.createdBy,
     substituteOfId: Long? = this.substituteOfId,
-    reviewDate: LocalDate? = this.reviewDate,
+    reviewDate: LocalDateTime? = this.reviewDate,
     licenceVersion: String? = this.licenceVersion,
   ): HardStopLicence {
     return HardStopLicence(

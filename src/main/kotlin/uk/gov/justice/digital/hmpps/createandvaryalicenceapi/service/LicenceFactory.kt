@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import java.time.LocalDateTime
 
-object LicenceCreation {
+object LicenceFactory {
   fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(

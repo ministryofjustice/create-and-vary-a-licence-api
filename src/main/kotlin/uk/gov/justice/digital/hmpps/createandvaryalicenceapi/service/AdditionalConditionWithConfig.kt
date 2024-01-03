@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 
 data class AdditionalConditionWithConfig(
@@ -8,9 +9,9 @@ data class AdditionalConditionWithConfig(
   val config: IAdditionalCondition,
 )
 
-fun mapConditionsToConfig(licenceConditions: List<AdditionalCondition>, policy: Set<IAdditionalCondition>): List<AdditionalConditionWithConfig> {
+fun mapConditionsToConfig(licenceConditions: List<AdditionalCondition>, policyConditions: AllAdditionalConditions): List<AdditionalConditionWithConfig> {
   return licenceConditions.map {
-    val policyCondition = policy.find { pc -> it.conditionCode == pc.code }!!
+    val policyCondition = policyConditions.getCondition(it.conditionVersion, it.conditionCode!!)
     AdditionalConditionWithConfig(it, policyCondition)
   }
 }
@@ -20,8 +21,8 @@ fun mapConditionsToConfig(licenceConditions: List<AdditionalCondition>, policy: 
   Data-input is all-or-nothing (ie the user cannot submit data without filling out all required fields),
   so we can infer that the presence of any data means all the required data exists and the condition is ready to submit.
 */
-fun isLicenceReadyToSubmit(licenceConditions: List<AdditionalCondition>, policy: Set<IAdditionalCondition>): Map<String, Boolean> {
-  val conditionsWithConfig = mapConditionsToConfig(licenceConditions, policy)
+fun isLicenceReadyToSubmit(licenceConditions: List<AdditionalCondition>, policyConditions: AllAdditionalConditions): Map<String, Boolean> {
+  val conditionsWithConfig = mapConditionsToConfig(licenceConditions, policyConditions)
   return conditionsWithConfig.associate {
     val enteredFields = it.additionalCondition.additionalConditionData.map { data -> data.dataField }
     val readyToSubmit =
@@ -35,6 +36,6 @@ fun isLicenceReadyToSubmit(licenceConditions: List<AdditionalCondition>, policy:
   }
 }
 
-fun isConditionReadyToSubmit(licenceCondition: AdditionalCondition, policy: Set<IAdditionalCondition>): Boolean {
-  return isLicenceReadyToSubmit(listOf(licenceCondition), policy)[licenceCondition.conditionCode]!!
+fun isConditionReadyToSubmit(licenceCondition: AdditionalCondition, policyConditions: AllAdditionalConditions): Boolean {
+  return isLicenceReadyToSubmit(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!
 }

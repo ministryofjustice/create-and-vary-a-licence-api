@@ -128,4 +128,31 @@ class ProbationSearchMockServer : WireMockServer(8094) {
         ),
     )
   }
+
+  fun stubSearchForPersonOnProbation() {
+    stubFor(
+      post(urlEqualTo("/search"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          )
+            .withBody(
+              """[
+                {
+                 "offenderId": 1,
+                 "otherIds": { "crn": "X12345" },
+                 "offenderManagers": [
+                    {
+                     "active": true,
+                     "staff": { "code": "staff-code-1"}
+                    } 
+                 ]
+                }
+                ]
+              """.trimMargin(),
+            ).withStatus(200),
+        ),
+    )
+  }
 }
