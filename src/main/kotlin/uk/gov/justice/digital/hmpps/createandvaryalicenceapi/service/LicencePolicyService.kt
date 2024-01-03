@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
@@ -11,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSug
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 enum class ConditionChangeType {
   /**
@@ -78,6 +80,34 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       .allAdditionalConditions()
       .find { it.code == conditionCode }
       ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
+
+  fun getCurrentStandardApConditions(licenceType: LicenceType): List<StandardCondition> {
+    return if (licenceType == LicenceType.PSS) {
+      emptyList()
+    } else {
+      currentPolicy().standardConditions.standardConditionsAp.mapIndexed { index, standardConditionAp ->
+        StandardCondition(
+          code = standardConditionAp.code,
+          sequence = index,
+          text = standardConditionAp.text,
+        )
+      }
+    }
+  }
+
+  fun getCurrentStandardPssConditions(licenceType: LicenceType): List<StandardCondition> {
+    return if (licenceType == LicenceType.AP) {
+      emptyList()
+    } else {
+      currentPolicy().standardConditions.standardConditionsPss.mapIndexed { index, standardConditionPss ->
+        StandardCondition(
+          code = standardConditionPss.code,
+          sequence = index,
+          text = standardConditionPss.text,
+        )
+      }
+    }
+  }
 
   fun getAllAdditionalConditions(): AllAdditionalConditions {
     return AllAdditionalConditions(

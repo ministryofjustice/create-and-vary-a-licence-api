@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Deacti
 class DeactivateLicencesController(
   private val deactivateLicencesService: DeactivateLicencesService,
 ) {
-  @PatchMapping(value = ["/deactivate-licences-past-release-date"])
+  @PostMapping(value = ["/run-deactivate-licences-past-release-date"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Deactivate licences which are past release date.",

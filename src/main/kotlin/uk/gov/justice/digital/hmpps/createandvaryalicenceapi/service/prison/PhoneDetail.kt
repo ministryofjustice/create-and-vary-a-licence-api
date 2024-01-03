@@ -4,5 +4,5 @@ data class PhoneDetail(
   val phoneId: Int,
   val number: String,
   val type: String,
-  val ext: String,
+  val ext: String?,
 )
