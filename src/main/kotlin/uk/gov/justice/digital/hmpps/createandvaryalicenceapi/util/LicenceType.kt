@@ -11,7 +11,7 @@ enum class LicenceType {
   companion object {
     fun getLicenceType(nomisRecord: PrisonerSearchPrisoner) = when {
       nomisRecord.licenceExpiryDate == null -> PSS
-      nomisRecord.topUpSupervisionExpiryDate == null || nomisRecord.topUpSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
+      nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
       else -> AP_PSS
     }
   }

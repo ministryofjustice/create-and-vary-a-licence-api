@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -50,6 +51,7 @@ class HardStopLicence(
   probationTeamDescription: String? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
+  appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
   approvedDate: LocalDateTime? = null,
@@ -114,6 +116,7 @@ class HardStopLicence(
   probationTeamDescription = probationTeamDescription,
   appointmentPerson = appointmentPerson,
   appointmentTime = appointmentTime,
+  appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
@@ -168,6 +171,7 @@ class HardStopLicence(
     probationTeamDescription: String? = this.probationTeamDescription,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
+    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -225,6 +229,7 @@ class HardStopLicence(
       probationTeamDescription = probationTeamDescription,
       appointmentPerson = appointmentPerson,
       appointmentTime = appointmentTime,
+      appointmentTimeType = appointmentTimeType,
       appointmentAddress = appointmentAddress,
       appointmentContact = appointmentContact,
       approvedDate = approvedDate,
@@ -297,8 +302,13 @@ class HardStopLicence(
     updatedByUsername = updatedByUsername,
   )
 
-  override fun updateAppointmentTime(appointmentTime: LocalDateTime, updatedByUsername: String?) = copy(
+  override fun updateAppointmentTime(
+    appointmentTime: LocalDateTime?,
+    appointmentTimeType: AppointmentTimeType,
+    updatedByUsername: String?,
+  ) = copy(
     appointmentTime = appointmentTime,
+    appointmentTimeType = appointmentTimeType,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = updatedByUsername,
   )
@@ -450,6 +460,7 @@ class HardStopLicence(
       "probationTeamDescription=$probationTeamDescription, " +
       "appointmentPerson=$appointmentPerson, " +
       "appointmentTime=$appointmentTime, " +
+      "appointmentTimeType=$appointmentTimeType, " +
       "appointmentAddress=$appointmentAddress, " +
       "appointmentContact=$appointmentContact, " +
       "approvedDate=$approvedDate, " +
