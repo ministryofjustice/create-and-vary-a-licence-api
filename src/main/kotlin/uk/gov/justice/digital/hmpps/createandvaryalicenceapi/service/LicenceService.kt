@@ -87,10 +87,7 @@ class LicenceService(
       else -> releaseDate
     }
 
-    val conditionsSubmissionStatus = isLicenceReadyToSubmit(
-      entityLicence.additionalConditions,
-      licencePolicyService.policyByVersion(entityLicence.version!!).allAdditionalConditions(),
-    )
+    val conditionsSubmissionStatus = isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
 
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
   }

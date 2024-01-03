@@ -42,7 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -64,6 +64,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -751,7 +752,7 @@ class LicenceControllerTest {
       BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text"),
     )
 
-    val aLicence = Licence(
+    val aLicence = CrdLicence(
       id = 1,
       typeCode = LicenceType.AP,
       version = "1.1",
@@ -793,7 +794,6 @@ class LicenceControllerTest {
       additionalLicenceConditions = someAdditionalConditions,
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
-      isVariation = false,
     )
 
     val aCreateLicenceRequest = CreateLicenceRequest(
@@ -832,6 +832,7 @@ class LicenceControllerTest {
     )
 
     val aLicenceSummary = LicenceSummary(
+      kind = LicenceKind.CRD,
       licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,

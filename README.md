@@ -31,6 +31,10 @@ values required.
 
 `$ ./run-local.sh`
 
+To run start up the application without pulling / restarting local containers:
+
+`$ ./run-local.sh --skip-docker`
+
 ## Running the unit tests
 
 Unit tests mock all external dependencies and can be run with no dependent containers.

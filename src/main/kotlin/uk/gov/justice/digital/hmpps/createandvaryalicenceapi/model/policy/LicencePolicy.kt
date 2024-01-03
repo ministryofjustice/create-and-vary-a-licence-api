@@ -56,3 +56,11 @@ data class LicencePolicy(
   fun allStandardConditions(): Set<ILicenceCondition> =
     (this.standardConditions.standardConditionsPss + this.standardConditions.standardConditionsAp).toSet()
 }
+
+data class AllAdditionalConditions(
+  val mappedPolicy: Map<String, Map<String, IAdditionalCondition>>,
+) {
+  fun getCondition(version: String, code: String): IAdditionalCondition {
+    return mappedPolicy[version]?.get(code) ?: error("Unable to find condition config for $code in policy version $version")
+  }
+}
