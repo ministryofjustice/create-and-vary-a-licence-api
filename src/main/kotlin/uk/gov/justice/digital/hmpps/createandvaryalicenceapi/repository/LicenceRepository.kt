@@ -101,7 +101,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
         )
-        AND COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) < CURRENT_DATE
+        AND (l.actualReleaseDate < CURRENT_DATE OR l.conditionalReleaseDate < CURRENT_DATE)
     """,
   )
   fun getDraftLicencesPassedReleaseDate(): List<Licence>

@@ -52,13 +52,15 @@ class DeactivateLicencesTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(deactivatedLicences?.size).isEqualTo(1)
+    assertThat(deactivatedLicences?.size).isEqualTo(3)
     assertThat(deactivatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
         tuple(1L, LicenceStatus.INACTIVE),
+        tuple(6L, LicenceStatus.INACTIVE),
+        tuple(7L, LicenceStatus.INACTIVE),
       )
   }
 
