@@ -178,6 +178,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.appointmentTime).isNull()
+    assertThat(result?.appointmentTimeType)
+      .isEqualTo(AppointmentTimeType.IMMEDIATE_UPON_RELEASE)
   }
 
   @Test
@@ -205,6 +207,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.appointmentTime)
       .isEqualTo(anAppointmentTimeRequest.appointmentTime?.truncatedTo(ChronoUnit.MINUTES))
+    assertThat(result?.appointmentTimeType)
+      .isEqualTo(anAppointmentTimeRequest.appointmentTimeType)
   }
 
   @Test
