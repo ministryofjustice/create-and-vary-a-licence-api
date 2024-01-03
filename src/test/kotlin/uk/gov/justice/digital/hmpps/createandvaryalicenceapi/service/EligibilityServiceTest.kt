@@ -225,7 +225,7 @@ class EligibilityServiceTest {
       status = "ACTIVE IN",
       mostSeriousOffence = "Robbery",
       licenceExpiryDate = LocalDate.now(clock).plusYears(1),
-      topUpSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
+      topupSupervisionExpiryDate = LocalDate.now(clock).plusYears(1),
       homeDetentionCurfewEligibilityDate = null,
       releaseDate = LocalDate.now(clock).plusDays(1),
       confirmedReleaseDate = LocalDate.now(clock).plusDays(1),
@@ -245,7 +245,7 @@ class EligibilityServiceTest {
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = LocalDate.parse("2023-09-14"),
       sentenceExpiryDate = LocalDate.parse("2024-09-14"),
-      topUpSupervisionStartDate = null,
+      topupSupervisionStartDate = null,
       croNumber = null,
     )
   }

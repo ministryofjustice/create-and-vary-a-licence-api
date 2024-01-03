@@ -74,6 +74,7 @@ class LicenceCreationServiceTest {
     prisonerSearchApiClient,
     prisonApiClient,
     communityApiClient,
+    frontendPayloadTakesPriority = false,
   )
 
   @BeforeEach
@@ -133,8 +134,8 @@ class LicenceCreationServiceTest {
       assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
       assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
       assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
-      assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topUpSupervisionStartDate)
-      assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topUpSupervisionExpiryDate)
+      assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+      assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
       assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
       assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
       assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
@@ -323,7 +324,7 @@ class LicenceCreationServiceTest {
   @Test
   fun `Populates licence with standard conditions for AP licence`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(aPrisonerSearchResult.copy(topUpSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
+      listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
     )
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
       anOffenderDetailResult,
@@ -347,7 +348,7 @@ class LicenceCreationServiceTest {
   @Test
   fun `Populates licence with standard conditions for PSS licence`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(aPrisonerSearchResult.copy(topUpSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+      listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
     )
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
       anOffenderDetailResult,
@@ -373,7 +374,7 @@ class LicenceCreationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
-          topUpSupervisionExpiryDate = LocalDate.now().plusDays(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
           licenceExpiryDate = LocalDate.now(),
         ),
       ),
@@ -627,7 +628,7 @@ class LicenceCreationServiceTest {
       status = "ACTIVE IN",
       mostSeriousOffence = "Robbery",
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topUpSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       homeDetentionCurfewEligibilityDate = null,
       releaseDate = LocalDate.of(2021, 10, 22),
       confirmedReleaseDate = LocalDate.of(2021, 10, 22),
@@ -647,7 +648,7 @@ class LicenceCreationServiceTest {
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = LocalDate.of(2018, 10, 22),
       sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topUpSupervisionStartDate = null,
+      topupSupervisionStartDate = null,
       croNumber = null,
     )
 

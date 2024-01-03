@@ -43,6 +43,7 @@ class LicenceCreationService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val communityApiClient: CommunityApiClient,
+  private val frontendPayloadTakesPriority: Boolean = true,
 ) {
 
   companion object {
@@ -79,18 +80,15 @@ class LicenceCreationService(
 
     val licenceType = getLicenceType(nomisRecord)
 
-    val createLicenceRequest = createLicenceRequest(
+    val (createLicenceRequest, licenceEqualityCheck) = getRequestToSave(
       licenceType,
       nomsId,
       nomisRecord,
       prisonInformation,
       currentResponsibleOfficerDetails,
       deliusRecord,
+      request,
     )
-
-    val licenceEqualityCheck = checkCreatedLicence(request, createLicenceRequest)
-      .filter { (test, _) -> !test }
-      .map { (_, field) -> field }
 
     val licence = transform(createLicenceRequest)
 
@@ -104,7 +102,8 @@ class LicenceCreationService(
 
     val entityStandardLicenceConditions =
       createLicenceRequest.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
-    val entityStandardPssConditions = createLicenceRequest.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
+    val entityStandardPssConditions =
+      createLicenceRequest.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
     standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
 
     auditEventRepository.saveAndFlush(
@@ -137,6 +136,32 @@ class LicenceCreationService(
     return createLicenceResponse
   }
 
+  private fun getRequestToSave(
+    licenceType: LicenceType,
+    nomsId: String,
+    nomisRecord: PrisonerSearchPrisoner,
+    prisonInformation: Prison,
+    currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
+    deliusRecord: OffenderDetail,
+    request: CreateLicenceRequest,
+  ): Pair<CreateLicenceRequest, List<String>> {
+    val createLicenceRequest = createLicenceRequest(
+      licenceType,
+      nomsId,
+      nomisRecord,
+      prisonInformation,
+      currentResponsibleOfficerDetails,
+      deliusRecord,
+    )
+
+    val licenceEqualityCheck = checkCreatedLicence(request, createLicenceRequest)
+      .filter { (test, _) -> !test }
+      .map { (_, field) -> field }
+
+    val requestToSave = if (frontendPayloadTakesPriority) request else createLicenceRequest
+    return Pair(requestToSave, licenceEqualityCheck)
+  }
+
   private fun createLicenceRequest(
     licenceType: LicenceType,
     nomsId: String,
@@ -161,8 +186,8 @@ class LicenceCreationService(
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
     licenceStartDate = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate,
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
-    topupSupervisionStartDate = nomisRecord.topUpSupervisionStartDate,
-    topupSupervisionExpiryDate = nomisRecord.topUpSupervisionExpiryDate,
+    topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
+    topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
     probationAreaCode = currentResponsibleOfficerDetails.probationArea.code,
@@ -181,7 +206,10 @@ class LicenceCreationService(
     responsibleComStaffId = currentResponsibleOfficerDetails.staffId,
   )
 
-  fun checkCreatedLicence(frontendRequest: CreateLicenceRequest, backendRequest: CreateLicenceRequest): List<Pair<Boolean, String>> {
+  fun checkCreatedLicence(
+    frontendRequest: CreateLicenceRequest,
+    backendRequest: CreateLicenceRequest,
+  ): List<Pair<Boolean, String>> {
     return listOf(
       (frontendRequest.typeCode == backendRequest.typeCode) to "type code",
       (frontendRequest.version == backendRequest.version) to "version",

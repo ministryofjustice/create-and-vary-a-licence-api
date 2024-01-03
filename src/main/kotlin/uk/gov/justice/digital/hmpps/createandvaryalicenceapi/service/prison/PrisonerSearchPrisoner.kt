@@ -13,7 +13,7 @@ data class PrisonerSearchPrisoner(
   val licenceExpiryDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
-  val topUpSupervisionExpiryDate: LocalDate? = null,
+  val topupSupervisionExpiryDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   val homeDetentionCurfewEligibilityDate: LocalDate? = null,
@@ -65,7 +65,7 @@ data class PrisonerSearchPrisoner(
   val sentenceExpiryDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
-  val topUpSupervisionStartDate: LocalDate? = null,
+  val topupSupervisionStartDate: LocalDate? = null,
 
   val croNumber: String? = null,
 )

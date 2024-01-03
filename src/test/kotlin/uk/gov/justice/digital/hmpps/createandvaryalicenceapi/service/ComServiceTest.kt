@@ -954,7 +954,7 @@ class ComServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
         aPrisonerSearchResult.copy(
-          topUpSupervisionExpiryDate = null,
+          topupSupervisionExpiryDate = null,
         ),
       ),
     )
@@ -1053,7 +1053,7 @@ class ComServiceTest {
       listOf(
         aPrisonerSearchResult.copy(
           licenceExpiryDate = LocalDate.parse("2024-09-15"),
-          topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+          topupSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
         ),
       ),
     )
@@ -1152,7 +1152,7 @@ class ComServiceTest {
       listOf(
         aPrisonerSearchResult.copy(
           licenceExpiryDate = LocalDate.parse("2024-09-15"),
-          topUpSupervisionExpiryDate = LocalDate.parse("2024-10-14"),
+          topupSupervisionExpiryDate = LocalDate.parse("2024-10-14"),
         ),
       ),
     )
@@ -1779,7 +1779,7 @@ class ComServiceTest {
       status = "ACTIVE IN",
       mostSeriousOffence = "Robbery",
       licenceExpiryDate = LocalDate.parse("2024-09-14"),
-      topUpSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
+      topupSupervisionExpiryDate = LocalDate.parse("2024-09-14"),
       homeDetentionCurfewEligibilityDate = null,
       releaseDate = LocalDate.parse("2023-09-14"),
       confirmedReleaseDate = LocalDate.parse("2023-09-14"),
@@ -1799,7 +1799,7 @@ class ComServiceTest {
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = LocalDate.parse("2023-09-14"),
       sentenceExpiryDate = LocalDate.parse("2024-09-14"),
-      topUpSupervisionStartDate = null,
+      topupSupervisionStartDate = null,
       croNumber = null,
     )
 
