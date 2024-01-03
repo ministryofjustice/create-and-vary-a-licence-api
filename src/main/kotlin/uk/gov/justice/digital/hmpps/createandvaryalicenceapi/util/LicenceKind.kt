@@ -20,9 +20,9 @@ enum class LicenceKind(
     LicenceEventType.VARIATION_SUBMITTED,
   ),
 
-  HARDSTOP(
+  HARD_STOP(
     IN_PROGRESS,
-    LicenceEventType.HARDSTOP_CREATED,
-    LicenceEventType.HARDSTOP_SUBMITTED,
+    LicenceEventType.HARD_STOP_CREATED,
+    LicenceEventType.HARD_STOP_SUBMITTED,
   ),
 }

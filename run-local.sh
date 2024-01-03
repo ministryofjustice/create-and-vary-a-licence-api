@@ -9,6 +9,28 @@
 # to match those used in the docker-compose files.
 #
 
+restart_docker () {
+  # Stop the back end containers
+  echo "Bringing down current containers ..."
+  docker compose down --remove-orphans
+
+  #Prune existing containers
+  #Comment in if you wish to perform a fresh install of all containers where all containers are removed and deleted
+  #You will be prompted to continue with the deletion in the terminal
+  #docker system prune --all
+
+  echo "Pulling back end containers ..."
+  docker compose pull
+  docker compose -f docker-compose.yml up -d
+
+  echo "Waiting for back end containers to be ready ..."
+  until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
+      sleep 0.1;
+  done;
+
+  echo "Back end containers are now ready"
+}
+
 # Server port - avoid clash with prison-api
 export SERVER_PORT=8089
 
@@ -31,25 +53,9 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
-# Stop the back end containers
-echo "Bringing down current containers ..."
-docker compose down --remove-orphans
-
-#Prune existing containers
-#Comment in if you wish to perform a fresh install of all containers where all containers are removed and deleted
-#You will be prompted to continue with the deletion in the terminal
-#docker system prune --all
-
-echo "Pulling back end containers ..."
-docker compose pull
-docker compose -f docker-compose.yml up -d
-
-echo "Waiting for back end containers to be ready ..."
-until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
-    sleep 0.1;
-done;
-
-echo "Back end containers are now ready"
+if [[ $1 != "--skip-docker" ]]; then
+  restart_docker
+fi
 
 # Run the application with stdout and dev profiles active
 echo "Starting the API locally"

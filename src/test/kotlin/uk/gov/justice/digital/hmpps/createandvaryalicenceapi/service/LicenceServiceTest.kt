@@ -39,7 +39,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
@@ -72,7 +74,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 class LicenceServiceTest {
@@ -130,10 +132,13 @@ class LicenceServiceTest {
   @Test
   fun `service returns a licence by ID`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
 
     val licence = service.getLicenceById(1L)
 
-    assertThat(licence).isExactlyInstanceOf(ModelLicence::class.java)
+    assertThat(licence).isExactlyInstanceOf(ModelCrdLicence::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
   }
@@ -141,6 +146,9 @@ class LicenceServiceTest {
   @Test
   fun `service returns a licence with the full name of the user who created it`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
 
     val licence = service.getLicenceById(1L)
 
@@ -150,6 +158,9 @@ class LicenceServiceTest {
   @Test
   fun `service transforms key fields of a licence object correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
 
     val licence = service.getLicenceById(1L)
 
@@ -1925,6 +1936,13 @@ class LicenceServiceTest {
       ModelStandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
     )
 
+    val anAdditionalCondition = AdditionalConditionAp(
+      code = "code",
+      category = "category",
+      text = "text",
+      requiresInput = false,
+    )
+
     val aCreateLicenceRequest = CreateLicenceRequest(
       typeCode = LicenceType.AP,
       version = "1.4",
@@ -2044,6 +2062,7 @@ class LicenceServiceTest {
     )
 
     val aLicenceSummary = LicenceSummary(
+      kind = LicenceKind.CRD,
       licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
