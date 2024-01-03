@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -154,6 +155,9 @@ data class HardStopLicence(
   @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   override val appointmentTime: LocalDateTime? = null,
+
+  @Schema(description = "The type of appointment time of the initial appointment", example = "SPECIFIC_DATE_TIME")
+  override val appointmentTimeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
 
   @Schema(
     description = "The address of initial appointment",

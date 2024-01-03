@@ -64,6 +64,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -248,18 +249,6 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `update appointment time - no date specified`() {
-    mvc.perform(
-      put("/licence/id/4/appointmentTime")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({})),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
-  }
-
-  @Test
   fun `update initial appointment time - lower precision datetime`() {
     mvc.perform(
       put("/licence/id/4/appointmentTime")
@@ -270,6 +259,50 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequestDateOnly)
+  }
+
+  @Test
+  fun `update initial appointment time should throw error when Appointment time is null and Appointment type is SPECIFIC_DATE_TIME`() {
+    val anAppointmentTimeRequestDateNull = anAppointmentTimeRequestDateOnly.copy(appointmentTime = null)
+    whenever(
+      licenceService.updateAppointmentTime(
+        4,
+        anAppointmentTimeRequestDateNull,
+      ),
+    ).thenThrow(ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME"))
+
+    val result = mvc.perform(
+      put("/licence/id/4/appointmentTime")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAppointmentTimeRequestDateNull)),
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).contains("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
+
+    verify(licenceService, times(1)).updateAppointmentTime(
+      4,
+      anAppointmentTimeRequestDateNull,
+    )
+  }
+
+  @Test
+  fun `update initial appointment time not should throw error when Appointment time is null and Appointment type is not SPECIFIC_DATE_TIME`() {
+    val anAppointmentTimeRequestDateNull =
+      anAppointmentTimeRequestDateOnly.copy(appointmentTime = null, AppointmentTimeType.IMMEDIATE_UPON_RELEASE)
+
+    mvc.perform(
+      put("/licence/id/4/appointmentTime")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(anAppointmentTimeRequestDateNull)),
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequestDateNull)
   }
 
   @Test
@@ -873,10 +906,12 @@ class LicenceControllerTest {
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES),
+      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
     )
 
     val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
+      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
     )
 
     val aContactNumberRequest = ContactNumberRequest(

@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDateTime
@@ -138,6 +139,53 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
+  fun `update initial appointment time should throw validation error when Appointment time is null and Appointment type is SPECIFIC_DATE_TIME`() {
+    webTestClient.put()
+      .uri("/licence/id/1/appointmentTime")
+      .bodyValue(anAppointmentTimeRequest.copy(appointmentTime = null))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isBadRequest
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `update initial appointment time should not throw validation error when Appointment time is null but Appointment type is not SPECIFIC_DATE_TIME`() {
+    webTestClient.put()
+      .uri("/licence/id/1/appointmentTime")
+      .bodyValue(
+        anAppointmentTimeRequest.copy(
+          appointmentTime = null,
+          appointmentTimeType = AppointmentTimeType.IMMEDIATE_UPON_RELEASE,
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.appointmentTime).isNull()
+    assertThat(result?.appointmentTimeType)
+      .isEqualTo(AppointmentTimeType.IMMEDIATE_UPON_RELEASE)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
   fun `Update time of the initial appointment`() {
     webTestClient.put()
       .uri("/licence/id/1/appointmentTime")
@@ -158,7 +206,9 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.appointmentTime)
-      .isEqualTo(anAppointmentTimeRequest.appointmentTime.truncatedTo(ChronoUnit.MINUTES))
+      .isEqualTo(anAppointmentTimeRequest.appointmentTime?.truncatedTo(ChronoUnit.MINUTES))
+    assertThat(result?.appointmentTimeType)
+      .isEqualTo(anAppointmentTimeRequest.appointmentTimeType)
   }
 
   @Test
@@ -556,6 +606,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     val anAppointmentTimeRequest = AppointmentTimeRequest(
       appointmentTime = LocalDateTime.now().plusDays(10),
+      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
     )
 
     val aContactNumberRequest = ContactNumberRequest(

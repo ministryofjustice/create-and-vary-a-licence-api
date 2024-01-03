@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDateTime
 import kotlin.reflect.full.memberProperties
 
@@ -13,6 +14,7 @@ class VariationLicenceTest {
   fun checkCopyMethod() {
     val submittedDate = LocalDateTime.now()
     val appointmentTime = LocalDateTime.now().plusDays(1)
+    val appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME
     val approvedDate = LocalDateTime.now().plusDays(2)
     val dateLastUpdated = LocalDateTime.now().plusDays(3)
     val licenceActivatedDate = LocalDateTime.now().plusDays(4)
@@ -27,6 +29,7 @@ class VariationLicenceTest {
         vloDiscussion = "Yes 2",
         appointmentAddress = "some address",
         appointmentTime = appointmentTime,
+        appointmentTimeType = appointmentTimeType,
         submittedBy = TestData.com(),
         appointmentContact = "appointmentContact",
         appointmentPerson = "appointmentPerson",

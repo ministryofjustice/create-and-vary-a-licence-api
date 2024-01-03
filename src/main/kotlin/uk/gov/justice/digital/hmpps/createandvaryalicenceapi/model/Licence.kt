@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -166,6 +167,9 @@ sealed interface Licence {
 
   @get:Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   val appointmentTime: LocalDateTime?
+
+  @get:Schema(description = "The type of appointment time of the initial appointment", example = "SPECIFIC_DATE_TIME")
+  val appointmentTimeType: AppointmentTimeType?
 
   @get:Schema(
     description = "The address of initial appointment",
