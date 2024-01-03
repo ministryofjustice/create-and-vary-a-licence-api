@@ -35,7 +35,7 @@ class DeactivateLicencesTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licences-for-deactivate-licences-past-release-date.sql",
   )
-  fun `Given an in progress Licence past release date when PATCH run-deactivate-licences-past-release-date then licence should inactivated`() {
+  fun `Given an in progress Licence past release date when POST run-deactivate-licences-past-release-date then licence should inactivated`() {
     webTestClient.post()
       .uri("/run-deactivate-licences-past-release-date")
       .accept(MediaType.APPLICATION_JSON)
