@@ -109,4 +109,27 @@ class CommunityApiMockServer : WireMockServer(8093) {
       ),
     )
   }
+
+  fun stubGetAllOffenderManagers(crn: String = "X12345") {
+    stubFor(
+      get(urlEqualTo("/secure/offenders/crn/$crn/allOffenderManagers")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """[{
+            "staffCode": "staff-code-1",
+            "staffId": 125,
+            "team": {
+              "code": "team-code-1",
+              "description": "staff-description-1",
+              "borough": { "code": "borough-code-1", "description": "borough-description-1" },
+              "district": { "code": "district-code-1", "description": "district-description-1" }
+            },
+            "probationArea": { 
+              "code": "probationArea-code-1", 
+              "description": "probationArea-description-1"
+            }
+          }]""",
+        ).withStatus(200),
+      ),
+    )
+  }
 }
