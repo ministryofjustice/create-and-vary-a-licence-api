@@ -33,11 +33,11 @@ class DeactivateLicencesTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licences-for-deactivate-licences-past-crd.sql",
+    "classpath:test_data/seed-licences-for-deactivate-licences-past-release-date.sql",
   )
-  fun `Given an in progress Licence past CRD when PATCH deactivate-post-crd then licence should inactivated`() {
+  fun `Given an in progress Licence past release date when PATCH deactivate-licences-past-release-date then licence should inactivated`() {
     webTestClient.patch()
-      .uri("/deactivate-licences-past-crd")
+      .uri("/deactivate-licences-past-release-date")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()

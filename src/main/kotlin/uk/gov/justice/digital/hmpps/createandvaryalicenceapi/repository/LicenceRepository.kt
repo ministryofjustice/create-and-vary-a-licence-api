@@ -101,10 +101,10 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
         )
-        AND COALESCE(l.conditionalReleaseDate, l.actualReleaseDate) < CURRENT_DATE
+        AND COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) < CURRENT_DATE
     """,
   )
-  fun getDraftLicencesPassedCRD(): List<Licence>
+  fun getDraftLicencesPassedReleaseDate(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

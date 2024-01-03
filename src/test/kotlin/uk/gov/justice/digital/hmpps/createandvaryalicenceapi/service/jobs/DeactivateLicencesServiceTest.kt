@@ -56,18 +56,18 @@ class DeactivateLicencesServiceTest {
   }
 
   @Test
-  fun `Given there no licences with CRD in past When deactivateLicencesJob Then should not deactivate any licence`() {
-    whenever(licenceRepository.getDraftLicencesPassedCRD()).thenReturn(emptyList())
+  fun `Given there no licences with release date in past When deactivateLicencesJob Then should not deactivate any licence`() {
+    whenever(licenceRepository.getDraftLicencesPassedReleaseDate()).thenReturn(emptyList())
     service.deactivateLicencesJob()
-    verify(licenceRepository, times(1)).getDraftLicencesPassedCRD()
+    verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
   }
 
   @Test
-  fun `Given there are licence with CRD in past When deactivateLicencesJob Then should deactivate the licence`() {
-    whenever(licenceRepository.getDraftLicencesPassedCRD()).thenReturn(
+  fun `Given there are licence with release date in past When deactivateLicencesJob Then should deactivate the licence`() {
+    whenever(licenceRepository.getDraftLicencesPassedReleaseDate()).thenReturn(
       listOf(
         aLicenceEntity,
       ),
@@ -79,7 +79,7 @@ class DeactivateLicencesServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(licenceRepository, times(1)).getDraftLicencesPassedCRD()
+    verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
 
@@ -98,7 +98,7 @@ class DeactivateLicencesServiceTest {
           "smills",
           "smills",
           AuditEventType.SYSTEM_EVENT,
-          "Licence deactivated automatically as it passed CRD for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence deactivated automatically as it passed release date for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.INACTIVE} version ${aLicenceEntity.version}",
         ),
       )
@@ -112,7 +112,7 @@ class DeactivateLicencesServiceTest {
           "smills",
           "smills",
           "smills",
-          "Licence deactivated automatically as it passed CRD for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence deactivated automatically as it passed release date for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
   }

@@ -22,18 +22,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Deacti
 class DeactivateLicencesController(
   private val deactivateLicencesService: DeactivateLicencesService,
 ) {
-  @PatchMapping(value = ["/deactivate-licences-past-crd"])
+  @PatchMapping(value = ["/deactivate-licences-past-release-date"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
-    summary = "Deactivate licences which are past CRD date.",
-    description = "Deactivate licences from IN_PROGRESS and SUBMITTED status to INACTIVE where these are past CRD date already. Requires ROLE_CVL_ADMIN.",
+    summary = "Deactivate licences which are past release date.",
+    description = "Deactivate licences from IN_PROGRESS and SUBMITTED status to INACTIVE where these are past release date already. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "204",
-        description = "Deactivation request for licences past CRD is processed successfully.",
+        description = "Deactivation request for licences past release date is processed successfully.",
       ),
       ApiResponse(
         responseCode = "401",
