@@ -73,7 +73,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as E
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
@@ -1846,6 +1845,14 @@ class LicenceServiceTest {
 
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
+
+    val anAdditionalCondition = AdditionalConditionAp(
+      code = "code",
+      category = "category",
+      text = "text",
+      requiresInput = false,
+    )
+
     val aLicenceEntity = TestData.createCrdLicence().copy(
       id = 1,
       typeCode = LicenceType.AP,

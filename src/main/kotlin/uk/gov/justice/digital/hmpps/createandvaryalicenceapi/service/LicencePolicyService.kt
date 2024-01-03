@@ -107,6 +107,7 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
         )
       }
     }
+  }
 
   fun getAllAdditionalConditions(): AllAdditionalConditions {
     return AllAdditionalConditions(
