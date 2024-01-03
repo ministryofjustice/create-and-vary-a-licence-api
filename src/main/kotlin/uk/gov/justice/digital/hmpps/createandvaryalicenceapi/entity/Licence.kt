@@ -150,7 +150,7 @@ abstract class Licence(
   abstract fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?): Licence
   abstract fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?): Licence
   abstract fun updateAppointmentTime(
-    appointmentTime: LocalDateTime,
+    appointmentTime: LocalDateTime?,
     appointmentTimeType: AppointmentTimeType,
     updatedByUsername: String?,
   ): Licence

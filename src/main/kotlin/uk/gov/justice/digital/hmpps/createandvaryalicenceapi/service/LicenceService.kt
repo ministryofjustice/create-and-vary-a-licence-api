@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -165,6 +166,11 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
+    if (request.appointmentTimeType === AppointmentTimeType.SPECIFIC_DATE_TIME) {
+      if (request.appointmentTime == null) {
+        throw ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
+      }
+    }
     val updatedLicence = licenceEntity.updateAppointmentTime(
       appointmentTime = request.appointmentTime,
       appointmentTimeType = request.appointmentTimeType,

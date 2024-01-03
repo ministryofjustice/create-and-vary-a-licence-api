@@ -301,7 +301,7 @@ class VariationLicence(
   )
 
   override fun updateAppointmentTime(
-    appointmentTime: LocalDateTime,
+    appointmentTime: LocalDateTime?,
     appointmentTimeType: AppointmentTimeType,
     updatedByUsername: String?,
   ) = copy(
