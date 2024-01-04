@@ -27,7 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Objects
+import java.util.*
 
 @Entity
 @Table(name = "licence")
@@ -139,6 +139,7 @@ abstract class Licence(
 
   abstract fun activate(): Licence
   abstract fun deactivate(): Licence
+  abstract fun deactivate(updatedByUsername: String): Licence
 
   abstract fun updatePrisonInfo(
     prisonCode: String,

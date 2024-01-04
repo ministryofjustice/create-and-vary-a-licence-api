@@ -254,6 +254,10 @@ class CrdLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
+  override fun deactivate(updatedByUsername: String) = copy(
+    statusCode = LicenceStatus.INACTIVE,
+    updatedByUsername = updatedByUsername,
+  )
 
   fun timeOut() = copy(
     statusCode = LicenceStatus.TIMED_OUT,
