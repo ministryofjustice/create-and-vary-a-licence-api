@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -73,7 +74,7 @@ class LicenceCreationService(
     } ?: error("No responsible officer details found for $nomsId")
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
-      ?: error("Staff with staffIdentifier ${currentResponsibleOfficerDetails.staffId} not found")
+      ?: createCom(currentResponsibleOfficerDetails.staffId)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username)
       ?: error("Staff with username $username not found")
@@ -253,4 +254,19 @@ class LicenceCreationService(
       licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
     return inFlight.isNotEmpty()
   }
+
+  private fun createCom(staffId: Long): CommunityOffenderManager {
+    val com = communityApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
+    return staffRepository.saveAndFlush(
+      CommunityOffenderManager(
+        staffIdentifier = staffId,
+        username = com.username?.uppercase() ?: missing(staffId, "username"),
+        email = com.email,
+        firstName = com.staff?.forenames,
+        lastName = com.staff?.surname,
+      ),
+    )
+  }
+
+  private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
 }

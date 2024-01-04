@@ -39,7 +39,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.O
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -531,7 +533,6 @@ class LicenceCreationServiceTest {
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
     whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
     whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
-
     whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
     val exception = assertThrows<IllegalStateException> {
@@ -540,12 +541,39 @@ class LicenceCreationServiceTest {
 
     assertThat(exception)
       .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("Staff with staffIdentifier 2000 not found")
+      .hasMessage("staff with staff identifier: '2000', missing record in delius")
 
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `service creates COM if no responsible COM exists in DB for this person`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
+    whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
+    whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+
+    service.createLicence(aCreateLicenceRequest)
+
+    argumentCaptor<CommunityOffenderManager>().apply {
+      verify(staffRepository, times(1)).saveAndFlush(capture())
+      assertThat(firstValue.staffIdentifier).isEqualTo(comUser.staffIdentifier)
+      assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
+      assertThat(firstValue.email).isEqualTo(comUser.email)
+      assertThat(firstValue.firstName).isEqualTo(comUser.staff!!.forenames)
+      assertThat(firstValue.lastName).isEqualTo(comUser.staff!!.surname)
+    }
+
+    argumentCaptor<CrdLicence>().apply {
+      verify(licenceRepository, times(1)).saveAndFlush(capture())
+      assertThat(firstValue.responsibleCom!!.id).isEqualTo(newCom.id)
+    }
   }
 
   @Test
@@ -716,6 +744,26 @@ class LicenceCreationServiceTest {
       email = "testemail@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
+    )
+
+    val comUser = User(
+      staffIdentifier = 2000,
+      username = "com-user",
+      email = "comuser@probation.gov.uk",
+      staff = StaffHuman(
+        forenames = "com",
+        surname = "user",
+      ),
+      teams = emptyList(),
+    )
+
+    val newCom = CommunityOffenderManager(
+      id = -2L,
+      staffIdentifier = 2000,
+      username = "com-user",
+      email = "comuser@probation.gov.uk",
+      firstName = "com",
+      lastName = "user",
     )
   }
 }
