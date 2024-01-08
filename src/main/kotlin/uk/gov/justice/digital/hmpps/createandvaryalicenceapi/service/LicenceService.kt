@@ -88,7 +88,8 @@ class LicenceService(
       else -> releaseDate
     }
 
-    val conditionsSubmissionStatus = isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
+    val conditionsSubmissionStatus =
+      isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
 
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
   }
@@ -346,8 +347,8 @@ class LicenceService(
       ?: throw ValidationException("Staff with username $username not found")
 
     val updatedLicence = when (licenceEntity) {
-      is CrdLicence -> licenceEntity.submit(submitter)
-      is VariationLicence -> licenceEntity.submit(submitter)
+      is CrdLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> TODO("Submitting hard stop licences not supported yet")
       else -> error("Unexpected licence type: $licenceEntity")
     }
@@ -862,10 +863,9 @@ class LicenceService(
 
   private fun getCommunityOffenderManagerForCurrentUser(): CommunityOffenderManager {
     val username = SecurityContextHolder.getContext().authentication.name
-    return (
-      this.staffRepository.findByUsernameIgnoreCase(username)
-        ?: error("Cannot find staff with username: $username")
-      )
+    val staff = this.staffRepository.findByUsernameIgnoreCase(username)
+      ?: error("Cannot find staff with username: $username")
+    return if (staff is CommunityOffenderManager) staff else error("Cannot find staff with username: $username")
   }
 
   private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType!!) != LicenceType.AP

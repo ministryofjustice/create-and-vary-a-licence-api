@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
-import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -52,11 +51,11 @@ class LicenceCreationService(
   }
 
   @Transactional
-  fun createLicence(request: CreateLicenceRequest): LicenceSummary {
-    val nomsId = request.nomsId!!
+  fun createLicence(apiRequest: CreateLicenceRequest): LicenceSummary {
+    val nomsId = apiRequest.nomsId!!
 
     if (offenderHasLicenceInFlight(nomsId)) {
-      throw ValidationException("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+      throw ValidationException("A licence already exists for person with prison number: $nomsId (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -65,7 +64,6 @@ class LicenceCreationService(
     val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(nomsId)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId)
     val offenderManagers = communityApiClient.getAllOffenderManagers(deliusRecord.otherIds.crn)
-
     val currentActiveOffenderManager = deliusRecord.offenderManagers.find { it.active } ?: error(
       "No active offender manager found for $nomsId",
     )
@@ -73,46 +71,35 @@ class LicenceCreationService(
       it.staffCode == currentActiveOffenderManager.staffDetail.code
     } ?: error("No responsible officer details found for $nomsId")
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
-      ?: createCom(currentResponsibleOfficerDetails.staffId)
-
-    val createdBy = staffRepository.findByUsernameIgnoreCase(username)
-      ?: error("Staff with username $username not found")
-
-    val licenceType = getLicenceType(nomisRecord)
-
-    val (createLicenceRequest, licenceEqualityCheck) = getRequestToSave(
-      licenceType,
-      nomsId,
+    val (request, licenceEqualityCheck) = getRequestToSave(
       nomisRecord,
       prisonInformation,
       currentResponsibleOfficerDetails,
       deliusRecord,
-      request,
+      apiRequest,
     )
 
-    val licence = transform(createLicenceRequest)
+    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
+      ?: createCom(currentResponsibleOfficerDetails.staffId)
 
-    licence.dateCreated = LocalDateTime.now()
-    licence.responsibleCom = responsibleCom
-    licence.createdBy = createdBy
-    licence.updatedByUsername = username
+    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
+      ?: error("Staff with username $username not found")
+
+    val licence = LicenceFactory.createCrd(request, responsibleCom, createdBy)
 
     val licenceEntity = licenceRepository.saveAndFlush(licence)
     val createLicenceResponse = transformToLicenceSummary(licenceEntity)
 
-    val entityStandardLicenceConditions =
-      createLicenceRequest.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
-    val entityStandardPssConditions =
-      createLicenceRequest.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
-    standardConditionRepository.saveAllAndFlush(entityStandardLicenceConditions + entityStandardPssConditions)
+    val standardConditions = request.standardLicenceConditions.transformToEntityStandard(licenceEntity, "AP")
+    val pssRequirements = request.standardPssConditions.transformToEntityStandard(licenceEntity, "PSS")
+    standardConditionRepository.saveAllAndFlush(standardConditions + pssRequirements)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = createLicenceResponse.licenceId,
         username = username,
         fullName = "${createdBy.firstName} ${createdBy.lastName}",
-        summary = "Licence created for ${createLicenceRequest.forename} ${createLicenceRequest.surname}",
+        summary = "Licence created for ${request.forename} ${request.surname}",
         detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
@@ -138,8 +125,6 @@ class LicenceCreationService(
   }
 
   private fun getRequestToSave(
-    licenceType: LicenceType,
-    nomsId: String,
     nomisRecord: PrisonerSearchPrisoner,
     prisonInformation: Prison,
     currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
@@ -147,8 +132,8 @@ class LicenceCreationService(
     request: CreateLicenceRequest,
   ): Pair<CreateLicenceRequest, List<String>> {
     val createLicenceRequest = createLicenceRequest(
-      licenceType,
-      nomsId,
+      licenceType = getLicenceType(nomisRecord),
+      nomsId = nomisRecord.prisonerNumber,
       nomisRecord,
       prisonInformation,
       currentResponsibleOfficerDetails,
@@ -159,7 +144,7 @@ class LicenceCreationService(
       .filter { (test, _) -> !test }
       .map { (_, field) -> field }
 
-    val requestToSave = if (LicenceCreationService.FRONTEND_PAYLOAD_TAKES_PRIORITY) request else createLicenceRequest
+    val requestToSave = if (FRONTEND_PAYLOAD_TAKES_PRIORITY) request else createLicenceRequest
     return Pair(requestToSave, licenceEqualityCheck)
   }
 
@@ -256,6 +241,7 @@ class LicenceCreationService(
   }
 
   private fun createCom(staffId: Long): CommunityOffenderManager {
+    log.info("Creating com record for staff with identifier: $staffId")
     val com = communityApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
@@ -268,5 +254,6 @@ class LicenceCreationService(
     )
   }
 
-  private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")
+  private fun missing(staffId: Long, field: String): Nothing =
+    error("staff with staff identifier: '$staffId', missing $field")
 }
