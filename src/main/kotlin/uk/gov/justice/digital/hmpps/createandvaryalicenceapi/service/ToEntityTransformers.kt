@@ -1,11 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
@@ -19,43 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 ** Functions which transform API models into their JPA entity objects equivalents.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
-
-fun transform(createRequest: CreateLicenceRequest): CrdLicence {
-  return CrdLicence(
-    typeCode = createRequest.typeCode,
-    version = createRequest.version,
-    statusCode = LicenceStatus.IN_PROGRESS,
-    nomsId = createRequest.nomsId,
-    bookingNo = createRequest.bookingNo,
-    bookingId = createRequest.bookingId,
-    crn = createRequest.crn,
-    pnc = createRequest.pnc,
-    cro = createRequest.cro,
-    prisonCode = createRequest.prisonCode,
-    prisonDescription = createRequest.prisonDescription,
-    prisonTelephone = createRequest.prisonTelephone,
-    forename = createRequest.forename,
-    middleNames = createRequest.middleNames,
-    surname = createRequest.surname,
-    dateOfBirth = createRequest.dateOfBirth,
-    conditionalReleaseDate = createRequest.conditionalReleaseDate,
-    actualReleaseDate = createRequest.actualReleaseDate,
-    sentenceStartDate = createRequest.sentenceStartDate,
-    sentenceEndDate = createRequest.sentenceEndDate,
-    licenceStartDate = createRequest.licenceStartDate,
-    licenceExpiryDate = createRequest.licenceExpiryDate,
-    topupSupervisionStartDate = createRequest.topupSupervisionStartDate,
-    topupSupervisionExpiryDate = createRequest.topupSupervisionExpiryDate,
-    probationAreaCode = createRequest.probationAreaCode,
-    probationAreaDescription = createRequest.probationAreaDescription,
-    probationPduCode = createRequest.probationPduCode,
-    probationPduDescription = createRequest.probationPduDescription,
-    probationLauCode = createRequest.probationLauCode,
-    probationLauDescription = createRequest.probationLauDescription,
-    probationTeamCode = createRequest.probationTeamCode,
-    probationTeamDescription = createRequest.probationTeamDescription,
-  )
-}
 
 // Transform a list of model standard conditions to a list of entity StandardConditions, setting the licenceId
 fun List<ModelStandardCondition>.transformToEntityStandard(

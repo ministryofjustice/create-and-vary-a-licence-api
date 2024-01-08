@@ -4,11 +4,57 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import java.time.LocalDateTime
 
 object LicenceFactory {
+
+  fun createCrd(
+    createRequest: CreateLicenceRequest,
+    responsibleCom: CommunityOffenderManager,
+    createdBy: CommunityOffenderManager,
+  ) = CrdLicence(
+    typeCode = createRequest.typeCode,
+    version = createRequest.version,
+    statusCode = LicenceStatus.IN_PROGRESS,
+    nomsId = createRequest.nomsId,
+    bookingNo = createRequest.bookingNo,
+    bookingId = createRequest.bookingId,
+    crn = createRequest.crn,
+    pnc = createRequest.pnc,
+    cro = createRequest.cro,
+    prisonCode = createRequest.prisonCode,
+    prisonDescription = createRequest.prisonDescription,
+    prisonTelephone = createRequest.prisonTelephone,
+    forename = createRequest.forename,
+    middleNames = createRequest.middleNames,
+    surname = createRequest.surname,
+    dateOfBirth = createRequest.dateOfBirth,
+    conditionalReleaseDate = createRequest.conditionalReleaseDate,
+    actualReleaseDate = createRequest.actualReleaseDate,
+    sentenceStartDate = createRequest.sentenceStartDate,
+    sentenceEndDate = createRequest.sentenceEndDate,
+    licenceStartDate = createRequest.licenceStartDate,
+    licenceExpiryDate = createRequest.licenceExpiryDate,
+    topupSupervisionStartDate = createRequest.topupSupervisionStartDate,
+    topupSupervisionExpiryDate = createRequest.topupSupervisionExpiryDate,
+    probationAreaCode = createRequest.probationAreaCode,
+    probationAreaDescription = createRequest.probationAreaDescription,
+    probationPduCode = createRequest.probationPduCode,
+    probationPduDescription = createRequest.probationPduDescription,
+    probationLauCode = createRequest.probationLauCode,
+    probationLauDescription = createRequest.probationLauDescription,
+    probationTeamCode = createRequest.probationTeamCode,
+    probationTeamDescription = createRequest.probationTeamDescription,
+    dateCreated = LocalDateTime.now(),
+    responsibleCom = responsibleCom,
+    createdBy = createdBy,
+    updatedByUsername = createdBy.username,
+  )
+
   fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(

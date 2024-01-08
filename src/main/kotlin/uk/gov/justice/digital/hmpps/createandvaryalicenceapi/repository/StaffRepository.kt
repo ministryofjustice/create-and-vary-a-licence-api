@@ -10,6 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 interface StaffRepository : JpaRepository<Staff, Long> {
   fun findByStaffIdentifier(staffIdentifier: Long): CommunityOffenderManager?
   fun findByStaffIdentifierOrUsernameIgnoreCase(staffIdentifier: Long, username: String): List<CommunityOffenderManager>?
-  fun findByUsernameIgnoreCase(username: String): CommunityOffenderManager?
+  fun findByUsernameIgnoreCase(username: String): Staff?
   fun findPrisonCaseAdministratorByUsernameIgnoreCase(username: String): PrisonCaseAdministrator?
 }
