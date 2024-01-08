@@ -98,7 +98,7 @@ class LicenceController(
     @RequestBody @Valid
     request: CreateLicenceRequest,
   ): LicenceSummary {
-    return licenceCreationService.createLicence(request)
+    return licenceCreationService.createLicence(request.nomsId)
   }
 
   @Tag(name = Tags.LICENCES)

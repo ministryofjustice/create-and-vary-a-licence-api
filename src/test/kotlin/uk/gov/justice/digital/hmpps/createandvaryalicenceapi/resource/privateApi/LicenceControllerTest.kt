@@ -173,7 +173,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest)).thenReturn(aLicenceSummary)
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
 
     val result = mvc.perform(
       post("/licence/create")
@@ -187,12 +187,12 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest)
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
   fun `create a licence where another is in progress`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId))
       .thenThrow(ValidationException("A licence already exists for this person"))
 
     val result = mvc.perform(
@@ -207,7 +207,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest)
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
@@ -829,40 +829,7 @@ class LicenceControllerTest {
       bespokeConditions = someBespokeConditions,
     )
 
-    val aCreateLicenceRequest = CreateLicenceRequest(
-      typeCode = LicenceType.AP,
-      version = "1.4",
-      nomsId = "NOMSID",
-      bookingNo = "BOOKINGNO",
-      bookingId = 1L,
-      crn = "CRN1",
-      pnc = "PNC1",
-      cro = "CRO1",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Mike",
-      surname = "Myers",
-      dateOfBirth = LocalDate.of(2001, 10, 1),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      standardLicenceConditions = someStandardConditions,
-      standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000,
-    )
+    val aCreateLicenceRequest = CreateLicenceRequest(nomsId = "NOMSID")
 
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,

@@ -20,10 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Creat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDate
 
 class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
@@ -112,40 +110,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       StandardCondition(code = "attendMeetings", sequence = 3, text = "Attend meetings"),
     )
 
-    val aCreateLicenceRequest = CreateLicenceRequest(
-      typeCode = LicenceType.AP,
-      version = "1.4",
-      nomsId = "NOMSID",
-      bookingNo = "BOOKNO",
-      bookingId = 1L,
-      crn = "CRN1",
-      pnc = "PNC1",
-      cro = "CRO1",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Mike",
-      surname = "Myers",
-      dateOfBirth = LocalDate.of(2001, 10, 1),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      standardLicenceConditions = someStandardConditions,
-      standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000,
-    )
+    val aCreateLicenceRequest = CreateLicenceRequest(nomsId = "NOMSID")
 
     val govUkApiMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
@@ -156,7 +121,6 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      LicenceCreationService.FRONTEND_PAYLOAD_TAKES_PRIORITY = false
       prisonApiMockServer.start()
       govUkApiMockServer.start()
       prisonerSearchMockServer.start()

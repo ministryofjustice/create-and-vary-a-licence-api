@@ -20,7 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -80,7 +79,6 @@ class LicenceCreationServiceTest {
 
   @BeforeEach
   fun reset() {
-    LicenceCreationService.FRONTEND_PAYLOAD_TAKES_PRIORITY = false
     reset(
       licenceRepository,
       licenceEventRepository,
@@ -112,7 +110,7 @@ class LicenceCreationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -165,7 +163,7 @@ class LicenceCreationServiceTest {
     )
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -184,7 +182,7 @@ class LicenceCreationServiceTest {
     )
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -203,7 +201,7 @@ class LicenceCreationServiceTest {
     )
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -223,7 +221,7 @@ class LicenceCreationServiceTest {
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
     whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -247,7 +245,7 @@ class LicenceCreationServiceTest {
       offender,
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -271,7 +269,7 @@ class LicenceCreationServiceTest {
       ),
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -293,7 +291,7 @@ class LicenceCreationServiceTest {
       anOffenderDetailResult,
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -315,7 +313,7 @@ class LicenceCreationServiceTest {
       anOffenderDetailResult,
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -332,7 +330,7 @@ class LicenceCreationServiceTest {
       anOffenderDetailResult,
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -356,7 +354,7 @@ class LicenceCreationServiceTest {
       anOffenderDetailResult,
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -385,7 +383,7 @@ class LicenceCreationServiceTest {
       anOffenderDetailResult,
     )
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CrdLicence>().apply {
       verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -405,7 +403,7 @@ class LicenceCreationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    val createResponse = service.createLicence(aCreateLicenceRequest)
+    val createResponse = service.createLicence(prisonNumber)
 
     assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
@@ -446,13 +444,13 @@ class LicenceCreationServiceTest {
     whenever(
       licenceRepository
         .findAllByNomsIdAndStatusCodeIn(
-          aCreateLicenceRequest.nomsId!!,
+          prisonNumber,
           listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
         ),
     ).thenReturn(listOf(TestData.createCrdLicence()))
 
     val exception = assertThrows<ValidationException> {
-      service.createLicence(aCreateLicenceRequest)
+      service.createLicence(prisonNumber)
     }
 
     assertThat(exception)
@@ -484,7 +482,7 @@ class LicenceCreationServiceTest {
     whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
     val exception = assertThrows<IllegalStateException> {
-      service.createLicence(aCreateLicenceRequest)
+      service.createLicence(prisonNumber)
     }
 
     assertThat(exception)
@@ -514,7 +512,7 @@ class LicenceCreationServiceTest {
     )
 
     val exception = assertThrows<IllegalStateException> {
-      service.createLicence(aCreateLicenceRequest)
+      service.createLicence(prisonNumber)
     }
 
     assertThat(exception)
@@ -536,7 +534,7 @@ class LicenceCreationServiceTest {
     whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
     val exception = assertThrows<IllegalStateException> {
-      service.createLicence(aCreateLicenceRequest)
+      service.createLicence(prisonNumber)
     }
 
     assertThat(exception)
@@ -559,7 +557,7 @@ class LicenceCreationServiceTest {
     whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
     whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
-    service.createLicence(aCreateLicenceRequest)
+    service.createLicence(prisonNumber)
 
     argumentCaptor<CommunityOffenderManager>().apply {
       verify(staffRepository, times(1)).saveAndFlush(capture())
@@ -595,7 +593,7 @@ class LicenceCreationServiceTest {
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
 
     val exception = assertThrows<IllegalStateException> {
-      service.createLicence(aCreateLicenceRequest)
+      service.createLicence(prisonNumber)
     }
 
     assertThat(exception)
@@ -615,40 +613,7 @@ class LicenceCreationServiceTest {
       ModelStandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
     )
 
-    val aCreateLicenceRequest = CreateLicenceRequest(
-      typeCode = LicenceType.AP,
-      version = "1.4",
-      nomsId = "NOMSID",
-      bookingNo = "BOOKINGNO",
-      bookingId = 1L,
-      crn = "CRN1",
-      pnc = "PNC1",
-      cro = "CRO1",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Mike",
-      surname = "Myers",
-      dateOfBirth = LocalDate.of(2001, 10, 1),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      standardLicenceConditions = someStandardConditions,
-      standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000,
-    )
+    val prisonNumber = "NOMSID"
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
       prisonerNumber = "A1234AA",

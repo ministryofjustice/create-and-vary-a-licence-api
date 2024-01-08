@@ -3,16 +3,18 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 
 enum class ConditionChangeType {
   /**
@@ -57,8 +59,7 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
 
   fun allPolicies(): List<LicencePolicy> = policies
 
-  fun compareLicenceWithPolicy(licence: Licence, previousPolicy: LicencePolicy, currentPolicy: LicencePolicy):
-
+  fun compareLicenceWithPolicy(licence: ModelLicence, previousPolicy: LicencePolicy, currentPolicy: LicencePolicy):
     List<LicenceConditionChanges> {
     if (previousPolicy.version == currentPolicy.version) return emptyList()
     val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
@@ -81,32 +82,35 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       .find { it.code == conditionCode }
       ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
 
-  fun getCurrentStandardApConditions(licenceType: LicenceType): List<StandardCondition> {
-    return if (licenceType == LicenceType.PSS) {
-      emptyList()
-    } else {
-      currentPolicy().standardConditions.standardConditionsAp.mapIndexed { index, standardConditionAp ->
-        StandardCondition(
-          code = standardConditionAp.code,
-          sequence = index,
-          text = standardConditionAp.text,
-        )
-      }
-    }
+  fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == LicenceType.PSS) {
+    emptyList()
+  } else {
+    currentPolicy().standardConditions.standardConditionsAp
   }
 
-  fun getCurrentStandardPssConditions(licenceType: LicenceType): List<StandardCondition> {
-    return if (licenceType == LicenceType.AP) {
-      emptyList()
-    } else {
-      currentPolicy().standardConditions.standardConditionsPss.mapIndexed { index, standardConditionPss ->
-        StandardCondition(
-          code = standardConditionPss.code,
-          sequence = index,
-          text = standardConditionPss.text,
-        )
-      }
-    }
+  fun getCurrentPssRequirements(licenceType: LicenceType) = if (licenceType == LicenceType.AP) {
+    emptyList()
+  } else {
+    currentPolicy().standardConditions.standardConditionsPss
+  }
+
+  private fun toEntityStandardCondition(licence: Licence, type: String) = { i: Int, condition: ILicenceCondition ->
+    StandardCondition(
+      licence = licence,
+      conditionType = type,
+      conditionSequence = i,
+      conditionCode = condition.code,
+      conditionText = condition.text,
+    )
+  }
+
+  fun getStandardConditionsForLicence(licence: Licence): List<StandardCondition> {
+    val standardConditions =
+      getCurrentStandardConditions(licence.typeCode).mapIndexed(toEntityStandardCondition(licence, "AP"))
+    val pssRequirements =
+      getCurrentPssRequirements(licence.typeCode).mapIndexed(toEntityStandardCondition(licence, "PSS"))
+
+    return standardConditions + pssRequirements
   }
 
   fun getAllAdditionalConditions(): AllAdditionalConditions {
