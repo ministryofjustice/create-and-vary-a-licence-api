@@ -4,55 +4,64 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDateTime
 
 object LicenceFactory {
 
   fun createCrd(
-    createRequest: CreateLicenceRequest,
+    licenceType: LicenceType,
+    nomsId: String,
+    version: String,
+    nomisRecord: PrisonerSearchPrisoner,
+    prisonInformation: Prison,
+    currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
+    deliusRecord: OffenderDetail,
+    creatingCom: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
-    createdBy: CommunityOffenderManager,
   ) = CrdLicence(
-    typeCode = createRequest.typeCode,
-    version = createRequest.version,
-    statusCode = LicenceStatus.IN_PROGRESS,
-    nomsId = createRequest.nomsId,
-    bookingNo = createRequest.bookingNo,
-    bookingId = createRequest.bookingId,
-    crn = createRequest.crn,
-    pnc = createRequest.pnc,
-    cro = createRequest.cro,
-    prisonCode = createRequest.prisonCode,
-    prisonDescription = createRequest.prisonDescription,
-    prisonTelephone = createRequest.prisonTelephone,
-    forename = createRequest.forename,
-    middleNames = createRequest.middleNames,
-    surname = createRequest.surname,
-    dateOfBirth = createRequest.dateOfBirth,
-    conditionalReleaseDate = createRequest.conditionalReleaseDate,
-    actualReleaseDate = createRequest.actualReleaseDate,
-    sentenceStartDate = createRequest.sentenceStartDate,
-    sentenceEndDate = createRequest.sentenceEndDate,
-    licenceStartDate = createRequest.licenceStartDate,
-    licenceExpiryDate = createRequest.licenceExpiryDate,
-    topupSupervisionStartDate = createRequest.topupSupervisionStartDate,
-    topupSupervisionExpiryDate = createRequest.topupSupervisionExpiryDate,
-    probationAreaCode = createRequest.probationAreaCode,
-    probationAreaDescription = createRequest.probationAreaDescription,
-    probationPduCode = createRequest.probationPduCode,
-    probationPduDescription = createRequest.probationPduDescription,
-    probationLauCode = createRequest.probationLauCode,
-    probationLauDescription = createRequest.probationLauDescription,
-    probationTeamCode = createRequest.probationTeamCode,
-    probationTeamDescription = createRequest.probationTeamDescription,
+    typeCode = licenceType,
+    version = version,
+    statusCode = IN_PROGRESS,
+    nomsId = nomsId,
+    bookingNo = nomisRecord.bookNumber,
+    bookingId = nomisRecord.bookingId.toLong(),
+    crn = deliusRecord.otherIds.crn,
+    pnc = deliusRecord.otherIds.pncNumber,
+    cro = deliusRecord.otherIds.croNumber ?: nomisRecord.croNumber,
+    prisonCode = nomisRecord.prisonId,
+    prisonDescription = prisonInformation.description,
+    prisonTelephone = prisonInformation.getPrisonContactNumber(),
+    forename = nomisRecord.firstName.convertToTitleCase(),
+    middleNames = nomisRecord.middleNames?.convertToTitleCase() ?: "",
+    surname = nomisRecord.lastName.convertToTitleCase(),
+    dateOfBirth = nomisRecord.dateOfBirth,
+    conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
+    actualReleaseDate = nomisRecord.confirmedReleaseDate,
+    sentenceStartDate = nomisRecord.sentenceStartDate,
+    sentenceEndDate = nomisRecord.sentenceExpiryDate,
+    licenceStartDate = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate,
+    licenceExpiryDate = nomisRecord.licenceExpiryDate,
+    topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
+    topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
+    probationAreaCode = currentResponsibleOfficerDetails.probationArea.code,
+    probationAreaDescription = currentResponsibleOfficerDetails.probationArea.description,
+    probationPduCode = currentResponsibleOfficerDetails.team.borough.code,
+    probationPduDescription = currentResponsibleOfficerDetails.team.borough.description,
+    probationLauCode = currentResponsibleOfficerDetails.team.district.code,
+    probationLauDescription = currentResponsibleOfficerDetails.team.district.description,
+    probationTeamCode = currentResponsibleOfficerDetails.team.code,
+    probationTeamDescription = currentResponsibleOfficerDetails.team.description,
     dateCreated = LocalDateTime.now(),
     responsibleCom = responsibleCom,
-    createdBy = createdBy,
-    updatedByUsername = createdBy.username,
+    createdBy = creatingCom,
+    updatedByUsername = creatingCom.username,
   )
 
   fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
