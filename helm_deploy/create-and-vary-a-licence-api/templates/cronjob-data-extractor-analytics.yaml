@@ -15,6 +15,9 @@ spec:
               image: ministryofjustice/data-engineering-data-extractor:v1
               imagePullPolicy: Always
               args: ["extract_psql_all_tables_to_csv.sh && transfer_local_to_s3.sh"]
+              resources:
+                limits:
+                  memory: 1024Mi
               env:
                 - name: PGHOST
                   valueFrom:
