@@ -32,10 +32,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
@@ -59,7 +55,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -88,7 +83,6 @@ class LicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val auditService = mock<AuditService>()
 
   private val service =
     LicenceService(
@@ -104,7 +98,6 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
-      auditService,
     )
 
   @BeforeEach
@@ -179,132 +172,6 @@ class LicenceServiceTest {
 
     val exception = assertThrows<EntityNotFoundException> {
       service.getLicenceById(1L)
-    }
-
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-  }
-
-  @Test
-  fun `update initial appointment person persists updated entity correctly`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-
-    service.updateAppointmentPerson(1L, AppointmentPersonRequest(appointmentPerson = "John Smith"))
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentPerson", "updatedByUsername")
-      .isEqualTo(listOf("John Smith", "smills"))
-  }
-
-  @Test
-  fun `update initial appointment person throws not found exception if licence not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAppointmentPerson(1L, AppointmentPersonRequest(appointmentPerson = "John Smith"))
-    }
-
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-  }
-
-  @Test
-  fun `update initial appointment time persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-
-    service.updateAppointmentTime(
-      1L,
-      AppointmentTimeRequest(
-        appointmentTime = tenDaysFromNow,
-        appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
-      ),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentTime", "updatedByUsername")
-      .isEqualTo(listOf(tenDaysFromNow, "smills"))
-  }
-
-  @Test
-  fun `update initial appointment time throws not found exception if licence not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAppointmentTime(
-        1L,
-        AppointmentTimeRequest(
-          appointmentTime = tenDaysFromNow,
-          appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
-        ),
-      )
-    }
-
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-  }
-
-  @Test
-  fun `update contact number persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-
-    service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentContact", "updatedByUsername")
-      .isEqualTo(listOf("0114 2565555", "smills"))
-  }
-
-  @Test
-  fun `update contact number throws not found exception if licence not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
-    }
-
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-  }
-
-  @Test
-  fun `update appointment address persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-
-    service.updateAppointmentAddress(
-      1L,
-      AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentAddress", "updatedByUsername")
-      .isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", "smills"))
-  }
-
-  @Test
-  fun `update appointment address throws not found exception if licence not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAppointmentAddress(
-        1L,
-        AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"),
-      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)

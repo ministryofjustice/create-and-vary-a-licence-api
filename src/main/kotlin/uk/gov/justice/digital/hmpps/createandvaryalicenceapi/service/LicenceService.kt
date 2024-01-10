@@ -12,10 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -36,7 +32,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -72,7 +67,6 @@ class LicenceService(
   private val notifyService: NotifyService,
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
-  private val auditService: AuditService,
 ) {
 
   @Transactional
@@ -93,106 +87,6 @@ class LicenceService(
       isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
 
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
-  }
-
-  @Transactional
-  fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val previousPerson = licenceEntity.appointmentPerson
-
-    val updatedLicence = licenceEntity.updateAppointmentPerson(
-      appointmentPerson = request.appointmentPerson,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-    licenceRepository.saveAndFlush(updatedLicence)
-    auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
-      mapOf(
-        "field" to "appointmentPerson",
-        "previousValue" to (previousPerson ?: ""),
-        "newValue" to (updatedLicence.appointmentPerson ?: ""),
-      ),
-    )
-  }
-
-  @Transactional
-  fun updateAppointmentTime(licenceId: Long, request: AppointmentTimeRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    if (request.appointmentTimeType === AppointmentTimeType.SPECIFIC_DATE_TIME) {
-      if (request.appointmentTime == null) {
-        throw ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
-      }
-    }
-    val previousTime = licenceEntity.appointmentTime
-
-    val updatedLicence = licenceEntity.updateAppointmentTime(
-      appointmentTime = request.appointmentTime,
-      appointmentTimeType = request.appointmentTimeType,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-    licenceRepository.saveAndFlush(updatedLicence)
-    auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
-      mapOf(
-        "field" to "appointmentTime",
-        "previousValue" to (previousTime ?: "").toString(),
-        "newValue" to (updatedLicence.appointmentTime ?: "").toString(),
-      ),
-    )
-  }
-
-  @Transactional
-  fun updateContactNumber(licenceId: Long, request: ContactNumberRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val previousContact = licenceEntity.appointmentContact
-
-    val updatedLicence = licenceEntity.updateAppointmentContactNumber(
-      appointmentContact = request.telephone,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-
-    licenceRepository.saveAndFlush(updatedLicence)
-    auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
-      mapOf(
-        "field" to "appointmentContact",
-        "previousValue" to (previousContact ?: ""),
-        "newValue" to (updatedLicence.appointmentContact ?: ""),
-      ),
-    )
-  }
-
-  @Transactional
-  fun updateAppointmentAddress(licenceId: Long, request: AppointmentAddressRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val previousAddress = licenceEntity.appointmentAddress
-
-    val updatedLicence = licenceEntity.updateAppointmentAddress(
-      appointmentAddress = request.appointmentAddress,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-
-    licenceRepository.saveAndFlush(updatedLicence)
-    auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
-      mapOf(
-        "field" to "appointmentAddress",
-        "previousValue" to (previousAddress ?: ""),
-        "newValue" to (updatedLicence.appointmentAddress ?: ""),
-      ),
-    )
   }
 
   @Transactional
