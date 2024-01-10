@@ -67,7 +67,6 @@ class LicenceService(
   private val notifyService: NotifyService,
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
-  private val auditService: AuditService,
 ) {
 
   @Transactional
