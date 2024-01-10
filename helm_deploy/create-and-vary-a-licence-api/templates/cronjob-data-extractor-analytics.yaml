@@ -14,10 +14,7 @@ spec:
             - name: data-extractor-analytics
               image: ministryofjustice/data-engineering-data-extractor:v1
               imagePullPolicy: Always
-              args: ["extract_psql_all_tables_to_csv.sh && transfer_local_to_s3.sh"]
-              resources:
-                limits:
-                  memory: 1024Mi
+              args: ["extract_table_names.py && mv ./export/metadata/database_name=meta/table_name=db_and_table_list/$(ls ./export/metadata/database_name=meta/table_name=db_and_table_list/)/db_and_table_list.yaml . && grep -v additional_condition_upload_detail db_and_table_list.yaml > temp.yaml && cp temp.yaml ./export/metadata/database_name=meta/table_name=db_and_table_list/$(ls ./export/metadata/database_name=meta/table_name=db_and_table_list/)/db_and_table_list.yaml && extract_psql_all_tables_to_csv.sh && transfer_local_to_s3.sh"]
               env:
                 - name: PGHOST
                   valueFrom:
