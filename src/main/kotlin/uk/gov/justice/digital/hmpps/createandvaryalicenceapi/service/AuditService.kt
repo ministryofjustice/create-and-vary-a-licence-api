@@ -277,7 +277,6 @@ class AuditService(
     changes: Map<String, Any>,
   ): AuditEvent {
     val authUsername = SecurityContextHolder.getContext().authentication.name
-    println(authUsername)
     val currentUser = staffRepository.findByUsernameIgnoreCase(authUsername)
 
     return AuditEvent(
