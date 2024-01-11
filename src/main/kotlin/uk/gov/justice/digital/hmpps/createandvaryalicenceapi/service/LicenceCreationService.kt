@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Creator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -81,33 +83,39 @@ class LicenceCreationService(
     )
 
     val licenceEntity = licenceRepository.saveAndFlush(licence)
-    val createLicenceResponse = transformToLicenceSummary(licenceEntity)
 
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(licenceEntity)
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
+    recordLicenceCreation(createdBy, licenceEntity)
+
+    return transformToLicenceSummary(licenceEntity)
+  }
+
+  private fun recordLicenceCreation(
+    creator: Creator,
+    licence: Licence,
+  ) {
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = createLicenceResponse.licenceId,
-        username = username,
-        fullName = "${createdBy.firstName} ${createdBy.lastName}",
+        licenceId = licence.id,
+        username = creator.username,
+        fullName = "${creator.firstName} ${creator.lastName}",
         summary = "Licence created for ${licence.forename} ${licence.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
+        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
       ),
     )
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
-        licenceId = createLicenceResponse.licenceId,
+        licenceId = licence.id,
         eventType = LicenceEventType.CREATED,
-        username = username,
-        forenames = createdBy.firstName,
-        surname = createdBy.lastName,
-        eventDescription = "Licence created for ${licenceEntity.forename} ${licenceEntity.surname}",
+        username = creator.username,
+        forenames = creator.firstName,
+        surname = creator.lastName,
+        eventDescription = "Licence created for ${licence.forename} ${licence.surname}",
       ),
     )
-
-    return createLicenceResponse
   }
 
   private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
