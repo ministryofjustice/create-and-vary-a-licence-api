@@ -34,6 +34,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
@@ -93,8 +95,9 @@ class LicenceController(
   fun createLicence(
     @RequestBody @Valid
     request: CreateLicenceRequest,
-  ): LicenceSummary {
-    return licenceCreationService.createLicence(request.nomsId)
+  ): LicenceSummary = when (request.type) {
+    CRD -> licenceCreationService.createLicence(request.nomsId)
+    HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
   }
 
   @Tag(name = Tags.LICENCES)

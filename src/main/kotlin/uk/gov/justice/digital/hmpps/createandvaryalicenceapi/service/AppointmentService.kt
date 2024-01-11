@@ -29,7 +29,6 @@ class AppointmentService(
       appointmentPerson = request.appointmentPerson,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
-
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
       licenceEntity,
@@ -59,7 +58,6 @@ class AppointmentService(
       appointmentTimeType = request.appointmentTimeType,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
-
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
       licenceEntity,
