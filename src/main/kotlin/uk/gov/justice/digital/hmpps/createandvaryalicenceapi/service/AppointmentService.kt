@@ -25,17 +25,17 @@ class AppointmentService(
 
     val previousPerson = licenceEntity.appointmentPerson
 
-    val updatedLicence = licenceEntity.updateAppointmentPerson(
+    licenceEntity.updateAppointmentPerson(
       appointmentPerson = request.appointmentPerson,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
+      licenceEntity,
       mapOf(
         "field" to "appointmentPerson",
         "previousValue" to (previousPerson ?: ""),
-        "newValue" to (updatedLicence.appointmentPerson ?: ""),
+        "newValue" to (licenceEntity.appointmentPerson ?: ""),
       ),
     )
   }
@@ -53,18 +53,19 @@ class AppointmentService(
     }
     val previousTime = licenceEntity.appointmentTime
 
-    val updatedLicence = licenceEntity.updateAppointmentTime(
+    licenceEntity.updateAppointmentTime(
       appointmentTime = request.appointmentTime,
       appointmentTimeType = request.appointmentTimeType,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
+
     auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
+      licenceEntity,
       mapOf(
         "field" to "appointmentTime",
         "previousValue" to (previousTime ?: "").toString(),
-        "newValue" to (updatedLicence.appointmentTime ?: "").toString(),
+        "newValue" to (licenceEntity.appointmentTime ?: "").toString(),
       ),
     )
   }
@@ -77,18 +78,18 @@ class AppointmentService(
 
     val previousContact = licenceEntity.appointmentContact
 
-    val updatedLicence = licenceEntity.updateAppointmentContactNumber(
+    licenceEntity.updateAppointmentContactNumber(
       appointmentContact = request.telephone,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
+      licenceEntity,
       mapOf(
         "field" to "appointmentContact",
         "previousValue" to (previousContact ?: ""),
-        "newValue" to (updatedLicence.appointmentContact ?: ""),
+        "newValue" to (licenceEntity.appointmentContact ?: ""),
       ),
     )
   }
@@ -101,18 +102,18 @@ class AppointmentService(
 
     val previousAddress = licenceEntity.appointmentAddress
 
-    val updatedLicence = licenceEntity.updateAppointmentAddress(
+    licenceEntity.updateAppointmentAddress(
       appointmentAddress = request.appointmentAddress,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
-      updatedLicence,
+      licenceEntity,
       mapOf(
         "field" to "appointmentAddress",
         "previousValue" to (previousAddress ?: ""),
-        "newValue" to (updatedLicence.appointmentAddress ?: ""),
+        "newValue" to (licenceEntity.appointmentAddress ?: ""),
       ),
     )
   }
