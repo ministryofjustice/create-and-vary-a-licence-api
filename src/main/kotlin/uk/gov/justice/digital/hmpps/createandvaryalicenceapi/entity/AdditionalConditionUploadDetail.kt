@@ -15,18 +15,18 @@ data class AdditionalConditionUploadDetail(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
   val id: Long = -1,
-
   @NotNull
   val licenceId: Long,
-
   @NotNull
   val additionalConditionId: Long,
-
   @Basic
   val originalData: ByteArray? = null,
-
   @Basic
   val fullSizeImage: ByteArray? = null,
+  @Basic
+  val originalDataDSUUID: String? = null,
+  @Basic
+  val fullSizeImageDSUUID: String? = null,
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

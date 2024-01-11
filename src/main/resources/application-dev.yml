@@ -32,3 +32,6 @@ hmpps:
   prisonersearch:
     api:
       url: "https://prisoner-search-dev.prison.service.justice.gov.uk"
+  document:
+    api:
+      url: "https://document-api-dev.hmpps.service.justice.gov.uk"
