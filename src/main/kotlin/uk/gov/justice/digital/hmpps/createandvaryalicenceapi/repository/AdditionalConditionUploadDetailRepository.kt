@@ -11,8 +11,8 @@ interface AdditionalConditionUploadDetailRepository : JpaRepository<AdditionalCo
   @Query(
     """
         FROM AdditionalConditionUploadDetail a 
-        WHERE a.fullSizeImage != null 
-            AND a.fullSizeImageDSUUID = null
+        WHERE a.fullSizeImage IS NOT NULL 
+            AND a.fullSizeImageDsUuid IS NULL
     """,
   )
   fun getFilesWhichAreNotCopiedToDocumentService(pageable: Pageable): List<AdditionalConditionUploadDetail>

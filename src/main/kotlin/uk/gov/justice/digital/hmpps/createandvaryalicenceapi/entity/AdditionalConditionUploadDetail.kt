@@ -24,9 +24,9 @@ data class AdditionalConditionUploadDetail(
   @Basic
   val fullSizeImage: ByteArray? = null,
   @Basic
-  val originalDataDSUUID: String? = null,
+  val originalDataDsUuid: String? = null,
   @Basic
-  val fullSizeImageDSUUID: String? = null,
+  val fullSizeImageDsUuid: String? = null,
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

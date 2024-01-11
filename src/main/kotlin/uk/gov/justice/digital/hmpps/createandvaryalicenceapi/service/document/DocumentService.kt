@@ -16,6 +16,6 @@ class DocumentService(
     if (file == null || file.isEmpty()) return
 
     val documentUuid = UUID.randomUUID().toString()
-    documentApiClient.postDocument(documentUuid, file.toString(Charsets.UTF_8), metadata, documentType)
+    documentApiClient.postDocument(documentUuid, file, metadata, documentType)
   }
 }

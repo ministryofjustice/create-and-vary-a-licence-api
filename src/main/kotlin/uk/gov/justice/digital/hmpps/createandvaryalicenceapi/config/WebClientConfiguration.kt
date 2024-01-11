@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 
+import io.netty.handler.logging.LogLevel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.client.reactive.ClientHttpConnector
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder
@@ -11,6 +14,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
+import reactor.netty.transport.logging.AdvancedByteBufFormat
 
 private const val HMPPS_AUTH = "hmpps-auth"
 
@@ -82,10 +87,16 @@ class WebClientConfiguration(
   fun oauthDocumentApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+    val httpClient: HttpClient =
+      HttpClient.create()
+        // Change log level to DEBUG to investigate an issues with Document service.
+        .wiretap(this.javaClass.canonicalName, LogLevel.INFO, AdvancedByteBufFormat.TEXTUAL)
+    val conn: ClientHttpConnector = ReactorClientHttpConnector(httpClient)
 
     return WebClient.builder()
       .baseUrl(documentApiUrl)
       .apply(oauth2Client.oauth2Configuration())
+      .clientConnector(conn)
       .exchangeStrategies(
         ExchangeStrategies.builder()
           .codecs { configurer ->

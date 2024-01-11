@@ -24,15 +24,15 @@ class MigrateDocumentsToDS(
   }
 
   private fun migrateExclusionZoneMaps(additionalCond: AdditionalConditionUploadDetail) {
-    log.info("Posting exclusion zone map for additionalCond.id: $additionalCond.id")
+    log.info("Posting exclusion zone map for additionalCond.id: " + additionalCond.id)
     documentService.postExclusionZoneMaps(
       additionalCond.fullSizeImage,
       metadata =
-      DocumentMetaData(
-        licenceId = additionalCond.licenceId.toString(),
-        additionalConditionId = additionalCond.additionalConditionId.toString(),
-        documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP_FULL_IMG.toString(),
-      ),
+        DocumentMetaData(
+          licenceId = additionalCond.licenceId.toString(),
+          additionalConditionId = additionalCond.additionalConditionId.toString(),
+          documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP_FULL_IMG.toString(),
+        ),
       documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP.toString(),
     )
   }
