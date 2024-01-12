@@ -7,11 +7,9 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -241,10 +239,6 @@ class ExclusionZoneService(
       log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
     return null
-  }
-
-  fun getExclusionZoneMaps(max: Int): List<AdditionalConditionUploadDetail> {
-    return additionalConditionUploadDetailRepository.getFilesWhichAreNotCopiedToDocumentService(Pageable.ofSize(max))
   }
 
   companion object {

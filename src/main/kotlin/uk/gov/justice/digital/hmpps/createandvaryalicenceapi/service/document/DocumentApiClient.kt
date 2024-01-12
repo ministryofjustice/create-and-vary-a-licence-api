@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType
@@ -17,6 +19,7 @@ class DocumentApiClient(
   fun postDocument(
     documentUuid: String,
     file: ByteArray,
+    fileType: MediaType,
     metadata: DocumentMetaData,
     documentType: String,
   ): Document? {
@@ -26,18 +29,23 @@ class DocumentApiClient(
           return documentUuid
         }
       }
+    log.info(documentUuid)
     return documentApiWebClient
       .post()
       .uri("/documents/$documentType/$documentUuid")
       .header("Service-Name", "create-and-vary-a-licence-api")
       .bodyValue(
         MultipartBodyBuilder().apply {
-          part("file", contentsAsResource, MediaType.IMAGE_JPEG)
+          part("file", contentsAsResource, fileType)
           part("metadata", metadata)
         }.build(),
       )
       .retrieve()
       .bodyToMono(typeReference<Document>())
       .block()
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 }
