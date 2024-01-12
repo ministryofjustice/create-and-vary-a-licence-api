@@ -13,14 +13,9 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
@@ -28,25 +23,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
-
-  @Autowired
-  lateinit var standardConditionRepository: StandardConditionRepository
-
-  @Autowired
-  lateinit var auditEventRepository: AuditEventRepository
 
   @BeforeEach
   fun reset() {
@@ -107,134 +91,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Update person to meet at initial appointment`() {
-    webTestClient.put()
-      .uri("/licence/id/1/appointmentPerson")
-      .bodyValue(anUpdateAppointmentPersonRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `update initial appointment time should throw validation error when Appointment time is null and Appointment type is SPECIFIC_DATE_TIME`() {
-    webTestClient.put()
-      .uri("/licence/id/1/appointmentTime")
-      .bodyValue(anAppointmentTimeRequest.copy(appointmentTime = null))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isBadRequest
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `update initial appointment time should not throw validation error when Appointment time is null but Appointment type is not SPECIFIC_DATE_TIME`() {
-    webTestClient.put()
-      .uri("/licence/id/1/appointmentTime")
-      .bodyValue(
-        anAppointmentTimeRequest.copy(
-          appointmentTime = null,
-          appointmentTimeType = AppointmentTimeType.IMMEDIATE_UPON_RELEASE,
-        ),
-      )
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.appointmentTime).isNull()
-    assertThat(result?.appointmentTimeType)
-      .isEqualTo(AppointmentTimeType.IMMEDIATE_UPON_RELEASE)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Update time of the initial appointment`() {
-    webTestClient.put()
-      .uri("/licence/id/1/appointmentTime")
-      .bodyValue(anAppointmentTimeRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.appointmentTime)
-      .isEqualTo(anAppointmentTimeRequest.appointmentTime?.truncatedTo(ChronoUnit.MINUTES))
-    assertThat(result?.appointmentTimeType)
-      .isEqualTo(anAppointmentTimeRequest.appointmentTimeType)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Update the contact number for the officer on a licence`() {
-    webTestClient.put()
-      .uri("/licence/id/1/contact-number")
-      .bodyValue(aContactNumberRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.appointmentContact).isEqualTo(aContactNumberRequest.telephone)
   }
 
   @Test
@@ -305,32 +161,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceV2?.statusCode).isEqualTo(LicenceStatus.APPROVED)
     assertThat(licenceV2?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
     assertThat(licenceV2?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
-  fun `Update the address where the initial appointment will take place`() {
-    webTestClient.put()
-      .uri("/licence/id/1/appointment-address")
-      .bodyValue(anAppointmentAddressRequest)
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.appointmentAddress).isEqualTo(anAppointmentAddressRequest.appointmentAddress)
   }
 
   @Test
@@ -594,29 +424,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val someStandardConditions = listOf(
-      StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      StandardCondition(code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
-      StandardCondition(code = "attendMeetings", sequence = 3, text = "Attend meetings"),
-    )
-
-    val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPerson = "John Smith",
-    )
-
-    val anAppointmentTimeRequest = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(10),
-      appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
-    )
-
-    val aContactNumberRequest = ContactNumberRequest(
-      telephone = "0114 2565555",
-    )
-
-    val anAppointmentAddressRequest = AppointmentAddressRequest(
-      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
-    )
-
     val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
 
     val govUkApiMockServer = GovUkMockServer()

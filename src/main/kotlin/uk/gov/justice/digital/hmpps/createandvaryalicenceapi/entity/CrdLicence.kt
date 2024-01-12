@@ -286,35 +286,6 @@ class CrdLicence(
     updatedByUsername = updatedByUsername,
   )
 
-  override fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) = copy(
-    appointmentAddress = appointmentAddress,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) = copy(
-    appointmentContact = appointmentContact,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?) = copy(
-    appointmentPerson = appointmentPerson,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentTime(
-    appointmentTime: LocalDateTime?,
-    appointmentTimeType: AppointmentTimeType,
-    updatedByUsername: String?,
-  ) = copy(
-    appointmentTime = appointmentTime,
-    appointmentTimeType = appointmentTimeType,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
   override fun updateStatus(
     statusCode: LicenceStatus,
     updatedByUsername: String,
