@@ -59,7 +59,6 @@ class AppointmentService(
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
     licenceRepository.saveAndFlush(licenceEntity)
-
     auditService.recordAuditEventInitialAppointmentUpdate(
       licenceEntity,
       mapOf(

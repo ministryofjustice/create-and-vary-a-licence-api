@@ -46,6 +46,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
@@ -166,14 +168,14 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `create a licence`() {
+  fun `create a CRD licence`() {
     whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
 
     val result = mvc.perform(
       post("/licence/create")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest)),
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = CRD))),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -182,6 +184,25 @@ class LicenceControllerTest {
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
 
     verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+  }
+
+  @Test
+  fun `create a Hard Stop licence`() {
+    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
+
+    val result = mvc.perform(
+      post("/licence/create")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = HARD_STOP))),
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
+
+    verify(licenceCreationService, times(1)).createHardStopLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test

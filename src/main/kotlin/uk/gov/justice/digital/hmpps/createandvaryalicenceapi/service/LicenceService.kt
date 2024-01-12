@@ -293,7 +293,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = updatedLicence.kind.submittedEventType,
+        eventType = updatedLicence.kind.submittedEventType(),
         username = username,
         forenames = submitter.firstName,
         surname = submitter.lastName,
@@ -702,7 +702,7 @@ class LicenceService(
     creator: CommunityOffenderManager,
   ): EntityLicence {
     val isVariation = kind == VARIATION
-    val newStatus = kind.initialStatus
+    val newStatus = kind.initialStatus()
 
     licenceCopy.version = licencePolicyService.currentPolicy().version
     val newLicence = licenceRepository.save(licenceCopy)
@@ -770,7 +770,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = newLicence.id,
-        eventType = kind.copyEventType,
+        eventType = kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
         surname = creator.lastName,

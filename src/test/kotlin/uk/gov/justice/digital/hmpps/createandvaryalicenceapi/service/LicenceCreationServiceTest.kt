@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
@@ -19,6 +20,8 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -49,7 +52,6 @@ import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 class LicenceCreationServiceTest {
   private val licencePolicyService = LicencePolicyService()
@@ -77,542 +79,1100 @@ class LicenceCreationServiceTest {
     communityApiClient,
   )
 
-  @BeforeEach
-  fun reset() {
-    reset(
-      licenceRepository,
-      licenceEventRepository,
-      auditEventRepository,
-      probationSearchApiClient,
-      prisonerSearchApiClient,
-      prisonApiClient,
-      communityApiClient,
-    )
-    val authentication = mock<Authentication>()
-    val securityContext = mock<SecurityContext>()
+  @Nested
+  inner class CreatingCrdLicences {
 
-    whenever(authentication.name).thenReturn("smills")
-    whenever(securityContext.authentication).thenReturn(authentication)
-    SecurityContextHolder.setContext(securityContext)
+    @BeforeEach
+    fun reset() {
+      reset(
+        licenceRepository,
+        licenceEventRepository,
+        auditEventRepository,
+        probationSearchApiClient,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        communityApiClient,
+      )
+      val authentication = mock<Authentication>()
+      val securityContext = mock<SecurityContext>()
 
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(authentication.name).thenReturn("smills")
+      whenever(securityContext.authentication).thenReturn(authentication)
+      SecurityContextHolder.setContext(securityContext)
 
-    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
-    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
 
-    whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
-    whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
-  }
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
-  @Test
-  fun `service creates populates licence with expected fields`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-    service.createLicence(prisonNumber)
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    with(licenceCaptor.value as CrdLicence) {
-      assertThat(kind).isEqualTo(LicenceKind.CRD)
-      assertThat(typeCode).isEqualTo(LicenceType.AP)
-      assertThat(version).isEqualTo("2.1")
-      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-      assertThat(versionOfId).isNull()
-      assertThat(licenceVersion).isEqualTo("1.0")
-      assertThat(nomsId).isEqualTo(nomsId)
-      assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
-      assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId.toLong())
-      assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
-      assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
-      assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
-      assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
-      assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
-      assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
-      assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
-      assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
-      assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
-      assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
-      assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
-      assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
-      assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-      assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
-      assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
-      assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
-      assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
-      assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
-      assertThat(probationLauDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.description)
-      assertThat(probationTeamCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.code)
-      assertThat(probationTeamDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.description)
-      assertThat(crn).isEqualTo(anOffenderDetailResult.otherIds.crn)
-      assertThat(pnc).isEqualTo(anOffenderDetailResult.otherIds.pncNumber)
-      assertThat(responsibleCom).isEqualTo(com)
+      whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
     }
-  }
 
-  @Test
-  fun `populates licence with crd when crd override present`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      conditionalReleaseDate = LocalDate.now().plusDays(1),
-      conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(prisoner),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+    @Test
+    fun `service creates populates licence with expected fields`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(prisonNumber)
+      service.createLicence(prisonNumber)
 
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      with(licenceCaptor.value as CrdLicence) {
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
+        assertThat(typeCode).isEqualTo(LicenceType.AP)
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(versionOfId).isNull()
+        assertThat(licenceVersion).isEqualTo("1.0")
+        assertThat(nomsId).isEqualTo(nomsId)
+        assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId.toLong())
+        assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
+        assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
+        assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
+        assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
+        assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
+        assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
+        assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
+        assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+        assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+        assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+        assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
+        assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
+        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
+        assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
+        assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
+        assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
+        assertThat(probationLauDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.description)
+        assertThat(probationTeamCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.code)
+        assertThat(probationTeamDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.description)
+        assertThat(crn).isEqualTo(anOffenderDetailResult.otherIds.crn)
+        assertThat(pnc).isEqualTo(anOffenderDetailResult.otherIds.pncNumber)
+        assertThat(responsibleCom).isEqualTo(com)
+      }
     }
-  }
 
-  @Test
-  fun `Populates licence with CRD date when CRD override is absent`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      conditionalReleaseDate = LocalDate.now().plusDays(1),
-      conditionalReleaseDateOverrideDate = null,
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(prisoner),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+    @Test
+    fun `populates licence with crd when crd override present`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        conditionalReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(prisonNumber)
+      service.createLicence(prisonNumber)
 
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)
+      }
     }
-  }
 
-  @Test
-  fun `Populates licence with start date when confirmed release date is present`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      confirmedReleaseDate = LocalDate.now().plusDays(1),
-      conditionalReleaseDate = LocalDate.now().plusDays(2),
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(prisoner),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+    @Test
+    fun `Populates licence with CRD date when CRD override is absent`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        conditionalReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDateOverrideDate = null,
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(prisonNumber)
+      service.createLicence(prisonNumber)
 
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
+      }
     }
-  }
 
-  @Test
-  fun `Populates licence with start date when confirmed release date is absent`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      confirmedReleaseDate = null,
-      conditionalReleaseDate = LocalDate.now().plusDays(1),
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(prisoner),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+    @Test
+    fun `Populates licence with start date when confirmed release date is present`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        confirmedReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDate = LocalDate.now().plusDays(2),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    service.createLicence(prisonNumber)
+      service.createLicence(prisonNumber)
 
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
+      }
     }
-  }
 
-  @Test
-  fun `Populates licence with CRO from delius when provided`() {
-    val offender = anOffenderDetailResult.copy(
-      otherIds = anOffenderDetailResult.otherIds.copy(croNumber = "ZZZZZ"),
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(
-        aPrisonerSearchResult.copy(
-          croNumber = "AAAAA",
-        ),
-      ),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      offender,
-    )
+    @Test
+    fun `Populates licence with start date when confirmed release date is absent`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        confirmedReleaseDate = null,
+        conditionalReleaseDate = LocalDate.now().plusDays(1),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
-    service.createLicence(prisonNumber)
+      service.createLicence(prisonNumber)
 
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.cro).isEqualTo(offender.otherIds.croNumber)
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
+      }
     }
-  }
 
-  @Test
-  fun `Populates licence with CRO from NOMIS when not provided by delius`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      croNumber = "AAAAA",
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(
-        prisoner,
-      ),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult.copy(
-        otherIds = anOffenderDetailResult.otherIds.copy(croNumber = null),
-      ),
-    )
-
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.cro).isEqualTo(prisoner.croNumber)
-    }
-  }
-
-  @Test
-  fun `Populates licence with middlename if provided`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      middleNames = "Timothy",
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(
-        prisoner,
-      ),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult,
-    )
-
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.middleNames).isEqualTo("Timothy")
-    }
-  }
-
-  @Test
-  fun `Populates licence with default middlename if not provided`() {
-    val prisoner = aPrisonerSearchResult.copy(
-      middleNames = null,
-    )
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(
-        prisoner,
-      ),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult,
-    )
-
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.middleNames).isEqualTo("")
-    }
-  }
-
-  @Test
-  fun `Populates licence with standard conditions for AP licence`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult,
-    )
-
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP)
-    }
-    argumentCaptor<List<StandardCondition>>().apply {
-      verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-      val apConditions = firstValue.filter { it.conditionType == "AP" }
-      assertThat(apConditions).isNotEmpty()
-      val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-      assertThat(pssConditions).isEmpty()
-    }
-  }
-
-  @Test
-  fun `Populates licence with standard conditions for PSS licence`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult,
-    )
-
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
-    }
-    argumentCaptor<List<StandardCondition>>().apply {
-      verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-      val apConditions = firstValue.filter { it.conditionType == "AP" }
-      assertThat(apConditions).isEmpty()
-      val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-      assertThat(pssConditions).isNotEmpty()
-    }
-  }
-
-  @Test
-  fun `Populates licence with standard conditions for an AP and PSS licence`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-      listOf(
-        aPrisonerSearchResult.copy(
-          topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
-          licenceExpiryDate = LocalDate.now(),
-        ),
-      ),
-    )
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult,
-    )
-
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
-    }
-    argumentCaptor<List<StandardCondition>>().apply {
-      verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
-      val apConditions = firstValue.filter { it.conditionType == "AP" }
-      assertThat(apConditions).isNotEmpty()
-      val pssConditions = firstValue.filter { it.conditionType == "PSS" }
-      assertThat(pssConditions).isNotEmpty()
-    }
-  }
-
-  @Test
-  fun `service audits correctly`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-    val createResponse = service.createLicence(prisonNumber)
-
-    assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
-
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
+    @Test
+    fun `Populates licence with CRO from delius when provided`() {
+      val offender = anOffenderDetailResult.copy(
+        otherIds = anOffenderDetailResult.otherIds.copy(croNumber = "ZZZZZ"),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
-          -1L,
-          "smills",
-          "X Y",
-          "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
+          aPrisonerSearchResult.copy(
+            croNumber = "AAAAA",
+          ),
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        offender,
+      )
+
+      service.createLicence(prisonNumber)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.cro).isEqualTo(offender.otherIds.croNumber)
+      }
+    }
+
+    @Test
+    fun `Populates licence with CRO from NOMIS when not provided by delius`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        croNumber = "AAAAA",
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisoner,
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          otherIds = anOffenderDetailResult.otherIds.copy(croNumber = null),
         ),
       )
 
-    assertThat(eventCaptor.value)
-      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
-      .isEqualTo(
+      service.createLicence(prisonNumber)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.cro).isEqualTo(prisoner.croNumber)
+      }
+    }
+
+    @Test
+    fun `Populates licence with middlename if provided`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        middleNames = "Timothy",
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
-          -1L,
-          LicenceEventType.CREATED,
-          "smills",
-          "X",
-          "Y",
-          "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
+          prisoner,
         ),
       )
-  }
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
 
-  @Test
-  fun `service throws a validation exception if an in progress licence exists for this person`() {
-    whenever(
-      licenceRepository
-        .findAllByNomsIdAndStatusCodeIn(
-          prisonNumber,
-          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
-        ),
-    ).thenReturn(listOf(TestData.createCrdLicence()))
-
-    val exception = assertThrows<ValidationException> {
       service.createLicence(prisonNumber)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.middleNames).isEqualTo("Timothy")
+      }
     }
 
-    assertThat(exception)
-      .isInstanceOf(ValidationException::class.java)
-      .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+    @Test
+    fun `Populates licence with default middlename if not provided`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        middleNames = null,
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisoner,
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-  }
+      service.createLicence(prisonNumber)
 
-  @Test
-  fun `service throws an error if no active offender manager found for this person`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult.copy(
-        offenderManagers = listOf(
-          OffenderManager(
-            staffDetail = StaffDetail(
-              code = "AB012C",
-            ),
-            active = false,
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.middleNames).isEqualTo("")
+      }
+    }
+
+    @Test
+    fun `Populates licence with standard conditions for AP licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createLicence(prisonNumber)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates licence with standard conditions for PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createLicence(prisonNumber)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates licence with standard conditions for an AP and PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+            licenceExpiryDate = LocalDate.now(),
           ),
         ),
-      ),
-    )
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
 
-    val exception = assertThrows<IllegalStateException> {
       service.createLicence(prisonNumber)
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
     }
 
-    assertThat(exception)
-      .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("No active offender manager found for NOMSID")
+    @Test
+    fun `service audits correctly`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-  }
+      val createResponse = service.createLicence(prisonNumber)
 
-  @Test
-  fun `service throws an error if no responsible officer details found for this person`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
-      anOffenderDetailResult.copy(
-        offenderManagers = listOf(
-          OffenderManager(
-            staffDetail = StaffDetail(
-              code = "XXXXXX",
+      assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            -1L,
+            "smills",
+            "X Y",
+            "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
+          ),
+        )
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            -1L,
+            LicenceEventType.CREATED,
+            "smills",
+            "X",
+            "Y",
+            "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
+          ),
+        )
+    }
+
+    @Test
+    fun `service throws a validation exception if an in progress licence exists for this person`() {
+      whenever(
+        licenceRepository
+          .findAllByNomsIdAndStatusCodeIn(
+            prisonNumber,
+            listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
+          ),
+      ).thenReturn(listOf(TestData.createCrdLicence()))
+
+      val exception = assertThrows<ValidationException> {
+        service.createLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(ValidationException::class.java)
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no active offender manager found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          offenderManagers = listOf(
+            OffenderManager(
+              staffDetail = StaffDetail(
+                code = "AB012C",
+              ),
+              active = false,
             ),
-            active = true,
           ),
         ),
-      ),
-    )
+      )
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
-    val exception = assertThrows<IllegalStateException> {
-      service.createLicence(prisonNumber)
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No active offender manager found for NOMSID")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
     }
 
-    assertThat(exception)
-      .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("No responsible officer details found for NOMSID")
+    @Test
+    fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          offenderManagers = listOf(
+            OffenderManager(
+              staffDetail = StaffDetail(
+                code = "XXXXXX",
+              ),
+              active = true,
+            ),
+          ),
+        ),
+      )
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No responsible officer details found for NOMSID")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no responsible COM found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("staff with staff identifier: '2000', missing record in delius")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service creates COM if no responsible COM exists in DB for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
+      whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
+      whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+
+      service.createLicence(prisonNumber)
+
+      argumentCaptor<CommunityOffenderManager>().apply {
+        verify(staffRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.staffIdentifier).isEqualTo(comUser.staffIdentifier)
+        assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
+        assertThat(firstValue.email).isEqualTo(comUser.email)
+        assertThat(firstValue.firstName).isEqualTo(comUser.staff!!.forenames)
+        assertThat(firstValue.lastName).isEqualTo(comUser.staff!!.surname)
+      }
+
+      argumentCaptor<CrdLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.responsibleCom!!.id).isEqualTo(newCom.id)
+      }
+    }
+
+    @Test
+    fun `service throws an error if no user found for this person`() {
+      val expectedCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("Staff with username smills not found")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
   }
 
-  @Test
-  fun `service throws an error if no responsible COM found for this person`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
-    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
+  @Nested
+  inner class CreatingHardStopLicences {
 
-    val exception = assertThrows<IllegalStateException> {
-      service.createLicence(prisonNumber)
+    @BeforeEach
+    fun reset() {
+      reset(
+        licenceRepository,
+        licenceEventRepository,
+        auditEventRepository,
+        probationSearchApiClient,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        communityApiClient,
+      )
+      val authentication = mock<Authentication>()
+      val securityContext = mock<SecurityContext>()
+
+      whenever(authentication.name).thenReturn(caseAdministrator.username)
+      whenever(securityContext.authentication).thenReturn(authentication)
+      SecurityContextHolder.setContext(securityContext)
+
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase(caseAdministrator.username)).thenReturn(caseAdministrator)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+
+      whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
     }
 
-    assertThat(exception)
-      .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("staff with staff identifier: '2000', missing record in delius")
+    @Test
+    fun `service creates populates licence with expected fields`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-  }
+      service.createHardStopLicence(prisonNumber)
 
-  @Test
-  fun `service creates COM if no responsible COM exists in DB for this person`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
-    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
-    whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
-    whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    service.createLicence(prisonNumber)
-
-    argumentCaptor<CommunityOffenderManager>().apply {
-      verify(staffRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.staffIdentifier).isEqualTo(comUser.staffIdentifier)
-      assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
-      assertThat(firstValue.email).isEqualTo(comUser.email)
-      assertThat(firstValue.firstName).isEqualTo(comUser.staff!!.forenames)
-      assertThat(firstValue.lastName).isEqualTo(comUser.staff!!.surname)
+      with(licenceCaptor.value as HardStopLicence) {
+        assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
+        assertThat(typeCode).isEqualTo(LicenceType.AP)
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(licenceVersion).isEqualTo("1.0")
+        assertThat(nomsId).isEqualTo(nomsId)
+        assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId.toLong())
+        assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
+        assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
+        assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
+        assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
+        assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
+        assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
+        assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
+        assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+        assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+        assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+        assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
+        assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
+        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
+        assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
+        assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
+        assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
+        assertThat(probationLauDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.description)
+        assertThat(probationTeamCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.code)
+        assertThat(probationTeamDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.description)
+        assertThat(crn).isEqualTo(anOffenderDetailResult.otherIds.crn)
+        assertThat(pnc).isEqualTo(anOffenderDetailResult.otherIds.pncNumber)
+        assertThat(responsibleCom).isEqualTo(com)
+      }
     }
 
-    argumentCaptor<CrdLicence>().apply {
-      verify(licenceRepository, times(1)).saveAndFlush(capture())
-      assertThat(firstValue.responsibleCom!!.id).isEqualTo(newCom.id)
-    }
-  }
+    @Test
+    fun `populates licence with crd when crd override present`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        conditionalReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-  @Test
-  fun `service throws an error if no user found for this person`() {
-    val expectedCom = CommunityOffenderManager(
-      staffIdentifier = 2000,
-      username = "smills",
-      email = "testemail@probation.gov.uk",
-      firstName = "X",
-      lastName = "Y",
-    )
+      service.createHardStopLicence(prisonNumber)
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
-    whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-    whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-    whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
-
-    whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
-
-    val exception = assertThrows<IllegalStateException> {
-      service.createLicence(prisonNumber)
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)
+      }
     }
 
-    assertThat(exception)
-      .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("Staff with username smills not found")
+    @Test
+    fun `Populates licence with CRD date when CRD override is absent`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        conditionalReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDateOverrideDate = null,
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-    verify(licenceRepository, times(0)).saveAndFlush(any())
-    verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
+      }
+    }
+
+    @Test
+    fun `Populates licence with start date when confirmed release date is present`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        confirmedReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDate = LocalDate.now().plusDays(2),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
+      }
+    }
+
+    @Test
+    fun `Populates licence with start date when confirmed release date is absent`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        confirmedReleaseDate = null,
+        conditionalReleaseDate = LocalDate.now().plusDays(1),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
+      }
+    }
+
+    @Test
+    fun `Populates licence with CRO from delius when provided`() {
+      val offender = anOffenderDetailResult.copy(
+        otherIds = anOffenderDetailResult.otherIds.copy(croNumber = "ZZZZZ"),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            croNumber = "AAAAA",
+          ),
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        offender,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.cro).isEqualTo(offender.otherIds.croNumber)
+      }
+    }
+
+    @Test
+    fun `Populates licence with CRO from NOMIS when not provided by delius`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        croNumber = "AAAAA",
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisoner,
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          otherIds = anOffenderDetailResult.otherIds.copy(croNumber = null),
+        ),
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.cro).isEqualTo(prisoner.croNumber)
+      }
+    }
+
+    @Test
+    fun `Populates licence with middlename if provided`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        middleNames = "Timothy",
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisoner,
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.middleNames).isEqualTo("Timothy")
+      }
+    }
+
+    @Test
+    fun `Populates licence with default middlename if not provided`() {
+      val prisoner = aPrisonerSearchResult.copy(
+        middleNames = null,
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          prisoner,
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.middleNames).isEqualTo("")
+      }
+    }
+
+    @Test
+    fun `Populates licence with previous licence if one exists`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          aPrisonerSearchResult,
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+
+      val previousLicence = TestData.createCrdLicence().copy(id = 1234L)
+
+      whenever(
+        licenceRepository.findByBookingIdAndStatusCodeOrderByDateCreatedDesc(
+          aPrisonerSearchResult.bookingId.toLong(),
+          LicenceStatus.TIMED_OUT,
+        ),
+      ).thenReturn(
+        previousLicence,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.substituteOfId).isEqualTo(previousLicence.id)
+      }
+    }
+
+    @Test
+    fun `Populates licence with standard conditions for AP licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates licence with standard conditions for PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `Populates licence with standard conditions for an AP and PSS licence`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
+            licenceExpiryDate = LocalDate.now(),
+          ),
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult,
+      )
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.typeCode).isEqualTo(LicenceType.AP_PSS)
+      }
+      argumentCaptor<List<StandardCondition>>().apply {
+        verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isNotEmpty()
+      }
+    }
+
+    @Test
+    fun `service audits correctly`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+
+      val createResponse = service.createHardStopLicence(prisonNumber)
+
+      assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            -1L,
+            "ca",
+            "A B",
+            "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
+          ),
+        )
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            -1L,
+            LicenceEventType.HARD_STOP_CREATED,
+            "ca",
+            "A",
+            "B",
+            "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
+          ),
+        )
+    }
+
+    @Test
+    fun `service throws a validation exception if an in progress licence exists for this person`() {
+      whenever(
+        licenceRepository
+          .findAllByNomsIdAndStatusCodeIn(
+            prisonNumber,
+            listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
+          ),
+      ).thenReturn(listOf(TestData.createCrdLicence()))
+
+      val exception = assertThrows<ValidationException> {
+        service.createHardStopLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(ValidationException::class.java)
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no active offender manager found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          offenderManagers = listOf(
+            OffenderManager(
+              staffDetail = StaffDetail(
+                code = "AB012C",
+              ),
+              active = false,
+            ),
+          ),
+        ),
+      )
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHardStopLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No active offender manager found for NOMSID")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
+        anOffenderDetailResult.copy(
+          offenderManagers = listOf(
+            OffenderManager(
+              staffDetail = StaffDetail(
+                code = "XXXXXX",
+              ),
+              active = true,
+            ),
+          ),
+        ),
+      )
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHardStopLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("No responsible officer details found for NOMSID")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if no responsible COM found for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHardStopLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("staff with staff identifier: '2000', missing record in delius")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service creates COM if no responsible COM exists in DB for this person`() {
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
+      whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
+      whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<CommunityOffenderManager>().apply {
+        verify(staffRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.staffIdentifier).isEqualTo(comUser.staffIdentifier)
+        assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
+        assertThat(firstValue.email).isEqualTo(comUser.email)
+        assertThat(firstValue.firstName).isEqualTo(comUser.staff!!.forenames)
+        assertThat(firstValue.lastName).isEqualTo(comUser.staff!!.surname)
+      }
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.responsibleCom!!.id).isEqualTo(newCom.id)
+      }
+    }
+
+    @Test
+    fun `service throws an error if no user found for this person`() {
+      val expectedCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
+      whenever(staffRepository.findByUsernameIgnoreCase(caseAdministrator.username)).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHardStopLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("Staff with username ca not found")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
   }
 
   private companion object {
-    val someStandardConditions = listOf(
-      ModelStandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-      ModelStandardCondition(id = 2, code = "notBreakLaw", sequence = 2, text = "Do not break any law"),
-      ModelStandardCondition(id = 3, code = "attendMeetings", sequence = 3, text = "Attend meetings"),
-    )
-
     val prisonNumber = "NOMSID"
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
@@ -709,6 +1269,13 @@ class LicenceCreationServiceTest {
       email = "testemail@probation.gov.uk",
       firstName = "X",
       lastName = "Y",
+    )
+
+    val caseAdministrator = PrisonCaseAdministrator(
+      username = "ca",
+      email = "testemail@prison.gov.uk",
+      firstName = "A",
+      lastName = "B",
     )
 
     val comUser = User(
