@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
@@ -10,10 +11,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAddit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 
 enum class ConditionChangeType {
@@ -82,13 +87,13 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       .find { it.code == conditionCode }
       ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
 
-  fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == LicenceType.PSS) {
+  fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == PSS) {
     emptyList()
   } else {
     currentPolicy().standardConditions.standardConditionsAp
   }
 
-  fun getCurrentPssRequirements(licenceType: LicenceType) = if (licenceType == LicenceType.AP) {
+  fun getCurrentPssRequirements(licenceType: LicenceType) = if (licenceType == AP) {
     emptyList()
   } else {
     currentPolicy().standardConditions.standardConditionsPss
@@ -101,6 +106,19 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       conditionSequence = i,
       conditionCode = condition.code,
       conditionText = condition.text,
+    )
+  }
+
+  private fun toEntityAdditionalCondition(licence: Licence, type: String) = { i: Int, condition: IAdditionalCondition ->
+    AdditionalCondition(
+      licence = licence,
+      conditionType = type,
+      conditionSequence = i,
+      conditionCode = condition.code,
+      conditionText = condition.text,
+      expandedConditionText = condition.text,
+      conditionVersion = licence.version!!,
+      conditionCategory = condition.categoryShort ?: condition.category,
     )
   }
 
@@ -120,4 +138,16 @@ class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(PO
       },
     )
   }
+
+  fun getHardStopAdditionalConditions(licence: Licence): List<AdditionalCondition> =
+    when {
+      licence.typeCode == AP || licence.typeCode == AP_PSS -> listOf(HARD_STOP_CONDITION).mapIndexed(
+        toEntityAdditionalCondition(
+          licence,
+          "AP",
+        ),
+      )
+
+      else -> emptyList()
+    }
 }
