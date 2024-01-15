@@ -61,7 +61,7 @@ jobs:
 
   integration-test:
     executor:
-      name: hmpps/java_localstack
+      name: hmpps/localstack
       jdk_tag: << pipeline.parameters.java-version >>
       localstack_tag: << pipeline.parameters.localstack-version >>
       services: "sns,sqs"
