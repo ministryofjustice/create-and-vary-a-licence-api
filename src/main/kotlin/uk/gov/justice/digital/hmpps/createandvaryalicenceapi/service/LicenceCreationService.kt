@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Creator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -36,6 +37,7 @@ class LicenceCreationService(
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val standardConditionRepository: StandardConditionRepository,
+  private val additionalConditionRepository: AdditionalConditionRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
   private val auditEventRepository: AuditEventRepository,
@@ -131,7 +133,8 @@ class LicenceCreationService(
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
-    // Need to add the additional condition here
+    val additionalConditions = licencePolicyService.getHardStopAdditionalConditions(createdLicence)
+    additionalConditionRepository.saveAllAndFlush(additionalConditions)
 
     recordLicenceCreation(createdBy, createdLicence)
 
