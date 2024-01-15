@@ -63,8 +63,7 @@ jobs:
     executor:
       name: hmpps/java
       tag: << pipeline.parameters.java-version >>
-      localstack_tag: << pipeline.parameters.localstack-version >>
-      services: "sns,sqs"
+      localstack_tag: "3.0.2"
     steps:
       - checkout
       - restore_cache:
