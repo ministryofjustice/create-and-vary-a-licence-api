@@ -23,6 +23,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
 
+val HARD_STOP_CONDITION = AdditionalConditionAp(
+  category = "Making or maintaining contact with a person",
+  categoryShort = "Contact with a person",
+  code = "d5998ca1-62a2-4409-88cd-3137d893c2a0",
+  requiresInput = false,
+  text = "Not to approach or communicate with any victims of your offences without the prior approval of your supervising officer.",
+)
+
 val POLICY_V2_1 = LicencePolicy(
   additionalConditions = AdditionalConditions(
     ap = listOf(
@@ -272,13 +280,7 @@ val POLICY_V2_1 = LicencePolicy(
         tpl = "Not to associate with any person currently or formerly associated with {nameOfOrganisation} without the prior approval of your supervising officer.",
         type = "NamedOrganisation",
       ),
-      AdditionalConditionAp(
-        category = "Making or maintaining contact with a person",
-        categoryShort = "Contact with a person",
-        code = "d5998ca1-62a2-4409-88cd-3137d893c2a0",
-        requiresInput = false,
-        text = "Not to approach or communicate with any victims of your offences without the prior approval of your supervising officer.",
-      ),
+      HARD_STOP_CONDITION,
       AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
         categoryShort = "Programmes or activities",

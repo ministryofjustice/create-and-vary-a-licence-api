@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
@@ -34,6 +35,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var standardConditionRepository: StandardConditionRepository
+
+  @Autowired
+  lateinit var additionalConditionRepository: AdditionalConditionRepository
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
@@ -74,6 +78,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licenceRepository.count()).isEqualTo(1)
     assertThat(licenceRepository.findAll().first().responsibleCom!!.username).isEqualTo("AAA")
     assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 
@@ -191,6 +196,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.substituteOfId).isEqualTo(crdLicence.id)
 
     assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(additionalConditionRepository.count()).isEqualTo(1)
+
     assertThat(auditEventRepository.count()).isEqualTo(1)
   }
 

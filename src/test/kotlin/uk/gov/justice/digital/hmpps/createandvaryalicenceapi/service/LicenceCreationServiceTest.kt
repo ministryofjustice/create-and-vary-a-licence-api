@@ -14,20 +14,24 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -56,6 +60,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 class LicenceCreationServiceTest {
   private val licencePolicyService = LicencePolicyService()
 
+  private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val standardConditionRepository = mock<StandardConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
@@ -70,6 +75,7 @@ class LicenceCreationServiceTest {
     licenceRepository,
     staffRepository,
     standardConditionRepository,
+    additionalConditionRepository,
     licenceEventRepository,
     licencePolicyService,
     auditEventRepository,
@@ -106,6 +112,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
+      whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
     }
@@ -327,7 +334,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with standard conditions for AP licence`() {
+    fun `Populates licence with conditions for AP licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
       )
@@ -343,6 +350,7 @@ class LicenceCreationServiceTest {
       }
       argumentCaptor<List<StandardCondition>>().apply {
         verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
         val apConditions = firstValue.filter { it.conditionType == "AP" }
         assertThat(apConditions).isNotEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
@@ -351,7 +359,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with standard conditions for PSS licence`() {
+    fun `Populates licence with conditions for PSS licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
       )
@@ -367,6 +375,7 @@ class LicenceCreationServiceTest {
       }
       argumentCaptor<List<StandardCondition>>().apply {
         verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
         val apConditions = firstValue.filter { it.conditionType == "AP" }
         assertThat(apConditions).isEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
@@ -396,6 +405,7 @@ class LicenceCreationServiceTest {
       }
       argumentCaptor<List<StandardCondition>>().apply {
         verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
+        verifyNoInteractions(additionalConditionRepository)
         val apConditions = firstValue.filter { it.conditionType == "AP" }
         assertThat(apConditions).isNotEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
@@ -887,7 +897,7 @@ class LicenceCreationServiceTest {
     }
 
     @Test
-    fun `Populates licence with standard conditions for AP licence`() {
+    fun `Populates licence with conditions for AP licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
       )
@@ -905,6 +915,16 @@ class LicenceCreationServiceTest {
         verify(standardConditionRepository, times(1)).saveAllAndFlush(capture())
         val apConditions = firstValue.filter { it.conditionType == "AP" }
         assertThat(apConditions).isNotEmpty()
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isEmpty()
+      }
+
+      argumentCaptor<List<AdditionalCondition>>().apply {
+        verify(additionalConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        assertThat(apConditions.first().conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
+
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
         assertThat(pssConditions).isEmpty()
       }
@@ -932,10 +952,12 @@ class LicenceCreationServiceTest {
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
         assertThat(pssConditions).isNotEmpty()
       }
+
+      verify(additionalConditionRepository).saveAllAndFlush(emptyList())
     }
 
     @Test
-    fun `Populates licence with standard conditions for an AP and PSS licence`() {
+    fun `Populates licence with conditions for an AP and PSS licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
           aPrisonerSearchResult.copy(
@@ -960,6 +982,15 @@ class LicenceCreationServiceTest {
         assertThat(apConditions).isNotEmpty()
         val pssConditions = firstValue.filter { it.conditionType == "PSS" }
         assertThat(pssConditions).isNotEmpty()
+      }
+      argumentCaptor<List<AdditionalCondition>>().apply {
+        verify(additionalConditionRepository, times(1)).saveAllAndFlush(capture())
+        val apConditions = firstValue.filter { it.conditionType == "AP" }
+        assertThat(apConditions).isNotEmpty()
+        assertThat(apConditions.first().conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
+
+        val pssConditions = firstValue.filter { it.conditionType == "PSS" }
+        assertThat(pssConditions).isEmpty()
       }
     }
 
