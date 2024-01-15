@@ -27,6 +27,9 @@ restart_docker () {
   until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
       sleep 0.1;
   done;
+  until [ "`docker inspect -f {{.State.Health.Status}} localstack`" == "healthy" ]; do
+      sleep 0.1;
+  done;
 
   echo "Back end containers are now ready"
 }

@@ -18,6 +18,24 @@ services:
       timeout: 5s
       retries: 5
 
+  localstack:
+    image: localstack/localstack:2.2.0
+    networks:
+      - hmpps
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - DEBUG=${DEBUG- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: awslocal sqs list-queues
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 networks:
   hmpps:
