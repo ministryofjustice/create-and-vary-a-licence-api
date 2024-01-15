@@ -58,7 +58,7 @@ jobs:
 
   integration-test:
     executor:
-      name: hmpps/localstack
+      name: hmpps/java
       tag: << pipeline.parameters.java-version >>
     steps:
       - checkout
