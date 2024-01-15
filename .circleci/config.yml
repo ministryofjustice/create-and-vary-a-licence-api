@@ -14,12 +14,17 @@ parameters:
   java-version:
     type: string
     default: "19.0"
+  localstack-version:
+    type: string
+    default: "3.0.2"
 
 jobs:
   validate:
     executor:
       name: hmpps/java
       tag: << pipeline.parameters.java-version >>
+      localstack_tag: << pipeline.parameters.localstack-version >>
+      services: "sns,sqs"
     steps:
       - checkout
       - restore_cache:
