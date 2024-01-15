@@ -11,10 +11,16 @@ interface AdditionalConditionDocumentsRepository : JpaRepository<AdditionalCondi
   @Query(
     """
         FROM AdditionalConditionDocuments 
-        WHERE (thumbnailImageDsUuid IS NULL AND thumbnailImage IS NOT NULL)
-              OR 
-              (fullSizeImageDsUuid IS NULL AND fullSizeImage IS NOT NULL)
+        WHERE fullSizeImageDsUuid IS NULL AND fullSizeImage IS NOT NULL
     """,
   )
   fun getFilesWhichAreNotCopiedToDocumentService(pageable: Pageable): List<AdditionalConditionDocuments>
+
+  @Query(
+    """
+        FROM AdditionalConditionDocuments 
+        WHERE fullSizeImageDsUuid IS NOT NULL AND fullSizeImage IS NOT NULL
+    """,
+  )
+  fun getFilesWhichAreAlreadyCopiedToDocumentService(pageable: Pageable): List<AdditionalConditionDocuments>
 }

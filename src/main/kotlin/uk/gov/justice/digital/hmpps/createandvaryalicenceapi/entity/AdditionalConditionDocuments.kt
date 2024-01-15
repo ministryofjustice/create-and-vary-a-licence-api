@@ -27,14 +27,14 @@ data class AdditionalConditionDocuments(
   @NotNull
   val additionalConditionId: Long,
   @Basic
-  val originalData: ByteArray? = null,
+  var originalData: ByteArray? = null,
   @Basic
-  val fullSizeImage: ByteArray? = null,
+  var fullSizeImage: ByteArray? = null,
   var originalDataDsUuid: String? = null,
   var fullSizeImageDsUuid: String? = null,
   @Basic
   @Column(name = "thumbnailImage", table = "additional_condition_upload_summary")
-  val thumbnailImage: ByteArray? = null,
+  var thumbnailImage: ByteArray? = null,
   @Column(name = "thumbnailImageDsUuid", table = "additional_condition_upload_summary")
   var thumbnailImageDsUuid: String? = null,
 ) {

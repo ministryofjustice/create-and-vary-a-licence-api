@@ -50,12 +50,46 @@ class MigrateFilesToDocumentServiceController(
       ),
     ],
   )
-  fun runTimeOutLicencesServiceJob(
+  fun runMigrateDocumentsToDocumentServiceJob(
     @PathVariable("maxDocsCountToMigrate")
     @Parameter(name = "maxDocsCountToMigrate", description = "This is the max number of documents which should be migrated")
     @Min(1)
     maxDocsCountToMigrate: Int,
   ) {
     return migrateDocumentsToDS.migrateDocuments(maxDocsCountToMigrate)
+  }
+
+  @PostMapping(value = ["/run-remove-copied-documents/{maxDocsCountToRemove}"])
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @Operation(
+    summary = "Remove documents from database which are already copied to documents service.",
+    description = "remove documents which are already copied to document service. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Request for removing the documents is processed successfully.",
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun runRemoveDocumentsAlreadyCopiedToDocumentServiceJob(
+    @PathVariable("maxDocsCountToRemove")
+    @Parameter(name = "maxDocsCountToRemove", description = "This is the max number of documents which should be migrated")
+    @Min(1)
+    maxDocsCountToRemove: Int,
+  ) {
+    return migrateDocumentsToDS.migrateDocuments(maxDocsCountToRemove)
   }
 }

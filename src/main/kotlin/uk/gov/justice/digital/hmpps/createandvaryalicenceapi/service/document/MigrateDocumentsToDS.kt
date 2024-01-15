@@ -25,8 +25,34 @@ class MigrateDocumentsToDS(
     }
   }
 
+  fun removeDocuments(count: Int) {
+    log.info("Start - Removing documents which are already copied to document service. Max count is: $count")
+    val exclusionZoneMaps = getExclusionZoneMapsAlreadyCopiedToDocumentService(count)
+    log.info("Found " + exclusionZoneMaps.size + " maps to remove from database")
+    exclusionZoneMaps.forEach {
+      removeFiles(it)
+    }
+  }
+
+  private fun removeFiles(additionalCondDocument: AdditionalConditionDocuments) {
+    if (additionalCondDocument.fullSizeImageDsUuid != null) {
+      additionalCondDocument.fullSizeImage = null
+    }
+    if (additionalCondDocument.thumbnailImageDsUuid != null) {
+      additionalCondDocument.thumbnailImage = null
+    }
+    if (additionalCondDocument.originalDataDsUuid != null) {
+      additionalCondDocument.originalData = null
+    }
+    additionalConditionDocumentsRepository.saveAndFlush(additionalCondDocument)
+  }
+
   fun getExclusionZoneMaps(max: Int): List<AdditionalConditionDocuments> {
     return additionalConditionDocumentsRepository.getFilesWhichAreNotCopiedToDocumentService(Pageable.ofSize(max))
+  }
+
+  fun getExclusionZoneMapsAlreadyCopiedToDocumentService(max: Int): List<AdditionalConditionDocuments> {
+    return additionalConditionDocumentsRepository.getFilesWhichAreAlreadyCopiedToDocumentService(Pageable.ofSize(max))
   }
 
   private fun migrateExclusionZoneMaps(additionalCond: AdditionalConditionDocuments) {
@@ -46,17 +72,21 @@ class MigrateDocumentsToDS(
         MediaType.APPLICATION_PDF,
         LicenceDocumentType.EXCLUSION_ZONE_MAP_PDF,
       )
-    // thumbnail
-    val thumbnailUuid =
-      postDocument(
-        additionalCond.thumbnailImage,
-        additionalCond,
-        MediaType.IMAGE_JPEG,
-        LicenceDocumentType.EXCLUSION_ZONE_MAP_THUMBNAIL,
-      )
-    additionalCond.thumbnailImageDsUuid = thumbnailUuid
+    if (additionalCond.thumbnailImageDsUuid == null) {
+      // thumbnail
+      val thumbnailUuid =
+        postDocument(
+          additionalCond.thumbnailImage,
+          additionalCond,
+          MediaType.IMAGE_JPEG,
+          LicenceDocumentType.EXCLUSION_ZONE_MAP_THUMBNAIL,
+        )
+      additionalCond.thumbnailImageDsUuid = thumbnailUuid
+    }
     additionalCond.originalDataDsUuid = pdfUuid
     additionalCond.fullSizeImageDsUuid = fullSizeImgUuid
+
+    additionalConditionDocumentsRepository.saveAndFlush(additionalCond)
   }
 
   private fun postDocument(
@@ -71,11 +101,11 @@ class MigrateDocumentsToDS(
       file,
       mediaType,
       metadata =
-        DocumentMetaData(
-          licenceId = additionalCond.licenceId.toString(),
-          additionalConditionId = additionalCond.additionalConditionId.toString(),
-          documentType = licenceDocumentType.toString(),
-        ),
+      DocumentMetaData(
+        licenceId = additionalCond.licenceId.toString(),
+        additionalConditionId = additionalCond.additionalConditionId.toString(),
+        documentType = licenceDocumentType.toString(),
+      ),
       documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP.toString(),
     )
   }
