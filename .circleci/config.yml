@@ -14,9 +14,6 @@ parameters:
   java-version:
     type: string
     default: "19.0"
-  localstack-version:
-    type: string
-    default: "3.0.2"
 
 jobs:
   validate:
@@ -61,15 +58,17 @@ jobs:
 
   integration-test:
     executor:
-      name: hmpps/java
+      name: hmpps/localstack
       tag: << pipeline.parameters.java-version >>
-      localstack_tag: "3.0.2"
     steps:
       - checkout
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
+      - run:
+          name: Wait for localstack to be ready
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4566
       - run:
           command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
       - save_cache:
