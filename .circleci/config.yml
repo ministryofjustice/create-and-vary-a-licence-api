@@ -72,9 +72,6 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
       - run:
-          name: Wait for localstack to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4566
-      - run:
           command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
       - save_cache:
           paths:

@@ -50,10 +50,6 @@ abstract class IntegrationTestBase {
   }
 
   private val domainEventsQueue by lazy { hmppsQueueService.findByQueueId("domaineventsqueue") ?: throw MissingQueueException("HmppsQueue domaineventsqueue not found") }
-//  private val domainEventsTopic by lazy { hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found") }
-
-//  protected val domainEventsTopicSnsClient by lazy { domainEventsTopic.snsClient }
-//  protected val domainEventsTopicArn by lazy { domainEventsTopic.arn }
 
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
