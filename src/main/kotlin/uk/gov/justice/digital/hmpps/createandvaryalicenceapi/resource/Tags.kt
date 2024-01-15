@@ -4,6 +4,7 @@ class Tags {
   companion object {
     const val ADMIN = "Admin"
     const val ANCILLARY = "Ancillary"
+    const val APPOINTMENTS = "Appointments"
     const val COM = "Community Offender Manager"
     const val EVENTS = "Events"
     const val EXCLUSION_ZONES = "Exclusion zones"

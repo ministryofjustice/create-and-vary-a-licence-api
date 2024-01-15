@@ -27,7 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Objects
 
 @Entity
 @Table(name = "licence")
@@ -47,9 +47,6 @@ abstract class Licence(
   @NotNull
   @Enumerated(EnumType.STRING)
   val typeCode: LicenceType = LicenceType.AP,
-
-  @Enumerated(EnumType.STRING)
-  val appointmentTimeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
 
   var version: String? = null,
 
@@ -87,17 +84,20 @@ abstract class Licence(
   val probationLauDescription: String? = null,
   val probationTeamCode: String? = null,
   val probationTeamDescription: String? = null,
-  val appointmentPerson: String? = null,
-  val appointmentTime: LocalDateTime? = null,
-  val appointmentAddress: String? = null,
-  val appointmentContact: String? = null,
+
+  var appointmentPerson: String? = null,
+  @Enumerated(EnumType.STRING)
+  var appointmentTimeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
+  var appointmentTime: LocalDateTime? = null,
+  var appointmentAddress: String? = null,
+  var appointmentContact: String? = null,
   val approvedDate: LocalDateTime? = null,
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,
   val supersededDate: LocalDateTime? = null,
   val submittedDate: LocalDateTime? = null,
   var dateCreated: LocalDateTime? = null,
-  val dateLastUpdated: LocalDateTime? = null,
+  var dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
   var licenceVersion: String? = "1.0",
 
@@ -148,15 +148,34 @@ abstract class Licence(
     updatedByUsername: String?,
   ): Licence
 
-  abstract fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?): Licence
-  abstract fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?): Licence
-  abstract fun updateAppointmentTime(
+  fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) {
+    this.appointmentAddress = appointmentAddress
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
+
+  fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) {
+    this.appointmentContact = appointmentContact
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
+
+  fun updateAppointmentTime(
     appointmentTime: LocalDateTime?,
     appointmentTimeType: AppointmentTimeType,
     updatedByUsername: String?,
-  ): Licence
+  ) {
+    this.appointmentTime = appointmentTime
+    this.appointmentTimeType = appointmentTimeType
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
 
-  abstract fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?): Licence
+  fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?) {
+    this.appointmentPerson = appointmentPerson
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
 
   abstract fun updateStatus(
     statusCode: LicenceStatus,
