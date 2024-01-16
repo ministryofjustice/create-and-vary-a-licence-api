@@ -27,7 +27,7 @@ restart_docker () {
   until [ "`docker inspect -f {{.State.Health.Status}} licences-db`" == "healthy" ]; do
       sleep 0.1;
   done;
-  until [ "`docker inspect -f {{.State.Health.Status}} localstack`" == "healthy" ]; do
+  until [ "`docker inspect -f {{.State.Health.Status}} localstack-api`" == "healthy" ]; do
       sleep 0.1;
   done;
 
