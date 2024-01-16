@@ -18,11 +18,11 @@ services:
       timeout: 5s
       retries: 5
 
-  localstack:
+  localstack-api:
     image: localstack/localstack:3.0.2
     networks:
       - hmpps
-    container_name: localstack
+    container_name: localstack-api
     ports:
       - "4566:4566"
     environment:
