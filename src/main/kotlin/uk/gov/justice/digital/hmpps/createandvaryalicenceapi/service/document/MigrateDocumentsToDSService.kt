@@ -64,24 +64,24 @@ class MigrateDocumentsToDSService(
         fullName = userName,
         eventType = AuditEventType.SYSTEM_EVENT,
         summary =
-          "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
-            additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
-            " as these are now copied to document service",
+        "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
+          additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
+          " as these are now copied to document service",
         detail =
-          "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
-            additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
-            " as these are now copied to document service as fullSizeImageDsUuid:" + additionalCondDocument.fullSizeImageDsUuid +
-            ", originalDataDsUuid:" + additionalCondDocument.originalDataDsUuid + " additionalCondDocument.thumbnailImageDsUuid:" +
-            additionalCondDocument.thumbnailImageDsUuid,
+        "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
+          additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
+          " as these are now copied to document service as fullSizeImageDsUuid:" + additionalCondDocument.fullSizeImageDsUuid +
+          ", originalDataDsUuid:" + additionalCondDocument.originalDataDsUuid + " additionalCondDocument.thumbnailImageDsUuid:" +
+          additionalCondDocument.thumbnailImageDsUuid,
       ),
     )
   }
 
-  fun getExclusionZoneMaps(max: Int): List<AdditionalConditionDocuments> {
+  private fun getExclusionZoneMaps(max: Int): List<AdditionalConditionDocuments> {
     return additionalConditionDocumentsRepository.getFilesWhichAreNotCopiedToDocumentService(Pageable.ofSize(max))
   }
 
-  fun getExclusionZoneMapsAlreadyCopiedToDocumentService(max: Int): List<AdditionalConditionDocuments> {
+  private fun getExclusionZoneMapsAlreadyCopiedToDocumentService(max: Int): List<AdditionalConditionDocuments> {
     return additionalConditionDocumentsRepository.getFilesWhichAreAlreadyCopiedToDocumentService(Pageable.ofSize(max))
   }
 
@@ -130,15 +130,15 @@ class MigrateDocumentsToDSService(
         additionalCond.additionalConditionId,
     )
 
-    return documentService.postDocumentToDocumentService(
+    return documentService.postFileToDocumentService(
       file,
       mediaType,
       metadata =
-        DocumentMetaData(
-          licenceId = additionalCond.licenceId.toString(),
-          additionalConditionId = additionalCond.additionalConditionId.toString(),
-          documentType = licenceDocumentType.toString(),
-        ),
+      DocumentMetaData(
+        licenceId = additionalCond.licenceId.toString(),
+        additionalConditionId = additionalCond.additionalConditionId.toString(),
+        documentType = licenceDocumentType.toString(),
+      ),
       documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP.toString(),
     )
   }

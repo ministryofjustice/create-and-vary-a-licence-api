@@ -3,13 +3,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.DocumentMetaData
-import java.util.UUID
+import java.util.*
 
 @Service
 class DocumentService(
   val documentApiClient: DocumentApiClient,
 ) {
-  fun postDocumentToDocumentService(
+  fun postFileToDocumentService(
     file: ByteArray?,
     fileType: MediaType,
     metadata: DocumentMetaData,
