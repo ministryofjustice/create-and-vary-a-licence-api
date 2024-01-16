@@ -15,6 +15,9 @@ generic-service:
     v1_2_enabled: true
     v0_47_enabled: false
 
+  # Used to access resources like SQS queues and SNS topics
+  serviceAccountName: create-and-vary-a-licence-api
+
   # Environment variables to load into the deployment
   env:
     JAVA_OPTS: "-Xmx512m"
@@ -42,6 +45,8 @@ generic-service:
       DB_NAME: "database_name"
       DB_USER: "database_username"
       DB_PASS: "database_password"
+    hmpps-domain-events-topic:
+      HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
 
   allowlist:
     dxw-vpn: 54.76.254.148/32
