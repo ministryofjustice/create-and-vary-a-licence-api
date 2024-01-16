@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -93,66 +92,6 @@ class LicenceService(
       isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
 
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
-  }
-
-  @Transactional
-  fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val updatedLicence = licenceEntity.updateAppointmentPerson(
-      appointmentPerson = request.appointmentPerson,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-    licenceRepository.saveAndFlush(updatedLicence)
-  }
-
-  @Transactional
-  fun updateAppointmentTime(licenceId: Long, request: AppointmentTimeRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    if (request.appointmentTimeType === AppointmentTimeType.SPECIFIC_DATE_TIME) {
-      if (request.appointmentTime == null) {
-        throw ValidationException("Appointment time must not be null if Appointment Type is SPECIFIC_DATE_TIME")
-      }
-    }
-    val updatedLicence = licenceEntity.updateAppointmentTime(
-      appointmentTime = request.appointmentTime,
-      appointmentTimeType = request.appointmentTimeType,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-    licenceRepository.saveAndFlush(updatedLicence)
-  }
-
-  @Transactional
-  fun updateContactNumber(licenceId: Long, request: ContactNumberRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val updatedLicence = licenceEntity.updateAppointmentContactNumber(
-      appointmentContact = request.telephone,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-
-    licenceRepository.saveAndFlush(updatedLicence)
-  }
-
-  @Transactional
-  fun updateAppointmentAddress(licenceId: Long, request: AppointmentAddressRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val updatedLicence = licenceEntity.updateAppointmentAddress(
-      appointmentAddress = request.appointmentAddress,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
-    )
-
-    licenceRepository.saveAndFlush(updatedLicence)
   }
 
   @Transactional
@@ -359,7 +298,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = updatedLicence.kind.submittedEventType,
+        eventType = updatedLicence.kind.submittedEventType(),
         username = username,
         forenames = submitter.firstName,
         surname = submitter.lastName,
@@ -768,7 +707,7 @@ class LicenceService(
     creator: CommunityOffenderManager,
   ): EntityLicence {
     val isVariation = kind == VARIATION
-    val newStatus = kind.initialStatus
+    val newStatus = kind.initialStatus()
 
     licenceCopy.version = licencePolicyService.currentPolicy().version
     val newLicence = licenceRepository.save(licenceCopy)
@@ -836,7 +775,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = newLicence.id,
-        eventType = kind.copyEventType,
+        eventType = kind.copyEventType(),
         username = creator.username,
         forenames = creator.firstName,
         surname = creator.lastName,

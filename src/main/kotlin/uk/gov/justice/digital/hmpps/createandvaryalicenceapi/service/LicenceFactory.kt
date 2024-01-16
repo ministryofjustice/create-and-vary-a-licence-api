@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -23,7 +25,7 @@ object LicenceFactory {
     prisonInformation: Prison,
     currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
     deliusRecord: OffenderDetail,
-    creatingCom: CommunityOffenderManager,
+    creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
   ) = CrdLicence(
     typeCode = licenceType,
@@ -60,8 +62,59 @@ object LicenceFactory {
     probationTeamDescription = currentResponsibleOfficerDetails.team.description,
     dateCreated = LocalDateTime.now(),
     responsibleCom = responsibleCom,
-    createdBy = creatingCom,
-    updatedByUsername = creatingCom.username,
+    createdBy = creator,
+    updatedByUsername = creator.username,
+  )
+
+  fun createHardStop(
+    licenceType: LicenceType,
+    nomsId: String,
+    version: String,
+    nomisRecord: PrisonerSearchPrisoner,
+    prisonInformation: Prison,
+    currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
+    deliusRecord: OffenderDetail,
+    creator: PrisonCaseAdministrator,
+    responsibleCom: CommunityOffenderManager,
+    timedOutLicence: CrdLicence?,
+  ) = HardStopLicence(
+    typeCode = licenceType,
+    version = version,
+    statusCode = IN_PROGRESS,
+    nomsId = nomsId,
+    bookingNo = nomisRecord.bookNumber,
+    bookingId = nomisRecord.bookingId.toLong(),
+    crn = deliusRecord.otherIds.crn,
+    pnc = deliusRecord.otherIds.pncNumber,
+    cro = deliusRecord.otherIds.croNumber ?: nomisRecord.croNumber,
+    prisonCode = nomisRecord.prisonId,
+    prisonDescription = prisonInformation.description,
+    prisonTelephone = prisonInformation.getPrisonContactNumber(),
+    forename = nomisRecord.firstName.convertToTitleCase(),
+    middleNames = nomisRecord.middleNames?.convertToTitleCase() ?: "",
+    surname = nomisRecord.lastName.convertToTitleCase(),
+    dateOfBirth = nomisRecord.dateOfBirth,
+    conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
+    actualReleaseDate = nomisRecord.confirmedReleaseDate,
+    sentenceStartDate = nomisRecord.sentenceStartDate,
+    sentenceEndDate = nomisRecord.sentenceExpiryDate,
+    licenceStartDate = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate,
+    licenceExpiryDate = nomisRecord.licenceExpiryDate,
+    topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
+    topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
+    probationAreaCode = currentResponsibleOfficerDetails.probationArea.code,
+    probationAreaDescription = currentResponsibleOfficerDetails.probationArea.description,
+    probationPduCode = currentResponsibleOfficerDetails.team.borough.code,
+    probationPduDescription = currentResponsibleOfficerDetails.team.borough.description,
+    probationLauCode = currentResponsibleOfficerDetails.team.district.code,
+    probationLauDescription = currentResponsibleOfficerDetails.team.district.description,
+    probationTeamCode = currentResponsibleOfficerDetails.team.code,
+    probationTeamDescription = currentResponsibleOfficerDetails.team.description,
+    dateCreated = LocalDateTime.now(),
+    responsibleCom = responsibleCom,
+    createdBy = creator,
+    updatedByUsername = creator.username,
+    substituteOfId = timedOutLicence?.id,
   )
 
   fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {

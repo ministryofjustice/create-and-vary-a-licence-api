@@ -2,19 +2,26 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.GsonBuilder
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.SqlMergeMode
 import org.springframework.test.web.reactive.server.WebTestClient
+import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
+import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
+import uk.gov.justice.hmpps.sqs.MissingQueueException
+import uk.gov.justice.hmpps.sqs.MissingTopicException
 
 /*
 ** The abstract parent class for integration tests.
@@ -38,6 +45,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 )
 abstract class IntegrationTestBase {
 
+  @BeforeEach
+  fun `Clear queues`() {
+    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
+  }
+
+  private val domainEventsQueue by lazy { hmppsQueueService.findByQueueId("domaineventsqueue") ?: throw MissingQueueException("HmppsQueue domaineventsqueue not found") }
+
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   lateinit var webTestClient: WebTestClient
@@ -48,7 +62,17 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var mapper: ObjectMapper
 
+  @Autowired
+  protected lateinit var hmppsQueueService: HmppsQueueService
+
+  @SpyBean
+  protected lateinit var hmppsSqsPropertiesSpy: HmppsSqsProperties
+
   internal val gson = GsonBuilder().setPrettyPrinting().create()
+
+  fun HmppsSqsProperties.domaineventsTopicConfig() =
+    topics["domainevents"]
+      ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
 
   internal fun setAuthorisation(
     user: String = "test-client",
