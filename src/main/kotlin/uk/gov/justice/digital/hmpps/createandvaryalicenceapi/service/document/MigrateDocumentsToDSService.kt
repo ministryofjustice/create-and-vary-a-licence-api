@@ -3,16 +3,23 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.AnonymousAuthenticationToken
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionDocuments
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.DocumentMetaData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.LicenceDocumentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionDocumentsRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 
 @Service
-class MigrateDocumentsToDS(
+class MigrateDocumentsToDSService(
   val documentService: DocumentService,
   val additionalConditionDocumentsRepository: AdditionalConditionDocumentsRepository,
+  private val auditEventRepository: AuditEventRepository,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -45,6 +52,29 @@ class MigrateDocumentsToDS(
       additionalCondDocument.originalData = null
     }
     additionalConditionDocumentsRepository.saveAndFlush(additionalCondDocument)
+    var userName = "SYSTEM"
+    val authentication: Authentication = SecurityContextHolder.getContext().authentication
+    if (authentication !is AnonymousAuthenticationToken) {
+      userName = authentication.name
+    }
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = additionalCondDocument.licenceId,
+        username = userName,
+        fullName = userName,
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary =
+          "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
+            additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
+            " as these are now copied to document service",
+        detail =
+          "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
+            additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
+            " as these are now copied to document service as fullSizeImageDsUuid:" + additionalCondDocument.fullSizeImageDsUuid +
+            ", originalDataDsUuid:" + additionalCondDocument.originalDataDsUuid + " additionalCondDocument.thumbnailImageDsUuid:" +
+            additionalCondDocument.thumbnailImageDsUuid,
+      ),
+    )
   }
 
   fun getExclusionZoneMaps(max: Int): List<AdditionalConditionDocuments> {
@@ -95,17 +125,20 @@ class MigrateDocumentsToDS(
     mediaType: MediaType,
     licenceDocumentType: LicenceDocumentType,
   ): String? {
-    log.info("Posting " + licenceDocumentType + " for additionalCond.additionalConditionId: " + additionalCond.additionalConditionId)
+    log.info(
+      "Posting " + licenceDocumentType + " for additionalCond.additionalConditionId: " +
+        additionalCond.additionalConditionId,
+    )
 
     return documentService.postDocumentToDocumentService(
       file,
       mediaType,
       metadata =
-      DocumentMetaData(
-        licenceId = additionalCond.licenceId.toString(),
-        additionalConditionId = additionalCond.additionalConditionId.toString(),
-        documentType = licenceDocumentType.toString(),
-      ),
+        DocumentMetaData(
+          licenceId = additionalCond.licenceId.toString(),
+          additionalConditionId = additionalCond.additionalConditionId.toString(),
+          documentType = licenceDocumentType.toString(),
+        ),
       documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP.toString(),
     )
   }

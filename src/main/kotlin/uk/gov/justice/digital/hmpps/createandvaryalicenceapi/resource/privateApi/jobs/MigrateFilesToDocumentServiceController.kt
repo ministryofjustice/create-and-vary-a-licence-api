@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.MigrateDocumentsToDS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.MigrateDocumentsToDSService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class MigrateFilesToDocumentServiceController(
-  private val migrateDocumentsToDS: MigrateDocumentsToDS,
+  private val migrateDocumentsToDS: MigrateDocumentsToDSService,
 ) {
   @PostMapping(value = ["/run-copy-documents/{maxDocsCountToMigrate}"])
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -52,7 +52,10 @@ class MigrateFilesToDocumentServiceController(
   )
   fun runMigrateDocumentsToDocumentServiceJob(
     @PathVariable("maxDocsCountToMigrate")
-    @Parameter(name = "maxDocsCountToMigrate", description = "This is the max number of documents which should be migrated")
+    @Parameter(
+      name = "maxDocsCountToMigrate",
+      description = "This is the max number of documents which should be migrated",
+    )
     @Min(1)
     maxDocsCountToMigrate: Int,
   ) {
@@ -86,10 +89,13 @@ class MigrateFilesToDocumentServiceController(
   )
   fun runRemoveDocumentsAlreadyCopiedToDocumentServiceJob(
     @PathVariable("maxDocsCountToRemove")
-    @Parameter(name = "maxDocsCountToRemove", description = "This is the max number of documents which should be migrated")
+    @Parameter(
+      name = "maxDocsCountToRemove",
+      description = "This is the max number of documents which should be migrated",
+    )
     @Min(1)
     maxDocsCountToRemove: Int,
   ) {
-    return migrateDocumentsToDS.migrateDocuments(maxDocsCountToRemove)
+    return migrateDocumentsToDS.removeDocuments(maxDocsCountToRemove)
   }
 }
