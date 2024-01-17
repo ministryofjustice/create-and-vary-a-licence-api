@@ -110,7 +110,6 @@ class MigrateDocumentsToDocumentServiceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql("classpath:test_data/seed-post-documents.sql")
-  @Sql("classpath:test_data/seed-licence-id-2.sql")
   fun `Given full size image and it is copied to document service when POST run-remove-copied-documents then full size image removed`() {
     webTestClient.post()
       .uri("/run-remove-copied-documents/1")
@@ -125,7 +124,6 @@ class MigrateDocumentsToDocumentServiceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql("classpath:test_data/seed-post-documents.sql")
-  @Sql("classpath:test_data/seed-licence-id-2.sql")
   fun `Given full size image and it is copied to document service when POST run-remove-copied-documents then pdf documents removed`() {
     webTestClient.post()
       .uri("/run-remove-copied-documents/1")
