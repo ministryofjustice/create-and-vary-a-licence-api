@@ -29,7 +29,7 @@ class DocumentApiClient(
           return documentUuid
         }
       }
-    log.info(documentUuid)
+    log.info("Saving file: $documentUuid")
     return documentApiWebClient
       .post()
       .uri("/documents/$documentType/$documentUuid")
@@ -42,6 +42,17 @@ class DocumentApiClient(
       )
       .retrieve()
       .bodyToMono(typeReference<Document>())
+      .block()
+  }
+
+  fun getDocument(documentUuid: String): ByteArray? {
+    log.info("Retrieving file from document service: $documentUuid")
+    return documentApiWebClient
+      .get()
+      .uri("/documents/$documentUuid/file")
+      .header("Service-Name", "create-and-vary-a-licence-api")
+      .retrieve()
+      .bodyToMono(typeReference<ByteArray>())
       .block()
   }
 

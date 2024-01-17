@@ -10,9 +10,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionDocuments
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.MigrateDocumentsToDSService
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -27,6 +31,7 @@ class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val migrateDocumentsToDSService: MigrateDocumentsToDSService,
 ) {
   init {
     ImageIO.scanForPlugins()
@@ -102,6 +107,7 @@ class ExclusionZoneService(
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+    postDocsToDS(uploadDetail, uploadSummary)
   }
 
   @Transactional
@@ -164,7 +170,12 @@ class ExclusionZoneService(
         .findById(uploadIds.first())
         .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    return upload.fullSizeImage
+    if (upload.fullSizeImage != null) {
+      return upload.fullSizeImage
+    } else if (upload.fullSizeImageDsUuid != null) {
+      return migrateDocumentsToDSService.documentService.getDocument(upload.fullSizeImageDsUuid!!)
+    }
+    return null
   }
 
   fun extractFullSizeImageJpeg(fileStream: InputStream): ByteArray? {
@@ -239,6 +250,22 @@ class ExclusionZoneService(
       log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
     return null
+  }
+
+  private fun postDocsToDS(
+    uploadDetail: AdditionalConditionUploadDetail,
+    uploadSummary: AdditionalConditionUploadSummary,
+  ) {
+    val additionalCond =
+      AdditionalConditionDocuments(
+        licenceId = uploadDetail.licenceId,
+        additionalConditionId = uploadDetail.additionalConditionId,
+        originalData = uploadDetail.originalData,
+        fullSizeImage = uploadDetail.fullSizeImage,
+        thumbnailImage = uploadSummary.thumbnailImage,
+        id = uploadDetail.id,
+      )
+    migrateDocumentsToDSService.postDocumentsToDS(additionalCond)
   }
 
   companion object {

@@ -136,3 +136,6 @@ cache:
   evict:
     bank-holidays:
       cron: "0 45 23 * * ?"
+
+document-service:
+  enabled: false

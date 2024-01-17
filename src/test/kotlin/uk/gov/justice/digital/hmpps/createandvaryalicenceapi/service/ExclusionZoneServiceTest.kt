@@ -20,18 +20,21 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.MigrateDocumentsToDSService
 import java.util.Optional
 
 class ExclusionZoneServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
-
-  private val service = ExclusionZoneService(
-    licenceRepository,
-    additionalConditionRepository,
-    additionalConditionUploadDetailRepository,
-  )
+  private val migrateDocumentsToDSService = mock<MigrateDocumentsToDSService>()
+  private val service =
+    ExclusionZoneService(
+      licenceRepository,
+      additionalConditionRepository,
+      additionalConditionUploadDetailRepository,
+      migrateDocumentsToDSService,
+    )
 
   @BeforeEach
   fun reset() {
@@ -53,12 +56,13 @@ class ExclusionZoneServiceTest {
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
     AssertionsForClassTypes.assertThat(fileResource).isNotNull
 
-    val multiPartFile = MockMultipartFile(
-      "file",
-      fileResource.filename,
-      MediaType.APPLICATION_PDF_VALUE,
-      fileResource.file.inputStream(),
-    )
+    val multiPartFile =
+      MockMultipartFile(
+        "file",
+        fileResource.filename,
+        MediaType.APPLICATION_PDF_VALUE,
+        fileResource.file.inputStream(),
+      )
 
     service.uploadExclusionZoneFile(1L, 1L, multiPartFile)
 
@@ -108,61 +112,67 @@ class ExclusionZoneServiceTest {
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence()
 
-    val someAdditionalConditionData = listOf(
-      AdditionalConditionData(
+    val someAdditionalConditionData =
+      listOf(
+        AdditionalConditionData(
+          id = 1,
+          dataField = "outOfBoundArea",
+          dataValue = "Bristol town centre",
+          additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        ),
+        AdditionalConditionData(
+          id = 2,
+          dataField = "outOfBoundFile",
+          dataValue = "test.pdf",
+          additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        ),
+      )
+
+    val anAdditionalConditionEntityWithoutUpload =
+      AdditionalCondition(
         id = 1,
-        dataField = "outOfBoundArea",
-        dataValue = "Bristol town centre",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
-      ),
-      AdditionalConditionData(
-        id = 2,
-        dataField = "outOfBoundFile",
-        dataValue = "test.pdf",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
-      ),
-    )
+        licence = aLicenceEntity,
+        conditionVersion = "1.0",
+        conditionCode = "outOfBounds",
+        conditionCategory = "Freedom of movement",
+        conditionSequence = 1,
+        conditionText = "text",
+        additionalConditionData = someAdditionalConditionData,
+        additionalConditionUploadSummary = emptyList(),
+      )
 
-    val anAdditionalConditionEntityWithoutUpload = AdditionalCondition(
-      id = 1,
-      licence = aLicenceEntity,
-      conditionVersion = "1.0",
-      conditionCode = "outOfBounds",
-      conditionCategory = "Freedom of movement",
-      conditionSequence = 1,
-      conditionText = "text",
-      additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
-    )
+    val someUploadSummaryData =
+      AdditionalConditionUploadSummary(
+        id = 1,
+        filename = "test.pdf",
+        fileType = "application/pdf",
+        description = "Description",
+        thumbnailImage = ByteArray(0),
+        // Any additional condition is Ok here.
+        additionalCondition = anAdditionalConditionEntityWithoutUpload,
+        uploadDetailId = 1,
+      )
 
-    val someUploadSummaryData = AdditionalConditionUploadSummary(
-      id = 1,
-      filename = "test.pdf",
-      fileType = "application/pdf",
-      description = "Description",
-      thumbnailImage = ByteArray(0),
-      additionalCondition = anAdditionalConditionEntityWithoutUpload, // Any additional condition is Ok here.
-      uploadDetailId = 1,
-    )
+    val anAdditionalConditionEntityWithUpload =
+      AdditionalCondition(
+        id = 1,
+        conditionVersion = "1.0",
+        licence = aLicenceEntity,
+        conditionCode = "outOfBounds",
+        conditionCategory = "Freedom of movement",
+        conditionSequence = 1,
+        conditionText = "text",
+        additionalConditionData = someAdditionalConditionData,
+        additionalConditionUploadSummary = listOf(someUploadSummaryData),
+      )
 
-    val anAdditionalConditionEntityWithUpload = AdditionalCondition(
-      id = 1,
-      conditionVersion = "1.0",
-      licence = aLicenceEntity,
-      conditionCode = "outOfBounds",
-      conditionCategory = "Freedom of movement",
-      conditionSequence = 1,
-      conditionText = "text",
-      additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = listOf(someUploadSummaryData),
-    )
-
-    val anAdditionalConditionUploadDetailEntity = AdditionalConditionUploadDetail(
-      id = 1,
-      licenceId = 1,
-      additionalConditionId = 1,
-      fullSizeImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes(),
-      originalData = ClassPathResource("Test_map_2021-12-06_112550.pdf").inputStream.readAllBytes(),
-    )
+    val anAdditionalConditionUploadDetailEntity =
+      AdditionalConditionUploadDetail(
+        id = 1,
+        licenceId = 1,
+        additionalConditionId = 1,
+        fullSizeImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes(),
+        originalData = ClassPathResource("Test_map_2021-12-06_112550.pdf").inputStream.readAllBytes(),
+      )
   }
 }

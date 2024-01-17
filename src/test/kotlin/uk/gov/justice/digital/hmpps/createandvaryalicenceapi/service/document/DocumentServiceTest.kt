@@ -16,16 +16,17 @@ class DocumentServiceTest {
     val documentService =
       DocumentService(
         documentApiClient = documentApiClient,
+        enabled = true,
       )
     documentService.postFileToDocumentService(
       file = "file".toByteArray(),
       fileType = MediaType.APPLICATION_PDF,
       metadata =
-      DocumentMetaData(
-        licenceId = "1",
-        additionalConditionId = "1",
-        documentType = "gif",
-      ),
+        DocumentMetaData(
+          licenceId = "1",
+          additionalConditionId = "1",
+          documentType = "gif",
+        ),
       documentType = "CVL_DOCS",
     )
     verify(documentApiClient, times(1)).postDocument(any(), any(), any(), any(), any())
