@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document
 
 import io.swagger.v3.oas.annotations.media.Schema
 

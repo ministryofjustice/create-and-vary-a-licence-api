@@ -6,7 +6,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.DocumentMetaData
 
 class DocumentServiceTest {
   @Test
@@ -22,11 +21,11 @@ class DocumentServiceTest {
       file = "file".toByteArray(),
       fileType = MediaType.APPLICATION_PDF,
       metadata =
-      DocumentMetaData(
-        licenceId = "1",
-        additionalConditionId = "1",
-        documentType = "gif",
-      ),
+        DocumentMetaData(
+          licenceId = "1",
+          additionalConditionId = "1",
+          documentType = "gif",
+        ),
       documentType = "CVL_DOCS",
     )
     verify(documentApiClient, times(1)).postDocument(any(), any(), any(), any(), any())

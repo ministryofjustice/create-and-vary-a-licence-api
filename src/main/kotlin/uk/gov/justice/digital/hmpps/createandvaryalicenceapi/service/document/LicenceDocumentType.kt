@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document
 
 enum class LicenceDocumentType {
   EXCLUSION_ZONE_MAP,

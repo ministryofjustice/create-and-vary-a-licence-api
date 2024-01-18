@@ -14,12 +14,12 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.DocumentMetaData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.DocumentApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.DocumentMetaData
 import java.time.Duration
 
 class MigrateDocumentsToDocumentServiceIntegrationTest : IntegrationTestBase() {

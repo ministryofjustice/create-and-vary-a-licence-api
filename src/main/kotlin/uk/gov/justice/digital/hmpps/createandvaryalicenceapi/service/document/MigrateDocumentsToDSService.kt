@@ -9,8 +9,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionDocuments
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.DocumentMetaData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.document.LicenceDocumentType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionDocumentsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -64,15 +62,15 @@ class MigrateDocumentsToDSService(
         fullName = userName,
         eventType = AuditEventType.SYSTEM_EVENT,
         summary =
-        "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
-          additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
-          " as these are now copied to document service",
+          "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
+            additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
+            " as these are now copied to document service",
         detail =
-        "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
-          additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
-          " as these are now copied to document service as fullSizeImageDsUuid:" + additionalCondDocument.fullSizeImageDsUuid +
-          ", originalDataDsUuid:" + additionalCondDocument.originalDataDsUuid + " additionalCondDocument.thumbnailImageDsUuid:" +
-          additionalCondDocument.thumbnailImageDsUuid,
+          "Removed full size image, raw data and thumbnail  documents from database for licenceId:" +
+            additionalCondDocument.licenceId + ", additionalConditionId:" + additionalCondDocument.additionalConditionId +
+            " as these are now copied to document service as fullSizeImageDsUuid:" + additionalCondDocument.fullSizeImageDsUuid +
+            ", originalDataDsUuid:" + additionalCondDocument.originalDataDsUuid + " additionalCondDocument.thumbnailImageDsUuid:" +
+            additionalCondDocument.thumbnailImageDsUuid,
       ),
     )
   }
@@ -134,11 +132,11 @@ class MigrateDocumentsToDSService(
       file,
       mediaType,
       metadata =
-      DocumentMetaData(
-        licenceId = additionalCond.licenceId.toString(),
-        additionalConditionId = additionalCond.additionalConditionId.toString(),
-        documentType = licenceDocumentType.toString(),
-      ),
+        DocumentMetaData(
+          licenceId = additionalCond.licenceId.toString(),
+          additionalConditionId = additionalCond.additionalConditionId.toString(),
+          documentType = licenceDocumentType.toString(),
+        ),
       documentType = LicenceDocumentType.EXCLUSION_ZONE_MAP.toString(),
     )
   }
