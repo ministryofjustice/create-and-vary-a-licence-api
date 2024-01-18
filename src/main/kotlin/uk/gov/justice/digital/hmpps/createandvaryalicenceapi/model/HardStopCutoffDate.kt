@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 @Schema(description = "cutoff date for licence to be timed out")
 data class HardStopCutoffDate(
-  @Schema(description = "cutoff date for licence to be timed out", example = "CRD")
+  @Schema(description = "cutoff date for licence to be timed out", example = "05/12/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val cutoffDate: LocalDate,
 )

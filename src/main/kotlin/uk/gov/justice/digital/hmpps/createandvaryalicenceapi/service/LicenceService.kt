@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopCutoffDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -836,10 +835,5 @@ class LicenceService(
     if (licencesToDeactivate.isNotEmpty()) {
       inactivateLicences(licencesToDeactivate, reason, false)
     }
-  }
-
-  @Transactional
-  fun getCutOffDate(today: LocalDate): HardStopCutoffDate {
-    return HardStopCutoffDate(releaseDateService.getCutOffDateForLicenceTimeOut(today))
   }
 }
