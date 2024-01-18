@@ -35,6 +35,7 @@ hmpps:
 
 hmpps.sqs:
   provider: localstack
+  localstackUrl: http://localhost:4666
   queues:
     domaineventsqueue:
       queueName: domainevents-queue
