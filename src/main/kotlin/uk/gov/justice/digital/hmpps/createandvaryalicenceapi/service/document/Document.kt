@@ -8,8 +8,8 @@ import java.util.*
 
 @Schema(
   description =
-    "Document properties and metadata associated with the document. This doesn't contain the actual file data. The document file is downloaded " +
-      "separately from document api, using the GET /documents/{documentUuid}/file endpoint.",
+  "Document properties and metadata associated with the document. This doesn't contain the actual file data. The document file is downloaded " +
+    "separately from document api, using the GET /documents/{documentUuid}/file endpoint.",
 )
 data class Document(
   @Schema(
@@ -24,9 +24,9 @@ data class Document(
   val documentType: String,
   @Schema(
     description =
-      "The generated filename the document file will be given when downloaded. The format of this filename " +
-        "can be document type specific and may include type information. the filename of the document file when it was uploaded " +
-        "as well as relevant metadata e.g. case reference or prison number",
+    "The generated filename the document file will be given when downloaded. The format of this filename " +
+      "can be document type specific and may include type information. the filename of the document file when it was uploaded " +
+      "as well as relevant metadata e.g. case reference or prison number",
     example = "exclusionZoneMap",
   )
   val documentFilename: String,
@@ -57,10 +57,10 @@ data class Document(
   val mimeType: String,
   @Schema(
     description =
-      "JSON structured metadata associated with the document. May contain prison codes, prison numbers, " +
-        "dates, tags etc. and the properties available will be defined by the document's type.",
+    "JSON structured metadata associated with the document. May contain prison codes, prison numbers, " +
+      "dates, tags etc. and the properties available will be defined by the document's type.",
     example =
-      """
+    """
     {
       "licenceId": "123",
       "nomisId": "C3456DE",
