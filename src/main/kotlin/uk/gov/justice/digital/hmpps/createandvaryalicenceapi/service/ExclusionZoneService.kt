@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -33,6 +34,9 @@ class ExclusionZoneService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val migrateDocumentsToDSService: MigrateDocumentsToDSService,
 ) {
+  @Value("\${document-service.enabled}")
+  private val isDSenabled: Boolean = false
+
   init {
     ImageIO.scanForPlugins()
   }
@@ -107,7 +111,9 @@ class ExclusionZoneService(
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
-    postDocsToDS(uploadDetail, uploadSummary)
+    if (isDSenabled) {
+      postDocsToDS(uploadDetail, uploadSummary)
+    }
   }
 
   @Transactional

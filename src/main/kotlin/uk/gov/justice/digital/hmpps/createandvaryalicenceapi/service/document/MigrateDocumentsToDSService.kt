@@ -84,14 +84,6 @@ class MigrateDocumentsToDSService(
   }
 
   fun postDocumentsToDS(additionalCond: AdditionalConditionDocuments) {
-    // JPEG image
-    val fullSizeImgUuid =
-      postDocument(
-        additionalCond.fullSizeImage,
-        additionalCond,
-        MediaType.IMAGE_JPEG,
-        LicenceDocumentType.EXCLUSION_ZONE_MAP_FULL_IMG,
-      )
     // PDF version
     val pdfUuid =
       postDocument(
@@ -111,6 +103,14 @@ class MigrateDocumentsToDSService(
         )
       additionalCond.thumbnailImageDsUuid = thumbnailUuid
     }
+    // JPEG image
+    val fullSizeImgUuid =
+      postDocument(
+        additionalCond.fullSizeImage,
+        additionalCond,
+        MediaType.IMAGE_JPEG,
+        LicenceDocumentType.EXCLUSION_ZONE_MAP_FULL_IMG,
+      )
     additionalCond.originalDataDsUuid = pdfUuid
     additionalCond.fullSizeImageDsUuid = fullSizeImgUuid
 
