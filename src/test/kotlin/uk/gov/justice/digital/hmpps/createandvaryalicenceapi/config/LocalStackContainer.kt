@@ -10,7 +10,7 @@ import java.io.IOException
 import java.net.ServerSocket
 
 /**
- * This is a localstack container configuration to create a Testcontainers LocalStack instance
+ * This is a LocalStack container configuration to create a Testcontainers LocalStack instance
  * only if a standalone LocalStack instance is not already running. This means that if you check out the library and
  * run the tests then Testcontainers will jump in and start a LocalStack instance for you.
  */
@@ -43,7 +43,7 @@ object LocalStackContainer {
 
   private fun localstackIsRunning(): Boolean =
     try {
-      val serverSocket = ServerSocket(4566)
+      val serverSocket = ServerSocket(4666)
       serverSocket.localPort == 0
     } catch (e: IOException) {
       true

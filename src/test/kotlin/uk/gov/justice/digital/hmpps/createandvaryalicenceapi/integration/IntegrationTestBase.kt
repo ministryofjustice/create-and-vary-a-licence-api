@@ -90,6 +90,7 @@ abstract class IntegrationTestBase {
     @JvmStatic
     @DynamicPropertySource
     fun testcontainers(registry: DynamicPropertyRegistry) {
+      log.info("Using a Testcontainers instance of LocalStack")
       localStackContainer?.also { setLocalStackProperties(it, registry) }
     }
   }
