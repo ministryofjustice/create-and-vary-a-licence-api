@@ -81,6 +81,7 @@ dependencies {
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
+  testImplementation("org.testcontainers:localstack:1.19.3")
 }
 
 repositories {
