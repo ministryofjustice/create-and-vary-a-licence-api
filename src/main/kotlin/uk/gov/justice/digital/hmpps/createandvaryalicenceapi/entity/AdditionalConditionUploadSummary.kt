@@ -18,29 +18,21 @@ data class AdditionalConditionUploadSummary(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
   val id: Long = -1,
-
   @ManyToOne
   @JoinColumn(name = "additional_condition_id", nullable = false)
   val additionalCondition: AdditionalCondition,
-
   val filename: String? = null,
-
   val fileType: String? = null,
-
   val fileSize: Int = 0,
-
   @NotNull
   val uploadedTime: LocalDateTime = LocalDateTime.now(),
-
   val description: String? = null,
-
   @Basic
   val thumbnailImage: ByteArray? = null,
-
+  val thumbnailImageDsUuid: String? = null,
   @NotNull
   val uploadDetailId: Long,
 ) {
-
   override fun toString(): String {
     return "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
   }

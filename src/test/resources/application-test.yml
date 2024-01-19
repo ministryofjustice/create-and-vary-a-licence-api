@@ -65,7 +65,9 @@ hmpps:
   prisonersearch:
     api:
       url: http://localhost:8099/api
-
+  document:
+    api:
+      url: http://localhost:8099/api
 notify:
   enabled: false
 
@@ -90,3 +92,5 @@ hmpps.sqs:
   topics:
     domainevents:
       arn: arn:aws:sns:eu-west-2:000000000000:domainevents-topic
+document-service:
+  enabled: true

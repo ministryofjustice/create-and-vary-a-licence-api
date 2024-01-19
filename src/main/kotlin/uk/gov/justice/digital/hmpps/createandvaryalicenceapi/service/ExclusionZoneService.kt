@@ -7,18 +7,22 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionDocuments
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.MigrateDocumentsToDSService
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.lang.IllegalArgumentException
 import javax.imageio.ImageIO
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail as EntityAdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
@@ -28,21 +32,30 @@ class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val migrateDocumentsToDSService: MigrateDocumentsToDSService,
 ) {
+  @Value("\${document-service.enabled}")
+  private val isDSenabled: Boolean = false
 
   init {
     ImageIO.scanForPlugins()
   }
 
   @Transactional
-  fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+  fun uploadExclusionZoneFile(
+    licenceId: Long,
+    conditionId: Long,
+    file: MultipartFile,
+  ) {
+    val licenceEntity =
+      licenceRepository
+        .findById(licenceId)
+        .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
-      .orElseThrow { EntityNotFoundException("$conditionId") }
+    val additionalCondition =
+      additionalConditionRepository
+        .findById(conditionId)
+        .orElseThrow { EntityNotFoundException("$conditionId") }
 
     // Remove any existing upload detail rows manually - intentionally not linked to the additionalCondition entity
     // There can only be one uploaded exclusion map on this licence/condition
@@ -55,7 +68,9 @@ class ExclusionZoneService(
     log.info("uploadExclusionZoneFile:  Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
 
     if (file.isEmpty) {
-      log.error("uploadExclusion:  Empty file uploaded, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
+      log.error(
+        "uploadExclusion:  Empty file uploaded, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}",
+      )
       throw ValidationException("Exclusion zone - file was empty.")
     }
 
@@ -66,43 +81,54 @@ class ExclusionZoneService(
 
     // Validate that we were able to extract meaningful data from the uploaded file
     if (fullSizeImage == null || thumbnailImage == null) {
-      log.error("uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
+      log.error(
+        "uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}",
+      )
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
 
-    val uploadDetail = EntityAdditionalConditionUploadDetail(
-      licenceId = licenceEntity.id,
-      additionalConditionId = additionalCondition.id,
-      originalData = file.bytes,
-      fullSizeImage = fullSizeImage,
-    )
+    val uploadDetail =
+      EntityAdditionalConditionUploadDetail(
+        licenceId = licenceEntity.id,
+        additionalConditionId = additionalCondition.id,
+        originalData = file.bytes,
+        fullSizeImage = fullSizeImage,
+      )
 
     val savedDetail = additionalConditionUploadDetailRepository.saveAndFlush(uploadDetail)
 
-    val uploadSummary = EntityAdditionalConditionUploadSummary(
-      additionalCondition = additionalCondition,
-      filename = file.originalFilename,
-      fileType = file.contentType,
-      fileSize = file.size.toInt(),
-      description = description,
-      thumbnailImage = thumbnailImage,
-      uploadDetailId = savedDetail.id,
-    )
+    val uploadSummary =
+      EntityAdditionalConditionUploadSummary(
+        additionalCondition = additionalCondition,
+        filename = file.originalFilename,
+        fileType = file.contentType,
+        fileSize = file.size.toInt(),
+        description = description,
+        thumbnailImage = thumbnailImage,
+        uploadDetailId = savedDetail.id,
+      )
 
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+    if (isDSenabled) {
+      postDocsToDS(uploadDetail, uploadSummary)
+    }
   }
 
   @Transactional
-  fun removeExclusionZoneFile(licenceId: Long, conditionId: Long) {
+  fun removeExclusionZoneFile(
+    licenceId: Long,
+    conditionId: Long,
+  ) {
     licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
-      .orElseThrow { EntityNotFoundException("$conditionId") }
+    val additionalCondition =
+      additionalConditionRepository
+        .findById(conditionId)
+        .orElseThrow { EntityNotFoundException("$conditionId") }
 
     // Remove uploadDetail rows manually - intentionally not linked to the additionalCondition entity
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
@@ -112,38 +138,50 @@ class ExclusionZoneService(
     }
 
     // Remove the additionalConditionData item for 'outOfBoundFilename'
-    val updatedAdditionalConditionData = additionalCondition
-      .additionalConditionData
-      .filter { !it.dataField.equals("outOfBoundFilename") }
+    val updatedAdditionalConditionData =
+      additionalCondition
+        .additionalConditionData
+        .filter { !it.dataField.equals("outOfBoundFilename") }
 
     // Update summary and data via the additionalCondition lists
-    val updatedAdditionalCondition = additionalCondition.copy(
-      additionalConditionData = updatedAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
-    )
+    val updatedAdditionalCondition =
+      additionalCondition.copy(
+        additionalConditionData = updatedAdditionalConditionData,
+        additionalConditionUploadSummary = emptyList(),
+      )
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
-  fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {
+  fun getExclusionZoneImage(
+    licenceId: Long,
+    conditionId: Long,
+  ): ByteArray? {
     licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
-      .orElseThrow { EntityNotFoundException("$conditionId") }
+    val additionalCondition =
+      additionalConditionRepository
+        .findById(conditionId)
+        .orElseThrow { EntityNotFoundException("$conditionId") }
 
     val uploadIds = additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }
     if (uploadIds.isEmpty()) {
       throw EntityNotFoundException("$conditionId")
     }
 
-    val upload = additionalConditionUploadDetailRepository
-      .findById(uploadIds.first())
-      .orElseThrow { EntityNotFoundException("$conditionId") }
+    val upload =
+      additionalConditionUploadDetailRepository
+        .findById(uploadIds.first())
+        .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    return upload.fullSizeImage
+    if (upload.fullSizeImage != null) {
+      return upload.fullSizeImage
+    } else if (upload.fullSizeImageDsUuid != null) {
+      return migrateDocumentsToDSService.documentService.getDocument(upload.fullSizeImageDsUuid!!)
+    }
+    return null
   }
 
   fun extractFullSizeImageJpeg(fileStream: InputStream): ByteArray? {
@@ -189,7 +227,11 @@ class ExclusionZoneService(
     return null
   }
 
-  fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray? {
+  fun createThumbnailImageJpeg(
+    fullSizeImage: ByteArray?,
+    width: Int = 150,
+    height: Int = 200,
+  ): ByteArray? {
     if (fullSizeImage?.isEmpty() == true) {
       log.error("Creating thumbnail image - full size image was empty.")
       return ByteArray(0)
@@ -214,6 +256,22 @@ class ExclusionZoneService(
       log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
     return null
+  }
+
+  private fun postDocsToDS(
+    uploadDetail: AdditionalConditionUploadDetail,
+    uploadSummary: AdditionalConditionUploadSummary,
+  ) {
+    val additionalCond =
+      AdditionalConditionDocuments(
+        licenceId = uploadDetail.licenceId,
+        additionalConditionId = uploadDetail.additionalConditionId,
+        originalData = uploadDetail.originalData,
+        fullSizeImage = uploadDetail.fullSizeImage,
+        thumbnailImage = uploadSummary.thumbnailImage,
+        id = uploadDetail.id,
+      )
+    migrateDocumentsToDSService.postDocumentsToDS(additionalCond)
   }
 
   companion object {

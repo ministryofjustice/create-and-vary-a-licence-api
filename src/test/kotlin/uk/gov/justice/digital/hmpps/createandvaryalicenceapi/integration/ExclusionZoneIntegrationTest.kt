@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -17,9 +18,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.DocumentApiClient
 import java.time.Duration
 
 class ExclusionZoneIntegrationTest : IntegrationTestBase() {
+  @MockBean
+  lateinit var documentApiClient: DocumentApiClient
 
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
@@ -87,15 +91,16 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val result = webTestClient.get()
-      .uri("/licence/id/2")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+    val result =
+      webTestClient.get()
+        .uri("/licence/id/2")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody
 
     val additionalCondition = result?.additionalLicenceConditions?.first()
     assertThat(additionalCondition?.uploadSummary).isEmpty()
@@ -130,12 +135,13 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
   fun `remove exclusion zone upload is role-protected`() {
-    val result = webTestClient.put()
-      .uri("/exclusion-zone/id/2/condition/id/1/remove-upload")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-      .exchange()
-      .expectStatus().isForbidden
+    val result =
+      webTestClient.put()
+        .uri("/exclusion-zone/id/2/condition/id/1/remove-upload")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus().isForbidden
 
     val body = result.expectBody(ErrorResponse::class.java).returnResult()
     assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
@@ -147,12 +153,13 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
   fun `get full-sized image for exclusion zone upload`() {
-    val result = webTestClient.get()
-      .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
-      .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
+    val result =
+      webTestClient.get()
+        .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
+        .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
 
     assertThat(result.expectHeader().contentType(MediaType.IMAGE_JPEG)).isNotNull
     assertThat(result.expectBody()).isNotNull
@@ -164,16 +171,18 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/add-upload-to-licence-id-2.sql",
   )
   fun `get full-sized image for exclusion zone is role-protected`() {
-    val result = webTestClient.get()
-      .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
-      .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-      .exchange()
-      .expectStatus().isForbidden
+    val result =
+      webTestClient.get()
+        .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
+        .accept(MediaType.IMAGE_JPEG, MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
+        .exchange()
+        .expectStatus().isForbidden
 
     val body = result.expectBody(ErrorResponse::class.java).returnResult()
     assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
   }
+
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
 

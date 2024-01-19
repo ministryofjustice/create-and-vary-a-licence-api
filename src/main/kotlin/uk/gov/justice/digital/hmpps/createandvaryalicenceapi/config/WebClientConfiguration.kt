@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.client.web.reactive.function.client.S
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
+private const val HMPPS_AUTH = "hmpps-auth"
+
 @Configuration
 class WebClientConfiguration(
   @Value("\${hmpps.auth.url}") private val oauthApiUrl: String,
@@ -20,9 +22,9 @@ class WebClientConfiguration(
   @Value("\${hmpps.community.api.url}") private val communityApiUrl: String,
   @Value("\${hmpps.probationsearch.api.url}") private val probationSearchApiUrl: String,
   @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String,
+  @Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
 ) {
-
   @Bean
   fun oauthApiHealthWebClient(): WebClient {
     return WebClient.builder().baseUrl(oauthApiUrl).build()
@@ -43,7 +45,7 @@ class WebClientConfiguration(
   @Bean
   fun oauthPrisonClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId("hmpps-auth")
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
 
     return WebClient.builder()
       .baseUrl(prisonApiUrl)
@@ -61,10 +63,28 @@ class WebClientConfiguration(
   @Bean
   fun oauthPrisonerSearchClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId("hmpps-auth")
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
 
     return WebClient.builder()
       .baseUrl(prisonerSearchApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
+  }
+
+  @Bean
+  fun oauthDocumentApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(documentApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .exchangeStrategies(
         ExchangeStrategies.builder()
@@ -94,7 +114,7 @@ class WebClientConfiguration(
   @Bean
   fun oauthCommunityApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId("hmpps-auth")
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
 
     return WebClient.builder()
       .baseUrl(communityApiUrl)
@@ -112,7 +132,7 @@ class WebClientConfiguration(
   @Bean
   fun oauthProbationSearchApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId("hmpps-auth")
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
 
     return WebClient.builder()
       .baseUrl(probationSearchApiUrl)
