@@ -75,7 +75,4 @@ data class LicenceSummary(
 
   @Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
   val isInPssPeriod: Boolean,
-
-  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
-  val isInHardStopPeriod: Boolean,
 )

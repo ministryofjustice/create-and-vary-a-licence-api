@@ -162,7 +162,6 @@ class LicenceDetailTransformerKtTest {
       updatedDateTime = modelLicence.dateLastUpdated,
       isInPssPeriod = modelLicence.isInPssPeriod ?: false,
       conditions = publicLicenseConditions,
-      isInHardStopPeriod = modelLicence.isInHardStopPeriod ?: false,
     )
   }
 

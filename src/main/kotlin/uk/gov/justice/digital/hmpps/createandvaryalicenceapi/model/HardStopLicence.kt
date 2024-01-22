@@ -254,5 +254,5 @@ data class HardStopLicence(
   override val isEligibleForEarlyRelease: Boolean = false,
 
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
-  override val isInHardStopPeriod: Boolean = false,
+  val isInHardStopPeriod: Boolean = false,
 ) : Licence

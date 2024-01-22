@@ -57,7 +57,6 @@ fun ModelLicence.transformToPublicLicence(): Licence {
     updatedDateTime = this.dateLastUpdated,
     isInPssPeriod = this.isInPssPeriod ?: false,
     conditions = licenseConditions,
-    isInHardStopPeriod = this.isInHardStopPeriod ?: false,
   )
 }
 

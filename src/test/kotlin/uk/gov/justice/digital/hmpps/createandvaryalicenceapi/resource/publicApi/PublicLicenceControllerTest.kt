@@ -247,7 +247,6 @@ class PublicLicenceControllerTest {
       updatedByUsername = "TestUpdater",
       updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
       isInPssPeriod = false,
-      isInHardStopPeriod = false,
     )
 
     val aFullSizeMapImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
@@ -268,7 +267,6 @@ class PublicLicenceControllerTest {
       updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
       isInPssPeriod = false,
       conditions = licenceConditions,
-      isInHardStopPeriod = false,
     )
   }
 }

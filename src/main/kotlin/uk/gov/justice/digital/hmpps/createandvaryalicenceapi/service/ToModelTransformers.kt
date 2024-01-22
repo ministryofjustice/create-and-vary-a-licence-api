@@ -237,7 +237,6 @@ fun toVariation(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-  isInHardStopPeriod = false,
 )
 
 fun toCrd(
