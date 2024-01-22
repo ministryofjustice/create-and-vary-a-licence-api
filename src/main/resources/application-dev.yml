@@ -33,6 +33,10 @@ hmpps:
     api:
       url: "https://prisoner-search-dev.prison.service.justice.gov.uk"
 
+  document:
+    api:
+      url: "https://document-api-dev.hmpps.service.justice.gov.uk"
+
 hmpps.sqs:
   provider: localstack
   localstackUrl: http://localhost:4666
