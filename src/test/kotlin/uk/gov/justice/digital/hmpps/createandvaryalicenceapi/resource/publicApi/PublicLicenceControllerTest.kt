@@ -267,7 +267,6 @@ class PublicLicenceControllerTest {
       updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
       isInPssPeriod = false,
       conditions = licenceConditions,
-
     )
   }
 }
