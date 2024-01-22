@@ -164,6 +164,7 @@ fun toHardstop(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  isInHardStopPeriod = licence.isInHardStopPeriod(),
 )
 
 fun toVariation(
@@ -236,6 +237,7 @@ fun toVariation(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  isInHardStopPeriod = false,
 )
 
 fun toCrd(
@@ -305,6 +307,7 @@ fun toCrd(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  isInHardStopPeriod = licence.isInHardStopPeriod(),
 )
 
 // Transform a list of entity standard conditions to model standard conditions

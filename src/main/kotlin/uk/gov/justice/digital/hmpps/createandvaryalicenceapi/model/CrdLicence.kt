@@ -245,4 +245,7 @@ data class CrdLicence(
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   override val isEligibleForEarlyRelease: Boolean = false,
+
+  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  override val isInHardStopPeriod: Boolean? = false,
 ) : Licence

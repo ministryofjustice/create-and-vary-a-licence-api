@@ -77,4 +77,7 @@ data class Licence(
 
   @Schema(description = "The AP and PSS conditions that form the licence")
   val conditions: Conditions,
+
+  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  val isInHardStopPeriod: Boolean,
 )

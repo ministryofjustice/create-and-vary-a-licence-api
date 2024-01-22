@@ -40,6 +40,7 @@ fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary {
     updatedByUsername = this.updatedByUsername,
     updatedDateTime = this.dateLastUpdated,
     isInPssPeriod = this.isInPssPeriod(),
+    isInHardStopPeriod = this.isInHardStopPeriod(),
   )
 }
 
