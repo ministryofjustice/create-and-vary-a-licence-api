@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
@@ -32,11 +32,11 @@ class DomainEventsService(
     event: LicenceDomainEventType,
     licenceId: String,
     crn: String,
-    nomsNumber: String
+    nomsNumber: String,
   ) {
     val additionalInformation = AdditionalInformation(licenceId)
     val personReferenceIdentifiers = PersonReference(
-      listOf(Identifiers("CRN", crn), Identifiers("NOMS", nomsNumber))
+      listOf(Identifiers("CRN", crn), Identifiers("NOMS", nomsNumber)),
     )
     val eventType = event.value
     val occurredAt = LocalDateTime.now(clock)

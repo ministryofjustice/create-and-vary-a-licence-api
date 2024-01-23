@@ -55,6 +55,7 @@
     <ID>ReturnCount:StaffService.kt$StaffService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>SwallowedException:EventService.kt$EventService$e: PropertyReferenceException</ID>
+    <ID>TooGenericExceptionThrown:DomainEventsService.kt$DomainEventsService$throw RuntimeException("Topic with name domainevents doesn't exist")</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:ComService.kt$ComService</ID>
     <ID>TooManyFunctions:CrdLicence.kt$CrdLicence : Licence</ID>
