@@ -86,8 +86,8 @@ class DomainEventsServiceTest {
                 ]
               }
             }
-          """.trimIndent(),
-        )
+        """.trimIndent(),
+      )
     }
 
     @Test
@@ -135,10 +135,9 @@ class DomainEventsServiceTest {
                 ]
               }
             }
-          """.trimIndent(),
-        )
+        """.trimIndent(),
+      )
     }
-
   }
 
   @Nested
@@ -188,7 +187,7 @@ class DomainEventsServiceTest {
                 ]
               }
             }
-          """.trimIndent(),
+        """.trimIndent(),
       )
     }
 
@@ -237,9 +236,8 @@ class DomainEventsServiceTest {
                 ]
               }
             }
-          """.trimIndent(),
+        """.trimIndent(),
       )
     }
-
   }
 }
