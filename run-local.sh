@@ -17,7 +17,7 @@ restart_docker () {
   #Prune existing containers
   #Comment in if you wish to perform a fresh install of all containers where all containers are removed and deleted
   #You will be prompted to continue with the deletion in the terminal
-  docker system prune --all
+  #docker system prune --all
 
   echo "Pulling back end containers ..."
   docker compose pull
