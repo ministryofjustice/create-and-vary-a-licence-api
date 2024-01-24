@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -317,7 +318,7 @@ class LicenceService(
     val updatedLicence = when (licenceEntity) {
       is CrdLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-      is HardStopLicence -> TODO("Submitting hard stop licences not supported yet")
+      is HardStopLicence -> licenceEntity.submit(submitter as PrisonCaseAdministrator)
       else -> error("Unexpected licence type: $licenceEntity")
     }
 

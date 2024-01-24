@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -817,7 +818,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `submit a licence saves new fields to the licence`() {
+  fun `submit a CRD licence saves new fields to the licence`() {
     val expectedCom = CommunityOffenderManager(
       staffIdentifier = 2000,
       username = "smills",
@@ -862,6 +863,56 @@ class LicenceServiceTest {
           "smills",
           "X Y",
           "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+  }
+
+  @Test
+  fun `submit a hard stop licence saves new fields to the licence`() {
+    val caseAdmin = PrisonCaseAdministrator(
+      username = "smills",
+      email = "testemail@prison.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+
+    val hardStopLicence = TestData.createHardStopLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(caseAdmin)
+
+    service.submitLicence(1L, emptyList())
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value.submittedDate).isNotNull()
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, "smills"))
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.HARD_STOP_SUBMITTED,
+          "Licence submitted for approval for ${hardStopLicence.forename} ${hardStopLicence.surname}",
+        ),
+      )
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence submitted for approval for ${hardStopLicence.forename} ${hardStopLicence.surname}",
         ),
       )
   }
