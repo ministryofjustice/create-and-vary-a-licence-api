@@ -71,9 +71,8 @@ class DatesControllerTest {
 
   @Test
   fun `get hard stop cut-off date for licence to time out`() {
-    val currentDate = LocalDate.now()
     val expectedCutoffDate = LocalDate.parse("2023-12-05")
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(currentDate)).thenReturn(
+    whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(
       expectedCutoffDate,
     )
 
@@ -86,6 +85,6 @@ class DatesControllerTest {
         jsonPath("\$.cutoffDate").value("05/12/2023"),
       )
 
-    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(currentDate)
+    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut()
   }
 }

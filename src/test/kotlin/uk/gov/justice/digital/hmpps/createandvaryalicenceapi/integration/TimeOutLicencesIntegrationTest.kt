@@ -59,7 +59,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     val jobExecutionDate = LocalDate.now()
-    val isOnBankHolidayOrWeekEnd = releaseDateService.excludeBankHolidaysAndWeekends(jobExecutionDate)
+    val isOnBankHolidayOrWeekEnd = releaseDateService.isBankHolidayOrWeekend(jobExecutionDate)
 
     assertThat(timedOutLicences?.size).isEqualTo(if (isOnBankHolidayOrWeekEnd) 0 else 3)
     assertThat(timedOutLicences)

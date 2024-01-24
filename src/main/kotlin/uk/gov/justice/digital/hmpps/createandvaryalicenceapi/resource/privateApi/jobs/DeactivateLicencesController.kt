@@ -47,7 +47,7 @@ class DeactivateLicencesController(
       ),
     ],
   )
-  fun runTimeOutLicencesServiceJob() {
-    return deactivateLicencesService.deactivateLicencesJob()
+  fun runDeactivateLicencesJob() {
+    return deactivateLicencesService.deactivateLicences()
   }
 }

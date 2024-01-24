@@ -62,23 +62,23 @@ class TimeOutLicencesServiceTest {
 
   @Test
   fun `return if job execution date is on bank holiday or weekend`() {
-    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(true)
+    whenever(releaseDateService.isBankHolidayOrWeekend(LocalDate.now(clock))).thenReturn(true)
 
-    service.timeOutLicencesJob()
+    service.timeOutLicences()
 
-    verify(releaseDateService, times(0)).getCutOffDateForLicenceTimeOut(any())
+    verify(releaseDateService, times(0)).getCutOffDateForLicenceTimeOut()
     verify(licenceRepository, times(0)).getAllLicencesToTimeOut(any())
   }
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
-    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(false)
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now(clock))).thenReturn(LocalDate.parse("2023-12-07"))
+    whenever(releaseDateService.isBankHolidayOrWeekend(LocalDate.now(clock))).thenReturn(false)
+    whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(LocalDate.parse("2023-12-07"))
     whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock))).thenReturn(emptyList())
 
-    service.timeOutLicencesJob()
+    service.timeOutLicences()
 
-    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(LocalDate.parse("2023-12-05"))
+    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut()
     verify(licenceRepository, times(1)).getAllLicencesToTimeOut(LocalDate.parse("2023-12-07"))
 
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
@@ -89,8 +89,8 @@ class TimeOutLicencesServiceTest {
 
   @Test
   fun `should update licences status if there are eligible licences`() {
-    whenever(releaseDateService.excludeBankHolidaysAndWeekends(LocalDate.now(clock))).thenReturn(false)
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now(clock))).thenReturn(
+    whenever(releaseDateService.isBankHolidayOrWeekend(LocalDate.now(clock))).thenReturn(false)
+    whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(
       LocalDate.now(clock).plusDays(2),
     )
     whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock).plusDays(2))).thenReturn(
@@ -99,13 +99,13 @@ class TimeOutLicencesServiceTest {
       ),
     )
 
-    service.timeOutLicencesJob()
+    service.timeOutLicences()
 
     val licenceCaptor = argumentCaptor<List<CrdLicence>>()
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut(LocalDate.parse("2023-12-05"))
+    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut()
     verify(licenceRepository, times(1)).getAllLicencesToTimeOut(LocalDate.parse("2023-12-07"))
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())

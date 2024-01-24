@@ -10,6 +10,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -68,7 +69,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as CrdLicenceModel
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
@@ -132,7 +133,7 @@ class LicenceServiceTest {
 
     val licence = service.getLicenceById(1L)
 
-    assertThat(licence).isExactlyInstanceOf(ModelCrdLicence::class.java)
+    assertThat(licence).isExactlyInstanceOf(CrdLicenceModel::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
   }
@@ -147,6 +148,19 @@ class LicenceServiceTest {
     val licence = service.getLicenceById(1L)
 
     assertThat(licence.createdByFullName).isEqualTo("X Y")
+  }
+
+  @Test
+  fun `service returns a licence with is hard stop populated`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+
+    val licence = service.getLicenceById(1L) as CrdLicenceModel
+
+    assertThat(licence.isInHardStopPeriod).isTrue()
   }
 
   @Test
