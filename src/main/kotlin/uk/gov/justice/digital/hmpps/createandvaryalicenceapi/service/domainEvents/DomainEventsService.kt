@@ -93,6 +93,8 @@ data class HMPPSDomainEvent(
 enum class LicenceDomainEventType(val value: String) {
   LICENCE_ACTIVATED("create-and-vary-a-licence.licence.activated"),
   LICENCE_VARIATION_ACTIVATED("create-and-vary-a-licence.variation.activated"),
+  LICENCE_INACTIVATED("create-and-vary-a-licence.licence.inactivated"),
+  LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.variation.inactivated"),
 }
 
 fun LocalDateTime.toOffsetDateFormat(): String =
