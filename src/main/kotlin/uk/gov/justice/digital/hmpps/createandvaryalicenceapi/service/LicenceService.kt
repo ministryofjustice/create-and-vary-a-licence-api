@@ -445,6 +445,13 @@ class LicenceService(
             eventDescription = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
           ),
         )
+
+        domainEventsService.recordDomainEvent(
+          LicenceDomainEventType.LICENCE_INACTIVATED,
+          licence.id.toString(),
+          licence.crn,
+          licence.nomsId,
+        )
       }
       if (deactivateInProgressVersions == true) {
         inactivateInProgressLicenceVersions(

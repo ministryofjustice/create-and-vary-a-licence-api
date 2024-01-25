@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import net.bytebuddy.asm.Advice.Argument
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -57,6 +58,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
@@ -981,6 +983,7 @@ class LicenceServiceTest {
     val licenceCaptor = argumentCaptor<List<Licence>>()
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val domainEventCaptor = argumentCaptor<DomainEventsService.HMPPSDomainEvent>()
 
     service.activateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
 
@@ -1001,7 +1004,6 @@ class LicenceServiceTest {
         aLicenceEntity.crn,
         aLicenceEntity.nomsId,
       )
-
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(
@@ -1154,6 +1156,14 @@ class LicenceServiceTest {
     ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
+
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1184,6 +1194,13 @@ class LicenceServiceTest {
     ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1223,6 +1240,13 @@ class LicenceServiceTest {
     ).saveAllAndFlush(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.INACTIVE)))
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1269,6 +1293,13 @@ class LicenceServiceTest {
       licenceRepository,
       times(1),
     ).saveAllAndFlush(listOf(licence.copy(statusCode = LicenceStatus.INACTIVE)))
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
   }
 
   @Test

@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.DeactivateLicencesService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -32,11 +33,13 @@ class DeactivateLicencesServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
+  private val domainEventsService = mock<DomainEventsService>()
 
   private val service = DeactivateLicencesService(
     licenceRepository,
     auditEventRepository,
     licenceEventRepository,
+    domainEventsService,
   )
 
   @BeforeEach
