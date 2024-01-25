@@ -55,6 +55,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
@@ -84,6 +85,7 @@ class LicenceServiceTest {
   private val notifyService = mock<NotifyService>()
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val domainEventsService = mock<DomainEventsService>()
 
   private val service =
     LicenceService(
@@ -99,6 +101,7 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
+      domainEventsService,
     )
 
   @BeforeEach
@@ -121,6 +124,7 @@ class LicenceServiceTest {
       notifyService,
       omuService,
       releaseDateService,
+      domainEventsService,
     )
   }
 

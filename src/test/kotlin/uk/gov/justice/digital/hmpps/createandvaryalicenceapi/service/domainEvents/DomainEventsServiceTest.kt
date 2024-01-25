@@ -240,4 +240,105 @@ class DomainEventsServiceTest {
       )
     }
   }
+
+  @Nested
+  inner class LicenceDomainEventWithoutIdentifiers {
+    @Test
+    fun `licence activated event publishes to SNS without CRN`() {
+      val licenceId = "1"
+      val crn = null
+      val nomsNumber = "nomsNumber"
+
+      val requestCaptor = ArgumentCaptor.forClass(PublishRequest::class.java)
+
+      whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
+      whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
+      whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
+
+      domainEventsService.publishDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED,
+        licenceId,
+        crn,
+        nomsNumber,
+      )
+
+      verify(snsClient, times(1)).publish(requestCaptor.capture())
+
+      assertThatJson(requestCaptor.value.message()).isEqualTo(
+        """
+            {
+              "eventType": "create-and-vary-a-licence.licence.activated",
+              "additionalInformation": {
+                "licenceId": "1"
+              },
+              "detailUrl": "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+              "version": 1,
+              "occurredAt": "2023-12-05T00:00:00Z",
+              "description": "Licence activated for 1",
+              "personReference": {
+                "identifiers": [
+                  {
+                    "type": "CRN",
+                    "value": null
+                  },
+                  {
+                    "type": "NOMS",
+                    "value": "nomsNumber"
+                  }
+                ]
+              }
+            }
+        """.trimIndent(),
+      )
+    }
+
+    @Test
+    fun `licence variation activated event publishes to SNS without NOMIS number`() {
+      val licenceId = "1"
+      val crn = "crn"
+      val nomsNumber = null
+
+      val requestCaptor = ArgumentCaptor.forClass(PublishRequest::class.java)
+
+      whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
+      whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
+      whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
+
+      domainEventsService.publishDomainEvent(
+        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
+        licenceId,
+        crn,
+        nomsNumber,
+      )
+
+      verify(snsClient, times(1)).publish(requestCaptor.capture())
+
+      assertThatJson(requestCaptor.value.message()).isEqualTo(
+        """
+            {
+              "eventType": "create-and-vary-a-licence.variation.activated",
+              "additionalInformation": {
+                "licenceId": "1"
+              },
+              "detailUrl": "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+              "version": 1,
+              "occurredAt": "2023-12-05T00:00:00Z",
+              "description": "Licence activated for 1",
+              "personReference": {
+                "identifiers": [
+                  {
+                    "type": "CRN",
+                    "value": "crn"
+                  },
+                  {
+                    "type": "NOMS",
+                    "value": null
+                  }
+                ]
+              }
+            }
+        """.trimIndent(),
+      )
+    }
+  }
 }

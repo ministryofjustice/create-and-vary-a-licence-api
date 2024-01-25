@@ -32,8 +32,8 @@ class DomainEventsService(
   fun publishDomainEvent(
     event: LicenceDomainEventType,
     licenceId: String,
-    crn: String,
-    nomsNumber: String,
+    crn: String?,
+    nomsNumber: String?,
   ) {
     val additionalInformation = AdditionalInformation(licenceId)
     val personReferenceIdentifiers = PersonReference(
@@ -78,7 +78,7 @@ data class PersonReference(
 
 data class Identifiers(
   val type: String,
-  val value: String,
+  val value: String?,
 )
 
 data class HMPPSDomainEvent(
