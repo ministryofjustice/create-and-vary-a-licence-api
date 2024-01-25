@@ -90,6 +90,39 @@ class LicenceService(
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
   }
 
+  fun transform(
+    licence: EntityLicence,
+    earliestReleaseDate: LocalDate?,
+    isEligibleForEarlyRelease: Boolean,
+    conditionSubmissionStatus: Map<String, Boolean>,
+  ): Licence =
+    when (licence) {
+      is CrdLicence -> toCrd(
+        licence = licence,
+        earliestReleaseDate = earliestReleaseDate,
+        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+        conditionSubmissionStatus = conditionSubmissionStatus,
+      )
+
+      is VariationLicence -> toVariation(
+        licence = licence,
+        earliestReleaseDate = earliestReleaseDate,
+        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+        conditionSubmissionStatus = conditionSubmissionStatus,
+      )
+
+      is HardStopLicence -> toHardstop(
+        licence = licence,
+        earliestReleaseDate = earliestReleaseDate,
+        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+        conditionSubmissionStatus = conditionSubmissionStatus,
+      )
+
+      else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
+    }
+
   @Transactional
   fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest) {
     val licenceEntity = licenceRepository

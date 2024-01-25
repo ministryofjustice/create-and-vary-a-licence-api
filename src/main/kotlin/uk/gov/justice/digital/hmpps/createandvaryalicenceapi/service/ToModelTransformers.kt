@@ -15,12 +15,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence as EntityCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence as EntityHardstopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
@@ -29,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicence as ModelHardstopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
@@ -83,23 +79,11 @@ fun transformToListOfSummaries(licences: List<EntityLicence>): List<LicenceSumma
   return licences.map { licence -> transformToLicenceSummary(licence) }
 }
 
-fun transform(
-  licence: EntityLicence,
-  earliestReleaseDate: LocalDate?,
-  isEligibleForEarlyRelease: Boolean,
-  conditionSubmissionStatus: Map<String, Boolean>,
-): ModelLicence =
-  when (licence) {
-    is EntityCrdLicence -> toCrd(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
-    is EntityVariationLicence -> toVariation(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
-    is EntityHardstopLicence -> toHardstop(licence, earliestReleaseDate, isEligibleForEarlyRelease, conditionSubmissionStatus)
-    else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
-  }
-
 fun toHardstop(
   licence: HardStopLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
+  isInHardStopPeriod: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelHardstopLicence(
   id = licence.id,
@@ -164,7 +148,7 @@ fun toHardstop(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-  isInHardStopPeriod = licence.isInHardStopPeriod(),
+  isInHardStopPeriod = isInHardStopPeriod,
 )
 
 fun toVariation(
@@ -243,6 +227,7 @@ fun toCrd(
   licence: CrdLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
+  isInHardStopPeriod: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelCrdLicence(
   id = licence.id,
@@ -306,7 +291,7 @@ fun toCrd(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-  isInHardStopPeriod = licence.isInHardStopPeriod(),
+  isInHardStopPeriod = isInHardStopPeriod,
 )
 
 // Transform a list of entity standard conditions to model standard conditions

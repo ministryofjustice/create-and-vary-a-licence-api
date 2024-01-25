@@ -29,8 +29,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Objects
 
-const val IS_IN_HARD_STOP_PERIOD = false
-
 @Entity
 @Table(name = "licence")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -137,10 +135,6 @@ abstract class Licence(
       return led.isBefore(LocalDate.now()) && !(tused.isBefore(LocalDate.now()))
     }
     return false
-  }
-
-  fun isInHardStopPeriod(): Boolean {
-    return IS_IN_HARD_STOP_PERIOD
   }
 
   abstract fun activate(): Licence
