@@ -14,11 +14,13 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import software.amazon.awssdk.services.sns.SnsAsyncClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.AdditionalInformation
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.PersonReference
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 
 class OutboundEventsPublisherTest {
   private val hmppsQueueServiceMock = mock<HmppsQueueService>()
@@ -31,12 +33,9 @@ class OutboundEventsPublisherTest {
     registerKotlinModule()
   }
 
-  private val clock: Clock = Clock.fixed(Instant.parse("2023-12-05T00:00:00Z"), ZoneId.systemDefault())
-
   private val outboundEventsPublisher = OutboundEventsPublisher(
     hmppsQueueService = hmppsQueueServiceMock,
     objectMapper = objectMapper,
-    clock = clock,
   )
 
   @Nested
@@ -53,14 +52,22 @@ class OutboundEventsPublisherTest {
       whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
       whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-      val payload = outboundEventsPublisher.createDomainEvent(
-        LicenceDomainEventType.LICENCE_ACTIVATED,
-        licenceId,
-        crn,
-        nomsNumber,
+      val domainEvent = HMPPSDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED.value,
+        AdditionalInformation(licenceId),
+        "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+        1,
+        "2023-12-05T00:00:00Z",
+        "Licence activated for 1",
+        PersonReference(
+          listOf(
+            Identifiers("CRN", crn),
+            Identifiers("NOMS", nomsNumber),
+          ),
+        ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(payload, licenceId)
+      outboundEventsPublisher.publishDomainEvent(domainEvent, licenceId)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 
@@ -104,11 +111,19 @@ class OutboundEventsPublisherTest {
       whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
       whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-      val payload = outboundEventsPublisher.createDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
-        licenceId,
-        crn,
-        nomsNumber,
+      val payload = HMPPSDomainEvent(
+        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value,
+        AdditionalInformation(licenceId),
+        "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+        1,
+        "2023-12-05T00:00:00Z",
+        "Licence activated for 1",
+        PersonReference(
+          listOf(
+            Identifiers("CRN", crn),
+            Identifiers("NOMS", nomsNumber),
+          ),
+        ),
       )
 
       outboundEventsPublisher.publishDomainEvent(payload, licenceId)
@@ -158,11 +173,19 @@ class OutboundEventsPublisherTest {
       whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
       whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-      val payload = outboundEventsPublisher.createDomainEvent(
-        LicenceDomainEventType.LICENCE_INACTIVATED,
-        licenceId,
-        crn,
-        nomsNumber,
+      val payload = HMPPSDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED.value,
+        AdditionalInformation(licenceId),
+        "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+        1,
+        "2023-12-05T00:00:00Z",
+        "Licence activated for 1",
+        PersonReference(
+          listOf(
+            Identifiers("CRN", crn),
+            Identifiers("NOMS", nomsNumber),
+          ),
+        ),
       )
 
       outboundEventsPublisher.publishDomainEvent(payload, licenceId)
@@ -209,11 +232,19 @@ class OutboundEventsPublisherTest {
       whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
       whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-      val payload = outboundEventsPublisher.createDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED,
-        licenceId,
-        crn,
-        nomsNumber,
+      val payload = HMPPSDomainEvent(
+        LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value,
+        AdditionalInformation(licenceId),
+        "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+        1,
+        "2023-12-05T00:00:00Z",
+        "Licence activated for 1",
+        PersonReference(
+          listOf(
+            Identifiers("CRN", crn),
+            Identifiers("NOMS", nomsNumber),
+          ),
+        ),
       )
 
       outboundEventsPublisher.publishDomainEvent(payload, licenceId)
@@ -263,11 +294,19 @@ class OutboundEventsPublisherTest {
       whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
       whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-      val payload = outboundEventsPublisher.createDomainEvent(
-        LicenceDomainEventType.LICENCE_ACTIVATED,
-        licenceId,
-        crn,
-        nomsNumber,
+      val payload = HMPPSDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED.value,
+        AdditionalInformation(licenceId),
+        "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+        1,
+        "2023-12-05T00:00:00Z",
+        "Licence activated for 1",
+        PersonReference(
+          listOf(
+            Identifiers("CRN", crn),
+            Identifiers("NOMS", nomsNumber),
+          ),
+        ),
       )
 
       outboundEventsPublisher.publishDomainEvent(payload, licenceId)
@@ -314,11 +353,19 @@ class OutboundEventsPublisherTest {
       whenever(mockHmppsTopic.arn).thenReturn("arn:aws:sns:eu-west-2:000000000000:domainevents-topic")
       whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-      val payload = outboundEventsPublisher.createDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
-        licenceId,
-        crn,
-        nomsNumber,
+      val payload = HMPPSDomainEvent(
+        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value,
+        AdditionalInformation(licenceId),
+        "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
+        1,
+        "2023-12-05T00:00:00Z",
+        "Licence activated for 1",
+        PersonReference(
+          listOf(
+            Identifiers("CRN", crn),
+            Identifiers("NOMS", nomsNumber),
+          ),
+        ),
       )
 
       outboundEventsPublisher.publishDomainEvent(payload, licenceId)
