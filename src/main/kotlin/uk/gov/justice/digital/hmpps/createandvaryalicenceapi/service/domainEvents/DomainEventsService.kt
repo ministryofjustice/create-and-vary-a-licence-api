@@ -19,14 +19,15 @@ class DomainEventsService(
   private val clock: Clock,
 ) {
   companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
+    const val DOMAIN_TOPIC_ID = "domainevents"
+    private val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  private val domaineventsTopic by lazy {
-    hmppsQueueService.findByTopicId("domainevents")
-      ?: throw RuntimeException("Topic with name domainevents doesn't exist")
+  private val domainEventsTopic by lazy {
+    hmppsQueueService.findByTopicId(DOMAIN_TOPIC_ID)
+      ?: throw NoSuchElementException("Topic with name $DOMAIN_TOPIC_ID doesn't exist")
   }
-  private val domaineventsTopicClient by lazy { domaineventsTopic.snsClient }
+  private val domainEventsTopicClient by lazy { domainEventsTopic.snsClient }
 
   fun publishDomainEvent(
     event: LicenceDomainEventType,
@@ -52,9 +53,9 @@ class DomainEventsService(
     )
 
     log.debug("Event {} for id {}", payload.eventType, licenceId)
-    domaineventsTopicClient.publish(
+    domainEventsTopicClient.publish(
       PublishRequest.builder()
-        .topicArn(domaineventsTopic.arn)
+        .topicArn(domainEventsTopic.arn)
         .message(objectMapper.writeValueAsString(payload))
         .messageAttributes(
           mapOf(
