@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.gson.GsonBuilder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.Logger
@@ -71,8 +70,6 @@ abstract class IntegrationTestBase {
 
   @SpyBean
   protected lateinit var hmppsSqsPropertiesSpy: HmppsSqsProperties
-
-  internal val gson = GsonBuilder().setPrettyPrinting().create()
 
   fun HmppsSqsProperties.domaineventsTopicConfig() =
     topics["domainevents"]

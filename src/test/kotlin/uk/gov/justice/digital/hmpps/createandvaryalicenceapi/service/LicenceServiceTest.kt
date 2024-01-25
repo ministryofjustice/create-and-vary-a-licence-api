@@ -56,6 +56,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
@@ -993,6 +994,13 @@ class LicenceServiceTest {
       )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1028,6 +1036,13 @@ class LicenceServiceTest {
       )
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -1084,6 +1099,13 @@ class LicenceServiceTest {
       )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED,
+        aLicenceEntity.id.toString(),
+        aLicenceEntity.crn,
+        aLicenceEntity.nomsId,
+      )
 
     val auditCaptors = auditCaptor.allValues
     assertThat(auditCaptors[0])

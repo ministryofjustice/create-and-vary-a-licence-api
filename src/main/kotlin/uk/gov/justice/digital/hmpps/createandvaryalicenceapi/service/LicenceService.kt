@@ -399,7 +399,7 @@ class LicenceService(
           ),
         )
 
-        domainEventsService.publishDomainEvent(
+        domainEventsService.recordDomainEvent(
           LicenceDomainEventType.LICENCE_ACTIVATED,
           licence.id.toString(),
           licence.crn,
