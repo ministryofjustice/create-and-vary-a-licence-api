@@ -24,15 +24,20 @@ class ReleaseDateService(
       .last()
   }
 
-  fun isInHardStopPeriod(licence: Licence, now: Clock? = null): Boolean {
-    val timedOutDate = getCutOffDateForLicenceTimeOut(now)
+  fun isInHardStopPeriod(licence: Licence, overrideClock: Clock? = null): Boolean {
+    val now = overrideClock ?: clock
+    val endOfHardStopPeriod = getCutOffDateForLicenceTimeOut(now)
     val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
 
     if (releaseDate == null) {
       log.warn("Licence with id: ${licence.id} has no CRD or ARD")
       return false
     }
-    return releaseDate <= timedOutDate
+    return if (releaseDate < LocalDate.now(now)) {
+      false
+    } else {
+      releaseDate <= endOfHardStopPeriod
+    }
   }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
