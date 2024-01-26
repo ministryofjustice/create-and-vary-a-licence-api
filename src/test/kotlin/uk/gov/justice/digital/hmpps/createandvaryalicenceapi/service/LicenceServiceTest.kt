@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
-import net.bytebuddy.asm.Advice.Argument
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -58,7 +57,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
@@ -1163,7 +1161,6 @@ class LicenceServiceTest {
         aLicenceEntity.crn,
         aLicenceEntity.nomsId,
       )
-
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")

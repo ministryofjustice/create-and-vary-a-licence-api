@@ -23,7 +23,7 @@ class DeactivateLicencesService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
-  ) {
+) {
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -43,7 +45,17 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+    verify(eventsPublisher, times(5)).publishDomainEvent(eventCaptor.capture(), any())
+
+    assertThat(eventCaptor.allValues[0].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
+
+    assertThat(eventCaptor.allValues[1].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
+
+    assertThat(eventCaptor.allValues[2].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
+
+    assertThat(eventCaptor.allValues[3].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+
+    assertThat(eventCaptor.allValues[4].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
 
     val activatedLicences = webTestClient.post()
       .uri("/licence/match")
