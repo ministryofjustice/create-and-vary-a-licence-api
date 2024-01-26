@@ -291,6 +291,18 @@ class ReleaseDateServiceTest {
     }
 
     @Test
+    fun `licence is still in hard stop period on release day`() {
+      val now = createClock("2018-03-12T00:00:00Z")
+
+      val licence = TestData.createCrdLicence().copy(
+        actualReleaseDate = LocalDate.now(now),
+        conditionalReleaseDate = null,
+      )
+
+      assertTrue(service.isInHardStopPeriod(licence, now))
+    }
+
+    @Test
     fun `licence is still in hard stop period after release`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
@@ -299,7 +311,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = null,
       )
 
-      assertTrue(service.isInHardStopPeriod(licence, now))
+      assertFalse(service.isInHardStopPeriod(licence, now))
     }
 
     @Test
