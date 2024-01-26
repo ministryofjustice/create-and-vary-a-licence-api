@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
+    <ID>CyclomaticComplexMethod:LicenceService.kt$LicenceService$@Transactional fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest)</ID>
     <ID>FunctionNaming:JPASpecificationDSL.kt$fun &lt;T, R : Any&gt; KProperty1&lt;T, R?&gt;.`in`(values: Collection&lt;R&gt;): Specification&lt;T&gt;</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>
