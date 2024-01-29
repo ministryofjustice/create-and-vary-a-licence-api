@@ -600,7 +600,6 @@ class LicenceServiceTest {
 
   @Test
   fun `update licenceActivatedDate field when licence status set to ACTIVE`() {
-    // TODO - add to the test
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
     service.updateLicenceStatus(
@@ -613,6 +612,13 @@ class LicenceServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED,
+        licenceCaptor.value.id.toString(),
+        licenceCaptor.value.crn,
+        licenceCaptor.value.nomsId,
+      )
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
 
@@ -635,7 +641,6 @@ class LicenceServiceTest {
 
   @Test
   fun `update licence status to ACTIVE deactivates any in progress version of licence`() {
-    // TODO add to the test
     val inProgressLicenceVersion =
       aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
 
@@ -659,6 +664,13 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceRepository, times(1)).saveAllAndFlush(inProgressLicenceCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        inProgressLicenceVersion.id.toString(),
+        inProgressLicenceVersion.crn,
+        inProgressLicenceVersion.nomsId,
+      )
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
 
@@ -694,7 +706,6 @@ class LicenceServiceTest {
 
   @Test
   fun `updating licence status to INACTIVE deactivates any in progress version of the licence`() {
-    // TODO add to the test
     val inProgressLicenceVersion =
       aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
@@ -717,6 +728,13 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceRepository, times(1)).saveAllAndFlush(inProgressLicenceCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        inProgressLicenceVersion.id.toString(),
+        inProgressLicenceVersion.crn,
+        inProgressLicenceVersion.nomsId,
+      )
 
     assertThat(licenceCaptor.value)
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -1848,13 +1866,103 @@ class LicenceServiceTest {
     )
   }
 
-  /**
-   * Scenario 1 - Parent - Active licence, Child - variation approved and made active - DONE
-   * Scenario 2 - Parent - Active Variation licence, Child - variation approved and made active - DONE
-   * Scenario 3 - Release Event Handler - updates status of current licence to active
-   * Scenario 4 - Release Event Handler - updates status of current licence to inactive
-   * Scenario 5 - Date Changed Event Handler - Prisoner Resentenced - update status of current licence to inactive
-   */
+  @Test
+  fun `update licence status to ACTIVE`() {
+    val approvedLicence =
+      aLicenceEntity.copy(id = 2L, statusCode = LicenceStatus.APPROVED, licenceVersion = "2.0")
+
+    whenever(licenceRepository.findById(approvedLicence.id)).thenReturn(Optional.of(approvedLicence))
+    whenever(
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(approvedLicence.id),
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+      ),
+    ).thenReturn(emptyList())
+
+    service.updateLicenceStatus(
+      approvedLicence.id,
+      StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "X", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_ACTIVATED,
+        approvedLicence.id.toString(),
+        approvedLicence.crn,
+        approvedLicence.nomsId,
+      )
+
+    assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate")
+      .isEqualTo(listOf(approvedLicence.id, LicenceStatus.ACTIVE, "X", licenceCaptor.value.licenceActivatedDate))
+
+    assertThat(auditCaptor.firstValue).extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          approvedLicence.id,
+          "X",
+          "Y",
+          "Licence set to ACTIVE for ${approvedLicence.forename} ${approvedLicence.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
+
+  @Test
+  fun `update licence status to INACTIVE`() {
+    val approvedLicence =
+      aLicenceEntity.copy(id = 2L, statusCode = LicenceStatus.APPROVED, licenceVersion = "2.0")
+
+    whenever(licenceRepository.findById(approvedLicence.id)).thenReturn(Optional.of(approvedLicence))
+    whenever(
+      licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+        listOf(approvedLicence.id),
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+      ),
+    ).thenReturn(emptyList())
+
+    service.updateLicenceStatus(
+      approvedLicence.id,
+      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "X", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_INACTIVATED,
+        approvedLicence.id.toString(),
+        approvedLicence.crn,
+        approvedLicence.nomsId,
+      )
+
+    assertThat(licenceCaptor.value.licenceActivatedDate).isNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername", "supersededDate")
+      .isEqualTo(listOf(approvedLicence.id, LicenceStatus.INACTIVE, "X", licenceCaptor.value.supersededDate))
+
+    assertThat(auditCaptor.firstValue).extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          approvedLicence.id,
+          "X",
+          "Y",
+          "Licence set to INACTIVE for ${approvedLicence.forename} ${approvedLicence.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
 
   @Test
   fun `update licence status to ACTIVE for variation approved`() {
