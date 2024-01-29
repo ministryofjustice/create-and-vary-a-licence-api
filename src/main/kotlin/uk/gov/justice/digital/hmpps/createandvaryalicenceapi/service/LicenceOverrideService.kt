@@ -13,6 +13,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
@@ -22,6 +24,7 @@ class LicenceOverrideService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
+  private val domainEventsService: DomainEventsService,
 ) {
 
   companion object {
@@ -88,6 +91,13 @@ class LicenceOverrideService(
         eventType = LicenceStatus.lookupLicenceEventByStatus(newStatus),
         eventDescription = reason,
       ),
+    )
+
+    domainEventsService.recordDomainEvent(
+      LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
+      licence.id.toString(),
+      licence.crn,
+      licence.nomsId,
     )
   }
 

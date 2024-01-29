@@ -23,6 +23,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -37,8 +39,9 @@ class LicenceOverrideServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
+  private val domainEventsService = mock<DomainEventsService>()
   private val licenceOverrideService =
-    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository)
+    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService)
 
   @BeforeEach
   fun reset() {
@@ -134,6 +137,13 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
+        licenceCaptor.value.id.toString(),
+        licenceCaptor.value.crn,
+        licenceCaptor.value.nomsId,
+      )
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -177,6 +187,13 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
+    verify(domainEventsService, times(1))
+      .recordDomainEvent(
+        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
+        licenceCaptor.value.id.toString(),
+        licenceCaptor.value.crn,
+        licenceCaptor.value.nomsId,
+      )
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
 
