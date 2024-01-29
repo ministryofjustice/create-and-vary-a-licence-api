@@ -29,13 +29,13 @@ class TimeOutLicencesService(
   }
 
   @Transactional
-  fun timeOutLicencesJob() {
+  fun timeOutLicences() {
     log.info("Job to runTimeOutLicencesService started")
     val jobExecutionDate = LocalDate.now(clock)
-    if (releaseDateService.excludeBankHolidaysAndWeekends(jobExecutionDate)) {
+    if (releaseDateService.isBankHolidayOrWeekend(jobExecutionDate)) {
       return
     }
-    val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut(jobExecutionDate)
+    val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut()
     val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut(timeOutDate)
     if (licencesToTimeOut.isEmpty()) {
       log.info("Job to runTimeOutLicencesService has no licences to time out")

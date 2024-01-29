@@ -99,6 +99,6 @@ class DatesController(
     ],
   )
   fun currentHardStopCutoffDate(): HardStopCutoffDate {
-    return HardStopCutoffDate(releaseDateService.getCutOffDateForLicenceTimeOut(LocalDate.now()))
+    return HardStopCutoffDate(releaseDateService.getCutOffDateForLicenceTimeOut())
   }
 }

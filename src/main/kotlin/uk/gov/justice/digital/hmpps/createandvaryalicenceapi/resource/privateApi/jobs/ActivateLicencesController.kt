@@ -48,6 +48,6 @@ class ActivateLicencesController(
     ],
   )
   fun runLicenceActivationJob() {
-    return licenceActivationService.licenceActivationJob()
+    return licenceActivationService.licenceActivation()
   }
 }

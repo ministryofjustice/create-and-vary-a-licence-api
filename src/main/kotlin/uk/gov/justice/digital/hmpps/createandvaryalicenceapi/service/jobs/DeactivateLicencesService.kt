@@ -30,7 +30,7 @@ class DeactivateLicencesService(
   }
 
   @Transactional
-  fun deactivateLicencesJob() {
+  fun deactivateLicences() {
     log.info("Job deactivateLicencesJob started")
     val licencesToDeactivate = licenceRepository.getDraftLicencesPassedReleaseDate()
     if (licencesToDeactivate.isEmpty()) {

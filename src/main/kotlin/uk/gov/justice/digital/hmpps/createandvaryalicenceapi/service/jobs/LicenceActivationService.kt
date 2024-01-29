@@ -26,7 +26,7 @@ class LicenceActivationService(
 ) {
 
   @Transactional
-  fun licenceActivationJob() {
+  fun licenceActivation() {
     val potentialLicences = licenceRepository.getApprovedLicencesOnOrPassedReleaseDate().associateBy { it.bookingId!! }
     if (potentialLicences.isEmpty()) {
       return

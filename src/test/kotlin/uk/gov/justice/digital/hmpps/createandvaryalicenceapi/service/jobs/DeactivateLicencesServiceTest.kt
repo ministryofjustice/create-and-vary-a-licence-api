@@ -61,7 +61,7 @@ class DeactivateLicencesServiceTest {
   @Test
   fun `Given there no licences with release date in past When deactivateLicencesJob Then should not deactivate any licence`() {
     whenever(licenceRepository.getDraftLicencesPassedReleaseDate()).thenReturn(emptyList())
-    service.deactivateLicencesJob()
+    service.deactivateLicences()
     verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
@@ -76,7 +76,7 @@ class DeactivateLicencesServiceTest {
       ),
     )
 
-    service.deactivateLicencesJob()
+    service.deactivateLicences()
 
     val licenceCaptor = argumentCaptor<List<Licence>>()
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)

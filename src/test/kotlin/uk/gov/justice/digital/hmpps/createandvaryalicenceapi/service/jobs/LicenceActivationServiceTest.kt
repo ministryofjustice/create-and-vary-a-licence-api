@@ -61,7 +61,7 @@ class LicenceActivationServiceTest {
   fun `licence activation job should return if there are no APPROVED licences`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf())
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(0)).activateLicences(emptyList(), "")
     verify(licenceService, times(0)).activateLicences(emptyList(), "")
@@ -78,7 +78,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(emptyList())
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
@@ -95,7 +95,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(emptyList())
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(licence), LICENCE_ACTIVATION)
@@ -112,7 +112,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(listOf(licence.bookingId!!))
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(listOf(licence), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -129,7 +129,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(listOf(licence.bookingId!!))
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(listOf(licence), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -146,7 +146,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(listOf(licence.bookingId!!))
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -160,7 +160,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(hdcPrisoner))
     whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -174,7 +174,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(hdcPrisoner.copy(homeDetentionCurfewEligibilityDate = null)))
     whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
@@ -199,7 +199,7 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
@@ -215,7 +215,7 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")))
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(unreleasedPrisoner))).thenReturn(emptyList())
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -236,7 +236,7 @@ class LicenceActivationServiceTest {
       emptyList(),
     )
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -264,7 +264,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner))).thenReturn(listOf(54321))
     whenever(prisonApiClient.getHdcStatuses(listOf(nonHdcLicence.bookingId!!))).thenReturn(emptyList())
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
@@ -289,7 +289,7 @@ class LicenceActivationServiceTest {
       .thenReturn(emptyList())
     whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(nonHdcLicence), LICENCE_ACTIVATION)
@@ -312,7 +312,7 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    service.licenceActivationJob()
+    service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(licenceWithOffender), LICENCE_ACTIVATION)
