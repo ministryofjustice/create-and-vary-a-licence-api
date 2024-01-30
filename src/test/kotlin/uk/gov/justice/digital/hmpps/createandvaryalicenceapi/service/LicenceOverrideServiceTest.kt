@@ -242,7 +242,6 @@ class LicenceOverrideServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
@@ -292,7 +291,6 @@ class LicenceOverrideServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
-
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
@@ -395,6 +393,5 @@ class LicenceOverrideServiceTest {
     val variationApprovedLicence = createCrdLicence().copy(
       statusCode = VARIATION_APPROVED,
     )
-
   }
 }

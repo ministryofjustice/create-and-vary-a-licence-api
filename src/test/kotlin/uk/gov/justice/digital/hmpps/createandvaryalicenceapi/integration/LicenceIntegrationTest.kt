@@ -8,13 +8,13 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -28,11 +28,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockBean
@@ -432,7 +432,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         tuple(10L, LicenceStatus.APPROVED, "F2504MG", "Smith", "Jim", "MDI", "Moorland HMP"),
       )
   }
-
 
   @Test
   @Sql(
