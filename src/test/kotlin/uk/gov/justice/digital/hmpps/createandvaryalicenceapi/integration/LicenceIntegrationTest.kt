@@ -7,10 +7,14 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -26,8 +30,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 
 class LicenceIntegrationTest : IntegrationTestBase() {
+  @MockBean
+  private lateinit var eventsPublisher: OutboundEventsPublisher
+  private val eventCaptor = argumentCaptor<HMPPSDomainEvent>()
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -100,7 +110,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Update the status of a licence to approved`() {
     webTestClient.put()
       .uri("/licence/id/1/status")
-      .bodyValue(aStatusUpdateRequest)
+      .bodyValue(aStatusToApprovedUpdateRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -116,10 +126,10 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.statusCode).isEqualTo(aStatusUpdateRequest.status)
-    assertThat(result?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
-    assertThat(result?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
-    assertThat(result?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
+    assertThat(result?.statusCode).isEqualTo(aStatusToApprovedUpdateRequest.status)
+    assertThat(result?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(result?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(result?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
   }
 
   @Test
@@ -129,7 +139,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   fun `Approve a new version of a licence`() {
     webTestClient.put()
       .uri("/licence/id/2/status")
-      .bodyValue(aStatusUpdateRequest)
+      .bodyValue(aStatusToApprovedUpdateRequest)
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -146,7 +156,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(licenceV1?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
-    assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusUpdateRequest.username)
+    assertThat(licenceV1?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
 
     val licenceV2 = webTestClient.get()
       .uri("/licence/id/2")
@@ -159,8 +169,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(licenceV2?.statusCode).isEqualTo(LicenceStatus.APPROVED)
-    assertThat(licenceV2?.approvedByUsername).isEqualTo(aStatusUpdateRequest.username)
-    assertThat(licenceV2?.approvedByName).isEqualTo(aStatusUpdateRequest.fullName)
+    assertThat(licenceV2?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
+    assertThat(licenceV2?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
   }
 
   @Test
@@ -423,8 +433,127 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       )
   }
 
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-licence-1.sql",
+  )
+  fun `Update the status of approved licence to active and record licence activated event`() {
+    webTestClient.put()
+      .uri("/licence/id/1/status")
+      .bodyValue(aStatusToActiveUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(aStatusToActiveUpdateRequest.status)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-3.sql",
+  )
+  fun `Update the status of active licence to inactive and record licence inactivated event`() {
+    webTestClient.put()
+      .uri("/licence/id/3/status")
+      .bodyValue(aStatusToInactiveUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val result = webTestClient.get()
+      .uri("/licence/id/3")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(aStatusToInactiveUpdateRequest.status)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-variation-licence-id-1.sql",
+  )
+  fun `Update the status of approved variation licence to an active variation and record licence activated event`() {
+    webTestClient.put()
+      .uri("/licence/id/1/status")
+      .bodyValue(aStatusToActiveUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(aStatusToActiveUpdateRequest.status)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-active-variation-licence-id-1.sql",
+  )
+  fun `Update the status of active variation licence to an inactive variation and record licence inactivated event`() {
+    webTestClient.put()
+      .uri("/licence/id/1/status")
+      .bodyValue(aStatusToInactiveUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(aStatusToInactiveUpdateRequest.status)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value)
+  }
+
   private companion object {
-    val aStatusUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
+    val aStatusToApprovedUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Y")
+    val aStatusToActiveUpdateRequest = StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "X", fullName = "Y")
+    val aStatusToInactiveUpdateRequest = StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "X", fullName = "Y")
 
     val govUkApiMockServer = GovUkMockServer()
 
