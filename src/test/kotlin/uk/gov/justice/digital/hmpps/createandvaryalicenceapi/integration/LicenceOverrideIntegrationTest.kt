@@ -2,7 +2,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
@@ -11,9 +16,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceOverrideIntegrationTest : IntegrationTestBase() {
+  @MockBean
+  private lateinit var eventsPublisher: OutboundEventsPublisher
+  private val eventCaptor = argumentCaptor<DomainEventsService.HMPPSDomainEvent>()
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -47,7 +57,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql("classpath:test_data/seed-licence-id-1.sql")
-  fun `Override licence with new status code`() {
+  fun `Override licence with new status code and record licence activated event`() {
     webTestClient.post()
       .uri("/licence/id/1/override/status")
       .bodyValue(
@@ -62,11 +72,14 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .expectStatus()
       .isAccepted
 
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
     val updatedLicence = licenceRepository.findById(1L).get()
 
     assertThat(LicenceStatus.ACTIVE).isEqualTo(updatedLicence.statusCode)
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
   }
 
   @Test
@@ -85,6 +98,89 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isBadRequest
+
+    verifyNoInteractions(eventsPublisher)
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-licence-id-3.sql")
+  fun `Override licence with inactive status code and record licence inactivated event`() {
+    webTestClient.post()
+      .uri("/licence/id/3/override/status")
+      .bodyValue(
+        OverrideLicenceStatusRequest(
+          LicenceStatus.INACTIVE,
+          "Override Test",
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus()
+      .isAccepted
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val updatedLicence = licenceRepository.findById(3L).get()
+
+    assertThat(LicenceStatus.INACTIVE).isEqualTo(updatedLicence.statusCode)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+    assertThat(licenceEventRepository.count()).isEqualTo(1)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-approved-variation-licence-id-1.sql")
+  fun `Override licence with active variation status code and record licence variation activated event`() {
+    webTestClient.post()
+      .uri("/licence/id/1/override/status")
+      .bodyValue(
+        OverrideLicenceStatusRequest(
+          LicenceStatus.ACTIVE,
+          "Override Test",
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus()
+      .isAccepted
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val updatedLicence = licenceRepository.findById(1L).get()
+
+    assertThat(LicenceStatus.ACTIVE).isEqualTo(updatedLicence.statusCode)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+    assertThat(licenceEventRepository.count()).isEqualTo(1)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value)
+  }
+
+  @Test
+  @Sql("classpath:test_data/seed-active-variation-licence-id-1.sql")
+  fun `Override licence with inactive variation status code and record licence variation inactivated event`() {
+    webTestClient.post()
+      .uri("/licence/id/1/override/status")
+      .bodyValue(
+        OverrideLicenceStatusRequest(
+          LicenceStatus.INACTIVE,
+          "Override Test",
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus()
+      .isAccepted
+
+    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+
+    val updatedLicence = licenceRepository.findById(1L).get()
+
+    assertThat(LicenceStatus.INACTIVE).isEqualTo(updatedLicence.statusCode)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+    assertThat(licenceEventRepository.count()).isEqualTo(1)
+    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value)
   }
 
   @Test
