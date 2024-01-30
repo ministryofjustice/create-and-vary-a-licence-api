@@ -7,8 +7,25 @@ import java.time.LocalDateTime
 
 @Repository
 interface AuditEventRepository : JpaRepository<AuditEvent, Long> {
-  fun findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(licenceId: Long, startTime: LocalDateTime, endTime: LocalDateTime): List<AuditEvent>
-  fun findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(username: String, startTime: LocalDateTime, endTime: LocalDateTime): List<AuditEvent>
-  fun findAllByLicenceIdAndUsernameAndEventTimeBetweenOrderByEventTimeDesc(licenceId: Long, username: String, startTime: LocalDateTime, endTime: LocalDateTime): List<AuditEvent>
+  fun findAllByLicenceIdIn(licenceIds: List<Long>): List<AuditEvent>
+  fun findAllByLicenceIdAndEventTimeBetweenOrderByEventTimeDesc(
+    licenceId: Long,
+    startTime: LocalDateTime,
+    endTime: LocalDateTime,
+  ): List<AuditEvent>
+
+  fun findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
+    username: String,
+    startTime: LocalDateTime,
+    endTime: LocalDateTime,
+  ): List<AuditEvent>
+
+  fun findAllByLicenceIdAndUsernameAndEventTimeBetweenOrderByEventTimeDesc(
+    licenceId: Long,
+    username: String,
+    startTime: LocalDateTime,
+    endTime: LocalDateTime,
+  ): List<AuditEvent>
+
   fun findAllByEventTimeBetweenOrderByEventTimeDesc(startTime: LocalDateTime, endTime: LocalDateTime): List<AuditEvent>
 }
