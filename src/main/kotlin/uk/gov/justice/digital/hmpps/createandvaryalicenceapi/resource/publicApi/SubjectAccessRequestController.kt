@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
 
@@ -45,7 +45,6 @@ class SubjectAccessRequestController(private val subjectAccessRequestService: Su
       ApiResponse(
         responseCode = "204",
         description = "The licence for this prn was not found.",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = Licence::class))],
       ),
       ApiResponse(
         responseCode = "209",
@@ -74,17 +73,19 @@ class SubjectAccessRequestController(private val subjectAccessRequestService: Su
     @RequestParam(name = "crn", required = false) crn: String?,
   ): ResponseEntity<SarContent> {
     val httpStatusWithIncorrectRequest = 209
-    if (prn != null && crn != null)
+    if (prn != null && crn != null) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build<SarContent>()
+    }
 
-    if (prn == null && crn != null)
+    if (prn == null && crn != null) {
       return ResponseEntity.status(httpStatusWithIncorrectRequest).build<SarContent>()
+    }
 
     val result = prn?.let { subjectAccessRequestService.getSarRecordsById(it) }
-    if (result == null)
+    if (result == null) {
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build<SarContent>()
-    else
+    } else {
       return ResponseEntity.status(HttpStatus.OK).body(result)
-
+    }
   }
 }
