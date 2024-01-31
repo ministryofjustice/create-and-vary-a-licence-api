@@ -34,7 +34,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -131,9 +130,6 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val isCurrentLicenceVariationApproved = licenceEntity.statusCode == VARIATION_APPROVED
-
     var approvedByUser = licenceEntity.approvedByUsername
     var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
@@ -206,46 +202,7 @@ class LicenceService(
 
     recordLicenceEventForStatus(licenceId, updatedLicence, request)
     auditStatusChange(updatedLicence, request.username, request.fullName)
-
-    // if the request status is to make the licence active - send domain event
-    if (!isCurrentLicenceVariationApproved && request.status == ACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_ACTIVATED,
-        updatedLicence.id.toString(),
-        updatedLicence.crn,
-        updatedLicence.nomsId,
-      )
-    }
-
-    // if the current licence is a variation approved and the request status is active - send domain event
-    if (isCurrentLicenceVariationApproved && request.status == ACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
-        updatedLicence.id.toString(),
-        updatedLicence.crn,
-        updatedLicence.nomsId,
-      )
-    }
-
-    // if the current licence is not a variation and the request status is inactivate - send domain event
-    if (licenceEntity.kind != VARIATION && request.status == INACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_INACTIVATED,
-        updatedLicence.id.toString(),
-        updatedLicence.crn,
-        updatedLicence.nomsId,
-      )
-    }
-
-    // if the current licence is a variation and the request status is inactivate - send domain event
-    if (licenceEntity.kind == VARIATION && request.status == INACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED,
-        updatedLicence.id.toString(),
-        updatedLicence.crn,
-        updatedLicence.nomsId,
-      )
-    }
+    domainEventsService.recordDomainEvent(updatedLicence, request.status)
   }
 
   private fun auditStatusChange(licenceEntity: EntityLicence, username: String, fullName: String?) {
@@ -474,12 +431,7 @@ class LicenceService(
           ),
         )
 
-        domainEventsService.recordDomainEvent(
-          LicenceDomainEventType.LICENCE_ACTIVATED,
-          licence.id.toString(),
-          licence.crn,
-          licence.nomsId,
-        )
+        domainEventsService.recordDomainEvent(licence, ACTIVE)
       }
       inactivateInProgressLicenceVersions(
         activatedLicences,
@@ -521,23 +473,7 @@ class LicenceService(
           ),
         )
 
-        if (licence.kind == CRD) {
-          domainEventsService.recordDomainEvent(
-            LicenceDomainEventType.LICENCE_INACTIVATED,
-            licence.id.toString(),
-            licence.crn,
-            licence.nomsId,
-          )
-        }
-
-        if (licence.kind == VARIATION) {
-          domainEventsService.recordDomainEvent(
-            LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED,
-            licence.id.toString(),
-            licence.crn,
-            licence.nomsId,
-          )
-        }
+        domainEventsService.recordDomainEvent(licence, INACTIVE)
       }
       if (deactivateInProgressVersions == true) {
         inactivateInProgressLicenceVersions(

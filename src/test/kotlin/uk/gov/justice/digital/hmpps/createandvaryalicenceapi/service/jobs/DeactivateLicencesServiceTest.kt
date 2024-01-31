@@ -92,6 +92,7 @@ class DeactivateLicencesServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")

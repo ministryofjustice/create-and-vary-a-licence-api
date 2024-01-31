@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -99,13 +98,7 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
-    verify(domainEventsService, times(1))
-      .recordDomainEvent(
-        LicenceDomainEventType.LICENCE_INACTIVATED,
-        licenceCaptor.value.id.toString(),
-        licenceCaptor.value.crn,
-        licenceCaptor.value.nomsId,
-      )
+    verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceB, INACTIVE)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -149,7 +142,7 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
-    verifyNoInteractions(domainEventsService)
+    verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceA, SUBMITTED)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -193,13 +186,7 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
-    verify(domainEventsService, times(1))
-      .recordDomainEvent(
-        LicenceDomainEventType.LICENCE_ACTIVATED,
-        licenceCaptor.value.id.toString(),
-        licenceCaptor.value.crn,
-        licenceCaptor.value.nomsId,
-      )
+    verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceA, ACTIVE)
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
 
@@ -245,13 +232,7 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
-    verify(domainEventsService, times(1))
-      .recordDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
-        licenceCaptor.value.id.toString(),
-        licenceCaptor.value.crn,
-        licenceCaptor.value.nomsId,
-      )
+    verify(domainEventsService, times(1)).recordDomainEvent(variationApprovedLicence, ACTIVE)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -295,13 +276,7 @@ class LicenceOverrideServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
-    verify(domainEventsService, times(1))
-      .recordDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED,
-        licenceCaptor.value.id.toString(),
-        licenceCaptor.value.crn,
-        licenceCaptor.value.nomsId,
-      )
+    verify(domainEventsService, times(1)).recordDomainEvent(activeVariationLicence, INACTIVE)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")

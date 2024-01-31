@@ -27,8 +27,8 @@ class OutboundEventsPublisher(
   private val domainEventsTopicClient by lazy { domainEventsTopic.snsClient }
 
   fun publishDomainEvent(event: HMPPSDomainEvent, licenceId: String) {
-    log.debug("Event {} for id {}", event.eventType, licenceId)
     val eventType = event.eventType
+    log.debug("Event {} for Licence ID {}", eventType, licenceId)
     domainEventsTopicClient.publish(
       PublishRequest.builder()
         .topicArn(domainEventsTopic.arn)

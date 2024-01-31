@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
+
   private val eventCaptor = argumentCaptor<HMPPSDomainEvent>()
 
   @Autowired

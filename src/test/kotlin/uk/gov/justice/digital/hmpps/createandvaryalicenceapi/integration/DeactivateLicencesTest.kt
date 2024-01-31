@@ -7,7 +7,12 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
@@ -15,10 +20,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 
 class DeactivateLicencesTest : IntegrationTestBase() {
+  @MockBean
+  private lateinit var eventsPublisher: OutboundEventsPublisher
+
+  private val eventCaptor = argumentCaptor<DomainEventsService.HMPPSDomainEvent>()
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -43,6 +54,8 @@ class DeactivateLicencesTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
+    verify(eventsPublisher, times(3)).publishDomainEvent(eventCaptor.capture(), any())
+
     val deactivatedLicences = webTestClient.post()
       .uri("/licence/match")
       .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.INACTIVE)))
@@ -62,6 +75,9 @@ class DeactivateLicencesTest : IntegrationTestBase() {
         tuple(6L, LicenceStatus.INACTIVE),
         tuple(7L, LicenceStatus.INACTIVE),
       )
+    assertThat(eventCaptor.allValues[0].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+    assertThat(eventCaptor.allValues[1].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+    assertThat(eventCaptor.allValues[2].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
   }
 
   private companion object {

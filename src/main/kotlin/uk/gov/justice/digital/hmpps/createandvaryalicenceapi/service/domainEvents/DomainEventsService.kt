@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -8,29 +11,62 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class DomainEventsService(
+  @Value("\${self.link}") private val baseUrl: String,
   private val outboundEventsPublisher: OutboundEventsPublisher,
   private val clock: Clock,
 ) {
-  fun recordDomainEvent(event: LicenceDomainEventType, licenceId: String, crn: String?, nomsNumber: String?) {
-    outboundEventsPublisher
-      .publishDomainEvent(
-        createDomainEvent(event, licenceId, crn, nomsNumber),
-        licenceId,
-      )
+  fun recordDomainEvent(licence: Licence, licenceStatus: LicenceStatus) {
+    when (licenceStatus) {
+      LicenceStatus.ACTIVE -> {
+        val domainEvent = createDomainEvent(
+          licence.kind.activatedDomainEventType(),
+          licence.id.toString(),
+          licence.crn,
+          licence.nomsId,
+          "Licence activated for Licence ID ${licence.id}",
+        )
+        outboundEventsPublisher
+          .publishDomainEvent(
+            domainEvent,
+            licence.id.toString(),
+          )
+      }
+
+      LicenceStatus.INACTIVE -> {
+        val domainEvent = createDomainEvent(
+          licence.kind.inactivatedDomainEventType(),
+          licence.id.toString(),
+          licence.crn,
+          licence.nomsId,
+          "Licence inactivated for Licence ID ${licence.id}",
+        )
+        outboundEventsPublisher
+          .publishDomainEvent(
+            domainEvent,
+            licence.id.toString(),
+          )
+      }
+      else -> return
+    }
   }
 
-  private fun createDomainEvent(event: LicenceDomainEventType, licenceId: String, crn: String?, nomsNumber: String?): HMPPSDomainEvent {
+  private fun createDomainEvent(
+    event: LicenceDomainEventType,
+    licenceId: String,
+    crn: String?,
+    nomsNumber: String?,
+    description: String,
+  ): HMPPSDomainEvent {
     val additionalInformation = AdditionalInformation(licenceId)
     val personReferenceIdentifiers = PersonReference(
       listOf(Identifiers("CRN", crn), Identifiers("NOMS", nomsNumber)),
     )
     val eventType = event.value
     val occurredAt = LocalDateTime.now(clock)
-    val description = "Licence activated for $licenceId"
     return HMPPSDomainEvent(
       eventType,
       additionalInformation,
-      "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/$licenceId",
+      baseUrl.plus("/public/licences/id/$licenceId"),
       1,
       occurredAt.toOffsetDateFormat(),
       description,

@@ -14,9 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
@@ -52,8 +50,6 @@ class LicenceOverrideService(
     val licence = getLicenceById(licenceId)
 
     val username = SecurityContextHolder.getContext().authentication.name
-
-    val isCurrentLicenceVariationApproved = licence?.statusCode == LicenceStatus.VARIATION_APPROVED
 
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence?.crn!!, listOf(newStatus))
 
@@ -96,45 +92,7 @@ class LicenceOverrideService(
       ),
     )
 
-    // if the request status is to make the licence active - send domain event
-    if (!isCurrentLicenceVariationApproved && newStatus == LicenceStatus.ACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_ACTIVATED,
-        licence.id.toString(),
-        licence.crn,
-        licence.nomsId,
-      )
-    }
-
-    // if the current licence is a variation approved and the request status is active - send domain event
-    if (isCurrentLicenceVariationApproved && newStatus == LicenceStatus.ACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED,
-        licence.id.toString(),
-        licence.crn,
-        licence.nomsId,
-      )
-    }
-
-    // if the current licence is not a variation and the request status is inactivate - send domain event
-    if (licence.kind != LicenceKind.VARIATION && newStatus == LicenceStatus.INACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_INACTIVATED,
-        licence.id.toString(),
-        licence.crn,
-        licence.nomsId,
-      )
-    }
-
-    // if the current licence is a variation and the request status is inactivate - send domain event
-    if (licence.kind == LicenceKind.VARIATION && newStatus == LicenceStatus.INACTIVE) {
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED,
-        licence.id.toString(),
-        licence.crn,
-        licence.nomsId,
-      )
-    }
+    domainEventsService.recordDomainEvent(licence, newStatus)
   }
 
   @Transactional

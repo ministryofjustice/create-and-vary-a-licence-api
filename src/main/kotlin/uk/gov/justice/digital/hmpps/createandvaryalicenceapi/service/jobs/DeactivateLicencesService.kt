@@ -13,9 +13,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class DeactivateLicencesService(
@@ -74,13 +74,7 @@ class DeactivateLicencesService(
           eventDescription = "${reason ?: "Licence deactivated automatically as it passed release date"} for ${licence.forename} ${licence.surname}",
         ),
       )
-
-      domainEventsService.recordDomainEvent(
-        LicenceDomainEventType.LICENCE_INACTIVATED,
-        licence.id.toString(),
-        licence.crn,
-        licence.nomsId,
-      )
+      domainEventsService.recordDomainEvent(licence, LicenceStatus.INACTIVE)
     }
   }
 }
