@@ -85,8 +85,8 @@ class SubjectAccessRequestController(private val subjectAccessRequestService: Su
     }
 
     val result = prn?.let { subjectAccessRequestService.getSarRecordsById(it) }
-    if (result == null) {
-      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+    return if (result == null) {
+      ResponseEntity.status(HttpStatus.NO_CONTENT).body(
         ErrorResponse(
           status = HttpStatus.NO_CONTENT,
           userMessage = "No records found for the prn.",
@@ -94,7 +94,7 @@ class SubjectAccessRequestController(private val subjectAccessRequestService: Su
         ),
       )
     } else {
-      return ResponseEntity.status(HttpStatus.OK).body(result)
+      ResponseEntity.status(HttpStatus.OK).body(result)
     }
   }
 }

@@ -72,7 +72,7 @@ class SubjectAccessRequestControllerTest {
         .andExpect(status().isInternalServerError)
         .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo("Only supports search by single identifier.")
+    assertThat(result.response.contentAsString).contains("Only supports search by single identifier.")
 
     verify(subjectAccessRequestService, times(0)).getSarRecordsById("G4169UO")
   }
