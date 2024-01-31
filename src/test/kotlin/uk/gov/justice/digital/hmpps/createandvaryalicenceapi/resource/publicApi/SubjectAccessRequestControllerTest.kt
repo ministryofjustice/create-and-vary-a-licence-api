@@ -72,7 +72,7 @@ class SubjectAccessRequestControllerTest {
         .andExpect(status().isInternalServerError)
         .andReturn()
 
-    assertThat(result.response.contentAsString).isEmpty()
+    assertThat(result.response.contentAsString).isEqualTo("Only supports search by single identifier.")
 
     verify(subjectAccessRequestService, times(0)).getSarRecordsById("G4169UO")
   }
@@ -84,7 +84,7 @@ class SubjectAccessRequestControllerTest {
         .andExpect(status().`is`(209))
         .andReturn()
 
-    assertThat(result.response.contentAsString).isEmpty()
+    assertThat(result.response.contentAsString).contains("Search by crn is not supported.")
 
     verify(subjectAccessRequestService, times(0)).getSarRecordsById("G4169UO")
   }
@@ -97,7 +97,7 @@ class SubjectAccessRequestControllerTest {
         .andExpect(status().isNoContent)
         .andReturn()
 
-    assertThat(result.response.contentAsString).isEmpty()
+    assertThat(result.response.contentAsString).contains("No records found for the prn.")
 
     verify(subjectAccessRequestService, times(1)).getSarRecordsById("G4169UO")
   }
