@@ -71,7 +71,6 @@ class PublicLicenceControllerTest {
 
   @Test
   fun `get a licence by id returns ok and have a response`() {
-    whenever(publicLicenceService.getAllLicencesByPrisonNumber("A1234AA")).thenReturn(listOf(aLicenceSummary))
     val result = mvc.perform(get("/public/licences/id/1234").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andReturn()
