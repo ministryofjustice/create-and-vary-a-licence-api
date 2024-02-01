@@ -28,14 +28,14 @@ class OutboundEventsPublisher(
 
   fun publishDomainEvent(event: HMPPSDomainEvent, licenceId: String) {
     val eventType = event.eventType
-    log.debug("Event {} for Licence ID {}", eventType, licenceId)
+    log.debug("Event {} for licence ID {}", eventType, licenceId)
     domainEventsTopicClient.publish(
       PublishRequest.builder()
         .topicArn(domainEventsTopic.arn)
         .message(objectMapper.writeValueAsString(event))
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(event.eventType).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
           ),
         )
         .build()

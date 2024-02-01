@@ -1,0 +1,38 @@
+asyncapi: 2.6.0
+info:
+  title: Create and Vary a Licence API
+  description: Reflect changes to licences in CVL
+  version: 1.0.0
+
+servers:
+  development:
+    url: https://sqs.eu-west-2.amazonaws.com/754256621582/probation-integration-dev-manage-pom-cases-and-delius-queue
+    protocol: sns
+  preproduction:
+    url: https://sqs.eu-west-2.amazonaws.com/754256621582/probation-integration-preprod-manage-pom-cases-and-delius-queue
+    protocol: sns
+  production:
+    url: https://sqs.eu-west-2.amazonaws.com/754256621582/probation-integration-prod-manage-pom-cases-and-delius-queue
+    protocol: sns
+
+channels:
+  hmpps-domain-events/cvl/licence-activated:
+    subscribe:
+      operationId: create-and-vary-a-licence.licence.activated
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-activated.yml
+  hmpps-domain-events/cvl/licence-inactivated:
+    subscribe:
+      operationId: create-and-vary-a-licence.licence.inactivated
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-inactivated.yml
+  hmpps-domain-events/cvl/variation-activated:
+    subscribe:
+      operationId: create-and-vary-a-licence.variation.activated
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-variation-activated.yml
+  hmpps-domain-events/cvl/variation-inactivated:
+    subscribe:
+      operationId: create-and-vary-a-licence.variation.inactivated
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-variation-inactivated.yml
