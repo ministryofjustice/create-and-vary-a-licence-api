@@ -16,14 +16,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceOverrideIntegrationTest : IntegrationTestBase() {
   @MockBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-  private val eventCaptor = argumentCaptor<DomainEventsService.HMPPSDomainEvent>()
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -72,14 +72,16 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .expectStatus()
       .isAccepted
 
-    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_ACTIVATED.value)
+    }
 
     val updatedLicence = licenceRepository.findById(1L).get()
 
     assertThat(LicenceStatus.ACTIVE).isEqualTo(updatedLicence.statusCode)
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
-    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
   }
 
   @Test
@@ -119,14 +121,16 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .expectStatus()
       .isAccepted
 
-    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
+    }
 
     val updatedLicence = licenceRepository.findById(3L).get()
 
     assertThat(LicenceStatus.INACTIVE).isEqualTo(updatedLicence.statusCode)
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
-    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
   }
 
   @Test
@@ -145,15 +149,16 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus()
       .isAccepted
-
-    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
-
     val updatedLicence = licenceRepository.findById(1L).get()
 
     assertThat(LicenceStatus.ACTIVE).isEqualTo(updatedLicence.statusCode)
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
-    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value)
+
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value)
+    }
   }
 
   @Test
@@ -173,14 +178,16 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .expectStatus()
       .isAccepted
 
-    verify(eventsPublisher).publishDomainEvent(eventCaptor.capture(), any())
-
     val updatedLicence = licenceRepository.findById(1L).get()
 
     assertThat(LicenceStatus.INACTIVE).isEqualTo(updatedLicence.statusCode)
     assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
-    assertThat(eventCaptor.firstValue.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value)
+
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value)
+    }
   }
 
   @Test

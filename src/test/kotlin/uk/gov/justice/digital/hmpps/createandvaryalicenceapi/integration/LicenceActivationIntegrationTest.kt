@@ -19,16 +19,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @MockBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
-
-  private val eventCaptor = argumentCaptor<HMPPSDomainEvent>()
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -45,17 +43,13 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    verify(eventsPublisher, times(5)).publishDomainEvent(eventCaptor.capture(), any())
-
-    assertThat(eventCaptor.allValues[0].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
-
-    assertThat(eventCaptor.allValues[1].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
-
-    assertThat(eventCaptor.allValues[2].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
-
-    assertThat(eventCaptor.allValues[3].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
-
-    assertThat(eventCaptor.allValues[4].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher, times(5)).publishDomainEvent(capture(), any())
+      val activationEvents = allValues.filter { it.eventType == LicenceDomainEventType.LICENCE_ACTIVATED.value }
+      assertThat(activationEvents).hasSize(3)
+      val inactivatedEvents = allValues.filter { it.eventType == LicenceDomainEventType.LICENCE_INACTIVATED.value }
+      assertThat(inactivatedEvents).hasSize(2)
+    }
 
     val activatedLicences = webTestClient.post()
       .uri("/licence/match")
