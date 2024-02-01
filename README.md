@@ -5,7 +5,7 @@
 
 # create-and-vary-a-licence-api
 
-This service provices access to data stored in the licences database via API endpoints.
+This service provides access to data stored in the licences database via API endpoints.
 The main client is the create-and-vary-a-licence (UI) service.
 It is built as  docker image and deployed to the MOJ Cloud Platform.
 

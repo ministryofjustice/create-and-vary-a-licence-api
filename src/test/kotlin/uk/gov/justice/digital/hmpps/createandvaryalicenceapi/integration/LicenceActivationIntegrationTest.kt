@@ -6,7 +6,12 @@ import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
@@ -14,9 +19,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceActivationIntegrationTest : IntegrationTestBase() {
+  @MockBean
+  private lateinit var eventsPublisher: OutboundEventsPublisher
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -32,6 +42,14 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
+
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher, times(5)).publishDomainEvent(capture(), any())
+      val activationEvents = allValues.filter { it.eventType == LicenceDomainEventType.LICENCE_ACTIVATED.value }
+      assertThat(activationEvents).hasSize(3)
+      val inactivatedEvents = allValues.filter { it.eventType == LicenceDomainEventType.LICENCE_INACTIVATED.value }
+      assertThat(inactivatedEvents).hasSize(2)
+    }
 
     val activatedLicences = webTestClient.post()
       .uri("/licence/match")

@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -68,6 +69,7 @@ class LicenceService(
   private val notifyService: NotifyService,
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
+  private val domainEventsService: DomainEventsService,
 ) {
 
   @Transactional
@@ -128,7 +130,6 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
     var approvedByUser = licenceEntity.approvedByUsername
     var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
@@ -201,6 +202,7 @@ class LicenceService(
 
     recordLicenceEventForStatus(licenceId, updatedLicence, request)
     auditStatusChange(updatedLicence, request.username, request.fullName)
+    domainEventsService.recordDomainEvent(updatedLicence, request.status)
   }
 
   private fun auditStatusChange(licenceEntity: EntityLicence, username: String, fullName: String?) {
@@ -428,6 +430,8 @@ class LicenceService(
             eventDescription = "${reason ?: "Licence automatically activated"} for ${licence.forename} ${licence.surname}",
           ),
         )
+
+        domainEventsService.recordDomainEvent(licence, ACTIVE)
       }
       inactivateInProgressLicenceVersions(
         activatedLicences,
@@ -468,6 +472,8 @@ class LicenceService(
             eventDescription = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
           ),
         )
+
+        domainEventsService.recordDomainEvent(licence, INACTIVE)
       }
       if (deactivateInProgressVersions == true) {
         inactivateInProgressLicenceVersions(
