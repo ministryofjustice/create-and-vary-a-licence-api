@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
 
 @Schema(description = "The list of licences, audit events and licence events")
 data class Content(
-  @Schema(description = "The list of licences")
+  @Schema(description = "The list of licence events")
   @get:JsonView(Views.PublicSar::class)
   val licences: List<Licence>,
 
@@ -19,12 +19,6 @@ data class Content(
 
   @Schema(description = "The list of licence events")
   @get:JsonView(Views.PublicSar::class)
-  val licences: List<Licence>,
-
-  @Schema(description = "The list of audit events")
-  val auditEvents: List<AuditEvent>,
-
-  @Schema(description = "The list of licence events")
   val licencesEvents: List<LicenceEvent>,
 )
 
