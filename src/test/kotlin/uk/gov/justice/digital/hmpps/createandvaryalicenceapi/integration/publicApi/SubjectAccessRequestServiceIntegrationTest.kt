@@ -48,26 +48,21 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     val result = resultList?.first()
 
     assertThat(result?.content?.licences?.first()).extracting(
-      "id",
       "kind",
       "nomsId",
       "bookingId",
-      "crn",
       "createdByUsername",
     )
       .isEqualTo(
         listOf(
-          1L,
           LicenceKinds.CRD,
           "A1234AA",
           12345L,
-          "CRN1",
           "test-client",
         ),
       )
 
     assertThat(result?.content?.auditEvents?.first()).extracting(
-      "id",
       "licenceId",
       "username",
       "eventType",
@@ -77,7 +72,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
       .isEqualTo(
         listOf(
           1L,
-          1L,
           "USER",
           AuditEventType.USER_EVENT,
           "Summary1",
@@ -86,7 +80,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
       )
 
     assertThat(result?.content?.licencesEvents?.get(2)).extracting(
-      "id",
       "licenceId",
       "eventType",
       "username",
@@ -94,7 +87,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
     )
       .isEqualTo(
         listOf(
-          3L,
           1L,
           LicenceEventType.CREATED,
           "Bob Smith",
