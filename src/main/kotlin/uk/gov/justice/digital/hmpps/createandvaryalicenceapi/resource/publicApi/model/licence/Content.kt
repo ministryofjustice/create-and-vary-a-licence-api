@@ -19,6 +19,12 @@ data class Content(
 
   @Schema(description = "The list of licence events")
   @get:JsonView(Views.PublicSar::class)
+  val licences: List<Licence>,
+
+  @Schema(description = "The list of audit events")
+  val auditEvents: List<AuditEvent>,
+
+  @Schema(description = "The list of licence events")
   val licencesEvents: List<LicenceEvent>,
 )
 

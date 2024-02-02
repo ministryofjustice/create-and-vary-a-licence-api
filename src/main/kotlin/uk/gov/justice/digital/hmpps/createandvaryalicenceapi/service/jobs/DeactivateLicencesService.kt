@@ -12,14 +12,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class DeactivateLicencesService(
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
+  private val domainEventsService: DomainEventsService,
 ) {
 
   companion object {
@@ -71,6 +74,7 @@ class DeactivateLicencesService(
           eventDescription = "${reason ?: "Licence deactivated automatically as it passed release date"} for ${licence.forename} ${licence.surname}",
         ),
       )
+      domainEventsService.recordDomainEvent(licence, LicenceStatus.INACTIVE)
     }
   }
 }

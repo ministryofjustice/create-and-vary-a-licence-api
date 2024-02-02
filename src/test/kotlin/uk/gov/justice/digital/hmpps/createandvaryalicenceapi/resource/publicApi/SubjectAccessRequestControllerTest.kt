@@ -41,6 +41,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Content
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -81,6 +87,15 @@ class SubjectAccessRequestControllerTest {
       .andExpect(status().isOk)
       .andExpect(content().json(serializedSarContent(), true))
       .andReturn()
+  @Test
+  fun `get a Sar Content by id returns ok and have a response`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(sarContentResponse)
+    val result = mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andReturn()
+
+    assertThat(result.response.contentAsString)
+      .isEqualTo(mapper.writeValueAsString(sarContentResponse))
   }
 
   @Test
@@ -286,289 +301,5 @@ class SubjectAccessRequestControllerTest {
         licencesEvents = aListOfLicenceEvents,
       ),
     )
-
-//    val sterlizedStandardConditions = listOf(
-//      StandardCondition(
-//        code = "goodBehaviour",
-//        text = "Be of good behaviour",
-//      ),
-//      StandardCondition(
-//        code = "notBreakLaw",
-//        text = "Do not break any law",
-//      ),
-//      StandardCondition(
-//        code = "attendMeetings",
-//        text = "Attend meetings",
-//      ),
-//    )
-//
-//    val sterlizedAssociationData = listOf(
-//      AdditionalConditionData(
-//        field = "field1",
-//        value = "value1",
-//      ),
-//      AdditionalConditionData(
-//        field = "numberOfCurfews",
-//        value = "value2",
-//      ),
-//    )
-//
-//    val sterlizedAdditionalConditions = listOf(
-//      AdditionalCondition(
-//        code = "associateWith",
-//        version = null,
-//        category = null,
-//        text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
-//        expandedText = "Do not associate with value1 for a period of value2",
-//        data = sterlizedAssociationData,
-//        uploadSummary = listOf(),
-//        readyToSubmit = true,
-//      ),
-//    )
-//
-//    val sterlizedBespokeConditions = listOf(
-//      BespokeCondition(
-//        text = "Bespoke one text",
-//      ),
-//      BespokeCondition(
-//        text = "Bespoke two text",
-//      ),
-//    )
-//
-//    val aListOfSterilizedModelLicences = listOf(
-//      CrdLicence(
-//        kind = "CRD1",
-//        typeCode = LicenceType.AP,
-//        version = "2.1",
-//        statusCode = LicenceStatus.IN_PROGRESS,
-//        nomsId = "A1234AA",
-//        bookingId = 987654,
-//        appointmentPerson = null,
-//        appointmentTime = null,
-//        appointmentTimeType = AppointmentTimeType.SPECIFIC_DATE_TIME,
-//        appointmentAddress = null,
-//        appointmentContact = null,
-//        approvedDate = LocalDateTime.of(2023, 10, 11, 12, 0),
-//        approvedByUsername = "TestApprover",
-//        submittedDate = null,
-//        approvedByName = null,
-//        supersededDate = null,
-//        dateCreated = LocalDateTime.of(2023, 10, 11, 11, 30),
-//        createdByUsername = "TestCreator",
-//        dateLastUpdated = LocalDateTime.of(2023, 10, 11, 11, 30),
-//        updatedByUsername = "TestUpdater",
-//        standardLicenceConditions = sterlizedStandardConditions,
-//        standardPssConditions = sterlizedStandardConditions,
-//        additionalLicenceConditions = sterlizedAdditionalConditions,
-//        additionalPssConditions = sterlizedAdditionalConditions,
-//        bespokeConditions = sterlizedBespokeConditions,
-//        createdByFullName = null,
-//        licenceVersion = "1.4",
-//      ),
-//    )
-//
-//    val aListOfSterilizedAuditEvents = listOf(
-//      AuditEvent(
-//        licenceId = 1L,
-//        eventTime = LocalDateTime.now().minusDays(1L),
-//        username = "USER",
-//        fullName = "First Last",
-//        eventType = AuditEventType.USER_EVENT,
-//        summary = "Summary1",
-//        detail = "Detail1",
-//      ),
-//      AuditEvent(
-//        licenceId = 1L,
-//        eventTime = LocalDateTime.now().minusDays(2L),
-//        username = "USER",
-//        fullName = "First Last",
-//        eventType = AuditEventType.USER_EVENT,
-//        summary = "Summary2",
-//        detail = "Detail2",
-//      ),
-//      AuditEvent(
-//        licenceId = 1L,
-//        eventTime = LocalDateTime.now().minusDays(3L),
-//        username = "CUSER",
-//        fullName = "First Last",
-//        eventType = AuditEventType.SYSTEM_EVENT,
-//        summary = "Summary3",
-//        detail = "Detail3",
-//      ),
-//    )
-//
-//    val aListOfSterilizedLicenceEvents = listOf(
-//      LicenceEvent(
-//        licenceId = 1,
-//        eventType = LicenceEventType.SUBMITTED,
-//        username = "smills",
-//        forenames = "Stephen",
-//        surname = "Mills",
-//        eventDescription = "Licence submitted for approval",
-//        eventTime = LocalDateTime.now(),
-//      ),
-//    )
-//
-//    val sarContentSerializedOutput = SarContent(
-//      Content(
-//        licences = aListOfSterilizedModelLicences,
-//        auditEvents = aListOfSterilizedAuditEvents,
-//        licencesEvents = aListOfSterilizedLicenceEvents,
-//      ),
-//    )
-
-    val sarContentSerializedOutput = """
-      {
-    "content": {
-        "licences": [
-            {
-                "kind": "CRD",
-                "typeCode": "AP",
-                "version": "2.1",
-                "statusCode": "IN_PROGRESS",
-                "nomsId": "A1234AA",
-                "bookingId": 987654,
-                "appointmentPerson": null,
-                "appointmentTime": null,
-                "appointmentTimeType": "SPECIFIC_DATE_TIME",
-                "appointmentAddress": null,
-                "appointmentContact": null,
-                "approvedDate": "11/10/2023 12:00:00",
-                "approvedByUsername": "TestApprover",
-                "submittedDate": null,
-                "approvedByName": null,
-                "supersededDate": null,
-                "dateCreated": "11/10/2023 11:30:00",
-                "createdByUsername": "TestCreator",
-                "dateLastUpdated": "11/10/2023 11:30:00",
-                "updatedByUsername": "TestUpdater",
-                "standardLicenceConditions": [
-                    {
-                        "code": "goodBehaviour",
-                        "text": "Be of good behaviour"
-                    },
-                    {
-                        "code": "notBreakLaw",
-                        "text": "Do not break any law"
-                    },
-                    {
-                        "code": "attendMeetings",
-                        "text": "Attend meetings"
-                    }
-                ],
-                "standardPssConditions": [
-                    {
-                        "code": "goodBehaviour",
-                        "text": "Be of good behaviour"
-                    },
-                    {
-                        "code": "notBreakLaw",
-                        "text": "Do not break any law"
-                    },
-                    {
-                        "code": "attendMeetings",
-                        "text": "Attend meetings"
-                    }
-                ],
-                "additionalLicenceConditions": [
-                    {
-                        "code": "associateWith",
-                        "version": null,
-                        "category": null,
-                        "text": "Do not associate with [NAME] for a period of [TIME PERIOD]",
-                        "expandedText": "Do not associate with value1 for a period of value2",
-                        "data": [
-                            {
-                                "field": "field1",
-                                "value": "value1",
-                                "sequence": -1
-                            },
-                            {
-                                "field": "numberOfCurfews",
-                                "value": "value2",
-                                "sequence": -1
-                            }
-                        ],
-                        "uploadSummary": [],
-                        "readyToSubmit": true
-                    }
-                ],
-                "additionalPssConditions": [
-                    {
-                        "code": "associateWith",
-                        "version": null,
-                        "category": null,
-                        "text": "Do not associate with [NAME] for a period of [TIME PERIOD]",
-                        "expandedText": "Do not associate with value1 for a period of value2",
-                        "data": [
-                            {
-                                "field": "field1",
-                                "value": "value1",
-                                "sequence": -1
-                            },
-                            {
-                                "field": "numberOfCurfews",
-                                "value": "value2",
-                                "sequence": -1
-                            }
-                        ],
-                        "uploadSummary": [],
-                        "readyToSubmit": true
-                    }
-                ],
-                "bespokeConditions": [
-                    {
-                        "text": "Bespoke one text"
-                    },
-                    {
-                        "text": "Bespoke two text"
-                    }
-                ],
-                "createdByFullName": null,
-                "licenceVersion": "1.4"
-            }
-        ],
-        "auditEvents": [
-            {
-                "licenceId": 1,
-                "eventTime": "31/01/2024 17:20:05",
-                "username": "USER",
-                "fullName": "First Last",
-                "eventType": "USER_EVENT",
-                "summary": "Summary1",
-                "detail": "Detail1"
-            },
-            {
-                "licenceId": 1,
-                "eventTime": "30/01/2024 17:20:05",
-                "username": "USER",
-                "fullName": "First Last",
-                "eventType": "USER_EVENT",
-                "summary": "Summary2",
-                "detail": "Detail2"
-            },
-            {
-                "licenceId": 1,
-                "eventTime": "29/01/2024 17:20:05",
-                "username": "CUSER",
-                "fullName": "First Last",
-                "eventType": "SYSTEM_EVENT",
-                "summary": "Summary3",
-                "detail": "Detail3"
-            }
-        ],
-        "licencesEvents": [
-            {
-                "licenceId": 1,
-                "eventType": "SUBMITTED",
-                "username": "smills",
-                "forenames": "Stephen",
-                "surname": "Mills",
-                "eventDescription": "Licence submitted for approval",
-                "eventTime": "01/02/2024 17:20:05"
-            }
-        ]
-    }
-}"""
   }
 }
