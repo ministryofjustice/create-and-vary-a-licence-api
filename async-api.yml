@@ -1,0 +1,68 @@
+asyncapi: 2.6.0
+info:
+  title: Create and Vary a Licence API
+  description: Reflect changes to licences in CVL
+  version: 1.0.0
+
+servers:
+  development:
+    url: hmpps-domain-events-dev.live-1.cloud-platform.service.justice.gov.uk
+    protocol: sqs
+    description: Development Environment
+  preproduction:
+    url: hmpps-domain-events-preprod.live-1.cloud-platform.service.justice.gov.uk
+    protocol: sqs
+    description: Pre-production Environment
+  production:
+    url: hmpps-domain-events-prod.live-1.cloud-platform.service.justice.gov.uk
+    protocol: sqs
+    description: Production Environment
+
+channels:
+  create-and-vary-a-licence.licence.activated:
+    description: Licence activated
+    publish:
+      operationId: create-and-vary-a-licence.licence.activated
+      description: Send create-and-vary-a-licence.licence.activated to the topic
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-activated.yml
+
+  create-and-vary-a-licence.licence.inactivated:
+    description: Licence inactivated
+    publish:
+      operationId: create-and-vary-a-licence.licence.inactivated
+      description: Send create-and-vary-a-licence.licence.inactivated to the topic
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-inactivated.yml
+
+  create-and-vary-a-licence.variation.activated:
+    description: Licence variation activated
+    publish:
+      operationId: create-and-vary-a-licence.variation.activated
+      description: Send create-and-vary-a-licence.variation.activated to the topic
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-variation-activated.yml
+
+  create-and-vary-a-licence.variation.inactivated:
+    description: Licence variation inactivated
+    publish:
+      operationId: create-and-vary-a-licence.variation.inactivated
+      description: Send create-and-vary-a-licence.variation.inactivated to the topic
+      bindings:
+        sns:
+          topic:
+            name: hmpps-domain-events-dev
+      message:
+        $ref: https://raw.githubusercontent.com/ministryofjustice/hmpps-domain-events/main/spec/schemas/create-and-vary-a-licence/licence-variation-inactivated.yml
