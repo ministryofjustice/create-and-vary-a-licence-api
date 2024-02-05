@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHardstop
@@ -127,8 +128,8 @@ class SubjectAccessRequestControllerTest {
               TestData.createHardStopLicence(),
               LocalDate.now(),
               false,
-              false,
-              emptyMap(),
+              true,
+              mapOf(HARD_STOP_CONDITION.code to true),
             ),
           ),
           auditEvents = aListOfAuditEvents,

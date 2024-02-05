@@ -28,7 +28,7 @@ object TestData {
     licence = licence,
     id = 2L,
     conditionSequence = 1,
-    conditionType = HARD_STOP_CONDITION.type,
+    conditionType = "AP",
     conditionCode = HARD_STOP_CONDITION.code,
     conditionText = HARD_STOP_CONDITION.text,
     expandedConditionText = HARD_STOP_CONDITION.text,
@@ -121,7 +121,7 @@ object TestData {
   fun createHardStopLicence() = HardStopLicence(
     id = 1,
     typeCode = LicenceType.AP,
-    version = "1.1",
+    version = "2.1",
     statusCode = LicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",
     bookingNo = "123456",

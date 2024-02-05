@@ -5,7 +5,7 @@
         "kind": "HARD_STOP",
         "id": 1,
         "typeCode": "AP",
-        "version": "1.1",
+        "version": "2.1",
         "statusCode": "IN_PROGRESS",
         "nomsId": "A1234AA",
         "bookingId": 54321,
@@ -38,7 +38,17 @@
           }
         ],
         "standardPssConditions": [],
-        "additionalLicenceConditions": [],
+        "additionalLicenceConditions": [
+          {
+            "code": "d5998ca1-62a2-4409-88cd-3137d893c2a0",
+            "version": "2.1",
+            "category": "Contact with a person",
+            "expandedText": "Not to approach or communicate with any victims of your offences without the prior approval of your supervising officer.",
+            "data": [],
+            "uploadSummary": [],
+            "readyToSubmit": true
+          }
+        ],
         "additionalPssConditions": [],
         "bespokeConditions": [],
         "createdByFullName": "X Y",
