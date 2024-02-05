@@ -23,20 +23,17 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHardstop
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -65,17 +62,83 @@ class SubjectAccessRequestControllerTest {
       .build()
   }
 
-  private fun serializedSarContent() =
-    this.javaClass.getResourceAsStream("/test_data/sar_content/serializedSarContent.json")!!.bufferedReader(
+  private fun serializedSarContent(licence: String) =
+    this.javaClass.getResourceAsStream("/test_data/sar_content/$licence.json")!!.bufferedReader(
       StandardCharsets.UTF_8,
     ).readText()
 
   @Test
-  fun `get a Sar Content by id returns ok and have a response`() {
-    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(sarContentResponse)
+  fun `get a Subject Access Request Content for CRD Licence`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
+      SarContent(
+        Content(
+          licences = listOf(
+            toCrd(
+              TestData.createCrdLicence(),
+              LocalDate.now(),
+              false,
+              false,
+              emptyMap(),
+            ),
+          ),
+          auditEvents = aListOfAuditEvents,
+          licencesEvents = aListOfLicenceEvents,
+        ),
+      ),
+    )
+
     mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent(), true))
+      .andExpect(content().json(serializedSarContent("crdLicence"), true))
+      .andReturn()
+  }
+
+  @Test
+  fun `get a Subject Access Request Content for Variation Licence`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
+      SarContent(
+        Content(
+          licences = listOf(
+            toVariation(
+              TestData.createVariationLicence(),
+              LocalDate.now(),
+              false,
+              emptyMap(),
+            ),
+          ),
+          auditEvents = aListOfAuditEvents,
+          licencesEvents = aListOfLicenceEvents,
+        ),
+      ),
+    )
+    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().json(serializedSarContent("variationLicence"), true))
+      .andReturn()
+  }
+
+  @Test
+  fun `get a Subject Access Request Content for Hardstop Licence`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
+      SarContent(
+        Content(
+          licences = listOf(
+            toHardstop(
+              TestData.createHardStopLicence(),
+              LocalDate.now(),
+              false,
+              false,
+              emptyMap(),
+            ),
+          ),
+          auditEvents = aListOfAuditEvents,
+          licencesEvents = aListOfLicenceEvents,
+        ),
+      ),
+    )
+    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().json(serializedSarContent("hardstopLicence"), true))
       .andReturn()
   }
 
@@ -117,119 +180,6 @@ class SubjectAccessRequestControllerTest {
   }
 
   private companion object {
-    val someStandardConditions = listOf(
-      StandardCondition(
-        id = 1,
-        code = "goodBehaviour",
-        sequence = 1,
-        text = "Be of good behaviour",
-      ),
-      StandardCondition(
-        id = 2,
-        code = "notBreakLaw",
-        sequence = 1,
-        text = "Do not break any law",
-      ),
-      StandardCondition(
-        id = 3,
-        code = "attendMeetings",
-        sequence = 1,
-        text = "Attend meetings",
-      ),
-    )
-
-    val someAssociationData = listOf(
-      AdditionalConditionData(
-        id = 1,
-        field = "field1",
-        value = "value1",
-        sequence = 1,
-      ),
-      AdditionalConditionData(
-        id = 2,
-        field = "numberOfCurfews",
-        value = "value2",
-        sequence = 2,
-      ),
-    )
-
-    val someAdditionalConditions = listOf(
-      AdditionalCondition(
-        id = 1,
-        code = "associateWith",
-        sequence = 1,
-        text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
-        expandedText = "Do not associate with value1 for a period of value2",
-        data = someAssociationData,
-        readyToSubmit = true,
-      ),
-    )
-
-    val someBespokeConditions = listOf(
-      BespokeCondition(
-        id = 1,
-        sequence = 1,
-        text = "Bespoke one text",
-      ),
-      BespokeCondition(
-        id = 2,
-        sequence = 2,
-        text = "Bespoke two text",
-      ),
-    )
-
-    val aListOfModelLicences = listOf(
-      CrdLicence(
-        id = 1,
-        typeCode = LicenceType.AP,
-        version = "2.1",
-        statusCode = LicenceStatus.IN_PROGRESS,
-        nomsId = "A1234AA",
-        bookingNo = "123456",
-        bookingId = 987654,
-        crn = "A12345",
-        pnc = "2019/123445",
-        cro = "12345",
-        prisonCode = "MDI",
-        prisonDescription = "Moorland (HMP)",
-        forename = "Bob",
-        surname = "Mortimer",
-        approvedByUsername = "TestApprover",
-        approvedDate = LocalDateTime.of(2023, 10, 11, 12, 0),
-        dateOfBirth = LocalDate.of(1985, 12, 28),
-        conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-        actualReleaseDate = LocalDate.of(2021, 10, 22),
-        sentenceStartDate = LocalDate.of(2018, 10, 22),
-        sentenceEndDate = LocalDate.of(2021, 10, 22),
-        licenceStartDate = LocalDate.of(2021, 10, 22),
-        licenceExpiryDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-        dateCreated = LocalDateTime.of(2023, 10, 11, 11, 30),
-        dateLastUpdated = LocalDateTime.of(2023, 10, 11, 11, 30),
-
-        comUsername = "X12345",
-        comStaffId = 12345,
-        comEmail = "stephen.mills@nps.gov.uk",
-        probationAreaCode = "N01",
-        probationAreaDescription = "Wales",
-        probationPduCode = "N01A",
-        probationPduDescription = "Cardiff",
-        probationLauCode = "N01A2",
-        probationLauDescription = "Cardiff South",
-        probationTeamCode = "NA01A2-A",
-        probationTeamDescription = "Cardiff South Team A",
-        createdByUsername = "TestCreator",
-        standardLicenceConditions = someStandardConditions,
-        standardPssConditions = someStandardConditions,
-        additionalLicenceConditions = someAdditionalConditions,
-        additionalPssConditions = someAdditionalConditions,
-        bespokeConditions = someBespokeConditions,
-        licenceVersion = "1.4",
-        updatedByUsername = "TestUpdater",
-      ),
-    )
-
     val aListOfAuditEvents = listOf(
       AuditEvent(
         id = 1L,
@@ -272,14 +222,6 @@ class SubjectAccessRequestControllerTest {
         surname = "Mills",
         eventDescription = "Licence submitted for approval",
         eventTime = LocalDateTime.of(2023, 10, 11, 12, 3),
-      ),
-    )
-
-    val sarContentResponse = SarContent(
-      Content(
-        licences = aListOfModelLicences,
-        auditEvents = aListOfAuditEvents,
-        licencesEvents = aListOfLicenceEvents,
       ),
     )
   }
