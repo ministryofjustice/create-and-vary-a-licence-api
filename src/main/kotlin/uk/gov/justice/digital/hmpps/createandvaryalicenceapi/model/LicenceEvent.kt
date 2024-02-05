@@ -15,40 +15,40 @@ data class LicenceEvent(
     description = "The internal ID of the licence that this event relates to",
     example = "1234",
   )
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val licenceId: Long? = null,
 
   @Schema(description = "The licence event type", example = "LicenceEventType.VARIATION_SUBMITTED")
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val eventType: LicenceEventType? = null,
 
   @Schema(
     description = "The username related to this event or SYSTEM if an automated event",
     example = "X63533",
   )
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val username: String? = null,
 
   @Schema(
     description = "The forename of the person related to this event, or SYSTEM if an automated event.",
     example = "Robert Mortimer",
   )
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val forenames: String? = null,
 
   @Schema(
     description = "The surname of the person related to this event, or SYSTEM if an automated event.",
     example = "Robert Mortimer",
   )
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val surname: String? = null,
 
   @Schema(description = "A reason or description related to the event", example = "Reason for variation")
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val eventDescription: String? = null,
 
   @Schema(description = "The date and time of the event", example = "12/01/2022 23:14:23")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val eventTime: LocalDateTime? = null,
 )

@@ -136,15 +136,15 @@ class ControllerAdvice {
 }
 
 data class ErrorResponse(
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val status: Int,
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val errorCode: Int? = null,
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val userMessage: String? = null,
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val developerMessage: String? = null,
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val moreInfo: String? = null,
 ) {
   constructor(

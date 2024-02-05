@@ -2,6 +2,7 @@
   "content": {
     "licences": [
       {
+        "id": 1,
         "kind": "CRD",
         "typeCode": "AP",
         "version": "2.1",
@@ -55,7 +56,6 @@
             "code": "associateWith",
             "version": null,
             "category": null,
-            "text": "Do not associate with [NAME] for a period of [TIME PERIOD]",
             "expandedText": "Do not associate with value1 for a period of value2",
             "data": [
               {
@@ -76,7 +76,6 @@
             "code": "associateWith",
             "version": null,
             "category": null,
-            "text": "Do not associate with [NAME] for a period of [TIME PERIOD]",
             "expandedText": "Do not associate with value1 for a period of value2",
             "data": [
               {

@@ -12,6 +12,6 @@ data class BespokeCondition(
   val sequence: Int? = null,
 
   @Schema(description = "The text of this bespoke condition", example = "You should not visit any music venues")
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val text: String? = null,
 )

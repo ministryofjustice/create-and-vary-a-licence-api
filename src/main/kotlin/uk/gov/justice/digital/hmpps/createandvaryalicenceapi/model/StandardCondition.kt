@@ -10,13 +10,13 @@ data class StandardCondition(
   val id: Long? = null,
 
   @Schema(description = "The unique code for this standard condition", example = "9ce9d594-e346-4785-9642-c87e764bee37")
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val code: String? = null,
 
   @Schema(description = "The sequence of this standard condition", example = "1")
   val sequence: Int? = null,
 
   @Schema(description = "The text of this standard condition", example = "Be of generally good behaviour")
-  @get:JsonView(Views.PublicSar::class)
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val text: String? = null,
 )

@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.S
 @RequestMapping("/public", produces = [MediaType.APPLICATION_JSON_VALUE])
 class SubjectAccessRequestController(private val subjectAccessRequestService: SubjectAccessRequestService) {
   @GetMapping(value = ["/subject-access-request"])
-  @JsonView(Views.PublicSar::class)
+  @JsonView(Views.SubjectAccessRequest::class)
   @ResponseBody
   @Operation(
     summary = "Get a list of licences and audits summaries matching the nomis Prison Reference Number(prn).",
