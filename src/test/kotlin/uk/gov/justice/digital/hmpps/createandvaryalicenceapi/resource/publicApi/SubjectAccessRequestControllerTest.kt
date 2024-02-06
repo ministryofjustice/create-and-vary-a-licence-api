@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,12 +19,25 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHardstop
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toVariation
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -41,9 +53,6 @@ class SubjectAccessRequestControllerTest {
   @Autowired
   private lateinit var mvc: MockMvc
 
-  @Autowired
-  private lateinit var mapper: ObjectMapper
-
   @BeforeEach
   fun reset() {
     reset(subjectAccessRequestService)
@@ -54,15 +63,84 @@ class SubjectAccessRequestControllerTest {
       .build()
   }
 
-  @Test
-  fun `get a Sar Content by id returns ok and have a response`() {
-    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(sarContentResponse)
-    val result = mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andReturn()
+  private fun serializedSarContent(licence: String) =
+    this.javaClass.getResourceAsStream("/test_data/sar_content/$licence.json")!!.bufferedReader(
+      StandardCharsets.UTF_8,
+    ).readText()
 
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(sarContentResponse))
+  @Test
+  fun `get a Subject Access Request Content for CRD Licence`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
+      SarContent(
+        Content(
+          licences = listOf(
+            toCrd(
+              TestData.createCrdLicence(),
+              LocalDate.now(),
+              false,
+              false,
+              emptyMap(),
+            ),
+          ),
+          auditEvents = aListOfAuditEvents,
+          licencesEvents = aListOfLicenceEvents,
+        ),
+      ),
+    )
+
+    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().json(serializedSarContent("crdLicence"), true))
+      .andReturn()
+  }
+
+  @Test
+  fun `get a Subject Access Request Content for Variation Licence`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
+      SarContent(
+        Content(
+          licences = listOf(
+            toVariation(
+              TestData.createVariationLicence(),
+              LocalDate.now(),
+              false,
+              emptyMap(),
+            ),
+          ),
+          auditEvents = aListOfAuditEvents,
+          licencesEvents = aListOfLicenceEvents,
+        ),
+      ),
+    )
+    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().json(serializedSarContent("variationLicence"), true))
+      .andReturn()
+  }
+
+  @Test
+  fun `get a Subject Access Request Content for Hardstop Licence`() {
+    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
+      SarContent(
+        Content(
+          licences = listOf(
+            toHardstop(
+              TestData.createHardStopLicence(),
+              LocalDate.now(),
+              false,
+              true,
+              mapOf(HARD_STOP_CONDITION.code to true),
+            ),
+          ),
+          auditEvents = aListOfAuditEvents,
+          licencesEvents = aListOfLicenceEvents,
+        ),
+      ),
+    )
+    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      .andExpect(status().isOk)
+      .andExpect(content().json(serializedSarContent("hardstopLicence"), true))
+      .andReturn()
   }
 
   @Test
@@ -103,11 +181,48 @@ class SubjectAccessRequestControllerTest {
   }
 
   private companion object {
-    val sarContentResponse = SarContent(
-      Content(
-        licences = emptyList(),
-        auditEvents = emptyList(),
-        licencesEvents = emptyList(),
+    val aListOfAuditEvents = listOf(
+      AuditEvent(
+        id = 1L,
+        licenceId = 1L,
+        eventTime = LocalDateTime.of(2023, 10, 11, 12, 0),
+        username = "USER",
+        fullName = "First Last",
+        eventType = AuditEventType.USER_EVENT,
+        summary = "Summary1",
+        detail = "Detail1",
+      ),
+      AuditEvent(
+        id = 2L,
+        licenceId = 1L,
+        eventTime = LocalDateTime.of(2023, 10, 11, 12, 1),
+        username = "USER",
+        fullName = "First Last",
+        eventType = AuditEventType.USER_EVENT,
+        summary = "Summary2",
+        detail = "Detail2",
+      ),
+      AuditEvent(
+        id = 3L,
+        licenceId = 1L,
+        eventTime = LocalDateTime.of(2023, 10, 11, 12, 2),
+        username = "CUSER",
+        fullName = "First Last",
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Summary3",
+        detail = "Detail3",
+      ),
+    )
+
+    val aListOfLicenceEvents = listOf(
+      LicenceEvent(
+        licenceId = 1,
+        eventType = LicenceEventType.SUBMITTED,
+        username = "smills",
+        forenames = "Stephen",
+        surname = "Mills",
+        eventDescription = "Licence submitted for approval",
+        eventTime = LocalDateTime.of(2023, 10, 11, 12, 3),
       ),
     )
   }
