@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -17,7 +18,7 @@ class VariationLicence(
   id: Long = -1L,
   typeCode: LicenceType,
   version: String? = null,
-  statusCode: LicenceStatus = LicenceStatus.IN_PROGRESS,
+  statusCode: LicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
   nomsId: String? = null,
   bookingNo: String? = null,
   bookingId: Long? = null,
@@ -50,6 +51,7 @@ class VariationLicence(
   probationTeamDescription: String? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
+  appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
   val spoDiscussion: String? = null,
@@ -114,6 +116,7 @@ class VariationLicence(
   probationTeamDescription = probationTeamDescription,
   appointmentPerson = appointmentPerson,
   appointmentTime = appointmentTime,
+  appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
@@ -168,6 +171,7 @@ class VariationLicence(
     probationTeamDescription: String? = this.probationTeamDescription,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
+    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     spoDiscussion: String? = this.spoDiscussion,
@@ -226,6 +230,7 @@ class VariationLicence(
       probationTeamDescription = probationTeamDescription,
       appointmentPerson = appointmentPerson,
       appointmentTime = appointmentTime,
+      appointmentTimeType = appointmentTimeType,
       appointmentAddress = appointmentAddress,
       appointmentContact = appointmentContact,
       spoDiscussion = spoDiscussion,
@@ -255,6 +260,10 @@ class VariationLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
+  override fun deactivate(updatedByUsername: String) = copy(
+    statusCode = LicenceStatus.INACTIVE,
+    updatedByUsername = updatedByUsername,
+  )
 
   fun submit(submittedBy: CommunityOffenderManager) = copy(
     statusCode = LicenceStatus.VARIATION_SUBMITTED,
@@ -273,30 +282,6 @@ class VariationLicence(
     prisonCode = prisonCode,
     prisonDescription = prisonDescription,
     prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) = copy(
-    appointmentAddress = appointmentAddress,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) = copy(
-    appointmentContact = appointmentContact,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?) = copy(
-    appointmentPerson = appointmentPerson,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentTime(appointmentTime: LocalDateTime, updatedByUsername: String?) = copy(
-    appointmentTime = appointmentTime,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = updatedByUsername,
   )
@@ -448,6 +433,7 @@ class VariationLicence(
       "probationTeamDescription=$probationTeamDescription, " +
       "appointmentPerson=$appointmentPerson, " +
       "appointmentTime=$appointmentTime, " +
+      "appointmentTimeType=$appointmentTimeType, " +
       "appointmentAddress=$appointmentAddress, " +
       "appointmentContact=$appointmentContact, " +
       "spoDiscussion=$spoDiscussion, " +

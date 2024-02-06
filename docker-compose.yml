@@ -18,6 +18,30 @@ services:
       timeout: 5s
       retries: 5
 
+  localstack-api:
+    image: localstack/localstack:3.0.2
+    networks:
+      - hmpps
+    container_name: localstack-api
+    ports:
+      - "4666:4666"
+      - "4610-4659:4610-4659"
+    environment:
+      - DEBUG=${DEBUG- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - GATEWAY_LISTEN=0.0.0.0:4666
+      - EXTERNAL_SERVICE_PORTS_START=4610
+      - EXTERNAL_SERVICE_PORTS_END=4659
+      - MAIN_CONTAINER_NAME=localstack-api
+      - AWS_ENDPOINT_URL=http://localhost:4666
+    volumes:
+      - "${TMPDIR:-/tmp/localstack}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: awslocal sqs list-queues
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 networks:
   hmpps:

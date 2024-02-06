@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -12,7 +13,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@DiscriminatorValue(value = "HARDSTOP")
+@DiscriminatorValue(value = "HARD_STOP")
 class HardStopLicence(
   id: Long = -1L,
   typeCode: LicenceType,
@@ -50,6 +51,7 @@ class HardStopLicence(
   probationTeamDescription: String? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
+  appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
   approvedDate: LocalDateTime? = null,
@@ -66,7 +68,7 @@ class HardStopLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
 
-  var reviewDate: LocalDate? = null,
+  var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -78,7 +80,7 @@ class HardStopLicence(
   var submittedBy: PrisonCaseAdministrator? = null,
 ) : Licence(
   id = id,
-  kind = LicenceKind.HARDSTOP,
+  kind = LicenceKind.HARD_STOP,
   typeCode = typeCode,
   version = version,
   statusCode = statusCode,
@@ -114,6 +116,7 @@ class HardStopLicence(
   probationTeamDescription = probationTeamDescription,
   appointmentPerson = appointmentPerson,
   appointmentTime = appointmentTime,
+  appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
@@ -168,6 +171,7 @@ class HardStopLicence(
     probationTeamDescription: String? = this.probationTeamDescription,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
+    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -185,7 +189,7 @@ class HardStopLicence(
     submittedBy: PrisonCaseAdministrator? = this.submittedBy,
     createdBy: PrisonCaseAdministrator? = this.createdBy,
     substituteOfId: Long? = this.substituteOfId,
-    reviewDate: LocalDate? = this.reviewDate,
+    reviewDate: LocalDateTime? = this.reviewDate,
     licenceVersion: String? = this.licenceVersion,
   ): HardStopLicence {
     return HardStopLicence(
@@ -225,6 +229,7 @@ class HardStopLicence(
       probationTeamDescription = probationTeamDescription,
       appointmentPerson = appointmentPerson,
       appointmentTime = appointmentTime,
+      appointmentTimeType = appointmentTimeType,
       appointmentAddress = appointmentAddress,
       appointmentContact = appointmentContact,
       approvedDate = approvedDate,
@@ -253,6 +258,10 @@ class HardStopLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
+  override fun deactivate(updatedByUsername: String) = copy(
+    statusCode = LicenceStatus.INACTIVE,
+    updatedByUsername = updatedByUsername,
+  )
 
   fun submit(submittedBy: PrisonCaseAdministrator) = copy(
     statusCode = LicenceStatus.SUBMITTED,
@@ -271,30 +280,6 @@ class HardStopLicence(
     prisonCode = prisonCode,
     prisonDescription = prisonDescription,
     prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) = copy(
-    appointmentAddress = appointmentAddress,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) = copy(
-    appointmentContact = appointmentContact,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?) = copy(
-    appointmentPerson = appointmentPerson,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentTime(appointmentTime: LocalDateTime, updatedByUsername: String?) = copy(
-    appointmentTime = appointmentTime,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = updatedByUsername,
   )
@@ -446,6 +431,7 @@ class HardStopLicence(
       "probationTeamDescription=$probationTeamDescription, " +
       "appointmentPerson=$appointmentPerson, " +
       "appointmentTime=$appointmentTime, " +
+      "appointmentTimeType=$appointmentTimeType, " +
       "appointmentAddress=$appointmentAddress, " +
       "appointmentContact=$appointmentContact, " +
       "approvedDate=$approvedDate, " +

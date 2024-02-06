@@ -4,6 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 
 class LicencePolicyServiceTest() {
 
@@ -56,6 +60,64 @@ class LicencePolicyServiceTest() {
       }
 
       assertThat(error.message).isEqualTo("Condition with code: '599bdcae-d545-461c-b1a9-02cb3d4ba268' and version: '2.1' not found.")
+    }
+  }
+
+  @Nested
+  inner class `getAllAdditionalConditions` {
+    @Test
+    fun `builds object containing conditions for all policy versions`() {
+      val allPolicyVersions = licencePolicyService.allPolicies().map { it.version }
+      assertThat(licencePolicyService.getAllAdditionalConditions().mappedPolicy.keys.toList()).isEqualTo(
+        allPolicyVersions,
+      )
+    }
+
+    @Test
+    fun `builds object containing all additional conditions from all policy versions`() {
+      val allAdditionalConditions = licencePolicyService.allPolicies().map { it.allAdditionalConditions() }.flatten()
+      assertThat(
+        licencePolicyService.getAllAdditionalConditions().mappedPolicy.map { it.value.values }
+          .flatten(),
+      ).containsAll(allAdditionalConditions)
+    }
+  }
+
+  @Nested
+  inner class `getHardStopAdditionalConditions` {
+    @Test
+    fun `get Hardstop conditions for PSS`() {
+      val pssLicence = TestData.createCrdLicence().copy(typeCode = PSS)
+      val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
+      assertThat(conditions).isEmpty()
+    }
+
+    @Test
+    fun `get HardStop conditions for AP`() {
+      val pssLicence = TestData.createCrdLicence().copy(id = 2L, typeCode = AP)
+      val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
+      assertThat(conditions).hasSize(1)
+      with(conditions.first()) {
+        assertThat(licence.id).isEqualTo(2L)
+        assertThat(conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
+        assertThat(conditionText).isEqualTo(HARD_STOP_CONDITION.text)
+        assertThat(conditionSequence).isEqualTo(0L)
+        assertThat(conditionType).isEqualTo("AP")
+      }
+    }
+
+    @Test
+    fun `get HardStop conditions for AP_PSS`() {
+      val pssLicence = TestData.createCrdLicence().copy(id = 2L, typeCode = AP_PSS)
+      val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
+      assertThat(conditions).hasSize(1)
+      with(conditions.first()) {
+        assertThat(licence.id).isEqualTo(2L)
+        assertThat(conditionCode).isEqualTo(HARD_STOP_CONDITION.code)
+        assertThat(conditionText).isEqualTo(HARD_STOP_CONDITION.text)
+        assertThat(conditionSequence).isEqualTo(0L)
+        assertThat(conditionType).isEqualTo("AP")
+      }
     }
   }
 }

@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 
 @Repository
-interface LicenceEventRepository : JpaRepository<LicenceEvent, Long>, JpaSpecificationExecutor<LicenceEvent>
+interface LicenceEventRepository : JpaRepository<LicenceEvent, Long>, JpaSpecificationExecutor<LicenceEvent> {
+  fun findAllByLicenceIdIn(licenceIds: List<Long>): List<LicenceEvent>
+}

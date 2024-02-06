@@ -32,4 +32,19 @@ class PrisonApiMockServer : WireMockServer(8091) {
       ),
     )
   }
+
+  fun stubGetPrison() {
+    stubFor(
+      get(urlEqualTo("/api/agencies/prison/ABC")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """{
+            "agencyId": "MDI",
+            "formattedDescription": "Moorland",
+            "phones": []
+            }
+          """.trimMargin(),
+        ).withStatus(200),
+      ),
+    )
+  }
 }

@@ -99,7 +99,7 @@ class LicenceConditionService(
 
     val readyToSubmit = isConditionReadyToSubmit(
       newCondition,
-      licencePolicyService.policyByVersion(licenceEntity.version!!).allAdditionalConditions(),
+      licencePolicyService.getAllAdditionalConditions(),
     )
 
     return transform(newCondition, readyToSubmit)

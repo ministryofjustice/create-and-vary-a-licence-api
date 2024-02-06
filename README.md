@@ -2,10 +2,11 @@
 [![CircleCI](https://circleci.com/gh/ministryofjustice/create-and-vary-a-licence-api/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/create-and-vary-a-licence-api)
 [![codecov](https://codecov.io/gh/ministryofjustice/create-and-vary-a-licence-api/branch/main/graph/badge.svg?token=G7EZ0S2D92)](https://codecov.io/gh/ministryofjustice/create-and-vary-a-licence-api)
 [![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html)
+[![Event docs](https://img.shields.io/badge/Event_docs-view-85EA2D.svg)](https://studio.asyncapi.com/?url=https://raw.githubusercontent.com/ministryofjustice/create-and-vary-a-licence-api/main/async-api.yml)
 
 # create-and-vary-a-licence-api
 
-This service provices access to data stored in the licences database via API endpoints.
+This service provides access to data stored in the licences database via API endpoints.
 The main client is the create-and-vary-a-licence (UI) service.
 It is built as  docker image and deployed to the MOJ Cloud Platform.
 
@@ -30,6 +31,10 @@ There is a script to help, which sets local profiles, port and DB connection pro
 values required.
 
 `$ ./run-local.sh`
+
+To run start up the application without pulling / restarting local containers:
+
+`$ ./run-local.sh --skip-docker`
 
 ## Running the unit tests
 

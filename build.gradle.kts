@@ -63,6 +63,9 @@ dependencies {
   implementation("io.arrow-kt:arrow-core:1.2.1")
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.5.1")
 
+  // SQS/SNS dependencies
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.2.1")
+
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
@@ -78,6 +81,7 @@ dependencies {
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
+  testImplementation("org.testcontainers:localstack:1.19.3")
 }
 
 repositories {

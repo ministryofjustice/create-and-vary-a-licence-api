@@ -11,4 +11,12 @@ data class Prison(
 
   @JsonProperty("phones")
   val phoneDetails: List<PhoneDetail>,
-)
+) {
+  fun getPrisonContactNumber(): String {
+    return listOfNotNull(
+      this.phoneDetails.find { it.type == "BUS" }?.number,
+      this.phoneDetails.find { it.type == "BUS" }?.ext,
+    )
+      .joinToString("")
+  }
+}

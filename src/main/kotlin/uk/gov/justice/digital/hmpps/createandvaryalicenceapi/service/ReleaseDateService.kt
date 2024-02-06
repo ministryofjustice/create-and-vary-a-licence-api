@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -15,11 +17,27 @@ class ReleaseDateService(
   @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int,
 ) {
 
-  fun getCutOffDateForLicenceTimeOut(jobExecutionDate: LocalDate): LocalDate {
-    return generateSequence(jobExecutionDate) { it.plusDays(1) }
-      .filterNot { excludeBankHolidaysAndWeekends(it) }
+  fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
+    return generateSequence(LocalDate.now(now ?: clock)) { it.plusDays(1) }
+      .filterNot { isBankHolidayOrWeekend(it) }
       .take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus)
       .last()
+  }
+
+  fun isInHardStopPeriod(licence: Licence, overrideClock: Clock? = null): Boolean {
+    val now = overrideClock ?: clock
+    val endOfHardStopPeriod = getCutOffDateForLicenceTimeOut(now)
+    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
+
+    if (releaseDate == null) {
+      log.warn("Licence with id: ${licence.id} has no CRD or ARD")
+      return false
+    }
+    return if (releaseDate < LocalDate.now(now)) {
+      false
+    } else {
+      releaseDate <= endOfHardStopPeriod
+    }
   }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
@@ -28,16 +46,16 @@ class ReleaseDateService(
 
   fun isLateAllocationWarningRequired(releaseDate: LocalDate?): Boolean {
     if (releaseDate === null || releaseDate.isBefore(LocalDate.now(clock))) return false
-    val dateBeforeXWorkingDays = getEarliestDateBefore(
+    val warningThreshold = getEarliestDateBefore(
       maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
       releaseDate,
-      ::excludeBankHolidaysAndWeekends,
+      ::isBankHolidayOrWeekend,
     )
-    return LocalDate.now(clock).isEqual(dateBeforeXWorkingDays) || LocalDate.now(clock).isAfter(dateBeforeXWorkingDays)
+    return LocalDate.now(clock) >= warningThreshold
   }
 
   /** Friday is not considered as weekend */
-  fun excludeBankHolidaysAndWeekends(releaseDate: LocalDate?): Boolean {
+  fun isBankHolidayOrWeekend(releaseDate: LocalDate?): Boolean {
     val dayOfWeek = releaseDate?.dayOfWeek
     if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
       return true
@@ -56,7 +74,7 @@ class ReleaseDateService(
     return listOfBankHolidays.contains(releaseDate)
   }
 
-  fun getEarliestDateBefore(
+  private fun getEarliestDateBefore(
     days: Int,
     releaseDate: LocalDate,
     isEligibleForEarlyRelease: (input: LocalDate) -> Boolean,
@@ -65,4 +83,8 @@ class ReleaseDateService(
       .filterNot { isEligibleForEarlyRelease(it) }
       .take(days)
       .last()
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
 }

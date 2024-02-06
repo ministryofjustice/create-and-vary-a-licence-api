@@ -15,6 +15,9 @@ generic-service:
     v1_2_enabled: true
     v0_47_enabled: false
 
+  # Used to access resources like SQS queues and SNS topics
+  serviceAccountName: create-and-vary-a-licence-api
+
   # Environment variables to load into the deployment
   env:
     JAVA_OPTS: "-Xmx512m"
@@ -24,6 +27,8 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     DB_SSL_ENABLED: "true"
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
+    HMPPS_SQS_USE_WEB_TOKEN: true
+    HMPPS_DOCUMENT_API_ENABLED: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -42,6 +47,8 @@ generic-service:
       DB_NAME: "database_name"
       DB_USER: "database_username"
       DB_PASS: "database_password"
+    hmpps-domain-events-topic:
+      HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
 
   allowlist:
     dxw-vpn: 54.76.254.148/32

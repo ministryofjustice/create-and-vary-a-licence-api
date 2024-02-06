@@ -36,13 +36,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -50,6 +46,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
@@ -61,13 +59,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -86,6 +85,9 @@ class LicenceControllerTest {
   @MockBean
   private lateinit var licenceConditionService: LicenceConditionService
 
+  @MockBean
+  private lateinit var licenceCreationService: LicenceCreationService
+
   @Autowired
   private lateinit var mvc: MockMvc
 
@@ -97,7 +99,14 @@ class LicenceControllerTest {
     reset(licenceService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(LicenceController(licenceService, updateSentenceDateService, licenceConditionService))
+      .standaloneSetup(
+        LicenceController(
+          licenceService,
+          updateSentenceDateService,
+          licenceConditionService,
+          licenceCreationService,
+        ),
+      )
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -159,14 +168,14 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `create a licence`() {
-    whenever(licenceService.createLicence(aCreateLicenceRequest)).thenReturn(aLicenceSummary)
+  fun `create a CRD licence`() {
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
 
     val result = mvc.perform(
       post("/licence/create")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aCreateLicenceRequest)),
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = CRD))),
     )
       .andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -174,12 +183,31 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
 
-    verify(licenceService, times(1)).createLicence(aCreateLicenceRequest)
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+  }
+
+  @Test
+  fun `create a Hard Stop licence`() {
+    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
+
+    val result = mvc.perform(
+      post("/licence/create")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = HARD_STOP))),
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
+
+    verify(licenceCreationService, times(1)).createHardStopLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
   fun `create a licence where another is in progress`() {
-    whenever(licenceService.createLicence(aCreateLicenceRequest))
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId))
       .thenThrow(ValidationException("A licence already exists for this person"))
 
     val result = mvc.perform(
@@ -194,120 +222,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
-    verify(licenceService, times(1)).createLicence(aCreateLicenceRequest)
-  }
-
-  @Test
-  fun `update initial appointment person`() {
-    mvc.perform(
-      put("/licence/id/4/appointmentPerson")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAppointmentPersonRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateAppointmentPerson(4, anUpdateAppointmentPersonRequest)
-  }
-
-  @Test
-  fun `update initial appointment person - invalid request body`() {
-    mvc.perform(
-      put("/licence/id/4/appointmentPerson")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
-  }
-
-  @Test
-  fun `update initial appointment time`() {
-    mvc.perform(
-      put("/licence/id/4/appointmentTime")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentTimeRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequest)
-  }
-
-  @Test
-  fun `update appointment time - no date specified`() {
-    mvc.perform(
-      put("/licence/id/4/appointmentTime")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({})),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
-  }
-
-  @Test
-  fun `update initial appointment time - lower precision datetime`() {
-    mvc.perform(
-      put("/licence/id/4/appointmentTime")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentTimeRequestDateOnly)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateAppointmentTime(4, anAppointmentTimeRequestDateOnly)
-  }
-
-  @Test
-  fun `update officer contact number`() {
-    mvc.perform(
-      put("/licence/id/4/contact-number")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aContactNumberRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateContactNumber(4, aContactNumberRequest)
-  }
-
-  @Test
-  fun `update officer contact number - invalid request body`() {
-    mvc.perform(
-      put("/licence/id/4/contact-number")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
-  }
-
-  @Test
-  fun `update appointment address`() {
-    mvc.perform(
-      put("/licence/id/4/appointment-address")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentAddressRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceService, times(1)).updateAppointmentAddress(4, anAppointmentAddressRequest)
-  }
-
-  @Test
-  fun `update appointment address - invalid request body`() {
-    mvc.perform(
-      put("/licence/id/4/appointment-address")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
+    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
@@ -740,7 +655,7 @@ class LicenceControllerTest {
       BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text"),
     )
 
-    val aLicence = Licence(
+    val aLicence = CrdLicence(
       id = 1,
       typeCode = LicenceType.AP,
       version = "1.1",
@@ -782,45 +697,12 @@ class LicenceControllerTest {
       additionalLicenceConditions = someAdditionalConditions,
       additionalPssConditions = someAdditionalConditions,
       bespokeConditions = someBespokeConditions,
-      isVariation = false,
     )
 
-    val aCreateLicenceRequest = CreateLicenceRequest(
-      typeCode = LicenceType.AP,
-      version = "1.4",
-      nomsId = "NOMSID",
-      bookingNo = "BOOKINGNO",
-      bookingId = 1L,
-      crn = "CRN1",
-      pnc = "PNC1",
-      cro = "CRO1",
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      forename = "Mike",
-      surname = "Myers",
-      dateOfBirth = LocalDate.of(2001, 10, 1),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      standardLicenceConditions = someStandardConditions,
-      standardPssConditions = someStandardConditions,
-      responsibleComStaffId = 2000,
-    )
+    val aCreateLicenceRequest = CreateLicenceRequest(nomsId = "NOMSID")
 
     val aLicenceSummary = LicenceSummary(
+      kind = LicenceKind.CRD,
       licenceId = 1,
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
@@ -853,26 +735,6 @@ class LicenceControllerTest {
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       licenceVersion = "1.0",
-    )
-
-    val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentPerson = "John Smith",
-    )
-
-    val anAppointmentTimeRequest = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.MINUTES),
-    )
-
-    val anAppointmentTimeRequestDateOnly = AppointmentTimeRequest(
-      appointmentTime = LocalDateTime.now().plusDays(1L).truncatedTo(ChronoUnit.DAYS),
-    )
-
-    val aContactNumberRequest = ContactNumberRequest(
-      telephone = "0114 2566555",
-    )
-
-    val anAppointmentAddressRequest = AppointmentAddressRequest(
-      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
     )
 
     val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(

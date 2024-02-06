@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
+import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Fields
 
@@ -9,9 +10,11 @@ data class AdditionalConditionData(
   val id: Long = -1,
 
   @Schema(description = "The field name of this data item for this condition on this licence", example = "location")
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val field: String? = null,
 
   @Schema(description = "The value of this data item", example = "Norfolk")
+  @get:JsonView(Views.SubjectAccessRequest::class)
   val value: String? = null,
 
   @Schema(description = "The sequence of this data item, for this condition on this licence", example = "1")

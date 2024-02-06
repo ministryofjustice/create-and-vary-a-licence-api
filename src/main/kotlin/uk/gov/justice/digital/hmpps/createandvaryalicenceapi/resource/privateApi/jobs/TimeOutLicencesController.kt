@@ -48,6 +48,6 @@ class TimeOutLicencesController(
     ],
   )
   fun runTimeOutLicencesServiceJob() {
-    return timeOutLicencesService.timeOutLicencesJob()
+    return timeOutLicencesService.timeOutLicences()
   }
 }

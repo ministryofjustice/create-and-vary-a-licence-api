@@ -21,6 +21,7 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -83,17 +84,20 @@ abstract class Licence(
   val probationLauDescription: String? = null,
   val probationTeamCode: String? = null,
   val probationTeamDescription: String? = null,
-  val appointmentPerson: String? = null,
-  val appointmentTime: LocalDateTime? = null,
-  val appointmentAddress: String? = null,
-  val appointmentContact: String? = null,
+
+  var appointmentPerson: String? = null,
+  @Enumerated(EnumType.STRING)
+  var appointmentTimeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
+  var appointmentTime: LocalDateTime? = null,
+  var appointmentAddress: String? = null,
+  var appointmentContact: String? = null,
   val approvedDate: LocalDateTime? = null,
   val approvedByUsername: String? = null,
   val approvedByName: String? = null,
   val supersededDate: LocalDateTime? = null,
   val submittedDate: LocalDateTime? = null,
   var dateCreated: LocalDateTime? = null,
-  val dateLastUpdated: LocalDateTime? = null,
+  var dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
   var licenceVersion: String? = "1.0",
 
@@ -135,6 +139,7 @@ abstract class Licence(
 
   abstract fun activate(): Licence
   abstract fun deactivate(): Licence
+  abstract fun deactivate(updatedByUsername: String): Licence
 
   abstract fun updatePrisonInfo(
     prisonCode: String,
@@ -143,10 +148,34 @@ abstract class Licence(
     updatedByUsername: String?,
   ): Licence
 
-  abstract fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?): Licence
-  abstract fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?): Licence
-  abstract fun updateAppointmentTime(appointmentTime: LocalDateTime, updatedByUsername: String?): Licence
-  abstract fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?): Licence
+  fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) {
+    this.appointmentAddress = appointmentAddress
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
+
+  fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) {
+    this.appointmentContact = appointmentContact
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
+
+  fun updateAppointmentTime(
+    appointmentTime: LocalDateTime?,
+    appointmentTimeType: AppointmentTimeType,
+    updatedByUsername: String?,
+  ) {
+    this.appointmentTime = appointmentTime
+    this.appointmentTimeType = appointmentTimeType
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
+
+  fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?) {
+    this.appointmentPerson = appointmentPerson
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = updatedByUsername
+  }
 
   abstract fun updateStatus(
     statusCode: LicenceStatus,

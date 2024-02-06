@@ -163,115 +163,29 @@ class ProbationSearchMockServer : WireMockServer(8094) {
         ),
     )
   }
-  fun stubPostLicenceCaseloadByTeamForEligibilityChecks(aLicenceCaseloadSearchRequest: String) {
+
+  fun stubSearchForPersonOnProbation() {
     stubFor(
-      post(urlEqualTo("/licence-caseload/by-team"))
-        .withRequestBody(equalToJson(aLicenceCaseloadSearchRequest))
+      post(urlEqualTo("/search"))
         .willReturn(
           aResponse().withHeader(
             "Content-Type",
             "application/json",
           )
             .withBody(
-              """{
-                    "content": [
-                        {
-                            "name": {
-                                "surname": "Surname",
-                                "forename": "Test",
-                                "middleName": ""
-                            },
-                            "identifiers": {
-                                "crn": "CRN1",
-                                "noms": "A1234AE"
-                            },
-                            "manager": {
-                                "code": "A01B02C",
-                                "name": {
-                                    "surname": "Surname",
-                                    "forename": "Staff"
-                                },
-                                "team": {
-                                    "code": "A01B02",
-                                    "description": "Test Team",
-                                    "borough": {
-                                        "code": "A01B02",
-                                        "description": "description"
-                                    },
-                                    "district": {
-                                        "code": "A01B02",
-                                        "description": "description"
-                                    }
-                                },
-                                "probationArea": {
-                                    "code": "N01",
-                                    "description": "description"
-                                }
-                            },
-                            "allocationDate": "2023-05-24"
-                        },                        
-                        {
-                            "name": {
-                                "surname": "Surname",
-                                "forename": "Test",
-                                "middleName": ""
-                            },
-                            "identifiers": {
-                                "crn": "CRN2",
-                                "noms": "A1234AD"
-                            },
-                            "manager": {
-                                "code": "A01B02C",
-                                "name": {
-                                    "surname": "Surname",
-                                    "forename": "Staff"
-                                },
-                                "team": {
-                                    "code": "A01B02",
-                                    "description": "Test Team",
-                                    "borough": {
-                                        "code": "A01B02",
-                                        "description": "description"
-                                    },
-                                    "district": {
-                                        "code": "A01B02",
-                                        "description": "description"
-                                    }
-                                },
-                                "probationArea": {
-                                    "code": "N01",
-                                    "description": "description"
-                                }
-                            },
-                            "allocationDate": "2023-05-24"
-                        }
-                    ],
-                    "pageable": {
-                        "pageSize": 100,
-                        "offset": 0,
-                        "sort": {
-                            "empty": false,
-                            "unsorted": false,
-                            "sorted": true
-                        },
-                        "pageNumber": 0,
-                        "paged": true,
-                        "unpaged": false
-                    },
-                    "totalElements": 2,
-                    "totalPages": 1,
-                    "last": true,
-                    "size": 100,
-                    "number": 0,
-                    "sort": {
-                        "empty": false,
-                        "unsorted": false,
-                        "sorted": true
-                    },
-                    "first": true,
-                    "numberOfElements": 2,
-                    "empty": false
-                }""",
+              """[
+                {
+                 "offenderId": 1,
+                 "otherIds": { "crn": "X12345" },
+                 "offenderManagers": [
+                    {
+                     "active": true,
+                     "staff": { "code": "staff-code-1"}
+                    } 
+                 ]
+                }
+                ]
+              """.trimMargin(),
             ).withStatus(200),
         ),
     )

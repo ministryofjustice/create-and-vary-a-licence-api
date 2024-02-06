@@ -75,5 +75,4 @@ data class LicenceSummary(
 
   @Schema(description = "Whether the licence in PSS period? This is when Licence End Date < TODAY <= TUSED (Top Up Supervision End Date)")
   val isInPssPeriod: Boolean,
-
 )

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -50,6 +51,7 @@ class CrdLicence(
   probationTeamDescription: String? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
+  appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
   approvedDate: LocalDateTime? = null,
@@ -112,6 +114,7 @@ class CrdLicence(
   probationTeamDescription = probationTeamDescription,
   appointmentPerson = appointmentPerson,
   appointmentTime = appointmentTime,
+  appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
@@ -166,6 +169,7 @@ class CrdLicence(
     probationTeamDescription: String? = this.probationTeamDescription,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
+    appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     approvedDate: LocalDateTime? = this.approvedDate,
@@ -222,6 +226,7 @@ class CrdLicence(
       probationTeamDescription = probationTeamDescription,
       appointmentPerson = appointmentPerson,
       appointmentTime = appointmentTime,
+      appointmentTimeType = appointmentTimeType,
       appointmentAddress = appointmentAddress,
       appointmentContact = appointmentContact,
       approvedDate = approvedDate,
@@ -249,6 +254,10 @@ class CrdLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
+  override fun deactivate(updatedByUsername: String) = copy(
+    statusCode = LicenceStatus.INACTIVE,
+    updatedByUsername = updatedByUsername,
+  )
 
   fun timeOut() = copy(
     statusCode = LicenceStatus.TIMED_OUT,
@@ -273,30 +282,6 @@ class CrdLicence(
     prisonCode = prisonCode,
     prisonDescription = prisonDescription,
     prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) = copy(
-    appointmentAddress = appointmentAddress,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) = copy(
-    appointmentContact = appointmentContact,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentPerson(appointmentPerson: String?, updatedByUsername: String?) = copy(
-    appointmentPerson = appointmentPerson,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
-  )
-
-  override fun updateAppointmentTime(appointmentTime: LocalDateTime, updatedByUsername: String?) = copy(
-    appointmentTime = appointmentTime,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = updatedByUsername,
   )
@@ -448,6 +433,7 @@ class CrdLicence(
       "probationTeamDescription=$probationTeamDescription, " +
       "appointmentPerson=$appointmentPerson, " +
       "appointmentTime=$appointmentTime, " +
+      "appointmentTimeType=$appointmentTimeType, " +
       "appointmentAddress=$appointmentAddress, " +
       "appointmentContact=$appointmentContact, " +
       "approvedDate=$approvedDate, " +

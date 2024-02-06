@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -9,6 +10,9 @@ import java.time.LocalDateTime
 
 @Schema(description = "Response object which summarises a licence")
 data class LicenceSummary(
+  @Schema(description = "kind of licence", example = "CRD")
+  val kind: LicenceKind,
+
   @Schema(description = "Internal identifier for this licence generated within this service", example = "123344")
   val licenceId: Long,
 

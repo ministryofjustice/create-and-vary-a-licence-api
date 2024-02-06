@@ -12,10 +12,12 @@ import java.time.LocalDate
 
 @Repository
 interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExecutor<Licence> {
+  fun findAllByNomsId(nomsId: String): List<Licence>
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
   fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<CrdLicence>
+  fun findByBookingIdAndStatusCodeOrderByDateCreatedDesc(bookingId: Long, status: LicenceStatus): CrdLicence?
 
   @Query(
     """
@@ -92,6 +94,19 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getLicencesPassedExpiryDate(): List<Licence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l
+        WHERE l.statusCode  IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+        )
+        AND COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) < CURRENT_DATE
+    """,
+  )
+  fun getDraftLicencesPassedReleaseDate(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
