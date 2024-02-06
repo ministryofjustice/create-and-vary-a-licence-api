@@ -60,6 +60,7 @@
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:ComService.kt$ComService</ID>
     <ID>TooManyFunctions:CrdLicence.kt$CrdLicence : Licence</ID>
+    <ID>TooManyFunctions:EligibilityService.kt$EligibilityService</ID>
     <ID>TooManyFunctions:HardStopLicence.kt$HardStopLicence : Licence</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:Licence.kt$Licence</ID>

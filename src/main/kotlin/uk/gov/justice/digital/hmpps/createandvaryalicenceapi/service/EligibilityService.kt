@@ -25,12 +25,25 @@ class EligibilityService(
     !isRecallCase() describedAs "is a recall case",
   )
 
+  val existingLicenceChecks = listOf(
+    hasReleaseDateInTheFuture() describedAs "release date in past",
+    hasActivePrisonStatus() describedAs "is not active in prison",
+  )
+
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
     return getIneligibilityReasons(prisoner).isEmpty()
   }
 
+  fun isExistingLicenceEligible(prisoner: PrisonerSearchPrisoner): Boolean {
+    return getIneligibilityReasonsForExistingLicence(prisoner).isEmpty()
+  }
+
   fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
     return checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+  }
+
+  fun getIneligibilityReasonsForExistingLicence(prisoner: PrisonerSearchPrisoner): List<String> {
+    return existingLicenceChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
   }
 
   private fun isPersonParoleEligible(): EligibilityCheck = early@{

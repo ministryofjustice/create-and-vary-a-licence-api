@@ -53,6 +53,41 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                                 }
                             },
                             "allocationDate": "2023-05-24"
+                        },                        
+                        {
+                            "name": {
+                                "surname": "Surname",
+                                "forename": "Test",
+                                "middleName": ""
+                            },
+                            "identifiers": {
+                                "crn": "CRN2",
+                                "noms": "A1234AD"
+                            },
+                            "manager": {
+                                "code": "A01B02C",
+                                "name": {
+                                    "surname": "Surname",
+                                    "forename": "Staff"
+                                },
+                                "team": {
+                                    "code": "A01B02",
+                                    "description": "Test Team",
+                                    "borough": {
+                                        "code": "A01B02",
+                                        "description": "description"
+                                    },
+                                    "district": {
+                                        "code": "A01B02",
+                                        "description": "description"
+                                    }
+                                },
+                                "probationArea": {
+                                    "code": "N01",
+                                    "description": "description"
+                                }
+                            },
+                            "allocationDate": "2023-05-24"
                         }
                     ],
                     "pageable": {

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
@@ -108,14 +109,15 @@ class ComService(
     val resultsWithLicences: List<Pair<CaseloadResult, Licence?>> =
       teamCaseloadResult.map { it to getLicence(it) }
 
-    val resultsWithUnstartedLicences = findPrisonersForUnstartedRecords(resultsWithLicences)
+    val prisonerRecords = findPrisonersForRelevantRecords(resultsWithLicences)
 
     val searchResults = resultsWithLicences.mapNotNull { (result, licence) ->
       when (licence) {
-        null -> result.createUnstartedRecord(resultsWithUnstartedLicences[result.identifiers.noms])
-        else -> result.createRecord(licence)
+        null -> createNotStartedRecord(result, prisonerRecords[result.identifiers.noms])
+        else -> createRecord(result, licence, prisonerRecords[result.identifiers.noms])
       }
-    }
+    }.filterOutHdc(prisonerRecords)
+
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
 
@@ -149,48 +151,41 @@ class ComService(
     }
   }
 
-  private fun findPrisonersForUnstartedRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
+  private fun findPrisonersForRelevantRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
     val prisonNumbers = record
-      .filter { (_, licence) -> licence == null }
+      .filter { (_, licence) -> licence == null || !licence.statusCode.isOnProbation() }
       .mapNotNull { (result, _) -> result.identifiers.noms }
 
-    val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
-
-    if (prisoners.isEmpty()) {
+    if (prisonNumbers.isEmpty()) {
       return emptyMap()
     }
 
-    val initialCvlEligiblePrisoners = prisoners
-      .filter {
-        eligibilityService.isEligibleForCvl(it)
-      }
+    // we gather further data from prisoner search if there is no licence or a create licence
+    val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
 
-    val prisonerBookingsWithHdc = initialCvlEligiblePrisoners.findBookingsWithHdc()
-
-    val eligibleForCvlPrisoners =
-      initialCvlEligiblePrisoners.filterNot { prisonerBookingsWithHdc.contains(it.bookingId.toLong()) }
-
-    return eligibleForCvlPrisoners.associateBy { it.prisonerNumber }
+    return prisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun CaseloadResult.createUnstartedRecord(
-    prisoner: PrisonerSearchPrisoner?,
-  ) = when {
+  private fun createNotStartedRecord(deliusOffender: CaseloadResult, prisonOffender: PrisonerSearchPrisoner?) = when {
     // no match for prisoner in Delius
-    prisoner == null -> null
+    prisonOffender == null -> null
 
-    // if both dates are null from the prisoner, we do not want to show the result as a licence cannot be created without them
-    prisoner.confirmedReleaseDate == null && prisoner.releaseDate == null -> null
+    !eligibilityService.isEligibleForCvl(prisonOffender) -> null
 
-    else -> this.transformToUnstartedRecord(
-      releaseDate = prisoner.getReleaseDate(),
-      licenceType = LicenceType.getLicenceType(prisoner),
+    else -> deliusOffender.transformToUnstartedRecord(
+      releaseDate = prisonOffender.getReleaseDate(),
+      licenceType = LicenceType.getLicenceType(prisonOffender),
       LicenceStatus.NOT_STARTED,
     )
   }
 
-  private fun CaseloadResult.createRecord(licence: Licence) =
-    this.transformToModelFoundProbationRecord(licence)
+  private fun createRecord(deliusOffender: CaseloadResult, licence: Licence, prisonOffender: PrisonerSearchPrisoner?): FoundProbationRecord? =
+    when {
+      licence.statusCode.isOnProbation() -> deliusOffender.transformToModelFoundProbationRecord(licence)
+      prisonOffender != null && eligibilityService.isExistingLicenceEligible(prisonOffender) -> deliusOffender.transformToModelFoundProbationRecord(licence)
+
+      else -> null
+    }
 
   private fun ProbationUserSearchRequest.getSortBy() =
     this.sortBy.map {
@@ -206,5 +201,16 @@ class ComService(
       .map { it.bookingId.toLong() }
     val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
     return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
+  }
+
+  private fun List<FoundProbationRecord>.filterOutHdc(prisonerRecords: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {
+    if (prisonerRecords.isEmpty()) {
+      return this
+    }
+    val prisonersForHdcCheck = this.filter { it.licenceStatus == LicenceStatus.NOT_STARTED }.mapNotNull { prisonerRecords[it.nomisId] }
+    val bookingIdsWithHdc = prisonersForHdcCheck.findBookingsWithHdc()
+
+    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId.toLong()) }
+    return this.filter { it.isOnProbation == true || prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
   }
 }
