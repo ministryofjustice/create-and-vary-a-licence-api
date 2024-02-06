@@ -222,7 +222,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given an offender is on probation and their licences is ACTIVE AND CRD and ARD in past When search for offender Then offender should be part of the search results `() {
     communityApiMockServer.stubGetTeamCodesForUser()
 
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamForEligibilityChecks(Gson().toJson(aLicenceCaseloadSearchRequest))
+    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
 
@@ -251,7 +251,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       2000,
     )
     communityApiMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamForEligibilityChecks(Gson().toJson(prisonerWithSentenceSpent))
+    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(prisonerWithSentenceSpent))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
 

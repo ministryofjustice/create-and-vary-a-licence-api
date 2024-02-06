@@ -172,9 +172,9 @@ class ComService(
 
     !eligibilityService.isEligibleForCvl(prisonOffender) -> null
 
-    else -> this.transformToUnstartedRecord(
-      releaseDate = prisoner.getReleaseDate(),
-      licenceType = LicenceType.getLicenceType(prisoner),
+    else -> deliusOffender.transformToUnstartedRecord(
+      releaseDate = prisonOffender.getReleaseDate(),
+      licenceType = LicenceType.getLicenceType(prisonOffender),
       LicenceStatus.NOT_STARTED,
     )
   }
