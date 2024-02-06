@@ -21,13 +21,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 
 @RestController
 @Tag(name = Tags.OFFENDER)
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
-class OffenderController(private val offenderService: OffenderService, private val comService: ComService) {
+class OffenderController(
+  private val offenderService: OffenderService,
+  private val caseloadService: CaseloadService,
+  private val staffService: StaffService,
+) {
   @PutMapping(
     value = ["/crn/{crn}/responsible-com"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -66,7 +71,7 @@ class OffenderController(private val offenderService: OffenderService, private v
     @Valid @RequestBody
     body: UpdateComRequest,
   ) {
-    val newCom = this.comService.updateComDetails(body)
+    val newCom = this.staffService.updateComDetails(body)
     this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
   }
 
@@ -196,5 +201,5 @@ class OffenderController(private val offenderService: OffenderService, private v
   )
   fun getIneligibilityReasons(
     @PathVariable nomsId: String,
-  ) = comService.getIneligibilityReasons(nomsId)
+  ) = caseloadService.getIneligibilityReasons(nomsId)
 }

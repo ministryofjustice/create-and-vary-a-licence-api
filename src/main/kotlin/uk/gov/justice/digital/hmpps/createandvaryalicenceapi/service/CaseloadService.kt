@@ -1,16 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -21,11 +16,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
-import java.time.LocalDateTime
 
 @Service
-class ComService(
-  private val staffRepository: StaffRepository,
+class CaseloadService(
   private val licenceRepository: LicenceRepository,
   private val communityApiClient: CommunityApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
@@ -33,72 +26,6 @@ class ComService(
   private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
 ) {
-
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
-
-  /**
-   * Check if record already exists. If so, check if any of the details have changed before performing an update.
-   * Check if the username and staffId do not match. This should not happen, unless a Delius account is updated to point
-   * at another linked account using the staffId. In this scenario, we should update the existing record to reflect
-   * the new username and or staffId.
-   *
-   */
-  @Deprecated("This can be removed after get in next caseload changes in, we can then rename this to a caseload service")
-  @Transactional
-  fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    val comResult = this.staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
-      comDetails.staffIdentifier,
-      comDetails.staffUsername,
-    )
-
-    if (comResult.isNullOrEmpty()) {
-      return this.staffRepository.saveAndFlush(
-        CommunityOffenderManager(
-          username = comDetails.staffUsername.uppercase(),
-          staffIdentifier = comDetails.staffIdentifier,
-          email = comDetails.staffEmail,
-          firstName = comDetails.firstName,
-          lastName = comDetails.lastName,
-        ),
-      )
-    }
-
-    if (comResult.count() > 1) {
-      log.warn(
-        "More then one COM record found for staffId {} username {}",
-        comDetails.staffIdentifier,
-        comDetails.staffUsername,
-      )
-    }
-
-    val com = comResult.first()
-
-    // only update entity if data is different
-    if (com.isUpdate(comDetails)) {
-      return this.staffRepository.saveAndFlush(
-        com.copy(
-          staffIdentifier = comDetails.staffIdentifier,
-          username = comDetails.staffUsername.uppercase(),
-          email = comDetails.staffEmail,
-          firstName = comDetails.firstName,
-          lastName = comDetails.lastName,
-          lastUpdatedTimestamp = LocalDateTime.now(),
-        ),
-      )
-    }
-
-    return com
-  }
-
-  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) =
-    (comDetails.firstName != this.firstName) ||
-      (comDetails.lastName != this.lastName) ||
-      (comDetails.staffEmail != this.email) ||
-      (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
-      (comDetails.staffIdentifier != this.staffIdentifier)
-
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
       body.query,

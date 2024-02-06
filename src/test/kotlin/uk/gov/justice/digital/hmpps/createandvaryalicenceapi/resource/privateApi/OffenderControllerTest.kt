@@ -29,8 +29,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ComService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
@@ -45,7 +46,10 @@ class OffenderControllerTest {
   private lateinit var offenderService: OffenderService
 
   @MockBean
-  private lateinit var comService: ComService
+  private lateinit var caseloadService: CaseloadService
+
+  @MockBean
+  private lateinit var staffService: StaffService
 
   @Autowired
   private lateinit var mvc: MockMvc
@@ -55,20 +59,32 @@ class OffenderControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(offenderService, comService)
+    reset(offenderService, caseloadService, staffService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(OffenderController(offenderService, comService))
+      .standaloneSetup(OffenderController(offenderService, caseloadService, staffService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
 
   @Test
   fun `update offender with new offender manager`() {
-    val body = UpdateComRequest(staffIdentifier = 2000, staffUsername = "joebloggs", staffEmail = "joebloggs@probation.gov.uk", firstName = "Joseph", lastName = "Bloggs")
+    val body = UpdateComRequest(
+      staffIdentifier = 2000,
+      staffUsername = "joebloggs",
+      staffEmail = "joebloggs@probation.gov.uk",
+      firstName = "Joseph",
+      lastName = "Bloggs",
+    )
 
-    val expectedCom = CommunityOffenderManager(staffIdentifier = 2000, username = "joebloggs", email = "joebloggs@probation.gov.uk", firstName = "Joseph", lastName = "Bloggs")
-    whenever(comService.updateComDetails(any())).thenReturn(expectedCom)
+    val expectedCom = CommunityOffenderManager(
+      staffIdentifier = 2000,
+      username = "joebloggs",
+      email = "joebloggs@probation.gov.uk",
+      firstName = "Joseph",
+      lastName = "Bloggs",
+    )
+    whenever(staffService.updateComDetails(any())).thenReturn(expectedCom)
 
     val request = put("/offender/crn/exampleCrn/responsible-com")
       .accept(MediaType.APPLICATION_JSON)
@@ -77,7 +93,7 @@ class OffenderControllerTest {
 
     mvc.perform(request).andExpect(status().isOk)
 
-    verify(comService, times(1)).updateComDetails(body)
+    verify(staffService, times(1)).updateComDetails(body)
     verify(offenderService, times(1)).updateOffenderWithResponsibleCom("exampleCrn", expectedCom)
   }
 
@@ -121,7 +137,7 @@ class OffenderControllerTest {
 
   @Test
   fun `get ineligibility reasons`() {
-    whenever(comService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
+    whenever(caseloadService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
 
     val request = get("/offender/nomisid/A1234AA/ineligibility-reasons")
       .accept(MediaType.APPLICATION_JSON)
