@@ -19,6 +19,26 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 
 class LicenceDetailTransformerKtTest {
+
+  @Test
+  fun transformToPublicLicence() {
+    val actualLicence = modelLicence.transformToPublicLicence()
+    assertThat(actualLicence).isEqualTo(publicLicence)
+  }
+
+  @Test
+  fun checkAdditionalConditionsShowExpandedText() {
+    val actualLicence = modelLicence.transformToPublicLicence()
+    val publicModelCondition = modelLicence.additionalLicenceConditions[0]
+    val privateAdditionalCondition = actualLicence.conditions.apConditions.additional[0]
+
+    // Check expanded differs from non-expanded:
+    assertThat(publicModelCondition.expandedText).isNotEqualTo(publicModelCondition.text)
+
+    // Check that expanded has been selected:
+    assertThat(privateAdditionalCondition.text).isEqualTo(publicModelCondition.expandedText)
+  }
+
   private companion object {
     val someStandardConditions = listOf(
       ModelStandardCondition(
@@ -160,14 +180,9 @@ class LicenceDetailTransformerKtTest {
       createdDateTime = modelLicence.dateCreated!!,
       updatedByUsername = modelLicence.updatedByUsername,
       updatedDateTime = modelLicence.dateLastUpdated,
+      licenceStartDate = modelLicence.licenceStartDate,
       isInPssPeriod = modelLicence.isInPssPeriod ?: false,
       conditions = publicLicenseConditions,
     )
-  }
-
-  @Test
-  fun transformToPublicLicence() {
-    val actualLicence = modelLicence.transformToPublicLicence()
-    assertThat(actualLicence).isEqualTo(publicLicence)
   }
 }

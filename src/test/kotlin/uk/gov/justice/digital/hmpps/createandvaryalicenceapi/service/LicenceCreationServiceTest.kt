@@ -177,6 +177,8 @@ class LicenceCreationServiceTest {
 
       service.createLicence(prisonNumber)
 
+      val l = listOf(LicenceStatus.IN_PROGRESS)
+      assertThat(l).allMatch { it == LicenceStatus.IN_PROGRESS }
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)

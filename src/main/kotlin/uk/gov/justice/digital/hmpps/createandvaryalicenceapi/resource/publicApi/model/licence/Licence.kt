@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
@@ -68,6 +69,10 @@ data class Licence(
   @Schema(description = "The date and time that the licence was last updated", example = "2022-08-24T12:30:33")
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   val updatedDateTime: LocalDateTime?,
+
+  @Schema(description = "The date the licence is to become active. This may be incorrect for IS-91 cases and people on remand. Get in touch for details", example = "2022-08-24")
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  val licenceStartDate: LocalDate?,
 
   @Schema(
     description =

@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ExtendWith(SpringExtension::class)
@@ -265,6 +266,7 @@ class PublicLicenceControllerTest {
       createdDateTime = LocalDateTime.of(2023, 10, 11, 11, 0, 0),
       updatedByUsername = "TestUpdater",
       updatedDateTime = LocalDateTime.of(2023, 10, 11, 11, 30, 0),
+      licenceStartDate = LocalDate.of(2023, 10, 11),
       isInPssPeriod = false,
       conditions = licenceConditions,
     )
