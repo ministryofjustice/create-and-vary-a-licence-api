@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class DomainEventsService(
-  @Value("\${self.link}") private val baseUrl: String,
+  @Value("\${self.api.link}") private val baseUrl: String,
   private val outboundEventsPublisher: OutboundEventsPublisher,
   private val clock: Clock,
 ) {
