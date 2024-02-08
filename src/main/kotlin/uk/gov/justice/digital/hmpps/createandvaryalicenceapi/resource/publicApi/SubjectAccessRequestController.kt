@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.S
 @RestController
 @Tag(name = Tags.SAR)
 @PreAuthorize("hasAnyRole('SAR_DATA_ACCESS', 'CVL_ADMIN')")
-@RequestMapping("/public", produces = [MediaType.APPLICATION_JSON_VALUE])
+@RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class SubjectAccessRequestController(private val subjectAccessRequestService: SubjectAccessRequestService) {
   @GetMapping(value = ["/subject-access-request"])
   @JsonView(Views.SubjectAccessRequest::class)

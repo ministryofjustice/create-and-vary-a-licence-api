@@ -88,7 +88,7 @@ class SubjectAccessRequestControllerTest {
       ),
     )
 
-    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+    mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andExpect(content().json(serializedSarContent("crdLicence"), true))
       .andReturn()
@@ -112,7 +112,7 @@ class SubjectAccessRequestControllerTest {
         ),
       ),
     )
-    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+    mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andExpect(content().json(serializedSarContent("variationLicence"), true))
       .andReturn()
@@ -137,7 +137,7 @@ class SubjectAccessRequestControllerTest {
         ),
       ),
     )
-    mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+    mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
       .andExpect(content().json(serializedSarContent("hardstopLicence"), true))
       .andReturn()
@@ -146,7 +146,7 @@ class SubjectAccessRequestControllerTest {
   @Test
   fun `500 when pass both prn and crn`() {
     val result =
-      mvc.perform(get("/public/subject-access-request?prn=G4169UO&crn=Z265290").accept(MediaType.APPLICATION_JSON))
+      mvc.perform(get("/subject-access-request?prn=G4169UO&crn=Z265290").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError)
         .andReturn()
 
@@ -158,7 +158,7 @@ class SubjectAccessRequestControllerTest {
   @Test
   fun `209 when pass crn and but not prn`() {
     val result =
-      mvc.perform(get("/public/subject-access-request?crn=Z265290").accept(MediaType.APPLICATION_JSON))
+      mvc.perform(get("/subject-access-request?crn=Z265290").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().`is`(209))
         .andReturn()
 
@@ -171,7 +171,7 @@ class SubjectAccessRequestControllerTest {
   fun `204 when pass prn but no records found`() {
     whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(null)
     val result =
-      mvc.perform(get("/public/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
+      mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent)
         .andReturn()
 
