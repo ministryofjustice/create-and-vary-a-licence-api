@@ -92,7 +92,7 @@ class CaseloadServiceTest {
       ),
     )
 
-    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
       true,
     )
 
@@ -108,7 +108,7 @@ class CaseloadServiceTest {
       communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
-    verify(eligibilityService).isExistingLicenceEligible(
+    verify(eligibilityService).isEligibleForCvl(
       aPrisonerSearchResult,
     )
 
@@ -190,7 +190,7 @@ class CaseloadServiceTest {
       ),
     )
 
-    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
       true,
     )
 
@@ -214,7 +214,7 @@ class CaseloadServiceTest {
       ),
     )
 
-    verify(eligibilityService).isExistingLicenceEligible(
+    verify(eligibilityService).isEligibleForCvl(
       aPrisonerSearchResult,
     )
 
@@ -273,7 +273,7 @@ class CaseloadServiceTest {
         aPrisonerSearchResult,
       ),
     )
-    whenever(eligibilityService.isExistingLicenceEligible(any())).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
     )
 
@@ -359,7 +359,7 @@ class CaseloadServiceTest {
           ),
       )
 
-    whenever(eligibilityService.isExistingLicenceEligible(aPrisonerSearchResult)).thenReturn(
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
       true,
     )
 
