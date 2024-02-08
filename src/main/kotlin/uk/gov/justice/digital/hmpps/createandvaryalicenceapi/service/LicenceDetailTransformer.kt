@@ -55,6 +55,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
       ?: error("Licence creation date should not be null for licence id:" + this.id),
     updatedByUsername = this.updatedByUsername,
     updatedDateTime = this.dateLastUpdated,
+    licenceStartDate = this.licenceStartDate,
     isInPssPeriod = this.isInPssPeriod ?: false,
     conditions = licenseConditions,
   )
@@ -93,7 +94,7 @@ fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitor
     type = ConditionTypes.ELECTRONIC_MONITORING,
     id = model.id ?: 0,
     code = model.code.orEmpty(),
-    text = model.text.orEmpty(),
+    text = model.expandedText.orEmpty(),
     restrictions = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }.map { data ->
       ElectronicMonitoringType.find(data.value.orEmpty())
         ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
@@ -107,7 +108,7 @@ fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): Exclus
     type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
     id = model.id ?: 0,
     code = model.code.orEmpty(),
-    text = model.text.orEmpty(),
+    text = model.expandedText.orEmpty(),
     hasImageUpload = model.uploadSummary.isNotEmpty(),
   )
 }
@@ -120,7 +121,7 @@ fun standardAdditionalCondition(model: AdditionalCondition): PublicStandardAddit
     type = ConditionTypes.STANDARD,
     id = model.id ?: 0,
     code = model.code.orEmpty(),
-    text = model.text.orEmpty(),
+    text = model.expandedText.orEmpty(),
   )
 }
 
