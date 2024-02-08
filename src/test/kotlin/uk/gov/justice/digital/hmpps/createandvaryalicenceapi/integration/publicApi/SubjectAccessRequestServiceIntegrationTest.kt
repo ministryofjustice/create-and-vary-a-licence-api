@@ -34,7 +34,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
   )
   fun `Get SAR records by PRN`() {
     val resultList = webTestClient.get()
-      .uri("/public/subject-access-request?prn=A1234AA")
+      .uri("/subject-access-request?prn=A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
@@ -103,7 +103,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
   )
   fun `Get sarContent by PRN is role protected`() {
     val result = webTestClient.get()
-      .uri("/public/subject-access-request?prn=A1234AA")
+      .uri("/subject-access-request?prn=A1234AA")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange()
