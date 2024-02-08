@@ -109,7 +109,7 @@ class CaseloadService(
   private fun createRecord(deliusOffender: CaseloadResult, licence: Licence, prisonOffender: PrisonerSearchPrisoner?): FoundProbationRecord? =
     when {
       licence.statusCode.isOnProbation() -> deliusOffender.transformToModelFoundProbationRecord(licence)
-      prisonOffender != null && eligibilityService.isExistingLicenceEligible(prisonOffender) -> deliusOffender.transformToModelFoundProbationRecord(licence)
+      prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.transformToModelFoundProbationRecord(licence)
 
       else -> null
     }
