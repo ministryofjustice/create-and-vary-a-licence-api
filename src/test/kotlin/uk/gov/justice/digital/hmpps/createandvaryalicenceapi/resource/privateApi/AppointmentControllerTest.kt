@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -208,6 +209,7 @@ class AppointmentControllerTest {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
+      appointmentWithType = AppointmentWithType.DUTY_OFFICER,
       appointmentPerson = "John Smith",
     )
 

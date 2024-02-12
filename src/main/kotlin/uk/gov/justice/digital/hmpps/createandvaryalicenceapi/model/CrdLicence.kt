@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -125,6 +126,12 @@ data class CrdLicence(
   @Schema(description = "The email address for the supervising probation officer", example = "jane.jones@nps.gov.uk")
   override val comEmail: String? = null,
 
+  @get:Schema(description = "The full name of the supervising probation officer", example = "Jane Jones")
+  override val responsibleComFullName: String? = null,
+
+  @get:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
+  override val updatedByFullName: String? = null,
+
   @Schema(description = "The probation area code where this licence is supervised from", example = "N01")
   override val probationAreaCode: String? = null,
 
@@ -151,6 +158,9 @@ data class CrdLicence(
 
   @Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   override val appointmentPerson: String? = null,
+
+  @Schema(description = "The type of appointment with for the initial appointment", example = "DUTY_OFFICER")
+  override val appointmentWithType: AppointmentWithType = AppointmentWithType.DUTY_OFFICER,
 
   @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")

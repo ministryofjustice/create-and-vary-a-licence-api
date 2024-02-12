@@ -26,6 +26,7 @@ class AppointmentService(
     val previousPerson = licenceEntity.appointmentPerson
 
     licenceEntity.updateAppointmentPerson(
+      appointmentWithType = request.appointmentWithType,
       appointmentPerson = request.appointmentPerson,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )

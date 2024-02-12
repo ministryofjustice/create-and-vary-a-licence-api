@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -142,6 +143,12 @@ sealed interface Licence {
   )
   val comEmail: String?
 
+  @get:Schema(description = "The full name of the supervising probation officer", example = "Jane Jones")
+  val responsibleComFullName: String?
+
+  @get:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
+  val updatedByFullName: String?
+
   @get:Schema(description = "The probation area code where this licence is supervised from", example = "N01")
   val probationAreaCode: String?
 
@@ -168,6 +175,9 @@ sealed interface Licence {
 
   @get:Schema(description = "The team description", example = "Cardiff South")
   val probationTeamDescription: String?
+
+  @get:Schema(description = "The type of appointment with for the initial appointment", example = "DUTY_OFFICER")
+  val appointmentWithType: AppointmentWithType
 
   @get:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   @get:JsonView(Views.SubjectAccessRequest::class)
