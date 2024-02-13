@@ -87,10 +87,10 @@ abstract class Licence(
   val probationTeamDescription: String? = null,
 
   @Enumerated(EnumType.STRING)
-  var appointmentWithType: AppointmentWithType? = AppointmentWithType.SOMEONE_ELSE,
+  var appointmentWithType: AppointmentWithType? = null,
   var appointmentPerson: String? = null,
   @Enumerated(EnumType.STRING)
-  var appointmentTimeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
+  var appointmentTimeType: AppointmentTimeType? = null,
   var appointmentTime: LocalDateTime? = null,
   var appointmentAddress: String? = null,
   var appointmentContact: String? = null,

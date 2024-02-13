@@ -160,14 +160,14 @@ data class CrdLicence(
   override val appointmentPerson: String? = null,
 
   @Schema(description = "The type of appointment with for the initial appointment", example = "SOMEONE_ELSE")
-  override val appointmentWithType: AppointmentWithType? = AppointmentWithType.SOMEONE_ELSE,
+  override val appointmentWithType: AppointmentWithType? = null,
 
   @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   override val appointmentTime: LocalDateTime? = null,
 
   @Schema(description = "The type of appointment time of the initial appointment", example = "SPECIFIC_DATE_TIME")
-  override val appointmentTimeType: AppointmentTimeType? = AppointmentTimeType.SPECIFIC_DATE_TIME,
+  override val appointmentTimeType: AppointmentTimeType? = null,
 
   @Schema(
     description = "The address of initial appointment",
