@@ -143,6 +143,12 @@ sealed interface Licence {
   )
   val comEmail: String?
 
+  @get:Schema(description = "The full name of the supervising probation officer", example = "Jane Jones")
+  val responsibleComFullName: String?
+
+  @get:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
+  val updatedByFullName: String?
+
   @get:Schema(description = "The probation area code where this licence is supervised from", example = "N01")
   val probationAreaCode: String?
 
