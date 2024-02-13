@@ -71,6 +71,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.standardPssConditions)
       .extracting("code")
       .containsAll(listOf("attendMeetings"))
+    assertThat(result?.responsibleComFullName).isEqualTo("Test Client")
   }
 
   @Test
