@@ -126,12 +126,6 @@ data class CrdLicence(
   @Schema(description = "The email address for the supervising probation officer", example = "jane.jones@nps.gov.uk")
   override val comEmail: String? = null,
 
-  @get:Schema(description = "The full name of the supervising probation officer", example = "Jane Jones")
-  override val responsibleComFullName: String? = null,
-
-  @get:Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
-  override val updatedByFullName: String? = null,
-
   @Schema(description = "The probation area code where this licence is supervised from", example = "N01")
   override val probationAreaCode: String? = null,
 
