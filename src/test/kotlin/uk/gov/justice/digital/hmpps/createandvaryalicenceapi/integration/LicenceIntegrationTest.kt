@@ -71,7 +71,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.standardPssConditions)
       .extracting("code")
       .containsAll(listOf("attendMeetings"))
-    assertThat(result?.responsibleComFullName).isEqualTo("Adam AAA")
+    assertThat(result?.responsibleComFullName).isEqualTo("Test Client")
   }
 
   @Test
@@ -196,7 +196,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
-    assertThat(result?.comUsername).isEqualTo("test-client")
+    assertThat(result?.comUsername).isEqualTo("AAA")
     assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
     assertThat(result?.comStaffId).isEqualTo(2000)
     assertThat(result?.updatedByUsername).isEqualTo("test-client")
