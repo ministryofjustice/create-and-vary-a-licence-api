@@ -5,7 +5,9 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -48,7 +50,7 @@ class CrdLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointmentWithType: AppointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+  appointmentWithType: AppointmentWithType? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
@@ -168,7 +170,7 @@ class CrdLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentWithType: AppointmentWithType = this.appointmentWithType,
+    appointmentWithType: AppointmentWithType? = this.appointmentWithType,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,

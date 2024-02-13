@@ -63,7 +63,7 @@ class AppointmentControllerTest {
   }
 
   @Test
-  fun `update initial appointment person`() {
+  fun `update initial appointment person with type DUTY_OFFICER`() {
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
@@ -77,14 +77,54 @@ class AppointmentControllerTest {
 
   @Test
   fun `update initial appointment person - invalid request body`() {
+    val anNullUpdateAppointmentPersonRequest = anUpdateAppointmentPersonRequest.copy(
+      appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+      appointmentPerson = null,
+    )
+    whenever(
+      appointmentService.updateAppointmentPerson(
+        4,
+        anNullUpdateAppointmentPersonRequest,
+      ),
+    ).thenThrow(ValidationException("Appointment person must not be null if Appointment With Type is SOMEONE_ELSE"))
+
+    val result = mvc.perform(
+      put("/licence/id/4/appointmentPerson")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(anNullUpdateAppointmentPersonRequest),
+        ),
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).contains("Appointment person must not be null if Appointment With Type is SOMEONE_ELSE")
+  }
+
+  @Test
+  fun `update initial appointment person with default type SOMEONE_ELSE`() {
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
+        .content(
+          mapper.writeValueAsBytes(
+            anUpdateAppointmentPersonRequest.copy(
+              appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+            ),
+          ),
+        ),
     )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
+      .andExpect(status().isOk)
+
+    verify(appointmentService, times(1)).updateAppointmentPerson(
+      4,
+      anUpdateAppointmentPersonRequest.copy(
+        appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+      ),
+    )
   }
 
   @Test

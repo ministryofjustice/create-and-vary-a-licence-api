@@ -159,8 +159,8 @@ data class VariationLicence(
   @Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   override val appointmentPerson: String? = null,
 
-  @Schema(description = "The type of appointment with for the initial appointment", example = "DUTY_OFFICER")
-  override val appointmentWithType: AppointmentWithType = AppointmentWithType.DUTY_OFFICER,
+  @Schema(description = "The type of appointment with for the initial appointment", example = "SOMEONE_ELSE")
+  override val appointmentWithType: AppointmentWithType? = AppointmentWithType.SOMEONE_ELSE,
 
   @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")

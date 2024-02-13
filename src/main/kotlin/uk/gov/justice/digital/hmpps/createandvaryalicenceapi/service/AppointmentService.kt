@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
 
 @Service
 class AppointmentService(
@@ -19,6 +20,11 @@ class AppointmentService(
 ) {
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
+    if (request.appointmentWithType === AppointmentWithType.SOMEONE_ELSE) {
+      if (request.appointmentPerson == null) {
+        throw ValidationException("Appointment person must not be null if Appointment With Type is SOMEONE_ELSE")
+      }
+    }
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
