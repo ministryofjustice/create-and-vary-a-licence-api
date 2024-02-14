@@ -31,7 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -78,7 +78,7 @@ class AppointmentControllerTest {
   @Test
   fun `update initial appointment person - invalid request body`() {
     val anNullUpdateAppointmentPersonRequest = anUpdateAppointmentPersonRequest.copy(
-      appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
+      appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
       appointmentPerson = null,
     )
     whenever(
@@ -112,7 +112,7 @@ class AppointmentControllerTest {
         .content(
           mapper.writeValueAsBytes(
             anUpdateAppointmentPersonRequest.copy(
-              appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
+              appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
             ),
           ),
         ),
@@ -122,7 +122,7 @@ class AppointmentControllerTest {
     verify(appointmentService, times(1)).updateAppointmentPerson(
       4,
       anUpdateAppointmentPersonRequest.copy(
-        appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
+        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
       ),
     )
   }
@@ -249,7 +249,7 @@ class AppointmentControllerTest {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentWithType = AppointmentWithType.DUTY_OFFICER,
+      appointmentPersonType = AppointmentPersonType.DUTY_OFFICER,
       appointmentPerson = "John Smith",
     )
 

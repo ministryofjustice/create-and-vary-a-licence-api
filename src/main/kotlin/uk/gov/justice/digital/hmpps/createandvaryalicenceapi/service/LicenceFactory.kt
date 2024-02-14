@@ -169,7 +169,7 @@ object LicenceFactory {
         probationLauDescription = this.probationLauDescription,
         probationTeamCode = this.probationTeamCode,
         probationTeamDescription = this.probationTeamDescription,
-        appointmentWithType = this.appointmentWithType,
+        appointmentPersonType = this.appointmentPersonType,
         appointmentPerson = this.appointmentPerson,
         appointmentTime = this.appointmentTime,
         appointmentTimeType = this.appointmentTimeType,

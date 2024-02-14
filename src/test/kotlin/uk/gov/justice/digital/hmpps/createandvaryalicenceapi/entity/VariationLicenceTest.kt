@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import java.time.LocalDateTime
 import kotlin.reflect.full.memberProperties
 
@@ -33,7 +33,7 @@ class VariationLicenceTest {
         appointmentTimeType = appointmentTimeType,
         submittedBy = TestData.com(),
         appointmentContact = "appointmentContact",
-        appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
+        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
         appointmentPerson = "appointmentPerson",
         approvedByName = "approvedByName",
         approvedByUsername = "approvedByUsername",

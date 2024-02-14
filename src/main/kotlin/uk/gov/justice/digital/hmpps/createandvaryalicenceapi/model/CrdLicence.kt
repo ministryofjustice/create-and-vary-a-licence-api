@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -160,7 +160,7 @@ data class CrdLicence(
   override val appointmentPerson: String? = null,
 
   @Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
-  override val appointmentWithType: AppointmentWithType? = null,
+  override val appointmentPersonType: AppointmentPersonType? = null,
 
   @Schema(description = "The date and time of the initial appointment", example = "23/08/2022 12:12")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")

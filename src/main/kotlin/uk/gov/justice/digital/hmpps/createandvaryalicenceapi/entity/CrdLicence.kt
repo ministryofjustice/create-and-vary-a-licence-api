@@ -6,7 +6,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -50,7 +50,7 @@ class CrdLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
-  appointmentWithType: AppointmentWithType? = null,
+  appointmentPersonType: AppointmentPersonType? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
@@ -114,7 +114,7 @@ class CrdLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
-  appointmentWithType = appointmentWithType,
+  appointmentPersonType = appointmentPersonType,
   appointmentPerson = appointmentPerson,
   appointmentTime = appointmentTime,
   appointmentTimeType = appointmentTimeType,
@@ -170,7 +170,7 @@ class CrdLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
-    appointmentWithType: AppointmentWithType? = this.appointmentWithType,
+    appointmentPersonType: AppointmentPersonType? = this.appointmentPersonType,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
@@ -228,7 +228,7 @@ class CrdLicence(
       probationLauDescription = probationLauDescription,
       probationTeamCode = probationTeamCode,
       probationTeamDescription = probationTeamDescription,
-      appointmentWithType = appointmentWithType,
+      appointmentPersonType = appointmentPersonType,
       appointmentPerson = appointmentPerson,
       appointmentTime = appointmentTime,
       appointmentTimeType = appointmentTimeType,
@@ -436,7 +436,7 @@ class CrdLicence(
       "probationLauDescription=$probationLauDescription, " +
       "probationTeamCode=$probationTeamCode, " +
       "probationTeamDescription=$probationTeamDescription, " +
-      "appointmentWithType=$appointmentWithType, " +
+      "appointmentPersonType=$appointmentPersonType, " +
       "appointmentPerson=$appointmentPerson, " +
       "appointmentTime=$appointmentTime, " +
       "appointmentTimeType=$appointmentTimeType, " +

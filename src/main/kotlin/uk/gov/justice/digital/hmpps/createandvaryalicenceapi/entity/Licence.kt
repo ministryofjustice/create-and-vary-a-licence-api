@@ -22,7 +22,7 @@ import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -87,7 +87,7 @@ abstract class Licence(
   val probationTeamDescription: String? = null,
 
   @Enumerated(EnumType.STRING)
-  var appointmentWithType: AppointmentWithType? = null,
+  var appointmentPersonType: AppointmentPersonType? = null,
   var appointmentPerson: String? = null,
   @Enumerated(EnumType.STRING)
   var appointmentTimeType: AppointmentTimeType? = null,
@@ -175,11 +175,11 @@ abstract class Licence(
   }
 
   fun updateAppointmentPerson(
-    appointmentWithType: AppointmentWithType?,
+    appointmentPersonType: AppointmentPersonType?,
     appointmentPerson: String?,
     updatedByUsername: String?,
   ) {
-    this.appointmentWithType = appointmentWithType
+    this.appointmentPersonType = appointmentPersonType
     this.appointmentPerson = appointmentPerson
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = updatedByUsername

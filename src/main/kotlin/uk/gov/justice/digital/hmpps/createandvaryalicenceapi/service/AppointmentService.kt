@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 
 @Service
 class AppointmentService(
@@ -20,7 +20,7 @@ class AppointmentService(
 ) {
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    if (request.appointmentWithType === AppointmentWithType.SPECIFIC_PERSON) {
+    if (request.appointmentPersonType === AppointmentPersonType.SPECIFIC_PERSON) {
       if (request.appointmentPerson == null) {
         throw ValidationException("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON")
       }
@@ -32,7 +32,7 @@ class AppointmentService(
     val previousPerson = licenceEntity.appointmentPerson
 
     licenceEntity.updateAppointmentPerson(
-      appointmentWithType = request.appointmentWithType,
+      appointmentPersonType = request.appointmentPersonType,
       appointmentPerson = request.appointmentPerson,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )

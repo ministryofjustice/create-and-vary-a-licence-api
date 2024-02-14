@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWithType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -58,7 +58,7 @@ class AppointmentServiceTest {
     service.updateAppointmentPerson(
       1L,
       AppointmentPersonRequest(
-        appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
+        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
         appointmentPerson = "John Smith",
       ),
     )
@@ -67,8 +67,8 @@ class AppointmentServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.value)
-      .extracting("appointmentWithType", "appointmentPerson", "updatedByUsername")
-      .isEqualTo(listOf(AppointmentWithType.SPECIFIC_PERSON, "John Smith", "smills"))
+      .extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername")
+      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", "smills"))
   }
 
   @Test
@@ -79,7 +79,7 @@ class AppointmentServiceTest {
       service.updateAppointmentPerson(
         1L,
         AppointmentPersonRequest(
-          appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
+          appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
           appointmentPerson = "John Smith",
         ),
       )
