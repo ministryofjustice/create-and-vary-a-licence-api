@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -47,6 +48,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
+    assertThat(result?.appointmentPersonType).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPersonType)
     assertThat(result?.appointmentPerson).isEqualTo(anUpdateAppointmentPersonRequest.appointmentPerson)
   }
 
@@ -180,6 +182,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
+      appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
       appointmentPerson = "John Smith",
     )
 

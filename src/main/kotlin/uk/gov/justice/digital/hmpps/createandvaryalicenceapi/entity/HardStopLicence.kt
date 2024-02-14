@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -49,6 +50,7 @@ class HardStopLicence(
   probationLauDescription: String? = null,
   probationTeamCode: String? = null,
   probationTeamDescription: String? = null,
+  appointmentPersonType: AppointmentPersonType? = null,
   appointmentPerson: String? = null,
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
@@ -114,6 +116,7 @@ class HardStopLicence(
   probationLauDescription = probationLauDescription,
   probationTeamCode = probationTeamCode,
   probationTeamDescription = probationTeamDescription,
+  appointmentPersonType = appointmentPersonType,
   appointmentPerson = appointmentPerson,
   appointmentTime = appointmentTime,
   appointmentTimeType = appointmentTimeType,
@@ -169,6 +172,7 @@ class HardStopLicence(
     probationLauDescription: String? = this.probationLauDescription,
     probationTeamCode: String? = this.probationTeamCode,
     probationTeamDescription: String? = this.probationTeamDescription,
+    appointmentPersonType: AppointmentPersonType? = this.appointmentPersonType,
     appointmentPerson: String? = this.appointmentPerson,
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
@@ -227,6 +231,7 @@ class HardStopLicence(
       probationLauDescription = probationLauDescription,
       probationTeamCode = probationTeamCode,
       probationTeamDescription = probationTeamDescription,
+      appointmentPersonType = appointmentPersonType,
       appointmentPerson = appointmentPerson,
       appointmentTime = appointmentTime,
       appointmentTimeType = appointmentTimeType,
@@ -429,6 +434,7 @@ class HardStopLicence(
       "probationLauDescription=$probationLauDescription, " +
       "probationTeamCode=$probationTeamCode, " +
       "probationTeamDescription=$probationTeamDescription, " +
+      "appointmentPersonType=$appointmentPersonType, " +
       "appointmentPerson=$appointmentPerson, " +
       "appointmentTime=$appointmentTime, " +
       "appointmentTimeType=$appointmentTimeType, " +

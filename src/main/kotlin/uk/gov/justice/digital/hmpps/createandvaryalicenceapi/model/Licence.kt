@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -174,6 +175,9 @@ sealed interface Licence {
 
   @get:Schema(description = "The team description", example = "Cardiff South")
   val probationTeamDescription: String?
+
+  @get:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
+  val appointmentPersonType: AppointmentPersonType?
 
   @get:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")
   @get:JsonView(Views.SubjectAccessRequest::class)

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 
 @Service
@@ -19,6 +20,11 @@ class AppointmentService(
 ) {
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
+    if (request.appointmentPersonType === AppointmentPersonType.SPECIFIC_PERSON) {
+      if (request.appointmentPerson == null) {
+        throw ValidationException("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON")
+      }
+    }
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -26,6 +32,7 @@ class AppointmentService(
     val previousPerson = licenceEntity.appointmentPerson
 
     licenceEntity.updateAppointmentPerson(
+      appointmentPersonType = request.appointmentPersonType,
       appointmentPerson = request.appointmentPerson,
       updatedByUsername = SecurityContextHolder.getContext().authentication.name,
     )
