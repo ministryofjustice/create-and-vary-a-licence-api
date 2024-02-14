@@ -176,7 +176,7 @@ sealed interface Licence {
   @get:Schema(description = "The team description", example = "Cardiff South")
   val probationTeamDescription: String?
 
-  @get:Schema(description = "The type of appointment with for the initial appointment", example = "SOMEONE_ELSE")
+  @get:Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
   val appointmentWithType: AppointmentWithType?
 
   @get:Schema(description = "Who the person will meet at their initial appointment", example = "Duty officer")

@@ -78,7 +78,7 @@ class AppointmentControllerTest {
   @Test
   fun `update initial appointment person - invalid request body`() {
     val anNullUpdateAppointmentPersonRequest = anUpdateAppointmentPersonRequest.copy(
-      appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+      appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
       appointmentPerson = null,
     )
     whenever(
@@ -86,7 +86,7 @@ class AppointmentControllerTest {
         4,
         anNullUpdateAppointmentPersonRequest,
       ),
-    ).thenThrow(ValidationException("Appointment person must not be null if Appointment With Type is SOMEONE_ELSE"))
+    ).thenThrow(ValidationException("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON"))
 
     val result = mvc.perform(
       put("/licence/id/4/appointmentPerson")
@@ -100,11 +100,11 @@ class AppointmentControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).contains("Appointment person must not be null if Appointment With Type is SOMEONE_ELSE")
+    assertThat(result.response.contentAsString).contains("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON")
   }
 
   @Test
-  fun `update initial appointment person with default type SOMEONE_ELSE`() {
+  fun `update initial appointment person with default type SPECIFIC_PERSON`() {
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
@@ -112,7 +112,7 @@ class AppointmentControllerTest {
         .content(
           mapper.writeValueAsBytes(
             anUpdateAppointmentPersonRequest.copy(
-              appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+              appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
             ),
           ),
         ),
@@ -122,7 +122,7 @@ class AppointmentControllerTest {
     verify(appointmentService, times(1)).updateAppointmentPerson(
       4,
       anUpdateAppointmentPersonRequest.copy(
-        appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+        appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
       ),
     )
   }

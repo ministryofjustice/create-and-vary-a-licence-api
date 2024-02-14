@@ -20,9 +20,9 @@ class AppointmentService(
 ) {
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
-    if (request.appointmentWithType === AppointmentWithType.SOMEONE_ELSE) {
+    if (request.appointmentWithType === AppointmentWithType.SPECIFIC_PERSON) {
       if (request.appointmentPerson == null) {
-        throw ValidationException("Appointment person must not be null if Appointment With Type is SOMEONE_ELSE")
+        throw ValidationException("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON")
       }
     }
     val licenceEntity = licenceRepository

@@ -215,7 +215,7 @@ object TestData {
       lastName = "Y",
     ),
     createdBy = com(),
-    appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+    appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }

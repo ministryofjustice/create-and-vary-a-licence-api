@@ -33,7 +33,7 @@ class VariationLicenceTest {
         appointmentTimeType = appointmentTimeType,
         submittedBy = TestData.com(),
         appointmentContact = "appointmentContact",
-        appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+        appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
         appointmentPerson = "appointmentPerson",
         approvedByName = "approvedByName",
         approvedByUsername = "approvedByUsername",

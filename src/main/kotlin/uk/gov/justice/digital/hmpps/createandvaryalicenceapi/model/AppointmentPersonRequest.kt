@@ -6,8 +6,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentWit
 @Schema(description = "Request object for updating the person the person on probation will meet at the initial appointment")
 data class AppointmentPersonRequest(
 
-  @Schema(description = "The type of appointment with for the initial appointment", example = "SOMEONE_ELSE")
-  val appointmentWithType: AppointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+  @Schema(description = "The type of appointment with for the initial appointment", example = "SPECIFIC_PERSON")
+  val appointmentWithType: AppointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
 
   @Schema(
     description = "The name of the person the person on probation will meet at the initial appointment",

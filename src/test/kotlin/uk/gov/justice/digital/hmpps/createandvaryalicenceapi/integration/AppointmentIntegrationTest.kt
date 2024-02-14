@@ -182,7 +182,7 @@ class AppointmentIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
-      appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+      appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
       appointmentPerson = "John Smith",
     )
 

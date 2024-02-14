@@ -58,7 +58,7 @@ class AppointmentServiceTest {
     service.updateAppointmentPerson(
       1L,
       AppointmentPersonRequest(
-        appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+        appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
         appointmentPerson = "John Smith",
       ),
     )
@@ -68,7 +68,7 @@ class AppointmentServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("appointmentWithType", "appointmentPerson", "updatedByUsername")
-      .isEqualTo(listOf(AppointmentWithType.SOMEONE_ELSE, "John Smith", "smills"))
+      .isEqualTo(listOf(AppointmentWithType.SPECIFIC_PERSON, "John Smith", "smills"))
   }
 
   @Test
@@ -79,7 +79,7 @@ class AppointmentServiceTest {
       service.updateAppointmentPerson(
         1L,
         AppointmentPersonRequest(
-          appointmentWithType = AppointmentWithType.SOMEONE_ELSE,
+          appointmentWithType = AppointmentWithType.SPECIFIC_PERSON,
           appointmentPerson = "John Smith",
         ),
       )
