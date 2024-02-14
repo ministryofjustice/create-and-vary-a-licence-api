@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -54,14 +55,20 @@ class AppointmentServiceTest {
   fun `update initial appointment person persists updated entity correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
-    service.updateAppointmentPerson(1L, AppointmentPersonRequest(appointmentPerson = "John Smith"))
+    service.updateAppointmentPerson(
+      1L,
+      AppointmentPersonRequest(
+        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+        appointmentPerson = "John Smith",
+      ),
+    )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.value)
-      .extracting("appointmentPerson", "updatedByUsername")
-      .isEqualTo(listOf("John Smith", "smills"))
+      .extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername")
+      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", "smills"))
   }
 
   @Test
@@ -69,7 +76,13 @@ class AppointmentServiceTest {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
 
     val exception = assertThrows<EntityNotFoundException> {
-      service.updateAppointmentPerson(1L, AppointmentPersonRequest(appointmentPerson = "John Smith"))
+      service.updateAppointmentPerson(
+        1L,
+        AppointmentPersonRequest(
+          appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+          appointmentPerson = "John Smith",
+        ),
+      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)

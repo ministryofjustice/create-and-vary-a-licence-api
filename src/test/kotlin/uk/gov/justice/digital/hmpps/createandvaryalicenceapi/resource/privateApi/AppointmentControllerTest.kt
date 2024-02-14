@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -62,7 +63,7 @@ class AppointmentControllerTest {
   }
 
   @Test
-  fun `update initial appointment person`() {
+  fun `update initial appointment person with type DUTY_OFFICER`() {
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
@@ -76,14 +77,54 @@ class AppointmentControllerTest {
 
   @Test
   fun `update initial appointment person - invalid request body`() {
+    val anNullUpdateAppointmentPersonRequest = anUpdateAppointmentPersonRequest.copy(
+      appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+      appointmentPerson = null,
+    )
+    whenever(
+      appointmentService.updateAppointmentPerson(
+        4,
+        anNullUpdateAppointmentPersonRequest,
+      ),
+    ).thenThrow(ValidationException("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON"))
+
+    val result = mvc.perform(
+      put("/licence/id/4/appointmentPerson")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+          mapper.writeValueAsBytes(anNullUpdateAppointmentPersonRequest),
+        ),
+    )
+      .andExpect(status().isBadRequest)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).contains("Appointment person must not be null if Appointment With Type is SPECIFIC_PERSON")
+  }
+
+  @Test
+  fun `update initial appointment person with default type SPECIFIC_PERSON`() {
     mvc.perform(
       put("/licence/id/4/appointmentPerson")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
+        .content(
+          mapper.writeValueAsBytes(
+            anUpdateAppointmentPersonRequest.copy(
+              appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+            ),
+          ),
+        ),
     )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
+      .andExpect(status().isOk)
+
+    verify(appointmentService, times(1)).updateAppointmentPerson(
+      4,
+      anUpdateAppointmentPersonRequest.copy(
+        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+      ),
+    )
   }
 
   @Test
@@ -208,6 +249,7 @@ class AppointmentControllerTest {
 
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
+      appointmentPersonType = AppointmentPersonType.DUTY_OFFICER,
       appointmentPerson = "John Smith",
     )
 
