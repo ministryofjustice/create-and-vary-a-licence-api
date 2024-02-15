@@ -39,7 +39,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary as ModelPublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
 
@@ -95,7 +94,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -139,7 +138,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -183,7 +182,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -214,24 +213,6 @@ class PublicLicenceServiceTest {
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("licence: 1 has no COM/creator")
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service throws an error for an unmapped field when querying a list of licence summaries by crn`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(statusCode = LicenceStatus.NOT_STARTED),
-        ),
-      )
-
-      val exception = assertThrows<IllegalStateException> {
-        service.getAllLicencesByCrn("A12345")
-      }
-
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No matching licence status found")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }
@@ -266,7 +247,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -310,7 +291,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -354,7 +335,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -385,24 +366,6 @@ class PublicLicenceServiceTest {
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("Null field retrieved: version for licence 1")
-
-      verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service throws an error for an unmapped field when querying a list of licence summaries by prison number`() {
-      whenever(licenceRepository.findAllByNomsIdAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(statusCode = LicenceStatus.NOT_STARTED),
-        ),
-      )
-
-      val exception = assertThrows<IllegalStateException> {
-        service.getAllLicencesByPrisonNumber("A1234BC")
-      }
-
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No matching licence status found")
 
       verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(any(), any())
     }
@@ -716,9 +679,7 @@ class PublicLicenceServiceTest {
       licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
       policyVersion = PolicyVersion.entries.find { it.version == modelLicence.version }!!,
       version = modelLicence.licenceVersion.orEmpty(),
-      statusCode = PublicLicenceStatus.valueOf(
-        modelLicence.statusCode.toString(),
-      ),
+      statusCode = modelLicence.statusCode!!,
 
       prisonNumber = modelLicence.nomsId.orEmpty(),
       bookingId = modelLicence.bookingId ?: 0,
@@ -774,7 +735,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -818,7 +779,7 @@ class PublicLicenceServiceTest {
           PublicLicenceType.AP,
           PolicyVersion.V1_0,
           "1.4",
-          PublicLicenceStatus.IN_PROGRESS,
+          LicenceStatus.IN_PROGRESS,
           "A1234BC",
           987654L,
           "A12345",
@@ -849,24 +810,6 @@ class PublicLicenceServiceTest {
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("licence: 1 has no COM/creator")
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service throws an error for an unmapped field when querying a list of licence summaries by crn`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(statusCode = LicenceStatus.NOT_STARTED),
-        ),
-      )
-
-      val exception = assertThrows<IllegalStateException> {
-        service.getAllLicencesByCrn("A12345")
-      }
-
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No matching licence status found")
 
       verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
     }

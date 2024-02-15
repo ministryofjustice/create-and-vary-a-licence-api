@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition as ModelBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus as PublicLicenceStatus
 
 class LicenceDetailTransformerKtTest {
 
@@ -167,10 +166,7 @@ class LicenceDetailTransformerKtTest {
       licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
       policyVersion = PolicyVersion.entries.find { it.version == modelLicence.version }!!,
       version = modelLicence.licenceVersion.orEmpty(),
-      statusCode = PublicLicenceStatus.valueOf(
-        modelLicence.statusCode.toString(),
-      ),
-
+      statusCode = modelLicence.statusCode!!,
       prisonNumber = modelLicence.nomsId.orEmpty(),
       bookingId = modelLicence.bookingId ?: 0,
       crn = modelLicence.crn.orEmpty(),

@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.additionalConditions.ConditionTypes
@@ -44,7 +43,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
     licenceType = this.typeCode.mapToPublicLicenceType(),
     policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy version not found for licence id:" + this.id),
     version = this.licenceVersion.orEmpty(),
-    statusCode = LicenceStatus.valueOf(this.statusCode.toString()),
+    statusCode = this.statusCode!!,
     prisonNumber = this.nomsId.orEmpty(),
     bookingId = this.bookingId ?: 0,
     crn = this.crn.orEmpty(),
