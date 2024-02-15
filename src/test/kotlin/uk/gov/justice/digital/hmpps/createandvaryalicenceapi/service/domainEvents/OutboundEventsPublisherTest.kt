@@ -67,7 +67,7 @@ class OutboundEventsPublisherTest {
         ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(domainEvent, licenceId)
+      outboundEventsPublisher.publishDomainEvent(domainEvent)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 
@@ -126,7 +126,7 @@ class OutboundEventsPublisherTest {
         ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(payload, licenceId)
+      outboundEventsPublisher.publishDomainEvent(payload)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 
@@ -188,7 +188,7 @@ class OutboundEventsPublisherTest {
         ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(payload, licenceId)
+      outboundEventsPublisher.publishDomainEvent(payload)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 
@@ -247,7 +247,7 @@ class OutboundEventsPublisherTest {
         ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(payload, licenceId)
+      outboundEventsPublisher.publishDomainEvent(payload)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 
@@ -309,7 +309,7 @@ class OutboundEventsPublisherTest {
         ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(payload, licenceId)
+      outboundEventsPublisher.publishDomainEvent(payload)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 
@@ -368,7 +368,7 @@ class OutboundEventsPublisherTest {
         ),
       )
 
-      outboundEventsPublisher.publishDomainEvent(payload, licenceId)
+      outboundEventsPublisher.publishDomainEvent(payload)
 
       verify(snsClient, times(1)).publish(requestCaptor.capture())
 

@@ -25,9 +25,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Deacti
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 
 class DeactivateLicencesServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -122,7 +119,6 @@ class DeactivateLicencesServiceTest {
   }
 
   private companion object {
-    val clock: Clock = Clock.fixed(Instant.parse("2023-12-05T00:00:00Z"), ZoneId.systemDefault())
     val aLicenceEntity = TestData.createCrdLicence().copy()
   }
 }
