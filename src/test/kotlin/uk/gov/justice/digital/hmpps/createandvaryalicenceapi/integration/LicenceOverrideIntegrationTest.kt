@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -73,7 +72,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .isAccepted
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      verify(eventsPublisher).publishDomainEvent(capture())
       assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_ACTIVATED.value)
     }
 
@@ -122,7 +121,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
       .isAccepted
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      verify(eventsPublisher).publishDomainEvent(capture())
       assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
     }
 
@@ -156,7 +155,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     assertThat(licenceEventRepository.count()).isEqualTo(1)
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      verify(eventsPublisher).publishDomainEvent(capture())
       assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value)
     }
   }
@@ -185,7 +184,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     assertThat(licenceEventRepository.count()).isEqualTo(1)
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher).publishDomainEvent(capture(), any())
+      verify(eventsPublisher).publishDomainEvent(capture())
       assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value)
     }
   }

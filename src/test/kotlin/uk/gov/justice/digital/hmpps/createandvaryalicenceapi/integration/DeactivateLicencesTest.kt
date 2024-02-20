@@ -7,7 +7,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -74,7 +73,7 @@ class DeactivateLicencesTest : IntegrationTestBase() {
       )
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(3)).publishDomainEvent(capture(), any())
+      verify(eventsPublisher, times(3)).publishDomainEvent(capture())
       assertThat(allValues).allMatch { it.eventType == LicenceDomainEventType.LICENCE_INACTIVATED.value }
     }
   }

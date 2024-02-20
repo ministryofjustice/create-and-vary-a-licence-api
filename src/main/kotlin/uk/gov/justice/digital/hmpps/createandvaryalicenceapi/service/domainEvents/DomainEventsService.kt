@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -12,8 +13,8 @@ import java.time.format.DateTimeFormatter
 @Service
 class DomainEventsService(
   @Value("\${self.api.link}") private val baseUrl: String,
-  private val outboundEventsPublisher: OutboundEventsPublisher,
   private val clock: Clock,
+  private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
   fun recordDomainEvent(licence: Licence, licenceStatus: LicenceStatus) {
     when (licenceStatus) {
@@ -25,11 +26,7 @@ class DomainEventsService(
           licence.nomsId,
           "Licence activated for Licence ID ${licence.id}",
         )
-        outboundEventsPublisher
-          .publishDomainEvent(
-            domainEvent,
-            licence.id.toString(),
-          )
+        applicationEventPublisher.publishEvent(domainEvent)
       }
 
       LicenceStatus.INACTIVE -> {
@@ -40,11 +37,7 @@ class DomainEventsService(
           licence.nomsId,
           "Licence inactivated for Licence ID ${licence.id}",
         )
-        outboundEventsPublisher
-          .publishDomainEvent(
-            domainEvent,
-            licence.id.toString(),
-          )
+        applicationEventPublisher.publishEvent(domainEvent)
       }
       else -> return
     }

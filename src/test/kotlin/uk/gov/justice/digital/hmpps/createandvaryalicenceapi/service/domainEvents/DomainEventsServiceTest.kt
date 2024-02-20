@@ -2,12 +2,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.springframework.context.ApplicationEventPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
@@ -17,13 +17,13 @@ import java.time.Instant
 import java.time.ZoneId
 
 class DomainEventsServiceTest {
-  private val outboundEventsPublisher = mock<OutboundEventsPublisher>()
   private val clock: Clock = Clock.fixed(Instant.parse("2023-12-05T00:00:00Z"), ZoneId.systemDefault())
+  private val applicationEventPublisher = mock<ApplicationEventPublisher>()
 
   private val domainEventsService = DomainEventsService(
     "http://test123",
-    outboundEventsPublisher,
     clock,
+    applicationEventPublisher,
   )
 
   @Test
@@ -32,7 +32,7 @@ class DomainEventsServiceTest {
 
     domainEventsService.recordDomainEvent(TestData.createCrdLicence(), LicenceStatus.ACTIVE)
 
-    verify(outboundEventsPublisher, times(1)).publishDomainEvent(eventCaptor.capture(), any())
+    verify(applicationEventPublisher, times(1)).publishEvent(eventCaptor.capture())
 
     assertThat(eventCaptor.firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_ACTIVATED.value)
 
@@ -45,7 +45,7 @@ class DomainEventsServiceTest {
 
     domainEventsService.recordDomainEvent(TestData.createCrdLicence(), LicenceStatus.INACTIVE)
 
-    verify(outboundEventsPublisher, times(1)).publishDomainEvent(eventCaptor.capture(), any())
+    verify(applicationEventPublisher, times(1)).publishEvent(eventCaptor.capture())
 
     assertThat(eventCaptor.firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
 
@@ -58,7 +58,7 @@ class DomainEventsServiceTest {
 
     domainEventsService.recordDomainEvent(TestData.createVariationLicence(), LicenceStatus.ACTIVE)
 
-    verify(outboundEventsPublisher, times(1)).publishDomainEvent(eventCaptor.capture(), any())
+    verify(applicationEventPublisher, times(1)).publishEvent(eventCaptor.capture())
 
     assertThat(eventCaptor.firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_VARIATION_ACTIVATED.value)
 
@@ -71,7 +71,7 @@ class DomainEventsServiceTest {
 
     domainEventsService.recordDomainEvent(TestData.createVariationLicence(), LicenceStatus.INACTIVE)
 
-    verify(outboundEventsPublisher, times(1)).publishDomainEvent(eventCaptor.capture(), any())
+    verify(applicationEventPublisher, times(1)).publishEvent(eventCaptor.capture())
 
     assertThat(eventCaptor.firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value)
 
@@ -84,7 +84,7 @@ class DomainEventsServiceTest {
 
     domainEventsService.recordDomainEvent(TestData.createHardStopLicence(), LicenceStatus.ACTIVE)
 
-    verify(outboundEventsPublisher, times(1)).publishDomainEvent(eventCaptor.capture(), any())
+    verify(applicationEventPublisher, times(1)).publishEvent(eventCaptor.capture())
 
     assertThat(eventCaptor.firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_ACTIVATED.value)
 
@@ -97,7 +97,7 @@ class DomainEventsServiceTest {
 
     domainEventsService.recordDomainEvent(TestData.createHardStopLicence(), LicenceStatus.INACTIVE)
 
-    verify(outboundEventsPublisher, times(1)).publishDomainEvent(eventCaptor.capture(), any())
+    verify(applicationEventPublisher, times(1)).publishEvent(eventCaptor.capture())
 
     assertThat(eventCaptor.firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
 
@@ -108,6 +108,6 @@ class DomainEventsServiceTest {
   fun `does not create and publishes a domain event when status is not ACTIVE or INACTIVE`() {
     domainEventsService.recordDomainEvent(TestData.createCrdLicence(), LicenceStatus.SUBMITTED)
 
-    verifyNoInteractions(outboundEventsPublisher)
+    verifyNoInteractions(applicationEventPublisher)
   }
 }
