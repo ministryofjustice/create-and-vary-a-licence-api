@@ -8,8 +8,11 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import software.amazon.awssdk.services.sns.model.PublishResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 @Service
 class OutboundEventsPublisher(
@@ -19,6 +22,7 @@ class OutboundEventsPublisher(
 
   companion object {
     const val DOMAIN_TOPIC_ID = "domainevents"
+    const val FUTURE_TIMEOUT = 10000L
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
@@ -31,18 +35,25 @@ class OutboundEventsPublisher(
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   fun publishDomainEvent(event: HMPPSDomainEvent) {
     val eventType = event.eventType
-    log.debug("Event {} for licence ID {}", eventType, event.additionalInformation?.licenceId)
-    domainEventsTopicClient.publish(
+    val publishedDomainEvent = buildDomainEvent(event).get(FUTURE_TIMEOUT, TimeUnit.MILLISECONDS)
+    if (publishedDomainEvent != null) {
+      log.info("Event {} raised for licence ID {}", eventType, event.additionalInformation?.licenceId)
+    } else {
+      log.warn("Event {} was not raised for licence ID {}", eventType, event.additionalInformation?.licenceId)
+    }
+  }
+
+  fun buildDomainEvent(event: HMPPSDomainEvent): CompletableFuture<PublishResponse> {
+    return domainEventsTopicClient.publish(
       PublishRequest.builder()
         .topicArn(domainEventsTopic.arn)
         .message(objectMapper.writeValueAsString(event))
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(eventType).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(event.eventType).build(),
           ),
         )
-        .build()
-        .also { log.info("Published event $eventType to outbound topic") },
+        .build(),
     )
   }
 }
