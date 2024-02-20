@@ -8,6 +8,7 @@ import net.javacrumbs.jsonunit.assertj.assertThatJson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 
 class OutboundEventsPublisherTest {
   private val hmppsQueueServiceMock = mock<HmppsQueueService>()
@@ -394,55 +396,29 @@ class OutboundEventsPublisherTest {
     }
   }
 
-  @Nested
-  inner class BuildEvent {
+  @Test
+  fun `failed future throws an exception when building an event`() {
+    whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
+    whenever(mockHmppsTopic.arn).thenReturn(anArn)
+    whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
 
-    @Test
-    fun `build event completes successfully`() {
-      whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
-      whenever(mockHmppsTopic.arn).thenReturn(anArn)
-      whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
+    val publishRequest = PublishRequest.builder()
+      .topicArn(anArn)
+      .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
+      .messageAttributes(
+        mapOf(
+          "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType).build(),
+        ),
+      )
+      .build()
 
-      val publishRequest = PublishRequest.builder()
-        .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType)
-              .build(),
-          ),
-        )
-        .build()
+    whenever(snsClient.publish(publishRequest)).thenReturn(CompletableFuture.failedFuture(Exception("Test")))
 
-      whenever(snsClient.publish(publishRequest)).thenReturn(CompletableFuture.completedFuture(aPublishResponse))
-
-      val publishedEvent = outboundEventsPublisher.buildDomainEvent(aHMPPSDomainEvent)
-
-      assertThat(publishedEvent.isDone).isTrue()
+    val exception = assertThrows<ExecutionException> {
+      outboundEventsPublisher.publishDomainEvent(aHMPPSDomainEvent)
     }
 
-    @Test
-    fun `failed future completes exceptionally when building an event`() {
-      whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
-      whenever(mockHmppsTopic.arn).thenReturn(anArn)
-      whenever(mockHmppsTopic.snsClient).thenReturn(snsClient)
-
-      val publishRequest = PublishRequest.builder()
-        .topicArn(anArn)
-        .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
-        .messageAttributes(
-          mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType).build(),
-          ),
-        )
-        .build()
-
-      whenever(snsClient.publish(publishRequest)).thenReturn(CompletableFuture.failedFuture(Exception("Exception")))
-
-      val publishedEvent = outboundEventsPublisher.buildDomainEvent(aHMPPSDomainEvent)
-
-      assertThat(publishedEvent.isCompletedExceptionally).isTrue()
-    }
+    assertThat(exception).isInstanceOf(ExecutionException::class.java)
   }
 
   private companion object {
