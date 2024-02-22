@@ -35,7 +35,7 @@ fun <T, R> KProperty1<T, R?>.equal(x: R): Specification<T> = spec { equal(it, x)
 fun <T, R> KProperty1<T, R?>.notEqual(x: R): Specification<T> = spec { notEqual(it, x) }
 
 // Ignores empty collection otherwise an empty 'in' predicate will be generated which will never match any results
-fun <T, R : Any> KProperty1<T, R?>.`in`(values: Collection<R>): Specification<T> = if (values.isNotEmpty()) {
+fun <T, R : Any> KProperty1<T, R?>.includedIn(values: Collection<R>): Specification<T> = if (values.isNotEmpty()) {
   spec { path ->
     `in`(path).apply { values.forEach { this.value(it) } }
   }

@@ -13,7 +13,7 @@ parameters:
     default: the_elephants_devs
   java-version:
     type: string
-    default: "19.0"
+    default: "21.0"
   localstack-version:
     type: string
     default: "3.0.2"

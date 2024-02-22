@@ -54,7 +54,8 @@ class LicencePolicyServiceTest() {
     fun `can't find config for condition that does not exist on version`() {
       val error = assertThrows<IllegalStateException> {
         licencePolicyService.getConfigForCondition(
-          "2.1", // only exists on 1.0
+          // only exists on 1.0
+          "2.1",
           "599bdcae-d545-461c-b1a9-02cb3d4ba268",
         )
       }

@@ -18,7 +18,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   fun getStaffByIdentifier(staffIdentifier: Long): User? =
     communityApiClient
       .get()
-      .uri("/secure/staff/staffIdentifier/$staffIdentifier")
+      .uri("/secure/staff/staffIdentifier/{staffIdentifier}", staffIdentifier)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(User::class.java)
@@ -27,7 +27,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   fun getAllOffenderManagers(crn: String): List<CommunityOrPrisonOffenderManager> {
     val communityApiResponse = communityApiClient
       .get()
-      .uri("/secure/offenders/crn/$crn/allOffenderManagers")
+      .uri("/secure/offenders/crn/{crn}/allOffenderManagers", crn)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<CommunityOrPrisonOffenderManager>>())

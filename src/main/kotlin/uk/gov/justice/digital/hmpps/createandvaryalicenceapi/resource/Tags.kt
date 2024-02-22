@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource
 
 class Tags {
+  private constructor()
   companion object {
     const val ADMIN = "Admin"
     const val ANCILLARY = "Ancillary"

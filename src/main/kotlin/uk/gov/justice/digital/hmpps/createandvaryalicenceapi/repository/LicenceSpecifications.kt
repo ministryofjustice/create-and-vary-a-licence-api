@@ -8,7 +8,7 @@ import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`in`
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`includedIn`
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 data class LicenceQueryObject(
@@ -48,15 +48,15 @@ fun LicenceQueryObject.getSort(): Sort = when {
 }
 
 fun hasPrisonCodeIn(prisonCodes: List<String>?): Specification<Licence>? = prisonCodes?.let {
-  Licence::prisonCode.`in`(it)
+  Licence::prisonCode.includedIn(it)
 }
 
 fun hasStatusCodeIn(statusCodes: List<LicenceStatus>?): Specification<Licence>? = statusCodes?.let {
-  Licence::statusCode.`in`(it)
+  Licence::statusCode.includedIn(it)
 }
 
 fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let {
-  Licence::nomsId.`in`(it)
+  Licence::nomsId.includedIn(it)
 }
 
 fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
@@ -67,9 +67,9 @@ fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffId
 }
 
 fun hasPdusIn(pduCodes: List<String>?): Specification<Licence>? = pduCodes?.let {
-  Licence::probationPduCode.`in`(it)
+  Licence::probationPduCode.includedIn(it)
 }
 
 fun hasProbationAreaCodeIn(areaCodes: List<String>?): Specification<Licence>? = areaCodes?.let {
-  Licence::probationAreaCode.`in`(it)
+  Licence::probationAreaCode.includedIn(it)
 }

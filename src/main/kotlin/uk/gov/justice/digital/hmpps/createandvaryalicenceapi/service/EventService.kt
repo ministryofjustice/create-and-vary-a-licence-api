@@ -17,7 +17,7 @@ class EventService(private val licenceEventRepository: LicenceEventRepository) {
       val matchingEvents = licenceEventRepository.findAll(eventQueryObject.toSpecification(), eventQueryObject.getSort())
       return matchingEvents.transformToModelEvents()
     } catch (e: PropertyReferenceException) {
-      throw ValidationException(e.message)
+      throw ValidationException(e.message, e)
     }
   }
 }

@@ -10,6 +10,12 @@ import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 
 class ControllerTagTest {
+  private val controllersToIgnore = listOf(
+    // These only gets wired up in tests
+    "uk.gov.justice.hmpps.sqs.HmppsQueueResource",
+    "uk.gov.justice.hmpps.sqs.HmppsReactiveQueueResource",
+  )
+
   private data class ControllerInfo(
     val controller: String,
     val unTaggedEndpoints: List<String>,
@@ -33,7 +39,7 @@ class ControllerTagTest {
     .also { it.addIncludeFilter(AnnotationTypeFilter(RestController::class.java)) }
     .findCandidateComponents("uk.gov.justice")
     .map { Class.forName(it.beanClassName) }
-    .filter { !it.hasTagAnnotation() }
+    .filter { !it.hasTagAnnotation() && !controllersToIgnore.contains(it.name) }
     .map { ControllerInfo(it.toString(), it.getUnTaggedEndpoints()) }
     .filter { it.unTaggedEndpoints.isNotEmpty() }
 
