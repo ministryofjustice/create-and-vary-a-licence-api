@@ -45,7 +45,12 @@ class OutboundEventsPublisherIntegrationTest : IntegrationTestBase() {
 
     await untilCallTo { domainEventsSqsClient.countMessagesOnQueue(domainEventsQueueUrl).get() } matches { it != 0 }
 
-    val (receivedMessage, _, _) = mapper.readValue(domainEventsSqsClient.receiveMessage(ReceiveMessageRequest.builder().queueUrl(domainEventsQueueUrl).build()).get().messages()[0].body(), Message::class.java)
+    val (receivedMessage, _, _) = mapper.readValue(
+      domainEventsSqsClient.receiveMessage(
+        ReceiveMessageRequest.builder().queueUrl(domainEventsQueueUrl).build(),
+      ).get().messages()[0].body(),
+      Message::class.java,
+    )
     val receivedEvent = mapper.readValue(receivedMessage, DomainEventsService.HMPPSDomainEvent::class.java)
 
     assertThat(receivedEvent.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
