@@ -6,14 +6,19 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import java.time.LocalDateTime
 
 @Service
 class StaffService(
   private val staffRepository: StaffRepository,
+  private val communityApiClient: CommunityApiClient,
+  private val licenceRepository: LicenceRepository,
 ) {
 
   companion object {
@@ -81,6 +86,22 @@ class StaffService(
       found.isUpdate(request) -> this.staffRepository.saveAndFlush(found.updatedWith(request))
       else -> found
     }
+  }
+
+  fun getReviewCounts(staffIdentifier: Long): ComReviewCount {
+    val com = this.staffRepository.findByStaffIdentifier(staffIdentifier)
+      ?: error("Staff with identifier $staffIdentifier not found")
+
+    val teamCodes = this.communityApiClient.getTeamsCodesForUser(staffIdentifier)
+
+    val comReviewCount = this.licenceRepository.getLicenceReviewCountForCom(com)
+
+    val teamsReviewCount = this.licenceRepository.getLicenceReviewCountForTeams(teamCodes)
+
+    return ComReviewCount(
+      comReviewCount,
+      teamsReviewCount,
+    )
   }
 
   private fun PrisonCaseAdministrator.updatedWith(
