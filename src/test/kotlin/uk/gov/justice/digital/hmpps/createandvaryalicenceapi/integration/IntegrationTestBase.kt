@@ -53,7 +53,17 @@ abstract class IntegrationTestBase {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
   }
 
-  private val domainEventsQueue by lazy { hmppsQueueService.findByQueueId("domaineventsqueue") ?: throw MissingQueueException("HmppsQueue domaineventsqueue not found") }
+  protected val domainEventsTopic by lazy {
+    hmppsQueueService.findByTopicId("domainevents")
+      ?: throw MissingQueueException("HmppsTopic domainevents not found")
+  }
+  protected val domainEventsTopicSnsClient by lazy { domainEventsTopic.snsClient }
+  protected val domainEventsTopicArn by lazy { domainEventsTopic.arn }
+
+  protected val domainEventsQueue by lazy { hmppsQueueService.findByQueueId("domaineventsqueue") ?: throw MissingQueueException("HmppsQueue domaineventsqueue not found") }
+
+  protected val domainEventsSqsClient by lazy { domainEventsQueue.sqsClient }
+  protected val domainEventsQueueUrl by lazy { domainEventsQueue.queueUrl }
 
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
@@ -79,6 +89,14 @@ abstract class IntegrationTestBase {
     user: String = "test-client",
     roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
+
+  data class EventType(val Value: String, val Type: String)
+  data class MessageAttributes(val eventType: EventType)
+  data class Message(
+    val Message: String,
+    val MessageId: String,
+    val MessageAttributes: MessageAttributes,
+  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
