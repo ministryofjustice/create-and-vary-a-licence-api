@@ -102,11 +102,24 @@ workflows:
           name: helm_lint
       - hmpps/build_docker:
           name: build_docker
+      - request-test1-approval:
+          type: approval
+          requires:
+            - build_docker
+            - validate
+            - integration-test
+      - hmpps/deploy_env:
+          name: deploy_test1
+          env: "test1"
+          context:
+            - hmpps-common-vars
+            - create-and-vary-a-licence-test1
+          requires:
+            - request-test1-approval
           filters:
             branches:
-              only:
+              ignore:
                 - main
-                - /test.*/
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -146,18 +159,6 @@ workflows:
             - create-and-vary-a-licence-api-prod
           requires:
             - request-prod-approval
-      - hmpps/deploy_env:
-          name: deploy_test1
-          env: "test1"
-          context:
-            - hmpps-common-vars
-            - create-and-vary-a-licence-test1
-          requires:
-            - build_docker
-          filters:
-            branches:
-              only:
-                - test1
       - hmpps/deploy_env:
           name: deploy_test2
           env: "test2"
