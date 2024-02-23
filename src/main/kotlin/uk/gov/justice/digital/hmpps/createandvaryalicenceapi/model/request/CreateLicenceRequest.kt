@@ -4,7 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 
 enum class LicenceType {
-  CRD, HARD_STOP
+  CRD,
+  HARD_STOP,
 }
 
 @Schema(description = "Request object for creating a new licence")

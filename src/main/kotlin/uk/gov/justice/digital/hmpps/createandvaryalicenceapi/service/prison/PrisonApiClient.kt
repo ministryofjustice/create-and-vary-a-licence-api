@@ -20,7 +20,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
   fun getHdcStatus(bookingId: Long): Mono<PrisonerHdcStatus> {
     return prisonerApiWebClient
       .get()
-      .uri("/offender-sentences/booking/$bookingId/home-detention-curfews/latest")
+      .uri("/offender-sentences/booking/{bookingId}/home-detention-curfews/latest", bookingId)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(PrisonerHdcStatus::class.java)
@@ -53,7 +53,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
   fun getPrisonInformation(prisonId: String): Prison {
     val prisonerApiResponse = prisonerApiWebClient
       .get()
-      .uri("/agencies/prison/$prisonId")
+      .uri("/agencies/prison/{prisonId}", prisonId)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(Prison::class.java)

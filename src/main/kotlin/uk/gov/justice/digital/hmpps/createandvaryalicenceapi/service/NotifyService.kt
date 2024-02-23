@@ -188,11 +188,11 @@ class NotifyService(
         "comName" to comName,
         "prisonersForRelease" to cases.map { prisoner ->
           "${prisoner.name} (CRN: ${prisoner.crn}), who is due to leave custody on ${
-          prisoner.releaseDate.format(
-            DateTimeFormatter.ofPattern(
-              "dd LLLL yyyy",
-            ),
-          )
+            prisoner.releaseDate.format(
+              DateTimeFormatter.ofPattern(
+                "dd LLLL yyyy",
+              ),
+            )
           }"
         },
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
@@ -207,9 +207,9 @@ class NotifyService(
       }
       log.info(
         "Notification sent to $emailAddress $promptType for ${prisoner.name} being release on ${
-        prisoner.releaseDate.format(
-          dateFormat,
-        )
+          prisoner.releaseDate.format(
+            dateFormat,
+          )
         }",
       )
     }

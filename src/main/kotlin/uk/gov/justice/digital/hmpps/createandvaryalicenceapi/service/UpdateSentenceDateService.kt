@@ -98,14 +98,14 @@ class UpdateSentenceDateService(
               "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate?.format(dateFormat)}" to sentenceChanges.ledChanged,
               "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate?.format(dateFormat)}" to sentenceChanges.sedChanged,
               "Top up supervision start date has changed to ${
-              updatedLicenceEntity.topupSupervisionStartDate?.format(
-                dateFormat,
-              )
+                updatedLicenceEntity.topupSupervisionStartDate?.format(
+                  dateFormat,
+                )
               }" to sentenceChanges.tussdChanged,
               "Top up supervision end date has changed to ${
-              updatedLicenceEntity.topupSupervisionExpiryDate?.format(
-                dateFormat,
-              )
+                updatedLicenceEntity.topupSupervisionExpiryDate?.format(
+                  dateFormat,
+                )
               }" to sentenceChanges.tusedChanged,
             ),
           )

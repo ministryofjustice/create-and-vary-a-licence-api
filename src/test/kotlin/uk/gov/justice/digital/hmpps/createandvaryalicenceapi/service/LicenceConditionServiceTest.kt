@@ -86,11 +86,11 @@ class LicenceConditionServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
       whenever(policyService.currentPolicy()).thenReturn(aPolicy)
 
-      val APConditions = listOf(
+      val apConditions = listOf(
         StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       )
 
-      val PSSConditions = listOf(
+      val pssConditions = listOf(
         StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
         StandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
       )
@@ -98,8 +98,8 @@ class LicenceConditionServiceTest {
       service.updateStandardConditions(
         1,
         UpdateStandardConditionDataRequest(
-          standardLicenceConditions = APConditions,
-          standardPssConditions = PSSConditions,
+          standardLicenceConditions = apConditions,
+          standardPssConditions = pssConditions,
         ),
       )
 

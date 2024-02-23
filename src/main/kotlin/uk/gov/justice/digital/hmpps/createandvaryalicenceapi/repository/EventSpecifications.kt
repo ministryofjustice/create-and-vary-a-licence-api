@@ -6,7 +6,7 @@ import org.springframework.data.jpa.domain.Specification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.and
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.equal
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`in`
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.`includedIn`
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 
 data class EventQueryObject(
@@ -38,5 +38,5 @@ fun hasLicenceEqualTo(licenceId: Long?): Specification<LicenceEvent>? = licenceI
 }
 
 fun hasEventTypeIn(eventTypes: List<LicenceEventType>?): Specification<LicenceEvent>? = eventTypes?.let {
-  LicenceEvent::eventType.`in`(it)
+  LicenceEvent::eventType.includedIn(it)
 }

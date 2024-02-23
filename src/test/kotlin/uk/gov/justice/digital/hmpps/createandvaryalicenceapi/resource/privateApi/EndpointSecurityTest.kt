@@ -12,6 +12,14 @@ import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 
 class EndpointSecurityTest {
+
+  private val controllersToIgnore = listOf(
+    // These only gets wired up in tests
+    "uk.gov.justice.hmpps.sqs.HmppsQueueResource",
+    "uk.gov.justice.hmpps.sqs.HmppsReactiveQueueResource",
+
+  )
+
   private data class EndpointInfo(
     val method: String,
     val hasEndpointLevelProtection: Boolean,
@@ -40,7 +48,7 @@ class EndpointSecurityTest {
     .also { it.addIncludeFilter(AnnotationTypeFilter(RestController::class.java)) }
     .findCandidateComponents("uk.gov.justice")
     .map { Class.forName(it.beanClassName) }
-    .filter { !it.isProtectedByAnnotation() }
+    .filter { !it.isProtectedByAnnotation() && !controllersToIgnore.contains(it.name) }
     .map { ControllerInfo(it.toString(), it.getUnprotectedEndpoints()) }
     .filter { it.unprotectedEndpoints.isNotEmpty() }
 

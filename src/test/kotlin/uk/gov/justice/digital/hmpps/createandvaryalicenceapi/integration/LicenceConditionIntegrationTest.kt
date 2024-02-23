@@ -135,7 +135,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
-  )/**/
+  )
   fun `Update the bespoke conditions`() {
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     webTestClient.put()

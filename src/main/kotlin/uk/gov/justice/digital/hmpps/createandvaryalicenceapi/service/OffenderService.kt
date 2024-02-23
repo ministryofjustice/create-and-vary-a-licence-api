@@ -42,8 +42,8 @@ OffenderService(
     this.licenceRepository.saveAllAndFlush(offenderLicences)
 
     if (offenderLicences.any {
-      it.statusCode === LicenceStatus.NOT_STARTED || it.statusCode === LicenceStatus.IN_PROGRESS
-    }
+        it.statusCode === LicenceStatus.NOT_STARTED || it.statusCode === LicenceStatus.IN_PROGRESS
+      }
     ) {
       val releaseDate = offenderLicences[0].actualReleaseDate ?: offenderLicences[0].conditionalReleaseDate
       if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {

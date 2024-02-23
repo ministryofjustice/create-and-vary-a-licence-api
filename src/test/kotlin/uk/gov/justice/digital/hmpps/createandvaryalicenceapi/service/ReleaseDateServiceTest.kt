@@ -22,9 +22,6 @@ class ReleaseDateServiceTest {
     ReleaseDateService(
       bankHolidayService,
       clock,
-      maxNumberOfWorkingDaysAllowedForEarlyRelease,
-      maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
-      maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus,
     )
 
   @BeforeEach
@@ -342,9 +339,7 @@ class ReleaseDateServiceTest {
       LocalDate.parse("2018-12-03"),
       LocalDate.parse("2018-12-04"),
     )
-    const val maxNumberOfWorkingDaysAllowedForEarlyRelease = 3
-    const val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail = 6
-    const val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus = 3
+
     private fun createClock(timestamp: String) = Clock.fixed(Instant.parse(timestamp), ZoneId.systemDefault())
 
     val clock: Clock = createClock("2023-11-10T00:00:00Z")

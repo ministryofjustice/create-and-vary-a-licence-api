@@ -12,9 +12,9 @@ import java.time.LocalDate
 class ReleaseDateService(
   private val bankHolidayService: BankHolidayService,
   private val clock: Clock,
-  @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int,
-  @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:6}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int,
-  @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int,
+  @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
+  @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:6}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 6,
+  @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int = 3,
 ) {
 
   fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
