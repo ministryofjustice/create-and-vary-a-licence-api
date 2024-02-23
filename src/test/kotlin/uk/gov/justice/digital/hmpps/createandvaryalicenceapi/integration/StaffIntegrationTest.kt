@@ -1,12 +1,16 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -96,6 +100,30 @@ class StaffIntegrationTest : IntegrationTestBase() {
     )
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-hard-stop-licences.sql",
+  )
+  fun `Get counts of cases needing a review`() {
+    communityApiMockServer.stubGetTeamCodesForUser(2000)
+
+    val resultObject = webTestClient.get()
+      .uri("/com/2000/review-counts")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(ComReviewCount::class.java)
+      .returnResult().responseBody
+
+    val teamCount = resultObject!!.teams.first()
+
+    assertThat(resultObject.myCount).isEqualTo(2)
+    assertThat(teamCount.teamCode).isEqualTo("A01B02")
+    assertThat(teamCount.count).isEqualTo(2)
+  }
+
   private fun doUpdate(uri: String, body: Any) {
     webTestClient.put()
       .uri(uri)
@@ -107,6 +135,8 @@ class StaffIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
+    val communityApiMockServer = CommunityApiMockServer()
+
     val updateCom = UpdateComRequest(
       staffIdentifier = 2000,
       staffUsername = "joebloggs",
@@ -120,5 +150,17 @@ class StaffIntegrationTest : IntegrationTestBase() {
       firstName = "Boseph",
       lastName = "Joggs",
     )
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      communityApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      communityApiMockServer.stop()
+    }
   }
 }

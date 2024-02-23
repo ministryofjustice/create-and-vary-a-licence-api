@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -11,21 +12,32 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 
 class StaffServiceTest {
   private val staffRepository = mock<StaffRepository>()
+  private val communityApiClient = mock<CommunityApiClient>()
+  private val licenceRepository = mock<LicenceRepository>()
 
-  private val service = StaffService(staffRepository)
+  private val service =
+    StaffService(
+      staffRepository,
+      communityApiClient,
+      licenceRepository,
+    )
 
   @BeforeEach
   fun reset() {
-    reset(staffRepository)
+    reset(staffRepository, communityApiClient, licenceRepository)
     whenever(staffRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
   }
 
@@ -173,6 +185,62 @@ class StaffServiceTest {
         assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")
           .isEqualTo(expectedCom)
       }
+    }
+
+    @Test
+    fun `retrieves review counts for COM and their teams`() {
+      val com = CommunityOffenderManager(
+        staffIdentifier = 3000,
+        username = "JBLOGGS",
+        email = "jbloggs123@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      )
+
+      val teamCodes = listOf(
+        "A01B02",
+      )
+
+      val teamCountsDto = listOf(
+        TeamCountsDto(
+          teamCode = teamCodes.first(),
+          count = 1L,
+        ),
+      )
+      whenever(staffRepository.findByStaffIdentifier(any())).thenReturn(com)
+      whenever(communityApiClient.getTeamsCodesForUser(any())).thenReturn(teamCodes)
+      whenever(licenceRepository.getLicenceReviewCountForCom(any())).thenReturn(1L)
+      whenever(licenceRepository.getLicenceReviewCountForTeams(any())).thenReturn(teamCountsDto)
+
+      val result = service.getReviewCounts(com.staffIdentifier)
+
+      verify(staffRepository, times(1)).findByStaffIdentifier(3000)
+      verify(communityApiClient, times(1)).getTeamsCodesForUser(3000)
+      verify(licenceRepository, times(1)).getLicenceReviewCountForCom(com)
+      verify(licenceRepository, times(1)).getLicenceReviewCountForTeams(teamCodes)
+
+      assertThat(result.myCount).isEqualTo(1L)
+      assertThat(result.teams.size).isEqualTo(1)
+
+      val team = result.teams.first()
+      assertThat(team.teamCode).isEqualTo(teamCodes.first())
+      assertThat(team.count).isEqualTo(1L)
+    }
+
+    @Test
+    fun `when getting review counts, an error is thrown if the COM cannot be found`() {
+      whenever(staffRepository.findByStaffIdentifier(any())).thenReturn(null)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.getReviewCounts(3000)
+      }
+
+      verify(staffRepository, times(1)).findByStaffIdentifier(3000)
+      verifyNoInteractions(communityApiClient)
+      verifyNoInteractions(licenceRepository)
+
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("Staff with identifier 3000 not found")
     }
   }
 

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -107,6 +108,35 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getDraftLicencesPassedReleaseDate(): List<Licence>
+
+  @Query(
+    """
+    SELECT COUNT(*)
+        FROM Licence l
+        WHERE l.kind IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
+            'TIME_SERVED'
+        )
+        AND l.reviewDate IS NULL
+        AND l.responsibleCom = :com
+    """,
+  )
+  fun getLicenceReviewCountForCom(com: CommunityOffenderManager?): Long
+
+  @Query(
+    """
+    SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto(l.probationTeamCode, COUNT(*))
+        FROM Licence l
+        WHERE l.kind IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
+            'TIME_SERVED'
+        )
+        AND l.reviewDate IS NULL
+        AND l.probationTeamCode IN ( :teamCodes )
+        GROUP BY l.probationTeamCode
+    """,
+  )
+  fun getLicenceReviewCountForTeams(teamCodes: List<String>): List<TeamCountsDto>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
@@ -128,4 +158,13 @@ data class UnapprovedLicence(
 
   @Schema(description = "The COM's email address", example = "jbloggs@probation.gov.uk")
   val comEmail: String? = null,
+)
+
+@Schema(description = "Describes a team and the respective count of their cases that need review")
+data class TeamCountsDto(
+  @Schema(description = "The team code", example = "ABC123")
+  val teamCode: String,
+
+  @Schema(description = "A count of cases that need to be reviewed", example = "42")
+  val count: Long,
 )
