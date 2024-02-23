@@ -177,7 +177,7 @@ class StaffController(private val caseloadService: CaseloadService, private val 
         content = [
           Content(
             mediaType = "application/json",
-            schema = Schema(implementation = ProbationSearchResult::class),
+            schema = Schema(implementation = ComReviewCount::class),
           ),
         ],
       ),
