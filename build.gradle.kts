@@ -61,7 +61,7 @@ dependencies {
 
   implementation("com.google.code.gson:gson:2.10.1")
   implementation("io.arrow-kt:arrow-core:1.2.1")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.7.3")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
 
   // SQS/SNS dependencies
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.1")
