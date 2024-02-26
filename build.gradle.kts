@@ -52,7 +52,7 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:5.0.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.1")
+  implementation("org.apache.pdfbox:pdfbox:2.0.29")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
