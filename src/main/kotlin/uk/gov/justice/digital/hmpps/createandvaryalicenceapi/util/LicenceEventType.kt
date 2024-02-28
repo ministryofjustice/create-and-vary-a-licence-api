@@ -20,4 +20,5 @@ enum class LicenceEventType {
   VERSION_CREATED,
   NOT_STARTED,
   TIMED_OUT,
+  REVIEW_NEEDED,
 }

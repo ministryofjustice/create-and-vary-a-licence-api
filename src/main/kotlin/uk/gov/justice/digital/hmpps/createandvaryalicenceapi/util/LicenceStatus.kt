@@ -14,6 +14,7 @@ enum class LicenceStatus {
   VARIATION_APPROVED,
   NOT_STARTED,
   TIMED_OUT,
+  REVIEW_NEEDED,
   ;
 
   fun isOnProbation() = ON_PROBATION_STATUSES.contains(this)
@@ -34,6 +35,7 @@ enum class LicenceStatus {
         RECALLED -> LicenceEventType.RECALLED
         NOT_STARTED -> LicenceEventType.NOT_STARTED
         TIMED_OUT -> LicenceEventType.TIMED_OUT
+        REVIEW_NEEDED -> LicenceEventType.REVIEW_NEEDED
       }
     }
 
