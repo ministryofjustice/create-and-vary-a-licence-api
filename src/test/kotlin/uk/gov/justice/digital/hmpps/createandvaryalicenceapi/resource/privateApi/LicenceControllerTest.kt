@@ -34,17 +34,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
@@ -58,7 +52,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
@@ -83,9 +76,6 @@ class LicenceControllerTest {
   private lateinit var updateSentenceDateService: UpdateSentenceDateService
 
   @MockBean
-  private lateinit var licenceConditionService: LicenceConditionService
-
-  @MockBean
   private lateinit var licenceCreationService: LicenceCreationService
 
   @Autowired
@@ -103,7 +93,6 @@ class LicenceControllerTest {
         LicenceController(
           licenceService,
           updateSentenceDateService,
-          licenceConditionService,
           licenceCreationService,
         ),
       )
@@ -223,57 +212,6 @@ class LicenceControllerTest {
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
     verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
-  }
-
-  @Test
-  fun `update bespoke conditions`() {
-    mvc.perform(
-      put("/licence/id/4/bespoke-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(aBespokeConditionsRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).updateBespokeConditions(4, aBespokeConditionsRequest)
-  }
-
-  @Test
-  fun `update bespoke conditions with an empty request removes previous bespoke conditions`() {
-    mvc.perform(
-      put("/licence/id/4/bespoke-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(BespokeConditionRequest())),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).updateBespokeConditions(4, BespokeConditionRequest())
-  }
-
-  @Test
-  fun `Add additional condition`() {
-    mvc.perform(
-      post("/licence/id/4/additional-condition/AP")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAddAdditionalConditionRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).addAdditionalCondition(4, anAddAdditionalConditionRequest)
-  }
-
-  @Test
-  fun `Delete additional condition`() {
-    mvc.perform(
-      delete("/licence/id/4/additional-condition/id/1")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON),
-    )
-      .andExpect(status().isNoContent)
-
-    verify(licenceConditionService, times(1)).deleteAdditionalCondition(4, 1)
   }
 
   @Test
@@ -414,49 +352,6 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).updateLicenceStatus(4, aStatusUpdateRequest)
-  }
-
-  @Test
-  fun `update the list of additional conditions`() {
-    mvc.perform(
-      put("/licence/id/4/additional-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsListRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).updateAdditionalConditions(4, anUpdateAdditionalConditionsListRequest)
-  }
-
-  @Test
-  fun `update the list of standard conditions`() {
-    mvc.perform(
-      put("/licence/id/4/standard-conditions")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateStandardConditionRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).updateStandardConditions(4, anUpdateStandardConditionRequest)
-  }
-
-  @Test
-  fun `update the data associated with an additional condition`() {
-    mvc.perform(
-      put("/licence/id/4/additional-conditions/condition/1")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anUpdateAdditionalConditionsDataRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(licenceConditionService, times(1)).updateAdditionalConditionData(
-      4,
-      1,
-      anUpdateAdditionalConditionsDataRequest,
-    )
   }
 
   @Test
@@ -737,37 +632,7 @@ class LicenceControllerTest {
       licenceVersion = "1.0",
     )
 
-    val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
-      standardLicenceConditions = listOf(
-        StandardCondition(code = "code1", sequence = 0, text = "text"),
-        StandardCondition(code = "code2", sequence = 1, text = "text"),
-        StandardCondition(code = "code3", sequence = 2, text = "text"),
-      ),
-    )
-
-    val anAddAdditionalConditionRequest = AddAdditionalConditionRequest(
-      conditionCode = "code",
-      conditionType = "AP",
-      conditionCategory = "category",
-      sequence = 4,
-      conditionText = "text",
-      expandedText = "some more text",
-    )
-
-    val aBespokeConditionsRequest = BespokeConditionRequest(conditions = listOf("Bespoke 1", "Bespoke 2"))
-
     val aStatusUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
-
-    val anUpdateAdditionalConditionsListRequest = AdditionalConditionsRequest(
-      additionalConditions = listOf(
-        AdditionalConditionRequest(code = "code", category = "category", sequence = 0, text = "text"),
-      ),
-      conditionType = "AP",
-    )
-
-    val anUpdateAdditionalConditionsDataRequest = UpdateAdditionalConditionDataRequest(
-      data = listOf(AdditionalConditionData(field = "field1", value = "value1", sequence = 0)),
-    )
   }
 }
