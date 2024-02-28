@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -24,6 +25,7 @@ class LicenceOverrideService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
+  private val staffRepository: StaffRepository,
 ) {
 
   companion object {
@@ -51,6 +53,8 @@ class LicenceOverrideService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(licence?.crn!!, listOf(newStatus))
 
     var licenceActivatedDate: LocalDateTime? = null
@@ -66,7 +70,7 @@ class LicenceOverrideService(
     licenceRepository.saveAndFlush(
       licence.overrideStatus(
         statusCode = newStatus,
-        updatedByUsername = username,
+        staffMember = staffMember,
         licenceActivatedDate = licenceActivatedDate,
       ),
     )
@@ -100,6 +104,8 @@ class LicenceOverrideService(
     val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     log.info(
       buildString {
@@ -138,7 +144,7 @@ class LicenceOverrideService(
       licenceExpiryDate = request.licenceExpiryDate,
       topupSupervisionStartDate = request.topupSupervisionStartDate,
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)

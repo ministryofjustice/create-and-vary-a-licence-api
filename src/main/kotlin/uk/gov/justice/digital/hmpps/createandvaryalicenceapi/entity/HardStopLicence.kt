@@ -69,6 +69,7 @@ class HardStopLicence(
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
+  updatedBy: Staff? = null,
 
   var reviewDate: LocalDateTime? = null,
   var substituteOfId: Long? = null,
@@ -135,6 +136,7 @@ class HardStopLicence(
   additionalConditions = additionalConditions,
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
+  updatedBy = updatedBy,
 ) {
 
   fun copy(
@@ -195,6 +197,7 @@ class HardStopLicence(
     substituteOfId: Long? = this.substituteOfId,
     reviewDate: LocalDateTime? = this.reviewDate,
     licenceVersion: String? = this.licenceVersion,
+    updatedBy: Staff? = this.updatedBy,
   ): HardStopLicence {
     return HardStopLicence(
       id = id,
@@ -254,6 +257,7 @@ class HardStopLicence(
       substituteOfId = substituteOfId,
       reviewDate = reviewDate,
       licenceVersion = licenceVersion,
+      updatedBy = updatedBy,
     )
   }
 
@@ -280,18 +284,19 @@ class HardStopLicence(
     prisonCode: String,
     prisonDescription: String,
     prisonTelephone: String?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) = copy(
     prisonCode = prisonCode,
     prisonDescription = prisonDescription,
     prisonTelephone = prisonTelephone,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateStatus(
     statusCode: LicenceStatus,
-    updatedByUsername: String,
+    staffMember: Staff?,
     approvedByUsername: String?,
     approvedByName: String?,
     approvedDate: LocalDateTime?,
@@ -301,37 +306,40 @@ class HardStopLicence(
   ) = copy(
     statusCode = statusCode,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
     approvedDate = approvedDate,
     supersededDate = supersededDate,
     submittedDate = submittedDate,
     licenceActivatedDate = licenceActivatedDate,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun overrideStatus(
     statusCode: LicenceStatus,
-    updatedByUsername: String?,
+    staffMember: Staff?,
     licenceActivatedDate: LocalDateTime?,
   ) = copy(
     statusCode = statusCode,
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     dateLastUpdated = LocalDateTime.now(),
     licenceActivatedDate = licenceActivatedDate,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>?,
     updatedStandardConditions: List<StandardCondition>?,
     updatedBespokeConditions: List<BespokeCondition>?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) = copy(
     additionalConditions = updatedAdditionalConditions ?: additionalConditions,
     standardConditions = updatedStandardConditions ?: standardConditions,
     bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateLicenceDates(
@@ -344,7 +352,7 @@ class HardStopLicence(
     licenceExpiryDate: LocalDate?,
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) = copy(
     statusCode = status ?: this.statusCode,
     conditionalReleaseDate = conditionalReleaseDate,
@@ -356,7 +364,8 @@ class HardStopLicence(
     topupSupervisionStartDate = topupSupervisionStartDate,
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateOffenderDetails(
@@ -458,6 +467,7 @@ class HardStopLicence(
       "substituteOfId=$substituteOfId, " +
       "reviewDate=$reviewDate, " +
       "licenceVersion=$licenceVersion" +
+      "updatedBy = $updatedBy" +
       ")"
   }
 

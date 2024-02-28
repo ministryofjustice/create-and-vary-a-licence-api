@@ -128,7 +128,15 @@ abstract class Licence(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
   var responsibleCom: CommunityOffenderManager? = null,
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "updated_by_id", nullable = true)
+  var updatedBy: Staff? = null,
 ) {
+
+  companion object {
+    const val SYSTEM_USER = "SYSTEM_USER"
+  }
 
   fun isInPssPeriod(): Boolean {
     val led = licenceExpiryDate
@@ -148,46 +156,50 @@ abstract class Licence(
     prisonCode: String,
     prisonDescription: String,
     prisonTelephone: String?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ): Licence
 
-  fun updateAppointmentAddress(appointmentAddress: String?, updatedByUsername: String?) {
+  fun updateAppointmentAddress(appointmentAddress: String?, staffMember: Staff?) {
     this.appointmentAddress = appointmentAddress
     this.dateLastUpdated = LocalDateTime.now()
-    this.updatedByUsername = updatedByUsername
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  fun updateAppointmentContactNumber(appointmentContact: String?, updatedByUsername: String?) {
+  fun updateAppointmentContactNumber(appointmentContact: String?, staffMember: Staff?) {
     this.appointmentContact = appointmentContact
     this.dateLastUpdated = LocalDateTime.now()
-    this.updatedByUsername = updatedByUsername
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
   }
 
   fun updateAppointmentTime(
     appointmentTime: LocalDateTime?,
     appointmentTimeType: AppointmentTimeType,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) {
     this.appointmentTime = appointmentTime
     this.appointmentTimeType = appointmentTimeType
     this.dateLastUpdated = LocalDateTime.now()
-    this.updatedByUsername = updatedByUsername
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
   }
 
   fun updateAppointmentPerson(
     appointmentPersonType: AppointmentPersonType?,
     appointmentPerson: String?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) {
     this.appointmentPersonType = appointmentPersonType
     this.appointmentPerson = appointmentPerson
     this.dateLastUpdated = LocalDateTime.now()
-    this.updatedByUsername = updatedByUsername
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
   }
 
   abstract fun updateStatus(
     statusCode: LicenceStatus,
-    updatedByUsername: String,
+    staffMember: Staff?,
     approvedByUsername: String?,
     approvedByName: String?,
     approvedDate: LocalDateTime?,
@@ -198,7 +210,7 @@ abstract class Licence(
 
   abstract fun overrideStatus(
     statusCode: LicenceStatus,
-    updatedByUsername: String?,
+    staffMember: Staff?,
     licenceActivatedDate: LocalDateTime?,
   ): Licence
 
@@ -206,7 +218,7 @@ abstract class Licence(
     updatedAdditionalConditions: List<AdditionalCondition>? = null,
     updatedStandardConditions: List<StandardCondition>? = null,
     updatedBespokeConditions: List<BespokeCondition>? = null,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ): Licence
 
   abstract fun updateLicenceDates(
@@ -219,7 +231,7 @@ abstract class Licence(
     licenceExpiryDate: LocalDate?,
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ): Licence
 
   abstract fun updateOffenderDetails(

@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 
 @Service
@@ -30,6 +31,7 @@ class LicenceConditionService(
   private val conditionFormatter: ConditionFormatter,
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
+  private val staffRepository: StaffRepository,
 ) {
 
   @Transactional
@@ -44,9 +46,11 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     val updatedLicence = licenceEntity.updateConditions(
       updatedStandardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
@@ -69,6 +73,8 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     val newConditions = licenceEntity.additionalConditions.toMutableList()
 
     newConditions.add(
@@ -86,7 +92,7 @@ class LicenceConditionService(
 
     val updatedLicence = licenceEntity.updateConditions(
       updatedAdditionalConditions = newConditions,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -121,6 +127,8 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     val submittedConditions =
       request.additionalConditions.transformToEntityAdditional(licenceEntity, request.conditionType)
 
@@ -134,7 +142,7 @@ class LicenceConditionService(
 
     val updatedLicence = licenceEntity.updateConditions(
       updatedAdditionalConditions = (newConditions + updatedConditions),
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(updatedLicence)
@@ -201,6 +209,8 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     val submittedConditions = request.conditions
 
     val existingConditions = licenceEntity.bespokeConditions
@@ -216,7 +226,7 @@ class LicenceConditionService(
 
     val updatedLicence = licenceEntity.updateConditions(
       updatedBespokeConditions = emptyList(),
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
@@ -271,7 +281,9 @@ class LicenceConditionService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
-    val updatedLicence = licenceEntity.updateConditions(updatedByUsername = username)
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    val updatedLicence = licenceEntity.updateConditions(staffMember = staffMember)
     licenceRepository.saveAndFlush(updatedLicence)
 
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition)
@@ -291,6 +303,8 @@ class LicenceConditionService(
       return
     }
     val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     // return all conditions except condition with submitted conditionIds
     val revisedAdditionalConditions =
@@ -317,7 +331,7 @@ class LicenceConditionService(
       updatedAdditionalConditions = revisedAdditionalConditions,
       updatedStandardConditions = revisedStandardConditions,
       updatedBespokeConditions = revisedBespokeConditions,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
     licenceRepository.saveAndFlush(updatedLicence)
 

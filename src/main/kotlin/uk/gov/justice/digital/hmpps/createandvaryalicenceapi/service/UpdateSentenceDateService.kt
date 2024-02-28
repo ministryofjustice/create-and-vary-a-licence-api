@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -21,6 +22,7 @@ class UpdateSentenceDateService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val prisonApiClient: PrisonApiClient,
+  private val staffRepository: StaffRepository,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
@@ -29,6 +31,8 @@ class UpdateSentenceDateService(
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
 
@@ -44,7 +48,7 @@ class UpdateSentenceDateService(
       licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)

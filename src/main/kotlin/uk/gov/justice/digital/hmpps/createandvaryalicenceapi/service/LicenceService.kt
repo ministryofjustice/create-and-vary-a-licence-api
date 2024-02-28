@@ -183,9 +183,10 @@ class LicenceService(
 
     val isReApproval = licenceEntity.statusCode === APPROVED && request.status === IN_PROGRESS
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(request.username)
     val updatedLicence = licenceEntity.updateStatus(
       statusCode = request.status,
-      updatedByUsername = request.username,
+      staffMember = staffMember,
       approvedByUsername = approvedByUser,
       approvedByName = approvedByName,
       approvedDate = approvedDate,
@@ -714,11 +715,13 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     val updatedLicenceEntity = licenceEntity.updatePrisonInfo(
       prisonCode = prisonInformationRequest.prisonCode,
       prisonDescription = prisonInformationRequest.prisonDescription,
       prisonTelephone = prisonInformationRequest.prisonTelephone,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)

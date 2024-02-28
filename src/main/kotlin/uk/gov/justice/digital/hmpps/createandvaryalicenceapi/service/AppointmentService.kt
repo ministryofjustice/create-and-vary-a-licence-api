@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTim
 class AppointmentService(
   private val licenceRepository: LicenceRepository,
   private val auditService: AuditService,
+  private val staffRepository: StaffRepository,
 ) {
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
@@ -31,10 +33,14 @@ class AppointmentService(
 
     val previousPerson = licenceEntity.appointmentPerson
 
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     licenceEntity.updateAppointmentPerson(
       appointmentPersonType = request.appointmentPersonType,
       appointmentPerson = request.appointmentPerson,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
+      staffMember = staffMember,
     )
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
@@ -60,10 +66,14 @@ class AppointmentService(
     }
     val previousTime = licenceEntity.appointmentTime
 
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     licenceEntity.updateAppointmentTime(
       appointmentTime = request.appointmentTime,
       appointmentTimeType = request.appointmentTimeType,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
+      staffMember = staffMember,
     )
     licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventInitialAppointmentUpdate(
@@ -84,9 +94,13 @@ class AppointmentService(
 
     val previousContact = licenceEntity.appointmentContact
 
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     licenceEntity.updateAppointmentContactNumber(
       appointmentContact = request.telephone,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(licenceEntity)
@@ -108,9 +122,13 @@ class AppointmentService(
 
     val previousAddress = licenceEntity.appointmentAddress
 
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
     licenceEntity.updateAppointmentAddress(
       appointmentAddress = request.appointmentAddress,
-      updatedByUsername = SecurityContextHolder.getContext().authentication.name,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(licenceEntity)

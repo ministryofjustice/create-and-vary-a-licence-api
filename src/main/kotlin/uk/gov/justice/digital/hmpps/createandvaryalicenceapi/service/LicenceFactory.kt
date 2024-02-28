@@ -64,6 +64,7 @@ object LicenceFactory {
     responsibleCom = responsibleCom,
     createdBy = creator,
     updatedByUsername = creator.username,
+    updatedBy = creator,
   )
 
   fun createHardStop(
@@ -115,6 +116,7 @@ object LicenceFactory {
     createdBy = creator,
     updatedByUsername = creator.username,
     substituteOfId = timedOutLicence?.id,
+    updatedBy = creator,
   )
 
   fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
@@ -178,6 +180,7 @@ object LicenceFactory {
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
         licenceVersion = getVariationVersion(this.licenceVersion!!),
+        updatedBy = creator,
       )
     }
   }
