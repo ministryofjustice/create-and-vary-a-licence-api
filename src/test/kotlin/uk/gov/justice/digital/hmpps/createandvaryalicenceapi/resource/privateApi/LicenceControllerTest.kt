@@ -520,6 +520,18 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).referLicenceVariation(4, expectedRequest)
   }
 
+  @Test
+  fun `mark licence as reviewed`() {
+    mvc.perform(
+      post("/licence/id/4/review-with-no-variation-required")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).reviewWithNoVariationRequired(4L)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(

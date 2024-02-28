@@ -79,7 +79,8 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val releaseDate = entityLicence.actualReleaseDate ?: entityLicence.conditionalReleaseDate
-    val isEligibleForEarlyRelease = releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate)
+    val isEligibleForEarlyRelease =
+      releaseDate !== null && releaseDateService.isEligibleForEarlyRelease(releaseDate)
 
     val earliestReleaseDate = when {
       isEligibleForEarlyRelease -> releaseDateService.getEarliestReleaseDate(releaseDate!!)
@@ -87,7 +88,10 @@ class LicenceService(
     }
 
     val conditionsSubmissionStatus =
-      isLicenceReadyToSubmit(entityLicence.additionalConditions, licencePolicyService.getAllAdditionalConditions())
+      isLicenceReadyToSubmit(
+        entityLicence.additionalConditions,
+        licencePolicyService.getAllAdditionalConditions(),
+      )
 
     return transform(entityLicence, earliestReleaseDate, isEligibleForEarlyRelease, conditionsSubmissionStatus)
   }
@@ -242,7 +246,11 @@ class LicenceService(
     }
   }
 
-  private fun recordLicenceEventForStatus(licenceId: Long, licenceEntity: EntityLicence, request: StatusUpdateRequest) {
+  private fun recordLicenceEventForStatus(
+    licenceId: Long,
+    licenceEntity: EntityLicence,
+    request: StatusUpdateRequest,
+  ) {
     // Only interested when moving to the APPROVED, ACTIVE or INACTIVE states
     val eventType = when (licenceEntity.statusCode) {
       APPROVED -> LicenceEventType.APPROVED
@@ -280,7 +288,8 @@ class LicenceService(
 
     if (previousVersionId != null) {
       val previousLicenceVersion =
-        licenceRepository.findById(previousVersionId).orElseThrow { EntityNotFoundException("$previousVersionId") }
+        licenceRepository.findById(previousVersionId)
+          .orElseThrow { EntityNotFoundException("$previousVersionId") }
 
       if (previousLicenceVersion !is CrdLicence) error("Trying to inactivate non-crd licence: $previousVersionId")
 
@@ -572,7 +581,8 @@ class LicenceService(
     val username = SecurityContextHolder.getContext().authentication.name
     val createdBy = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicenceEntity =
+      licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     licenceEventRepository.saveAndFlush(
@@ -875,5 +885,45 @@ class LicenceService(
     if (licencesToDeactivate.isNotEmpty()) {
       inactivateLicences(licencesToDeactivate, reason, false)
     }
+  }
+
+  @Transactional
+  fun reviewWithNoVariationRequired(licenceId: Long) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    if (licenceEntity !is HardStopLicence) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
+    val username = SecurityContextHolder.getContext().authentication.name
+    val user = this.staffRepository.findByUsernameIgnoreCase(username)
+
+    if (licenceEntity.reviewDate != null) {
+      return
+    }
+
+    licenceEntity.markAsReviewed(user)
+
+    licenceRepository.saveAndFlush(licenceEntity)
+
+    licenceEventRepository.saveAndFlush(
+      EntityLicenceEvent(
+        licenceId = licenceId,
+        eventType = LicenceEventType.HARD_STOP_REVIEWED,
+        username = username,
+        forenames = user?.firstName,
+        surname = user?.lastName,
+        eventDescription = "Licence reviewed without being varied",
+      ),
+    )
+
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licenceId,
+        username = username,
+        fullName = "${user?.firstName} ${user?.lastName}",
+        summary = "Licence reviewed without being varied for ${licenceEntity.forename} ${licenceEntity.surname}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.reviewDate} version ${licenceEntity.version}",
+      ),
+    )
   }
 }
