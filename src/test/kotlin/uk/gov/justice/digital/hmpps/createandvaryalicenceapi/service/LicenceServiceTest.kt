@@ -62,6 +62,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -328,7 +329,7 @@ class LicenceServiceTest {
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
-    val activeVariationLicence = TestData.createVariationLicence().copy(
+    val activeVariationLicence = createVariationLicence().copy(
       id = aRecentlyApprovedLicence.id + 1,
       statusCode = LicenceStatus.ACTIVE,
       variationOfId = aRecentlyApprovedLicence.id,
@@ -996,7 +997,7 @@ class LicenceServiceTest {
       firstName = "X",
       lastName = "Y",
     )
-    val variation = TestData.createVariationLicence().copy(
+    val variation = createVariationLicence().copy(
       variationOfId = 1,
       submittedBy = CommunityOffenderManager(
         staffIdentifier = 2000,
@@ -1340,7 +1341,7 @@ class LicenceServiceTest {
 
   @Test
   fun `update spo discussion persists the updated entity`() {
-    val variation = TestData.createVariationLicence()
+    val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
 
     service.updateSpoDiscussion(1L, UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
@@ -1355,7 +1356,7 @@ class LicenceServiceTest {
 
   @Test
   fun `update vlo discussion persists the updated entity`() {
-    val variation = TestData.createVariationLicence()
+    val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
 
     service.updateVloDiscussion(1L, UpdateVloDiscussionRequest(vloDiscussion = "Yes"))
@@ -1370,7 +1371,7 @@ class LicenceServiceTest {
 
   @Test
   fun `update reason for variation creates a licence event containing the reason`() {
-    val variation = TestData.createVariationLicence()
+    val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1764,7 +1765,7 @@ class LicenceServiceTest {
       firstName = "X",
       lastName = "Y",
     )
-    val variation = TestData.createVariationLicence()
+    val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
@@ -1818,7 +1819,7 @@ class LicenceServiceTest {
       lastName = "Y",
     )
 
-    val variation = TestData.createVariationLicence().copy(id = 2, variationOfId = 1L)
+    val variation = createVariationLicence().copy(id = 2, variationOfId = 1L)
     whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(expectedCom)
 
@@ -1958,7 +1959,7 @@ class LicenceServiceTest {
   @Test
   fun `update licence status to ACTIVE for variation approved`() {
     val variationApprovedLicence =
-      TestData.createVariationLicence().copy(id = 2L, statusCode = LicenceStatus.VARIATION_APPROVED, licenceVersion = "2.0")
+      createVariationLicence().copy(id = 2L, statusCode = LicenceStatus.VARIATION_APPROVED, licenceVersion = "2.0")
 
     whenever(licenceRepository.findById(variationApprovedLicence.id)).thenReturn(Optional.of(variationApprovedLicence))
     whenever(
@@ -2000,8 +2001,7 @@ class LicenceServiceTest {
 
   @Test
   fun `update licence status to INACTIVE for an existing ACTIVE variation licence`() {
-    val variationLicence = TestData
-      .createVariationLicence()
+    val variationLicence = createVariationLicence()
       .copy(id = 1L, statusCode = LicenceStatus.ACTIVE, licenceVersion = "2.0")
 
     whenever(licenceRepository.findById(variationLicence.id)).thenReturn(Optional.of(variationLicence))
@@ -2130,6 +2130,127 @@ class LicenceServiceTest {
         service.reviewWithNoVariationRequired(1L)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessage("Trying to review a CrdLicence: 1")
+
+      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(auditEventRepository, never()).saveAndFlush(any())
+      verify(licenceEventRepository, never()).saveAndFlush(any())
+    }
+  }
+
+  @Nested
+  inner class `Activating variations` {
+    @Test
+    fun happyPathWhenNotHardstop() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createCrdLicence().copy(id = 1L)))
+      whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(createVariationLicence().copy(id = 2L, variationOfId = 1L, statusCode = LicenceStatus.VARIATION_APPROVED)))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(
+        CommunityOffenderManager(
+          staffIdentifier = 2000,
+          username = "smills",
+          email = "testemail@probation.gov.uk",
+          firstName = "X",
+          lastName = "Y",
+        ),
+      )
+
+      service.activateVariation(2L)
+
+      argumentCaptor<Licence>().apply {
+        verify(licenceRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue).isInstanceOf(VariationLicence::class.java)
+        assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+
+        assertThat(secondValue).isInstanceOf(CrdLicence::class.java)
+        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(2L)
+        assertThat(firstValue.summary).isEqualTo("Licence set to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+
+        assertThat(secondValue.licenceId).isEqualTo(1L)
+        assertThat(secondValue.summary).isEqualTo("Licence set to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(2)).saveAndFlush(capture())
+
+        assertThat(firstValue.eventDescription).isEqualTo("Licence updated to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.ACTIVATED)
+
+        assertThat(secondValue.eventDescription).isEqualTo("Licence updated to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.SUPERSEDED)
+      }
+    }
+
+    @Test
+    fun happyPathWhenVaryingHardStopLicence() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHardStopLicence().copy(id = 1L, reviewDate = null)))
+      whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(createVariationLicence().copy(id = 2L, variationOfId = 1L, statusCode = LicenceStatus.VARIATION_APPROVED)))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(
+        CommunityOffenderManager(
+          staffIdentifier = 2000,
+          username = "smills",
+          email = "testemail@probation.gov.uk",
+          firstName = "X",
+          lastName = "Y",
+        ),
+      )
+
+      service.activateVariation(2L)
+
+      argumentCaptor<Licence>().apply {
+        verify(licenceRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue).isInstanceOf(VariationLicence::class.java)
+        assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+
+        assertThat(secondValue).isInstanceOf(HardStopLicence::class.java)
+        assertThat((secondValue as HardStopLicence).reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
+
+        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(2L)
+        assertThat(firstValue.summary).isEqualTo("Licence set to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+
+        assertThat(secondValue.licenceId).isEqualTo(1L)
+        assertThat(secondValue.summary).isEqualTo("Licence set to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(2)).saveAndFlush(capture())
+
+        assertThat(firstValue.eventDescription).isEqualTo("Licence updated to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.ACTIVATED)
+
+        assertThat(secondValue.eventDescription).isEqualTo("Licence updated to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.SUPERSEDED)
+      }
+    }
+
+    @Test
+    fun attemptingToVaryNonVariation() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createCrdLicence().copy(id = 1L)))
+
+      service.activateVariation(1L)
+
+      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(auditEventRepository, never()).saveAndFlush(any())
+      verify(licenceEventRepository, never()).saveAndFlush(any())
+    }
+
+    @Test
+    fun attemptingToVaryNonApprovedVariation() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createVariationLicence().copy(id = 2L, variationOfId = 1L, statusCode = LicenceStatus.VARIATION_IN_PROGRESS)))
+
+      service.activateVariation(1L)
 
       verify(licenceRepository, never()).saveAndFlush(any())
       verify(auditEventRepository, never()).saveAndFlush(any())

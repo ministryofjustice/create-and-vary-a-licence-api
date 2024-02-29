@@ -506,6 +506,18 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `activate a variation`() {
+    mvc.perform(
+      put("/licence/id/4/activate-variation")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).activateVariation(4)
+  }
+
+  @Test
   fun `refer a variation`() {
     val expectedRequest = ReferVariationRequest(reasonForReferral = "Reason")
 
