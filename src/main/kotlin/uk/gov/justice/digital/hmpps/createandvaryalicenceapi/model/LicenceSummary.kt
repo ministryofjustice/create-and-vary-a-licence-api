@@ -150,4 +150,7 @@ data class LicenceSummary(
 
   @Schema(description = "The licence Id which this licence is a version of", example = "86")
   val versionOf: Long? = null,
+
+  @Schema(description = "Is a review of this licence is required", example = "true")
+  val isReviewNeeded: Boolean,
 )

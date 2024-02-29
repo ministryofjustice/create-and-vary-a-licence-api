@@ -258,4 +258,7 @@ data class CrdLicence(
 
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
+
+  @Schema(description = "Is a review of this licence is required", example = "true")
+  override val isReviewNeeded: Boolean = false,
 ) : Licence

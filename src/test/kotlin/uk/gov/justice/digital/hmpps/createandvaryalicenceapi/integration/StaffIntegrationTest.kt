@@ -102,6 +102,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
     "classpath:test_data/seed-hard-stop-licences.sql",
   )
   fun `Get counts of cases needing a review`() {
