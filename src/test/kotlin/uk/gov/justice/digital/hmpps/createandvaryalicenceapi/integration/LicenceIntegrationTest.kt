@@ -568,12 +568,25 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   inner class CheckReviewingLicences {
     @Test
     @Sql(
+      "classpath:test_data/seed-prison-case-administrator.sql",
       "classpath:test_data/seed-hard-stop-licences.sql",
     )
     fun `Review licence successfully`() {
       run {
         val licence = licenceRepository.findById(1L).get() as HardStopLicence
         assertThat(licence.reviewDate).isNull()
+
+        val result = webTestClient.get()
+          .uri("/licence/id/1")
+          .accept(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .exchange()
+          .expectStatus().isOk
+          .expectHeader().contentType(MediaType.APPLICATION_JSON)
+          .expectBody(Licence::class.java)
+          .returnResult().responseBody
+
+        assertThat(result.isReviewNeeded).isTrue()
       }
 
       webTestClient.post()
@@ -586,6 +599,18 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       run {
         val licence = licenceRepository.findById(1L).get() as HardStopLicence
         assertThat(licence.reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
+
+        val result = webTestClient.get()
+          .uri("/licence/id/1")
+          .accept(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .exchange()
+          .expectStatus().isOk
+          .expectHeader().contentType(MediaType.APPLICATION_JSON)
+          .expectBody(Licence::class.java)
+          .returnResult().responseBody
+
+        assertThat(result.isReviewNeeded).isFalse()
       }
     }
 

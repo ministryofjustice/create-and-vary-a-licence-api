@@ -364,6 +364,48 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `review needed - when review date not set`() {
+    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        createHardStopLicence().copy(reviewDate = null),
+      ),
+    )
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries[0].isReviewNeeded).isTrue()
+  }
+
+  @Test
+  fun `review not needed - when review date set`() {
+    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        createHardStopLicence().copy(reviewDate = LocalDateTime.now()),
+      ),
+    )
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries[0].isReviewNeeded).isFalse()
+  }
+
+  @Test
+  fun `review not needed - for CRD licences`() {
+    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity,
+      ),
+    )
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries[0].isReviewNeeded).isFalse()
+  }
+
+  @Test
   fun `update licence status persists the licence and history correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
 
@@ -2220,6 +2262,7 @@ class LicenceServiceTest {
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       licenceVersion = "1.0",
+      isReviewNeeded = false,
     )
 
     val aRecentlyApprovedLicenceSummary = aLicenceSummary.copy(

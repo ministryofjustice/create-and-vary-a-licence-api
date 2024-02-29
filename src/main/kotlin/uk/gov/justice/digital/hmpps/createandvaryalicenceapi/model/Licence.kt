@@ -292,4 +292,7 @@ sealed interface Licence {
 
   @get:Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   val isEligibleForEarlyRelease: Boolean
+
+  @get:Schema(description = "Is a review of this licence is required", example = "true")
+  val isReviewNeeded: Boolean
 }
