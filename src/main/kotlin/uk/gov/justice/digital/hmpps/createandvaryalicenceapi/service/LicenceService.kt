@@ -134,6 +134,10 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
+    updateLicenceStatus(licenceEntity, request)
+  }
+
+  private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest) {
     var approvedByUser = licenceEntity.approvedByUsername
     var approvedByName = licenceEntity.approvedByName
     var approvedDate = licenceEntity.approvedDate
@@ -204,7 +208,7 @@ class LicenceService(
       notifyReApprovalNeeded(licenceEntity)
     }
 
-    recordLicenceEventForStatus(licenceId, updatedLicence, request)
+    recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
     auditStatusChange(updatedLicence, request.username, request.fullName)
     domainEventsService.recordDomainEvent(updatedLicence, request.status)
   }
@@ -695,6 +699,39 @@ class LicenceService(
   }
 
   @Transactional
+  fun activateVariation(licenceId: Long) {
+    val licence = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    if (licence !is VariationLicence || licence.statusCode != VARIATION_APPROVED) {
+      return
+    }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val user =
+      this.staffRepository.findByUsernameIgnoreCase(username) ?: error("need user in scope to activate variation")
+
+    updateLicenceStatus(
+      licence,
+      StatusUpdateRequest(status = ACTIVE, username = user.username, fullName = user.fullName),
+    )
+
+    val previousLicence = licenceRepository
+      .findById(licence.variationOfId!!)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    if (previousLicence is HardStopLicence) {
+      previousLicence.markAsReviewed(user)
+    }
+
+    updateLicenceStatus(
+      previousLicence,
+      StatusUpdateRequest(status = INACTIVE, username = user.username, fullName = user.fullName),
+    )
+  }
+
+  @Transactional
   fun discardLicence(licenceId: Long) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
@@ -799,7 +836,8 @@ class LicenceService(
 
       val updatedAdditionalConditionUploadSummary = condition.additionalConditionUploadSummary.map {
         var uploadDetail = additionalConditionUploadDetailRepository.getReferenceById(it.uploadDetailId)
-        uploadDetail = uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
+        uploadDetail =
+          uploadDetail.copy(id = -1, licenceId = newLicence.id, additionalConditionId = condition.id)
         uploadDetail = additionalConditionUploadDetailRepository.save(uploadDetail)
         it.copy(additionalCondition = condition, uploadDetailId = uploadDetail.id)
       }

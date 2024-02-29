@@ -818,6 +818,68 @@ class LicenceController(
   }
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
+  @PutMapping(value = ["/id/{licenceId}/activate-variation"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Activates an approved variation. Inactivates previous licence.",
+    description = "Activates a variation. Inactivates previous licence. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Licence variation activated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun activateVariation(
+    @PathVariable("licenceId") licenceId: Long,
+  ) {
+    licenceService.activateVariation(licenceId)
+  }
+
+  @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/approve-variation"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
