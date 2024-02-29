@@ -44,6 +44,7 @@ class VariationLicenceTest {
         prisonTelephone = "prisonTelephone",
         supersededDate = supersededDate,
         updatedByUsername = "updatedByUsername",
+        updatedBy = TestData.com()
       )
 
     VariationLicence::class.memberProperties.forEach {

@@ -495,7 +495,6 @@ class LicenceService(
     val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
     val creator = getCommunityOffenderManagerForCurrentUser()
     val licenceCopy = LicenceFactory.createVariation(licence, creator)
     val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)

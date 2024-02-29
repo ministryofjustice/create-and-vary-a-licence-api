@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -42,8 +43,9 @@ class LicenceOverrideServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
+  private val staffRepository = mock<StaffRepository>()
   private val licenceOverrideService =
-    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService)
+    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService, staffRepository)
 
   @BeforeEach
   fun reset() {
@@ -54,7 +56,7 @@ class LicenceOverrideServiceTest {
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
-    reset(licenceRepository)
+    reset(licenceRepository, staffRepository)
   }
 
   @Test
@@ -64,6 +66,8 @@ class LicenceOverrideServiceTest {
     )
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     val exception = assertThrows<ValidationException> {
       licenceOverrideService.changeStatus(approvedLicenceB.id, APPROVED, "Test Exception")
@@ -83,6 +87,8 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
 
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     val reasonForChange = "Test override from $APPROVED to $INACTIVE"
 
     licenceOverrideService.changeStatus(
@@ -99,6 +105,7 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceB, INACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -127,6 +134,8 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     val reasonForChange = "Test override from $APPROVED to $SUBMITTED"
 
     licenceOverrideService.changeStatus(
@@ -143,6 +152,7 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceA, SUBMITTED)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -171,6 +181,8 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     val reasonForChange = "Test licenceActivatedDate when licence is made $ACTIVE"
 
     licenceOverrideService.changeStatus(
@@ -187,6 +199,7 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceA, ACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
 
@@ -217,6 +230,8 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(variationApprovedLicence.id)).thenReturn(Optional.of(variationApprovedLicence))
 
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     val reasonForChange = "Test override from $VARIATION_APPROVED to $ACTIVE"
 
     licenceOverrideService.changeStatus(
@@ -233,6 +248,7 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(variationApprovedLicence, ACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -261,6 +277,8 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(activeVariationLicence.id)).thenReturn(Optional.of(activeVariationLicence))
 
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     val reasonForChange = "Test override from $ACTIVE to $INACTIVE"
 
     licenceOverrideService.changeStatus(
@@ -277,6 +295,7 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(activeVariationLicence, INACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
 
     assertThat(licenceCaptor.value)
       .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
@@ -300,6 +319,7 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override dates updates licence dates`() {
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
@@ -323,18 +343,21 @@ class LicenceOverrideServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
 
     assertThat(licenceCaptor.value)
       .extracting(
         "conditionalReleaseDate", "actualReleaseDate",
         "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
         "topupSupervisionStartDate", "topupSupervisionExpiryDate", "updatedByUsername",
+        "updatedBy",
       )
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
           request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
           request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, "smills",
+          TestData.com(),
         ),
       )
 

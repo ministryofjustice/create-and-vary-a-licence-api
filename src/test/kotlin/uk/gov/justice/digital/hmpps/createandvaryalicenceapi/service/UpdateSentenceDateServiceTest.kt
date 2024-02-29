@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -30,12 +31,14 @@ class UpdateSentenceDateServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val prisonApiClient = mock<PrisonApiClient>()
+  private val staffRepository = mock<StaffRepository>()
 
   private val service = UpdateSentenceDateService(
     licenceRepository,
     auditEventRepository,
     notifyService,
     prisonApiClient,
+    staffRepository,
   )
 
   @BeforeEach
@@ -70,6 +73,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     service.updateSentenceDates(
       1L,
@@ -102,6 +106,7 @@ class UpdateSentenceDateServiceTest {
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
         "updatedByUsername",
+        "updatedBy",
       )
       .isEqualTo(
         listOf(
@@ -114,6 +119,7 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2025-09-11"),
           "smills",
+          TestData.com(),
         ),
       )
 
@@ -142,12 +148,15 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to 11 September 2025" to true,
       ),
     )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   @Test
   fun `update sentence dates still sends email if HDC licence is not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(Mono.empty())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     service.updateSentenceDates(
       1L,
@@ -181,6 +190,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     service.updateSentenceDates(
       1L,
@@ -214,6 +224,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     service.updateSentenceDates(
       1L,
@@ -248,6 +259,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     service.updateSentenceDates(
       1L,
@@ -280,6 +292,7 @@ class UpdateSentenceDateServiceTest {
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
         "updatedByUsername",
+        "updatedBy",
       )
       .isEqualTo(
         listOf(
@@ -292,6 +305,7 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           null,
           "smills",
+          TestData.com(),
         ),
       )
 
@@ -313,6 +327,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   @Test
@@ -330,6 +346,8 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     service.updateSentenceDates(
       1L,
       UpdateSentenceDatesRequest(
@@ -374,6 +392,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   @Test
@@ -391,6 +410,8 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     service.updateSentenceDates(
       1L,
       UpdateSentenceDatesRequest(
@@ -435,6 +456,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   @Test
@@ -452,6 +474,8 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     service.updateSentenceDates(
       1L,
       UpdateSentenceDatesRequest(
@@ -497,6 +521,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   @Test
@@ -514,6 +539,8 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+
     service.updateSentenceDates(
       1L,
       UpdateSentenceDatesRequest(
@@ -559,6 +586,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   @Test
@@ -576,6 +604,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
 
     service.updateSentenceDates(
       1L,
@@ -622,6 +651,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
   }
 
   private companion object {

@@ -467,7 +467,7 @@ class CrdLicence(
       "createdBy=$createdBy, " +
       "createdBy=$createdBy, " +
       "versionOfId=$versionOfId, " +
-      "licenceVersion=$licenceVersion" +
+      "licenceVersion=$licenceVersion, " +
       "updatedBy=$updatedBy" +
       ")"
   }

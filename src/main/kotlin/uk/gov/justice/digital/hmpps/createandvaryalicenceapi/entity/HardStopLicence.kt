@@ -466,7 +466,7 @@ class HardStopLicence(
       "createdBy=$createdBy, " +
       "substituteOfId=$substituteOfId, " +
       "reviewDate=$reviewDate, " +
-      "licenceVersion=$licenceVersion" +
+      "licenceVersion=$licenceVersion, " +
       "updatedBy = $updatedBy" +
       ")"
   }

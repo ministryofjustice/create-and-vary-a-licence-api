@@ -469,7 +469,7 @@ class VariationLicence(
       "createdBy=$createdBy, " +
       "createdBy=$createdBy, " +
       "variationOfId=$variationOfId, " +
-      "licenceVersion=$licenceVersion" +
+      "licenceVersion=$licenceVersion, " +
       "updatedBy=$updatedBy" +
       ")"
   }
