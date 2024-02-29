@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
@@ -30,6 +32,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
@@ -57,6 +60,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
@@ -329,7 +334,11 @@ class LicenceServiceTest {
       variationOfId = aRecentlyApprovedLicence.id,
     )
 
-    whenever(licenceRepository.findById(aRecentlyApprovedLicence.id)).thenReturn(Optional.of(aRecentlyApprovedLicence))
+    whenever(licenceRepository.findById(aRecentlyApprovedLicence.id)).thenReturn(
+      Optional.of(
+        aRecentlyApprovedLicence,
+      ),
+    )
     whenever(
       licenceRepository.getRecentlyApprovedLicences(
         anyList(),
@@ -446,7 +455,11 @@ class LicenceServiceTest {
       approvedDate = LocalDateTime.now(),
     )
     val newVersionOfLicence =
-      aLicenceEntity.copy(id = newLicenceId, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = aLicenceEntity.id)
+      aLicenceEntity.copy(
+        id = newLicenceId,
+        statusCode = LicenceStatus.IN_PROGRESS,
+        versionOfId = aLicenceEntity.id,
+      )
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(firstVersionOfLicence))
     whenever(licenceRepository.findById(newLicenceId)).thenReturn(Optional.of(newVersionOfLicence))
@@ -560,7 +573,14 @@ class LicenceServiceTest {
     )
 
     assertThat(licenceCaptor.value)
-      .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedDate", "licenceActivatedDate")
+      .extracting(
+        "id",
+        "statusCode",
+        "updatedByUsername",
+        "approvedByUsername",
+        "approvedDate",
+        "licenceActivatedDate",
+      )
       .isEqualTo(listOf(1L, LicenceStatus.IN_PROGRESS, "X", null, null, null))
 
     assertThat(auditCaptor.value)
@@ -884,7 +904,7 @@ class LicenceServiceTest {
       lastName = "Y",
     )
 
-    val hardStopLicence = TestData.createHardStopLicence()
+    val hardStopLicence = createHardStopLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(caseAdmin)
 
@@ -1980,9 +2000,102 @@ class LicenceServiceTest {
       )
   }
 
-  private companion object {
-    val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
+  @Nested
+  inner class `Marking reviewed when no variation required` {
+    @Test
+    fun happyPath() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(
+        CommunityOffenderManager(
+          staffIdentifier = 2000,
+          username = "smills",
+          email = "testemail@probation.gov.uk",
+          firstName = "X",
+          lastName = "Y",
+        ),
+      )
 
+      val hardstopLicence = createHardStopLicence()
+        .copy(id = 1L, statusCode = LicenceStatus.ACTIVE, licenceVersion = "2.0", reviewDate = null)
+
+      whenever(licenceRepository.findById(hardstopLicence.id)).thenReturn(Optional.of(hardstopLicence))
+
+      service.reviewWithNoVariationRequired(1L)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
+        assertThat(firstValue.dateLastUpdated?.toLocalDate()).isEqualTo(LocalDate.now())
+        assertThat(firstValue.updatedByUsername).isEqualTo("smills")
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(hardstopLicence.id)
+        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.fullName).isEqualTo("X Y")
+        assertThat(firstValue.summary).isEqualTo("Licence reviewed without being varied for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(hardstopLicence.id)
+        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.eventDescription).isEqualTo("Licence reviewed without being varied")
+        assertThat(firstValue.forenames).isEqualTo("X")
+        assertThat(firstValue.surname).isEqualTo("Y")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.HARD_STOP_REVIEWED)
+      }
+    }
+
+    @Test
+    fun alreadyReviewed() {
+      val hardstopLicence = createHardStopLicence()
+        .copy(id = 1L, reviewDate = LocalDateTime.now())
+
+      whenever(licenceRepository.findById(hardstopLicence.id)).thenReturn(Optional.of(hardstopLicence))
+
+      service.reviewWithNoVariationRequired(1L)
+
+      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(auditEventRepository, never()).saveAndFlush(any())
+      verify(licenceEventRepository, never()).saveAndFlush(any())
+    }
+
+    @Test
+    fun missingLicence() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        service.reviewWithNoVariationRequired(1L)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessage("1")
+
+      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(auditEventRepository, never()).saveAndFlush(any())
+      verify(licenceEventRepository, never()).saveAndFlush(any())
+    }
+
+    @Test
+    fun notAHardStopLicence() {
+      val hardstopLicence = createCrdLicence()
+        .copy(id = 1L)
+
+      whenever(licenceRepository.findById(hardstopLicence.id)).thenReturn(Optional.of(hardstopLicence))
+
+      assertThatThrownBy {
+        service.reviewWithNoVariationRequired(1L)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessage("Trying to review a CrdLicence: 1")
+
+      verify(licenceRepository, never()).saveAndFlush(any())
+      verify(auditEventRepository, never()).saveAndFlush(any())
+      verify(licenceEventRepository, never()).saveAndFlush(any())
+    }
+  }
+
+  private companion object {
     val anAdditionalCondition = AdditionalConditionAp(
       code = "code",
       category = "category",

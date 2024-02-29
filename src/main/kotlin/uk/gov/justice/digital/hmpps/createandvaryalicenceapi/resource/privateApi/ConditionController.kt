@@ -290,7 +290,7 @@ class ConditionController(
   }
 
   /**
-   * This functionality can be replaced once proper licence versioning is implemented
+   * This functionality to set standard conditions from the frontend could be removed - we should be able to set/refresh standard conditions at various points in the licence lifecycle.
    */
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping("/id/{licenceId}/standard-conditions")
