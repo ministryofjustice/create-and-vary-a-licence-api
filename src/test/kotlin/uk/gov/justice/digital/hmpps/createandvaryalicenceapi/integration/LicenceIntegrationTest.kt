@@ -703,11 +703,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val aStatusToApprovedUpdateRequest = 
+    val aStatusToApprovedUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "AAA", fullName = "Y")
-    val aStatusToActiveUpdateRequest = 
+    val aStatusToActiveUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "AAA", fullName = "Y")
-    val aStatusToInactiveUpdateRequest = 
+    val aStatusToInactiveUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "AAA", fullName = "Y")
 
     val govUkApiMockServer = GovUkMockServer()
