@@ -506,6 +506,18 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `activate a variation`() {
+    mvc.perform(
+      put("/licence/id/4/activate-variation")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).activateVariation(4)
+  }
+
+  @Test
   fun `refer a variation`() {
     val expectedRequest = ReferVariationRequest(reasonForReferral = "Reason")
 
@@ -518,6 +530,18 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).referLicenceVariation(4, expectedRequest)
+  }
+
+  @Test
+  fun `mark licence as reviewed`() {
+    mvc.perform(
+      post("/licence/id/4/review-with-no-variation-required")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
+    )
+      .andExpect(status().isOk)
+
+    verify(licenceService, times(1)).reviewWithNoVariationRequired(4L)
   }
 
   private companion object {
@@ -630,6 +654,7 @@ class LicenceControllerTest {
       approvedByName = "jim smith",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       licenceVersion = "1.0",
+      isReviewNeeded = false,
     )
 
     val aStatusUpdateRequest =

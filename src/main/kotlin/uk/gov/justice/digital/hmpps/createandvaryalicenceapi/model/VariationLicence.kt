@@ -264,4 +264,7 @@ data class VariationLicence(
 
   @Schema(description = "If ARD||CRD falls on Friday/Bank holiday/Weekend then it is eligible for early release)")
   override val isEligibleForEarlyRelease: Boolean = false,
+
+  @Schema(description = "Is a review of this licence is required", example = "true")
+  override val isReviewNeeded: Boolean = false,
 ) : Licence

@@ -6,6 +6,7 @@ import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -32,6 +35,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 
 class LicenceIntegrationTest : IntegrationTestBase() {
   @MockBean
@@ -422,7 +427,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.size).isEqualTo(4)
     assertThat(result)
       .extracting<Tuple> {
-        tuple(it.licenceId, it.licenceStatus, it.nomisId, it.surname, it.forename, it.prisonCode, it.prisonDescription)
+        tuple(
+          it.licenceId,
+          it.licenceStatus,
+          it.nomisId,
+          it.surname,
+          it.forename,
+          it.prisonCode,
+          it.prisonDescription,
+        )
       }
       .contains(
         tuple(2L, LicenceStatus.APPROVED, "B1234BB", "Bobson", "Bob", "MDI", "Moorland HMP"),
@@ -553,10 +566,149 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  inner class CheckReviewingLicences {
+    @Test
+    @Sql(
+      "classpath:test_data/seed-prison-case-administrator.sql",
+      "classpath:test_data/seed-hard-stop-licences.sql",
+    )
+    fun `Review licence successfully`() {
+      run {
+        val licence = licenceRepository.findById(1L).get() as HardStopLicence
+        assertThat(licence.reviewDate).isNull()
+
+        val result = webTestClient.get()
+          .uri("/licence/id/1")
+          .accept(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .exchange()
+          .expectStatus().isOk
+          .expectHeader().contentType(MediaType.APPLICATION_JSON)
+          .expectBody(Licence::class.java)
+          .returnResult().responseBody
+
+        assertThat(result.isReviewNeeded).isTrue()
+      }
+
+      webTestClient.post()
+        .uri("/licence/id/1/review-with-no-variation-required")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+
+      run {
+        val licence = licenceRepository.findById(1L).get() as HardStopLicence
+        assertThat(licence.reviewDate?.toLocalDate()).isEqualTo(LocalDate.now())
+
+        val result = webTestClient.get()
+          .uri("/licence/id/1")
+          .accept(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .exchange()
+          .expectStatus().isOk
+          .expectHeader().contentType(MediaType.APPLICATION_JSON)
+          .expectBody(Licence::class.java)
+          .returnResult().responseBody
+
+        assertThat(result.isReviewNeeded).isFalse()
+      }
+    }
+
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.post()
+        .uri("/licence/id/1/review-with-no-variation-required")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.post()
+        .uri("/licence/id/1/review-with-no-variation-required")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+    }
+  }
+
+  @Nested
+  inner class CheckActivatingVariations {
+    @Test
+    @Sql(
+      "classpath:test_data/seed-variation-licence.sql",
+    )
+    fun `Activate licence successfully`() {
+      run {
+        webTestClient.put()
+          .uri("/licence/id/2/approve-variation")
+          .accept(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+          .exchange()
+          .expectStatus().isOk
+
+        val variation = licenceRepository.findById(2L).get() as EntityVariationLicence
+        assertThat(variation.statusCode).isEqualTo(LicenceStatus.VARIATION_APPROVED)
+
+        val original = licenceRepository.findById(1L).get() as CrdLicence
+        assertThat(original.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      }
+
+      webTestClient.put()
+        .uri("/licence/id/2/activate-variation")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+
+      run {
+        val variation = licenceRepository.findById(2L).get() as EntityVariationLicence
+        assertThat(variation.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+
+        val original = licenceRepository.findById(1L).get() as CrdLicence
+        assertThat(original.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      }
+    }
+
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.put()
+        .uri("/licence/id/1/activate-variation")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.post()
+        .uri("/licence/id/1/activate-variation")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+    }
+  }
+
   private companion object {
-    val aStatusToApprovedUpdateRequest = StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "AAA", fullName = "Y")
-    val aStatusToActiveUpdateRequest = StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "AAA", fullName = "Y")
-    val aStatusToInactiveUpdateRequest = StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "AAA", fullName = "Y")
+    val aStatusToApprovedUpdateRequest = 
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "AAA", fullName = "Y")
+    val aStatusToActiveUpdateRequest = 
+      StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "AAA", fullName = "Y")
+    val aStatusToInactiveUpdateRequest = 
+      StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "AAA", fullName = "Y")
 
     val govUkApiMockServer = GovUkMockServer()
 

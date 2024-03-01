@@ -404,7 +404,13 @@ class HardStopLicence(
     responsibleCom = responsibleCom,
   )
 
-  override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
+  fun markAsReviewed(staff: Staff?) {
+    reviewDate = LocalDateTime.now()
+    dateLastUpdated = LocalDateTime.now()
+    updatedByUsername = staff?.username
+  }
+
+  override fun getCreator() = createdBy ?: error("licence: $id has no CA/creator")
 
   override fun toString(): String {
     return "HardStopLicence(" +

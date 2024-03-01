@@ -72,6 +72,10 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     submittedDate = licence.submittedDate,
     licenceVersion = licence.licenceVersion,
     versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    isReviewNeeded = when (licence) {
+      is HardStopLicence -> licence.reviewDate == null
+      else -> false
+    },
   )
 }
 
@@ -142,7 +146,10 @@ fun toHardstop(
   updatedByUsername = licence.updatedByUsername,
   standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
-  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
+    "AP",
+    conditionSubmissionStatus,
+  ),
   additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
@@ -217,7 +224,10 @@ fun toVariation(
   updatedByUsername = licence.updatedByUsername,
   standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
-  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
+    "AP",
+    conditionSubmissionStatus,
+  ),
   additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   variationOf = licence.variationOfId,
@@ -291,7 +301,10 @@ fun toCrd(
   updatedByUsername = licence.updatedByUsername,
   standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
   standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
-  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
+    "AP",
+    conditionSubmissionStatus,
+  ),
   additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
   bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
   createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
@@ -317,8 +330,16 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition {
 }
 
 // Transform a list of entity additional conditions to model additional conditions
-fun List<EntityAdditionalCondition>.transformToModelAdditional(conditionType: String, conditionSubmissionStatus: Map<String, Boolean>): List<ModelAdditionalCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map { transform(it, conditionSubmissionStatus[it.conditionCode]!!) }
+fun List<EntityAdditionalCondition>.transformToModelAdditional(
+  conditionType: String,
+  conditionSubmissionStatus: Map<String, Boolean>,
+): List<ModelAdditionalCondition> =
+  filter { condition -> condition.conditionType == conditionType }.map {
+    transform(
+      it,
+      conditionSubmissionStatus[it.conditionCode]!!,
+    )
+  }
 
 fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition {
   return ModelAdditionalCondition(
