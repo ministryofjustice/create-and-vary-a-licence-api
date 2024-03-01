@@ -20,6 +20,7 @@ class VariationLicenceTest {
     val dateLastUpdated = LocalDateTime.now().plusDays(3)
     val licenceActivatedDate = LocalDateTime.now().plusDays(4)
     val supersededDate = LocalDateTime.now().plusDays(5)
+    val aCom = TestData.com()
 
     val variationLicence = TestData.createVariationLicence()
       .copy(
@@ -31,7 +32,7 @@ class VariationLicenceTest {
         appointmentAddress = "some address",
         appointmentTime = appointmentTime,
         appointmentTimeType = appointmentTimeType,
-        submittedBy = TestData.com(),
+        submittedBy = aCom,
         appointmentContact = "appointmentContact",
         appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
         appointmentPerson = "appointmentPerson",
@@ -44,7 +45,7 @@ class VariationLicenceTest {
         prisonTelephone = "prisonTelephone",
         supersededDate = supersededDate,
         updatedByUsername = "updatedByUsername",
-        updatedBy = TestData.com(),
+        updatedBy = aCom,
       )
 
     VariationLicence::class.memberProperties.forEach {

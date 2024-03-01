@@ -73,7 +73,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -118,8 +118,8 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2025-09-11"),
-          "smills",
-          TestData.com(),
+          aCom.username,
+          aCom,
         ),
       )
 
@@ -149,14 +149,14 @@ class UpdateSentenceDateServiceTest {
       ),
     )
 
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   @Test
   fun `update sentence dates still sends email if HDC licence is not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(Mono.empty())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -190,7 +190,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -224,7 +224,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -259,7 +259,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -304,8 +304,8 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
           null,
-          "smills",
-          TestData.com(),
+          aCom.username,
+          aCom,
         ),
       )
 
@@ -328,7 +328,7 @@ class UpdateSentenceDateServiceTest {
       ),
     )
 
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   @Test
@@ -346,7 +346,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -392,7 +392,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   @Test
@@ -410,7 +410,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -456,7 +456,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   @Test
@@ -474,7 +474,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -521,7 +521,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   @Test
@@ -539,7 +539,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -586,7 +586,7 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   @Test
@@ -604,7 +604,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -651,10 +651,11 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision end date has changed to null" to true,
       ),
     )
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(TestData.com().username)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence()
+    val aCom = TestData.com()
   }
 }

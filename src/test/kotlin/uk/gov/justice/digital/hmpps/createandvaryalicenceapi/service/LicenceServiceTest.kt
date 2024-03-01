@@ -409,7 +409,7 @@ class LicenceServiceTest {
   @Test
   fun `update licence status persists the licence and history correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -507,7 +507,7 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(firstVersionOfLicence))
     whenever(licenceRepository.findById(newLicenceId)).thenReturn(Optional.of(newVersionOfLicence))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       newLicenceId,
@@ -598,7 +598,7 @@ class LicenceServiceTest {
       ),
     )
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -667,7 +667,7 @@ class LicenceServiceTest {
   @Test
   fun `update licenceActivatedDate field when licence status set to ACTIVE`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -712,7 +712,7 @@ class LicenceServiceTest {
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -771,7 +771,7 @@ class LicenceServiceTest {
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -823,7 +823,7 @@ class LicenceServiceTest {
       licenceActivatedDate = LocalDateTime.now(),
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -847,7 +847,7 @@ class LicenceServiceTest {
       licenceActivatedDate = LocalDateTime.now(),
     )
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       1L,
@@ -1352,6 +1352,7 @@ class LicenceServiceTest {
   fun `update spo discussion persists the updated entity`() {
     val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSpoDiscussion(1L, UpdateSpoDiscussionRequest(spoDiscussion = "Yes"))
 
@@ -1359,14 +1360,15 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.value)
-      .extracting("spoDiscussion", "updatedByUsername")
-      .isEqualTo(listOf("Yes", "smills"))
+      .extracting("spoDiscussion", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf("Yes", "smills", aCom))
   }
 
   @Test
   fun `update vlo discussion persists the updated entity`() {
     val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateVloDiscussion(1L, UpdateVloDiscussionRequest(vloDiscussion = "Yes"))
 
@@ -1382,6 +1384,7 @@ class LicenceServiceTest {
   fun `update reason for variation creates a licence event containing the reason`() {
     val variation = createVariationLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -1391,7 +1394,9 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
 
-    assertThat(licenceCaptor.value).extracting("updatedByUsername").isEqualTo("smills")
+    assertThat(licenceCaptor.value)
+      .extracting("updatedByUsername", "updatedBy")
+      .isEqualTo(listOf("smills", aCom))
 
     assertThat(eventCaptor.value)
       .extracting("eventType", "username", "eventDescription")
@@ -1732,7 +1737,7 @@ class LicenceServiceTest {
   @Test
   fun `update prison information persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updatePrisonInformation(
       1L,
@@ -1892,7 +1897,7 @@ class LicenceServiceTest {
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(emptyList())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       approvedLicence.id,
@@ -1936,7 +1941,7 @@ class LicenceServiceTest {
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(emptyList())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       approvedLicence.id,
@@ -1980,7 +1985,7 @@ class LicenceServiceTest {
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(emptyList())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       variationApprovedLicence.id,
@@ -2024,7 +2029,7 @@ class LicenceServiceTest {
         listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
       ),
     ).thenReturn(emptyList())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateLicenceStatus(
       variationLicence.id,
@@ -2440,5 +2445,7 @@ class LicenceServiceTest {
         conditionType = "PSS",
       ),
     )
+
+    val aCom = TestData.com()
   }
 }

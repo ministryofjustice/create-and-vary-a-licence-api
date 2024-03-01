@@ -58,7 +58,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment person persists updated entity correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateAppointmentPerson(
       1L,
@@ -73,13 +73,13 @@ class AppointmentServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", "smills", TestData.com()))
+      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", aCom.username, aCom))
   }
 
   @Test
   fun `update initial appointment person throws not found exception if licence not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateAppointmentPerson(
@@ -99,7 +99,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment time persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateAppointmentTime(
       1L,
@@ -114,7 +114,7 @@ class AppointmentServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("appointmentTime", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(tenDaysFromNow, "smills", TestData.com()))
+      .isEqualTo(listOf(tenDaysFromNow, aCom.username, aCom))
   }
 
   @Test
@@ -140,7 +140,7 @@ class AppointmentServiceTest {
   @Test
   fun `update contact number persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
 
@@ -149,7 +149,7 @@ class AppointmentServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("appointmentContact", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("0114 2565555", "smills", TestData.com()))
+      .isEqualTo(listOf("0114 2565555", aCom.username, aCom))
   }
 
   @Test
@@ -169,7 +169,7 @@ class AppointmentServiceTest {
   @Test
   fun `update appointment address persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateAppointmentAddress(
       1L,
@@ -181,7 +181,7 @@ class AppointmentServiceTest {
 
     assertThat(licenceCaptor.value)
       .extracting("appointmentAddress", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", "smills", TestData.com()))
+      .isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", aCom.username, aCom))
   }
 
   @Test
@@ -281,5 +281,7 @@ class AppointmentServiceTest {
         ),
       )
     }
+
+    val aCom = TestData.com()
   }
 }

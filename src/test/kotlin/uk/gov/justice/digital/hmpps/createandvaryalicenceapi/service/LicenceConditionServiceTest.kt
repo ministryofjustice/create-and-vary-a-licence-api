@@ -89,7 +89,7 @@ class LicenceConditionServiceTest {
     fun `update standard conditions for an individual licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
       whenever(policyService.currentPolicy()).thenReturn(aPolicy)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val apConditions = listOf(
         StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -115,7 +115,7 @@ class LicenceConditionServiceTest {
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
 
       assertThat(licenceCaptor.value.standardConditions).containsExactly(
         uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
@@ -159,7 +159,7 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.deleteAdditionalCondition(1L, 2)
 
@@ -176,7 +176,7 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
     }
 
     @Test
@@ -199,7 +199,7 @@ class LicenceConditionServiceTest {
         ),
       )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2), listOf(1, 3))
 
@@ -222,7 +222,7 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
     }
 
     @Test
@@ -289,7 +289,7 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val request = AdditionalConditionsRequest(
         additionalConditions = listOf(
@@ -324,7 +324,7 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
 
       verifyNoInteractions(conditionFormatter)
     }
@@ -354,7 +354,7 @@ class LicenceConditionServiceTest {
         AllAdditionalConditions(mapOf("1.0" to mapOf(policyApCondition.code to policyApCondition))),
       )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val request = AddAdditionalConditionRequest(
         conditionCode = "code",
@@ -382,7 +382,7 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
 
       // No way of providing additional condition data via this endpoint so no point running through formatter
       verifyNoInteractions(conditionFormatter)
@@ -406,7 +406,7 @@ class LicenceConditionServiceTest {
     @Test
     fun `update bespoke conditions persists multiple entities`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val bespokeEntities = listOf(
         BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
@@ -428,7 +428,7 @@ class LicenceConditionServiceTest {
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
       assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
 
       // Verify new bespoke conditions are added in their place
@@ -560,7 +560,7 @@ class LicenceConditionServiceTest {
             anAdditionalConditionEntity.copy(),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
@@ -596,7 +596,7 @@ class LicenceConditionServiceTest {
       // Verify last contact info is recorded
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf("smills", TestData.com()))
+        .isEqualTo(listOf(aCom.username, aCom))
 
       verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
     }
@@ -620,7 +620,7 @@ class LicenceConditionServiceTest {
           ),
         )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(TestData.com())
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
@@ -692,6 +692,8 @@ class LicenceConditionServiceTest {
       text = "text",
       requiresInput = false,
     )
+
+    val aCom = TestData.com()
   }
 
   private fun standardCondition(id: Long) =
