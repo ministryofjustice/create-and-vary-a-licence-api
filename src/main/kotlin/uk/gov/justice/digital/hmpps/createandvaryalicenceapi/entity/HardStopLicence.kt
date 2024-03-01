@@ -407,7 +407,8 @@ class HardStopLicence(
   fun markAsReviewed(staff: Staff?) {
     reviewDate = LocalDateTime.now()
     dateLastUpdated = LocalDateTime.now()
-    updatedByUsername = staff?.username
+    updatedByUsername = staff?.username ?: SYSTEM_USER
+    updatedBy = staff ?: this.updatedBy
   }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no CA/creator")

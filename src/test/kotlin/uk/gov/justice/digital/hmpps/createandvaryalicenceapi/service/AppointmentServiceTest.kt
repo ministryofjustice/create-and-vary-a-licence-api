@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -79,7 +80,6 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment person throws not found exception if licence not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateAppointmentPerson(
@@ -94,6 +94,7 @@ class AppointmentServiceTest {
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
 
     verify(licenceRepository, times(1)).findById(1L)
+    verifyNoInteractions(staffRepository)
   }
 
   @Test
@@ -201,6 +202,33 @@ class AppointmentServiceTest {
     verifyNoInteractions(staffRepository)
   }
 
+  @Test
+  fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        aLicenceEntity.copy(
+          updatedBy = aPreviousUser,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+
+    service.updateAppointmentPerson(
+      1L,
+      AppointmentPersonRequest(
+        appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
+        appointmentPerson = "John Smith",
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", SYSTEM_USER, aPreviousUser))
+  }
+
   private companion object {
     val tenDaysFromNow: LocalDateTime = LocalDateTime.now().plusDays(10)
 
@@ -283,5 +311,13 @@ class AppointmentServiceTest {
     }
 
     val aCom = TestData.com()
+
+    val aPreviousUser = CommunityOffenderManager(
+      staffIdentifier = 4000,
+      username = "test",
+      email = "test@test.com",
+      firstName = "Test",
+      lastName = "Test",
+    )
   }
 }

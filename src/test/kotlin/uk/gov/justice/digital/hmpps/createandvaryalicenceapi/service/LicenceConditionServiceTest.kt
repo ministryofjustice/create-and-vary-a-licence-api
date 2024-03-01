@@ -21,7 +21,9 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
@@ -427,9 +429,8 @@ class LicenceConditionServiceTest {
       verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
 
       assertThat(licenceCaptor.value)
-        .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(aCom.username, aCom))
-      assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
+        .extracting("bespokeConditions", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(emptyList<BespokeCondition>(), aCom.username, aCom))
 
       // Verify new bespoke conditions are added in their place
       bespokeEntities.forEach { bespoke ->
@@ -452,11 +453,19 @@ class LicenceConditionServiceTest {
           ),
         ),
       )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.updateBespokeConditions(1L, BespokeConditionRequest())
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
       verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
-      verify(licenceRepository, times(1)).saveAndFlush(any())
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
+
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(aCom.username, aCom))
     }
 
     @Test
@@ -635,11 +644,61 @@ class LicenceConditionServiceTest {
       service.updateAdditionalConditionData(1L, 1L, request)
 
       val conditionCaptor = ArgumentCaptor.forClass(AdditionalCondition::class.java)
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(additionalConditionRepository).saveAndFlush(conditionCaptor.capture())
+      verify(licenceRepository).saveAndFlush(licenceCaptor.capture())
       verify(conditionFormatter).format(CONDITION_CONFIG, conditionCaptor.value.additionalConditionData)
+
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(aCom.username, aCom))
     }
   }
+
+  @Nested
+  inner class `update username and updatedBy` {
+    @Test
+    fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            updatedBy = aPreviousUser,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+
+      val bespokeEntities = listOf(
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 2, conditionText = "Condition 3"),
+        BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 0, conditionText = "Condition 1"),
+      )
+
+      bespokeEntities.forEach { bespoke ->
+        whenever(bespokeConditionRepository.saveAndFlush(bespoke)).thenReturn(bespoke)
+      }
+
+      service.updateBespokeConditions(1L, someBespokeConditions)
+
+      // Verify licence entity is updated with last contact info
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
+
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(SYSTEM_USER, aPreviousUser))
+      assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
+
+      // Verify new bespoke conditions are added in their place
+      bespokeEntities.forEach { bespoke ->
+        verify(bespokeConditionRepository, times(1)).saveAndFlush(bespoke)
+      }
+    }
+  }
+
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
 
@@ -694,6 +753,14 @@ class LicenceConditionServiceTest {
     )
 
     val aCom = TestData.com()
+
+    val aPreviousUser = CommunityOffenderManager(
+      staffIdentifier = 4000,
+      username = "test",
+      email = "test@test.com",
+      firstName = "Test",
+      lastName = "Test",
+    )
   }
 
   private fun standardCondition(id: Long) =

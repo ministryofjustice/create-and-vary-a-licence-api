@@ -950,13 +950,13 @@ class LicenceService(
 
     if (licenceEntity !is HardStopLicence) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
-    val user = this.staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     if (licenceEntity.reviewDate != null) {
       return
     }
 
-    licenceEntity.markAsReviewed(user)
+    licenceEntity.markAsReviewed(staffMember)
 
     licenceRepository.saveAndFlush(licenceEntity)
 
@@ -965,8 +965,8 @@ class LicenceService(
         licenceId = licenceId,
         eventType = LicenceEventType.HARD_STOP_REVIEWED,
         username = username,
-        forenames = user?.firstName,
-        surname = user?.lastName,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
         eventDescription = "Licence reviewed without being varied",
       ),
     )
@@ -975,7 +975,7 @@ class LicenceService(
       AuditEvent(
         licenceId = licenceId,
         username = username,
-        fullName = "${user?.firstName} ${user?.lastName}",
+        fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
         summary = "Licence reviewed without being varied for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.reviewDate} version ${licenceEntity.version}",
       ),

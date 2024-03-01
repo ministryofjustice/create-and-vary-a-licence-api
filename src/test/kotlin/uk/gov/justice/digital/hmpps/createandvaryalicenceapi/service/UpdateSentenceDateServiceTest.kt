@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -156,7 +158,6 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates still sends email if HDC licence is not found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(Mono.empty())
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -190,7 +191,6 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -224,7 +224,6 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
       1L,
@@ -366,7 +365,9 @@ class UpdateSentenceDateServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.INACTIVE, aCom.username, aCom))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
@@ -430,7 +431,9 @@ class UpdateSentenceDateServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.INACTIVE, aCom.username, aCom))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
@@ -494,8 +497,9 @@ class UpdateSentenceDateServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.IN_PROGRESS)
-
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.IN_PROGRESS, aCom.username, aCom))
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
       .isEqualTo(
@@ -559,7 +563,9 @@ class UpdateSentenceDateServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.INACTIVE, aCom.username, aCom))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
@@ -624,7 +630,9 @@ class UpdateSentenceDateServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value).extracting("statusCode").isEqualTo(LicenceStatus.INACTIVE)
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.INACTIVE, aCom.username, aCom))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     assertThat(auditCaptor.value).extracting("licenceId", "username", "fullName", "summary")
@@ -654,8 +662,87 @@ class UpdateSentenceDateServiceTest {
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
+  @Test
+  fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(
+        aLicenceEntity.copy(
+          updatedBy = aPreviousUser,
+        ),
+      ),
+    )
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate",
+        "actualReleaseDate",
+        "sentenceStartDate",
+        "sentenceEndDate",
+        "licenceStartDate",
+        "licenceExpiryDate",
+        "topupSupervisionStartDate",
+        "topupSupervisionExpiryDate",
+        "updatedByUsername",
+        "updatedBy",
+      )
+      .isEqualTo(
+        listOf(
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2021-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
+          SYSTEM_USER,
+          aPreviousUser,
+        ),
+      )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence()
     val aCom = TestData.com()
+    val aPreviousUser = CommunityOffenderManager(
+      staffIdentifier = 4000,
+      username = "test",
+      email = "test@test.com",
+      firstName = "Test",
+      lastName = "Test",
+    )
   }
 }
