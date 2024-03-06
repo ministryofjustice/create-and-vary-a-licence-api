@@ -267,9 +267,10 @@ class HardStopLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
-  override fun deactivate(updatedByUsername: String) = copy(
+  override fun deactivate(staffMember: Staff?) = copy(
     statusCode = LicenceStatus.INACTIVE,
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   fun submit(submittedBy: PrisonCaseAdministrator) = copy(
@@ -278,6 +279,7 @@ class HardStopLicence(
     updatedByUsername = submittedBy.username,
     submittedDate = LocalDateTime.now(),
     dateLastUpdated = LocalDateTime.now(),
+    updatedBy = submittedBy,
   )
 
   override fun updatePrisonInfo(

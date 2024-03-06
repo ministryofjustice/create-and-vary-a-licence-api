@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.DeactivateLicencesService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -31,12 +32,14 @@ class DeactivateLicencesServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
+  private val staffRepository = mock<StaffRepository>()
 
   private val service = DeactivateLicencesService(
     licenceRepository,
     auditEventRepository,
     licenceEventRepository,
     domainEventsService,
+    staffRepository,
   )
 
   @BeforeEach
@@ -52,6 +55,7 @@ class DeactivateLicencesServiceTest {
       licenceRepository,
       auditEventRepository,
       licenceEventRepository,
+      staffRepository,
     )
   }
 
@@ -72,6 +76,7 @@ class DeactivateLicencesServiceTest {
         aLicenceEntity,
       ),
     )
+    whenever(staffRepository.findByUsernameIgnoreCase(aCom.username)).thenReturn(aCom)
 
     service.deactivateLicences()
 
@@ -84,12 +89,13 @@ class DeactivateLicencesServiceTest {
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.firstValue[0])
-      .extracting("statusCode", "updatedByUsername")
-      .isEqualTo(listOf(LicenceStatus.INACTIVE, "smills"))
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.INACTIVE, aCom.username, aCom))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(aLicenceEntity, LicenceStatus.INACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
@@ -120,5 +126,6 @@ class DeactivateLicencesServiceTest {
 
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence().copy()
+    val aCom = TestData.com()
   }
 }

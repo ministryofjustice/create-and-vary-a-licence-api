@@ -150,7 +150,7 @@ abstract class Licence(
 
   abstract fun activate(): Licence
   abstract fun deactivate(): Licence
-  abstract fun deactivate(updatedByUsername: String): Licence
+  abstract fun deactivate(staffMember: Staff?): Licence
 
   abstract fun updatePrisonInfo(
     prisonCode: String,

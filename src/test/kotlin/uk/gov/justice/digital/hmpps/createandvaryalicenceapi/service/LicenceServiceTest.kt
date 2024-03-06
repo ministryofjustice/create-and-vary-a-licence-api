@@ -936,8 +936,8 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.submittedDate).isNotNull()
     assertThat(licenceCaptor.value)
-      .extracting("id", "statusCode", "updatedByUsername")
-      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, "smills"))
+      .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, aCom.username, aCom))
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
@@ -986,8 +986,8 @@ class LicenceServiceTest {
 
     assertThat(licenceCaptor.value.submittedDate).isNotNull()
     assertThat(licenceCaptor.value)
-      .extracting("id", "statusCode", "updatedByUsername")
-      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, "smills"))
+      .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(1L, LicenceStatus.SUBMITTED, caseAdmin.username, caseAdmin))
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
@@ -1041,8 +1041,8 @@ class LicenceServiceTest {
       )
 
     assertThat(licenceCaptor.value)
-      .extracting("id", "statusCode", "updatedByUsername")
-      .isEqualTo(listOf(1L, LicenceStatus.VARIATION_SUBMITTED, "smills"))
+      .extracting("id", "statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(1L, LicenceStatus.VARIATION_SUBMITTED, aCom.username, aCom))
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "eventDescription")
