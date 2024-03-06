@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -81,8 +82,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = username,
-        fullName = username,
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = staffMember?.fullName ?: SYSTEM_USER,
         summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason",
       ),
     )
@@ -155,8 +156,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = username,
-        fullName = username,
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = staffMember?.fullName ?: SYSTEM_USER,
         summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
       ),
     )

@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -28,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
@@ -736,27 +734,6 @@ class AuditServiceTest {
             ),
           )
       }
-    }
-  }
-
-  @Nested
-  inner class `createUserAuditEvent` {
-    @Test
-    fun `throws an error if a user is not present`() {
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
-
-      val error = assertThrows<IllegalStateException> {
-        service.recordAuditEventInitialAppointmentUpdate(
-          aLicenceEntity,
-          mapOf(
-            "field" to "appointmentPerson",
-            "previousValue" to "Joe Bloggs",
-            "newValue" to "John Smith",
-          ),
-        )
-      }
-
-      assertThat(error.message).isEqualTo("User not found when creating audit event Updated initial appointment details for licence ${aLicenceEntity.id}")
     }
   }
 

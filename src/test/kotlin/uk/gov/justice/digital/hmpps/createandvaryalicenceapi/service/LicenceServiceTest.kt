@@ -436,7 +436,7 @@ class LicenceServiceTest {
         listOf(
           1L,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -485,7 +485,7 @@ class LicenceServiceTest {
         listOf(
           1L,
           aCom.username,
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -562,7 +562,7 @@ class LicenceServiceTest {
         listOf(
           firstVersionOfLicence.id,
           aCom.username,
-          fullName,
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to INACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -574,7 +574,7 @@ class LicenceServiceTest {
         listOf(
           newVersionOfLicence.id,
           aCom.username,
-          fullName,
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -638,7 +638,14 @@ class LicenceServiceTest {
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(listOf(1L, "smills", "Y", "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}"))
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "${aCom.firstName} ${aCom.lastName}",
+          "Licence edited for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
   }
 
   @Test
@@ -700,7 +707,7 @@ class LicenceServiceTest {
         listOf(
           1L,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to ACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -761,7 +768,7 @@ class LicenceServiceTest {
         listOf(
           aLicenceEntity.id,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to ACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -827,7 +834,7 @@ class LicenceServiceTest {
         listOf(
           1L,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to INACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           USER_EVENT,
         ),
@@ -1917,7 +1924,7 @@ class LicenceServiceTest {
         listOf(
           approvedLicence.id,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to ACTIVE for ${approvedLicence.forename} ${approvedLicence.surname}",
           USER_EVENT,
         ),
@@ -1970,7 +1977,7 @@ class LicenceServiceTest {
         listOf(
           approvedLicence.id,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to INACTIVE for ${approvedLicence.forename} ${approvedLicence.surname}",
           USER_EVENT,
         ),
@@ -2023,7 +2030,7 @@ class LicenceServiceTest {
         listOf(
           variationApprovedLicence.id,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to ACTIVE for ${variationApprovedLicence.forename} ${variationApprovedLicence.surname}",
           USER_EVENT,
         ),
@@ -2076,7 +2083,7 @@ class LicenceServiceTest {
         listOf(
           variationLicence.id,
           "smills",
-          "Y",
+          "${aCom.firstName} ${aCom.lastName}",
           "Licence set to INACTIVE for ${variationLicence.forename} ${variationLicence.surname}",
           USER_EVENT,
         ),
@@ -2311,10 +2318,10 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             1L,
-            "smills",
-            "Y",
+            SYSTEM_USER,
+            SYSTEM_USER,
             "Licence rejected for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-            USER_EVENT,
+            SYSTEM_EVENT,
           ),
         )
     }

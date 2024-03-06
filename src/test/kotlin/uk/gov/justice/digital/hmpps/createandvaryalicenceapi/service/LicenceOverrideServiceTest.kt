@@ -429,7 +429,7 @@ class LicenceOverrideServiceTest {
       .isEqualTo(
         listOf(
           approvedLicenceA.id,
-          aCom.username,
+          SYSTEM_USER,
           AuditEventType.USER_EVENT,
           "Sentence dates overridden for John Smith: ${request.reason}",
         ),

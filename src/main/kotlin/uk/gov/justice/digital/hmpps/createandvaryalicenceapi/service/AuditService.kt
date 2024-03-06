@@ -223,7 +223,7 @@ class AuditService(
   fun recordAuditEventInitialAppointmentUpdate(licence: Licence, changes: Map<String, Any>) {
     val summary = "Updated initial appointment details"
 
-    auditEventRepository.save(createUserAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes))
   }
 
   private fun getAuditEventsForLicence(auditRequest: AuditRequest): List<ModelAuditEvent> {
@@ -284,26 +284,6 @@ class AuditService(
       username = currentUser?.username ?: "SYSTEM",
       fullName = if (currentUser != null) "${currentUser.firstName} ${currentUser.lastName}" else "SYSTEM",
       eventType = if (currentUser == null) AuditEventType.SYSTEM_EVENT else AuditEventType.USER_EVENT,
-      summary = "$summary for ${licence.forename} ${licence.surname}",
-      detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-      changes = changes,
-    )
-  }
-
-  private fun createUserAuditEvent(
-    licence: Licence,
-    summary: String,
-    changes: Map<String, Any>,
-  ): AuditEvent {
-    val authUsername = SecurityContextHolder.getContext().authentication.name
-    val currentUser = staffRepository.findByUsernameIgnoreCase(authUsername)
-      ?: error("User not found when creating audit event $summary for licence ${licence.id}")
-
-    return AuditEvent(
-      licenceId = licence.id,
-      username = currentUser.username,
-      fullName = "${currentUser.firstName} ${currentUser.lastName}",
-      eventType = AuditEventType.USER_EVENT,
       summary = "$summary for ${licence.forename} ${licence.surname}",
       detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
       changes = changes,
