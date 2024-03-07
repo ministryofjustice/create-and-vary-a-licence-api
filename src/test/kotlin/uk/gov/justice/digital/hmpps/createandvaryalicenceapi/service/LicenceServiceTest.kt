@@ -493,7 +493,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `update licence status to APPROVED deactivates previous version of licence`() {
+  fun `update licence status to APPROVED deactivates previous version of CRD licence`() {
     val newLicenceId = 23L
     val fullName = "user 1"
     val firstVersionOfLicence = aLicenceEntity.copy(
@@ -576,6 +576,61 @@ class LicenceServiceTest {
           aCom.username,
           "${aCom.firstName} ${aCom.lastName}",
           "Licence approved for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
+
+  @Test
+  fun `update licence status to APPROVED works for HardStop licence`() {
+    val hardstopLicence = createHardStopLicence().copy(
+      id = 1L,
+      statusCode = LicenceStatus.APPROVED,
+      approvedByUsername = aCom.username,
+      approvedByName = "user 1",
+      approvedDate = LocalDateTime.now(),
+    )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardstopLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = hardstopLicence.approvedByName),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
+      .isEqualTo(listOf(hardstopLicence.id, LicenceStatus.APPROVED, aCom.username, hardstopLicence.approvedByName))
+    assertThat(licenceCaptor.allValues[0].approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
+
+    assertThat(eventCaptor.allValues[0])
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(
+        listOf(
+          hardstopLicence.id,
+          LicenceEventType.APPROVED,
+          "Licence updated to APPROVED for ${hardstopLicence.forename} ${hardstopLicence.surname}",
+        ),
+      )
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          hardstopLicence.id,
+          aCom.username,
+          "${aCom.firstName} ${aCom.lastName}",
+          "Licence approved for ${hardstopLicence.forename} ${hardstopLicence.surname}",
           USER_EVENT,
         ),
       )
