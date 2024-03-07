@@ -11,7 +11,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -144,11 +146,12 @@ class LicenceService(
     var submittedDate = licenceEntity.submittedDate
     val supersededDate: LocalDateTime?
     var licenceActivatedDate = licenceEntity.licenceActivatedDate
+    val staffMember = staffRepository.findByUsernameIgnoreCase(request.username)
 
     when (request.status) {
       APPROVED -> {
         if (licenceEntity !is CrdLicence) error("Cannot approve a CRD licence: ${licenceEntity.id}")
-        deactivatePreviousLicenceVersion(licenceEntity, request.username, request.fullName)
+        deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
         approvedByUser = request.username
         approvedByName = request.fullName
         approvedDate = LocalDateTime.now()
@@ -193,7 +196,7 @@ class LicenceService(
 
     val updatedLicence = licenceEntity.updateStatus(
       statusCode = request.status,
-      updatedByUsername = request.username,
+      staffMember = staffMember,
       approvedByUsername = approvedByUser,
       approvedByName = approvedByName,
       approvedDate = approvedDate,
@@ -209,11 +212,11 @@ class LicenceService(
     }
 
     recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
-    auditStatusChange(updatedLicence, request.username, request.fullName)
+    auditStatusChange(updatedLicence, staffMember)
     domainEventsService.recordDomainEvent(updatedLicence, request.status)
   }
 
-  private fun auditStatusChange(licenceEntity: EntityLicence, username: String, fullName: String?) {
+  private fun auditStatusChange(licenceEntity: EntityLicence, staffMember: Staff?) {
     val licenceFullName = "${licenceEntity.forename} ${licenceEntity.surname}"
     val detailText =
       "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}"
@@ -230,11 +233,13 @@ class LicenceService(
       else -> "Check - licence status not accounted for in auditing"
     }
 
+    val username = staffMember?.username ?: SYSTEM_USER
+
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceEntity.id,
         username = username,
-        fullName = fullName,
+        fullName = staffMember?.fullName ?: SYSTEM_USER,
         eventType = getAuditEventType(username),
         summary = summaryText,
         detail = detailText,
@@ -243,7 +248,7 @@ class LicenceService(
   }
 
   private fun getAuditEventType(username: String): AuditEventType {
-    return if (username == "SYSTEM") {
+    return if (username == "SYSTEM_USER") {
       AuditEventType.SYSTEM_EVENT
     } else {
       AuditEventType.USER_EVENT
@@ -287,7 +292,7 @@ class LicenceService(
     )
   }
 
-  private fun deactivatePreviousLicenceVersion(licence: CrdLicence, username: String, fullName: String?) {
+  private fun deactivatePreviousLicenceVersion(licence: CrdLicence, fullName: String?, staffMember: Staff?) {
     val previousVersionId = licence.versionOfId
 
     if (previousVersionId != null) {
@@ -299,8 +304,9 @@ class LicenceService(
 
       val updatedLicence = previousLicenceVersion.copy(
         dateLastUpdated = LocalDateTime.now(),
-        updatedByUsername = username,
+        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
         statusCode = INACTIVE,
+        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
       licenceRepository.saveAndFlush(updatedLicence)
 
@@ -309,14 +315,14 @@ class LicenceService(
         EntityLicenceEvent(
           licenceId = previousVersionId,
           eventType = LicenceEventType.SUPERSEDED,
-          username = username,
+          username = staffMember?.username ?: SYSTEM_USER,
           forenames = firstName,
           surname = lastName,
           eventDescription = "Licence deactivated as a newer version was approved for ${licence.forename} ${licence.surname}",
         ),
       )
 
-      auditStatusChange(updatedLicence, username, fullName)
+      auditStatusChange(updatedLicence, staffMember)
     }
   }
 
@@ -507,7 +513,6 @@ class LicenceService(
     val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
     val creator = getCommunityOffenderManagerForCurrentUser()
     val licenceCopy = LicenceFactory.createVariation(licence, creator)
     val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
@@ -548,10 +553,13 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
+
     val updatedLicenceEntity = licenceEntity.copy(
       spoDiscussion = spoDiscussionRequest.spoDiscussion,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
+      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+      updatedBy = staffMember ?: licenceEntity.updatedBy,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -566,10 +574,13 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
+
     val updatedLicenceEntity = licenceEntity.copy(
       vloDiscussion = vloDiscussionRequest.vloDiscussion,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
+      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+      updatedBy = staffMember ?: licenceEntity.updatedBy,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -583,19 +594,22 @@ class LicenceService(
     if (licenceEntity !is VariationLicence) error("Trying to update variation reason for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity =
-      licenceEntity.copy(dateLastUpdated = LocalDateTime.now(), updatedByUsername = username)
+    val updatedLicenceEntity = licenceEntity.copy(
+      dateLastUpdated = LocalDateTime.now(),
+      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+      updatedBy = staffMember ?: licenceEntity.updatedBy,
+    )
     licenceRepository.saveAndFlush(updatedLicenceEntity)
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
         eventType = LicenceEventType.VARIATION_SUBMITTED_REASON,
-        username = username,
-        forenames = createdBy?.firstName,
-        surname = createdBy?.lastName,
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
         eventDescription = reasonForVariationRequest.reasonForVariation,
       ),
     )
@@ -608,12 +622,13 @@ class LicenceService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
     if (licenceEntity !is VariationLicence) error("Trying to reject non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
-    val createdBy = this.staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = VARIATION_REJECTED,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
+      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+      updatedBy = staffMember ?: licenceEntity.updatedBy,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -622,9 +637,9 @@ class LicenceService(
       EntityLicenceEvent(
         licenceId = licenceId,
         eventType = LicenceEventType.VARIATION_REFERRED,
-        username = username,
-        forenames = createdBy?.firstName,
-        surname = createdBy?.lastName,
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
         eventDescription = referVariationRequest.reasonForReferral,
       ),
     )
@@ -632,8 +647,8 @@ class LicenceService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${createdBy?.firstName} ${createdBy?.lastName}",
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
         summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
@@ -654,15 +669,16 @@ class LicenceService(
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     if (licenceEntity !is VariationLicence) error("Trying to approve non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
-    val user = this.staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     val updatedLicenceEntity = licenceEntity.copy(
       statusCode = VARIATION_APPROVED,
       dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = username,
+      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
       approvedByUsername = username,
       approvedDate = LocalDateTime.now(),
-      approvedByName = "${user?.firstName} ${user?.lastName}",
+      approvedByName = "${staffMember?.firstName} ${staffMember?.lastName}",
+      updatedBy = staffMember ?: licenceEntity.updatedBy,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -671,18 +687,18 @@ class LicenceService(
       EntityLicenceEvent(
         licenceId = licenceId,
         eventType = LicenceEventType.VARIATION_APPROVED,
-        username = username,
-        forenames = user?.firstName,
-        surname = user?.lastName,
-        eventDescription = "Licence variation approved for ${updatedLicenceEntity.forename}${updatedLicenceEntity.surname}",
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
+        eventDescription = "Licence variation approved for ${updatedLicenceEntity.forename} ${updatedLicenceEntity.surname}",
       ),
     )
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${user?.firstName} ${user?.lastName}",
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
         summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
@@ -743,7 +759,7 @@ class LicenceService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
+        username = discardedBy?.username ?: SYSTEM_USER,
         fullName = "${discardedBy?.firstName} ${discardedBy?.lastName}",
         summary = "Licence variation discarded for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
@@ -761,11 +777,13 @@ class LicenceService(
 
     val username = SecurityContextHolder.getContext().authentication.name
 
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
+
     val updatedLicenceEntity = licenceEntity.updatePrisonInfo(
       prisonCode = prisonInformationRequest.prisonCode,
       prisonDescription = prisonInformationRequest.prisonDescription,
       prisonTelephone = prisonInformationRequest.prisonTelephone,
-      updatedByUsername = username,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(updatedLicenceEntity)
@@ -933,13 +951,13 @@ class LicenceService(
 
     if (licenceEntity !is HardStopLicence) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
-    val user = this.staffRepository.findByUsernameIgnoreCase(username)
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
     if (licenceEntity.reviewDate != null) {
       return
     }
 
-    licenceEntity.markAsReviewed(user)
+    licenceEntity.markAsReviewed(staffMember)
 
     licenceRepository.saveAndFlush(licenceEntity)
 
@@ -947,9 +965,9 @@ class LicenceService(
       EntityLicenceEvent(
         licenceId = licenceId,
         eventType = LicenceEventType.HARD_STOP_REVIEWED,
-        username = username,
-        forenames = user?.firstName,
-        surname = user?.lastName,
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = staffMember?.firstName,
+        surname = staffMember?.lastName,
         eventDescription = "Licence reviewed without being varied",
       ),
     )
@@ -957,8 +975,8 @@ class LicenceService(
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licenceId,
-        username = username,
-        fullName = "${user?.firstName} ${user?.lastName}",
+        username = staffMember?.username ?: SYSTEM_USER,
+        fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
         summary = "Licence reviewed without being varied for ${licenceEntity.forename} ${licenceEntity.surname}",
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.reviewDate} version ${licenceEntity.version}",
       ),

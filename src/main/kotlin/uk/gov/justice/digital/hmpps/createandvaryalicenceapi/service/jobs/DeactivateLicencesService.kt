@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -23,6 +24,7 @@ class DeactivateLicencesService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
+  private val staffRepository: StaffRepository,
 ) {
 
   companion object {
@@ -48,7 +50,8 @@ class DeactivateLicencesService(
     if (authentication !is AnonymousAuthenticationToken) {
       userName = authentication.getName()
     }
-    val deactivateLicences = licences.map { it.deactivate(userName) }
+    val staffMember = this.staffRepository.findByUsernameIgnoreCase(userName)
+    val deactivateLicences = licences.map { it.deactivate(staffMember) }
 
     licenceRepository.saveAllAndFlush(deactivateLicences)
 

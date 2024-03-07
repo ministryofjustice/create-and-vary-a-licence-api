@@ -70,6 +70,7 @@ class CrdLicence(
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
+  updatedBy: Staff? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
@@ -133,6 +134,7 @@ class CrdLicence(
   additionalConditions = additionalConditions,
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
+  updatedBy = updatedBy,
 ) {
 
   fun copy(
@@ -192,6 +194,7 @@ class CrdLicence(
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
     licenceVersion: String? = this.licenceVersion,
+    updatedBy: Staff? = this.updatedBy,
   ): CrdLicence {
     return CrdLicence(
       id = id,
@@ -250,6 +253,7 @@ class CrdLicence(
       createdBy = createdBy,
       versionOfId = versionOfId,
       licenceVersion = licenceVersion,
+      updatedBy = updatedBy,
     )
   }
 
@@ -259,9 +263,10 @@ class CrdLicence(
   )
 
   override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
-  override fun deactivate(updatedByUsername: String) = copy(
+  override fun deactivate(staffMember: Staff?) = copy(
     statusCode = LicenceStatus.INACTIVE,
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   fun timeOut() = copy(
@@ -276,24 +281,26 @@ class CrdLicence(
     updatedByUsername = submittedBy.username,
     submittedDate = LocalDateTime.now(),
     dateLastUpdated = LocalDateTime.now(),
+    updatedBy = submittedBy,
   )
 
   override fun updatePrisonInfo(
     prisonCode: String,
     prisonDescription: String,
     prisonTelephone: String?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) = copy(
     prisonCode = prisonCode,
     prisonDescription = prisonDescription,
     prisonTelephone = prisonTelephone,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateStatus(
     statusCode: LicenceStatus,
-    updatedByUsername: String,
+    staffMember: Staff?,
     approvedByUsername: String?,
     approvedByName: String?,
     approvedDate: LocalDateTime?,
@@ -303,37 +310,40 @@ class CrdLicence(
   ) = copy(
     statusCode = statusCode,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     approvedByUsername = approvedByUsername,
     approvedByName = approvedByName,
     approvedDate = approvedDate,
     supersededDate = supersededDate,
     submittedDate = submittedDate,
     licenceActivatedDate = licenceActivatedDate,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun overrideStatus(
     statusCode: LicenceStatus,
-    updatedByUsername: String?,
+    staffMember: Staff?,
     licenceActivatedDate: LocalDateTime?,
   ) = copy(
     statusCode = statusCode,
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     dateLastUpdated = LocalDateTime.now(),
     licenceActivatedDate = licenceActivatedDate,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>?,
     updatedStandardConditions: List<StandardCondition>?,
     updatedBespokeConditions: List<BespokeCondition>?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) = copy(
     additionalConditions = updatedAdditionalConditions ?: additionalConditions,
     standardConditions = updatedStandardConditions ?: standardConditions,
     bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateLicenceDates(
@@ -346,7 +356,7 @@ class CrdLicence(
     licenceExpiryDate: LocalDate?,
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
-    updatedByUsername: String?,
+    staffMember: Staff?,
   ) = copy(
     statusCode = status ?: this.statusCode,
     conditionalReleaseDate = conditionalReleaseDate,
@@ -358,7 +368,8 @@ class CrdLicence(
     topupSupervisionStartDate = topupSupervisionStartDate,
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
     dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = updatedByUsername,
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateOffenderDetails(
@@ -458,7 +469,8 @@ class CrdLicence(
       "createdBy=$createdBy, " +
       "createdBy=$createdBy, " +
       "versionOfId=$versionOfId, " +
-      "licenceVersion=$licenceVersion" +
+      "licenceVersion=$licenceVersion, " +
+      "updatedBy=$updatedBy" +
       ")"
   }
 

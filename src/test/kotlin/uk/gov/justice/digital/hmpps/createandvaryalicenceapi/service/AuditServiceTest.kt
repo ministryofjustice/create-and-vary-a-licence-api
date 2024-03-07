@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -26,9 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
@@ -36,9 +33,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent a
 class AuditServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
-  private val staffRepository = mock<StaffRepository>()
 
-  private val service = AuditService(auditEventRepository, licenceRepository, staffRepository)
+  private val service = AuditService(auditEventRepository, licenceRepository)
 
   @BeforeEach
   fun reset() {
@@ -49,8 +45,7 @@ class AuditServiceTest {
 
     SecurityContextHolder.setContext(securityContext)
 
-    reset(auditEventRepository, licenceRepository, staffRepository)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    reset(auditEventRepository, licenceRepository)
   }
 
   @Test
@@ -143,12 +138,13 @@ class AuditServiceTest {
         "previousValue" to "Joe Bloggs",
         "newValue" to "Bob Robertson",
       ),
+      aCom,
     )
 
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
-    assertThat(auditCaptor.value.username).isEqualTo("smills")
+    assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
     assertThat(auditCaptor.value.summary).isEqualTo("Updated initial appointment details for ${aLicenceEntity.forename} ${aLicenceEntity.surname}")
     assertThat(auditCaptor.value.detail).isEqualTo(
       "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
@@ -167,12 +163,12 @@ class AuditServiceTest {
   inner class `audit events for licence conditions` {
     @Test
     fun `records an audit event when standard conditions are updated`() {
-      service.recordAuditEventUpdateStandardCondition(aLicenceEntity, aPolicy.version)
+      service.recordAuditEventUpdateStandardCondition(aLicenceEntity, aPolicy.version, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated standard conditions to policy version ${aPolicy.version} for " +
@@ -198,13 +194,14 @@ class AuditServiceTest {
       service.recordAuditEventDeleteStandardConditions(
         aLicenceEntity,
         aLicenceEntity.standardConditions,
+        aCom,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated standard conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -249,13 +246,14 @@ class AuditServiceTest {
       service.recordAuditEventDeleteBespokeConditions(
         aLicenceEntity,
         someBespokeConditions,
+        aCom,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated bespoke conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -283,27 +281,27 @@ class AuditServiceTest {
 
     @Test
     fun `records no audit event when no standard conditions are removed`() {
-      service.recordAuditEventDeleteStandardConditions(aLicenceEntity, emptyList())
+      service.recordAuditEventDeleteStandardConditions(aLicenceEntity, emptyList(), aCom)
 
       verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
     fun `records no audit event when no bespoke conditions are removed`() {
-      service.recordAuditEventDeleteBespokeConditions(aLicenceEntity, emptyList())
+      service.recordAuditEventDeleteBespokeConditions(aLicenceEntity, emptyList(), aCom)
 
       verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
     fun `records an audit event when an additional condition of the same type is added`() {
-      service.recordAuditEventAddAdditionalConditionOfSameType(aLicenceEntity, anAdditionalConditionEntity)
+      service.recordAuditEventAddAdditionalConditionOfSameType(aLicenceEntity, anAdditionalConditionEntity, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated additional condition of the same type for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -339,13 +337,13 @@ class AuditServiceTest {
         ),
       )
 
-      service.recordAuditEventDeleteAdditionalConditions(aLicenceEntity, aDeletedCondition)
+      service.recordAuditEventDeleteAdditionalConditions(aLicenceEntity, aDeletedCondition, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated additional conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -390,13 +388,14 @@ class AuditServiceTest {
         aLicenceEntity,
         anAddedAdditionalCondition,
         emptyList(),
+        aCom,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated additional conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -434,13 +433,14 @@ class AuditServiceTest {
         aLicenceEntity,
         emptyList(),
         aRemovedAdditionalCondition,
+        aCom,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated additional conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -489,13 +489,14 @@ class AuditServiceTest {
         aLicenceEntity,
         anAddedAddtionalCondition,
         aRemovedAdditionalCondition,
+        aCom,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated additional conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -531,20 +532,20 @@ class AuditServiceTest {
 
     @Test
     fun `does not record an audit event when no additional conditions are updated`() {
-      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, emptyList(), emptyList())
+      service.recordAuditEventUpdateAdditionalConditions(aLicenceEntity, emptyList(), emptyList(), aCom)
 
       verifyNoMoreInteractions(auditEventRepository)
     }
 
     @Test
     fun `records an audit event when bespoke conditions are updated by adding new conditions`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, newBespokeConditions, emptyList())
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, newBespokeConditions, emptyList(), aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated bespoke conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -572,13 +573,13 @@ class AuditServiceTest {
 
     @Test
     fun `records an audit event when bespoke conditions are updated by removing existing conditions`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, emptyList(), newBespokeConditions)
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, emptyList(), newBespokeConditions, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated bespoke conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -614,13 +615,14 @@ class AuditServiceTest {
         aLicenceEntity,
         anAddedBespokeCondition,
         newBespokeConditions,
+        aCom,
       )
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated bespoke conditions for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -652,7 +654,7 @@ class AuditServiceTest {
 
     @Test
     fun `does not record an audit event when no bespoke conditions are updated`() {
-      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, emptyList(), emptyList())
+      service.recordAuditEventUpdateBespokeConditions(aLicenceEntity, emptyList(), emptyList(), aCom)
 
       verifyNoMoreInteractions(auditEventRepository)
     }
@@ -663,13 +665,13 @@ class AuditServiceTest {
         expandedConditionText = "updatedText",
       )
 
-      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition)
+      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition, aCom)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
 
       assertThat(auditCaptor.value.licenceId).isEqualTo(aLicenceEntity.id)
-      assertThat(auditCaptor.value.username).isEqualTo("smills")
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
       assertThat(auditCaptor.value.summary)
         .isEqualTo(
           "Updated additional condition data for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
@@ -703,8 +705,7 @@ class AuditServiceTest {
         expandedConditionText = "updatedText",
       )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
-      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition)
+      service.recordAuditEventUpdateAdditionalConditionData(aLicenceEntity, anAdditionalCondition, null)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       verify(auditEventRepository, times(1)).save(auditCaptor.capture())
@@ -736,27 +737,6 @@ class AuditServiceTest {
             ),
           )
       }
-    }
-  }
-
-  @Nested
-  inner class `createUserAuditEvent` {
-    @Test
-    fun `throws an error if a user is not present`() {
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
-
-      val error = assertThrows<IllegalStateException> {
-        service.recordAuditEventInitialAppointmentUpdate(
-          aLicenceEntity,
-          mapOf(
-            "field" to "appointmentPerson",
-            "previousValue" to "Joe Bloggs",
-            "newValue" to "John Smith",
-          ),
-        )
-      }
-
-      assertThat(error.message).isEqualTo("User not found when creating audit event Updated initial appointment details for licence ${aLicenceEntity.id}")
     }
   }
 

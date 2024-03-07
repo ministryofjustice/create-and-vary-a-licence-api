@@ -63,7 +63,6 @@ object LicenceFactory {
     dateCreated = LocalDateTime.now(),
     responsibleCom = responsibleCom,
     createdBy = creator,
-    updatedByUsername = creator.username,
   )
 
   fun createHardStop(
@@ -113,7 +112,6 @@ object LicenceFactory {
     dateCreated = LocalDateTime.now(),
     responsibleCom = responsibleCom,
     createdBy = creator,
-    updatedByUsername = creator.username,
     substituteOfId = timedOutLicence?.id,
   )
 

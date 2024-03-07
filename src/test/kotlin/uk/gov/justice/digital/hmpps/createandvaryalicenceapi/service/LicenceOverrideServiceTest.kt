@@ -17,12 +17,15 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -42,8 +45,9 @@ class LicenceOverrideServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
+  private val staffRepository = mock<StaffRepository>()
   private val licenceOverrideService =
-    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService)
+    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService, staffRepository)
 
   @BeforeEach
   fun reset() {
@@ -54,7 +58,7 @@ class LicenceOverrideServiceTest {
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
-    reset(licenceRepository)
+    reset(licenceRepository, staffRepository)
   }
 
   @Test
@@ -64,6 +68,8 @@ class LicenceOverrideServiceTest {
     )
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val exception = assertThrows<ValidationException> {
       licenceOverrideService.changeStatus(approvedLicenceB.id, APPROVED, "Test Exception")
@@ -83,6 +89,8 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
 
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
     val reasonForChange = "Test override from $APPROVED to $INACTIVE"
 
     licenceOverrideService.changeStatus(
@@ -99,16 +107,17 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceB, INACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(INACTIVE, "smills", null))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(INACTIVE, aCom.username, null, aCom))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
         listOf(
           approvedLicenceB.id,
-          "smills",
+          aCom.username,
           AuditEventType.USER_EVENT,
           "Licence status overridden to $INACTIVE for John Smith: $reasonForChange",
         ),
@@ -116,7 +125,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
-      .isEqualTo(listOf(approvedLicenceB.id, "smills", LicenceEventType.INACTIVE, reasonForChange))
+      .isEqualTo(listOf(approvedLicenceB.id, aCom.username, LicenceEventType.INACTIVE, reasonForChange))
   }
 
   @Test
@@ -126,6 +135,8 @@ class LicenceOverrideServiceTest {
     )
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $APPROVED to $SUBMITTED"
 
@@ -143,16 +154,17 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceA, SUBMITTED)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(SUBMITTED, "smills", null))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(SUBMITTED, aCom.username, null, aCom))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
         listOf(
           approvedLicenceA.id,
-          "smills",
+          aCom.username,
           AuditEventType.USER_EVENT,
           "Licence status overridden to $SUBMITTED for John Smith: $reasonForChange",
         ),
@@ -160,7 +172,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
-      .isEqualTo(listOf(approvedLicenceA.id, "smills", LicenceEventType.SUBMITTED, reasonForChange))
+      .isEqualTo(listOf(approvedLicenceA.id, aCom.username, LicenceEventType.SUBMITTED, reasonForChange))
   }
 
   @Test
@@ -170,6 +182,8 @@ class LicenceOverrideServiceTest {
     )
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val reasonForChange = "Test licenceActivatedDate when licence is made $ACTIVE"
 
@@ -187,18 +201,19 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceA, ACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(ACTIVE, "smills", licenceCaptor.value.licenceActivatedDate))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(ACTIVE, aCom.username, licenceCaptor.value.licenceActivatedDate, aCom))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
         listOf(
           approvedLicenceA.id,
-          "smills",
+          aCom.username,
           AuditEventType.USER_EVENT,
           "Licence status overridden to $ACTIVE for John Smith: $reasonForChange",
         ),
@@ -206,7 +221,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
-      .isEqualTo(listOf(approvedLicenceA.id, "smills", LicenceEventType.ACTIVATED, reasonForChange))
+      .isEqualTo(listOf(approvedLicenceA.id, aCom.username, LicenceEventType.ACTIVATED, reasonForChange))
   }
 
   @Test
@@ -216,6 +231,8 @@ class LicenceOverrideServiceTest {
     )
 
     whenever(licenceRepository.findById(variationApprovedLicence.id)).thenReturn(Optional.of(variationApprovedLicence))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $VARIATION_APPROVED to $ACTIVE"
 
@@ -233,16 +250,17 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(variationApprovedLicence, ACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(ACTIVE, "smills", licenceCaptor.value.licenceActivatedDate))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(ACTIVE, aCom.username, licenceCaptor.value.licenceActivatedDate, aCom))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
         listOf(
           variationApprovedLicence.id,
-          "smills",
+          aCom.username,
           AuditEventType.USER_EVENT,
           "Licence status overridden to $ACTIVE for John Smith: $reasonForChange",
         ),
@@ -250,7 +268,7 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
-      .isEqualTo(listOf(variationApprovedLicence.id, "smills", LicenceEventType.ACTIVATED, reasonForChange))
+      .isEqualTo(listOf(variationApprovedLicence.id, aCom.username, LicenceEventType.ACTIVATED, reasonForChange))
   }
 
   @Test
@@ -260,6 +278,8 @@ class LicenceOverrideServiceTest {
     )
 
     whenever(licenceRepository.findById(activeVariationLicence.id)).thenReturn(Optional.of(activeVariationLicence))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $ACTIVE to $INACTIVE"
 
@@ -277,16 +297,17 @@ class LicenceOverrideServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(licenceEventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(activeVariationLicence, INACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate")
-      .isEqualTo(listOf(INACTIVE, "smills", null))
+      .extracting("statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(INACTIVE, aCom.username, null, aCom))
 
     assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
       .isEqualTo(
         listOf(
           activeVariationLicence.id,
-          "smills",
+          aCom.username,
           AuditEventType.USER_EVENT,
           "Licence status overridden to $INACTIVE for John Smith: $reasonForChange",
         ),
@@ -294,12 +315,13 @@ class LicenceOverrideServiceTest {
 
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
-      .isEqualTo(listOf(activeVariationLicence.id, "smills", LicenceEventType.INACTIVE, reasonForChange))
+      .isEqualTo(listOf(activeVariationLicence.id, aCom.username, LicenceEventType.INACTIVE, reasonForChange))
   }
 
   @Test
   fun `Override dates updates licence dates`() {
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
@@ -323,18 +345,21 @@ class LicenceOverrideServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
       .extracting(
         "conditionalReleaseDate", "actualReleaseDate",
         "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
         "topupSupervisionStartDate", "topupSupervisionExpiryDate", "updatedByUsername",
+        "updatedBy",
       )
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
           request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
-          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, "smills",
+          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, aCom.username,
+          aCom,
         ),
       )
 
@@ -342,7 +367,69 @@ class LicenceOverrideServiceTest {
       .isEqualTo(
         listOf(
           approvedLicenceA.id,
-          "smills",
+          aCom.username,
+          AuditEventType.USER_EVENT,
+          "Sentence dates overridden for John Smith: ${request.reason}",
+        ),
+      )
+  }
+
+  @Test
+  fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(
+      Optional.of(
+        approvedLicenceA.copy(
+          updatedBy = aPreviousUser,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+
+    val request = OverrideLicenceDatesRequest(
+      conditionalReleaseDate = LocalDate.now(),
+      actualReleaseDate = LocalDate.now(),
+      sentenceStartDate = LocalDate.now(),
+      sentenceEndDate = LocalDate.now(),
+      licenceStartDate = LocalDate.now(),
+      licenceExpiryDate = LocalDate.now(),
+      topupSupervisionStartDate = LocalDate.now(),
+      topupSupervisionExpiryDate = LocalDate.now(),
+      reason = "Test override dates",
+    )
+
+    licenceOverrideService.changeDates(
+      approvedLicenceA.id,
+      request,
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate", "actualReleaseDate",
+        "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
+        "topupSupervisionStartDate", "topupSupervisionExpiryDate", "updatedByUsername",
+        "updatedBy",
+      )
+      .isEqualTo(
+        listOf(
+          request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
+          request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
+          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, SYSTEM_USER,
+          aPreviousUser,
+        ),
+      )
+
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
+      .isEqualTo(
+        listOf(
+          approvedLicenceA.id,
+          SYSTEM_USER,
           AuditEventType.USER_EVENT,
           "Sentence dates overridden for John Smith: ${request.reason}",
         ),
@@ -367,6 +454,16 @@ class LicenceOverrideServiceTest {
     )
     val variationApprovedLicence = createCrdLicence().copy(
       statusCode = VARIATION_APPROVED,
+    )
+
+    val aCom = TestData.com()
+
+    val aPreviousUser = CommunityOffenderManager(
+      staffIdentifier = 4000,
+      username = "test",
+      email = "test@test.com",
+      firstName = "Test",
+      lastName = "Test",
     )
   }
 }
