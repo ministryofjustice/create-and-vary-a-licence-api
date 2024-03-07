@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -113,7 +114,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateStandardCondition(any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateStandardCondition(any(), any(), any())
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
@@ -168,7 +169,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any())
+      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -310,7 +311,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(
@@ -372,7 +373,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventAddAdditionalConditionOfSameType(any(), any())
+      verify(auditService, times(1)).recordAuditEventAddAdditionalConditionOfSameType(any(), any(), any())
 
       assertThat(licenceCaptor.value.additionalConditions).extracting("id", "conditionCode", "conditionSequence")
         .containsExactly(
@@ -426,7 +427,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), any())
 
       assertThat(licenceCaptor.value)
         .extracting("bespokeConditions", "updatedByUsername", "updatedBy")
@@ -461,7 +462,7 @@ class LicenceConditionServiceTest {
 
       verify(bespokeConditionRepository, times(0)).saveAndFlush(any())
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), any())
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
@@ -587,7 +588,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditionData(any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditionData(any(), any(), any())
 
       verify(additionalConditionRepository, times(1)).saveAndFlush(conditionCaptor.capture())
 
@@ -685,7 +686,7 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any())
+      verify(auditService, times(1)).recordAuditEventUpdateBespokeConditions(any(), any(), any(), anyOrNull())
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")

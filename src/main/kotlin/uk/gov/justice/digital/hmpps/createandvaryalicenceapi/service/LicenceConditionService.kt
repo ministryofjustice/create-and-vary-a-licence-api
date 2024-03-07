@@ -56,7 +56,7 @@ class LicenceConditionService(
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
 
     licenceRepository.saveAndFlush(updatedLicence)
-    auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion)
+    auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion, staffMember)
   }
 
   /**
@@ -101,7 +101,7 @@ class LicenceConditionService(
     val newCondition =
       licenceEntity.additionalConditions.filter { it.conditionCode == request.conditionCode }.maxBy { it.id }
 
-    auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition)
+    auditService.recordAuditEventAddAdditionalConditionOfSameType(licenceEntity, newCondition, staffMember)
 
     val readyToSubmit = isConditionReadyToSubmit(
       newCondition,
@@ -160,6 +160,7 @@ class LicenceConditionService(
       licenceEntity,
       newConditions,
       removedConditions,
+      staffMember,
     )
   }
 
@@ -237,7 +238,7 @@ class LicenceConditionService(
       )
     }
 
-    auditService.recordAuditEventUpdateBespokeConditions(licenceEntity, newConditions, removedConditions)
+    auditService.recordAuditEventUpdateBespokeConditions(licenceEntity, newConditions, removedConditions, staffMember)
   }
 
   private fun List<BespokeCondition>.getAddedBespokeConditions(
@@ -286,7 +287,7 @@ class LicenceConditionService(
     val updatedLicence = licenceEntity.updateConditions(staffMember = staffMember)
     licenceRepository.saveAndFlush(updatedLicence)
 
-    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition)
+    auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
 
   fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
@@ -335,9 +336,9 @@ class LicenceConditionService(
     )
     licenceRepository.saveAndFlush(updatedLicence)
 
-    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions)
-    auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions)
-    auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions)
+    auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
+    auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
+    auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
   }
 
   companion object {

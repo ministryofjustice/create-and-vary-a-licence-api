@@ -1,17 +1,16 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 
@@ -19,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as
 class AuditService(
   private val auditEventRepository: AuditEventRepository,
   private val licenceRepository: LicenceRepository,
-  private val staffRepository: StaffRepository,
 ) {
 
   fun recordAuditEvent(auditEvent: ModelAuditEvent) {
@@ -41,6 +39,7 @@ class AuditService(
   fun recordAuditEventUpdateStandardCondition(
     licence: Licence,
     currentPolicyVersion: String,
+    staffMember: Staff?,
   ) {
     val summary = "Updated standard conditions to policy version $currentPolicyVersion"
 
@@ -49,10 +48,14 @@ class AuditService(
       "changes" to emptyMap<String, Any>(),
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventAddAdditionalConditionOfSameType(licence: Licence, condition: AdditionalCondition) {
+  fun recordAuditEventAddAdditionalConditionOfSameType(
+    licence: Licence,
+    condition: AdditionalCondition,
+    staffMember: Staff?,
+  ) {
     val summary = "Updated additional condition of the same type"
 
     val changes = mapOf(
@@ -67,12 +70,13 @@ class AuditService(
       ),
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
   fun recordAuditEventDeleteAdditionalConditions(
     licence: Licence,
     removedAdditionalConditions: List<AdditionalCondition>,
+    staffMember: Staff?,
   ) {
     if (removedAdditionalConditions.isEmpty()) {
       return
@@ -91,12 +95,13 @@ class AuditService(
       },
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
   fun recordAuditEventDeleteStandardConditions(
     licence: Licence,
     removedStandardConditions: List<StandardCondition>,
+    staffMember: Staff?,
   ) {
     if (removedStandardConditions.isEmpty()) {
       return
@@ -115,12 +120,13 @@ class AuditService(
       },
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
   fun recordAuditEventDeleteBespokeConditions(
     licence: Licence,
     removedBespokeConditions: List<BespokeCondition>,
+    staffMember: Staff?,
   ) {
     if (removedBespokeConditions.isEmpty()) {
       return
@@ -137,13 +143,14 @@ class AuditService(
       },
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
   fun recordAuditEventUpdateAdditionalConditions(
     licence: Licence,
     newConditions: List<AdditionalCondition>,
     removedConditions: List<AdditionalCondition>,
+    staffMember: Staff?,
   ) {
     if (newConditions.isEmpty() && removedConditions.isEmpty()) {
       return
@@ -170,13 +177,14 @@ class AuditService(
         },
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
   fun recordAuditEventUpdateBespokeConditions(
     licence: Licence,
     newConditions: List<String>,
     removedConditions: List<String?>,
+    staffMember: Staff?,
   ) {
     if (newConditions.isEmpty() && removedConditions.isEmpty()) {
       return
@@ -199,10 +207,14 @@ class AuditService(
         },
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventUpdateAdditionalConditionData(licence: Licence, condition: AdditionalCondition) {
+  fun recordAuditEventUpdateAdditionalConditionData(
+    licence: Licence,
+    condition: AdditionalCondition,
+    staffMember: Staff?,
+  ) {
     val summary = "Updated additional condition data"
 
     val changes = mapOf(
@@ -217,13 +229,13 @@ class AuditService(
       ),
     )
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
-  fun recordAuditEventInitialAppointmentUpdate(licence: Licence, changes: Map<String, Any>) {
+  fun recordAuditEventInitialAppointmentUpdate(licence: Licence, changes: Map<String, Any>, staffMember: Staff?) {
     val summary = "Updated initial appointment details"
 
-    auditEventRepository.save(createAuditEvent(licence, summary, changes))
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }
 
   private fun getAuditEventsForLicence(auditRequest: AuditRequest): List<ModelAuditEvent> {
@@ -275,15 +287,13 @@ class AuditService(
     licence: Licence,
     summary: String,
     changes: Map<String, Any>,
+    staffMember: Staff?,
   ): AuditEvent {
-    val authUsername = SecurityContextHolder.getContext().authentication.name
-    val currentUser = staffRepository.findByUsernameIgnoreCase(authUsername)
-
     return AuditEvent(
       licenceId = licence.id,
-      username = currentUser?.username ?: "SYSTEM",
-      fullName = if (currentUser != null) "${currentUser.firstName} ${currentUser.lastName}" else "SYSTEM",
-      eventType = if (currentUser == null) AuditEventType.SYSTEM_EVENT else AuditEventType.USER_EVENT,
+      username = staffMember?.username ?: "SYSTEM",
+      fullName = if (staffMember != null) "${staffMember.firstName} ${staffMember.lastName}" else "SYSTEM",
+      eventType = if (staffMember == null) AuditEventType.SYSTEM_EVENT else AuditEventType.USER_EVENT,
       summary = "$summary for ${licence.forename} ${licence.surname}",
       detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
       changes = changes,

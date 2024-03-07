@@ -50,6 +50,7 @@ class AppointmentService(
         "previousValue" to (previousPerson ?: ""),
         "newValue" to (licenceEntity.appointmentPerson ?: ""),
       ),
+      staffMember,
     )
   }
 
@@ -83,6 +84,7 @@ class AppointmentService(
         "previousValue" to (previousTime ?: "").toString(),
         "newValue" to (licenceEntity.appointmentTime ?: "").toString(),
       ),
+      staffMember,
     )
   }
 
@@ -111,6 +113,7 @@ class AppointmentService(
         "previousValue" to (previousContact ?: ""),
         "newValue" to (licenceEntity.appointmentContact ?: ""),
       ),
+      staffMember,
     )
   }
 
@@ -139,6 +142,7 @@ class AppointmentService(
         "previousValue" to (previousAddress ?: ""),
         "newValue" to (licenceEntity.appointmentAddress ?: ""),
       ),
+      staffMember,
     )
   }
 }
