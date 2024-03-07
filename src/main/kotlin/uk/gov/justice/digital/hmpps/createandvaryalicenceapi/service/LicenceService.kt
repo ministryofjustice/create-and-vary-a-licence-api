@@ -150,8 +150,10 @@ class LicenceService(
 
     when (request.status) {
       APPROVED -> {
-        if (licenceEntity !is CrdLicence) error("Cannot approve a CRD licence: ${licenceEntity.id}")
-        deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
+        when (licenceEntity) {
+          is VariationLicence -> error("Cannot approve a Variation licence: ${licenceEntity.id}")
+          is CrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
+        }
         approvedByUser = request.username
         approvedByName = request.fullName
         approvedDate = LocalDateTime.now()
