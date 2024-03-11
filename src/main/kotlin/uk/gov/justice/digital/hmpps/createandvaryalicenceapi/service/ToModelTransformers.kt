@@ -73,7 +73,7 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
     licenceVersion = licence.licenceVersion,
     versionOf = if (licence is CrdLicence) licence.versionOfId else null,
     isReviewNeeded = when (licence) {
-      is HardStopLicence -> licence.reviewDate == null
+      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
       else -> false
     },
   )
