@@ -204,6 +204,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
     assertThat(result?.comStaffId).isEqualTo(2000)
     assertThat(result?.updatedByUsername).isEqualTo("test-client")
+    assertThat(result?.submittedByFullName).isEqualTo("Test Client")
   }
 
   @Test
