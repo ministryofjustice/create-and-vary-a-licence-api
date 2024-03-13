@@ -76,8 +76,6 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
       is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
       else -> false
     },
-    updatedByFullName = licence.getUpdatedByFullName(),
-    submittedByFullName = licence.getSubmittedByFullName(),
   )
 }
 
