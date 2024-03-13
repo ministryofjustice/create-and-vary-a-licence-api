@@ -153,4 +153,10 @@ data class LicenceSummary(
 
   @Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean,
+
+  @Schema(description = "The username of the person who last updated this licence", example = "X34433")
+  val updatedByFullName: String? = null,
+
+  @Schema(description = "The username of the person who last updated this licence", example = "X34433")
+  val submittedByFullName: String? = null,
 )

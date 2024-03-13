@@ -268,4 +268,7 @@ data class HardStopLicence(
 
   @Schema(description = "If a review of this licence is required", example = "true")
   override val isReviewNeeded: Boolean = reviewDate == null,
+
+  @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
+  override val submittedByFullName: String? = null,
 ) : Licence

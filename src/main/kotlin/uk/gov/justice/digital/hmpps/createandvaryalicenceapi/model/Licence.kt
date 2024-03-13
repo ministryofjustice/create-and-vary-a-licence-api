@@ -295,4 +295,7 @@ sealed interface Licence {
 
   @get:Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean
+
+  @get:Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
+  val submittedByFullName: String?
 }

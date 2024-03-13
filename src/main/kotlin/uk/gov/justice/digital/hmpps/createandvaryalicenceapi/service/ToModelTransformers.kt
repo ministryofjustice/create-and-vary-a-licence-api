@@ -76,6 +76,8 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
       is HardStopLicence -> licence.reviewDate == null
       else -> false
     },
+    updatedByFullName = licence.getUpdatedByFullName(),
+    submittedByFullName = licence.getSubmittedByFullName(),
   )
 }
 
@@ -119,7 +121,7 @@ fun toHardstop(
   comStaffId = licence.responsibleCom!!.staffIdentifier,
   comEmail = licence.responsibleCom!!.email,
   responsibleComFullName = with(licence.responsibleCom!!) { "$firstName $lastName" },
-  updatedByFullName = with(licence.updatedBy) { "${this?.firstName} ${this?.lastName}" },
+  updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
   probationPduCode = licence.probationPduCode,
@@ -159,6 +161,7 @@ fun toHardstop(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
+  submittedByFullName = licence.getSubmittedByFullName(),
 )
 
 fun toVariation(
@@ -196,7 +199,7 @@ fun toVariation(
   comStaffId = licence.responsibleCom!!.staffIdentifier,
   comEmail = licence.responsibleCom!!.email,
   responsibleComFullName = with(licence.responsibleCom!!) { "$firstName $lastName" },
-  updatedByFullName = with(licence.updatedBy) { "${this?.firstName} ${this?.lastName}" },
+  updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
   probationPduCode = licence.probationPduCode,
@@ -237,6 +240,7 @@ fun toVariation(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  submittedByFullName = licence.getSubmittedByFullName(),
 )
 
 fun toCrd(
@@ -275,7 +279,7 @@ fun toCrd(
   comStaffId = licence.responsibleCom!!.staffIdentifier,
   comEmail = licence.responsibleCom!!.email,
   responsibleComFullName = with(licence.responsibleCom!!) { "$firstName $lastName" },
-  updatedByFullName = with(licence.updatedBy) { "${this?.firstName} ${this?.lastName}" },
+  updatedByFullName = licence.getUpdatedByFullName(),
   probationAreaCode = licence.probationAreaCode,
   probationAreaDescription = licence.probationAreaDescription,
   probationPduCode = licence.probationPduCode,
@@ -314,6 +318,7 @@ fun toCrd(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
+  submittedByFullName = licence.getSubmittedByFullName(),
 )
 
 // Transform a list of entity standard conditions to model standard conditions
@@ -463,4 +468,27 @@ fun CaseloadResult.transformToUnstartedRecord(
     licenceStatus = licenceStatus,
     isOnProbation = false,
   )
+}
+
+fun Licence.getUpdatedByFullName(): String {
+  val staffMember = this.updatedBy
+  return if (staffMember != null) {
+    "${staffMember.firstName} ${staffMember.lastName}"
+  } else {
+    ""
+  }
+}
+
+fun Licence.getSubmittedByFullName(): String {
+  val staffMember = when (this) {
+    is HardStopLicence -> this.submittedBy
+    is CrdLicence -> this.submittedBy
+    is VariationLicence -> this.submittedBy
+    else -> null
+  }
+  return if (staffMember != null) {
+    "${staffMember.firstName} ${staffMember.lastName}"
+  } else {
+    ""
+  }
 }

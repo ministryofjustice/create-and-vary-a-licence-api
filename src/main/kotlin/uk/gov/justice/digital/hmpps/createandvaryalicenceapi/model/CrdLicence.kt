@@ -261,4 +261,7 @@ data class CrdLicence(
 
   @Schema(description = "Is a review of this licence is required", example = "true")
   override val isReviewNeeded: Boolean = false,
+
+  @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
+  override val submittedByFullName: String? = null,
 ) : Licence

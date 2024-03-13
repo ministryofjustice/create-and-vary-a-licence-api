@@ -655,6 +655,8 @@ class LicenceControllerTest {
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       licenceVersion = "1.0",
       isReviewNeeded = false,
+      updatedByFullName = "",
+      submittedByFullName = "",
     )
 
     val aStatusUpdateRequest =
