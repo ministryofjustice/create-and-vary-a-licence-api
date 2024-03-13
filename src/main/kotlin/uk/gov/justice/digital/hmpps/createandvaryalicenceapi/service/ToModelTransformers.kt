@@ -468,25 +468,25 @@ fun CaseloadResult.transformToUnstartedRecord(
   )
 }
 
-fun Licence.getUpdatedByFullName(): String {
+fun Licence.getUpdatedByFullName(): String? {
   val staffMember = this.updatedBy
   return if (staffMember != null) {
     "${staffMember.firstName} ${staffMember.lastName}"
   } else {
-    ""
+    null
   }
 }
 
-fun Licence.getSubmittedByFullName(): String {
+fun Licence.getSubmittedByFullName(): String? {
   val staffMember = when (this) {
     is HardStopLicence -> this.submittedBy
     is CrdLicence -> this.submittedBy
     is VariationLicence -> this.submittedBy
-    else -> null
+    else -> error("Unexpected licence type: $this")
   }
   return if (staffMember != null) {
     "${staffMember.firstName} ${staffMember.lastName}"
   } else {
-    ""
+    null
   }
 }
