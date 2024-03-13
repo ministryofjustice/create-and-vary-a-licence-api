@@ -367,11 +367,11 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `review needed - when review date not set`() {
+  fun `review needed - when review date not set on ACTIVE licence`() {
     val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
-        createHardStopLicence().copy(reviewDate = null),
+        createHardStopLicence().copy(statusCode = LicenceStatus.ACTIVE, reviewDate = null),
       ),
     )
 
@@ -386,6 +386,20 @@ class LicenceServiceTest {
     whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
       listOf(
         createHardStopLicence().copy(reviewDate = LocalDateTime.now()),
+      ),
+    )
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries[0].isReviewNeeded).isFalse()
+  }
+
+  @Test
+  fun `review not needed - when review date not set on non-ACTIVE licence`() {
+    val licenceQueryObject = LicenceQueryObject(pdus = listOf("A", "B"))
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        createHardStopLicence().copy(reviewDate = null),
       ),
     )
 
