@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
@@ -19,6 +19,13 @@ object TestData {
 
   fun com() = CommunityOffenderManager(
     staffIdentifier = 2000,
+    username = "smills",
+    email = "testemail@probation.gov.uk",
+    firstName = "X",
+    lastName = "Y",
+  )
+
+  fun ca() = PrisonUser(
     username = "smills",
     email = "testemail@probation.gov.uk",
     firstName = "X",
@@ -160,7 +167,7 @@ object TestData {
       firstName = "X",
       lastName = "Y",
     ),
-    createdBy = PrisonCaseAdministrator(
+    createdBy = PrisonUser(
       username = "smills",
       email = "testemail@probation.gov.uk",
       firstName = "X",

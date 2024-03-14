@@ -15,9 +15,9 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto
@@ -248,16 +248,16 @@ class StaffServiceTest {
   inner class `CA tests` {
     @Test
     fun `updates existing CA with new details`() {
-      val expectedCa = PrisonCaseAdministrator(
+      val expectedCa = PrisonUser(
         username = "JBLOGGS",
         email = "jbloggs123@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
       )
 
-      whenever(staffRepository.findPrisonCaseAdministratorByUsernameIgnoreCase(expectedCa.username))
+      whenever(staffRepository.findPrisonUserByUsernameIgnoreCase(expectedCa.username))
         .thenReturn(
-          PrisonCaseAdministrator(
+          PrisonUser(
             username = "joebloggs",
             email = "jbloggs@probation.gov.uk",
             firstName = "A",
@@ -265,8 +265,8 @@ class StaffServiceTest {
           ),
         )
 
-      service.updatePrisonCaseAdmin(
-        UpdatePrisonCaseAdminRequest(
+      service.updatePrisonUser(
+        UpdatePrisonUserRequest(
           staffUsername = "jbloggs",
           staffEmail = "jbloggs123@probation.gov.uk",
           firstName = "X",
@@ -274,7 +274,7 @@ class StaffServiceTest {
         ),
       )
 
-      argumentCaptor<PrisonCaseAdministrator>().apply {
+      argumentCaptor<PrisonUser>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")
           .isEqualTo(expectedCa)
@@ -283,9 +283,9 @@ class StaffServiceTest {
 
     @Test
     fun `does not update CA with same details`() {
-      whenever(staffRepository.findPrisonCaseAdministratorByUsernameIgnoreCase(any()))
+      whenever(staffRepository.findPrisonUserByUsernameIgnoreCase(any()))
         .thenReturn(
-          PrisonCaseAdministrator(
+          PrisonUser(
             username = "jbloggs",
             email = "jbloggs@probation.gov.uk",
             firstName = "A",
@@ -293,8 +293,8 @@ class StaffServiceTest {
           ),
         )
 
-      service.updatePrisonCaseAdmin(
-        UpdatePrisonCaseAdminRequest(
+      service.updatePrisonUser(
+        UpdatePrisonUserRequest(
           staffUsername = "jbloggs",
           staffEmail = "jbloggs@probation.gov.uk",
           firstName = "A",
@@ -302,23 +302,23 @@ class StaffServiceTest {
         ),
       )
 
-      verify(staffRepository, times(1)).findPrisonCaseAdministratorByUsernameIgnoreCase("jbloggs")
+      verify(staffRepository, times(1)).findPrisonUserByUsernameIgnoreCase("jbloggs")
       verify(staffRepository, never()).saveAndFlush(any())
     }
 
     @Test
     fun `adds a new existing COM if it doesnt exist`() {
-      val expectedCa = PrisonCaseAdministrator(
+      val expectedCa = PrisonUser(
         username = "JBLOGGS",
         email = "jbloggs123@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
       )
 
-      whenever(staffRepository.findPrisonCaseAdministratorByUsernameIgnoreCase(expectedCa.username)).thenReturn(null)
+      whenever(staffRepository.findPrisonUserByUsernameIgnoreCase(expectedCa.username)).thenReturn(null)
 
-      service.updatePrisonCaseAdmin(
-        UpdatePrisonCaseAdminRequest(
+      service.updatePrisonUser(
+        UpdatePrisonUserRequest(
           staffUsername = "jbloggs",
           staffEmail = "jbloggs123@probation.gov.uk",
           firstName = "X",
@@ -326,7 +326,7 @@ class StaffServiceTest {
         ),
       )
 
-      argumentCaptor<PrisonCaseAdministrator>().apply {
+      argumentCaptor<PrisonUser>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
 
         assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")

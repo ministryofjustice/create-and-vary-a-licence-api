@@ -6,8 +6,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.time.LocalDateTime
 
 @Entity
-@DiscriminatorValue(value = "PRISON_CASE_ADMIN")
-class PrisonCaseAdministrator(
+@DiscriminatorValue(value = "PRISON_USER")
+class PrisonUser(
   id: Long? = -1,
   username: String,
   email: String?,
@@ -16,7 +16,7 @@ class PrisonCaseAdministrator(
   lastUpdatedTimestamp: LocalDateTime? = null,
 ) : Creator, Staff(
   id = id,
-  kind = StaffKind.PRISON_CASE_ADMIN,
+  kind = StaffKind.PRISON_USER,
   username = username,
   email = email,
   firstName = firstName,
@@ -30,7 +30,7 @@ class PrisonCaseAdministrator(
     firstName: String? = this.firstName,
     lastName: String? = this.lastName,
     lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp,
-  ) = PrisonCaseAdministrator(
+  ) = PrisonUser(
     id = id,
     username = username,
     email = email,
@@ -41,7 +41,7 @@ class PrisonCaseAdministrator(
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (other !is PrisonCaseAdministrator) return false
+    if (other !is PrisonUser) return false
     if (!super.equals(other)) return false
     return true
   }
@@ -51,7 +51,7 @@ class PrisonCaseAdministrator(
   }
 
   override fun toString(): String {
-    return "PrisonCaseAdministrator()" +
+    return "PrisonUser()" +
       " ${super.toString()}"
   }
 }

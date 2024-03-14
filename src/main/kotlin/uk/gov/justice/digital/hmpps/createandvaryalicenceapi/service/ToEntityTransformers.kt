@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
@@ -83,8 +83,8 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent {
   )
 }
 
-fun UpdatePrisonCaseAdminRequest.toEntity() =
-  PrisonCaseAdministrator(
+fun UpdatePrisonUserRequest.toEntity() =
+  PrisonUser(
     username = staffUsername.uppercase(),
     email = staffEmail,
     firstName = firstName,

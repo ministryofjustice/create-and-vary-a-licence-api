@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
 
 @Schema(description = "Request object for updating a prison case administrator")
-data class UpdatePrisonCaseAdminRequest(
+data class UpdatePrisonUserRequest(
 
   @Schema(description = "The NOMIS username of the case administrator", example = "jbloggs")
   @field:NotNull

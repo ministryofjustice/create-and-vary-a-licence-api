@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 
 class StaffIntegrationTest : IntegrationTestBase() {
@@ -54,22 +54,22 @@ class StaffIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/clear-all-data.sql",
   )
   fun `Add and update a Prison Case Administrator record`() {
-    doUpdate("/prison-case-administrator/update", updatePrison)
+    doUpdate("/prison-user/update", updatePrison)
 
     assertThat(staffRepository.count()).isEqualTo(1)
 
-    with(staffRepository.findAll().first() as PrisonCaseAdministrator) {
+    with(staffRepository.findAll().first() as PrisonUser) {
       assertThat(username).isEqualTo(updatePrison.staffUsername.uppercase())
       assertThat(email).isEqualTo(updatePrison.staffEmail)
       assertThat(firstName).isEqualTo(updatePrison.firstName)
       assertThat(lastName).isEqualTo(updatePrison.lastName)
     }
 
-    doUpdate("/prison-case-administrator/update", updatePrison.copy(firstName = "NEW NAME"))
+    doUpdate("/prison-user/update", updatePrison.copy(firstName = "NEW NAME"))
 
     assertThat(staffRepository.count()).isEqualTo(1)
 
-    with(staffRepository.findAll().first() as PrisonCaseAdministrator) {
+    with(staffRepository.findAll().first() as PrisonUser) {
       assertThat(username).isEqualTo(updatePrison.staffUsername.uppercase())
       assertThat(email).isEqualTo(updatePrison.staffEmail)
       assertThat(firstName).isEqualTo("NEW NAME")
@@ -84,8 +84,8 @@ class StaffIntegrationTest : IntegrationTestBase() {
   fun `Persist multiple records`() {
     doUpdate("/com/update", updateCom.copy(staffIdentifier = 1, staffUsername = "A COM"))
     doUpdate("/com/update", updateCom.copy(staffIdentifier = 2, staffUsername = "DIFFERENT COM"))
-    doUpdate("/prison-case-administrator/update", updatePrison.copy(staffUsername = "A CA"))
-    doUpdate("/prison-case-administrator/update", updatePrison.copy(staffUsername = "DIFFERENT CA"))
+    doUpdate("/prison-user/update", updatePrison.copy(staffUsername = "A CA"))
+    doUpdate("/prison-user/update", updatePrison.copy(staffUsername = "DIFFERENT CA"))
 
     assertThat(staffRepository.count()).isEqualTo(4)
 
@@ -95,7 +95,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
       listOf("A COM", "DIFFERENT COM"),
     )
     assertThat(staffByType).containsEntry(
-      PrisonCaseAdministrator::class,
+      PrisonUser::class,
       listOf("A CA", "DIFFERENT CA"),
     )
   }
@@ -145,7 +145,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
       firstName = "Joseph",
       lastName = "Bloggs",
     )
-    val updatePrison = UpdatePrisonCaseAdminRequest(
+    val updatePrison = UpdatePrisonUserRequest(
       staffUsername = "boejoggs",
       staffEmail = "boejoggs@prison.gov.uk",
       firstName = "Boseph",
