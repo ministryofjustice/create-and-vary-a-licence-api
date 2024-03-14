@@ -1211,7 +1211,17 @@ class LicenceController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+            array = ArraySchema(schema = Schema(implementation = ApprovedLicenceSummary::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
           ),
         ],
       ),
