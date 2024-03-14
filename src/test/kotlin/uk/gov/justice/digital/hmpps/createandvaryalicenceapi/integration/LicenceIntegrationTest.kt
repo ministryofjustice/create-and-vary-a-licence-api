@@ -748,10 +748,15 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Get forbidden (403) when incorrect roles are supplied`() {
-      val result = webTestClient.put()
+      val result = webTestClient.post()
         .uri("/licence/licences-for-approval")
         .accept(MediaType.APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+        .bodyValue(
+          ApproveLicencesRequest(
+            prisonCodes = listOf("MDI", "ABC"),
+          ),
+        )
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
         .expectBody(ErrorResponse::class.java)

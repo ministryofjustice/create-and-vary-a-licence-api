@@ -1217,7 +1217,7 @@ class LicenceController(
       ),
       ApiResponse(
         responseCode = "400",
-        description = "Bad request",
+        description = "Bad request, request body must be valid",
         content = [
           Content(
             mediaType = "application/json",
