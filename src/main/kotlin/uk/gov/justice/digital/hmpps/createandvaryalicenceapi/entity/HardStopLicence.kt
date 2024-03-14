@@ -76,11 +76,11 @@ class HardStopLicence(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_ca_id", nullable = false)
-  var createdBy: PrisonCaseAdministrator? = null,
+  var createdBy: PrisonUser? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_ca_id", nullable = true)
-  var submittedBy: PrisonCaseAdministrator? = null,
+  var submittedBy: PrisonUser? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HARD_STOP,
@@ -192,8 +192,8 @@ class HardStopLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager? = this.responsibleCom,
-    submittedBy: PrisonCaseAdministrator? = this.submittedBy,
-    createdBy: PrisonCaseAdministrator? = this.createdBy,
+    submittedBy: PrisonUser? = this.submittedBy,
+    createdBy: PrisonUser? = this.createdBy,
     substituteOfId: Long? = this.substituteOfId,
     reviewDate: LocalDateTime? = this.reviewDate,
     licenceVersion: String? = this.licenceVersion,
@@ -273,7 +273,7 @@ class HardStopLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  fun submit(submittedBy: PrisonCaseAdministrator) = copy(
+  fun submit(submittedBy: PrisonUser) = copy(
     statusCode = LicenceStatus.SUBMITTED,
     submittedBy = submittedBy,
     updatedByUsername = submittedBy.username,

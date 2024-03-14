@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -73,7 +73,7 @@ object LicenceFactory {
     prisonInformation: Prison,
     currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
     deliusRecord: OffenderDetail,
-    creator: PrisonCaseAdministrator,
+    creator: PrisonUser,
     responsibleCom: CommunityOffenderManager,
     timedOutLicence: CrdLicence?,
   ) = HardStopLicence(

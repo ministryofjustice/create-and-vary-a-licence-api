@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
@@ -74,20 +74,20 @@ class StaffController(private val caseloadService: CaseloadService, private val 
 
   @Tag(name = Tags.COM)
   @PutMapping(
-    value = ["/prison-case-administrator/update"],
+    value = ["/prison-case-administrator/update", "/prison-user/update"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
-    summary = "Create/updates the details of a prison case administrator.",
-    description = "Create/updates the details of a prison case administrator (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    summary = "Create/updates the details of a prison user.",
+    description = "Create/updates the details of a prison user (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "The Case Administrator was created/updated",
+        description = "The User was created/updated",
       ),
       ApiResponse(
         responseCode = "400",
@@ -106,12 +106,12 @@ class StaffController(private val caseloadService: CaseloadService, private val 
       ),
     ],
   )
-  fun updateCaDetails(
+  fun updatePrisonUser(
     @Valid
     @RequestBody
-    body: UpdatePrisonCaseAdminRequest,
+    body: UpdatePrisonUserRequest,
   ) {
-    this.staffService.updatePrisonCaseAdmin(body)
+    this.staffService.updatePrisonUser(body)
   }
 
   @Tag(name = Tags.COM)

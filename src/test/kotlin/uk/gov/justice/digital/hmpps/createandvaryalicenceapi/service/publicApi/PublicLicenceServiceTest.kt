@@ -437,7 +437,7 @@ class PublicLicenceServiceTest {
       }
 
       assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessage("Condition 1 upload details not found")
+        .hasMessage("Condition 1 upload summary not found")
 
       verify(licenceRepository, times(1)).findById(1L)
       verify(additionalConditionRepository, times(1)).findById(1L)
