@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -489,4 +490,26 @@ fun Licence.getSubmittedByFullName(): String? {
   } else {
     null
   }
+}
+
+fun transformToListOfApprovedLicenceSummaries(licences: List<EntityLicence>): List<ApprovedLicenceSummary> {
+  return licences.map { licence -> transformToApprovedLicenceSummary(licence) }
+}
+
+fun transformToApprovedLicenceSummary(licence: EntityLicence): ApprovedLicenceSummary {
+  return ApprovedLicenceSummary(
+    licenceId = licence.id,
+    licenceStatus = licence.statusCode,
+    kind = licence.kind,
+    licenceType = licence.typeCode,
+    nomisId = licence.nomsId,
+    crn = licence.crn,
+    comUsername = licence.responsibleCom!!.username,
+    dateCreated = licence.dateCreated,
+    approvedByName = licence.approvedByName,
+    approvedDate = licence.approvedDate,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    updatedByFullName = licence.getUpdatedByFullName(),
+    submittedByFullName = licence.getSubmittedByFullName(),
+  )
 }

@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -983,5 +984,15 @@ class LicenceService(
         detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.reviewDate} version ${licenceEntity.version}",
       ),
     )
+  }
+
+  @Transactional
+  fun getLicencesForApproval(prisons: List<String>?): List<ApprovedLicenceSummary> {
+    if (prisons.isNullOrEmpty()) {
+      return emptyList()
+    }
+    val licences = licenceRepository.getLicencesReadyForApproval(prisons)
+      .sortedWith(compareBy(nullsLast()) { it.conditionalReleaseDate })
+    return transformToListOfApprovedLicenceSummaries(licences)
   }
 }

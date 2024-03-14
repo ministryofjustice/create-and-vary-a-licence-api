@@ -19,11 +19,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -697,6 +699,71 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     fun `Unauthorized (401) when no token is supplied`() {
       webTestClient.post()
         .uri("/licence/id/1/activate-variation")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+    }
+  }
+
+  @Nested
+  inner class CheckGetLicencesForApprovals {
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-submitted-licences.sql",
+    )
+    fun `Get licences for approval`() {
+      val result = webTestClient.post()
+        .uri("/licence/licences-for-approval")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(
+          ApproveLicencesRequest(
+            prisonCodes = listOf("MDI", "ABC"),
+          ),
+        )
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBodyList(ApprovedLicenceSummary::class.java)
+        .returnResult().responseBody
+
+      assertThat(result).hasSize(5)
+      assertThat(result)
+        .extracting<Tuple> {
+          tuple(
+            it.licenceId,
+            it.licenceStatus,
+            it.submittedByFullName,
+          )
+        }
+        .containsExactly(
+          tuple(3L, LicenceStatus.SUBMITTED, "Adam AAA"),
+          tuple(1L, LicenceStatus.SUBMITTED, "Test Client"),
+          tuple(2L, LicenceStatus.SUBMITTED, "Test Client"),
+          tuple(6L, LicenceStatus.SUBMITTED, "Test Client"),
+          tuple(7L, LicenceStatus.SUBMITTED, "Test Client"),
+        )
+    }
+
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.put()
+        .uri("/licence/licences-for-approval")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.post()
+        .uri("/licence/licences-for-approval")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())

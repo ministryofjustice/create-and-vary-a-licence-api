@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
@@ -2396,6 +2397,81 @@ class LicenceServiceTest {
     }
   }
 
+  @Nested
+  inner class `getting licences for approval` {
+
+    @Test
+    fun `Get licences for approval returns correct approved licence summary`() {
+      val prisons = listOf("MDI")
+
+      val aLicence = aLicenceEntity.copy(
+        statusCode = LicenceStatus.SUBMITTED,
+        submittedBy = aCom,
+        updatedBy = aCom,
+      )
+
+      whenever(licenceRepository.getLicencesReadyForApproval(prisons)).thenReturn(listOf(aLicence))
+
+      val approvedLicenceSummaries = service.getLicencesForApproval(prisons)
+
+      verify(licenceRepository).getLicencesReadyForApproval(prisons)
+
+      assertThat(approvedLicenceSummaries).hasSize(1)
+      assertThat(approvedLicenceSummaries[0]).isEqualTo(anApprovedLicenceSummary)
+    }
+
+    @Test
+    fun `Get licences for approval are sorted correctly`() {
+      val prisons = listOf("MDI", "ABC")
+
+      val licences = listOf(
+        aLicenceEntity.copy(
+          statusCode = LicenceStatus.SUBMITTED,
+          submittedBy = aCom,
+          updatedBy = aCom,
+          conditionalReleaseDate = null,
+        ),
+        aLicenceEntity.copy(
+          id = 2L,
+          prisonCode = "ABC",
+          statusCode = LicenceStatus.SUBMITTED,
+          submittedBy = aCom,
+          conditionalReleaseDate = LocalDate.of(2024, 3, 11),
+        ),
+        aLicenceEntity.copy(
+          id = 3L,
+          prisonCode = "ABC",
+          statusCode = LicenceStatus.SUBMITTED,
+          submittedBy = aCom,
+          conditionalReleaseDate = LocalDate.of(2024, 3, 14),
+        ),
+        aLicenceEntity.copy(
+          id = 4L,
+          prisonCode = "MDI",
+          statusCode = LicenceStatus.SUBMITTED,
+          submittedBy = aCom,
+          updatedBy = aPreviousUser,
+          conditionalReleaseDate = LocalDate.of(2024, 3, 12),
+        ),
+      )
+
+      whenever(licenceRepository.getLicencesReadyForApproval(prisons)).thenReturn(licences)
+
+      val approvedLicenceSummaries = service.getLicencesForApproval(prisons)
+
+      verify(licenceRepository).getLicencesReadyForApproval(prisons)
+      assertThat(approvedLicenceSummaries).hasSize(4)
+      assertThat(approvedLicenceSummaries).extracting<Long> { it.licenceId }.containsExactly(2, 4, 3, 1)
+    }
+
+    @Test
+    fun `No prison codes when getting licences for approval returns early`() {
+      val response = service.getLicencesForApproval(emptyList())
+      verifyNoInteractions(licenceRepository)
+      assertThat(response).isEmpty()
+    }
+  }
+
   private companion object {
     val anAdditionalCondition = AdditionalConditionAp(
       code = "code",
@@ -2572,6 +2648,21 @@ class LicenceServiceTest {
       email = "test@test.com",
       firstName = "Test",
       lastName = "Test",
+    )
+
+    val anApprovedLicenceSummary = ApprovedLicenceSummary(
+      licenceId = 1,
+      licenceStatus = LicenceStatus.SUBMITTED,
+      kind = LicenceKind.CRD,
+      licenceType = LicenceType.AP,
+      nomisId = "A1234AA",
+      crn = "X12345",
+      comUsername = "smills",
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      approvedByName = "jim smith",
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+      updatedByFullName = "X Y",
+      submittedByFullName = "X Y",
     )
   }
 }

@@ -137,6 +137,16 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getLicenceReviewCountForTeams(teamCodes: List<String>): List<TeamCountsDto>
+
+  @Query(
+    """
+      SELECT l
+      FROM Licence l
+      WHERE l.statusCode = 'SUBMITTED'
+      AND l.prisonCode IN ( :prisonCodes )
+  """,
+  )
+  fun getLicencesReadyForApproval(prisonCodes: List<String>): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
