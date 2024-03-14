@@ -16,7 +16,7 @@ data class ApprovedLicenceSummary(
   @Schema(description = "The status of this licence", example = "IN_PROGRESS")
   val licenceStatus: LicenceStatus,
 
-  @Schema(description = "kind of licence", example = "CRD")
+  @Schema(description = "Kind of licence", example = "CRD")
   val kind: LicenceKind,
 
   @Schema(description = "Licence type code", example = "AP")
@@ -51,9 +51,9 @@ data class ApprovedLicenceSummary(
   @Schema(description = "The licence Id which this licence is a version of", example = "86")
   val versionOf: Long? = null,
 
-  @Schema(description = "The username of the person who last updated this licence", example = "X34433")
+  @Schema(description = "The username of the person who last updated this licence", example = "John Doe")
   val updatedByFullName: String? = null,
 
-  @Schema(description = "The username of the person who last submitted this licence", example = "X34433")
+  @Schema(description = "The username of the person who last submitted this licence", example = "Jane Doe")
   val submittedByFullName: String? = null,
 )
