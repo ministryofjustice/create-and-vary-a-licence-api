@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -641,14 +641,14 @@ class LicenceCreationServiceTest {
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
 
-      whenever(authentication.name).thenReturn(caseAdministrator.username)
+      whenever(authentication.name).thenReturn(prisonUser.username)
       whenever(securityContext.authentication).thenReturn(authentication)
       SecurityContextHolder.setContext(securityContext)
 
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
-      whenever(staffRepository.findByUsernameIgnoreCase(caseAdministrator.username)).thenReturn(caseAdministrator)
+      whenever(staffRepository.findByUsernameIgnoreCase(prisonUser.username)).thenReturn(prisonUser)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
@@ -1188,7 +1188,7 @@ class LicenceCreationServiceTest {
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
-      whenever(staffRepository.findByUsernameIgnoreCase(caseAdministrator.username)).thenReturn(null)
+      whenever(staffRepository.findByUsernameIgnoreCase(prisonUser.username)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
         service.createHardStopLicence(prisonNumber)
@@ -1304,7 +1304,7 @@ class LicenceCreationServiceTest {
       lastName = "Y",
     )
 
-    val caseAdministrator = PrisonCaseAdministrator(
+    val prisonUser = PrisonUser(
       username = "ca",
       email = "testemail@prison.gov.uk",
       firstName = "A",

@@ -1,7 +1,7 @@
 version: "3"
 services:
   licences-db:
-    image: postgres:14.3
+    image: postgres:15.6
     networks:
       - hmpps
     container_name: licences-db

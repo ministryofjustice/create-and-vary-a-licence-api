@@ -1,0 +1,2 @@
+
+UPDATE STAFF SET kind = 'PRISON_USER' where kind = 'PRISON_CASE_ADMIN';

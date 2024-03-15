@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Creator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -107,7 +107,7 @@ class LicenceCreationService(
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
       ?: createCom(currentResponsibleOfficerDetails.staffId)
 
-    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonCaseAdministrator?
+    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
 
     val timedOutLicence: CrdLicence? = licenceRepository.findByBookingIdAndStatusCodeOrderByDateCreatedDesc(

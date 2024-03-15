@@ -46,7 +46,7 @@ class PublicLicenceService(
 
     val uploadIds = additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }
     if (uploadIds.isEmpty()) {
-      throw EntityNotFoundException("Condition $conditionId upload details not found")
+      throw EntityNotFoundException("Condition $conditionId upload summary not found")
     }
 
     val upload = additionalConditionUploadDetailRepository

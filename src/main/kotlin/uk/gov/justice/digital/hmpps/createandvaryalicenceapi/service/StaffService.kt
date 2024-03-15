@@ -4,11 +4,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonCaseAdministrator
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonCaseAdminRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
@@ -78,8 +78,8 @@ class StaffService(
   }
 
   @Transactional
-  fun updatePrisonCaseAdmin(request: UpdatePrisonCaseAdminRequest): Staff {
-    val found = this.staffRepository.findPrisonCaseAdministratorByUsernameIgnoreCase(request.staffUsername)
+  fun updatePrisonUser(request: UpdatePrisonUserRequest): Staff {
+    val found = this.staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
 
     return when {
       found == null -> this.staffRepository.saveAndFlush(request.toEntity())
@@ -104,8 +104,8 @@ class StaffService(
     )
   }
 
-  private fun PrisonCaseAdministrator.updatedWith(
-    updatedDetails: UpdatePrisonCaseAdminRequest,
+  private fun PrisonUser.updatedWith(
+    updatedDetails: UpdatePrisonUserRequest,
   ) = copy(
     username = updatedDetails.staffUsername.uppercase(),
     email = updatedDetails.staffEmail,
@@ -121,7 +121,7 @@ class StaffService(
       (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
       (comDetails.staffIdentifier != this.staffIdentifier)
 
-  private fun PrisonCaseAdministrator.isUpdate(caDetails: UpdatePrisonCaseAdminRequest) =
+  private fun PrisonUser.isUpdate(caDetails: UpdatePrisonUserRequest) =
     (caDetails.firstName != this.firstName) ||
       (caDetails.lastName != this.lastName) ||
       (caDetails.staffEmail != this.email) ||
