@@ -992,7 +992,7 @@ class LicenceService(
       return emptyList()
     }
     val licences = licenceRepository.getLicencesReadyForApproval(prisons)
-      .sortedWith(compareBy(nullsLast()) { it.conditionalReleaseDate })
+      .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
     return transformToListOfApprovedLicenceSummaries(licences)
   }
 }

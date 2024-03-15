@@ -2407,6 +2407,7 @@ class LicenceServiceTest {
       val aLicence = aLicenceEntity.copy(
         statusCode = LicenceStatus.SUBMITTED,
         submittedBy = aCom,
+        submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
         updatedBy = aCom,
       )
 
@@ -2429,6 +2430,7 @@ class LicenceServiceTest {
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
           updatedBy = aCom,
+          actualReleaseDate = null,
           conditionalReleaseDate = null,
         ),
         aLicenceEntity.copy(
@@ -2436,14 +2438,14 @@ class LicenceServiceTest {
           prisonCode = "ABC",
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
-          conditionalReleaseDate = LocalDate.of(2024, 3, 11),
+          actualReleaseDate = LocalDate.of(2024, 3, 11),
         ),
         aLicenceEntity.copy(
           id = 3L,
           prisonCode = "ABC",
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
-          conditionalReleaseDate = LocalDate.of(2024, 3, 14),
+          actualReleaseDate = LocalDate.of(2024, 3, 14),
         ),
         aLicenceEntity.copy(
           id = 4L,
@@ -2451,7 +2453,16 @@ class LicenceServiceTest {
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
           updatedBy = aPreviousUser,
-          conditionalReleaseDate = LocalDate.of(2024, 3, 12),
+          actualReleaseDate = LocalDate.of(2024, 3, 12),
+        ),
+        aLicenceEntity.copy(
+          id = 5L,
+          prisonCode = "MDI",
+          statusCode = LicenceStatus.SUBMITTED,
+          submittedBy = aCom,
+          updatedBy = aPreviousUser,
+          actualReleaseDate = null,
+          conditionalReleaseDate = LocalDate.of(2024, 3, 10),
         ),
       )
 
@@ -2460,8 +2471,8 @@ class LicenceServiceTest {
       val approvedLicenceSummaries = service.getLicencesForApproval(prisons)
 
       verify(licenceRepository).getLicencesReadyForApproval(prisons)
-      assertThat(approvedLicenceSummaries).hasSize(4)
-      assertThat(approvedLicenceSummaries).extracting<Long> { it.licenceId }.containsExactly(2, 4, 3, 1)
+      assertThat(approvedLicenceSummaries).hasSize(5)
+      assertThat(approvedLicenceSummaries).extracting<Long> { it.licenceId }.containsExactly(5, 2, 4, 3, 1)
     }
 
     @Test
@@ -2652,15 +2663,41 @@ class LicenceServiceTest {
 
     val anApprovedLicenceSummary = ApprovedLicenceSummary(
       licenceId = 1,
+      forename = "Bob",
+      surname = "Mortimer",
+      dateOfBirth = LocalDate.of(1985, 12, 28),
       licenceStatus = LicenceStatus.SUBMITTED,
       kind = LicenceKind.CRD,
       licenceType = LicenceType.AP,
       nomisId = "A1234AA",
       crn = "X12345",
+      bookingId = 54321,
+      prisonCode = "MDI",
+      prisonDescription = "Moorland (HMP)",
+      probationAreaCode = "N01",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
       comUsername = "smills",
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      actualReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceStartDate = LocalDate.of(2018, 10, 22),
+      sentenceEndDate = LocalDate.of(2021, 10, 22),
+      licenceStartDate = LocalDate.of(2021, 10, 22),
+      licenceExpiryDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      approvedByName = "jim smith",
+      submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+      approvedByName = "jim smith",
+      licenceVersion = "1.0",
+      versionOf = null,
+      isReviewNeeded = false,
       updatedByFullName = "X Y",
       submittedByFullName = "X Y",
     )

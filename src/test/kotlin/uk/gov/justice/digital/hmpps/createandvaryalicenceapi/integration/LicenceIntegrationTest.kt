@@ -728,7 +728,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
         .expectBodyList(ApprovedLicenceSummary::class.java)
         .returnResult().responseBody
 
-      assertThat(result).hasSize(5)
+      assertThat(result).hasSize(6)
       assertThat(result)
         .extracting<Tuple> {
           tuple(
@@ -738,10 +738,11 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           )
         }
         .containsExactly(
-          tuple(3L, LicenceStatus.SUBMITTED, "Adam AAA"),
-          tuple(1L, LicenceStatus.SUBMITTED, "Test Client"),
           tuple(2L, LicenceStatus.SUBMITTED, "Test Client"),
+          tuple(1L, LicenceStatus.SUBMITTED, "Test Client"),
           tuple(6L, LicenceStatus.SUBMITTED, "Test Client"),
+          tuple(8L, LicenceStatus.SUBMITTED, "Test Client"),
+          tuple(3L, LicenceStatus.SUBMITTED, "Adam AAA"),
           tuple(7L, LicenceStatus.SUBMITTED, "Test Client"),
         )
     }

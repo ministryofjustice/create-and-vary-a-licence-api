@@ -20,4 +20,6 @@ insert into licence (
 (4,'CRD','1.0','400','MDI',1,1,1,'APPROVED','bob', 'pint', CURRENT_TIMESTAMP,'2023-09-29','AP'),
 (5,'CRD','1.0','500','MDI',1,1,1,'APPROVED','prisoner', 'five', '2023-09-29','2023-09-29','AP'),
 (6,'CRD','1.0','600','ABC',1,1,1,'SUBMITTED','prisoner', 'six', CURRENT_TIMESTAMP,'2023-09-29','AP'),
-(7,'CRD','1.0','700','ABC',1,1,1,'SUBMITTED','prisoner', 'seven', null, null,'AP');
+(7,'CRD','1.0','700','ABC',1,1,1,'SUBMITTED','prisoner', 'seven', null, null,'AP'),
+(8,'CRD','1.0','800','ABC',1,1,1,'SUBMITTED','prisoner', 'eight', '2024-03-14', null,'AP');
+
