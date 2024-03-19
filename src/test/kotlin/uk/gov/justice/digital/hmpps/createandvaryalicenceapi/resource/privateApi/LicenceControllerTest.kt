@@ -34,11 +34,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
@@ -544,6 +546,29 @@ class LicenceControllerTest {
     verify(licenceService, times(1)).reviewWithNoVariationRequired(4L)
   }
 
+  @Test
+  fun `get licences for approval`() {
+    val request = ApproveLicencesRequest(
+      prisonCodes = listOf("AB1", "AB2"),
+    )
+
+    whenever(licenceService.getLicencesForApproval(request.prisonCodes)).thenReturn(listOf(anApprovedLicenceSummary))
+
+    val result = mvc.perform(
+      post("/licence/licences-for-approval")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(listOf(anApprovedLicenceSummary)))
+
+    verify(licenceService, times(1)).getLicencesForApproval(request.prisonCodes)
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -659,5 +684,46 @@ class LicenceControllerTest {
 
     val aStatusUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
+
+    val anApprovedLicenceSummary = ApprovedLicenceSummary(
+      licenceId = 1,
+      forename = "Bob",
+      surname = "Mortimer",
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      licenceStatus = LicenceStatus.IN_PROGRESS,
+      kind = LicenceKind.CRD,
+      licenceType = LicenceType.AP,
+      nomisId = "A1234AA",
+      crn = "X12345",
+      bookingId = 54321,
+      prisonCode = "MDI",
+      prisonDescription = "Moorland (HMP)",
+      probationAreaCode = "N01",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
+      comUsername = "jsmith",
+      conditionalReleaseDate = LocalDate.of(2022, 12, 28),
+      actualReleaseDate = LocalDate.of(2022, 12, 30),
+      sentenceStartDate = LocalDate.of(2018, 10, 22),
+      sentenceEndDate = LocalDate.of(2021, 10, 22),
+      licenceStartDate = LocalDate.of(2021, 10, 22),
+      licenceExpiryDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+      approvedByName = "Jim Smith",
+      licenceVersion = "1.0",
+      versionOf = null,
+      isReviewNeeded = false,
+      updatedByFullName = "Test Updater",
+      submittedByFullName = "Test Submitter",
+    )
   }
 }

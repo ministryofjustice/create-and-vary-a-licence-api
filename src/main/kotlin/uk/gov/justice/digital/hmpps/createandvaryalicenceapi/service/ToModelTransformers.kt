@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -489,4 +490,54 @@ fun Licence.getSubmittedByFullName(): String? {
   } else {
     null
   }
+}
+
+fun transformToListOfApprovedLicenceSummaries(licences: List<EntityLicence>): List<ApprovedLicenceSummary> {
+  return licences.map { licence -> transformToApprovedLicenceSummary(licence) }
+}
+
+fun transformToApprovedLicenceSummary(licence: EntityLicence): ApprovedLicenceSummary {
+  return ApprovedLicenceSummary(
+    licenceId = licence.id,
+    forename = licence.forename,
+    surname = licence.surname,
+    dateOfBirth = licence.dateOfBirth,
+    licenceStatus = licence.statusCode,
+    kind = licence.kind,
+    licenceType = licence.typeCode,
+    nomisId = licence.nomsId,
+    crn = licence.crn,
+    bookingId = licence.bookingId,
+    prisonCode = licence.prisonCode,
+    prisonDescription = licence.prisonDescription,
+    probationAreaCode = licence.probationAreaCode,
+    probationAreaDescription = licence.probationAreaDescription,
+    probationPduCode = licence.probationPduCode,
+    probationPduDescription = licence.probationPduDescription,
+    probationLauCode = licence.probationLauCode,
+    probationLauDescription = licence.probationLauDescription,
+    probationTeamCode = licence.probationTeamCode,
+    probationTeamDescription = licence.probationTeamDescription,
+    comUsername = licence.responsibleCom!!.username,
+    conditionalReleaseDate = licence.conditionalReleaseDate,
+    actualReleaseDate = licence.actualReleaseDate,
+    sentenceStartDate = licence.sentenceStartDate,
+    sentenceEndDate = licence.sentenceEndDate,
+    licenceStartDate = licence.licenceStartDate,
+    licenceExpiryDate = licence.licenceExpiryDate,
+    topupSupervisionStartDate = licence.topupSupervisionStartDate,
+    topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+    dateCreated = licence.dateCreated,
+    submittedDate = licence.submittedDate,
+    approvedDate = licence.approvedDate,
+    approvedByName = licence.approvedByName,
+    licenceVersion = licence.licenceVersion,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    isReviewNeeded = when (licence) {
+      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+      else -> false
+    },
+    updatedByFullName = licence.getUpdatedByFullName(),
+    submittedByFullName = licence.getSubmittedByFullName(),
+  )
 }
