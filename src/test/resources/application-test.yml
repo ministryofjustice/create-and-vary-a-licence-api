@@ -67,7 +67,7 @@ hmpps:
       url: http://localhost:8099/api
   document:
     api:
-      url: http://localhost:8099/api
+      url: http://localhost:8096/api
       enabled: true
 notify:
   enabled: false

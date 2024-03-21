@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
-import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToPublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -15,8 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 @Service
 class PublicLicenceService(
   private val licenceRepository: LicenceRepository,
-  private val additionalConditionRepository: AdditionalConditionRepository,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val exclusionZoneService: ExclusionZoneService,
   private val licenceService: LicenceService,
 ) {
 
@@ -36,24 +33,7 @@ class PublicLicenceService(
 
   @Transactional
   fun getImageUpload(licenceId: Long, conditionId: Long): ByteArray? {
-    licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("Licence $licenceId not found") }
-
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
-      .orElseThrow { EntityNotFoundException("Condition $conditionId not found") }
-
-    val uploadIds = additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }
-    if (uploadIds.isEmpty()) {
-      throw EntityNotFoundException("Condition $conditionId upload summary not found")
-    }
-
-    val upload = additionalConditionUploadDetailRepository
-      .findById(uploadIds.first())
-      .orElseThrow { EntityNotFoundException("Condition $conditionId upload details not found") }
-
-    return upload.fullSizeImage
+    return exclusionZoneService.getExclusionZoneImage(licenceId, conditionId)
   }
 
   fun getLicenceById(id: Long): Licence {

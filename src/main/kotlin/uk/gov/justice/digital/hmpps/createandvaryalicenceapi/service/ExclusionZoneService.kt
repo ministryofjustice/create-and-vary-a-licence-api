@@ -7,18 +7,23 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.rendering.PDFRenderer
 import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.DocumentService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.document.LicenceDocumentType.EXCLUSION_ZONE_MAP_FULL_IMG
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.toCheckSum
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.verifyCheckSum
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.lang.IllegalArgumentException
 import javax.imageio.ImageIO
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail as EntityAdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
@@ -28,8 +33,9 @@ class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val documentService: DocumentService,
+  @Value("\${hmpps.document.api.enabled}") private val isDataStoreEnabled: Boolean = false,
 ) {
-
   init {
     ImageIO.scanForPlugins()
   }
@@ -89,9 +95,13 @@ class ExclusionZoneService(
       uploadDetailId = savedDetail.id,
     )
 
-    val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
+    val updatedAdditionalCondition =
+      additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+    if (isDataStoreEnabled) {
+      postDocsToDS(savedDetail)
+    }
   }
 
   @Transactional
@@ -143,7 +153,14 @@ class ExclusionZoneService(
       .findById(uploadIds.first())
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    return upload.fullSizeImage
+    return when {
+      upload.fullSizeImageDsUuid != null ->
+        documentService.getDocument(upload.fullSizeImageDsUuid!!)
+          .also { it.verifyCheckSum(upload.fullSizeImageDsChecksum) }
+
+      upload.fullSizeImage != null -> upload.fullSizeImage
+      else -> null
+    }
   }
 
   fun extractFullSizeImageJpeg(fileStream: InputStream): ByteArray? {
@@ -214,6 +231,20 @@ class ExclusionZoneService(
       log.error("Creating thumbnail image (null image) - error ${iae.message}")
     }
     return null
+  }
+
+  private fun postDocsToDS(
+    uploadDetail: AdditionalConditionUploadDetail,
+  ) {
+    val imageUuid = documentService.uploadExclusionZoneFile(
+      EXCLUSION_ZONE_MAP_FULL_IMG,
+      uploadDetail.licenceId,
+      uploadDetail.additionalConditionId,
+      uploadDetail.fullSizeImage,
+    )
+    uploadDetail.fullSizeImageDsUuid = imageUuid
+    uploadDetail.fullSizeImageDsChecksum = uploadDetail.fullSizeImage.toCheckSum()
+    additionalConditionUploadDetailRepository.saveAndFlush(uploadDetail)
   }
 
   companion object {

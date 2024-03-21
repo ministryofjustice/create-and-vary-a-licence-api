@@ -37,12 +37,15 @@ data class AdditionalConditionUploadSummary(
   @Basic
   val thumbnailImage: ByteArray? = null,
 
+  val thumbnailImageDsUuid: String? = null,
+  val thumbnailImageDsChecksum: String? = null,
+
   @NotNull
   val uploadDetailId: Long,
 ) {
 
   override fun toString(): String {
-    return "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
+    return "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description, thumbnailImageDsUuid=$thumbnailImageDsUuid, thumbnailImageDsChecksum=$thumbnailImageDsChecksum)"
   }
 
   override fun equals(other: Any?): Boolean {
@@ -57,6 +60,8 @@ data class AdditionalConditionUploadSummary(
     if (fileSize != other.fileSize) return false
     if (uploadedTime != other.uploadedTime) return false
     if (description != other.description) return false
+    if (thumbnailImageDsUuid != other.thumbnailImageDsUuid) return false
+    if (thumbnailImageDsChecksum != other.thumbnailImageDsChecksum) return false
 
     return true
   }
@@ -67,7 +72,9 @@ data class AdditionalConditionUploadSummary(
     result = 31 * result + (fileType?.hashCode() ?: 0)
     result = 31 * result + fileSize
     result = 31 * result + uploadedTime.hashCode()
-    result = 31 * result + (description?.hashCode() ?: 0)
+    result = 31 * result + (thumbnailImageDsUuid?.hashCode() ?: 0)
+    result = 31 * result + (thumbnailImageDsChecksum?.hashCode() ?: 0)
+
     return result
   }
 }
