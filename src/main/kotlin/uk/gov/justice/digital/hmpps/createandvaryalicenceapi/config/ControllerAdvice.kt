@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
 
 @RestControllerAdvice
@@ -24,7 +25,7 @@ class ControllerAdvice {
 
   @ExceptionHandler(AccessDeniedException::class)
   fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
-    log.info("Access denied exception: {}", e.message)
+    log.info("Access denied exception: {}", e.message, e)
     return ResponseEntity
       .status(HttpStatus.FORBIDDEN)
       .body(
@@ -38,7 +39,7 @@ class ControllerAdvice {
 
   @ExceptionHandler(AuthorizationServiceException::class)
   fun handleAuthorizationServiceException(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
-    log.info("Auth service exception: {}", e.message)
+    log.info("Auth service exception: {}", e.message, e)
     return ResponseEntity
       .status(HttpStatus.UNAUTHORIZED)
       .body(
@@ -52,7 +53,21 @@ class ControllerAdvice {
 
   @ExceptionHandler(RestClientResponseException::class)
   fun handleRestClientException(e: RestClientResponseException): ResponseEntity<ErrorResponse> {
-    log.error("RestClientResponseException: {}", e.message)
+    log.error("RestClientResponseException: {}", e.message, e)
+    return ResponseEntity
+      .status(e.statusCode)
+      .body(
+        ErrorResponse(
+          status = e.statusCode.value(),
+          userMessage = "Rest client exception ${e.message}",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(WebClientResponseException::class)
+  fun handleWebClientException(e: WebClientResponseException): ResponseEntity<ErrorResponse> {
+    log.error("RestClientResponseException: {}, response: {}", e.message, e.responseBodyAsString, e)
     return ResponseEntity
       .status(e.statusCode)
       .body(
@@ -122,7 +137,7 @@ class ControllerAdvice {
 
   @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse?>? {
-    log.error("Unexpected exception: {}", e.stackTraceToString())
+    log.error("Unexpected exception: {}", e.message, e)
     return ResponseEntity
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .body(

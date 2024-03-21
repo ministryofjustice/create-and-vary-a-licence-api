@@ -1,15 +1,17 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
 class GovUkMockServer : WireMockServer(8095) {
 
   fun stubGetBankHolidaysForEnglandAndWales() {
     stubFor(
-      WireMock.get(WireMock.urlEqualTo("/bank-holidays.json"))
+      get(urlEqualTo("/bank-holidays.json"))
         .willReturn(
-          WireMock.aResponse().withHeader(
+          aResponse().withHeader(
             "Content-Type",
             "application/json",
           )

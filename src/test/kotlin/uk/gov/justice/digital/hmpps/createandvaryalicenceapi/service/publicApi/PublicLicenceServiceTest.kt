@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
-import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
@@ -20,12 +19,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
@@ -37,21 +35,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Licence as PublicLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary as ModelPublicLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType as PublicLicenceType
 
 class PublicLicenceServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
-  private val additionalConditionRepository = mock<AdditionalConditionRepository>()
-  private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
   private val licenceService = mock<LicenceService>()
+  private val exclusionZoneService = mock<ExclusionZoneService>()
 
   private val service = PublicLicenceService(
     licenceRepository,
-    additionalConditionRepository,
-    additionalConditionUploadDetailRepository,
+    exclusionZoneService,
     licenceService,
   )
 
@@ -59,8 +54,6 @@ class PublicLicenceServiceTest {
   fun reset() {
     reset(
       licenceRepository,
-      additionalConditionRepository,
-      additionalConditionUploadDetailRepository,
       licenceService,
     )
   }
@@ -375,91 +368,13 @@ class PublicLicenceServiceTest {
   inner class `Get exclusion zone image by condition ID` {
     @Test
     fun `service returns an exclusion zone image by condition ID`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
-      whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(
-        Optional.of(
-          anAdditionalConditionUploadDetailEntity,
-        ),
-      )
+      val image = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
 
-      val image = service.getImageUpload(1L, 1L)
+      whenever(exclusionZoneService.getExclusionZoneImage(any(), any())).thenReturn(image)
 
-      assertThat(image).isEqualTo(ClassPathResource("test_map.jpg").inputStream.readAllBytes())
+      val response = service.getImageUpload(1L, 2L)
 
-      verify(licenceRepository, times(1)).findById(1L)
-      verify(additionalConditionRepository, times(1)).findById(1L)
-      verify(additionalConditionUploadDetailRepository, times(1)).findById(1L)
-    }
-
-    @Test
-    fun `service throws error retrieving an exclusion zone image by condition ID for no licence`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-      val exception = assertThrows<EntityNotFoundException> {
-        service.getImageUpload(1L, 1L)
-      }
-
-      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java).hasMessage("Licence 1 not found")
-
-      verify(licenceRepository, times(1)).findById(1L)
-      verify(additionalConditionRepository, times(0)).findById(1L)
-      verify(additionalConditionUploadDetailRepository, times(0)).findById(1L)
-    }
-
-    @Test
-    fun `service throws error retrieving an exclusion zone image by condition ID for no condition`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.empty())
-
-      val exception = assertThrows<EntityNotFoundException> {
-        service.getImageUpload(1L, 1L)
-      }
-
-      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java).hasMessage("Condition 1 not found")
-
-      verify(licenceRepository, times(1)).findById(1L)
-      verify(additionalConditionRepository, times(1)).findById(1L)
-      verify(additionalConditionUploadDetailRepository, times(0)).findById(1L)
-    }
-
-    @Test
-    fun `service throws error retrieving an exclusion zone image by condition ID without an upload`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(additionalConditionRepository.findById(1L)).thenReturn(
-        Optional.of(
-          anAdditionalConditionEntityWithoutUpload,
-        ),
-      )
-
-      val exception = assertThrows<EntityNotFoundException> {
-        service.getImageUpload(1L, 1L)
-      }
-
-      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessage("Condition 1 upload summary not found")
-
-      verify(licenceRepository, times(1)).findById(1L)
-      verify(additionalConditionRepository, times(1)).findById(1L)
-      verify(additionalConditionUploadDetailRepository, times(0)).findById(1L)
-    }
-
-    @Test
-    fun `service throws error retrieving an exclusion zone image by condition ID for no upload details`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
-      whenever(additionalConditionUploadDetailRepository.findById(1L)).thenReturn(Optional.empty())
-
-      val exception = assertThrows<EntityNotFoundException> {
-        service.getImageUpload(1L, 1L)
-      }
-
-      assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessage("Condition 1 upload details not found")
-
-      verify(licenceRepository, times(1)).findById(1L)
-      verify(additionalConditionRepository, times(1)).findById(1L)
-      verify(additionalConditionUploadDetailRepository, times(1)).findById(1L)
+      assertThat(response).isEqualTo(image)
     }
   }
 
