@@ -67,6 +67,5 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:VariationLicence.kt$VariationLicence : Licence</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
-    <ID>UnusedPrivateProperty:WorkingDaysService.kt$WorkingDaysService$i</ID>
   </CurrentIssues>
 </SmellBaseline>
