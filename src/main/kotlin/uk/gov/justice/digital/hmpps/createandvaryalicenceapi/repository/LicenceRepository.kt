@@ -117,6 +117,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
             'TIME_SERVED'
         )
+        AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
         AND l.responsibleCom = :com
     """,
@@ -131,6 +132,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
             'TIME_SERVED'
         )
+        AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
         AND l.probationTeamCode IN ( :teamCodes )
         GROUP BY l.probationTeamCode
