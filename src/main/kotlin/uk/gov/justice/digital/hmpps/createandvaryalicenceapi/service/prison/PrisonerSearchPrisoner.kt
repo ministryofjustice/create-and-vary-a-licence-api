@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 data class PrisonerSearchPrisoner(
   val prisonerNumber: String,
+  val pncNumber: String? = null,
   val bookingId: String,
   val status: String? = null,
   val mostSeriousOffence: String?,
@@ -17,6 +18,12 @@ data class PrisonerSearchPrisoner(
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   val homeDetentionCurfewEligibilityDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  var homeDetentionCurfewActualDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  var homeDetentionCurfewEndDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   val releaseDate: LocalDate? = null,
@@ -34,15 +41,24 @@ data class PrisonerSearchPrisoner(
   val actualParoleDate: LocalDate? = null,
 
   @JsonFormat(pattern = "yyyy-MM-dd")
+  var releaseOnTemporaryLicenceDate: LocalDate? = null,
+
+  @JsonFormat(pattern = "yyyy-MM-dd")
   val postRecallReleaseDate: LocalDate? = null,
 
   val legalStatus: String,
 
   val indeterminateSentence: Boolean,
 
+  val imprisonmentStatus: String? = null,
+
+  val imprisonmentStatusDescription: String? = null,
+
   val recall: Boolean,
 
   val prisonId: String,
+
+  val prisonName: String? = null,
 
   val bookNumber: String,
 
