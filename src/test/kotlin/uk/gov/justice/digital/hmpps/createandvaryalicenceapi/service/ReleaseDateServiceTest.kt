@@ -13,15 +13,15 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 class ReleaseDateServiceTest {
   private val bankHolidayService = mock<BankHolidayService>()
+  private val workingDaysService = WorkingDaysService(bankHolidayService)
 
   private val service =
     ReleaseDateService(
-      bankHolidayService,
       clock,
+      workingDaysService,
     )
 
   @BeforeEach
@@ -176,18 +176,23 @@ class ReleaseDateServiceTest {
   @Nested
   inner class `Late Allocation Warning` {
     @Test
-    fun `should not warn if allocation is 6 days before release date`() {
-      assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-20T00:01", formatter)))
+    fun `should not warn if allocation is greater than 5 days before release date`() {
+      assertFalse(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-21")))
     }
 
     @Test
     fun `should warn if allocation is 5 days before release date`() {
-      assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-17T00:01", formatter)))
+      assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-20")))
     }
 
     @Test
     fun `should warn if allocation is 4 days before release date`() {
       assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-16")))
+    }
+
+    @Test
+    fun `should warn if allocation is 3 days before release date`() {
+      assertTrue(service.isLateAllocationWarningRequired(LocalDate.parse("2023-11-15")))
     }
 
     @Test
@@ -324,6 +329,73 @@ class ReleaseDateServiceTest {
     }
   }
 
+  @Nested
+  inner class `Licence is eligible for early release` {
+    @Test
+    fun `should return true if ARD or CRD is Friday(2018-01-05)`() {
+      val actualReleaseDate = LocalDate.parse("2018-01-05")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isTrue()
+    }
+
+    @Test
+    fun `should return true if ARD or CRD is on Saturday(2018-01-06)`() {
+      val actualReleaseDate = LocalDate.parse("2018-01-06")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isTrue()
+    }
+
+    @Test
+    fun `should return true if ARD or CRD is on Sunday(2018-01-07)`() {
+      val actualReleaseDate = LocalDate.parse("2018-01-07")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isTrue()
+    }
+
+    @Test
+    fun `should return true if ARD or CRD is on Bank holiday Friday(2018-03-30)`() {
+      val actualReleaseDate = LocalDate.parse("2018-03-30")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isTrue()
+    }
+
+    @Test
+    fun `should return true if ARD or CRD is on Bank holiday Monday(2018-04-02)`() {
+      val actualReleaseDate = LocalDate.parse("2018-04-02")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isTrue()
+    }
+
+    @Test
+    fun `should return false if ARD or CRD is Thursday (2018-07-05) as it is not a bank holiday or weekend`() {
+      val actualReleaseDate = LocalDate.parse("2018-07-05")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isFalse()
+    }
+
+    @Test
+    fun `should return false if ARD or CRD is Wednesday (2018-07-04) as it is not a bank holiday or weekend`() {
+      val actualReleaseDate = LocalDate.parse("2018-07-04")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isFalse()
+    }
+
+    @Test
+    fun `should return false if ARD or CRD is Monday (2018-07-02) as it is not a bank holiday or weekend`() {
+      val actualReleaseDate = LocalDate.parse("2018-07-02")
+
+      val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
+      assertThat(isEligibleForEarlyRelease).isFalse()
+    }
+  }
+
   private companion object {
     val bankHolidays = listOf(
       LocalDate.parse("2018-01-01"),
@@ -343,6 +415,5 @@ class ReleaseDateServiceTest {
     private fun createClock(timestamp: String) = Clock.fixed(Instant.parse(timestamp), ZoneId.systemDefault())
 
     val clock: Clock = createClock("2023-11-10T00:00:00Z")
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd['T'HH:mm]")
   }
 }

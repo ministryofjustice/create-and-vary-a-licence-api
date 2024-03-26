@@ -34,12 +34,14 @@ class TimeOutLicencesServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
+  private val workingDaysService = mock<WorkingDaysService>()
 
   private val service = TimeOutLicencesService(
     licenceRepository,
     releaseDateService,
     auditEventRepository,
     licenceEventRepository,
+    workingDaysService,
     clock,
   )
 
@@ -57,12 +59,13 @@ class TimeOutLicencesServiceTest {
       releaseDateService,
       auditEventRepository,
       licenceEventRepository,
+      workingDaysService,
     )
   }
 
   @Test
   fun `return if job execution date is on bank holiday or weekend`() {
-    whenever(releaseDateService.isBankHolidayOrWeekend(LocalDate.now(clock))).thenReturn(true)
+    whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(true)
 
     service.timeOutLicences()
 
@@ -72,7 +75,7 @@ class TimeOutLicencesServiceTest {
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
-    whenever(releaseDateService.isBankHolidayOrWeekend(LocalDate.now(clock))).thenReturn(false)
+    whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
     whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(LocalDate.parse("2023-12-07"))
     whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock))).thenReturn(emptyList())
 
@@ -89,7 +92,7 @@ class TimeOutLicencesServiceTest {
 
   @Test
   fun `should update licences status if there are eligible licences`() {
-    whenever(releaseDateService.isBankHolidayOrWeekend(LocalDate.now(clock))).thenReturn(false)
+    whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
     whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(
       LocalDate.now(clock).plusDays(2),
     )

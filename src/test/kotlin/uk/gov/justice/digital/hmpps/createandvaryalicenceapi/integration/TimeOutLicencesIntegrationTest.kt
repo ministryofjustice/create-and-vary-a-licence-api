@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 import java.time.LocalDate
@@ -29,7 +29,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
   lateinit var auditEventRepository: AuditEventRepository
 
   @Autowired
-  lateinit var releaseDateService: ReleaseDateService
+  lateinit var workingDaysService: WorkingDaysService
 
   @BeforeEach
   fun setupClient() {
@@ -59,7 +59,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     val jobExecutionDate = LocalDate.now()
-    val isOnBankHolidayOrWeekEnd = releaseDateService.isBankHolidayOrWeekend(jobExecutionDate)
+    val isOnBankHolidayOrWeekEnd = workingDaysService.isNonWorkingDay(jobExecutionDate)
 
     assertThat(timedOutLicences?.size).isEqualTo(if (isOnBankHolidayOrWeekEnd) 0 else 3)
     assertThat(timedOutLicences)
