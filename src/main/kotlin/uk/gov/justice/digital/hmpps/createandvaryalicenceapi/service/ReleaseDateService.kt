@@ -54,10 +54,10 @@ class ReleaseDateService(
 
   /** Friday is also considered as weekend */
   fun isEligibleForEarlyRelease(releaseDate: LocalDate): Boolean {
-    return workingDaysService.isNonWorkingDay(
-      releaseDate,
-      listOf(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
-    )
+    if (releaseDate.dayOfWeek in listOf(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)) {
+      return true
+    }
+    return workingDaysService.isNonWorkingDay(releaseDate)
   }
 
   private fun getEarliestDateBefore(

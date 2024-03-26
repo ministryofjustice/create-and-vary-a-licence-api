@@ -10,40 +10,32 @@ class WorkingDaysService(private val bankHolidayService: BankHolidayService) {
   fun workingDaysAfter(
     date: LocalDate,
   ): Sequence<LocalDate> {
-    return generateSequence(date) { it.nextWorkingDay() }.drop(1)
+    return generateSequence(date) { it.plusDays(1) }
+      .drop(1)
+      .filterNot { isNonWorkingDay(it) }
   }
 
   fun workingDaysBefore(
     date: LocalDate,
   ): Sequence<LocalDate> {
-    return generateSequence(date) { it.previousWorkingDay() }.drop(1)
+    return generateSequence(date) { it.minusDays(1) }
+      .drop(1)
+      .filterNot { isNonWorkingDay(it) }
   }
 
-  fun isWeekend(date: LocalDate, weekend: List<DayOfWeek> = listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)): Boolean {
+  fun isWeekend(date: LocalDate): Boolean {
     return date.dayOfWeek in weekend
   }
 
-  fun isNonWorkingDay(date: LocalDate, weekend: List<DayOfWeek> = listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)): Boolean {
-    return isWeekend(date, weekend) || getBankHolidays().contains(date)
-  }
-
-  fun LocalDate.nextWorkingDay(): LocalDate {
-    var adjustedDate = this.plusDays(1)
-    while (isNonWorkingDay(adjustedDate)) {
-      adjustedDate = adjustedDate.plusDays(1)
-    }
-    return adjustedDate
-  }
-
-  fun LocalDate.previousWorkingDay(): LocalDate {
-    var adjustedDate = this.minusDays(1)
-    while (isNonWorkingDay(adjustedDate)) {
-      adjustedDate = adjustedDate.minusDays(1)
-    }
-    return adjustedDate
+  fun isNonWorkingDay(date: LocalDate): Boolean {
+    return isWeekend(date) || getBankHolidays().contains(date)
   }
 
   private fun getBankHolidays(): List<LocalDate> {
     return bankHolidayService.getBankHolidaysForEnglandAndWales()
+  }
+
+  companion object {
+    val weekend = listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
   }
 }
