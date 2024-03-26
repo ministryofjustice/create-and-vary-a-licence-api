@@ -21,8 +21,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 
 @RestController
@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffServic
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenderController(
   private val offenderService: OffenderService,
-  private val caseloadService: CaseloadService,
+  private val prisonerSearchService: PrisonerSearchService,
   private val staffService: StaffService,
 ) {
   @PutMapping(
@@ -201,5 +201,5 @@ class OffenderController(
   )
   fun getIneligibilityReasons(
     @PathVariable nomsId: String,
-  ) = caseloadService.getIneligibilityReasons(nomsId)
+  ) = prisonerSearchService.getIneligibilityReasons(nomsId)
 }

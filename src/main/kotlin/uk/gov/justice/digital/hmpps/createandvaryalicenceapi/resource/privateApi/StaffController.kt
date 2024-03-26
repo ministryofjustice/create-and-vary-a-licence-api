@@ -24,12 +24,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-class StaffController(private val caseloadService: CaseloadService, private val staffService: StaffService) {
+class StaffController(private val prisonerSearchService: PrisonerSearchService, private val staffService: StaffService) {
   @Tag(name = Tags.COM)
   @PutMapping(
     value = ["/com/update"],
@@ -157,7 +157,7 @@ class StaffController(private val caseloadService: CaseloadService, private val 
   fun searchForOffenderOnStaffCaseload(
     @Valid @RequestBody
     body: ProbationUserSearchRequest,
-  ) = caseloadService.searchForOffenderOnStaffCaseload(body)
+  ) = prisonerSearchService.searchForOffenderOnStaffCaseload(body)
 
   @Tag(name = Tags.COM)
   @GetMapping(

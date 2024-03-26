@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -226,4 +227,34 @@ object TestData {
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
+
+  fun prisonerSearchResult() = PrisonerSearchPrisoner(
+    prisonerNumber = "A1234AA",
+    bookingId = "123456",
+    status = "ACTIVE IN",
+    mostSeriousOffence = "Robbery",
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewEligibilityDate = null,
+    releaseDate = LocalDate.of(2021, 10, 22),
+    confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    paroleEligibilityDate = null,
+    actualParoleDate = null,
+    postRecallReleaseDate = null,
+    legalStatus = "SENTENCED",
+    indeterminateSentence = false,
+    recall = false,
+    prisonId = "MDI",
+    bookNumber = "12345A",
+    firstName = "Bob",
+    middleNames = null,
+    lastName = "Mortimar",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDateOverrideDate = null,
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = null,
+    croNumber = null,
+  )
 }
