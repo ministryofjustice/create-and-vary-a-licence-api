@@ -29,8 +29,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import java.time.LocalDate
 
@@ -46,7 +46,7 @@ class OffenderControllerTest {
   private lateinit var offenderService: OffenderService
 
   @MockBean
-  private lateinit var caseloadService: CaseloadService
+  private lateinit var prisonerSearchService: PrisonerSearchService
 
   @MockBean
   private lateinit var staffService: StaffService
@@ -59,10 +59,10 @@ class OffenderControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(offenderService, caseloadService, staffService)
+    reset(offenderService, prisonerSearchService, staffService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(OffenderController(offenderService, caseloadService, staffService))
+      .standaloneSetup(OffenderController(offenderService, prisonerSearchService, staffService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -137,7 +137,7 @@ class OffenderControllerTest {
 
   @Test
   fun `get ineligibility reasons`() {
-    whenever(caseloadService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
+    whenever(prisonerSearchService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
 
     val request = get("/offender/nomisid/A1234AA/ineligibility-reasons")
       .accept(MediaType.APPLICATION_JSON)

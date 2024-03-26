@@ -31,12 +31,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
@@ -119,6 +119,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service creates populates licence with expected fields`() {
+      val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
@@ -166,7 +167,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `populates licence with crd when crd override present`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         conditionalReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
       )
@@ -187,7 +188,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRD date when CRD override is absent`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         conditionalReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDateOverrideDate = null,
       )
@@ -206,7 +207,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with start date when confirmed release date is present`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         confirmedReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDate = LocalDate.now().plusDays(2),
       )
@@ -225,7 +226,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with start date when confirmed release date is absent`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         confirmedReleaseDate = null,
         conditionalReleaseDate = LocalDate.now().plusDays(1),
       )
@@ -250,7 +251,7 @@ class LicenceCreationServiceTest {
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
-          aPrisonerSearchResult.copy(
+          prisonerSearchResult().copy(
             croNumber = "AAAAA",
           ),
         ),
@@ -269,7 +270,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRO from NOMIS when not provided by delius`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         croNumber = "AAAAA",
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
@@ -293,7 +294,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with middlename if provided`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         middleNames = "Timothy",
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
@@ -315,7 +316,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with default middlename if not provided`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         middleNames = null,
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
@@ -338,7 +339,7 @@ class LicenceCreationServiceTest {
     @Test
     fun `Populates licence with conditions for AP licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
+        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
       )
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult,
@@ -363,7 +364,7 @@ class LicenceCreationServiceTest {
     @Test
     fun `Populates licence with conditions for PSS licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
       )
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult,
@@ -389,7 +390,7 @@ class LicenceCreationServiceTest {
     fun `Populates licence with standard conditions for an AP and PSS licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
-          aPrisonerSearchResult.copy(
+          prisonerSearchResult().copy(
             topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
             licenceExpiryDate = LocalDate.now(),
           ),
@@ -417,6 +418,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service audits correctly`() {
+      val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
@@ -482,7 +484,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no active offender manager found for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
@@ -514,7 +516,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible officer details found for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
@@ -544,7 +546,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible COM found for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
@@ -566,7 +568,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service creates COM if no responsible COM exists in DB for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
@@ -601,7 +603,7 @@ class LicenceCreationServiceTest {
         lastName = "Y",
       )
 
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
@@ -657,6 +659,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service creates populates licence with expected fields`() {
+      val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
@@ -703,7 +706,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `populates licence with crd when crd override present`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         conditionalReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
       )
@@ -722,7 +725,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRD date when CRD override is absent`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         conditionalReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDateOverrideDate = null,
       )
@@ -741,7 +744,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with start date when confirmed release date is present`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         confirmedReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDate = LocalDate.now().plusDays(2),
       )
@@ -760,7 +763,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with start date when confirmed release date is absent`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         confirmedReleaseDate = null,
         conditionalReleaseDate = LocalDate.now().plusDays(1),
       )
@@ -785,7 +788,7 @@ class LicenceCreationServiceTest {
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
-          aPrisonerSearchResult.copy(
+          prisonerSearchResult().copy(
             croNumber = "AAAAA",
           ),
         ),
@@ -804,7 +807,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with CRO from NOMIS when not provided by delius`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         croNumber = "AAAAA",
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
@@ -828,7 +831,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with middlename if provided`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         middleNames = "Timothy",
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
@@ -850,7 +853,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with default middlename if not provided`() {
-      val prisoner = aPrisonerSearchResult.copy(
+      val prisoner = prisonerSearchResult().copy(
         middleNames = null,
       )
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
@@ -872,6 +875,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `Populates licence with previous licence if one exists`() {
+      val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
           aPrisonerSearchResult,
@@ -901,7 +905,7 @@ class LicenceCreationServiceTest {
     @Test
     fun `Populates licence with conditions for AP licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
+        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = null, licenceExpiryDate = LocalDate.now())),
       )
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult,
@@ -935,7 +939,7 @@ class LicenceCreationServiceTest {
     @Test
     fun `Populates licence with standard conditions for PSS licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(aPrisonerSearchResult.copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
+        listOf(prisonerSearchResult().copy(topupSupervisionExpiryDate = LocalDate.now(), licenceExpiryDate = null)),
       )
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult,
@@ -962,7 +966,7 @@ class LicenceCreationServiceTest {
     fun `Populates licence with conditions for an AP and PSS licence`() {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
         listOf(
-          aPrisonerSearchResult.copy(
+          prisonerSearchResult().copy(
             topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
             licenceExpiryDate = LocalDate.now(),
           ),
@@ -998,6 +1002,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service audits correctly`() {
+      val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
@@ -1063,7 +1068,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no active offender manager found for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
@@ -1095,7 +1100,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible officer details found for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
@@ -1125,7 +1130,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible COM found for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
@@ -1147,7 +1152,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service creates COM if no responsible COM exists in DB for this person`() {
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
@@ -1182,7 +1187,7 @@ class LicenceCreationServiceTest {
         lastName = "Y",
       )
 
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
       whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
@@ -1207,37 +1212,6 @@ class LicenceCreationServiceTest {
 
   private companion object {
     val prisonNumber = "NOMSID"
-
-    val aPrisonerSearchResult = PrisonerSearchPrisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "123456",
-      status = "ACTIVE IN",
-      mostSeriousOffence = "Robbery",
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      homeDetentionCurfewEligibilityDate = null,
-      releaseDate = LocalDate.of(2021, 10, 22),
-      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      paroleEligibilityDate = null,
-      actualParoleDate = null,
-      postRecallReleaseDate = null,
-      legalStatus = "SENTENCED",
-      indeterminateSentence = false,
-      recall = false,
-      prisonId = "MDI",
-      bookNumber = "12345A",
-      firstName = "Bob",
-      middleNames = null,
-      lastName = "Mortimar",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      conditionalReleaseDateOverrideDate = null,
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = null,
-      croNumber = null,
-    )
-
     val anOffenderDetailResult = OffenderDetail(
       offenderId = 1L,
       otherIds = OtherIds(

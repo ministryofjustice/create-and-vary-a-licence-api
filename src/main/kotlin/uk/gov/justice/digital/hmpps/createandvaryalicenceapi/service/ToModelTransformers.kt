@@ -6,6 +6,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -541,3 +543,39 @@ fun transformToApprovedLicenceSummary(licence: EntityLicence): ApprovedLicenceSu
     submittedByFullName = licence.getSubmittedByFullName(),
   )
 }
+
+fun PrisonerSearchPrisoner.toPrisoner() = Prisoner(
+  prisonerNumber = this.prisonerNumber,
+  pncNumber = this.pncNumber,
+  croNumber = this.croNumber,
+  bookingId = this.bookingId,
+  bookNumber = this.bookNumber,
+  firstName = this.firstName,
+  middleNames = this.middleNames,
+  lastName = this.lastName,
+  dateOfBirth = this.dateOfBirth,
+  status = this.status,
+  prisonId = this.prisonId,
+  prisonName = this.prisonName,
+  legalStatus = this.legalStatus,
+  imprisonmentStatus = this.imprisonmentStatus,
+  imprisonmentStatusDescription = this.imprisonmentStatusDescription,
+  mostSeriousOffence = this.mostSeriousOffence,
+  recall = this.recall,
+  indeterminateSentence = this.indeterminateSentence,
+  sentenceStartDate = this.sentenceStartDate,
+  releaseDate = this.releaseDate,
+  confirmedReleaseDate = this.confirmedReleaseDate,
+  sentenceExpiryDate = this.sentenceExpiryDate,
+  licenceExpiryDate = this.licenceExpiryDate,
+  homeDetentionCurfewEligibilityDate = this.homeDetentionCurfewEligibilityDate,
+  homeDetentionCurfewActualDate = this.homeDetentionCurfewActualDate,
+  homeDetentionCurfewEndDate = this.homeDetentionCurfewEndDate,
+  topupSupervisionStartDate = this.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
+  paroleEligibilityDate = this.paroleEligibilityDate,
+  postRecallReleaseDate = this.postRecallReleaseDate,
+  conditionalReleaseDate = this.conditionalReleaseDate,
+  actualParoleDate = this.actualParoleDate,
+  releaseOnTemporaryLicenceDate = this.releaseOnTemporaryLicenceDate,
+)
