@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.time.Clock
@@ -21,6 +22,7 @@ class TimeOutLicencesService(
   private val releaseDateService: ReleaseDateService,
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
+  private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
 ) {
 
@@ -32,7 +34,7 @@ class TimeOutLicencesService(
   fun timeOutLicences() {
     log.info("Job to runTimeOutLicencesService started")
     val jobExecutionDate = LocalDate.now(clock)
-    if (releaseDateService.isBankHolidayOrWeekend(jobExecutionDate)) {
+    if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
     val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut()

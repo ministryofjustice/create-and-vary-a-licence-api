@@ -10,16 +10,15 @@ import java.time.LocalDate
 
 @Service
 class ReleaseDateService(
-  private val bankHolidayService: BankHolidayService,
   private val clock: Clock,
+  private val workingDaysService: WorkingDaysService,
   @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
-  @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:6}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 6,
+  @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
   @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:3}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int = 3,
 ) {
 
   fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
-    return generateSequence(LocalDate.now(now ?: clock)) { it.plusDays(1) }
-      .filterNot { isBankHolidayOrWeekend(it) }
+    return workingDaysService.workingDaysAfter(LocalDate.now(now ?: clock))
       .take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus)
       .last()
   }
@@ -41,7 +40,7 @@ class ReleaseDateService(
   }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
-    return getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate, ::isEligibleForEarlyRelease)
+    return getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate)
   }
 
   fun isLateAllocationWarningRequired(releaseDate: LocalDate?): Boolean {
@@ -49,40 +48,25 @@ class ReleaseDateService(
     val warningThreshold = getEarliestDateBefore(
       maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
       releaseDate,
-      ::isBankHolidayOrWeekend,
     )
     return LocalDate.now(clock) >= warningThreshold
   }
 
-  /** Friday is not considered as weekend */
-  fun isBankHolidayOrWeekend(releaseDate: LocalDate?): Boolean {
-    val dayOfWeek = releaseDate?.dayOfWeek
-    if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-      return true
-    }
-    val listOfBankHolidays: List<LocalDate> = bankHolidayService.getBankHolidaysForEnglandAndWales()
-    return listOfBankHolidays.contains(releaseDate)
-  }
-
   /** Friday is also considered as weekend */
   fun isEligibleForEarlyRelease(releaseDate: LocalDate): Boolean {
-    val listOfBankHolidays: List<LocalDate> = bankHolidayService.getBankHolidaysForEnglandAndWales()
-    val dayOfWeek = releaseDate.dayOfWeek
-    if (dayOfWeek == DayOfWeek.FRIDAY || dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-      return true
-    }
-    return listOfBankHolidays.contains(releaseDate)
+    return workingDaysService.isNonWorkingDay(
+      releaseDate,
+      listOf(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
+    )
   }
 
   private fun getEarliestDateBefore(
     days: Int,
     releaseDate: LocalDate,
-    isEligibleForEarlyRelease: (input: LocalDate) -> Boolean,
-  ): LocalDate =
-    generateSequence(releaseDate) { it.minusDays(1) }
-      .filterNot { isEligibleForEarlyRelease(it) }
-      .take(days)
-      .last()
+  ): LocalDate = workingDaysService.workingDaysBefore(releaseDate)
+    .filterNot { it.dayOfWeek == DayOfWeek.FRIDAY }
+    .take(days)
+    .last()
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

@@ -34,20 +34,6 @@ class WorkingDaysServiceTest {
       val isWeekend = service.isWeekend(today)
       assertThat(isWeekend).isFalse()
     }
-
-    @Test
-    fun `is date on the early release weekend`() {
-      val today = LocalDate.of(2024, 3, 22)
-      val isERWeekend = service.isWeekend(today, true)
-      assertThat(isERWeekend).isTrue()
-    }
-
-    @Test
-    fun `is date not on the early release weekend`() {
-      val today = LocalDate.of(2024, 3, 21)
-      val isERWeekend = service.isWeekend(today, true)
-      assertThat(isERWeekend).isFalse()
-    }
   }
 
   @Nested
@@ -75,185 +61,96 @@ class WorkingDaysServiceTest {
   }
 
   @Nested
-  inner class `next working day` {
+  inner class `working days after a date` {
     @Test
     fun `get next working day on a weekday`() {
       val today = LocalDate.of(2024, 3, 21)
-      val nextWorkingDay = service.getNextWorkingDay(today)
+      val nextWorkingDay = service.workingDaysAfter(today).take(1).first()
       assertThat(LocalDate.of(2024, 3, 22)).isEqualTo(nextWorkingDay)
     }
 
     @Test
     fun `get next working day on a Friday`() {
       val today = LocalDate.of(2024, 3, 22)
-      val nextWorkingDay = service.getNextWorkingDay(today)
+      val nextWorkingDay = service.workingDaysAfter(today).take(1).first()
       assertThat(LocalDate.of(2024, 3, 25)).isEqualTo(nextWorkingDay)
     }
 
     @Test
     fun `get next working day on a bank holiday`() {
       val today = LocalDate.of(2024, 5, 3)
-      val nextWorkingDay = service.getNextWorkingDay(today)
+      val nextWorkingDay = service.workingDaysAfter(today).take(1).first()
       assertThat(LocalDate.of(2024, 5, 7)).isEqualTo(nextWorkingDay)
     }
 
     @Test
     fun `get next working day on a multi day bank holiday`() {
       val today = LocalDate.of(2024, 3, 28)
-      val nextWorkingDay = service.getNextWorkingDay(today)
+      val nextWorkingDay = service.workingDaysAfter(today).take(1).first()
       assertThat(LocalDate.of(2024, 4, 2)).isEqualTo(nextWorkingDay)
+    }
+
+    @Test
+    fun `check sequence is made up of only working days`() {
+      val today = LocalDate.of(2024, 3, 21)
+      val nextWorkingDays = service.workingDaysAfter(today).take(3)
+      nextWorkingDays.forEach {
+        assertThat(service.isNonWorkingDay(it)).isFalse()
+      }
+      assertThat(nextWorkingDays.toList()).isEqualTo(
+        listOf(
+          LocalDate.of(2024, 3, 22),
+          LocalDate.of(2024, 3, 25),
+          LocalDate.of(2024, 3, 26),
+        ),
+      )
     }
   }
 
   @Nested
-  inner class `previous working day` {
+  inner class `working days before a date` {
     @Test
     fun `get previous working day on a weekday`() {
       val today = LocalDate.of(2024, 3, 21)
-      val previousWorkingDay = service.getPreviousWorkingDay(today)
+      val previousWorkingDay = service.workingDaysBefore(today).take(1).first()
       assertThat(LocalDate.of(2024, 3, 20)).isEqualTo(previousWorkingDay)
     }
 
     @Test
     fun `get previous working day on a Monday`() {
       val today = LocalDate.of(2024, 3, 25)
-      val previousWorkingDay = service.getPreviousWorkingDay(today)
+      val previousWorkingDay = service.workingDaysBefore(today).take(1).first()
       assertThat(LocalDate.of(2024, 3, 22)).isEqualTo(previousWorkingDay)
     }
 
     @Test
     fun `get previous working day on a bank holiday`() {
       val today = LocalDate.of(2024, 5, 7)
-      val previousWorkingDay = service.getPreviousWorkingDay(today)
+      val previousWorkingDay = service.workingDaysBefore(today).take(1).first()
       assertThat(LocalDate.of(2024, 5, 3)).isEqualTo(previousWorkingDay)
     }
 
     @Test
     fun `get previous working day on a multi day bank holiday`() {
       val today = LocalDate.of(2024, 4, 2)
-      val previousWorkingDay = service.getPreviousWorkingDay(today)
+      val previousWorkingDay = service.workingDaysBefore(today).take(1).first()
       assertThat(LocalDate.of(2024, 3, 28)).isEqualTo(previousWorkingDay)
     }
-  }
-
-  @Nested
-  inner class `add working days` {
-    @Test
-    fun `add working days`() {
-      val today = LocalDate.of(2024, 3, 20)
-      val date = service.addWorkingDays(today, 2)
-      assertThat(LocalDate.of(2024, 3, 22)).isEqualTo(date)
-    }
 
     @Test
-    fun `add working days on Friday`() {
-      val today = LocalDate.of(2024, 3, 22)
-      val date = service.addWorkingDays(today, 2)
-      assertThat(LocalDate.of(2024, 3, 26)).isEqualTo(date)
-    }
-
-    @Test
-    fun `add working days over Easter bank holiday`() {
-      val today = LocalDate.of(2024, 3, 28)
-      val date = service.addWorkingDays(today, 2)
-      assertThat(LocalDate.of(2024, 4, 3)).isEqualTo(date)
-    }
-
-    @Test
-    fun `add working days over multiple Christmas bank holidays`() {
-      val today = LocalDate.of(2024, 12, 20)
-      val date = service.addWorkingDays(today, 10)
-      assertThat(LocalDate.of(2025, 1, 8)).isEqualTo(date)
-    }
-  }
-
-  @Nested
-  inner class `subtract working days` {
-    @Test
-    fun `subtract working days`() {
-      val today = LocalDate.of(2024, 3, 20)
-      val date = service.subWorkingDays(today, 2)
-      assertThat(LocalDate.of(2024, 3, 18)).isEqualTo(date)
-    }
-
-    @Test
-    fun `subtract working days on Monday`() {
-      val today = LocalDate.of(2024, 3, 18)
-      val date = service.subWorkingDays(today, 2)
-      assertThat(LocalDate.of(2024, 3, 14)).isEqualTo(date)
-    }
-
-    @Test
-    fun `subtract working days over Easter bank holiday`() {
-      val today = LocalDate.of(2024, 4, 3)
-      val date = service.subWorkingDays(today, 2)
-      assertThat(LocalDate.of(2024, 3, 28)).isEqualTo(date)
-    }
-
-    @Test
-    fun `subtract working days over multiple Christmas bank holidays`() {
-      val today = LocalDate.of(2025, 1, 8)
-      val date = service.subWorkingDays(today, 10)
-      assertThat(LocalDate.of(2024, 12, 20)).isEqualTo(date)
-    }
-  }
-
-  @Nested
-  inner class `working date ranges` {
-    @Test
-    fun `get working days range in the future`() {
-      val today = LocalDate.of(2024, 3, 20)
-      val dates = service.getWorkingDaysRange(today, 2)
-      assertThat(listOf(LocalDate.of(2024, 3, 21), LocalDate.of(2024, 3, 22))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the past`() {
-      val today = LocalDate.of(2024, 3, 20)
-      val dates = service.getWorkingDaysRange(today, 2, true)
-      assertThat(listOf(LocalDate.of(2024, 3, 18), LocalDate.of(2024, 3, 19))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the future on Friday`() {
-      val today = LocalDate.of(2024, 3, 22)
-      val dates = service.getWorkingDaysRange(today, 2)
-      assertThat(listOf(LocalDate.of(2024, 3, 25), LocalDate.of(2024, 3, 26))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the past on Monday`() {
-      val today = LocalDate.of(2024, 3, 25)
-      val dates = service.getWorkingDaysRange(today, 2, true)
-      assertThat(listOf(LocalDate.of(2024, 3, 21), LocalDate.of(2024, 3, 22))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the future over a bank holiday`() {
-      val today = LocalDate.of(2024, 5, 3)
-      val dates = service.getWorkingDaysRange(today, 2)
-      assertThat(listOf(LocalDate.of(2024, 5, 7), LocalDate.of(2024, 5, 8))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the past over a bank holiday`() {
-      val today = LocalDate.of(2024, 5, 7)
-      val dates = service.getWorkingDaysRange(today, 2, true)
-      assertThat(listOf(LocalDate.of(2024, 5, 2), LocalDate.of(2024, 5, 3))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the future over a multi bank holiday`() {
-      val today = LocalDate.of(2024, 3, 28)
-      val dates = service.getWorkingDaysRange(today, 2)
-      assertThat(listOf(LocalDate.of(2024, 4, 2), LocalDate.of(2024, 4, 3))).isEqualTo(dates)
-    }
-
-    @Test
-    fun `get working days range in the past over a multi bank holiday`() {
-      val today = LocalDate.of(2024, 4, 2)
-      val dates = service.getWorkingDaysRange(today, 2, true)
-      assertThat(listOf(LocalDate.of(2024, 3, 27), LocalDate.of(2024, 3, 28))).isEqualTo(dates)
+    fun `check sequence is made up of only working days`() {
+      val today = LocalDate.of(2024, 3, 21)
+      val previousWorkingDays = service.workingDaysBefore(today).take(3)
+      previousWorkingDays.forEach {
+        assertThat(service.isNonWorkingDay(it)).isFalse()
+      }
+      assertThat(previousWorkingDays.toList()).isEqualTo(
+        listOf(
+          LocalDate.of(2024, 3, 20),
+          LocalDate.of(2024, 3, 19),
+          LocalDate.of(2024, 3, 18),
+        ),
+      )
     }
   }
 

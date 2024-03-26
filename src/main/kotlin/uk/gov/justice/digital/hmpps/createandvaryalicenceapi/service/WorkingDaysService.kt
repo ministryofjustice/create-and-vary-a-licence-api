@@ -7,66 +7,37 @@ import java.time.LocalDate
 @Service
 class WorkingDaysService(private val bankHolidayService: BankHolidayService) {
 
-  fun addWorkingDays(date: LocalDate, workingDays: Int, isEarlyReleaseWeekend: Boolean = false): LocalDate {
-    var adjustedDate = date
-    repeat(workingDays) {
-      adjustedDate = getNextWorkingDay(adjustedDate, isEarlyReleaseWeekend)
-    }
-    return adjustedDate
-  }
-
-  fun subWorkingDays(date: LocalDate, workingDays: Int, isEarlyReleaseWeekend: Boolean = false): LocalDate {
-    var adjustedDate = date
-    repeat(workingDays) {
-      adjustedDate = getPreviousWorkingDay(adjustedDate, isEarlyReleaseWeekend)
-    }
-    return adjustedDate
-  }
-
-  fun getWorkingDaysRange(
+  fun workingDaysAfter(
     date: LocalDate,
-    workingDaysRequired: Int,
-    isPastRangeRequired: Boolean = false,
-    isEarlyReleaseWeekend: Boolean = false,
-  ): List<LocalDate> {
-    var adjustedDate = date
-    val workingDays = mutableListOf<LocalDate>()
-
-    repeat(workingDaysRequired) {
-      adjustedDate = if (isPastRangeRequired) {
-        getPreviousWorkingDay(adjustedDate, isEarlyReleaseWeekend)
-      } else {
-        getNextWorkingDay(adjustedDate, isEarlyReleaseWeekend)
-      }
-      workingDays.add(adjustedDate)
-    }
-
-    return workingDays.sorted().toList()
+  ): Sequence<LocalDate> {
+    return generateSequence(date) { it.nextWorkingDay() }.drop(1)
   }
 
-  fun isWeekend(date: LocalDate, isEarlyReleaseWeekend: Boolean = false): Boolean {
-    val weekend = when (isEarlyReleaseWeekend) {
-      true -> listOf(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
-      else -> listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
-    }
+  fun workingDaysBefore(
+    date: LocalDate,
+  ): Sequence<LocalDate> {
+    return generateSequence(date) { it.previousWorkingDay() }.drop(1)
+  }
+
+  fun isWeekend(date: LocalDate, weekend: List<DayOfWeek> = listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)): Boolean {
     return date.dayOfWeek in weekend
   }
 
-  fun isNonWorkingDay(date: LocalDate, isEarlyReleaseWeekend: Boolean = false): Boolean {
-    return isWeekend(date, isEarlyReleaseWeekend) || getBankHolidays().contains(date)
+  fun isNonWorkingDay(date: LocalDate, weekend: List<DayOfWeek> = listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)): Boolean {
+    return isWeekend(date, weekend) || getBankHolidays().contains(date)
   }
 
-  fun getNextWorkingDay(date: LocalDate, isEarlyReleaseWeekend: Boolean = false): LocalDate {
-    var adjustedDate = date.plusDays(1)
-    while (isNonWorkingDay(adjustedDate, isEarlyReleaseWeekend)) {
+  fun LocalDate.nextWorkingDay(): LocalDate {
+    var adjustedDate = this.plusDays(1)
+    while (isNonWorkingDay(adjustedDate)) {
       adjustedDate = adjustedDate.plusDays(1)
     }
     return adjustedDate
   }
 
-  fun getPreviousWorkingDay(date: LocalDate, isEarlyReleaseWeekend: Boolean = false): LocalDate {
-    var adjustedDate = date.minusDays(1)
-    while (isNonWorkingDay(adjustedDate, isEarlyReleaseWeekend)) {
+  fun LocalDate.previousWorkingDay(): LocalDate {
+    var adjustedDate = this.minusDays(1)
+    while (isNonWorkingDay(adjustedDate)) {
       adjustedDate = adjustedDate.minusDays(1)
     }
     return adjustedDate
