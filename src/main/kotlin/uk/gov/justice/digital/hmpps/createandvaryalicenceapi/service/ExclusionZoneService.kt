@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.apache.pdfbox.Loader
+import org.apache.pdfbox.io.RandomAccessReadBuffer
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
 import org.apache.pdfbox.rendering.PDFRenderer
@@ -149,7 +151,7 @@ class ExclusionZoneService(
   fun extractFullSizeImageJpeg(fileStream: InputStream): ByteArray? {
     var pdfDoc: PDDocument? = null
     try {
-      pdfDoc = PDDocument.load(fileStream)
+      pdfDoc = Loader.loadPDF(RandomAccessReadBuffer(fileStream))
       val renderer = PDFRenderer(pdfDoc)
       val firstImage = renderer.renderImage(0)
       val croppedImage = firstImage.getSubimage(50, 50, firstImage.width - 100, firstImage.height - 100)
@@ -173,7 +175,7 @@ class ExclusionZoneService(
   fun extractDescription(fileStream: InputStream): String? {
     var pdfDoc: PDDocument? = null
     try {
-      pdfDoc = PDDocument.load(fileStream)
+      pdfDoc = Loader.loadPDF(RandomAccessReadBuffer(fileStream))
       val stripper = PDFTextStripper()
       stripper.sortByPosition = true
       stripper.startPage = 2
