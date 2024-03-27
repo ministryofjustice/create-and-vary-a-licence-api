@@ -59,28 +59,22 @@ class ReleaseDateService(
 
   fun getHardStopDate(licence: Licence): LocalDate? {
     val actualReleaseDate = licence.actualReleaseDate
-    val conditionalReleaseDate = licence.conditionalReleaseDate
+    val conditionalReleaseDate = licence.conditionalReleaseDate ?: return null
 
-    if (conditionalReleaseDate == null && actualReleaseDate == null) {
-      return null
+    val hardStopDateUsingCrd = workingDaysService.workingDaysBefore(conditionalReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
+
+    if (actualReleaseDate == null) {
+      return hardStopDateUsingCrd
     }
 
-    if (conditionalReleaseDate != null) {
-      val hardStopDateUsingCrd = workingDaysService.workingDaysBefore(conditionalReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
-      if (actualReleaseDate != null) {
-        val hardStopDateUsingArd = workingDaysService.workingDaysBefore(actualReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
-        val isNotAnEarlyRelease = actualReleaseDate >= workingDaysService.workingDaysBefore(conditionalReleaseDate).take(1).last()
-        val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
-        return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
-          hardStopDateUsingArd
-        } else {
-          hardStopDateUsingCrd
-        }
-      } else {
-        return hardStopDateUsingCrd
-      }
+    val hardStopDateUsingArd = workingDaysService.workingDaysBefore(actualReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
+    val isNotAnEarlyRelease = actualReleaseDate >= workingDaysService.workingDaysBefore(conditionalReleaseDate).take(1).last()
+    val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
+
+    return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
+      hardStopDateUsingArd
     } else {
-      return null
+      hardStopDateUsingCrd
     }
   }
 
