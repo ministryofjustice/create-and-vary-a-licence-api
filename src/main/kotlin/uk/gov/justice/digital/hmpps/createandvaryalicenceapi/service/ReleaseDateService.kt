@@ -61,22 +61,29 @@ class ReleaseDateService(
     val actualReleaseDate = licence.actualReleaseDate
     val conditionalReleaseDate = licence.conditionalReleaseDate ?: return null
 
-    val hardStopDateUsingCrd = workingDaysService.workingDaysBefore(conditionalReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
+    val date = chooseDateForHardstop(actualReleaseDate, conditionalReleaseDate)
 
+    return twoWorkingDaysBefore(date)
+  }
+
+  private fun chooseDateForHardstop(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate): LocalDate {
     if (actualReleaseDate == null) {
-      return hardStopDateUsingCrd
+      return conditionalReleaseDate
     }
 
-    val hardStopDateUsingArd = workingDaysService.workingDaysBefore(actualReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
-    val isNotAnEarlyRelease = actualReleaseDate >= workingDaysService.workingDaysBefore(conditionalReleaseDate).take(1).last()
+    val isNotAnEarlyRelease = actualReleaseDate >= oneWorkingDayBefore(conditionalReleaseDate)
     val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
 
     return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
-      hardStopDateUsingArd
+      actualReleaseDate
     } else {
-      hardStopDateUsingCrd
+      conditionalReleaseDate
     }
   }
+
+  private fun oneWorkingDayBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(1).last()
+
+  private fun twoWorkingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(2).last()
 
   private fun getEarliestDateBefore(
     days: Int,
