@@ -29,7 +29,7 @@ class ReleaseDateService(
     val today = LocalDate.now(now)
 
     if (hardStopDate == null) {
-      log.warn("Licence with id: ${licence.id} has no CRD or ARD")
+      log.warn("Licence with id: ${licence.id} has no CRD")
       return false
     }
 
