@@ -25,18 +25,15 @@ class ReleaseDateService(
 
   fun isInHardStopPeriod(licence: Licence, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val endOfHardStopPeriod = getCutOffDateForLicenceTimeOut(now)
-    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
+    val hardStopDate = getHardStopDate(licence)
+    val today = LocalDate.now(now)
 
-    if (releaseDate == null) {
+    if (hardStopDate == null) {
       log.warn("Licence with id: ${licence.id} has no CRD or ARD")
       return false
     }
-    return if (releaseDate < LocalDate.now(now)) {
-      false
-    } else {
-      releaseDate <= endOfHardStopPeriod
-    }
+
+    return today >= hardStopDate && today <= licence.licenceStartDate
   }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
@@ -58,6 +55,33 @@ class ReleaseDateService(
       return true
     }
     return workingDaysService.isNonWorkingDay(releaseDate)
+  }
+
+  fun getHardStopDate(licence: Licence): LocalDate? {
+    val actualReleaseDate = licence.actualReleaseDate
+    val conditionalReleaseDate = licence.conditionalReleaseDate
+
+    if (conditionalReleaseDate == null && actualReleaseDate == null) {
+      return null
+    }
+
+    if (conditionalReleaseDate != null) {
+      val hardStopDateUsingCrd = workingDaysService.workingDaysBefore(conditionalReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
+      if (actualReleaseDate != null) {
+        val hardStopDateUsingArd = workingDaysService.workingDaysBefore(actualReleaseDate).take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus).last()
+        val isNotAnEarlyRelease = actualReleaseDate >= workingDaysService.workingDaysBefore(conditionalReleaseDate).take(1).last()
+        val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
+        return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
+          hardStopDateUsingArd
+        } else {
+          hardStopDateUsingCrd
+        }
+      } else {
+        return hardStopDateUsingCrd
+      }
+    } else {
+      return null
+    }
   }
 
   private fun getEarliestDateBefore(

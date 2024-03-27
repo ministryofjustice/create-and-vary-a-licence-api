@@ -251,7 +251,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = null,
       )
 
-      assertFalse(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
     }
 
     @Test
@@ -261,10 +261,10 @@ class ReleaseDateServiceTest {
 
       val licence = TestData.createCrdLicence().copy(
         actualReleaseDate = cutOff.plusDays(1),
-        conditionalReleaseDate = null,
+        conditionalReleaseDate = cutOff.plusDays(1),
       )
 
-      assertFalse(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
     }
 
     @Test
@@ -274,10 +274,10 @@ class ReleaseDateServiceTest {
 
       val licence = TestData.createCrdLicence().copy(
         actualReleaseDate = cutOff.minusDays(1),
-        conditionalReleaseDate = null,
+        conditionalReleaseDate = cutOff.minusDays(1),
       )
 
-      assertTrue(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
     }
 
     @Test
@@ -286,10 +286,10 @@ class ReleaseDateServiceTest {
 
       val licence = TestData.createCrdLicence().copy(
         actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
-        conditionalReleaseDate = null,
+        conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
       )
 
-      assertTrue(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
     }
 
     @Test
@@ -298,10 +298,10 @@ class ReleaseDateServiceTest {
 
       val licence = TestData.createCrdLicence().copy(
         actualReleaseDate = LocalDate.now(now),
-        conditionalReleaseDate = null,
+        conditionalReleaseDate = LocalDate.now(now),
       )
 
-      assertTrue(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
     }
 
     @Test
@@ -309,11 +309,12 @@ class ReleaseDateServiceTest {
       val now = createClock("2018-03-12T00:00:00Z")
 
       val licence = TestData.createCrdLicence().copy(
+        licenceStartDate = LocalDate.now(now).minusDays(1),
         actualReleaseDate = LocalDate.now(now).minusDays(1),
-        conditionalReleaseDate = null,
+        conditionalReleaseDate = LocalDate.now(now).minusDays(1),
       )
 
-      assertFalse(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
     }
 
     @Test
@@ -325,7 +326,19 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
       )
 
-      assertTrue(service.isInHardStopPeriod(licence, now))
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
+    }
+
+    @Test
+    fun `returns false if CRD is absent`() {
+      val now = createClock("2018-03-12T00:00:00Z")
+
+      val licence = TestData.createCrdLicence().copy(
+        actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
+        conditionalReleaseDate = null,
+      )
+
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
     }
   }
 
