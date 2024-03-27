@@ -18,25 +18,20 @@ class ReleaseDateService(
 ) {
 
   fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
-    return workingDaysService.workingDaysAfter(LocalDate.now(now ?: clock))
-      .take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus)
-      .last()
+    return maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus.workingDaysAfter(LocalDate.now(now ?: clock))
   }
 
   fun isInHardStopPeriod(licence: Licence, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val endOfHardStopPeriod = getCutOffDateForLicenceTimeOut(now)
-    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
+    val hardStopDate = getHardStopDate(licence)
+    val today = LocalDate.now(now)
 
-    if (releaseDate == null) {
-      log.warn("Licence with id: ${licence.id} has no CRD or ARD")
+    if (hardStopDate == null) {
+      log.warn("Licence with id: ${licence.id} has no CRD")
       return false
     }
-    return if (releaseDate < LocalDate.now(now)) {
-      false
-    } else {
-      releaseDate <= endOfHardStopPeriod
-    }
+
+    return today >= hardStopDate && today <= licence.licenceStartDate
   }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
@@ -59,6 +54,34 @@ class ReleaseDateService(
     }
     return workingDaysService.isNonWorkingDay(releaseDate)
   }
+
+  fun getHardStopDate(licence: Licence): LocalDate? {
+    val actualReleaseDate = licence.actualReleaseDate
+    val conditionalReleaseDate = licence.conditionalReleaseDate ?: return null
+
+    val date = chooseDateForHardstop(actualReleaseDate, conditionalReleaseDate)
+
+    return 2.workingDaysBefore(date)
+  }
+
+  private fun chooseDateForHardstop(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate): LocalDate {
+    if (actualReleaseDate == null) {
+      return conditionalReleaseDate
+    }
+
+    val isNotAnEarlyRelease = actualReleaseDate >= 1.workingDaysBefore(conditionalReleaseDate)
+    val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
+
+    return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
+      actualReleaseDate
+    } else {
+      conditionalReleaseDate
+    }
+  }
+
+  private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
+
+  private fun Int.workingDaysAfter(date: LocalDate) = workingDaysService.workingDaysAfter(date).take(this).last()
 
   private fun getEarliestDateBefore(
     days: Int,
