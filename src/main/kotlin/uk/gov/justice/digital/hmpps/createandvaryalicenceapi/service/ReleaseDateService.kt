@@ -18,9 +18,7 @@ class ReleaseDateService(
 ) {
 
   fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
-    return workingDaysService.workingDaysAfter(LocalDate.now(now ?: clock))
-      .take(maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus)
-      .last()
+    return maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus.workingDaysAfter(LocalDate.now(now ?: clock))
   }
 
   fun isInHardStopPeriod(licence: Licence, overrideClock: Clock? = null): Boolean {
@@ -63,7 +61,7 @@ class ReleaseDateService(
 
     val date = chooseDateForHardstop(actualReleaseDate, conditionalReleaseDate)
 
-    return twoWorkingDaysBefore(date)
+    return 2.workingDaysBefore(date)
   }
 
   private fun chooseDateForHardstop(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate): LocalDate {
@@ -71,7 +69,7 @@ class ReleaseDateService(
       return conditionalReleaseDate
     }
 
-    val isNotAnEarlyRelease = actualReleaseDate >= oneWorkingDayBefore(conditionalReleaseDate)
+    val isNotAnEarlyRelease = actualReleaseDate >= 1.workingDaysBefore(conditionalReleaseDate)
     val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
 
     return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
@@ -81,9 +79,9 @@ class ReleaseDateService(
     }
   }
 
-  private fun oneWorkingDayBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(1).last()
+  private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
 
-  private fun twoWorkingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(2).last()
+  private fun Int.workingDaysAfter(date: LocalDate) = workingDaysService.workingDaysAfter(date).take(this).last()
 
   private fun getEarliestDateBefore(
     days: Int,
