@@ -20,13 +20,16 @@ import java.time.LocalDate
 
 class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service = CaseloadService(prisonerSearchApiClient)
+  private val service = CaseloadService(prisonerSearchApiClient, releaseDateService)
 
   @BeforeEach
   fun reset() {
     reset(prisonerSearchApiClient)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
+    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
   }
 
   @Test
@@ -37,8 +40,8 @@ class CaseloadServiceTest {
       CaseloadItem(
         cvl = CvlFields(
           licenceType = LicenceType.AP,
-          hardStopDate = null,
-          hardStopWarningDate = null,
+          hardStopDate = LocalDate.of(2023, 10, 12),
+          hardStopWarningDate = LocalDate.of(2023, 10, 11),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -88,8 +91,8 @@ class CaseloadServiceTest {
       CaseloadItem(
         cvl = CvlFields(
           licenceType = LicenceType.AP,
-          hardStopDate = null,
-          hardStopWarningDate = null,
+          hardStopDate = LocalDate.of(2023, 10, 12),
+          hardStopWarningDate = LocalDate.of(2023, 10, 11),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

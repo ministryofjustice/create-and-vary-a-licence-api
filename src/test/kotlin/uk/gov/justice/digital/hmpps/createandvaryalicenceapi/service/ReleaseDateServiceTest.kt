@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -246,7 +247,7 @@ class ReleaseDateServiceTest {
     fun `licence is not in hard stop period if there is no release date`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = null,
         conditionalReleaseDate = null,
       )
@@ -259,7 +260,7 @@ class ReleaseDateServiceTest {
       val now = createClock("2018-03-12T00:00:00Z")
       val cutOff = service.getCutOffDateForLicenceTimeOut(now)
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = cutOff.plusDays(1),
         conditionalReleaseDate = cutOff.plusDays(1),
       )
@@ -272,7 +273,7 @@ class ReleaseDateServiceTest {
       val now = createClock("2018-03-12T00:00:00Z")
       val cutOff = service.getCutOffDateForLicenceTimeOut(now)
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = cutOff.minusDays(1),
         conditionalReleaseDate = cutOff.minusDays(1),
       )
@@ -284,7 +285,7 @@ class ReleaseDateServiceTest {
     fun `licence is in hard stop period if ARD is at the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
         conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
       )
@@ -296,7 +297,7 @@ class ReleaseDateServiceTest {
     fun `licence is still in hard stop period on release day`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = LocalDate.now(now),
         conditionalReleaseDate = LocalDate.now(now),
       )
@@ -308,7 +309,7 @@ class ReleaseDateServiceTest {
     fun `licence is still in hard stop period after release`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         licenceStartDate = LocalDate.now(now).minusDays(1),
         actualReleaseDate = LocalDate.now(now).minusDays(1),
         conditionalReleaseDate = LocalDate.now(now).minusDays(1),
@@ -321,7 +322,7 @@ class ReleaseDateServiceTest {
     fun `licence is in hard stop period if ARD is absent but CRD is at the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = null,
         conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
       )
@@ -333,7 +334,7 @@ class ReleaseDateServiceTest {
     fun `returns false if CRD is absent`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
         conditionalReleaseDate = null,
       )
@@ -344,12 +345,11 @@ class ReleaseDateServiceTest {
 
   @Nested
   inner class `Get hard stop date` {
-
     @Test
     fun `should return null if no conditional release date provided`() {
       val actualReleaseDate = LocalDate.parse("2024-03-27")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = actualReleaseDate,
         conditionalReleaseDate = null,
       )
@@ -362,7 +362,7 @@ class ReleaseDateServiceTest {
     fun `should return CRD - 2 working days (2024-03-25) if no actual release date provided`() {
       val conditionalReleaseDate = LocalDate.parse("2024-03-27")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = null,
         conditionalReleaseDate = conditionalReleaseDate,
       )
@@ -375,7 +375,7 @@ class ReleaseDateServiceTest {
     fun `should return ARD - 2 working days (2024-03-25) if ARD is equal to CRD`() {
       val date = LocalDate.parse("2024-03-27")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = date,
         conditionalReleaseDate = date,
       )
@@ -388,7 +388,7 @@ class ReleaseDateServiceTest {
     fun `should return ARD - 2 working days (2024-03-22) if ARD is a day before CRD`() {
       val date = LocalDate.parse("2024-03-27")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = date.minusDays(1),
         conditionalReleaseDate = date,
       )
@@ -401,7 +401,7 @@ class ReleaseDateServiceTest {
     fun `should return CRD - 2 working days (2024-03-25) if ARD is two or more days before CRD`() {
       val date = LocalDate.parse("2024-03-27")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = date.minusDays(2),
         conditionalReleaseDate = date,
       )
@@ -414,13 +414,94 @@ class ReleaseDateServiceTest {
     fun `should return CRD - 2 working days (2024-03-25) if ARD is a day or more after CRD`() {
       val date = LocalDate.parse("2024-03-27")
 
-      val licence = TestData.createCrdLicence().copy(
+      val licence = createCrdLicence().copy(
         actualReleaseDate = date.plusDays(1),
         conditionalReleaseDate = date,
       )
 
       val hardStopDate = service.getHardStopDate(licence)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 25))
+    }
+  }
+
+  @Nested
+  inner class `Get hard stop warning date` {
+    @Test
+    fun `should return null if no conditional release date provided`() {
+      val actualReleaseDate = LocalDate.parse("2024-03-27")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = actualReleaseDate,
+        conditionalReleaseDate = null,
+      )
+
+      val hardStopDate = service.getHardStopWarningDate(licence)
+      assertThat(hardStopDate).isNull()
+    }
+
+    @Test
+    fun `should return CRD - 4 working days (2024-03-21) if no actual release date provided`() {
+      val conditionalReleaseDate = LocalDate.parse("2024-03-27")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = conditionalReleaseDate,
+      )
+
+      val hardStopDate = service.getHardStopWarningDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 21))
+    }
+
+    @Test
+    fun `should return ARD - 4 working days (2024-03-21) if ARD is equal to CRD`() {
+      val date = LocalDate.parse("2024-03-27")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date,
+        conditionalReleaseDate = date,
+      )
+
+      val hardStopDate = service.getHardStopWarningDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 21))
+    }
+
+    @Test
+    fun `should return ARD - 4 working days (2024-03-20) if ARD is a day before CRD`() {
+      val date = LocalDate.parse("2024-03-27")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.minusDays(1),
+        conditionalReleaseDate = date,
+      )
+
+      val hardStopDate = service.getHardStopWarningDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 20))
+    }
+
+    @Test
+    fun `should return CRD - 4 working days (2024-03-21) if ARD is two or more days before CRD`() {
+      val date = LocalDate.parse("2024-03-27")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.minusDays(2),
+        conditionalReleaseDate = date,
+      )
+
+      val hardStopDate = service.getHardStopWarningDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 21))
+    }
+
+    @Test
+    fun `should return CRD - 4 working days (2024-03-21) if ARD is a day or more after CRD`() {
+      val date = LocalDate.parse("2024-03-27")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.plusDays(1),
+        conditionalReleaseDate = date,
+      )
+
+      val hardStopDate = service.getHardStopWarningDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 21))
     }
   }
 

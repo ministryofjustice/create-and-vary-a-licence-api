@@ -68,11 +68,11 @@ abstract class Licence(
   val middleNames: String? = null,
   val surname: String? = null,
   val dateOfBirth: LocalDate? = null,
-  val conditionalReleaseDate: LocalDate? = null,
-  val actualReleaseDate: LocalDate? = null,
+  override val conditionalReleaseDate: LocalDate? = null,
+  override val actualReleaseDate: LocalDate? = null,
   val sentenceStartDate: LocalDate? = null,
   val sentenceEndDate: LocalDate? = null,
-  val licenceStartDate: LocalDate? = null,
+  override val licenceStartDate: LocalDate? = null,
   val licenceExpiryDate: LocalDate? = null,
   val licenceActivatedDate: LocalDateTime? = null,
   val topupSupervisionStartDate: LocalDate? = null,
@@ -132,7 +132,7 @@ abstract class Licence(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
-) {
+) : SentenceDateHolder {
 
   companion object {
     const val SYSTEM_USER = "SYSTEM_USER"
