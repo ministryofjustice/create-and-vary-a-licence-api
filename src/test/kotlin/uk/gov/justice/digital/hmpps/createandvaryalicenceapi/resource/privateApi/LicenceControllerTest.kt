@@ -34,10 +34,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
@@ -317,7 +317,7 @@ class LicenceControllerTest {
 
     whenever(licenceService.findRecentlyApprovedLicences(any())).thenReturn(
       listOf(
-        aLicenceSummary,
+        aLicenceSummaryApproverView,
       ),
     )
 
@@ -338,7 +338,7 @@ class LicenceControllerTest {
       .andReturn()
 
     assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
+      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
 
     verify(licenceService, times(1)).findRecentlyApprovedLicences(prisonCodes)
   }
@@ -552,7 +552,7 @@ class LicenceControllerTest {
       prisonCodes = listOf("AB1", "AB2"),
     )
 
-    whenever(licenceService.getLicencesForApproval(request.prisonCodes)).thenReturn(listOf(anApprovedLicenceSummary))
+    whenever(licenceService.getLicencesForApproval(request.prisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
 
     val result = mvc.perform(
       post("/licence/licences-for-approval")
@@ -564,7 +564,7 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(listOf(anApprovedLicenceSummary)))
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
 
     verify(licenceService, times(1)).getLicencesForApproval(request.prisonCodes)
   }
@@ -685,7 +685,7 @@ class LicenceControllerTest {
     val aStatusUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "X", fullName = "Jon Smith")
 
-    val anApprovedLicenceSummary = ApprovedLicenceSummary(
+    val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
       forename = "Bob",
       surname = "Mortimer",

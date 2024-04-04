@@ -4,8 +4,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
@@ -494,12 +494,12 @@ fun Licence.getSubmittedByFullName(): String? {
   }
 }
 
-fun transformToListOfApprovedLicenceSummaries(licences: List<EntityLicence>): List<ApprovedLicenceSummary> {
+fun transformToListOfLicenceSummariesForApproverView(licences: List<EntityLicence>): List<LicenceSummaryApproverView> {
   return licences.map { licence -> transformToApprovedLicenceSummary(licence) }
 }
 
-fun transformToApprovedLicenceSummary(licence: EntityLicence): ApprovedLicenceSummary {
-  return ApprovedLicenceSummary(
+fun transformToApprovedLicenceSummary(licence: EntityLicence): LicenceSummaryApproverView {
+  return LicenceSummaryApproverView(
     licenceId = licence.id,
     forename = licence.forename,
     surname = licence.surname,

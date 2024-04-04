@@ -15,9 +15,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -397,7 +397,7 @@ class LicenceService(
   @Transactional
   fun findRecentlyApprovedLicences(
     prisonCodes: List<String>,
-  ): List<LicenceSummary> {
+  ): List<LicenceSummaryApproverView> {
     try {
       val releasedAfterDate = LocalDate.now().minusDays(14L)
       val recentActiveAndApprovedLicences =
@@ -412,7 +412,7 @@ class LicenceService(
           it
         }
       }
-      return transformToListOfSummaries(recentlyApprovedLicences)
+      return transformToListOfLicenceSummariesForApproverView(recentlyApprovedLicences)
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }
@@ -987,12 +987,12 @@ class LicenceService(
   }
 
   @Transactional
-  fun getLicencesForApproval(prisons: List<String>?): List<ApprovedLicenceSummary> {
+  fun getLicencesForApproval(prisons: List<String>?): List<LicenceSummaryApproverView> {
     if (prisons.isNullOrEmpty()) {
       return emptyList()
     }
     val licences = licenceRepository.getLicencesReadyForApproval(prisons)
       .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
-    return transformToListOfApprovedLicenceSummaries(licences)
+    return transformToListOfLicenceSummariesForApproverView(licences)
   }
 }
