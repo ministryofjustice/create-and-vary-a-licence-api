@@ -8,8 +8,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Schema(description = "Response object which summarises an approved licence")
-data class ApprovedLicenceSummary(
+@Schema(description = "Response object which summarises an licence for approval view")
+data class LicenceSummaryApproverView(
 
   @Schema(description = "Internal identifier for this licence generated within this service", example = "123344")
   val licenceId: Long,

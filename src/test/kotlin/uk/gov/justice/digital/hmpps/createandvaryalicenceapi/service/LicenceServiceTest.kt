@@ -40,8 +40,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
@@ -63,6 +63,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
@@ -309,13 +310,25 @@ class LicenceServiceTest {
   fun `find recently approved licences matching criteria - returns recently approved licences`() {
     whenever(licenceRepository.getRecentlyApprovedLicences(any(), any())).thenReturn(
       listOf(
-        aRecentlyApprovedLicence,
+        aRecentlyApprovedLicence.copy(
+          statusCode = LicenceStatus.APPROVED,
+          submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
+          submittedBy = com(),
+          updatedBy = com(),
+        ),
       ),
     )
 
     val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
 
-    assertThat(licenceSummaries).isEqualTo(listOf(aRecentlyApprovedLicenceSummary))
+    assertThat(licenceSummaries).isEqualTo(
+      listOf(
+        aRecentlyApprovedLicenceSummary.copy(
+          licenceStatus = LicenceStatus.APPROVED,
+          submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
+        ),
+      ),
+    )
     verify(licenceRepository, times(1)).getRecentlyApprovedLicences(
       anyList(),
       any<LocalDate>(),
@@ -329,7 +342,11 @@ class LicenceServiceTest {
       actualReleaseDate = LocalDate.now().minusDays(1),
       conditionalReleaseDate = LocalDate.now(),
       approvedByName = "jim smith",
+      statusCode = LicenceStatus.INACTIVE,
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+      submittedBy = com(),
+      updatedBy = com(),
+      submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
     val activeVariationLicence = createVariationLicence().copy(
@@ -361,6 +378,10 @@ class LicenceServiceTest {
         aRecentlyApprovedLicenceSummary.copy(
           surname = activeVariationLicence.surname,
           forename = activeVariationLicence.forename,
+          licenceStatus = LicenceStatus.INACTIVE,
+          submittedByFullName = com().fullName,
+          updatedByFullName = com().fullName,
+          submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
         ),
       ),
     )
@@ -2418,7 +2439,7 @@ class LicenceServiceTest {
       verify(licenceRepository).getLicencesReadyForApproval(prisons)
 
       assertThat(approvedLicenceSummaries).hasSize(1)
-      assertThat(approvedLicenceSummaries[0]).isEqualTo(anApprovedLicenceSummary)
+      assertThat(approvedLicenceSummaries[0]).isEqualTo(aLicenceSummaryApproverView)
     }
 
     @Test
@@ -2611,10 +2632,6 @@ class LicenceServiceTest {
       isReviewNeeded = false,
     )
 
-    val aRecentlyApprovedLicenceSummary = aLicenceSummary.copy(
-      actualReleaseDate = LocalDate.now().minusDays(1),
-      conditionalReleaseDate = LocalDate.now(),
-    )
     val someAdditionalConditionData = listOf(
       AdditionalConditionData(
         id = 1,
@@ -2661,7 +2678,7 @@ class LicenceServiceTest {
       lastName = "Test",
     )
 
-    val anApprovedLicenceSummary = ApprovedLicenceSummary(
+    val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
       forename = "Bob",
       surname = "Mortimer",
@@ -2700,6 +2717,11 @@ class LicenceServiceTest {
       isReviewNeeded = false,
       updatedByFullName = "X Y",
       submittedByFullName = "X Y",
+    )
+
+    val aRecentlyApprovedLicenceSummary = aLicenceSummaryApproverView.copy(
+      actualReleaseDate = LocalDate.now().minusDays(1),
+      conditionalReleaseDate = LocalDate.now(),
     )
   }
 }

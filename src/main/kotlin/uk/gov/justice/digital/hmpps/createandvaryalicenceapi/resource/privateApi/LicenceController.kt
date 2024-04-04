@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovedLicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
@@ -280,7 +280,7 @@ class LicenceController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummary::class)),
+            array = ArraySchema(schema = Schema(implementation = LicenceSummaryApproverView::class)),
           ),
         ],
       ),
@@ -309,7 +309,7 @@ class LicenceController(
   fun getRecentlyApprovedLicences(
     @RequestBody @Valid
     body: RecentlyApprovedLicencesRequest,
-  ): List<LicenceSummary> {
+  ): List<LicenceSummaryApproverView> {
     return licenceService.findRecentlyApprovedLicences(
       body.prisonCodes,
     )
@@ -1211,7 +1211,7 @@ class LicenceController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ApprovedLicenceSummary::class)),
+            array = ArraySchema(schema = Schema(implementation = LicenceSummaryApproverView::class)),
           ),
         ],
       ),
@@ -1250,7 +1250,7 @@ class LicenceController(
   fun getLicencesForApproval(
     @Valid @RequestBody
     body: ApproveLicencesRequest,
-  ): List<ApprovedLicenceSummary> {
+  ): List<LicenceSummaryApproverView> {
     return licenceService.getLicencesForApproval(body.prisonCodes)
   }
 }
