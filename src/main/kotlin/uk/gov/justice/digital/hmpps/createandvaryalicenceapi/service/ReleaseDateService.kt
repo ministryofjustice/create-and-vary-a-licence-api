@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -21,17 +20,16 @@ class ReleaseDateService(
     return maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus.workingDaysAfter(LocalDate.now(now ?: clock))
   }
 
-  fun isInHardStopPeriod(licence: Licence, overrideClock: Clock? = null): Boolean {
+  fun isInHardStopPeriod(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
-    val hardStopDate = getHardStopDate(licence)
+    val hardStopDate = getHardStopDate(sentenceDateHolder)
     val today = LocalDate.now(now)
 
     if (hardStopDate == null) {
-      log.warn("Licence with id: ${licence.id} has no CRD")
       return false
     }
 
-    return today >= hardStopDate && today <= licence.licenceStartDate
+    return today >= hardStopDate && today <= sentenceDateHolder.licenceStartDate
   }
 
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
@@ -55,13 +53,18 @@ class ReleaseDateService(
     return workingDaysService.isNonWorkingDay(releaseDate)
   }
 
-  fun getHardStopDate(licence: Licence): LocalDate? {
-    val actualReleaseDate = licence.actualReleaseDate
-    val conditionalReleaseDate = licence.conditionalReleaseDate ?: return null
+  fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
+    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
+    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate ?: return null
 
     val date = chooseDateForHardstop(actualReleaseDate, conditionalReleaseDate)
 
     return 2.workingDaysBefore(date)
+  }
+
+  fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
+    val hardStopDate = getHardStopDate(sentenceDateHolder) ?: return null
+    return 2.workingDaysBefore(hardStopDate)
   }
 
   private fun chooseDateForHardstop(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate): LocalDate {
@@ -90,8 +93,4 @@ class ReleaseDateService(
     .filterNot { it.dayOfWeek == DayOfWeek.FRIDAY }
     .take(days)
     .last()
-
-  companion object {
-    private val log = LoggerFactory.getLogger(this::class.java)
-  }
 }

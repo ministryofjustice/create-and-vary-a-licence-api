@@ -74,11 +74,11 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody!!
 
       with(caseloadItem) {
-        assertThat(prisoner).isNotNull()
+        assertThat(prisoner).isNotNull
         with(cvl) {
           assertThat(licenceType).isEqualTo(LicenceType.AP)
-          assertThat(hardStopDate).isNull()
-          assertThat(hardStopWarningDate).isNull()
+          assertThat(hardStopDate).isNotNull
+          assertThat(hardStopWarningDate).isNotNull
         }
       }
     }
@@ -150,8 +150,8 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(prisoner).isNotNull()
         with(cvl) {
           assertThat(licenceType).isEqualTo(LicenceType.AP)
-          assertThat(hardStopDate).isNull()
-          assertThat(hardStopWarningDate).isNull()
+          assertThat(hardStopDate).isNotNull
+          assertThat(hardStopWarningDate).isNotNull
         }
       }
     }
