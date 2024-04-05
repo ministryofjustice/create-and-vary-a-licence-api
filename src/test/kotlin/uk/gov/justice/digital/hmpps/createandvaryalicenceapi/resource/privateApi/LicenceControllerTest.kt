@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
@@ -160,7 +161,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a CRD licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
+    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -172,14 +173,14 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
+    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
 
     verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
   fun `create a Hard Stop licence`() {
-    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(aLicenceSummary)
+    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -191,7 +192,7 @@ class LicenceControllerTest {
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(aLicenceSummary))
+    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(LicenceCreationResponse(1)))
 
     verify(licenceCreationService, times(1)).createHardStopLicence(aCreateLicenceRequest.nomsId)
   }

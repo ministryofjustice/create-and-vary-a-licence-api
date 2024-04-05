@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Creator
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -51,7 +51,7 @@ class LicenceCreationService(
   }
 
   @Transactional
-  fun createLicence(prisonNumber: String): LicenceSummary {
+  fun createLicence(prisonNumber: String): LicenceCreationResponse {
     if (offenderHasLicenceInFlight(prisonNumber)) {
       throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
@@ -88,11 +88,11 @@ class LicenceCreationService(
 
     recordLicenceCreation(createdBy, createdLicence)
 
-    return transformToLicenceSummary(createdLicence)
+    return LicenceCreationResponse(createdLicence.id)
   }
 
   @Transactional
-  fun createHardStopLicence(prisonNumber: String): LicenceSummary {
+  fun createHardStopLicence(prisonNumber: String): LicenceCreationResponse {
     if (offenderHasLicenceInFlight(prisonNumber)) {
       throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
     }
@@ -138,7 +138,7 @@ class LicenceCreationService(
 
     recordLicenceCreation(createdBy, createdLicence)
 
-    return transformToLicenceSummary(createdLicence)
+    return LicenceCreationResponse(createdLicence.id)
   }
 
   private fun recordLicenceCreation(

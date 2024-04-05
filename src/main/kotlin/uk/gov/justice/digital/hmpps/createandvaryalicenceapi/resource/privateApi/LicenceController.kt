@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
@@ -69,7 +70,7 @@ class LicenceController(
         responseCode = "200",
         description = "Licence created",
         content = [
-          Content(mediaType = "application/json", schema = Schema(implementation = LicenceSummary::class)),
+          Content(mediaType = "application/json", schema = Schema(implementation = LicenceCreationResponse::class)),
         ],
       ),
       ApiResponse(
@@ -97,7 +98,7 @@ class LicenceController(
   fun createLicence(
     @RequestBody @Valid
     request: CreateLicenceRequest,
-  ): LicenceSummary = when (request.type) {
+  ): LicenceCreationResponse = when (request.type) {
     CRD -> licenceCreationService.createLicence(request.nomsId)
     HARD_STOP -> licenceCreationService.createHardStopLicence(request.nomsId)
   }

@@ -388,7 +388,7 @@ class LicenceService(
     try {
       val matchingLicences =
         licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
-      return transformToListOfSummaries(matchingLicences)
+      return matchingLicences.map { it.toSummary() }
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }
@@ -421,7 +421,7 @@ class LicenceService(
   fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
-    return transformToListOfSummaries(matchingLicences)
+    return matchingLicences.map { it.toSummary() }
   }
 
   @Transactional
@@ -519,7 +519,7 @@ class LicenceService(
     val creator = getCommunityOffenderManagerForCurrentUser()
     val licenceCopy = LicenceFactory.createVariation(licence, creator)
     val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
-    return transformToLicenceSummary(licenceVariation)
+    return licenceVariation.toSummary()
   }
 
   @Transactional
@@ -536,7 +536,7 @@ class LicenceService(
     val inProgressVersions =
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(listOf(licenceId), listOf(IN_PROGRESS, SUBMITTED))
     if (inProgressVersions.isNotEmpty()) {
-      return transformToLicenceSummary(inProgressVersions[0])
+      return inProgressVersions[0].toSummary()
     }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
@@ -544,7 +544,7 @@ class LicenceService(
     val licenceCopy = populateCopyAndAudit(CRD, licence, copyToEdit, creator)
     notifyReApprovalNeeded(licence)
 
-    return transformToLicenceSummary(licenceCopy)
+    return licenceCopy.toSummary()
   }
 
   @Transactional
@@ -995,4 +995,7 @@ class LicenceService(
       .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
     return transformToListOfLicenceSummariesForApproverView(licences)
   }
+
+  private fun EntityLicence.toSummary() =
+    transformToLicenceSummary(this, releaseDateService.getHardStopDate(this), releaseDateService.getHardStopWarningDate(this))
 }

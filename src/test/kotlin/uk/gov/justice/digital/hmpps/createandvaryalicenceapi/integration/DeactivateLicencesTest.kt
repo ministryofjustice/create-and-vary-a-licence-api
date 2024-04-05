@@ -85,6 +85,7 @@ class DeactivateLicencesTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic

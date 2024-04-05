@@ -278,6 +278,28 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `find licences matching criteria - enriched with hard stop dates`() {
+    val expectedHardStopDate = LocalDate.of(2023, 1, 12)
+    val expectedHardStopWarningDate = LocalDate.of(2023, 1, 10)
+
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(expectedHardStopDate)
+    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(expectedHardStopWarningDate)
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity,
+      ),
+    )
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(LicenceQueryObject())
+
+    assertThat(licenceSummaries).hasSize(1)
+    with(licenceSummaries.first()) {
+      assertThat(hardStopDate).isEqualTo(expectedHardStopDate)
+      assertThat(hardStopWarningDate).isEqualTo(expectedHardStopWarningDate)
+    }
+  }
+
+  @Test
   fun `find licences matching criteria - unknown property`() {
     val licenceQueryObject = LicenceQueryObject(sortBy = "unknown", sortOrder = "DESC")
     whenever(

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -93,14 +94,17 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+    val govUkMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
       prisonerSearchMockServer.start()
+      govUkMockServer.start()
       prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
       prisonApiMockServer.stubGetCourtOutcomes()
+      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic
@@ -108,6 +112,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonApiMockServer.stop()
       prisonerSearchMockServer.stop()
+      govUkMockServer.stop()
     }
   }
 }

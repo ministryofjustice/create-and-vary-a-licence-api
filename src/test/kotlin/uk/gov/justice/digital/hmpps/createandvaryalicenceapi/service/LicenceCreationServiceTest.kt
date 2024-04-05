@@ -424,9 +424,6 @@ class LicenceCreationServiceTest {
 
       val createResponse = service.createLicence(prisonNumber)
 
-      assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-      assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
-
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
@@ -1006,10 +1003,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-      val createResponse = service.createHardStopLicence(prisonNumber)
-
-      assertThat(createResponse.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-      assertThat(createResponse.licenceType).isEqualTo(LicenceType.AP)
+      service.createHardStopLicence(prisonNumber)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
