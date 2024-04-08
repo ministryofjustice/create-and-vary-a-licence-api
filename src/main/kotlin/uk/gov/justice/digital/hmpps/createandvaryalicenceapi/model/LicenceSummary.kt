@@ -106,6 +106,20 @@ data class LicenceSummary(
   val topupSupervisionExpiryDate: LocalDate? = null,
 
   @Schema(
+    description = "The date when the hard stop period starts",
+    example = "11/09/2022",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val hardStopDate: LocalDate? = null,
+
+  @Schema(
+    description = "The date when warning about the hard stop period begins",
+    example = "11/09/2022",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val hardStopWarningDate: LocalDate? = null,
+
+  @Schema(
     description = "The case reference number (CRN) of this person, from either prison or probation service",
     example = "X12344",
   )

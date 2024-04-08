@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
+fun transformToLicenceSummary(licence: Licence, hardStopDate: LocalDate?, hardStopWarningDate: LocalDate?): LicenceSummary {
   return LicenceSummary(
     kind = licence.kind,
     licenceId = licence.id,
@@ -79,11 +79,9 @@ fun transformToLicenceSummary(licence: EntityLicence): LicenceSummary {
       is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
       else -> false
     },
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
   )
-}
-
-fun transformToListOfSummaries(licences: List<EntityLicence>): List<LicenceSummary> {
-  return licences.map { licence -> transformToLicenceSummary(licence) }
 }
 
 fun toHardstop(

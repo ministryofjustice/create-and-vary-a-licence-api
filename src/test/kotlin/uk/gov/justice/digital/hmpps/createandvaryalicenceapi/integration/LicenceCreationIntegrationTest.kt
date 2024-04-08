@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -66,17 +66,19 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+      .expectBody(LicenceCreationResponse::class.java)
       .returnResult().responseBody
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
 
     assertThat(result?.licenceId).isGreaterThan(0L)
-    assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(1)
-    assertThat(licenceRepository.findAll().first().responsibleCom!!.username).isEqualTo("AAA")
+    val licence = licenceRepository.findAll().first()
+    assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
@@ -134,19 +136,19 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+      .expectBody(LicenceCreationResponse::class.java)
       .returnResult().responseBody!!
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
 
-    assertThat(result.kind).isEqualTo(LicenceKind.HARD_STOP)
     assertThat(result.licenceId).isGreaterThan(0L)
-    assertThat(result.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(result.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(1)
 
     val licence = licenceRepository.findAll().first() as HardStopLicence
+    assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
     assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
     assertThat(standardConditionRepository.count()).isEqualTo(9)
@@ -176,15 +178,12 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
+      .expectBody(LicenceCreationResponse::class.java)
       .returnResult().responseBody!!
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
 
-    assertThat(result.kind).isEqualTo(LicenceKind.HARD_STOP)
     assertThat(result.licenceId).isGreaterThan(0L)
-    assertThat(result.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(result.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(licenceRepository.count()).isEqualTo(2)
 
@@ -194,6 +193,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(hardStopLicence.responsibleCom!!.username).isEqualTo("AAA")
     assertThat(hardStopLicence.createdBy!!.id).isEqualTo(9L)
     assertThat(hardStopLicence.substituteOfId).isEqualTo(crdLicence.id)
+    assertThat(hardStopLicence.kind).isEqualTo(LicenceKind.HARD_STOP)
+    assertThat(hardStopLicence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(hardStopLicence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(additionalConditionRepository.count()).isEqualTo(1)
