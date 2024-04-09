@@ -8,6 +8,7 @@
 .gradle/
 build/
 .httpClient/
+.DS_Store
 
 # CMake
 cmake-build-debug/

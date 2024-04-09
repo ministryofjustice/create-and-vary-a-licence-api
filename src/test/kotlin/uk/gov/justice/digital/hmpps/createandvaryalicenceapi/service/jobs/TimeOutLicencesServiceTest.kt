@@ -70,19 +70,17 @@ class TimeOutLicencesServiceTest {
     service.timeOutLicences()
 
     verify(releaseDateService, times(0)).getCutOffDateForLicenceTimeOut()
-    verify(licenceRepository, times(0)).getAllLicencesToTimeOut(any())
+    verify(licenceRepository, times(0)).getAllLicencesToTimeOut()
   }
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(LocalDate.parse("2023-12-07"))
-    whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock))).thenReturn(emptyList())
+    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(emptyList())
 
     service.timeOutLicences()
 
-    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut()
-    verify(licenceRepository, times(1)).getAllLicencesToTimeOut(LocalDate.parse("2023-12-07"))
+    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
 
@@ -93,13 +91,13 @@ class TimeOutLicencesServiceTest {
   @Test
   fun `should update licences status if there are eligible licences`() {
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(
-      LocalDate.now(clock).plusDays(2),
-    )
-    whenever(licenceRepository.getAllLicencesToTimeOut(LocalDate.now(clock).plusDays(2))).thenReturn(
+    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(
       listOf(
         aLicenceEntity,
       ),
+    )
+    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity)).thenReturn(
+      true,
     )
 
     service.timeOutLicences()
@@ -108,14 +106,80 @@ class TimeOutLicencesServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut()
-    verify(licenceRepository, times(1)).getAllLicencesToTimeOut(LocalDate.parse("2023-12-07"))
+    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
 
     assertThat(licenceCaptor.firstValue[0])
       .extracting("statusCode", "updatedByUsername")
       .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          AuditEventType.SYSTEM_EVENT,
+          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.TIMED_OUT} version ${aLicenceEntity.version}",
+        ),
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.TIMED_OUT,
+          "SYSTEM",
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+  }
+
+  @Test
+  fun `should not update licences status if there are ineligible licences`() {
+    val anIneligibleLicence = aLicenceEntity.copy(
+      id = 2L,
+      licenceStartDate = LocalDate.now(clock).plusDays(1),
+    )
+
+    whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
+    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(
+      listOf(
+        aLicenceEntity,
+        anIneligibleLicence,
+      ),
+    )
+    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity)).thenReturn(
+      true,
+    )
+    whenever(releaseDateService.isInHardStopPeriod(anIneligibleLicence)).thenReturn(
+      false,
+    )
+
+    service.timeOutLicences()
+
+    val licenceCaptor = argumentCaptor<List<CrdLicence>>()
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
+
+    verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.allValues.size).isEqualTo(1)
+
+    assertThat(licenceCaptor.firstValue[0])
+      .extracting("id", "statusCode", "updatedByUsername")
+      .isEqualTo(listOf(1L, LicenceStatus.TIMED_OUT, "SYSTEM"))
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
