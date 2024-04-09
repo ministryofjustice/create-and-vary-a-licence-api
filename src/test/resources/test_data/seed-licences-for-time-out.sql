@@ -27,9 +27,9 @@ values (1, 'CRD', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date
        (10, 'CRD', '1.0', 1, 1, 'AP', 'J1234KL', 'IN_PROGRESS', 432, current_date, null, current_date, '1.0', null),
        (11, 'CRD', '1.0', 1, 1, 'AP', 'M1234NO', 'IN_PROGRESS', 432, current_date, current_date,
         DATEADD(day, -1, current_date), '1.0', null),
-       (12, 'VARIATION', '1.0', 1, 1, 'AP', 'M1234NO', 'VARIATION_IN_PROGRESS', 432, current_date, current_date,
+       (12, 'VARIATION', '1.0', 1, 1, 'AP', 'P1234QR', 'VARIATION_IN_PROGRESS', 432, current_date, current_date,
         current_date, '1.0', null),
-       (13, 'HARD_STOP', '1.0', 1, 1, 'AP', 'M1234NO', 'ACTIVE', 432, current_date, current_date,
+       (13, 'HARD_STOP', '1.0', 1, 1, 'AP', 'S1234TU', 'ACTIVE', 432, current_date, current_date,
         current_date, '1.0', null);
 
 
