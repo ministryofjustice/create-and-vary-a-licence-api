@@ -37,8 +37,9 @@ class TimeOutLicencesService(
     if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
-    val timeOutDate = releaseDateService.getCutOffDateForLicenceTimeOut()
-    val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut(timeOutDate)
+    val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut().filter {
+      releaseDateService.isInHardStopPeriod(it)
+    }
     if (licencesToTimeOut.isEmpty()) {
       log.info("Job to runTimeOutLicencesService has no licences to time out")
       return

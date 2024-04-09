@@ -78,13 +78,15 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
 
   @Query(
     """
-      SELECT l
-      FROM CrdLicence l
-      WHERE COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) <= :timeOutDate
-      AND l.statusCode = 'IN_PROGRESS'
+      SELECT *
+        FROM licence
+        WHERE kind = 'CRD'
+        AND status_code = 'IN_PROGRESS' 
+        AND conditional_release_date - (INTERVAL '14' DAY) <= CURRENT_DATE;
   """,
+    nativeQuery = true,
   )
-  fun getAllLicencesToTimeOut(timeOutDate: LocalDate): List<CrdLicence>
+  fun getAllLicencesToTimeOut(): List<CrdLicence>
 
   @Query(
     """
