@@ -433,7 +433,12 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
   )
 }
 
-fun CaseloadResult.transformToModelFoundProbationRecord(licence: Licence?): ModelFoundProbationRecord {
+fun CaseloadResult.transformToModelFoundProbationRecord(
+  licence: Licence?,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
+): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence?.crn,
@@ -446,6 +451,9 @@ fun CaseloadResult.transformToModelFoundProbationRecord(licence: Licence?): Mode
     licenceType = licence?.typeCode,
     licenceStatus = licence?.statusCode,
     isOnProbation = licence?.statusCode?.isOnProbation(),
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
   )
 }
 
@@ -453,6 +461,9 @@ fun CaseloadResult.transformToUnstartedRecord(
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
@@ -466,6 +477,9 @@ fun CaseloadResult.transformToUnstartedRecord(
     licenceType = licenceType,
     licenceStatus = licenceStatus,
     isOnProbation = false,
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
   )
 }
 
