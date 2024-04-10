@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
@@ -39,6 +40,7 @@ class PrisonerSearchServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val eligibilityService = mock<EligibilityService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val service =
     PrisonerSearchService(
@@ -48,6 +50,7 @@ class PrisonerSearchServiceTest {
       prisonerSearchApiClient,
       prisonApiClient,
       eligibilityService,
+      releaseDateService,
     )
 
   @BeforeEach
@@ -59,6 +62,7 @@ class PrisonerSearchServiceTest {
       prisonerSearchApiClient,
       prisonApiClient,
       eligibilityService,
+      releaseDateService,
     )
   }
 
@@ -1568,6 +1572,108 @@ class PrisonerSearchServiceTest {
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `hard stop dates are populated for non-started licences`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
+    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(isInHardStopPeriod).isEqualTo(true)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
+      assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
+    }
+  }
+
+  @Test
+  fun `hard stop dates are populated for started licences`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        (
+          listOf(
+            aLicenceEntity.copy(
+              statusCode = LicenceStatus.ACTIVE,
+            ),
+            aLicenceEntity.copy(
+              statusCode = LicenceStatus.APPROVED,
+            ),
+          )
+          ),
+      )
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult,
+      ),
+    )
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+      true,
+    )
+
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
+    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(isInHardStopPeriod).isEqualTo(true)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
+      assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
+    }
   }
 
   @Test

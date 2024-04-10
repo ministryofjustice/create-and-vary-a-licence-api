@@ -34,6 +34,23 @@ data class FoundProbationRecord(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate? = null,
 
+  @Schema(
+    description = "The date when the hard stop period starts",
+    example = "11/09/2022",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val hardStopDate: LocalDate? = null,
+
+  @Schema(
+    description = "The date when warning about the hard stop period begins",
+    example = "11/09/2022",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val hardStopWarningDate: LocalDate? = null,
+
+  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  val isInHardStopPeriod: Boolean = false,
+
   @Schema(description = "The ID of the most recent and relevant licence", example = "123344")
   val licenceId: Long? = null,
 
@@ -45,4 +62,5 @@ data class FoundProbationRecord(
 
   @Schema(description = "Indicates whether the offender is in prison or out on probation")
   val isOnProbation: Boolean? = null,
+
 )
