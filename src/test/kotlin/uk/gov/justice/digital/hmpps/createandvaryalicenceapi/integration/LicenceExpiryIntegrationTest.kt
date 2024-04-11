@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -67,5 +70,22 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
         Tuple.tuple(3L, LicenceStatus.ACTIVE),
         Tuple.tuple(4L, LicenceStatus.IN_PROGRESS),
       )
+  }
+
+  private companion object {
+    val govUkApiMockServer = GovUkMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      govUkApiMockServer.start()
+      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      govUkApiMockServer.stop()
+    }
   }
 }

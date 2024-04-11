@@ -23,6 +23,9 @@ data class CvlFields(
 
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
+
+  @Schema(description = "Is the prisoner due for early release")
+  val isDueForEarlyRelease: Boolean = false,
 )
 
 @Schema(description = "An item in the caseload")
