@@ -62,12 +62,12 @@ class UpdateSentenceDateService(
     if (licenceIsNowInHardStopPeriod && updatedLicenceEntity is CrdLicence) {
       val timedOutLicence = updatedLicenceEntity.timeOut()
       licenceRepository.saveAndFlush(timedOutLicence)
-      updatedLicenceEntity.recordAuditEvent("Sentence dates updated")
-      timedOutLicence.recordAuditEvent("Licence automatically timed out")
-      timedOutLicence.recordLicenceEvent("Licence automatically timed out")
+      recordAuditEvent(timedOutLicence, "Sentence dates updated")
+      recordAuditEvent(timedOutLicence, "Licence automatically timed out")
+      recordLicenceEvent(timedOutLicence, "Licence automatically timed out")
     } else {
       licenceRepository.saveAndFlush(updatedLicenceEntity)
-      updatedLicenceEntity.recordAuditEvent("Sentence dates updated")
+      recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
     }
 
     log.info(
@@ -157,30 +157,34 @@ class UpdateSentenceDateService(
     )
   }
 
-  private fun Licence.recordAuditEvent(auditEventDescription: String) {
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = this.id,
-        username = "SYSTEM",
-        fullName = "SYSTEM",
-        eventType = AuditEventType.SYSTEM_EVENT,
-        summary = "$auditEventDescription for ${this.forename} ${this.surname}",
-        detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode} version ${this.version}",
-      ),
-    )
+  private fun recordAuditEvent(licenceEntity: Licence, auditEventDescription: String) {
+    with(licenceEntity) {
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = this.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "$auditEventDescription for ${this.forename} ${this.surname}",
+          detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode} version ${this.version}",
+        ),
+      )
+    }
   }
 
-  private fun Licence.recordLicenceEvent(licenceEventDescription: String) {
-    licenceEventRepository.saveAndFlush(
-      LicenceEvent(
-        licenceId = this.id,
-        eventType = LicenceEventType.TIMED_OUT,
-        username = "SYSTEM",
-        forenames = "SYSTEM",
-        surname = "SYSTEM",
-        eventDescription = "$licenceEventDescription for ${this.forename} ${this.surname}",
-      ),
-    )
+  private fun recordLicenceEvent(licenceEntity: Licence, licenceEventDescription: String) {
+    with(licenceEntity) {
+      licenceEventRepository.saveAndFlush(
+        LicenceEvent(
+          licenceId = this.id,
+          eventType = LicenceEventType.TIMED_OUT,
+          username = "SYSTEM",
+          forenames = "SYSTEM",
+          surname = "SYSTEM",
+          eventDescription = "$licenceEventDescription for ${this.forename} ${this.surname}",
+        ),
+      )
+    }
   }
 
   companion object {
