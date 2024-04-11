@@ -344,6 +344,112 @@ class ReleaseDateServiceTest {
   }
 
   @Nested
+  inner class `Licence is due for early release` {
+    val date = LocalDate.of(2024, 4, 4)
+
+    @Test
+    fun `missing crd`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date,
+        conditionalReleaseDate = null,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `missing ard`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `ard and crd the same`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date,
+        conditionalReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `ard is one day before crd`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.minusDays(1),
+        conditionalReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `ard is two days before crd`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.minusDays(2),
+        conditionalReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isTrue
+    }
+
+    @Test
+    fun `ard is two days before crd when one is a non working day`() {
+      val sunday = LocalDate.of(2024, 4, 7)
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = sunday.minusDays(2),
+        conditionalReleaseDate = sunday,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `ard is three days before crd`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.minusDays(3),
+        conditionalReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isTrue
+    }
+
+    @Test
+    fun `crd is one day before ard`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date,
+        conditionalReleaseDate = date.minusDays(1),
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `crd is two days before ard`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date,
+        conditionalReleaseDate = date.minusDays(2),
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `crd is three days before ard`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date,
+        conditionalReleaseDate = date.minusDays(3),
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse()
+    }
+  }
+
+  @Nested
   inner class `Get hard stop date` {
     @Test
     fun `should return null if no conditional release date provided`() {

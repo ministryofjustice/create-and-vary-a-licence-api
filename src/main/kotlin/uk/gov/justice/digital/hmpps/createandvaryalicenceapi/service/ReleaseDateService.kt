@@ -32,6 +32,16 @@ class ReleaseDateService(
     return today >= hardStopDate && today <= sentenceDateHolder.licenceStartDate
   }
 
+  fun isDueForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
+    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
+    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
+
+    if (actualReleaseDate == null || conditionalReleaseDate == null) {
+      return false
+    }
+    return actualReleaseDate < 1.workingDaysBefore(conditionalReleaseDate)
+  }
+
   fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
     return getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate)
   }
