@@ -13,11 +13,11 @@ data class CvlFields(
   )
   val licenceType: LicenceType,
 
-  @Schema(description = "Date which the hard stop period will start", example = "2023-05-01")
+  @Schema(description = "Date which the hard stop period will start", example = "03/05/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   var hardStopDate: LocalDate? = null,
 
-  @Schema(description = "Date which to show the hard stop warning", example = "2023-05-01")
+  @Schema(description = "Date which to show the hard stop warning", example = "01/05/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   var hardStopWarningDate: LocalDate? = null,
 
