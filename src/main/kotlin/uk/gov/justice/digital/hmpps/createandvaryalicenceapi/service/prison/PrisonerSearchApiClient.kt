@@ -7,6 +7,8 @@ import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.PrisonerSearchByBookingIdsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.PrisonerSearchByPrisonerNumbersRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.ReleaseDateSearch
+import java.time.LocalDate
 
 @Service
 class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prisonerSearchApiWebClient: WebClient) {
@@ -30,6 +32,18 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .uri("/prisoner-search/prisoner-numbers")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(PrisonerSearchByPrisonerNumbersRequest(nomisIds))
+      .retrieve()
+      .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
+      .block() ?: emptyList()
+  }
+
+  fun searchPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>): List<PrisonerSearchPrisoner> {
+    if (prisonIds.isEmpty()) return emptyList()
+    return prisonerSearchApiWebClient
+      .post()
+      .uri("/prisoner-search/release-date-by-prison?size=2000")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(ReleaseDateSearch(earliestReleaseDate = earliestReleaseDate, latestReleaseDate = latestReleaseDate, prisonIds = prisonIds))
       .retrieve()
       .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
       .block() ?: emptyList()

@@ -17,6 +17,9 @@ data class CvlFields(
 
   @Schema(description = "Date which to show the hard stop warning", example = "2023-05-01")
   var hardStopWarningDate: LocalDate? = null,
+
+  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  val isInHardStopPeriod: Boolean = false,
 )
 
 @Schema(description = "An item in the caseload")
