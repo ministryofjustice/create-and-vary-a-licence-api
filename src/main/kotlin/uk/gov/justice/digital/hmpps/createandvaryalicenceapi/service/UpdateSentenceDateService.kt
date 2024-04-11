@@ -6,14 +6,18 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -23,6 +27,8 @@ class UpdateSentenceDateService(
   private val notifyService: NotifyService,
   private val prisonApiClient: PrisonApiClient,
   private val staffRepository: StaffRepository,
+  private val releaseDateService: ReleaseDateService,
+  private val licenceEventRepository: LicenceEventRepository,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
@@ -51,18 +57,18 @@ class UpdateSentenceDateService(
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    val licenceIsNowInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
 
-    auditEventRepository.saveAndFlush(
-      AuditEvent(
-        licenceId = licenceEntity.id,
-        username = "SYSTEM",
-        fullName = "SYSTEM",
-        eventType = AuditEventType.SYSTEM_EVENT,
-        summary = "Sentence dates updated for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID ${licenceEntity.id} type ${licenceEntity.typeCode} status ${licenceEntity.statusCode} version ${licenceEntity.version}",
-      ),
-    )
+    if (licenceIsNowInHardStopPeriod && updatedLicenceEntity is CrdLicence) {
+      val timedOutLicence = updatedLicenceEntity.timeOut()
+      licenceRepository.saveAndFlush(timedOutLicence)
+      recordAuditEvent(timedOutLicence, "Sentence dates updated")
+      recordAuditEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
+      recordLicenceEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
+    } else {
+      licenceRepository.saveAndFlush(updatedLicenceEntity)
+      recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
+    }
 
     log.info(
       buildString {
@@ -149,6 +155,36 @@ class UpdateSentenceDateService(
         append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
       },
     )
+  }
+
+  private fun recordAuditEvent(licenceEntity: Licence, auditEventDescription: String) {
+    with(licenceEntity) {
+      auditEventRepository.saveAndFlush(
+        AuditEvent(
+          licenceId = this.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          eventType = AuditEventType.SYSTEM_EVENT,
+          summary = "$auditEventDescription for ${this.forename} ${this.surname}",
+          detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode} version ${this.version}",
+        ),
+      )
+    }
+  }
+
+  private fun recordLicenceEvent(licenceEntity: Licence, licenceEventDescription: String) {
+    with(licenceEntity) {
+      licenceEventRepository.saveAndFlush(
+        LicenceEvent(
+          licenceId = this.id,
+          eventType = LicenceEventType.TIMED_OUT,
+          username = "SYSTEM",
+          forenames = "SYSTEM",
+          surname = "SYSTEM",
+          eventDescription = "$licenceEventDescription for ${this.forename} ${this.surname}",
+        ),
+      )
+    }
   }
 
   companion object {

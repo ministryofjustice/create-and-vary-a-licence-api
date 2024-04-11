@@ -306,7 +306,7 @@ class ReleaseDateServiceTest {
     }
 
     @Test
-    fun `licence is still in hard stop period after release`() {
+    fun `licence is not in hard stop period after release`() {
       val now = createClock("2018-03-12T00:00:00Z")
 
       val licence = createCrdLicence().copy(

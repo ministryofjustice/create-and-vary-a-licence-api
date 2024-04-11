@@ -9,6 +9,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -18,15 +19,19 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 class UpdateSentenceDateServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -34,6 +39,8 @@ class UpdateSentenceDateServiceTest {
   private val notifyService = mock<NotifyService>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val staffRepository = mock<StaffRepository>()
+  private val releaseDateService = mock<ReleaseDateService>()
+  private val licenceEventRepository = mock<LicenceEventRepository>()
 
   private val service = UpdateSentenceDateService(
     licenceRepository,
@@ -41,6 +48,8 @@ class UpdateSentenceDateServiceTest {
     notifyService,
     prisonApiClient,
     staffRepository,
+    releaseDateService,
+    licenceEventRepository,
   )
 
   @BeforeEach
@@ -57,6 +66,9 @@ class UpdateSentenceDateServiceTest {
       auditEventRepository,
       notifyService,
       prisonApiClient,
+      staffRepository,
+      releaseDateService,
+      licenceEventRepository,
     )
   }
 
@@ -732,6 +744,204 @@ class UpdateSentenceDateServiceTest {
       )
 
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
+  fun `should set the license status to timed out if the licence is in hard stop period`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity)).thenReturn(true)
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.now().plusDays(5),
+        actualReleaseDate = LocalDate.now().minusDays(2),
+        sentenceStartDate = LocalDate.parse("2018-10-22"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = null,
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM", aCom))
+
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          AuditEventType.SYSTEM_EVENT,
+        ),
+      )
+
+    assertThat(auditCaptor.allValues[1])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          AuditEventType.SYSTEM_EVENT,
+        ),
+      )
+
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+      .isEqualTo(
+        listOf(
+          1L,
+          LicenceEventType.TIMED_OUT,
+          "SYSTEM",
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
+        "Top up supervision end date has changed to null" to true,
+      ),
+    )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
+  fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createVariationLicence()))
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(releaseDateService.isInHardStopPeriod(TestData.createVariationLicence())).thenReturn(true)
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate",
+        "actualReleaseDate",
+        "sentenceStartDate",
+        "sentenceEndDate",
+        "licenceStartDate",
+        "licenceExpiryDate",
+        "topupSupervisionStartDate",
+        "topupSupervisionExpiryDate",
+        "updatedByUsername",
+        "updatedBy",
+        "statusCode",
+      )
+      .isEqualTo(
+        listOf(
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2021-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
+          aCom.username,
+          aCom,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+        ),
+      )
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aLicenceEntity.responsibleCom?.email,
+      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+      aLicenceEntity.crn,
+      mapOf(
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
+        "Top up supervision end date has changed to 11 September 2025" to true,
+      ),
+    )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+    verifyNoInteractions(licenceEventRepository)
   }
 
   private companion object {
