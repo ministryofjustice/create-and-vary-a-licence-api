@@ -111,6 +111,45 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `Update sentence dates should set licence status to timed out when the licence is in hard stop period`() {
+    prisonApiMockServer.stubGetHdcLatest()
+
+    webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .bodyValue(
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now(),
+          actualReleaseDate = LocalDate.now(),
+          sentenceStartDate = LocalDate.now().minusYears(2),
+          sentenceEndDate = LocalDate.now().plusYears(1),
+          licenceStartDate = LocalDate.now(),
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionStartDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
+  }
+
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
     val govUkApiMockServer = GovUkMockServer()
