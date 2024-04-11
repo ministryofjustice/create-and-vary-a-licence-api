@@ -808,7 +808,7 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           AuditEventType.SYSTEM_EVENT,
         ),
       )
@@ -824,7 +824,7 @@ class UpdateSentenceDateServiceTest {
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
-          "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
 

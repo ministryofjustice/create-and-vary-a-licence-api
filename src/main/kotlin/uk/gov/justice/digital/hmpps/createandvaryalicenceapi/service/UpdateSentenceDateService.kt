@@ -63,8 +63,8 @@ class UpdateSentenceDateService(
       val timedOutLicence = updatedLicenceEntity.timeOut()
       licenceRepository.saveAndFlush(timedOutLicence)
       recordAuditEvent(timedOutLicence, "Sentence dates updated")
-      recordAuditEvent(timedOutLicence, "Licence automatically timed out")
-      recordLicenceEvent(timedOutLicence, "Licence automatically timed out")
+      recordAuditEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
+      recordLicenceEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
     } else {
       licenceRepository.saveAndFlush(updatedLicenceEntity)
       recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
