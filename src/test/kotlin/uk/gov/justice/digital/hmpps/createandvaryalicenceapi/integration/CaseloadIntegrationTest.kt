@@ -86,6 +86,22 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         }
       }
     }
+
+    @Test
+    fun checkDateFormats() {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+      webTestClient.get()
+        .uri(GET_PRISONER)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody()
+        .jsonPath("$.cvl.hardStopDate").value<String> { assertThat(it).matches("\\d{2}/\\d{2}/\\d{4}") }
+        .jsonPath("$.prisoner.dateOfBirth").value<String> { assertThat(it).matches("\\d{4}-\\d{2}-\\d{2}") }
+    }
   }
 
   @Nested
