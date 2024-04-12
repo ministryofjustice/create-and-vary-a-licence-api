@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -29,6 +31,7 @@ class UpdateSentenceDateService(
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceEventRepository: LicenceEventRepository,
+  private val licenceService: LicenceService,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
@@ -57,17 +60,27 @@ class UpdateSentenceDateService(
       staffMember = staffMember,
     )
 
-    val licenceIsNowInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
+    val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
+    val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
 
-    if (licenceIsNowInHardStopPeriod && updatedLicenceEntity is CrdLicence) {
+    if (licenceCurrentlyInHardStopPeriod && updatedLicenceEntity is CrdLicence) {
       val timedOutLicence = updatedLicenceEntity.timeOut()
       licenceRepository.saveAndFlush(timedOutLicence)
-      recordAuditEvent(timedOutLicence, "Sentence dates updated")
+      recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
       recordAuditEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
       recordLicenceEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
     } else {
       licenceRepository.saveAndFlush(updatedLicenceEntity)
       recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
+    }
+
+    if (licencePreviouslyInHardStopPeriod && !licenceCurrentlyInHardStopPeriod) {
+      val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+        licenceEntity?.bookingId!!,
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
+        listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+      )
+      licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
     }
 
     log.info(
@@ -189,5 +202,6 @@ class UpdateSentenceDateService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+    const val LICENCE_DEACTIVATION_HARD_STOP = "Licence automatically inactivated as licence is no longer in hard stop period"
   }
 }

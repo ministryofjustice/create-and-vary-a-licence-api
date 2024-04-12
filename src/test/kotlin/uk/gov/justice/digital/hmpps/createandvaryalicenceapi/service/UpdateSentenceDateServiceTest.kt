@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.util.Optional
@@ -41,6 +43,7 @@ class UpdateSentenceDateServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
+  private val licenceService = mock<LicenceService>()
 
   private val service = UpdateSentenceDateService(
     licenceRepository,
@@ -50,6 +53,7 @@ class UpdateSentenceDateServiceTest {
     staffRepository,
     releaseDateService,
     licenceEventRepository,
+    licenceService,
   )
 
   @BeforeEach
@@ -69,6 +73,7 @@ class UpdateSentenceDateServiceTest {
       staffRepository,
       releaseDateService,
       licenceEventRepository,
+      licenceService,
     )
   }
 
@@ -942,6 +947,93 @@ class UpdateSentenceDateServiceTest {
 
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
     verifyNoInteractions(licenceEventRepository)
+  }
+
+  @Test
+  fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period`() {
+    val inHardStopLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.TIMED_OUT,
+      conditionalReleaseDate = LocalDate.now(),
+      actualReleaseDate = LocalDate.now(),
+      sentenceStartDate = LocalDate.now().minusYears(2),
+      sentenceEndDate = LocalDate.now().plusYears(1),
+      licenceStartDate = LocalDate.now(),
+      licenceExpiryDate = LocalDate.now().plusYears(1),
+      topupSupervisionStartDate = LocalDate.now().plusYears(1),
+      topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+    )
+
+    val noLongerInHardStopLicence = inHardStopLicence.copy(
+      conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+      actualReleaseDate = LocalDate.now().plusWeeks(1),
+      licenceStartDate = LocalDate.now().plusWeeks(1),
+    )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true, false)
+    whenever(
+      licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+        inHardStopLicence.bookingId!!,
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
+        listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+      ),
+    ).thenReturn(listOf(noLongerInHardStopLicence))
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+        actualReleaseDate = LocalDate.now().plusWeeks(1),
+        sentenceStartDate = LocalDate.now().minusYears(2),
+        sentenceEndDate = LocalDate.now().plusYears(1),
+        licenceStartDate = LocalDate.now().plusWeeks(1),
+        licenceExpiryDate = LocalDate.now().plusYears(1),
+        topupSupervisionStartDate = LocalDate.now().plusYears(1),
+        topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceService, times(1)).inactivateLicences(
+      listOf(noLongerInHardStopLicence),
+      UpdateSentenceDateService.LICENCE_DEACTIVATION_HARD_STOP,
+    )
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.TIMED_OUT, aCom.username, aCom))
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          AuditEventType.SYSTEM_EVENT,
+        ),
+      )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
   private companion object {
