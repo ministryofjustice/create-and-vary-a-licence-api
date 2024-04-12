@@ -335,6 +335,19 @@ class ReleaseDateServiceTest {
       val now = createClock("2018-03-12T00:00:00Z")
 
       val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
+        licenceStartDate = null,
+      )
+
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
+    }
+
+    @Test
+    fun `returns false if licence start date is absent`() {
+      val now = createClock("2018-03-12T00:00:00Z")
+
+      val licence = createCrdLicence().copy(
         actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
         conditionalReleaseDate = null,
       )

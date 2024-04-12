@@ -167,16 +167,22 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `service returns a licence with is hard stop populated`() {
+  fun `service returns a licence with derived fields populated`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
       AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
     )
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2022, 1, 3))
+    whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2022, 1, 1))
 
     val licence = service.getLicenceById(1L) as CrdLicenceModel
 
     assertThat(licence.isInHardStopPeriod).isTrue()
+    assertThat(licence.isDueForEarlyRelease).isTrue()
+    assertThat(licence.hardStopDate).isEqualTo(LocalDate.of(2022, 1, 3))
+    assertThat(licence.hardStopWarningDate).isEqualTo(LocalDate.of(2022, 1, 1))
   }
 
   @Test
@@ -278,7 +284,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `find licences matching criteria - enriched with hard stop dates`() {
+  fun `find licences matching criteria - enriched with derived fields`() {
     val expectedHardStopDate = LocalDate.of(2023, 1, 12)
     val expectedHardStopWarningDate = LocalDate.of(2023, 1, 10)
 

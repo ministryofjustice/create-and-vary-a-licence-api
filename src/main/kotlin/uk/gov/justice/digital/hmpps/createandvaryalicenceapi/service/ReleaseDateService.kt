@@ -25,7 +25,7 @@ class ReleaseDateService(
     val hardStopDate = getHardStopDate(sentenceDateHolder)
     val today = LocalDate.now(now)
 
-    if (hardStopDate == null) {
+    if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
       return false
     }
 
