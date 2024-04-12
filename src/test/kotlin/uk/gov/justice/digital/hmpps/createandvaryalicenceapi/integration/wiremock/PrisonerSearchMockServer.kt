@@ -216,7 +216,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
             "Content-Type",
             "application/json",
           ).withBody(
-            """[
+            """{ "content": [
                 {
                   "prisonerNumber": "A1234AA",
                   "bookingId": "123",
@@ -332,7 +332,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "lastName": "Person3",
                   "dateOfBirth": "1987-01-01"
                }
-              ]
+              ]}
             """.trimIndent(),
           ).withStatus(200),
         ),
