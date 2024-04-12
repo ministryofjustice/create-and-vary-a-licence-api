@@ -38,7 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-fun transformToLicenceSummary(licence: Licence, hardStopDate: LocalDate?, hardStopWarningDate: LocalDate?): LicenceSummary {
+fun transformToLicenceSummary(licence: Licence, hardStopDate: LocalDate?, hardStopWarningDate: LocalDate?, isInHardStopPeriod: Boolean, isDueForEarlyRelease: Boolean): LicenceSummary {
   return LicenceSummary(
     kind = licence.kind,
     licenceId = licence.id,
@@ -81,6 +81,8 @@ fun transformToLicenceSummary(licence: Licence, hardStopDate: LocalDate?, hardSt
     },
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
+    isDueForEarlyRelease = isDueForEarlyRelease,
   )
 }
 
@@ -88,7 +90,10 @@ fun toHardstop(
   licence: HardStopLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelHardstopLicence(
   id = licence.id,
@@ -160,6 +165,9 @@ fun toHardstop(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
@@ -246,7 +254,10 @@ fun toCrd(
   licence: CrdLicence,
   earliestReleaseDate: LocalDate?,
   isEligibleForEarlyRelease: Boolean,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelCrdLicence(
   id = licence.id,
@@ -316,7 +327,10 @@ fun toCrd(
   licenceVersion = licence.licenceVersion,
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 

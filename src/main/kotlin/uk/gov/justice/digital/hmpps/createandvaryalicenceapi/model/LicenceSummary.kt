@@ -119,6 +119,12 @@ data class LicenceSummary(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val hardStopWarningDate: LocalDate? = null,
 
+  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  val isInHardStopPeriod: Boolean = false,
+
+  @Schema(description = "Is the prisoner due for early release")
+  val isDueForEarlyRelease: Boolean = false,
+
   @Schema(
     description = "The case reference number (CRN) of this person, from either prison or probation service",
     example = "X12344",

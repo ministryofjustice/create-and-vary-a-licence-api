@@ -111,6 +111,9 @@ class LicenceService(
         earliestReleaseDate = earliestReleaseDate,
         isEligibleForEarlyRelease = isEligibleForEarlyRelease,
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+        hardStopDate = releaseDateService.getHardStopDate(licence),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
         conditionSubmissionStatus = conditionSubmissionStatus,
       )
 
@@ -126,6 +129,9 @@ class LicenceService(
         earliestReleaseDate = earliestReleaseDate,
         isEligibleForEarlyRelease = isEligibleForEarlyRelease,
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+        hardStopDate = releaseDateService.getHardStopDate(licence),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
         conditionSubmissionStatus = conditionSubmissionStatus,
       )
 
@@ -997,5 +1003,11 @@ class LicenceService(
   }
 
   private fun EntityLicence.toSummary() =
-    transformToLicenceSummary(this, releaseDateService.getHardStopDate(this), releaseDateService.getHardStopWarningDate(this))
+    transformToLicenceSummary(
+      this,
+      hardStopDate = releaseDateService.getHardStopDate(this),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
+    )
 }
