@@ -45,7 +45,7 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(ReleaseDateSearch(earliestReleaseDate = earliestReleaseDate, latestReleaseDate = latestReleaseDate, prisonIds = prisonIds))
       .retrieve()
-      .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
-      .block() ?: emptyList()
+      .bodyToMono(typeReference<SearchPaginationResponse>())
+      .block()?.content ?: emptyList()
   }
 }
