@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -19,6 +20,11 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
   fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<CrdLicence>
   fun findByBookingIdAndStatusCodeOrderByDateCreatedDesc(bookingId: Long, status: LicenceStatus): CrdLicence?
+  fun findAllByBookingIdAndStatusCodeInAndKindIn(
+    bookingId: Long,
+    status: List<LicenceStatus>,
+    kind: List<LicenceKind>,
+  ): List<Licence>
 
   @Query(
     """

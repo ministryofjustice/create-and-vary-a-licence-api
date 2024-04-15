@@ -370,7 +370,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result).isNotNull
     assertThat(result).hasSize(1)
-    assertThat(result!!.get(0)?.eventDescription).isEqualTo("reason")
+    assertThat(result!!.first().eventDescription).isEqualTo("reason")
   }
 
   @Test
@@ -591,7 +591,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           .expectBody(Licence::class.java)
           .returnResult().responseBody
 
-        assertThat(result.isReviewNeeded).isTrue()
+        assertThat(result!!.isReviewNeeded).isTrue
       }
 
       webTestClient.post()
@@ -615,7 +615,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
           .expectBody(Licence::class.java)
           .returnResult().responseBody
 
-        assertThat(result.isReviewNeeded).isFalse()
+        assertThat(result!!.isReviewNeeded).isFalse
       }
     }
 

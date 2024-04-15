@@ -5,14 +5,23 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -20,6 +29,15 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
+
+  @Autowired
+  lateinit var auditEventRepository: AuditEventRepository
+
+  @Autowired
+  lateinit var licenceEventRepository: LicenceEventRepository
+
+  @MockBean
+  private lateinit var eventsPublisher: OutboundEventsPublisher
 
   @BeforeEach
   fun reset() {
@@ -148,6 +166,86 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `Update sentence dates should inactivate licence where licence was in hard stop period but is no longer in hard stop period`() {
+    prisonApiMockServer.stubGetHdcLatest()
+
+    webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .bodyValue(
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now(),
+          actualReleaseDate = LocalDate.now(),
+          sentenceStartDate = LocalDate.now().minusYears(2),
+          sentenceEndDate = LocalDate.now().plusYears(1),
+          licenceStartDate = LocalDate.now(),
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionStartDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val previousLicence = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(auditEventRepository.count()).isEqualTo(2)
+    assertThat(licenceEventRepository.count()).isEqualTo(1)
+    assertThat(previousLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
+
+    webTestClient.put()
+      .uri("/licence/id/1/sentence-dates")
+      .bodyValue(
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+          actualReleaseDate = LocalDate.now().plusWeeks(1),
+          sentenceStartDate = LocalDate.now().minusYears(2),
+          sentenceEndDate = LocalDate.now().plusYears(1),
+          licenceStartDate = LocalDate.now().plusWeeks(1),
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionStartDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+        ),
+      )
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val currentLicence = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    argumentCaptor<HMPPSDomainEvent>().apply {
+      verify(eventsPublisher, times(1)).publishDomainEvent(capture())
+      assertThat(allValues).hasSize(1)
+      assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
+    }
+
+    assertThat(auditEventRepository.count()).isEqualTo(4)
+    assertThat(licenceEventRepository.count()).isEqualTo(2)
+    assertThat(currentLicence?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
 
   private companion object {

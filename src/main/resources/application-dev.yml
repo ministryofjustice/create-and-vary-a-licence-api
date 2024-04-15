@@ -37,6 +37,9 @@ hmpps:
     api:
       url: "https://document-api-dev.hmpps.service.justice.gov.uk"
 
+hardstop:
+  enabled: true
+
 hmpps.sqs:
   provider: localstack
   localstackUrl: http://localhost:4666

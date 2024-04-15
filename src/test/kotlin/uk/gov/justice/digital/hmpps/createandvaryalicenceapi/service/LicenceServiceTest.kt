@@ -2530,6 +2530,26 @@ class LicenceServiceTest {
       verifyNoInteractions(licenceRepository)
       assertThat(response).isEmpty()
     }
+
+    @Test
+    fun `Derived fields are populated`() {
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+      whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+      whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2022, 1, 3))
+      whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2022, 1, 1))
+
+      whenever(licenceRepository.getLicencesReadyForApproval(listOf("MDI"))).thenReturn(listOf(aLicenceEntity))
+
+      val approvedLicenceSummaries = service.getLicencesForApproval(listOf("MDI"))
+
+      assertThat(approvedLicenceSummaries).hasSize(1)
+      with(approvedLicenceSummaries.first()) {
+        assertThat(isInHardStopPeriod).isTrue()
+        assertThat(isDueForEarlyRelease).isTrue()
+        assertThat(hardStopDate).isEqualTo(LocalDate.of(2022, 1, 3))
+        assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2022, 1, 1))
+      }
+    }
   }
 
   private companion object {

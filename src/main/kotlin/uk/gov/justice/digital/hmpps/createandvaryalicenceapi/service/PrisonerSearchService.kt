@@ -153,6 +153,7 @@ class PrisonerSearchService(
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
     )
   }
 
@@ -162,5 +163,6 @@ class PrisonerSearchService(
       hardStopDate = releaseDateService.getHardStopDate(licence),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
     )
 }

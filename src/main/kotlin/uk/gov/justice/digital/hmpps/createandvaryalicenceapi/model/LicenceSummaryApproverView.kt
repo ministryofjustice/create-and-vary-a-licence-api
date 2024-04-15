@@ -160,4 +160,18 @@ data class LicenceSummaryApproverView(
 
   @Schema(description = "The username of the person who last submitted this licence", example = "Jane Doe")
   val submittedByFullName: String? = null,
+
+  @Schema(description = "Date which the hard stop period will start", example = "03/05/2023")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  var hardStopDate: LocalDate? = null,
+
+  @Schema(description = "Date which to show the hard stop warning", example = "01/05/2023")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  var hardStopWarningDate: LocalDate? = null,
+
+  @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
+  val isInHardStopPeriod: Boolean = false,
+
+  @Schema(description = "Is the prisoner due for early release")
+  val isDueForEarlyRelease: Boolean = false,
 )
