@@ -418,7 +418,7 @@ class LicenceService(
           it
         }
       }
-      return transformToListOfLicenceSummariesForApproverView(recentlyApprovedLicences)
+      return recentlyApprovedLicences.map { it.toApprovalSummaryView() }
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }
@@ -999,7 +999,7 @@ class LicenceService(
     }
     val licences = licenceRepository.getLicencesReadyForApproval(prisons)
       .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
-    return transformToListOfLicenceSummariesForApproverView(licences)
+    return licences.map { it.toApprovalSummaryView() }
   }
 
   private fun EntityLicence.toSummary() =
@@ -1010,4 +1010,14 @@ class LicenceService(
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
     )
+
+  private fun EntityLicence.toApprovalSummaryView(): LicenceSummaryApproverView {
+    return transformToApprovalLicenceSummary(
+      licence = this,
+      hardStopDate = releaseDateService.getHardStopDate(this),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
+    )
+  }
 }

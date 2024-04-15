@@ -725,6 +725,10 @@ class LicenceControllerTest {
       isReviewNeeded = false,
       updatedByFullName = "Test Updater",
       submittedByFullName = "Test Submitter",
+      hardStopDate = LocalDate.of(2020, 1, 6),
+      hardStopWarningDate = LocalDate.of(2020, 1, 4),
+      isInHardStopPeriod = true,
+      isDueForEarlyRelease = true,
     )
   }
 }

@@ -452,6 +452,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
@@ -468,6 +469,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
+    isDueForEarlyRelease = isDueForEarlyRelease,
   )
 }
 
@@ -478,6 +480,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
@@ -494,6 +497,7 @@ fun CaseloadResult.transformToUnstartedRecord(
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
+    isDueForEarlyRelease = isDueForEarlyRelease,
   )
 }
 
@@ -520,11 +524,13 @@ fun Licence.getSubmittedByFullName(): String? {
   }
 }
 
-fun transformToListOfLicenceSummariesForApproverView(licences: List<EntityLicence>): List<LicenceSummaryApproverView> {
-  return licences.map { licence -> transformToApprovedLicenceSummary(licence) }
-}
-
-fun transformToApprovedLicenceSummary(licence: EntityLicence): LicenceSummaryApproverView {
+fun transformToApprovalLicenceSummary(
+  licence: EntityLicence,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
+): LicenceSummaryApproverView {
   return LicenceSummaryApproverView(
     licenceId = licence.id,
     forename = licence.forename,
@@ -567,6 +573,10 @@ fun transformToApprovedLicenceSummary(licence: EntityLicence): LicenceSummaryApp
     },
     updatedByFullName = licence.getUpdatedByFullName(),
     submittedByFullName = licence.getSubmittedByFullName(),
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
+    isDueForEarlyRelease = isDueForEarlyRelease,
   )
 }
 
