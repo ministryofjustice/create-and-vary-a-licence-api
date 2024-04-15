@@ -165,6 +165,13 @@ class NotifyService(
   }
 
   fun sendInitialLicenceCreateEmails(comsToEmail: List<PromptLicenceCreationRequest>) {
+    log.info(
+      """
+      sending initial emails to ${comsToEmail.size} COMS. 
+      * initial emails to send: ${comsToEmail.filter { it.initialPromptCases.isNotEmpty() }}
+      * urgent emails to send: ${comsToEmail.filter { it.urgentPromptCases.isNotEmpty() }}
+      """.trimIndent(),
+    )
     comsToEmail.forEach {
       if (it.initialPromptCases.isNotEmpty()) {
         sendLicenceCreateEmail(initialLicencePromptTemplateId, it.email, it.comName, it.initialPromptCases)
@@ -181,6 +188,7 @@ class NotifyService(
     comName: String,
     cases: List<PrisonerForRelease>,
   ) {
+    log.info("Sending licence create email to: $emailAddress for ${cases.size}")
     sendEmail(
       templateId,
       emailAddress,
