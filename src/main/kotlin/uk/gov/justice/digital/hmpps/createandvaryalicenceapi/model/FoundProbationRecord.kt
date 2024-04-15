@@ -51,6 +51,9 @@ data class FoundProbationRecord(
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
 
+  @Schema(description = "Is the prisoner due for early release")
+  val isDueForEarlyRelease: Boolean = false,
+
   @Schema(description = "The ID of the most recent and relevant licence", example = "123344")
   val licenceId: Long? = null,
 

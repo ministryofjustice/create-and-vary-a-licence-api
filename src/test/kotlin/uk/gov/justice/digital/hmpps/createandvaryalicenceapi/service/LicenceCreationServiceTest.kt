@@ -422,7 +422,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
-      val createResponse = service.createLicence(prisonNumber)
+      service.createLicence(prisonNumber)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
