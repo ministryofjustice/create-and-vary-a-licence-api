@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
@@ -31,7 +32,7 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
   lateinit var auditEventRepository: AuditEventRepository
 
   @Autowired
-  lateinit var licenceEventRepository: AuditEventRepository
+  lateinit var licenceEventRepository: LicenceEventRepository
 
   @Test
   fun `Get forbidden (403) when incorrect roles are supplied`() {
@@ -229,6 +230,5 @@ class LicenceOverrideIntegrationTest : IntegrationTestBase() {
     assertThat(updatedLicence.topupSupervisionExpiryDate).isEqualTo(initialLicence.topupSupervisionExpiryDate)
     assertThat(updatedLicence.topupSupervisionStartDate).isEqualTo(newTussd)
     assertThat(auditEventRepository.count()).isEqualTo(1)
-    assertThat(licenceEventRepository.count()).isEqualTo(1)
   }
 }
