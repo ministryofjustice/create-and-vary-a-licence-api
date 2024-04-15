@@ -46,6 +46,7 @@ class UpdateSentenceDateServiceTest {
   private val licenceService = mock<LicenceService>()
 
   private val service = UpdateSentenceDateService(
+    hardStopEnabled = true,
     licenceRepository,
     auditEventRepository,
     notifyService,
@@ -752,7 +753,7 @@ class UpdateSentenceDateServiceTest {
   }
 
   @Test
-  fun `should set the license status to timed out if the licence is in hard stop period`() {
+  fun `should set the license status to timed out if the licence is now in hard stop period but previously was not`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
@@ -767,7 +768,7 @@ class UpdateSentenceDateServiceTest {
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    whenever(releaseDateService.isInHardStopPeriod(aLicenceEntity)).thenReturn(true)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
     service.updateSentenceDates(
       1L,
@@ -867,7 +868,7 @@ class UpdateSentenceDateServiceTest {
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    whenever(releaseDateService.isInHardStopPeriod(TestData.createVariationLicence())).thenReturn(true)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
     service.updateSentenceDates(
       1L,

@@ -69,8 +69,12 @@ hmpps:
     api:
       url: http://localhost:8099/api
       enabled: true
+
 notify:
   enabled: false
+
+hardstop:
+  enabled: true
 
 oauth:
   client:
