@@ -121,6 +121,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT COUNT(*)
         FROM Licence l
+        LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
             'TIME_SERVED'
@@ -128,6 +129,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
         AND l.responsibleCom = :com
+        AND l2.variationOfId IS NULL
     """,
   )
   fun getLicenceReviewCountForCom(com: CommunityOffenderManager?): Long
@@ -136,6 +138,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto(l.probationTeamCode, COUNT(*))
         FROM Licence l
+        LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
             'TIME_SERVED'
@@ -143,6 +146,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
         AND l.probationTeamCode IN ( :teamCodes )
+        AND l2.variationOfId IS NULL
         GROUP BY l.probationTeamCode
     """,
   )

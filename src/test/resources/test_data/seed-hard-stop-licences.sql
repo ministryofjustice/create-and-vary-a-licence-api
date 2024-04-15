@@ -7,8 +7,11 @@ insert into licence (id,
                      type_code,
                      status_code,
                      probation_team_code,
-                     review_date)
-values (1, 'HARD_STOP', '1.0', 1, null, 9, 'AP', 'ACTIVE', 'A01B02', null),
-       (2, 'CRD', '1.0', 2, 5, null, 'AP', 'ACTIVE', 'A01B02', null),
-       (3, 'HARD_STOP', '1.0', 1, null, 9, 'AP', 'ACTIVE', 'A01B02', null),
-       (4, 'HARD_STOP', '1.0', 2, null, 9, 'AP', 'APPROVED', 'A01B02', null);
+                     review_date,
+                     variation_of_id)
+values (1, 'HARD_STOP', '1.0', 1, null, 9, 'AP', 'ACTIVE', 'A01B02', null, null),
+       (2, 'CRD', '1.0', 2, 5, null, 'AP', 'ACTIVE', 'A01B02', null, null),
+       (3, 'HARD_STOP', '1.0', 1, null, 9, 'AP', 'ACTIVE', 'A01B02', null, null),
+       (4, 'HARD_STOP', '1.0', 2, null, 9, 'AP', 'APPROVED', 'A01B02', null, null),
+       (5, 'HARD_STOP', '1.0', 1, null, 9, 'AP', 'ACTIVE', 'A01B02', null, null),
+       (6, 'VARIATION', '2.0', 1, 1, null, 'AP', 'VARIATION_IN_PROGRESS', 'A01B02', null, 5);
