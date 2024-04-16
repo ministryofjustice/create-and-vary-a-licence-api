@@ -40,6 +40,9 @@ data class Prisoner(
   @get:Schema(description = "Prison ID", example = "MDI")
   var prisonId: String? = null,
 
+  @get:Schema(description = "Location Description", example = "Outside - released from Leeds")
+  var locationDescription: String? = null,
+
   @get:Schema(description = "Prison Name", example = "HMP Leeds")
   var prisonName: String? = null,
 

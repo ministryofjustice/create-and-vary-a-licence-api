@@ -592,6 +592,7 @@ fun PrisonerSearchPrisoner.toPrisoner() = Prisoner(
   dateOfBirth = this.dateOfBirth,
   status = this.status,
   prisonId = this.prisonId,
+  locationDescription = this.locationDescription,
   prisonName = this.prisonName,
   legalStatus = this.legalStatus,
   imprisonmentStatus = this.imprisonmentStatus,

@@ -62,6 +62,8 @@ data class PrisonerSearchPrisoner(
 
   val prisonId: String,
 
+  val locationDescription: String? = null,
+
   val prisonName: String? = null,
 
   val bookNumber: String,

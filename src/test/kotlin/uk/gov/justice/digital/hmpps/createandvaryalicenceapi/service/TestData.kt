@@ -246,6 +246,7 @@ object TestData {
     indeterminateSentence = false,
     recall = false,
     prisonId = "MDI",
+    locationDescription = "HMP Moorland",
     bookNumber = "12345A",
     firstName = "Bob",
     middleNames = null,
