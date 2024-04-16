@@ -356,6 +356,7 @@ class LicenceActivationServiceTest {
     indeterminateSentence = false,
     recall = false,
     prisonId = "ABC",
+    locationDescription = "HMP Moorland",
     bookNumber = "12345A",
     firstName = "Jane",
     middleNames = null,
