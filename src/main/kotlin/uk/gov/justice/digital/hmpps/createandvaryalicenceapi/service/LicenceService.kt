@@ -220,6 +220,20 @@ class LicenceService(
       notifyReApprovalNeeded(licenceEntity)
     }
 
+    if (request.status === APPROVED && licenceEntity is HardStopLicence) {
+      val com = licenceEntity.responsibleCom
+      if (com != null) {
+        notifyService.sendHardStopLicenceApprovedEmail(
+          com.email,
+          licenceEntity.forename ?: "unknown",
+          licenceEntity.surname ?: "unknown",
+          licenceEntity.crn,
+          licenceEntity.conditionalReleaseDate ?: licenceEntity.actualReleaseDate,
+          licenceEntity.id.toString(),
+        )
+      }
+    }
+
     recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
     auditStatusChange(updatedLicence, staffMember)
     domainEventsService.recordDomainEvent(updatedLicence, request.status)

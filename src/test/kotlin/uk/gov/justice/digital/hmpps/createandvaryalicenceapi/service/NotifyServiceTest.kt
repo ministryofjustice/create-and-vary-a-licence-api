@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
@@ -34,6 +35,7 @@ class NotifyServiceTest {
     variationReferredTemplateId = TEMPLATE_ID,
     variationForReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
+    hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -345,6 +347,7 @@ class NotifyServiceTest {
       client = notificationClient,
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
       releaseDateService = releaseDateService,
+      hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)
@@ -389,6 +392,56 @@ class NotifyServiceTest {
     notifyService.sendUnapprovedLicenceEmail(emailContent)
     verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedMap, null)
     verify(notificationClient).sendEmail(TEMPLATE_ID, INTERNAL_EMAIL_ADDRESS, expectedMap, null)
+  }
+
+  @Nested
+  inner class `approving hard stop licences` {
+    @Test
+    fun `send hard stop licence approved email to probation practitioner`() {
+      notifyService.sendHardStopLicenceApprovedEmail(
+        emailAddress = EMAIL_ADDRESS,
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        crd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+      )
+
+      val expectedMap = mapOf(
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+        "releaseDate" to "17 April 2024",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `No hard stop approval licence email is sent when CRD is empty`() {
+      notifyService.sendHardStopLicenceApprovedEmail(
+        emailAddress = EMAIL_ADDRESS,
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        crd = null,
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+
+    @Test
+    fun `No hard stop approval licence email is sent when email address is empty`() {
+      notifyService.sendHardStopLicenceApprovedEmail(
+        emailAddress = null,
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        crd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
   }
 
   private companion object {
