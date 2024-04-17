@@ -78,9 +78,9 @@ jobs:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle.kts" }}
       - store_test_results:
-           path: build/test-results
+          path: build/test-results
       - store_artifacts:
-           path: build/reports/tests
+          path: build/reports/tests
 
 workflows:
   version: 2
@@ -157,7 +157,7 @@ workflows:
           filters:
             branches:
               only:
-                - test1
+                - main
       - hmpps/deploy_env:
           name: deploy_test2
           env: "test2"
@@ -170,7 +170,6 @@ workflows:
             branches:
               only:
                 - main
-                - test2
   security:
     triggers:
       - schedule:

@@ -21,7 +21,7 @@ generic-service:
     HMPPS_PROBATIONSEARCH_API_URL: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence-dev.hmpps.service.justice.gov.uk"
     SELF_API_LINK: "https://create-and-vary-a-licence-api-dev.hmpps.service.justice.gov.uk"
-    HARDSTOP_ENABLED: true
+    HARDSTOP_ENABLED: false
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
