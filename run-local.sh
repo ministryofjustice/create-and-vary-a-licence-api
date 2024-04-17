@@ -49,6 +49,10 @@ export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=cvl
 export DB_PASS=cvl
 
+# Provide Notify details to access Notify
+# Match with the API key in hmpps-auth set for its dev profile
+export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.NOTIFY_API_KEY | @base64d')
+
 # Provide URLs to other local container-based dependent services
 # Match with ports defined in docker-compose.yml
 export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth

@@ -40,6 +40,9 @@ hmpps:
 hardstop:
   enabled: true
 
+notify:
+  enabled: false
+
 hmpps.sqs:
   provider: localstack
   localstackUrl: http://localhost:4666

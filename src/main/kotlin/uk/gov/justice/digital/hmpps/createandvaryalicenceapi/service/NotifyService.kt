@@ -24,6 +24,7 @@ class NotifyService(
   @Value("\${notify.templates.variationApproved}") private val variationApprovedTemplateId: String,
   @Value("\${notify.templates.variationReferred}") private val variationReferredTemplateId: String,
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
+  @Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -179,6 +180,28 @@ class NotifyService(
       if (it.urgentPromptCases.isNotEmpty()) {
         sendLicenceCreateEmail(urgentLicencePromptTemplateId, it.email, it.comName, it.urgentPromptCases)
       }
+    }
+  }
+
+  fun sendHardStopLicenceApprovedEmail(
+    emailAddress: String?,
+    firstName: String,
+    lastName: String,
+    crn: String?,
+    crd: LocalDate?,
+    licenceId: String,
+  ) {
+    if (emailAddress != null && crd != null) {
+      val values: Map<String, String> = mapOf(
+        "firstName" to firstName,
+        "lastName" to lastName,
+        "crn" to crn!!,
+        "releaseDate" to crd.format(dateFormat),
+      )
+      sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values, null)
+      log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")
+    } else {
+      log.error("Notification failed (hardStopLicenceApproved) for licence $licenceId - email and CRD must be present")
     }
   }
 
