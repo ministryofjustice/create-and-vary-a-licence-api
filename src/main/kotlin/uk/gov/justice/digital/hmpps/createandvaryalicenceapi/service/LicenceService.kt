@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -60,6 +61,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 
 @Service
 class LicenceService(
+  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val standardConditionRepository: StandardConditionRepository,
@@ -220,18 +222,8 @@ class LicenceService(
       notifyReApprovalNeeded(licenceEntity)
     }
 
-    if (request.status === APPROVED && licenceEntity is HardStopLicence) {
-      val com = licenceEntity.responsibleCom
-      if (com != null) {
-        notifyService.sendHardStopLicenceApprovedEmail(
-          com.email,
-          licenceEntity.forename ?: "unknown",
-          licenceEntity.surname ?: "unknown",
-          licenceEntity.crn,
-          licenceEntity.conditionalReleaseDate ?: licenceEntity.actualReleaseDate,
-          licenceEntity.id.toString(),
-        )
-      }
+    if (request.status === APPROVED && licenceEntity is HardStopLicence && hardStopEnabled) {
+      notifyHardStopApprovalNeeded(licenceEntity)
     }
 
     recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
@@ -313,6 +305,20 @@ class LicenceService(
       licenceEntity.nomsId,
       licenceEntity.conditionalReleaseDate,
     )
+  }
+
+  private fun notifyHardStopApprovalNeeded(licenceEntity: EntityLicence) {
+    val com = licenceEntity.responsibleCom
+    if (com != null) {
+      notifyService.sendHardStopLicenceApprovedEmail(
+        com.email,
+        licenceEntity.forename!!,
+        licenceEntity.surname!!,
+        licenceEntity.crn,
+        licenceEntity.licenceStartDate,
+        licenceEntity.id.toString(),
+      )
+    }
   }
 
   private fun deactivatePreviousLicenceVersion(licence: CrdLicence, fullName: String?, staffMember: Staff?) {

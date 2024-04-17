@@ -101,6 +101,7 @@ class LicenceServiceTest {
 
   private val service =
     LicenceService(
+      hardStopEnabled = true,
       licenceRepository,
       staffRepository,
       standardConditionRepository,
