@@ -204,7 +204,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
       .expectBody(Licence::class.java)
       .returnResult().responseBody
 
-    assertThat(auditEventRepository.count()).isEqualTo(2)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
     assertThat(licenceEventRepository.count()).isEqualTo(1)
     assertThat(previousLicence?.statusCode).isEqualTo(LicenceStatus.TIMED_OUT)
 
@@ -243,7 +243,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
       assertThat(firstValue.eventType).isEqualTo(LicenceDomainEventType.LICENCE_INACTIVATED.value)
     }
 
-    assertThat(auditEventRepository.count()).isEqualTo(4)
+    assertThat(auditEventRepository.count()).isEqualTo(3)
     assertThat(licenceEventRepository.count()).isEqualTo(2)
     assertThat(currentLicence?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }

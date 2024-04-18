@@ -9,16 +9,13 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.format.DateTimeFormatter
@@ -32,7 +29,6 @@ class UpdateSentenceDateService(
   private val prisonApiClient: PrisonApiClient,
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
-  private val licenceEventRepository: LicenceEventRepository,
   private val licenceService: LicenceService,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
@@ -67,14 +63,7 @@ class UpdateSentenceDateService(
       val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
 
       if (!licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && updatedLicenceEntity is CrdLicence) {
-        val timedOutLicence = updatedLicenceEntity.timeOut()
-        licenceRepository.saveAndFlush(timedOutLicence)
-        recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
-        recordAuditEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
-        recordLicenceEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
-        if (timedOutLicence.versionOfId != null) {
-          notifyComOfTimeout(timedOutLicence)
-        }
+        licenceService.timeout(updatedLicenceEntity, reason = "due to sentence dates update")
       } else {
         licenceRepository.saveAndFlush(updatedLicenceEntity)
         recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
@@ -192,38 +181,6 @@ class UpdateSentenceDateService(
           detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode} version ${this.version}",
         ),
       )
-    }
-  }
-
-  private fun recordLicenceEvent(licenceEntity: Licence, licenceEventDescription: String) {
-    with(licenceEntity) {
-      licenceEventRepository.saveAndFlush(
-        LicenceEvent(
-          licenceId = this.id,
-          eventType = LicenceEventType.TIMED_OUT,
-          username = "SYSTEM",
-          forenames = "SYSTEM",
-          surname = "SYSTEM",
-          eventDescription = "$licenceEventDescription for ${this.forename} ${this.surname}",
-        ),
-      )
-    }
-  }
-
-  private fun notifyComOfTimeout(licenceEntity: Licence) {
-    val com = licenceEntity.responsibleCom
-    if (com != null) {
-      with(licenceEntity) {
-        notifyService.sendEditedLicenceTimedOutEmail(
-          com.email,
-          "${com.firstName} ${com.lastName}",
-          this.forename!!,
-          this.surname!!,
-          this.crn,
-          this.licenceStartDate,
-          this.id.toString(),
-        )
-      }
     }
   }
 
