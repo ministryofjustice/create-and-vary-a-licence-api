@@ -52,21 +52,21 @@ data class PrisonerSearchPrisoner(
 
   val legalStatus: String? = null,
 
-  val indeterminateSentence: Boolean,
+  val indeterminateSentence: Boolean? = null,
 
   val imprisonmentStatus: String? = null,
 
   val imprisonmentStatusDescription: String? = null,
 
-  val recall: Boolean,
+  val recall: Boolean? = null,
 
-  val prisonId: String,
+  val prisonId: String? = null,
 
   val locationDescription: String? = null,
 
   val prisonName: String? = null,
 
-  val bookNumber: String,
+  val bookNumber: String? = null,
 
   val firstName: String,
 

@@ -6,6 +6,7 @@ import java.time.Clock
 import java.time.LocalDate
 
 typealias EligibilityCheck = (PrisonerSearchPrisoner) -> Boolean
+
 operator fun EligibilityCheck.not(): EligibilityCheck = { !this(it) }
 infix fun EligibilityCheck.describedAs(message: String): Pair<EligibilityCheck, String> = this to message
 
@@ -28,6 +29,7 @@ class EligibilityService(
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
     return getIneligibilityReasons(prisoner).isEmpty()
   }
+
   fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
     return checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
   }
@@ -43,7 +45,9 @@ class EligibilityService(
 
   private fun hasCorrectLegalStatus(): EligibilityCheck = { it.legalStatus != "DEAD" }
 
-  private fun isOnIndeterminateSentence(): EligibilityCheck = { it.indeterminateSentence }
+  private fun isOnIndeterminateSentence(): EligibilityCheck = {
+    it.indeterminateSentence ?: error("${it.prisonerNumber} missing indeterminateSentence")
+  }
 
   private fun hasConditionalReleaseDate(): EligibilityCheck = { it.conditionalReleaseDate != null }
 
@@ -92,6 +96,6 @@ class EligibilityService(
     }
 
     // Trust the Nomis recall flag as a fallback position - the above rules should always override
-    return@early it.recall
+    return@early it.recall ?: error("${it.prisonerNumber} missing recall flag")
   }
 }
