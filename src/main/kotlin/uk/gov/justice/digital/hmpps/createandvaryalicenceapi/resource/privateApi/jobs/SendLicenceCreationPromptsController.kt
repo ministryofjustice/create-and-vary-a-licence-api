@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,14 +18,11 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class SendLicenceCreationPromptsController(
-  private val notifyService: NotifyService,
-) {
+class SendLicenceCreationPromptsController {
   @PostMapping(
     value = ["/com/prompt-licence-creation"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -62,6 +60,18 @@ class SendLicenceCreationPromptsController(
     @RequestBody @Valid
     body: List<PromptLicenceCreationRequest>,
   ) {
-    notifyService.sendInitialLicenceCreateEmails(body)
+    log.warn(
+      "Received request to send licence creation emails\n" +
+        "      sending initial emails to ${body.size} contacts. \n" +
+        "      * initial emails to send: ${body.filter { it.initialPromptCases.isNotEmpty() }}\n" +
+        "      * urgent emails to send: ${body.filter { it.urgentPromptCases.isNotEmpty() }}\n" +
+        "      \"\"\".trimIndent(),\n" +
+        "    )",
+    )
+//     notifyService.sendInitialLicenceCreateEmails(body)
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
