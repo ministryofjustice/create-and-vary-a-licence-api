@@ -51,6 +51,7 @@ class PrisonerSearchServiceTest {
       prisonApiClient,
       eligibilityService,
       releaseDateService,
+      hardStopEnabled = true,
     )
 
   @BeforeEach
@@ -1332,7 +1333,7 @@ class PrisonerSearchServiceTest {
       true,
     )
 
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
       listOf(
         aPrisonerHdcStatus,
       ),
@@ -1359,7 +1360,7 @@ class PrisonerSearchServiceTest {
     )
 
     verify(prisonApiClient).getHdcStatuses(
-      listOf(aPrisonerSearchResult.bookingId.toLong()),
+      listOf(aPrisonerSearchResult.bookingId!!.toLong()),
     )
 
     val resultsList = result.results
@@ -1436,7 +1437,7 @@ class PrisonerSearchServiceTest {
       true,
     )
 
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
       listOf(
         aPrisonerHdcStatus.copy(
           approvalStatus = "APPROVED",
@@ -1613,6 +1614,7 @@ class PrisonerSearchServiceTest {
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
     with(result.results.first()) {
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
@@ -1670,6 +1672,7 @@ class PrisonerSearchServiceTest {
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
     with(result.results.first()) {
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.APPROVED)
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
@@ -1694,7 +1697,7 @@ class PrisonerSearchServiceTest {
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
     whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
       listOf(approvedHdc),
     )
 

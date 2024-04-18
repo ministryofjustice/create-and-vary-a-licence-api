@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 
@@ -28,6 +30,7 @@ class PrisonerSearchService(
   private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -127,7 +130,7 @@ class PrisonerSearchService(
   private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
     val bookingsWithHdc = this
       .filter { it.homeDetentionCurfewEligibilityDate != null }
-      .map { it.bookingId.toLong() }
+      .mapNotNull { it.bookingId?.toLong() }
     val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
     return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
   }
@@ -140,19 +143,21 @@ class PrisonerSearchService(
       this.filter { it.licenceStatus == NOT_STARTED }.mapNotNull { prisonerRecords[it.nomisId] }
     val bookingIdsWithHdc = prisonersForHdcCheck.findBookingsWithHdc()
 
-    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId.toLong()) }
+    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId?.toLong()) }
     return this.filter { it.isOnProbation == true || prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
   }
 
   private fun CaseloadResult.toUnstartedRecord(prisonOffender: PrisonerSearchPrisoner): FoundProbationRecord {
     val sentenceDateHolder = prisonOffender.toSentenceDateHolder()
+    val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
+
     return this.transformToUnstartedRecord(
       releaseDate = prisonOffender.getReleaseDate(),
       licenceType = LicenceType.getLicenceType(prisonOffender),
-      licenceStatus = NOT_STARTED,
+      licenceStatus = if (hardStopEnabled && inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
+      isInHardStopPeriod = inHardStopPeriod,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
     )
   }

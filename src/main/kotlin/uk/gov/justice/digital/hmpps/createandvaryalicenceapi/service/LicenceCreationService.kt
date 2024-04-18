@@ -111,7 +111,7 @@ class LicenceCreationService(
       ?: error("Staff with username $username not found")
 
     val timedOutLicence: CrdLicence? = licenceRepository.findByBookingIdAndStatusCodeOrderByDateCreatedDesc(
-      nomisRecord.bookingId.toLong(),
+      nomisRecord.bookingId!!.toLong(),
       TIMED_OUT,
     )
 

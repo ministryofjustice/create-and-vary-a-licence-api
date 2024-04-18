@@ -137,7 +137,7 @@ class LicenceCreationServiceTest {
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
         assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
-        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId.toLong())
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
         assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
         assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
         assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
@@ -673,7 +673,7 @@ class LicenceCreationServiceTest {
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
         assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
-        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId.toLong())
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
         assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
         assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
         assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
@@ -884,7 +884,7 @@ class LicenceCreationServiceTest {
 
       whenever(
         licenceRepository.findByBookingIdAndStatusCodeOrderByDateCreatedDesc(
-          aPrisonerSearchResult.bookingId.toLong(),
+          aPrisonerSearchResult.bookingId!!.toLong(),
           LicenceStatus.TIMED_OUT,
         ),
       ).thenReturn(
