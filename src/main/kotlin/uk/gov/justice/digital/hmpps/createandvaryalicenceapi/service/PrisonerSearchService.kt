@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 
@@ -28,6 +30,7 @@ class PrisonerSearchService(
   private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -146,13 +149,15 @@ class PrisonerSearchService(
 
   private fun CaseloadResult.toUnstartedRecord(prisonOffender: PrisonerSearchPrisoner): FoundProbationRecord {
     val sentenceDateHolder = prisonOffender.toSentenceDateHolder()
+    val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
+
     return this.transformToUnstartedRecord(
       releaseDate = prisonOffender.getReleaseDate(),
       licenceType = LicenceType.getLicenceType(prisonOffender),
-      licenceStatus = NOT_STARTED,
+      licenceStatus = if (hardStopEnabled && inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
+      isInHardStopPeriod = inHardStopPeriod,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
     )
   }

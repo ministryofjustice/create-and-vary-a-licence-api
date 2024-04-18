@@ -51,6 +51,7 @@ class PrisonerSearchServiceTest {
       prisonApiClient,
       eligibilityService,
       releaseDateService,
+      hardStopEnabled = true,
     )
 
   @BeforeEach
@@ -1613,6 +1614,7 @@ class PrisonerSearchServiceTest {
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
     with(result.results.first()) {
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
@@ -1670,6 +1672,7 @@ class PrisonerSearchServiceTest {
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
     with(result.results.first()) {
+      assertThat(licenceStatus).isEqualTo(LicenceStatus.APPROVED)
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
