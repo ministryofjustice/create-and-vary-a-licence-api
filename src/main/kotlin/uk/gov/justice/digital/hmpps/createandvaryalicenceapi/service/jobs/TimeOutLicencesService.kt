@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
@@ -9,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -18,12 +20,14 @@ import java.time.LocalDate
 
 @Service
 class TimeOutLicencesService(
+  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
   private val licenceRepository: LicenceRepository,
   private val releaseDateService: ReleaseDateService,
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
+  private val notifyService: NotifyService,
 ) {
 
   companion object {
@@ -76,6 +80,22 @@ class TimeOutLicencesService(
           eventDescription = "${reason ?: "Licence automatically timed out"} for ${licence.forename} ${licence.surname}",
         ),
       )
+
+      // previously approved now edited licence that is timed out
+      if (hardStopEnabled && licence.versionOfId != null) {
+        val com = licence.responsibleCom
+        if (com != null) {
+          notifyService.sendEditedLicenceTimedOutEmail(
+            com.email,
+            "${com.firstName} ${com.lastName}",
+            licence.forename!!,
+            licence.surname!!,
+            licence.crn,
+            licence.licenceStartDate,
+            licence.id.toString(),
+          )
+        }
+      }
     }
   }
 }

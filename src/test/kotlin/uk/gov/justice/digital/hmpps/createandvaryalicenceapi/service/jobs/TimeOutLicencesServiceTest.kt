@@ -5,11 +5,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -35,14 +37,17 @@ class TimeOutLicencesServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val workingDaysService = mock<WorkingDaysService>()
+  private val notifyService = mock<NotifyService>()
 
   private val service = TimeOutLicencesService(
+    hardStopEnabled = true,
     licenceRepository,
     releaseDateService,
     auditEventRepository,
     licenceEventRepository,
     workingDaysService,
     clock,
+    notifyService,
   )
 
   @BeforeEach
@@ -86,6 +91,7 @@ class TimeOutLicencesServiceTest {
 
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verifyNoInteractions(notifyService)
   }
 
   @Test
@@ -116,6 +122,7 @@ class TimeOutLicencesServiceTest {
 
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verifyNoInteractions(notifyService)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
@@ -175,6 +182,8 @@ class TimeOutLicencesServiceTest {
 
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
 
+    verifyNoInteractions(notifyService)
+
     assertThat(licenceCaptor.allValues.size).isEqualTo(1)
 
     assertThat(licenceCaptor.firstValue[0])
@@ -207,6 +216,75 @@ class TimeOutLicencesServiceTest {
           "SYSTEM",
           "SYSTEM",
           "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+  }
+
+  @Test
+  fun `should send notification when a previously approved now edited licence is timed out`() {
+    val approvedThenEditedLicence = aLicenceEntity.copy(
+      id = 2L,
+      versionOfId = 1L,
+    )
+    whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
+    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(
+      listOf(
+        approvedThenEditedLicence,
+      ),
+    )
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(
+      true,
+    )
+
+    service.timeOutLicences()
+
+    val licenceCaptor = argumentCaptor<List<CrdLicence>>()
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
+
+    verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.firstValue[0])
+      .extracting("statusCode", "updatedByUsername")
+      .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
+
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(notifyService, times(1)).sendEditedLicenceTimedOutEmail(
+      approvedThenEditedLicence.responsibleCom?.email,
+      "${approvedThenEditedLicence.responsibleCom?.firstName} ${approvedThenEditedLicence.responsibleCom?.lastName}",
+      approvedThenEditedLicence.forename!!,
+      approvedThenEditedLicence.surname!!,
+      approvedThenEditedLicence.crn!!,
+      approvedThenEditedLicence.licenceStartDate,
+      approvedThenEditedLicence.id.toString(),
+    )
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
+      .isEqualTo(
+        listOf(
+          2L,
+          "SYSTEM",
+          "SYSTEM",
+          AuditEventType.SYSTEM_EVENT,
+          "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname}",
+          "ID ${approvedThenEditedLicence.id} type ${approvedThenEditedLicence.typeCode} status ${LicenceStatus.TIMED_OUT} version ${approvedThenEditedLicence.version}",
+        ),
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+      .isEqualTo(
+        listOf(
+          2L,
+          LicenceEventType.TIMED_OUT,
+          "SYSTEM",
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname}",
         ),
       )
   }

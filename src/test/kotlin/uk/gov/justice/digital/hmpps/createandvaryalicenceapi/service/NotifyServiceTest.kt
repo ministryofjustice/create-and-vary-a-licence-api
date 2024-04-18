@@ -36,6 +36,7 @@ class NotifyServiceTest {
     variationForReApprovalTemplateId = TEMPLATE_ID,
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
+    editedLicenceTimedOutTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -348,6 +349,7 @@ class NotifyServiceTest {
       internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
       releaseDateService = releaseDateService,
       hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
+      editedLicenceTimedOutTemplateId = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)

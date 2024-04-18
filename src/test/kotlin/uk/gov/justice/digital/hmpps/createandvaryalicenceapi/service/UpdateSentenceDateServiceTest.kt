@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
@@ -752,289 +753,410 @@ class UpdateSentenceDateServiceTest {
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
-  @Test
-  fun `should set the license status to timed out if the licence is now in hard stop period but previously was not`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
-          passed = true,
+  @Nested
+  inner class `timing out licences` {
+    @Test
+    fun `should set the license status to timed out if the licence is now in hard stop period but previously was not`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+        Mono.just(
+          PrisonerHdcStatus(
+            approvalStatusDate = null,
+            approvalStatus = "REJECTED",
+            refusedReason = null,
+            checksPassedDate = null,
+            bookingId = aLicenceEntity.bookingId!!,
+            passed = true,
+          ),
         ),
-      ),
-    )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.now().plusDays(5),
-        actualReleaseDate = LocalDate.now().minusDays(2),
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
-      ),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM", aCom))
-
-    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(auditCaptor.allValues[0])
-      .extracting("licenceId", "username", "fullName", "summary", "eventType")
-      .isEqualTo(
-        listOf(
-          1L,
-          "SYSTEM",
-          "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          AuditEventType.SYSTEM_EVENT,
+      service.updateSentenceDates(
+        1L,
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now().plusDays(5),
+          actualReleaseDate = LocalDate.now().minusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceEndDate = LocalDate.parse("2024-09-11"),
+          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
         ),
       )
 
-    assertThat(auditCaptor.allValues[1])
-      .extracting("licenceId", "username", "fullName", "summary", "eventType")
-      .isEqualTo(
-        listOf(
-          1L,
-          "SYSTEM",
-          "SYSTEM",
-          "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          AuditEventType.SYSTEM_EVENT,
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      assertThat(licenceCaptor.value)
+        .extracting("statusCode", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM", aCom))
+
+      verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.allValues[0])
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+            AuditEventType.SYSTEM_EVENT,
+          ),
+        )
+
+      assertThat(auditCaptor.allValues[1])
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+            AuditEventType.SYSTEM_EVENT,
+          ),
+        )
+
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            1L,
+            LicenceEventType.TIMED_OUT,
+            "SYSTEM",
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          ),
+        )
+
+      verify(notifyService, times(1)).sendDatesChangedEmail(
+        "1",
+        aLicenceEntity.responsibleCom?.email,
+        "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+        "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        aLicenceEntity.crn,
+        mapOf(
+          "Release date has changed to 11 September 2023" to true,
+          "Licence end date has changed to 11 September 2024" to true,
+          "Sentence end date has changed to 11 September 2024" to true,
+          "Top up supervision start date has changed to 11 September 2024" to true,
+          "Top up supervision end date has changed to null" to true,
         ),
       )
 
-    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+      verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+      verify(notifyService, times(0)).sendEditedLicenceTimedOutEmail(any(), any(), any(), any(), any(), any(), any())
+    }
 
-    assertThat(eventCaptor.value)
-      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
-      .isEqualTo(
-        listOf(
-          1L,
-          LicenceEventType.TIMED_OUT,
-          "SYSTEM",
-          "SYSTEM",
-          "SYSTEM",
-          "Licence automatically timed out after sentence dates update for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+    @Test
+    fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createVariationLicence()))
+      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+        Mono.just(
+          PrisonerHdcStatus(
+            approvalStatusDate = null,
+            approvalStatus = "REJECTED",
+            refusedReason = null,
+            checksPassedDate = null,
+            bookingId = aLicenceEntity.bookingId!!,
+            passed = true,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+
+      service.updateSentenceDates(
+        1L,
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          actualReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceEndDate = LocalDate.parse("2024-09-11"),
+          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
         ),
       )
 
-    verify(notifyService, times(1)).sendDatesChangedEmail(
-      "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
-      mapOf(
-        "Release date has changed to 11 September 2023" to true,
-        "Licence end date has changed to 11 September 2024" to true,
-        "Sentence end date has changed to 11 September 2024" to true,
-        "Top up supervision start date has changed to 11 September 2024" to true,
-        "Top up supervision end date has changed to null" to true,
-      ),
-    )
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
 
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-  }
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
 
-  @Test
-  fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createVariationLicence()))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      ),
-    )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+      assertThat(licenceCaptor.value)
+        .extracting(
+          "conditionalReleaseDate",
+          "actualReleaseDate",
+          "sentenceStartDate",
+          "sentenceEndDate",
+          "licenceStartDate",
+          "licenceExpiryDate",
+          "topupSupervisionStartDate",
+          "topupSupervisionExpiryDate",
+          "updatedByUsername",
+          "updatedBy",
+          "statusCode",
+        )
+        .isEqualTo(
+          listOf(
+            LocalDate.parse("2023-09-11"),
+            LocalDate.parse("2023-09-11"),
+            LocalDate.parse("2021-09-11"),
+            LocalDate.parse("2024-09-11"),
+            LocalDate.parse("2023-09-11"),
+            LocalDate.parse("2024-09-11"),
+            LocalDate.parse("2024-09-11"),
+            LocalDate.parse("2025-09-11"),
+            aCom.username,
+            aCom,
+            LicenceStatus.VARIATION_IN_PROGRESS,
+          ),
+        )
 
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      ),
-    )
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          ),
+        )
 
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(licenceCaptor.value)
-      .extracting(
-        "conditionalReleaseDate",
-        "actualReleaseDate",
-        "sentenceStartDate",
-        "sentenceEndDate",
-        "licenceStartDate",
-        "licenceExpiryDate",
-        "topupSupervisionStartDate",
-        "topupSupervisionExpiryDate",
-        "updatedByUsername",
-        "updatedBy",
-        "statusCode",
-      )
-      .isEqualTo(
-        listOf(
-          LocalDate.parse("2023-09-11"),
-          LocalDate.parse("2023-09-11"),
-          LocalDate.parse("2021-09-11"),
-          LocalDate.parse("2024-09-11"),
-          LocalDate.parse("2023-09-11"),
-          LocalDate.parse("2024-09-11"),
-          LocalDate.parse("2024-09-11"),
-          LocalDate.parse("2025-09-11"),
-          aCom.username,
-          aCom,
-          LicenceStatus.VARIATION_IN_PROGRESS,
+      verify(notifyService, times(1)).sendDatesChangedEmail(
+        "1",
+        aLicenceEntity.responsibleCom?.email,
+        "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
+        "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        aLicenceEntity.crn,
+        mapOf(
+          "Release date has changed to 11 September 2023" to true,
+          "Licence end date has changed to 11 September 2024" to true,
+          "Sentence end date has changed to 11 September 2024" to true,
+          "Top up supervision start date has changed to 11 September 2024" to true,
+          "Top up supervision end date has changed to 11 September 2025" to true,
         ),
       )
 
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
-        listOf(
-          1L,
-          "SYSTEM",
-          "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-        ),
-      )
+      verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+      verifyNoInteractions(licenceEventRepository)
+      verify(notifyService, times(0)).sendEditedLicenceTimedOutEmail(any(), any(), any(), any(), any(), any(), any())
+    }
 
-    verify(notifyService, times(1)).sendDatesChangedEmail(
-      "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
-      mapOf(
-        "Release date has changed to 11 September 2023" to true,
-        "Licence end date has changed to 11 September 2024" to true,
-        "Sentence end date has changed to 11 September 2024" to true,
-        "Top up supervision start date has changed to 11 September 2024" to true,
-        "Top up supervision end date has changed to 11 September 2025" to true,
-      ),
-    )
-
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-    verifyNoInteractions(licenceEventRepository)
-  }
-
-  @Test
-  fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period`() {
-    val inHardStopLicence = aLicenceEntity.copy(
-      statusCode = LicenceStatus.TIMED_OUT,
-      conditionalReleaseDate = LocalDate.now(),
-      actualReleaseDate = LocalDate.now(),
-      sentenceStartDate = LocalDate.now().minusYears(2),
-      sentenceEndDate = LocalDate.now().plusYears(1),
-      licenceStartDate = LocalDate.now(),
-      licenceExpiryDate = LocalDate.now().plusYears(1),
-      topupSupervisionStartDate = LocalDate.now().plusYears(1),
-      topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
-    )
-
-    val noLongerInHardStopLicence = inHardStopLicence.copy(
-      conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-      actualReleaseDate = LocalDate.now().plusWeeks(1),
-      licenceStartDate = LocalDate.now().plusWeeks(1),
-    )
-
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      ),
-    )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true, false)
-    whenever(
-      licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-        inHardStopLicence.bookingId!!,
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
-        listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
-      ),
-    ).thenReturn(listOf(noLongerInHardStopLicence))
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-        actualReleaseDate = LocalDate.now().plusWeeks(1),
+    @Test
+    fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period`() {
+      val inHardStopLicence = aLicenceEntity.copy(
+        statusCode = LicenceStatus.TIMED_OUT,
+        conditionalReleaseDate = LocalDate.now(),
+        actualReleaseDate = LocalDate.now(),
         sentenceStartDate = LocalDate.now().minusYears(2),
         sentenceEndDate = LocalDate.now().plusYears(1),
-        licenceStartDate = LocalDate.now().plusWeeks(1),
+        licenceStartDate = LocalDate.now(),
         licenceExpiryDate = LocalDate.now().plusYears(1),
         topupSupervisionStartDate = LocalDate.now().plusYears(1),
         topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
-      ),
-    )
+      )
 
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val noLongerInHardStopLicence = inHardStopLicence.copy(
+        conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+        actualReleaseDate = LocalDate.now().plusWeeks(1),
+        licenceStartDate = LocalDate.now().plusWeeks(1),
+      )
 
-    verify(licenceService, times(1)).inactivateLicences(
-      listOf(noLongerInHardStopLicence),
-      UpdateSentenceDateService.LICENCE_DEACTIVATION_HARD_STOP,
-    )
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
+      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+        Mono.just(
+          PrisonerHdcStatus(
+            approvalStatusDate = null,
+            approvalStatus = "REJECTED",
+            refusedReason = null,
+            checksPassedDate = null,
+            bookingId = aLicenceEntity.bookingId!!,
+            passed = true,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true, false)
+      whenever(
+        licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+          inHardStopLicence.bookingId!!,
+          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
+          listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+        ),
+      ).thenReturn(listOf(noLongerInHardStopLicence))
 
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    assertThat(licenceCaptor.value)
-      .extracting("statusCode", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(LicenceStatus.TIMED_OUT, aCom.username, aCom))
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary", "eventType")
-      .isEqualTo(
-        listOf(
-          1L,
-          "SYSTEM",
-          "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-          AuditEventType.SYSTEM_EVENT,
+      service.updateSentenceDates(
+        1L,
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+          actualReleaseDate = LocalDate.now().plusWeeks(1),
+          sentenceStartDate = LocalDate.now().minusYears(2),
+          sentenceEndDate = LocalDate.now().plusYears(1),
+          licenceStartDate = LocalDate.now().plusWeeks(1),
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionStartDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
         ),
       )
 
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+      verify(licenceService, times(1)).inactivateLicences(
+        listOf(noLongerInHardStopLicence),
+        UpdateSentenceDateService.LICENCE_DEACTIVATION_HARD_STOP,
+      )
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      assertThat(licenceCaptor.value)
+        .extracting("statusCode", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, aCom.username, aCom))
+
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+            AuditEventType.SYSTEM_EVENT,
+          ),
+        )
+
+      verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+      verify(notifyService, times(0)).sendEditedLicenceTimedOutEmail(any(), any(), any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `should send notification when the license status is timed out and licence is a previously approved edit`() {
+      val approvedThenEditedLicence = aLicenceEntity.copy(
+        id = 2L,
+        versionOfId = 1L,
+      )
+
+      whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(approvedThenEditedLicence))
+      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+        Mono.just(
+          PrisonerHdcStatus(
+            approvalStatusDate = null,
+            approvalStatus = "REJECTED",
+            refusedReason = null,
+            checksPassedDate = null,
+            bookingId = approvedThenEditedLicence.bookingId!!,
+            passed = true,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+
+      service.updateSentenceDates(
+        2L,
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now().plusDays(5),
+          actualReleaseDate = LocalDate.now().minusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceEndDate = LocalDate.parse("2024-09-11"),
+          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      assertThat(licenceCaptor.value)
+        .extracting("statusCode", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM", aCom))
+
+      verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.allValues[0])
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            2L,
+            "SYSTEM",
+            "SYSTEM",
+            "Sentence dates updated for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname}",
+            AuditEventType.SYSTEM_EVENT,
+          ),
+        )
+
+      assertThat(auditCaptor.allValues[1])
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            2L,
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out after sentence dates update for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname}",
+            AuditEventType.SYSTEM_EVENT,
+          ),
+        )
+
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            2L,
+            LicenceEventType.TIMED_OUT,
+            "SYSTEM",
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out after sentence dates update for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname}",
+          ),
+        )
+
+      verify(notifyService, times(1)).sendDatesChangedEmail(
+        "2",
+        approvedThenEditedLicence.responsibleCom?.email,
+        "${approvedThenEditedLicence.responsibleCom?.firstName} ${approvedThenEditedLicence.responsibleCom?.lastName}",
+        "${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname}",
+        approvedThenEditedLicence.crn,
+        mapOf(
+          "Release date has changed to 11 September 2023" to true,
+          "Licence end date has changed to 11 September 2024" to true,
+          "Sentence end date has changed to 11 September 2024" to true,
+          "Top up supervision start date has changed to 11 September 2024" to true,
+          "Top up supervision end date has changed to null" to true,
+        ),
+      )
+
+      verify(notifyService, times(1)).sendEditedLicenceTimedOutEmail(
+        approvedThenEditedLicence.responsibleCom?.email,
+        "${approvedThenEditedLicence.responsibleCom?.firstName} ${approvedThenEditedLicence.responsibleCom?.lastName}",
+        approvedThenEditedLicence.forename!!,
+        approvedThenEditedLicence.surname!!,
+        approvedThenEditedLicence.crn!!,
+        LocalDate.of(2023, 9, 11),
+        approvedThenEditedLicence.id.toString(),
+      )
+
+      verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+    }
   }
 
   private companion object {

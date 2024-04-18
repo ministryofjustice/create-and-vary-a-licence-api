@@ -2580,7 +2580,7 @@ class LicenceServiceTest {
         submittedLicence.forename!!,
         submittedLicence.surname!!,
         submittedLicence.crn,
-        submittedLicence.conditionalReleaseDate ?: submittedLicence.actualReleaseDate,
+        submittedLicence.licenceStartDate,
         submittedLicence.id.toString(),
       )
 

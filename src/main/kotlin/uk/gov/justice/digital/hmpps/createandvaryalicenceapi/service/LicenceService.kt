@@ -223,7 +223,7 @@ class LicenceService(
     }
 
     if (request.status === APPROVED && licenceEntity is HardStopLicence && hardStopEnabled) {
-      notifyHardStopApprovalNeeded(licenceEntity)
+      notifyComAboutHardstopLicenceApproval(licenceEntity)
     }
 
     recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
@@ -307,7 +307,7 @@ class LicenceService(
     )
   }
 
-  private fun notifyHardStopApprovalNeeded(licenceEntity: EntityLicence) {
+  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
     val com = licenceEntity.responsibleCom
     if (com != null) {
       notifyService.sendHardStopLicenceApprovedEmail(

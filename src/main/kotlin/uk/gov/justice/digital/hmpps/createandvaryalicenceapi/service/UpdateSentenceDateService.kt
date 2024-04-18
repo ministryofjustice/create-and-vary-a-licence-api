@@ -72,6 +72,9 @@ class UpdateSentenceDateService(
         recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
         recordAuditEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
         recordLicenceEvent(timedOutLicence, "Licence automatically timed out after sentence dates update")
+        if (timedOutLicence.versionOfId != null) {
+          notifyComOfTimeout(timedOutLicence)
+        }
       } else {
         licenceRepository.saveAndFlush(updatedLicenceEntity)
         recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
@@ -204,6 +207,23 @@ class UpdateSentenceDateService(
           eventDescription = "$licenceEventDescription for ${this.forename} ${this.surname}",
         ),
       )
+    }
+  }
+
+  private fun notifyComOfTimeout(licenceEntity: Licence) {
+    val com = licenceEntity.responsibleCom
+    if (com != null) {
+      with(licenceEntity) {
+        notifyService.sendEditedLicenceTimedOutEmail(
+          com.email,
+          "${com.firstName} ${com.lastName}",
+          this.forename!!,
+          this.surname!!,
+          this.crn,
+          this.licenceStartDate,
+          this.id.toString(),
+        )
+      }
     }
   }
 
