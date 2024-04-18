@@ -130,7 +130,7 @@ class PrisonerSearchService(
   private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
     val bookingsWithHdc = this
       .filter { it.homeDetentionCurfewEligibilityDate != null }
-      .map { it.bookingId.toLong() }
+      .mapNotNull { it.bookingId?.toLong() }
     val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
     return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
   }
@@ -143,7 +143,7 @@ class PrisonerSearchService(
       this.filter { it.licenceStatus == NOT_STARTED }.mapNotNull { prisonerRecords[it.nomisId] }
     val bookingIdsWithHdc = prisonersForHdcCheck.findBookingsWithHdc()
 
-    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId.toLong()) }
+    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId?.toLong()) }
     return this.filter { it.isOnProbation == true || prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
   }
 

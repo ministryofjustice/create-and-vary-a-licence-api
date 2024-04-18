@@ -32,7 +32,7 @@ class LicenceActivationService(
       return
     }
     val matchedLicences = prisonerSearchApiClient.searchPrisonersByBookingIds(potentialLicences.keys)
-      .map { LicenceWithPrisoner(potentialLicences[it.bookingId.toLong()]!!, it) }
+      .map { LicenceWithPrisoner(potentialLicences[it.bookingId?.toLong()]!!, it) }
 
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(matchedLicences)
     val (iS91licencesToActivate, standardLicencesToActivate) = determineEligibleLicencesToActivate(eligibleLicences)
