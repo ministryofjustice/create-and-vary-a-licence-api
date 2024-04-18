@@ -60,7 +60,7 @@ class LicenceCreationService(
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId)
+    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
@@ -101,7 +101,7 @@ class LicenceCreationService(
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
     val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
-    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId)
+    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
