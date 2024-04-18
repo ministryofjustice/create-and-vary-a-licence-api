@@ -118,7 +118,7 @@ class ComIntegrationTest : IntegrationTestBase() {
           LocalDate.now().plusDays(1),
           null,
           LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
+          LicenceStatus.TIMED_OUT,
           false,
         ),
       )
@@ -209,7 +209,7 @@ class ComIntegrationTest : IntegrationTestBase() {
           LocalDate.now().plusDays(1),
           null,
           LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
+          LicenceStatus.TIMED_OUT,
           false,
         ),
       )
