@@ -1332,7 +1332,7 @@ class PrisonerSearchServiceTest {
       true,
     )
 
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
       listOf(
         aPrisonerHdcStatus,
       ),
@@ -1359,7 +1359,7 @@ class PrisonerSearchServiceTest {
     )
 
     verify(prisonApiClient).getHdcStatuses(
-      listOf(aPrisonerSearchResult.bookingId.toLong()),
+      listOf(aPrisonerSearchResult.bookingId!!.toLong()),
     )
 
     val resultsList = result.results
@@ -1436,7 +1436,7 @@ class PrisonerSearchServiceTest {
       true,
     )
 
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
       listOf(
         aPrisonerHdcStatus.copy(
           approvalStatus = "APPROVED",
@@ -1694,7 +1694,7 @@ class PrisonerSearchServiceTest {
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
     whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId.toLong()))).thenReturn(
+    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
       listOf(approvedHdc),
     )
 

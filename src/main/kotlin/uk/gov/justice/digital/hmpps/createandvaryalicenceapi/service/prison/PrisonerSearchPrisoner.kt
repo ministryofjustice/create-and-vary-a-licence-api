@@ -10,7 +10,7 @@ data class SearchPaginationResponse(
 data class PrisonerSearchPrisoner(
   val prisonerNumber: String,
   val pncNumber: String? = null,
-  val bookingId: String,
+  val bookingId: String? = null,
   val status: String? = null,
   val mostSeriousOffence: String?,
 
@@ -50,7 +50,7 @@ data class PrisonerSearchPrisoner(
   @JsonFormat(pattern = "yyyy-MM-dd")
   val postRecallReleaseDate: LocalDate? = null,
 
-  val legalStatus: String,
+  val legalStatus: String? = null,
 
   val indeterminateSentence: Boolean,
 
