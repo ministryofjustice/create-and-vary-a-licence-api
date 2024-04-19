@@ -26,6 +26,7 @@ class NotifyService(
   @Value("\${notify.templates.unapprovedLicence}") private val unapprovedLicenceByCrdTemplateId: String,
   @Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
+  @Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -227,6 +228,28 @@ class NotifyService(
       log.info("Notification sent to $emailAddress EDITED LICENCE TIMED OUT for $licenceId $firstName $lastName")
     } else {
       log.error("Notification failed (editedLicenceTimedOut) for licence $licenceId - email and CRD must be present")
+    }
+  }
+
+  fun sendHardStopLicenceReviewOverdueEmail(
+    emailAddress: String?,
+    comName: String,
+    firstName: String,
+    lastName: String,
+    crn: String?,
+    licenceId: String,
+  ) {
+    if (emailAddress != null) {
+      val values: Map<String, String> = mapOf(
+        "comName" to comName,
+        "firstName" to firstName,
+        "lastName" to lastName,
+        "crn" to crn!!,
+      )
+      sendEmail(hardStopLicenceReviewOverdueTemplateId, emailAddress, values, null)
+      log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
+    } else {
+      log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
     }
   }
 
