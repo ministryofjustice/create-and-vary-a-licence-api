@@ -2,12 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
 @Schema(description = "Describes a search result which has been found and enriched")
 data class FoundProbationRecord(
+  @Schema(description = "kind of licence, null if no licence exists", example = "CRD")
+  val kind: LicenceKind? = null,
 
   @Schema(description = "The forename and surname of the offender")
   val name: String = "",
@@ -56,6 +59,9 @@ data class FoundProbationRecord(
 
   @Schema(description = "The ID of the most recent and relevant licence", example = "123344")
   val licenceId: Long? = null,
+
+  @Schema(description = "The licence Id which this licence is a version of", example = "86")
+  val versionOf: Long? = null,
 
   @Schema(description = "The type of licence")
   val licenceType: LicenceType? = null,

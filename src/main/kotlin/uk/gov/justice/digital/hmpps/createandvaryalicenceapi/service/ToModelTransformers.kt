@@ -455,6 +455,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   isDueForEarlyRelease: Boolean,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
+    kind = licence?.kind,
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence?.crn,
     nomisId = licence?.nomsId,
@@ -463,6 +464,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     teamName = manager.team.description ?: licence?.probationTeamDescription,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
     licenceId = licence?.id,
+    versionOf = if (licence is CrdLicence) licence?.versionOfId else null,
     licenceType = licence?.typeCode,
     licenceStatus = licence?.statusCode,
     isOnProbation = licence?.statusCode?.isOnProbation(),
@@ -483,6 +485,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   isDueForEarlyRelease: Boolean,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
+    kind = null,
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = identifiers.crn,
     nomisId = identifiers.noms,

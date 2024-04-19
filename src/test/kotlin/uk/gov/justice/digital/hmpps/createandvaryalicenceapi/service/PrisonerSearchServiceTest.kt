@@ -14,6 +14,7 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
@@ -1680,6 +1682,43 @@ class PrisonerSearchServiceTest {
   }
 
   @Test
+  fun `Kind and version of are populated for started CRD licences`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(listOf(createCrdLicence().copy(versionOfId = 2L)))
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(kind).isEqualTo(LicenceKind.CRD)
+      assertThat(versionOf).isEqualTo(2L)
+    }
+  }
+
+  @Test
   fun `get ineligibility reasons for absent offender`() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
 
@@ -1706,7 +1745,7 @@ class PrisonerSearchServiceTest {
   }
 
   private companion object {
-    val aLicenceEntity = TestData.createCrdLicence()
+    val aLicenceEntity = createCrdLicence()
 
     val aPrisonerSearchResult = PrisonerSearchPrisoner(
       prisonerNumber = "A1234AA",
