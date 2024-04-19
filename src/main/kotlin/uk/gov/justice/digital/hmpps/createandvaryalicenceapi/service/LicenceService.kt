@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
@@ -223,7 +224,7 @@ class LicenceService(
     }
 
     if (request.status === APPROVED && licenceEntity is HardStopLicence && hardStopEnabled) {
-      notifyHardStopApprovalNeeded(licenceEntity)
+      notifyComAboutHardstopLicenceApproval(licenceEntity)
     }
 
     recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
@@ -307,7 +308,7 @@ class LicenceService(
     )
   }
 
-  private fun notifyHardStopApprovalNeeded(licenceEntity: EntityLicence) {
+  private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
     val com = licenceEntity.responsibleCom
     if (com != null) {
       notifyService.sendHardStopLicenceApprovedEmail(
@@ -1020,6 +1021,48 @@ class LicenceService(
     val licences = licenceRepository.getLicencesReadyForApproval(prisons)
       .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
     return licences.map { it.toApprovalSummaryView() }
+  }
+
+  @Transactional
+  fun timeout(licence: CrdLicence, reason: String? = null) {
+    val timedOutLicence = licence.timeOut()
+    licenceRepository.saveAndFlush(timedOutLicence)
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = timedOutLicence.id,
+        username = "SYSTEM",
+        fullName = "SYSTEM",
+        eventType = AuditEventType.SYSTEM_EVENT,
+        summary = "Licence automatically timed out for ${timedOutLicence.forename} ${timedOutLicence.surname} ${reason ?: ""}",
+        detail = "ID ${timedOutLicence.id} type ${timedOutLicence.typeCode} status ${timedOutLicence.statusCode} version ${timedOutLicence.version}",
+      ),
+    )
+    licenceEventRepository.saveAndFlush(
+      LicenceEvent(
+        licenceId = timedOutLicence.id,
+        eventType = LicenceEventType.TIMED_OUT,
+        username = "SYSTEM",
+        forenames = "SYSTEM",
+        surname = "SYSTEM",
+        eventDescription = "Licence automatically timed out for ${timedOutLicence.forename} ${timedOutLicence.surname} ${reason ?: ""}",
+      ),
+    )
+    if (timedOutLicence.versionOfId != null) {
+      val com = timedOutLicence.responsibleCom
+      if (com != null) {
+        with(timedOutLicence) {
+          notifyService.sendEditedLicenceTimedOutEmail(
+            com.email,
+            "${com.firstName} ${com.lastName}",
+            this.forename!!,
+            this.surname!!,
+            this.crn,
+            this.licenceStartDate,
+            this.id.toString(),
+          )
+        }
+      }
+    }
   }
 
   private fun EntityLicence.toSummary() =

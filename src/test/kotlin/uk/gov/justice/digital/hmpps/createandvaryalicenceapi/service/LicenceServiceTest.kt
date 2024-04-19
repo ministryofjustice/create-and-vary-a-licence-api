@@ -2580,7 +2580,7 @@ class LicenceServiceTest {
         submittedLicence.forename!!,
         submittedLicence.surname!!,
         submittedLicence.crn,
-        submittedLicence.conditionalReleaseDate ?: submittedLicence.actualReleaseDate,
+        submittedLicence.licenceStartDate,
         submittedLicence.id.toString(),
       )
 
@@ -2652,6 +2652,171 @@ class LicenceServiceTest {
             USER_EVENT,
           ),
         )
+    }
+  }
+
+  @Nested
+  inner class `timing out licences` {
+
+    @Test
+    fun `should time out licence, persist and audit upon timeout`() {
+      service.timeout(
+        aLicenceEntity,
+        "due to entering hard stop",
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      assertThat(licenceCaptor.value)
+        .extracting("statusCode", "updatedByUsername")
+        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
+
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            1L,
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname} due to entering hard stop",
+            SYSTEM_EVENT,
+          ),
+        )
+
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            1L,
+            LicenceEventType.TIMED_OUT,
+            "SYSTEM",
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out for ${aLicenceEntity.forename} ${aLicenceEntity.surname} due to entering hard stop",
+          ),
+        )
+
+      verifyNoInteractions(notifyService)
+    }
+
+    @Test
+    fun `should also send notification when the license status is timed out and licence is a previously approved edit`() {
+      val approvedThenEditedLicence = aLicenceEntity.copy(
+        id = 2L,
+        versionOfId = 1L,
+      )
+      service.timeout(
+        approvedThenEditedLicence,
+        "due to sentence date changes",
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      assertThat(licenceCaptor.value)
+        .extracting("statusCode", "updatedByUsername")
+        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
+
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            2L,
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname} due to sentence date changes",
+            SYSTEM_EVENT,
+          ),
+        )
+
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            2L,
+            LicenceEventType.TIMED_OUT,
+            "SYSTEM",
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname} due to sentence date changes",
+          ),
+        )
+
+      verify(notifyService, times(1)).sendEditedLicenceTimedOutEmail(
+        approvedThenEditedLicence.responsibleCom?.email,
+        "${approvedThenEditedLicence.responsibleCom?.firstName} ${approvedThenEditedLicence.responsibleCom?.lastName}",
+        approvedThenEditedLicence.forename!!,
+        approvedThenEditedLicence.surname!!,
+        approvedThenEditedLicence.crn!!,
+        approvedThenEditedLicence.licenceStartDate,
+        approvedThenEditedLicence.id.toString(),
+      )
+    }
+
+    @Test
+    fun `should not send notification when there is no com`() {
+      val approvedThenEditedLicence = aLicenceEntity.copy(
+        id = 2L,
+        versionOfId = 1L,
+        responsibleCom = null,
+      )
+      service.timeout(
+        approvedThenEditedLicence,
+        "due to sentence date changes",
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      assertThat(licenceCaptor.value)
+        .extracting("statusCode", "updatedByUsername")
+        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
+
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary", "eventType")
+        .isEqualTo(
+          listOf(
+            2L,
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname} due to sentence date changes",
+            SYSTEM_EVENT,
+          ),
+        )
+
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+        .isEqualTo(
+          listOf(
+            2L,
+            LicenceEventType.TIMED_OUT,
+            "SYSTEM",
+            "SYSTEM",
+            "SYSTEM",
+            "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname} due to sentence date changes",
+          ),
+        )
+
+      verifyNoInteractions(notifyService)
     }
   }
 
