@@ -1741,8 +1741,7 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(listOf(createCrdLicence().copy(versionOfId = 2L)))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
       .thenReturn(listOf(aPrisonerSearchResult))
@@ -1757,7 +1756,7 @@ class PrisonerSearchServiceTest {
   }
 
   @Test
-  fun `Release date label reads 'CRD' when no confirmed release date is provided by NOMIS`() {
+  fun `Release date label reads 'CRD' when no confirmed release date is provided by NOMIS for not started CRD licences`() {
     whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
@@ -1778,8 +1777,7 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(listOf(createCrdLicence().copy(versionOfId = 2L)))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
       .thenReturn(
