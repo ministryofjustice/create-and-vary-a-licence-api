@@ -61,8 +61,11 @@ class UpdateSentenceDateService(
     if (hardStopEnabled) {
       val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
       val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
+      val isLicenceStatusInProgress = updatedLicenceEntity.statusCode == LicenceStatus.IN_PROGRESS
+      val isTimedOut =
+        !licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && isLicenceStatusInProgress
 
-      if (!licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && updatedLicenceEntity is CrdLicence) {
+      if (isTimedOut && updatedLicenceEntity is CrdLicence) {
         licenceService.timeout(updatedLicenceEntity, reason = "due to sentence dates update")
       } else {
         licenceRepository.saveAndFlush(updatedLicenceEntity)
