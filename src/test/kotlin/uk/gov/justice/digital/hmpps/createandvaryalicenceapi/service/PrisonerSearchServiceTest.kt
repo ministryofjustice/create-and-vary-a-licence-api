@@ -15,6 +15,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -1715,6 +1716,130 @@ class PrisonerSearchServiceTest {
     with(result.results.first()) {
       assertThat(kind).isEqualTo(LicenceKind.CRD)
       assertThat(versionOf).isEqualTo(2L)
+    }
+  }
+
+  @Test
+  fun `Release date label and is review needed are populated for not started CRD licences`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(listOf(createCrdLicence().copy(versionOfId = 2L)))
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
+      assertThat(isReviewNeeded).isFalse()
+    }
+  }
+
+  @Test
+  fun `Release date label reads 'CRD' when no confirmed release date is provided by NOMIS`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(listOf(createCrdLicence().copy(versionOfId = 2L)))
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            confirmedReleaseDate = null,
+          ),
+        ),
+      )
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDateLabel).isEqualTo("CRD")
+      assertThat(isReviewNeeded).isFalse
+    }
+  }
+
+  @Test
+  fun `Release date label and is review needed are populated for started hard stop licence`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        listOf(
+          createHardStopLicence().copy(
+            statusCode = LicenceStatus.ACTIVE,
+            reviewDate = null,
+          ),
+        ),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
+      assertThat(isReviewNeeded).isTrue()
     }
   }
 
