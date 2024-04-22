@@ -169,7 +169,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         FROM licence
         WHERE kind = 'HARD_STOP'
         AND review_date IS NULL
-        AND DATE(licence_activated_date) + INTERVAL '5' DAY = CURRENT_DATE;
+        AND CAST(licence_activated_date as DATE) + INTERVAL '5' DAY = CURRENT_DATE;
     """,
     nativeQuery = true,
   )
