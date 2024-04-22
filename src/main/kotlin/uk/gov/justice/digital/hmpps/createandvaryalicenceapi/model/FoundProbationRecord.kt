@@ -72,4 +72,10 @@ data class FoundProbationRecord(
   @Schema(description = "Indicates whether the offender is in prison or out on probation")
   val isOnProbation: Boolean? = null,
 
+  @Schema(description = "Label for release date", example = "Confirmed release date")
+  val releaseDateLabel: String? = null,
+
+  @Schema(description = "Is a review of this licence is required", example = "true")
+  val isReviewNeeded: Boolean? = null,
+
 )

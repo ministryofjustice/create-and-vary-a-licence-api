@@ -159,6 +159,7 @@ class PrisonerSearchService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
       isInHardStopPeriod = inHardStopPeriod,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
+      releaseDateLabel = if (prisonOffender.confirmedReleaseDate != null) "Confirmed release date" else "CRD",
     )
   }
 

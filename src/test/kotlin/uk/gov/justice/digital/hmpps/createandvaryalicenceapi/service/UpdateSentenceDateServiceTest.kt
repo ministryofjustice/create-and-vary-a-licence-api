@@ -786,6 +786,47 @@ class UpdateSentenceDateServiceTest {
     }
 
     @Test
+    fun `should not time out if the licence is not an in progress licence`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.SUBMITTED,
+          ),
+        ),
+      )
+      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+        Mono.just(
+          PrisonerHdcStatus(
+            approvalStatusDate = null,
+            approvalStatus = "REJECTED",
+            refusedReason = null,
+            checksPassedDate = null,
+            bookingId = aLicenceEntity.bookingId!!,
+            passed = true,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+
+      service.updateSentenceDates(
+        1L,
+        UpdateSentenceDatesRequest(
+          conditionalReleaseDate = LocalDate.now().plusDays(5),
+          actualReleaseDate = LocalDate.now().minusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceEndDate = LocalDate.parse("2024-09-11"),
+          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
+      )
+
+      verify(licenceService, times(0)).timeout(any(), any())
+    }
+
+    @Test
     fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createVariationLicence()))
       whenever(prisonApiClient.getHdcStatus(any())).thenReturn(

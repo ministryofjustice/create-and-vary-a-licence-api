@@ -472,6 +472,11 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
+    releaseDateLabel = if (licence?.actualReleaseDate != null) "Confirmed release date" else "CRD",
+    isReviewNeeded = when (licence) {
+      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+      else -> false
+    },
   )
 }
 
@@ -483,6 +488,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
+  releaseDateLabel: String,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     kind = null,
@@ -501,6 +507,8 @@ fun CaseloadResult.transformToUnstartedRecord(
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
+    releaseDateLabel = releaseDateLabel,
+    isReviewNeeded = false,
   )
 }
 
