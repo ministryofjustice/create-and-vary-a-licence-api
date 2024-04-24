@@ -26,6 +26,9 @@ data class CvlFields(
 
   @Schema(description = "Is the prisoner due for early release")
   val isDueForEarlyRelease: Boolean = false,
+
+  @Schema(description = "Is the prisoner due to be released in the next two working days")
+  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
 )
 
 @Schema(description = "An item in the caseload")

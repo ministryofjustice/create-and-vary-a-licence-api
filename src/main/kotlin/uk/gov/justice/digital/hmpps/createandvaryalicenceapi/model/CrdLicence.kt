@@ -270,6 +270,9 @@ data class CrdLicence(
   @Schema(description = "Is the prisoner due for early release")
   val isDueForEarlyRelease: Boolean = false,
 
+  @Schema(description = "Is the prisoner due to be released in the next two working days")
+  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
+
   @Schema(description = "Is a review of this licence is required", example = "true")
   override val isReviewNeeded: Boolean = false,
 

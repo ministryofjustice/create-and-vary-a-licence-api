@@ -125,6 +125,9 @@ data class LicenceSummary(
   @Schema(description = "Is the prisoner due for early release")
   val isDueForEarlyRelease: Boolean = false,
 
+  @Schema(description = "Is the prisoner due to be released in the next two working days")
+  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
+
   @Schema(
     description = "The case reference number (CRN) of this person, from either prison or probation service",
     example = "X12344",

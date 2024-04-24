@@ -1613,6 +1613,8 @@ class PrisonerSearchServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
+    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
@@ -1621,6 +1623,8 @@ class PrisonerSearchServiceTest {
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
+      assertThat(isDueForEarlyRelease).isEqualTo(true)
+      assertThat(isDueToBeReleasedInTheNextTwoWorkingDays).isEqualTo(true)
     }
   }
 
@@ -1671,6 +1675,8 @@ class PrisonerSearchServiceTest {
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
+    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
@@ -1679,6 +1685,8 @@ class PrisonerSearchServiceTest {
       assertThat(isInHardStopPeriod).isEqualTo(true)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2023, 2, 12))
       assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2023, 3, 14))
+      assertThat(isDueForEarlyRelease).isEqualTo(true)
+      assertThat(isDueToBeReleasedInTheNextTwoWorkingDays).isEqualTo(true)
     }
   }
 
