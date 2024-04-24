@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumber
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.DUTY_OFFICER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -72,9 +73,26 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", aCom.username, aCom))
+    assertThat(licenceCaptor.value).extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy").isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", aCom.username, aCom))
+  }
+
+  @Test
+  fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointmentPerson = "Bob")))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    service.updateAppointmentPerson(
+      1L,
+      AppointmentPersonRequest(
+        appointmentPersonType = DUTY_OFFICER,
+        appointmentPerson = "John Smith",
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    assertThat(licenceCaptor.value).extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy").isEqualTo(listOf(DUTY_OFFICER, null, aCom.username, aCom))
   }
 
   @Test
@@ -113,9 +131,7 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentTime", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(tenDaysFromNow, aCom.username, aCom))
+    assertThat(licenceCaptor.value).extracting("appointmentTime", "updatedByUsername", "updatedBy").isEqualTo(listOf(tenDaysFromNow, aCom.username, aCom))
   }
 
   @Test
@@ -148,9 +164,7 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentContact", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("0114 2565555", aCom.username, aCom))
+    assertThat(licenceCaptor.value).extracting("appointmentContact", "updatedByUsername", "updatedBy").isEqualTo(listOf("0114 2565555", aCom.username, aCom))
   }
 
   @Test
@@ -180,9 +194,7 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentAddress", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", aCom.username, aCom))
+    assertThat(licenceCaptor.value).extracting("appointmentAddress", "updatedByUsername", "updatedBy").isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", aCom.username, aCom))
   }
 
   @Test
@@ -224,9 +236,7 @@ class AppointmentServiceTest {
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
 
-    assertThat(licenceCaptor.value)
-      .extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", SYSTEM_USER, aPreviousUser))
+    assertThat(licenceCaptor.value).extracting("appointmentPersonType", "appointmentPerson", "updatedByUsername", "updatedBy").isEqualTo(listOf(AppointmentPersonType.SPECIFIC_PERSON, "John Smith", SYSTEM_USER, aPreviousUser))
   }
 
   private companion object {
