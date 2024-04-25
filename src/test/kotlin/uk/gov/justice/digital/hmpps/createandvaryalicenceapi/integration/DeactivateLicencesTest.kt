@@ -61,7 +61,7 @@ class DeactivateLicencesTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(deactivatedLicences?.size).isEqualTo(3)
+    assertThat(deactivatedLicences?.size).isEqualTo(4)
     assertThat(deactivatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -70,10 +70,11 @@ class DeactivateLicencesTest : IntegrationTestBase() {
         tuple(1L, LicenceStatus.INACTIVE),
         tuple(6L, LicenceStatus.INACTIVE),
         tuple(7L, LicenceStatus.INACTIVE),
+        tuple(8L, LicenceStatus.INACTIVE),
       )
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(3)).publishDomainEvent(capture())
+      verify(eventsPublisher, times(4)).publishDomainEvent(capture())
       assertThat(allValues).allMatch { it.eventType == LicenceDomainEventType.LICENCE_INACTIVATED.value }
     }
   }

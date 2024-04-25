@@ -17,5 +17,6 @@ values (1, 'CRD', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, null, curren
        (4, 'CRD', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date + 1, current_date + 1, '1.1', 1),
        (5, 'CRD', '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date + 1, current_date + 1, '1.1', 3),
        (6, 'CRD', '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date - 1, current_date + 1, '1.1', 3),
-       (7, 'CRD', '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date - 1, null, '1.1', 3);
+       (7, 'HARD_STOP', '1.0', 1, 1, 'AP', 'G4169UO', 'SUBMITTED', 432, current_date - 1, null, '1.1', 3),
+       (8, 'CRD', '1.0', 1, 1, 'AP', 'G4169UO', 'TIMED_OUT', 432, current_date - 1, null, '1.1', 3);
 

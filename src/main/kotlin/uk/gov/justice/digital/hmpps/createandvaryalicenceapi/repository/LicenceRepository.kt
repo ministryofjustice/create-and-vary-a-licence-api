@@ -110,7 +110,8 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         FROM Licence l
         WHERE l.statusCode  IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
         )
         AND COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) < CURRENT_DATE
     """,
