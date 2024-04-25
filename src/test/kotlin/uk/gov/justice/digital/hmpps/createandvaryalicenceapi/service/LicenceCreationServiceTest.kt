@@ -883,13 +883,11 @@ class LicenceCreationServiceTest {
       val previousLicence = TestData.createCrdLicence().copy(id = 1234L)
 
       whenever(
-        licenceRepository.findByBookingIdAndStatusCodeOrderByDateCreatedDesc(
-          aPrisonerSearchResult.bookingId!!.toLong(),
+        licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+          listOf(aPrisonerSearchResult.bookingId!!.toLong()),
           LicenceStatus.TIMED_OUT,
         ),
-      ).thenReturn(
-        previousLicence,
-      )
+      ).thenReturn(listOf(previousLicence))
 
       service.createHardStopLicence(prisonNumber)
 
