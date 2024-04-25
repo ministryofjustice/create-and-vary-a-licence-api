@@ -22,6 +22,7 @@ import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -191,7 +192,7 @@ abstract class Licence(
     staffMember: Staff?,
   ) {
     this.appointmentPersonType = appointmentPersonType
-    this.appointmentPerson = appointmentPerson
+    this.appointmentPerson = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
