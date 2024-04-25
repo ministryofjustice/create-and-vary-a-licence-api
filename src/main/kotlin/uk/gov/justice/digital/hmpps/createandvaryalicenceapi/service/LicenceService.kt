@@ -117,6 +117,7 @@ class LicenceService(
         hardStopDate = releaseDateService.getHardStopDate(licence),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
         isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
         conditionSubmissionStatus = conditionSubmissionStatus,
       )
 
@@ -135,6 +136,7 @@ class LicenceService(
         hardStopDate = releaseDateService.getHardStopDate(licence),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
         isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
         conditionSubmissionStatus = conditionSubmissionStatus,
       )
 
@@ -1072,6 +1074,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
     )
 
   private fun EntityLicence.toApprovalSummaryView(): LicenceSummaryApproverView {
@@ -1081,6 +1084,7 @@ class LicenceService(
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
       isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
     )
   }
 }

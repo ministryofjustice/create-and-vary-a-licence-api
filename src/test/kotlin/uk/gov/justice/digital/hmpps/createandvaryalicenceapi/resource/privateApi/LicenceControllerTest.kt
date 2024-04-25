@@ -729,6 +729,7 @@ class LicenceControllerTest {
       hardStopWarningDate = LocalDate.of(2020, 1, 4),
       isInHardStopPeriod = true,
       isDueForEarlyRelease = true,
+      isDueToBeReleasedInTheNextTwoWorkingDays = true,
     )
   }
 }
