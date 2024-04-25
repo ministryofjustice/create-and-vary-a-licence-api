@@ -38,7 +38,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLice
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-fun transformToLicenceSummary(licence: Licence, hardStopDate: LocalDate?, hardStopWarningDate: LocalDate?, isInHardStopPeriod: Boolean, isDueForEarlyRelease: Boolean): LicenceSummary {
+fun transformToLicenceSummary(
+  licence: Licence,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
+): LicenceSummary {
   return LicenceSummary(
     kind = licence.kind,
     licenceId = licence.id,
@@ -83,6 +90,7 @@ fun transformToLicenceSummary(licence: Licence, hardStopDate: LocalDate?, hardSt
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   )
 }
 
@@ -94,6 +102,7 @@ fun toHardstop(
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelHardstopLicence(
   id = licence.id,
@@ -166,6 +175,7 @@ fun toHardstop(
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   isInHardStopPeriod = isInHardStopPeriod,
   isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   hardStopDate = hardStopDate,
   hardStopWarningDate = hardStopWarningDate,
   submittedByFullName = licence.getSubmittedByFullName(),
@@ -258,6 +268,7 @@ fun toCrd(
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   conditionSubmissionStatus: Map<String, Boolean>,
 ) = ModelCrdLicence(
   id = licence.id,
@@ -331,6 +342,7 @@ fun toCrd(
   hardStopWarningDate = hardStopWarningDate,
   isInHardStopPeriod = isInHardStopPeriod,
   isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
@@ -453,6 +465,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
     kind = licence?.kind,
@@ -464,7 +477,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     teamName = manager.team.description ?: licence?.probationTeamDescription,
     releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
     licenceId = licence?.id,
-    versionOf = if (licence is CrdLicence) licence?.versionOfId else null,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
     licenceType = licence?.typeCode,
     licenceStatus = licence?.statusCode,
     isOnProbation = licence?.statusCode?.isOnProbation(),
@@ -472,6 +485,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = if (licence?.actualReleaseDate != null) "Confirmed release date" else "CRD",
     isReviewNeeded = when (licence) {
       is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
@@ -488,6 +502,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   releaseDateLabel: String,
 ): ModelFoundProbationRecord {
   return ModelFoundProbationRecord(
@@ -507,6 +522,7 @@ fun CaseloadResult.transformToUnstartedRecord(
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = releaseDateLabel,
     isReviewNeeded = false,
   )
@@ -541,6 +557,7 @@ fun transformToApprovalLicenceSummary(
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
 ): LicenceSummaryApproverView {
   return LicenceSummaryApproverView(
     licenceId = licence.id,
@@ -588,6 +605,7 @@ fun transformToApprovalLicenceSummary(
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   )
 }
 

@@ -175,6 +175,7 @@ class LicenceServiceTest {
     )
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2022, 1, 3))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2022, 1, 1))
 
@@ -182,6 +183,7 @@ class LicenceServiceTest {
 
     assertThat(licence.isInHardStopPeriod).isTrue()
     assertThat(licence.isDueForEarlyRelease).isTrue()
+    assertThat(licence.isDueToBeReleasedInTheNextTwoWorkingDays).isTrue()
     assertThat(licence.hardStopDate).isEqualTo(LocalDate.of(2022, 1, 3))
     assertThat(licence.hardStopWarningDate).isEqualTo(LocalDate.of(2022, 1, 1))
   }

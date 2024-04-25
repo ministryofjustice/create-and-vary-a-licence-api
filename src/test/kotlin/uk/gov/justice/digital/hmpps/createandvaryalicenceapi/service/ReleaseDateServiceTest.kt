@@ -252,7 +252,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = null,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
     }
 
     @Test
@@ -265,7 +265,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = cutOff.plusDays(1),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
     }
 
     @Test
@@ -278,7 +278,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = cutOff.minusDays(1),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
     }
 
     @Test
@@ -290,7 +290,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
     }
 
     @Test
@@ -302,7 +302,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = LocalDate.now(now),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
     }
 
     @Test
@@ -315,7 +315,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = LocalDate.now(now).minusDays(1),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
     }
 
     @Test
@@ -327,7 +327,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isTrue()
+      assertThat(service.isInHardStopPeriod(licence, now)).isTrue
     }
 
     @Test
@@ -340,7 +340,7 @@ class ReleaseDateServiceTest {
         licenceStartDate = null,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
     }
 
     @Test
@@ -352,7 +352,95 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = null,
       )
 
-      assertThat(service.isInHardStopPeriod(licence, now)).isFalse()
+      assertThat(service.isInHardStopPeriod(licence, now)).isFalse
+    }
+  }
+
+  @Nested
+  inner class `Licence is due to be released in the next two days` {
+    val thisClock = createClock("2024-04-22T00:00:00Z")
+    val today = LocalDate.now(thisClock)
+
+    private val service = ReleaseDateService(clock = thisClock, workingDaysService)
+
+    @Test
+    fun `false if there is no release date`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = null,
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
+    }
+
+    @Test
+    fun `false when CRD is yesterday`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = today.minusDays(1),
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
+    }
+
+    @Test
+    fun `true when CRD is today`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = today,
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
+    }
+
+    @Test
+    fun `true when CRD is 1 day in the future`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = today.plusDays(1),
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
+    }
+
+    @Test
+    fun `true when CRD is 2 working days in the future`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = today.plusDays(2),
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
+    }
+
+    @Test
+    fun `false when CRD is more than 2 working days in the future`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = today.plusDays(3),
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
+    }
+
+    @Test
+    fun `takes the earliest date when ard is earliest`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = today.plusDays(2),
+        conditionalReleaseDate = today.plusDays(3),
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
+    }
+
+    @Test
+    fun `takes the earliest date when crd is earliest`() {
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = today.plusDays(3),
+        conditionalReleaseDate = today.plusDays(2),
+      )
+
+      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
   }
 
@@ -458,7 +546,7 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = date.minusDays(3),
       )
 
-      assertThat(service.isDueForEarlyRelease(licence)).isFalse()
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
     }
   }
 
@@ -631,7 +719,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-01-05")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isTrue()
+      assertThat(isEligibleForEarlyRelease).isTrue
     }
 
     @Test
@@ -639,7 +727,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-01-06")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isTrue()
+      assertThat(isEligibleForEarlyRelease).isTrue
     }
 
     @Test
@@ -647,7 +735,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-01-07")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isTrue()
+      assertThat(isEligibleForEarlyRelease).isTrue
     }
 
     @Test
@@ -655,7 +743,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-03-30")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isTrue()
+      assertThat(isEligibleForEarlyRelease).isTrue
     }
 
     @Test
@@ -663,7 +751,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-04-02")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isTrue()
+      assertThat(isEligibleForEarlyRelease).isTrue
     }
 
     @Test
@@ -671,7 +759,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-07-05")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isFalse()
+      assertThat(isEligibleForEarlyRelease).isFalse
     }
 
     @Test
@@ -679,7 +767,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-07-04")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isFalse()
+      assertThat(isEligibleForEarlyRelease).isFalse
     }
 
     @Test
@@ -687,7 +775,7 @@ class ReleaseDateServiceTest {
       val actualReleaseDate = LocalDate.parse("2018-07-02")
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
-      assertThat(isEligibleForEarlyRelease).isFalse()
+      assertThat(isEligibleForEarlyRelease).isFalse
     }
   }
 

@@ -57,6 +57,9 @@ data class FoundProbationRecord(
   @Schema(description = "Is the prisoner due for early release")
   val isDueForEarlyRelease: Boolean = false,
 
+  @Schema(description = "Is the prisoner due to be released in the next two working days")
+  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
+
   @Schema(description = "The ID of the most recent and relevant licence", example = "123344")
   val licenceId: Long? = null,
 

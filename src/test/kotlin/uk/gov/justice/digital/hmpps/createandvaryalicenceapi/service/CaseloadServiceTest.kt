@@ -33,6 +33,8 @@ class CaseloadServiceTest {
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+    whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
   }
 
   @Test
@@ -46,6 +48,8 @@ class CaseloadServiceTest {
           hardStopDate = LocalDate.of(2023, 10, 12),
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
+          isDueForEarlyRelease = true,
+          isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -99,6 +103,8 @@ class CaseloadServiceTest {
           hardStopDate = LocalDate.of(2023, 10, 12),
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
+          isDueForEarlyRelease = true,
+          isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -159,6 +165,8 @@ class CaseloadServiceTest {
           hardStopDate = LocalDate.of(2023, 10, 12),
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
+          isDueForEarlyRelease = true,
+          isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
