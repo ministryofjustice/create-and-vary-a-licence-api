@@ -779,6 +779,16 @@ class LicenceService(
 
     if (previousLicence is HardStopLicence) {
       previousLicence.markAsReviewed(user)
+      licenceEventRepository.saveAndFlush(
+        EntityLicenceEvent(
+          licenceId = licenceId,
+          eventType = LicenceEventType.HARD_STOP_REVIEWED_WITH_VARIATION,
+          username = user.username,
+          forenames = user.firstName,
+          surname = user.lastName,
+          eventDescription = "Licence reviewed with variation for ${licence.forename} ${licence.surname}",
+        ),
+      )
     }
 
     updateLicenceStatus(
@@ -1015,11 +1025,11 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.HARD_STOP_REVIEWED,
+        eventType = LicenceEventType.HARD_STOP_REVIEWED_WITHOUT_VARIATION,
         username = staffMember?.username ?: SYSTEM_USER,
         forenames = staffMember?.firstName,
         surname = staffMember?.lastName,
-        eventDescription = "Licence reviewed without being varied",
+        eventDescription = "Licence reviewed without being varied for ${licenceEntity.forename} ${licenceEntity.surname}",
       ),
     )
 
