@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import java.time.Clock
 import java.time.Instant
@@ -31,8 +32,14 @@ class ReleaseDateServiceTest {
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 
-  private fun getEarliestDate(actualReleaseDate: LocalDate): LocalDate {
-    return service.getEarliestReleaseDate(actualReleaseDate)
+  private fun getEarliestDate(actualReleaseDate: LocalDate): LocalDate? {
+    return service.getEarliestReleaseDate(
+      object : SentenceDateHolder {
+        override val licenceStartDate: LocalDate? = null
+        override val conditionalReleaseDate: LocalDate? = null
+        override val actualReleaseDate: LocalDate? = actualReleaseDate
+      },
+    )
   }
 
   @Nested
