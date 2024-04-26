@@ -37,6 +37,7 @@ class NotifyServiceTest {
     unapprovedLicenceByCrdTemplateId = TEMPLATE_ID,
     hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     editedLicenceTimedOutTemplateId = TEMPLATE_ID,
+    hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -350,6 +351,7 @@ class NotifyServiceTest {
       releaseDateService = releaseDateService,
       hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
       editedLicenceTimedOutTemplateId = TEMPLATE_ID,
+      hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)
@@ -440,6 +442,97 @@ class NotifyServiceTest {
         lastName = "Doe",
         crn = "A123456",
         crd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+  }
+
+  @Nested
+  inner class `edited licences timed out` {
+    @Test
+    fun `send edited licence timed out email to COM`() {
+      notifyService.sendEditedLicenceTimedOutEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        crd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+      )
+
+      val expectedMap = mapOf(
+        "comName" to "Joe Bloggs",
+        "prisonerFirstName" to "John",
+        "prisonerLastName" to "Doe",
+        "crn" to "A123456",
+        "crd" to "17 April 2024",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `No edited licence timed out email is sent when CRD is empty`() {
+      notifyService.sendEditedLicenceTimedOutEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        crd = null,
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+
+    @Test
+    fun `No edited licence timed out email is sent when email address is empty`() {
+      notifyService.sendEditedLicenceTimedOutEmail(
+        emailAddress = null,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        crd = LocalDate.of(2024, 4, 17),
+        licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+  }
+
+  @Nested
+  inner class `hard stop licence review overdue` {
+    @Test
+    fun `send hard stop licence review overdue email to COM`() {
+      notifyService.sendHardStopLicenceReviewOverdueEmail(
+        emailAddress = EMAIL_ADDRESS,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
+        licenceId = "1",
+      )
+
+      val expectedMap = mapOf(
+        "comName" to "Joe Bloggs",
+        "firstName" to "John",
+        "lastName" to "Doe",
+        "crn" to "A123456",
+      )
+
+      verify(notificationClient).sendEmail(TEMPLATE_ID, EMAIL_ADDRESS, expectedMap, null)
+    }
+
+    @Test
+    fun `No hard stop licence review overdue email is sent when email address is empty`() {
+      notifyService.sendHardStopLicenceReviewOverdueEmail(
+        emailAddress = null,
+        comName = "Joe Bloggs",
+        firstName = "John",
+        lastName = "Doe",
+        crn = "A123456",
         licenceId = "1",
       )
       verifyNoInteractions(notificationClient)
