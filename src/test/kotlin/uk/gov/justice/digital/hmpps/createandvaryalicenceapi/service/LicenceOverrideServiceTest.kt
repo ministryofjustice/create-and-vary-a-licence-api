@@ -46,8 +46,9 @@ class LicenceOverrideServiceTest {
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
   private val staffRepository = mock<StaffRepository>()
+  private val licenceService = mock<LicenceService>()
   private val licenceOverrideService =
-    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService, staffRepository)
+    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService, staffRepository, licenceService)
 
   @BeforeEach
   fun reset() {
@@ -222,6 +223,27 @@ class LicenceOverrideServiceTest {
     assertThat(licenceEventCaptor.value)
       .extracting("licenceId", "username", "eventType", "eventDescription")
       .isEqualTo(listOf(approvedLicenceA.id, aCom.username, LicenceEventType.ACTIVATED, reasonForChange))
+  }
+
+  @Test
+  fun `inactivates timed out licences when new licence status is ACTIVE`() {
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(inactiveLicenceA, approvedLicenceA, approvedLicenceB),
+    )
+
+    whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
+
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    val reasonForChange = "Test licenceActivatedDate when licence is made $ACTIVE"
+
+    licenceOverrideService.changeStatus(
+      approvedLicenceA.id,
+      ACTIVE,
+      reasonForChange,
+    )
+
+    verify(licenceService).inactivateTimedOutLicenceVersions(listOf(approvedLicenceA), "Deactivating timed out licence as the licence status was overridden to active")
   }
 
   @Test

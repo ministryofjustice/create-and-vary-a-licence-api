@@ -120,6 +120,7 @@ notify:
     variationReferred: e124b2ff-68e1-4364-894b-b723289d1fdc
     hardStopLicenceApproved: 0cf3be7c-7179-41d1-b287-1bd269057714
     editedLicenceTimedOut: 3db6954b-f16f-4c77-b028-ccfa4f87fb62
+    hardStopLicenceReviewOverdue: fd1388a3-8d22-4d51-898f-4cd277ab8314
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'

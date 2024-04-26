@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -19,7 +20,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
   fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<CrdLicence>
-  fun findByBookingIdAndStatusCodeOrderByDateCreatedDesc(bookingId: Long, status: LicenceStatus): CrdLicence?
+  fun findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(bookingId: List<Long>, status: LicenceStatus): List<CrdLicence>
   fun findAllByBookingIdAndStatusCodeInAndKindIn(
     bookingId: Long,
     status: List<LicenceStatus>,
@@ -162,6 +163,18 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   """,
   )
   fun getLicencesReadyForApproval(prisonCodes: List<String>): List<Licence>
+
+  @Query(
+    """
+      SELECT *
+        FROM licence
+        WHERE kind = 'HARD_STOP'
+        AND review_date IS NULL
+        AND CAST(licence_activated_date as DATE) + INTERVAL '5' DAY = CURRENT_DATE;
+    """,
+    nativeQuery = true,
+  )
+  fun getHardStopLicencesNeedingReview(): List<HardStopLicence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
