@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
@@ -50,6 +51,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED
@@ -191,6 +193,10 @@ class LicenceService(
         supersededDate = null
         licenceActivatedDate = LocalDateTime.now()
         inactivateInProgressLicenceVersions(
+          listOf(licenceEntity),
+          "Deactivating licence as the parent licence version was activated",
+        )
+        inactivateTimedOutLicenceVersions(
           listOf(licenceEntity),
           "Deactivating licence as the parent licence version was activated",
         )
@@ -488,6 +494,7 @@ class LicenceService(
         activatedLicences,
         "Licence automatically deactivated as the approved licence version was activated",
       )
+      inactivateTimedOutLicenceVersions(activatedLicences, "Licence automatically deactivated as the approved licence version was activated")
     }
   }
 
@@ -527,9 +534,7 @@ class LicenceService(
         domainEventsService.recordDomainEvent(licence, INACTIVE)
       }
       if (deactivateInProgressVersions == true) {
-        inactivateInProgressLicenceVersions(
-          inActivatedLicences,
-        )
+        inactivateInProgressLicenceVersions(inActivatedLicences)
       }
     }
   }
@@ -537,7 +542,10 @@ class LicenceService(
   @Transactional
   fun inActivateLicencesByIds(licenceIds: List<Long>) {
     val matchingLicences = licenceRepository.findAllById(licenceIds)
-    inactivateLicences(matchingLicences)
+    inactivateLicences(
+      matchingLicences,
+      deactivateInProgressVersions = true,
+    )
   }
 
   @Transactional
@@ -971,7 +979,18 @@ class LicenceService(
     val licencesToDeactivate =
       licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(licenceIds, listOf(IN_PROGRESS, SUBMITTED))
     if (licencesToDeactivate.isNotEmpty()) {
-      inactivateLicences(licencesToDeactivate, reason, false)
+      inactivateLicences(licencesToDeactivate, reason, deactivateInProgressVersions = false)
+    }
+  }
+
+  @Transactional
+  fun inactivateTimedOutLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
+    val bookingIds = licences.mapNotNull { it.bookingId }
+    val licencesToDeactivate =
+      licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(bookingIds, TIMED_OUT)
+    if (licencesToDeactivate.isNotEmpty()) {
+      log.info("deactivating timeout licences: ${licencesToDeactivate.map { it.id }}")
+      inactivateLicences(licencesToDeactivate, reason, deactivateInProgressVersions = false)
     }
   }
 
@@ -1086,5 +1105,9 @@ class LicenceService(
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
     )
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }

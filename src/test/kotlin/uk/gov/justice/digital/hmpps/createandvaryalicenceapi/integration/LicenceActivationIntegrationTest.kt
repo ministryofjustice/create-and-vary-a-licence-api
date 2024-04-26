@@ -20,7 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
@@ -44,11 +45,17 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(5)).publishDomainEvent(capture())
-      val activationEvents = allValues.filter { it.eventType == LicenceDomainEventType.LICENCE_ACTIVATED.value }
-      assertThat(activationEvents).hasSize(3)
-      val inactivatedEvents = allValues.filter { it.eventType == LicenceDomainEventType.LICENCE_INACTIVATED.value }
-      assertThat(inactivatedEvents).hasSize(2)
+      verify(eventsPublisher, times(7)).publishDomainEvent(capture())
+
+      assertThat(allValues).extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }.containsExactly(
+        tuple(LICENCE_ACTIVATED.value, "1"),
+        tuple(LICENCE_ACTIVATED.value, "2"),
+        tuple(LICENCE_ACTIVATED.value, "3"),
+        tuple(LICENCE_ACTIVATED.value, "7"),
+        tuple(LICENCE_INACTIVATED.value, "4"),
+        tuple(LICENCE_INACTIVATED.value, "5"),
+        tuple(LICENCE_INACTIVATED.value, "6"),
+      )
     }
 
     val activatedLicences = webTestClient.post()
@@ -60,7 +67,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(activatedLicences?.size).isEqualTo(3)
+    assertThat(activatedLicences?.size).isEqualTo(4)
     assertThat(activatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -69,6 +76,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(1L, LicenceStatus.ACTIVE),
         tuple(2L, LicenceStatus.ACTIVE),
         tuple(3L, LicenceStatus.ACTIVE),
+        tuple(7L, LicenceStatus.ACTIVE),
       )
 
     val deactivatedLicences = webTestClient.post()
@@ -80,7 +88,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(deactivatedLicences?.size).isEqualTo(2)
+    assertThat(deactivatedLicences?.size).isEqualTo(3)
     assertThat(deactivatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -88,6 +96,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .contains(
         tuple(4L, LicenceStatus.INACTIVE),
         tuple(5L, LicenceStatus.INACTIVE),
+        tuple(6L, LicenceStatus.INACTIVE),
       )
   }
 

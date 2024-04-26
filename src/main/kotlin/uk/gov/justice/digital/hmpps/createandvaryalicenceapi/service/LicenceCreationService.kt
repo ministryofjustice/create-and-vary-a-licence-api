@@ -110,10 +110,10 @@ class LicenceCreationService(
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
 
-    val timedOutLicence: CrdLicence? = licenceRepository.findByBookingIdAndStatusCodeOrderByDateCreatedDesc(
-      nomisRecord.bookingId!!.toLong(),
+    val timedOutLicence: CrdLicence? = licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+      listOf(nomisRecord.bookingId!!.toLong()),
       TIMED_OUT,
-    )
+    ).firstOrNull()
 
     val licence = LicenceFactory.createHardStop(
       licenceType = getLicenceType(nomisRecord),

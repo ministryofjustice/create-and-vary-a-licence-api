@@ -54,6 +54,19 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "firstName": "Test3",
                   "lastName": "Person3",
                   "dateOfBirth": "1987-01-01"
+               },
+               {
+                  "prisonerNumber": "G7285AA",
+                  "bookingId": "521",
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "12345C",
+                  "firstName": "Test4",
+                  "lastName": "Person4",
+                  "dateOfBirth": "1987-01-01"
                }
               ]
             """.trimIndent(),

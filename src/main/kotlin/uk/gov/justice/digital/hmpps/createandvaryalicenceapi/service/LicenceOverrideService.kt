@@ -27,6 +27,7 @@ class LicenceOverrideService(
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
   private val staffRepository: StaffRepository,
+  private val licenceService: LicenceService,
 ) {
 
   companion object {
@@ -66,6 +67,10 @@ class LicenceOverrideService(
 
     if (newStatus == LicenceStatus.ACTIVE) {
       licenceActivatedDate = LocalDateTime.now()
+      licenceService.inactivateTimedOutLicenceVersions(
+        listOf(licence),
+        "Deactivating timed out licence as the licence status was overridden to active",
+      )
     }
 
     licenceRepository.saveAndFlush(

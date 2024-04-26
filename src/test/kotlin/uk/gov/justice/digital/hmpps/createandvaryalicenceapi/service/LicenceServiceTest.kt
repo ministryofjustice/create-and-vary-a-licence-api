@@ -74,6 +74,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -898,6 +899,67 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `update licence status to ACTIVE deactivates any TIMED_OUT version of a licence`() {
+    val timedOutLicenceVersion =
+      aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.TIMED_OUT, versionOfId = aLicenceEntity.id)
+
+    whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(
+      licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+        listOf(aLicenceEntity.bookingId!!),
+        TIMED_OUT,
+      ),
+    ).thenReturn(listOf(timedOutLicenceVersion))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    service.updateLicenceStatus(
+      1L,
+      StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "smills", fullName = "Y"),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val timedOutLicenceCaptor = argumentCaptor<List<EntityLicence>>()
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceRepository, times(1)).saveAllAndFlush(timedOutLicenceCaptor.capture())
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(domainEventsService, times(1)).recordDomainEvent(licenceCaptor.value, LicenceStatus.ACTIVE)
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    assertThat(licenceCaptor.value.licenceActivatedDate).isNotNull()
+
+    assertThat(licenceCaptor.value)
+      .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(1L, LicenceStatus.ACTIVE, aCom.username, licenceCaptor.value.licenceActivatedDate, aCom))
+    assertThat(timedOutLicenceCaptor.firstValue[0])
+      .extracting("id", "statusCode")
+      .isEqualTo(listOf(timedOutLicenceVersion.id, LicenceStatus.INACTIVE))
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          timedOutLicenceVersion.id,
+          "SYSTEM",
+          "SYSTEM",
+          "Deactivating licence as the parent licence version was activated for Bob Mortimer",
+          SYSTEM_EVENT,
+        ),
+      )
+    assertThat(auditCaptor.allValues[1]).extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          aLicenceEntity.id,
+          "smills",
+          "${aCom.firstName} ${aCom.lastName}",
+          "Licence set to ACTIVE for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
+
+  @Test
   fun `updating licence status to INACTIVE deactivates any in progress version of the licence`() {
     val inProgressLicenceVersion =
       aLicenceEntity.copy(id = 99999, statusCode = LicenceStatus.SUBMITTED, versionOfId = aLicenceEntity.id)
@@ -1344,11 +1406,87 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `activate licences deactivates an older timed out version of a licence`() {
+    val licenceCaptor = argumentCaptor<List<Licence>>()
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+    val approvedLicenceVersion = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+    val timedOutVersion = approvedLicenceVersion.copy(
+      id = 99999,
+      statusCode = LicenceStatus.TIMED_OUT,
+      versionOfId = approvedLicenceVersion.id,
+    )
+    whenever(
+      licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+        listOf(approvedLicenceVersion.bookingId!!),
+        TIMED_OUT,
+      ),
+    ).thenReturn(listOf(timedOutVersion))
+
+    service.activateLicences(listOf(approvedLicenceVersion))
+
+    verify(licenceRepository, times(2)).saveAllAndFlush(licenceCaptor.capture())
+    val licenceCaptors = licenceCaptor.allValues
+    assertThat(licenceCaptors[0])
+      .extracting("statusCode")
+      .isEqualTo(
+        listOf(
+          LicenceStatus.ACTIVE,
+        ),
+      )
+    assertThat(licenceCaptors[1])
+      .extracting("statusCode")
+      .isEqualTo(
+        listOf(
+          LicenceStatus.INACTIVE,
+        ),
+      )
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1)).recordDomainEvent(approvedLicenceVersion, LicenceStatus.ACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(timedOutVersion, LicenceStatus.INACTIVE)
+
+    val auditCaptors = auditCaptor.allValues
+    assertThat(auditCaptors[0])
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          aLicenceEntity.id,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+    assertThat(auditCaptors[1])
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          timedOutVersion.id,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence automatically deactivated as the approved licence version was activated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+    val eventCaptors = eventCaptor.allValues
+    assertThat(eventCaptors[0])
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(
+        listOf(1L, LicenceEventType.ACTIVATED, "SYSTEM", "SYSTEM"),
+      )
+    assertThat(eventCaptors[1])
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(
+        listOf(timedOutVersion.id, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"),
+      )
+  }
+
+  @Test
   fun `inactivate licences sets licence statuses to INACTIVE`() {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), deactivateInProgressVersions = true)
 
     verify(
       licenceRepository,
@@ -1379,7 +1517,7 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason")
+    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason", deactivateInProgressVersions = true)
 
     verify(
       licenceRepository,
@@ -1419,7 +1557,7 @@ class LicenceServiceTest {
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
 
-    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)))
+    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), deactivateInProgressVersions = true)
 
     verify(
       licenceRepository,
