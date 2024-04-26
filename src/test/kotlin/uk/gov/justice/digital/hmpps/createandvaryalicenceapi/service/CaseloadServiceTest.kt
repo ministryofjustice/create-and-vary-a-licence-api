@@ -11,6 +11,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -34,6 +35,7 @@ class CaseloadServiceTest {
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
   }
 
@@ -48,6 +50,7 @@ class CaseloadServiceTest {
           hardStopDate = LocalDate.of(2023, 10, 12),
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
+          isEligibleForEarlyRelease = true,
           isDueForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
@@ -104,6 +107,7 @@ class CaseloadServiceTest {
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
           isDueForEarlyRelease = true,
+          isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
         prisoner = Prisoner(
@@ -166,6 +170,7 @@ class CaseloadServiceTest {
           hardStopWarningDate = LocalDate.of(2023, 10, 11),
           isInHardStopPeriod = true,
           isDueForEarlyRelease = true,
+          isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
         prisoner = Prisoner(

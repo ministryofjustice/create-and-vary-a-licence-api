@@ -49,8 +49,12 @@ class ReleaseDateService(
     return LocalDate.now(clock) >= 2.workingDaysBefore(earliestReleaseDate) && LocalDate.now(clock) <= earliestReleaseDate
   }
 
-  fun getEarliestReleaseDate(releaseDate: LocalDate): LocalDate {
-    return getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate)
+  fun getEarliestReleaseDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
+    val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate ?: return null
+    return when {
+      isEligibleForEarlyRelease(sentenceDateHolder) -> getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate)
+      else -> releaseDate
+    }
   }
 
   fun isLateAllocationWarningRequired(releaseDate: LocalDate?): Boolean {
@@ -60,6 +64,11 @@ class ReleaseDateService(
       releaseDate,
     )
     return LocalDate.now(clock) >= warningThreshold
+  }
+
+  fun isEligibleForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
+    val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate
+    return releaseDate != null && isEligibleForEarlyRelease(releaseDate)
   }
 
   /** Friday is also considered as weekend */
