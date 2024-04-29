@@ -1815,7 +1815,6 @@ class PrisonerSearchServiceTest {
     }
   }
 
-
   @Test
   fun `Release date label and is review needed are populated for not started CRD licences`() {
     whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
