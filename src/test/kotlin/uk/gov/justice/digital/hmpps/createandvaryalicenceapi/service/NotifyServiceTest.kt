@@ -45,7 +45,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence initial licence create email`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
@@ -67,7 +67,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence urgent licence create email`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
@@ -89,7 +89,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence initial licence create email with multiple cases among which one prisoner is eligible for early release`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
@@ -143,7 +143,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence urgent licence create email with multiple cases among which one prisoner is eligible for early release`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(true)
+    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
@@ -171,7 +171,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence urgent licence create email with multiple cases among which none are eligible for early release`() {
-    whenever(releaseDateService.isEligibleForEarlyRelease(any())).thenReturn(false)
+    whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(false)
 
     val comToEmail = PromptLicenceCreationRequest(
       email = EMAIL_ADDRESS,
