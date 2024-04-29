@@ -476,7 +476,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
     comStaffCode = manager.code,
     teamName = manager.team.description ?: licence?.probationTeamDescription,
-    releaseDate = licence?.conditionalReleaseDate ?: licence?.actualReleaseDate,
+    releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate,
     licenceId = licence?.id,
     versionOf = if (licence is CrdLicence) licence.versionOfId else null,
     licenceType = licence?.typeCode,
