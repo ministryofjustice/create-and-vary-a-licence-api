@@ -1728,6 +1728,95 @@ class PrisonerSearchServiceTest {
   }
 
   @Test
+  fun `Release date is ARD when it exists for search results where a licence exists`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        listOf(
+          createHardStopLicence().copy(
+            conditionalReleaseDate = LocalDate.of(2024, 4, 29),
+            actualReleaseDate = LocalDate.of(2024, 4, 28),
+          ),
+        ),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 4, 28))
+      assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
+    }
+  }
+
+  @Test
+  fun `Release date is CRD when ARD does not exist for search results where a licence exists`() {
+    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
+      .thenReturn(
+        listOf(
+          createHardStopLicence().copy(
+            conditionalReleaseDate = LocalDate.of(2024, 4, 29),
+            actualReleaseDate = null,
+          ),
+        ),
+      )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 4, 29))
+      assertThat(releaseDateLabel).isEqualTo("CRD")
+    }
+  }
+
+
+  @Test
   fun `Release date label and is review needed are populated for not started CRD licences`() {
     whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
