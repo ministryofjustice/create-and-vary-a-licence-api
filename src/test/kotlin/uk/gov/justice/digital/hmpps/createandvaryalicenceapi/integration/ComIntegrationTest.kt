@@ -64,7 +64,7 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Staff Surname",
           "A01B02C",
           "Test Team",
-          LocalDate.parse("2022-02-12"),
+          LocalDate.parse("2022-02-25"),
           1L,
           LicenceType.AP,
           LicenceStatus.IN_PROGRESS,

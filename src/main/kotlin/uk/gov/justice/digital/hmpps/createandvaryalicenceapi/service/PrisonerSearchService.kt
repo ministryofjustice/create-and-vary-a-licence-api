@@ -71,7 +71,7 @@ class PrisonerSearchService(
     return reasons + hdcReasonIfPresent
   }
 
-  private fun PrisonerSearchPrisoner.getReleaseDate() = confirmedReleaseDate ?: conditionalReleaseDate
+  private fun PrisonerSearchPrisoner.getReleaseDate() = confirmedReleaseDate ?: releaseDate
 
   private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
