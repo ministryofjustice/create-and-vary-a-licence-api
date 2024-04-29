@@ -91,6 +91,7 @@ fun transformToLicenceSummary(
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+    updatedByFullName = licence.getUpdatedByFullName(),
   )
 }
 

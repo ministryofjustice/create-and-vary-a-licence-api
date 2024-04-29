@@ -339,6 +339,34 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `find licences matching criteria - updated by full name populated`() {
+    val licenceQueryObject = LicenceQueryObject(
+      prisonCodes = listOf("MDI"),
+      statusCodes = listOf(LicenceStatus.APPROVED),
+      staffIds = listOf(1, 2, 3),
+      nomsIds = listOf("A1234AA"),
+    )
+    whenever(licenceRepository.findAll(any<Specification<EntityLicence>>(), any<Sort>())).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          updatedBy = aCom,
+        ),
+      ),
+    )
+
+    val licenceSummaries = service.findLicencesMatchingCriteria(licenceQueryObject)
+
+    assertThat(licenceSummaries).isEqualTo(
+      listOf(
+        aLicenceSummary.copy(
+          updatedByFullName = "X Y",
+        ),
+      ),
+    )
+    verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.unsorted()))
+  }
+
+  @Test
   fun `find recently approved licences matching criteria - returns recently approved licences`() {
     whenever(licenceRepository.getRecentlyApprovedLicences(any(), any())).thenReturn(
       listOf(
