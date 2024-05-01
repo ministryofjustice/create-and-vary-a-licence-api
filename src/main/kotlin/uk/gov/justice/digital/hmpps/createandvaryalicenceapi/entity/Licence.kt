@@ -78,6 +78,7 @@ abstract class Licence(
   val licenceActivatedDate: LocalDateTime? = null,
   val topupSupervisionStartDate: LocalDate? = null,
   val topupSupervisionExpiryDate: LocalDate? = null,
+  val postRecallReleaseDate: LocalDate? = null,
   val probationAreaCode: String? = null,
   val probationAreaDescription: String? = null,
   val probationPduCode: String? = null,
