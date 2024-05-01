@@ -1,4 +1,3 @@
-version: "3"
 services:
   licences-db:
     image: postgres:15.6
