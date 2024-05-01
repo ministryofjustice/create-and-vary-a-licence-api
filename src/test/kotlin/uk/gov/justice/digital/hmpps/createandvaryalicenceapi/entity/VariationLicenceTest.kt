@@ -6,6 +6,7 @@ import org.junit.jupiter.api.fail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.reflect.full.memberProperties
 
@@ -21,6 +22,7 @@ class VariationLicenceTest {
     val licenceActivatedDate = LocalDateTime.now().plusDays(4)
     val supersededDate = LocalDateTime.now().plusDays(5)
     val aCom = TestData.com()
+    val postRecallReleaseDate = LocalDate.now()
 
     val variationLicence = TestData.createVariationLicence()
       .copy(
@@ -46,6 +48,7 @@ class VariationLicenceTest {
         supersededDate = supersededDate,
         updatedByUsername = "updatedByUsername",
         updatedBy = aCom,
+        postRecallReleaseDate = postRecallReleaseDate,
       )
 
     VariationLicence::class.memberProperties.forEach {
