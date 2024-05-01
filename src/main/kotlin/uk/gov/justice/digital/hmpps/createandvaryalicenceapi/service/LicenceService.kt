@@ -963,7 +963,7 @@ class LicenceService(
     return Pair(firstName, lastName)
   }
 
-  private fun findOriginalLicenceForVariation(variationLicence: VariationLicence): CrdLicence {
+  private fun findOriginalLicenceForVariation(variationLicence: VariationLicence): EntityLicence {
     var originalLicence = variationLicence
     while (originalLicence.variationOfId != null) {
       val licence = licenceRepository
@@ -971,7 +971,9 @@ class LicenceService(
         .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
       when (licence) {
         is CrdLicence -> return licence
+        is HardStopLicence -> return licence
         is VariationLicence -> originalLicence = licence
+        else -> error("Unknown licence type in hierarchy: ${licence.javaClass}")
       }
     }
     error("original licence not found for licence: ${variationLicence.id}")
