@@ -125,6 +125,13 @@ data class LicenceSummaryApproverView(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val topupSupervisionExpiryDate: LocalDate? = null,
 
+  @Schema(
+    description = "The release date after being recalled",
+    example = "06/06/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val postRecallReleaseDate: LocalDate? = null,
+
   @Schema(description = "The date the licence was created", example = "02/12/2001 10:15")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val dateCreated: LocalDateTime?,

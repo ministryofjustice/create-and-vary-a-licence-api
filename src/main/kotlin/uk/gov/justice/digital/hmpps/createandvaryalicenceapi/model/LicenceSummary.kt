@@ -106,6 +106,13 @@ data class LicenceSummary(
   val topupSupervisionExpiryDate: LocalDate? = null,
 
   @Schema(
+    description = "The release date after being recalled",
+    example = "06/06/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val postRecallReleaseDate: LocalDate? = null,
+
+  @Schema(
     description = "The date when the hard stop period starts",
     example = "11/09/2022",
   )

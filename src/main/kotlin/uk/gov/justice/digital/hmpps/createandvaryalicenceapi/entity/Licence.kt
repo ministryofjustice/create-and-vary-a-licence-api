@@ -233,6 +233,7 @@ abstract class Licence(
     licenceExpiryDate: LocalDate?,
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
+    postRecallReleaseDate: LocalDate?,
     staffMember: Staff?,
   ): Licence
 

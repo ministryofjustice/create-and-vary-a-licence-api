@@ -99,6 +99,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
       ),
     )
 
@@ -118,6 +119,7 @@ class UpdateSentenceDateServiceTest {
         "licenceExpiryDate",
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
         "updatedByUsername",
         "updatedBy",
       )
@@ -130,6 +132,7 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2023-09-11"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
           LocalDate.parse("2025-09-11"),
           aCom.username,
           aCom,
@@ -159,6 +162,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to 11 September 2025" to true,
+        "Post recall release date has changed to 11 September 2025" to true,
       ),
     )
 
@@ -282,6 +286,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = null,
+        postRecallReleaseDate = null,
       ),
     )
 
@@ -301,6 +306,7 @@ class UpdateSentenceDateServiceTest {
         "licenceExpiryDate",
         "topupSupervisionStartDate",
         "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
         "updatedByUsername",
         "updatedBy",
       )
@@ -313,6 +319,7 @@ class UpdateSentenceDateServiceTest {
           LocalDate.parse("2023-09-11"),
           LocalDate.parse("2024-09-11"),
           LocalDate.parse("2024-09-11"),
+          null,
           null,
           aCom.username,
           aCom,
@@ -335,6 +342,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to null" to false,
       ),
     )
 
@@ -402,6 +410,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -468,6 +477,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -534,6 +544,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -601,6 +612,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -668,6 +680,7 @@ class UpdateSentenceDateServiceTest {
         "Sentence end date has changed to 11 September 2024" to true,
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
+        "Post recall release date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)

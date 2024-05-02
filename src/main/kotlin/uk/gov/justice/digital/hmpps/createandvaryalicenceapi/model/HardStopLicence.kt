@@ -117,6 +117,13 @@ data class HardStopLicence(
   @JsonFormat(pattern = "dd/MM/yyyy")
   override val topupSupervisionExpiryDate: LocalDate? = null,
 
+  @Schema(
+    description = "The release date after being recalled",
+    example = "06/06/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  override val postRecallReleaseDate: LocalDate? = null,
+
   @Schema(description = "The nDELIUS user name for the supervising probation officer", example = "X32122")
   override val comUsername: String? = null,
 

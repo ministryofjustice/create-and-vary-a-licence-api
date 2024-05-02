@@ -360,6 +360,7 @@ class VariationLicence(
     licenceExpiryDate: LocalDate?,
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
+    postRecallReleaseDate: LocalDate?,
     staffMember: Staff?,
   ) = copy(
     statusCode = status ?: this.statusCode,
@@ -371,6 +372,7 @@ class VariationLicence(
     licenceExpiryDate = licenceExpiryDate,
     topupSupervisionStartDate = topupSupervisionStartDate,
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
+    postRecallReleaseDate = postRecallReleaseDate,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,

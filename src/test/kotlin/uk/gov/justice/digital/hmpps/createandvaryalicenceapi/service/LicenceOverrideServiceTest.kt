@@ -354,6 +354,7 @@ class LicenceOverrideServiceTest {
       licenceExpiryDate = LocalDate.now(),
       topupSupervisionStartDate = LocalDate.now(),
       topupSupervisionExpiryDate = LocalDate.now(),
+      postRecallReleaseDate = LocalDate.now(),
       reason = "Test override dates",
     )
 
@@ -373,15 +374,15 @@ class LicenceOverrideServiceTest {
       .extracting(
         "conditionalReleaseDate", "actualReleaseDate",
         "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
-        "topupSupervisionStartDate", "topupSupervisionExpiryDate", "updatedByUsername",
-        "updatedBy",
+        "topupSupervisionStartDate", "topupSupervisionExpiryDate", "postRecallReleaseDate",
+        "updatedByUsername", "updatedBy",
       )
       .isEqualTo(
         listOf(
           request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
           request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
-          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, aCom.username,
-          aCom,
+          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, request.postRecallReleaseDate,
+          aCom.username, aCom,
         ),
       )
 
