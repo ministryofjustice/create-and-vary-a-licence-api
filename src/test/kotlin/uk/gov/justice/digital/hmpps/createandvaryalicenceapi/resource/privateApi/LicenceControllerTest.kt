@@ -717,6 +717,7 @@ class LicenceControllerTest {
       licenceStartDate = LocalDate.of(2021, 10, 22),
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       postRecallReleaseDate = LocalDate.of(2021, 10, 22),
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
