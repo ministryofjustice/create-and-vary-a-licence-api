@@ -149,6 +149,7 @@ class LicenceCreationServiceTest {
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+        assertThat(postRecallReleaseDate).isNull()
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
         assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
@@ -775,6 +776,24 @@ class LicenceCreationServiceTest {
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
+      }
+    }
+
+    @Test
+    fun `Populates licence with PPRD date when PRRD is present`() {
+      val prisoner = prisonerSearchResult().copy(
+        postRecallReleaseDate = LocalDate.now().plusDays(1),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
+        listOf(prisoner),
+      )
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+
+      service.createHardStopLicence(prisonNumber)
+
+      argumentCaptor<HardStopLicence>().apply {
+        verify(licenceRepository, times(1)).saveAndFlush(capture())
+        assertThat(firstValue.postRecallReleaseDate).isEqualTo(prisoner.postRecallReleaseDate)
       }
     }
 

@@ -44,6 +44,7 @@ class LicenceFunctionsKtTest {
         sedChanged = false,
         tussdChanged = false,
         tusedChanged = false,
+        prrdChanged = false,
         isMaterial = true,
       ),
     )
@@ -62,7 +63,27 @@ class LicenceFunctionsKtTest {
         sedChanged = true,
         tussdChanged = false,
         tusedChanged = false,
+        prrdChanged = false,
         isMaterial = false,
+      ),
+    )
+  }
+
+  @Test
+  fun `Sentence Changes should return material change for PPRD update`() {
+    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
+
+    assertThat(
+      licence.getSentenceChanges(testSentenceChanges.copy(postRecallReleaseDate = fourDaysAgo)),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = false,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        prrdChanged = true,
+        isMaterial = true,
       ),
     )
   }
@@ -82,6 +103,7 @@ class LicenceFunctionsKtTest {
         sedChanged = true,
         tussdChanged = false,
         tusedChanged = false,
+        prrdChanged = false,
         isMaterial = true,
       ),
     )

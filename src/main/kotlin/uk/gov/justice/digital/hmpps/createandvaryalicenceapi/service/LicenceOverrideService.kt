@@ -124,6 +124,7 @@ class LicenceOverrideService(
         append("LED ${licence.licenceExpiryDate} ")
         append("TUSSD ${licence.topupSupervisionStartDate} ")
         append("TUSED ${licence.topupSupervisionExpiryDate}")
+        append("PRRD ${licence.postRecallReleaseDate}")
       },
     )
 
@@ -138,6 +139,7 @@ class LicenceOverrideService(
         append("LED ${request.licenceExpiryDate} ")
         append("TUSSD ${request.topupSupervisionStartDate} ")
         append("TUSED ${request.topupSupervisionExpiryDate}")
+        append("PRRD ${request.postRecallReleaseDate}")
       },
     )
 
@@ -150,6 +152,7 @@ class LicenceOverrideService(
       licenceExpiryDate = request.licenceExpiryDate,
       topupSupervisionStartDate = request.topupSupervisionStartDate,
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
+      postRecallReleaseDate = request.postRecallReleaseDate,
       staffMember = staffMember,
     )
 

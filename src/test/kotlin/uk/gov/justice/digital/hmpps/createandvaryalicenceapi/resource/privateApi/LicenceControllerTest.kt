@@ -483,6 +483,7 @@ class LicenceControllerTest {
       licenceExpiryDate = LocalDate.parse("2024-09-11"),
       topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
       topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      postRecallReleaseDate = LocalDate.parse("2025-09-11"),
     )
 
     mvc.perform(
@@ -717,6 +718,7 @@ class LicenceControllerTest {
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
       topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      postRecallReleaseDate = LocalDate.of(2021, 10, 22),
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),

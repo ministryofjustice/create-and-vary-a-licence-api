@@ -131,6 +131,12 @@ sealed interface Licence {
   )
   val topupSupervisionExpiryDate: LocalDate?
 
+  @get:Schema(
+    description = "The release date after being recalled",
+    example = "06/06/2023",
+  )
+  val postRecallReleaseDate: LocalDate?
+
   @get:Schema(description = "The nDELIUS user name for the supervising probation officer", example = "X32122")
   val comUsername: String?
 
