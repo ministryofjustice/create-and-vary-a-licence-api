@@ -84,8 +84,9 @@ class ReleaseDateService(
     val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate ?: return null
 
     val date = chooseDateForHardstop(actualReleaseDate, conditionalReleaseDate)
+    val numberOfWorkingDays = if (workingDaysService.isNonWorkingDay(date)) 3 else 2
 
-    return 2.workingDaysBefore(date)
+    return numberOfWorkingDays.workingDaysBefore(date)
   }
 
   fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
