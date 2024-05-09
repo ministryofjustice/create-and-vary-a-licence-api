@@ -636,6 +636,32 @@ class ReleaseDateServiceTest {
       val hardStopDate = service.getHardStopDate(licence)
       assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 3, 25))
     }
+
+    @Test
+    fun `should return CRD - 3 working days (2024-05-01) if CRD falls on weekend`() {
+      val date = LocalDate.parse("2024-05-05")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.minusDays(3),
+        conditionalReleaseDate = date,
+      )
+
+      val hardStopDate = service.getHardStopDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2024, 5, 1))
+    }
+
+    @Test
+    fun `should return CRD - 3 working days (2018-03-21) if CRD falls on bank holiday`() {
+      val date = LocalDate.parse("2018-03-26")
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = date.plusDays(1),
+        conditionalReleaseDate = date,
+      )
+
+      val hardStopDate = service.getHardStopDate(licence)
+      assertThat(hardStopDate).isEqualTo(LocalDate.of(2018, 3, 21))
+    }
   }
 
   @Nested
