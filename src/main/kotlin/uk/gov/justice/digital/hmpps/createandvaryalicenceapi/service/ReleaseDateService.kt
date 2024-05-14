@@ -81,31 +81,30 @@ class ReleaseDateService(
 
   fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
     val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate ?: return null
+    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
 
-    val date = chooseDateForHardstop(actualReleaseDate, conditionalReleaseDate)
+    return when {
+      conditionalReleaseDate == null -> null
+      actualReleaseDate != null && isExcludedFromHardstop(actualReleaseDate, conditionalReleaseDate) -> null
+      else -> calculateHardStopDate(conditionalReleaseDate)
+    }
+  }
 
+  private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
+    val date = if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
     return 2.workingDaysBefore(date)
+  }
+
+  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate, conditionalReleaseDate: LocalDate): Boolean {
+    if (conditionalReleaseDate.isNonWorkingDay()) {
+      return actualReleaseDate != 1.workingDaysBefore(conditionalReleaseDate)
+    }
+    return actualReleaseDate != conditionalReleaseDate
   }
 
   fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
     val hardStopDate = getHardStopDate(sentenceDateHolder) ?: return null
     return 2.workingDaysBefore(hardStopDate)
-  }
-
-  private fun chooseDateForHardstop(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate): LocalDate {
-    if (actualReleaseDate == null) {
-      return if (workingDaysService.isNonWorkingDay(conditionalReleaseDate)) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
-    }
-
-    val isNotAnEarlyRelease = actualReleaseDate >= 1.workingDaysBefore(conditionalReleaseDate)
-    val isArdTheReleaseDate = actualReleaseDate <= conditionalReleaseDate
-
-    return if (isNotAnEarlyRelease && isArdTheReleaseDate) {
-      actualReleaseDate
-    } else {
-      if (workingDaysService.isNonWorkingDay(conditionalReleaseDate)) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
-    }
   }
 
   private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
@@ -119,4 +118,6 @@ class ReleaseDateService(
     .filterNot { it.dayOfWeek == DayOfWeek.FRIDAY }
     .take(days)
     .last()
+
+  private fun LocalDate.isNonWorkingDay() = workingDaysService.isNonWorkingDay(this)
 }
