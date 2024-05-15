@@ -26,7 +26,7 @@ class InactivateRecallLicencesController(
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Triggers the inactivate recall licences job.",
-    description = "Triggers a job that inactivates licences where there is an active or varied licence with a PRRD of today or in the future. Requires ROLE_CVL_ADMIN.",
+    description = "Triggers a job that inactivates licences where there is an active licence or an in flight variation of a licence with a PRRD of today or in the future. Requires ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
