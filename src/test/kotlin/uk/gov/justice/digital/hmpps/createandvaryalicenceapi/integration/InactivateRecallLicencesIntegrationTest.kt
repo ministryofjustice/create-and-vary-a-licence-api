@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -54,16 +55,16 @@ class InactivateRecallLicencesIntegrationTest : IntegrationTestBase() {
 
     assertThat(inactiveLicences)
       .extracting<Tuple> {
-        Tuple.tuple(it.licenceId, it.licenceStatus)
+        tuple(it.licenceId, it.licenceStatus)
       }
       .containsExactlyElementsOf(
         listOf(
-          Tuple.tuple(1L, LicenceStatus.INACTIVE),
-          Tuple.tuple(2L, LicenceStatus.INACTIVE),
-          Tuple.tuple(4L, LicenceStatus.INACTIVE),
-          Tuple.tuple(5L, LicenceStatus.INACTIVE),
-          Tuple.tuple(6L, LicenceStatus.INACTIVE),
-          Tuple.tuple(7L, LicenceStatus.INACTIVE),
+          tuple(1L, LicenceStatus.INACTIVE),
+          tuple(2L, LicenceStatus.INACTIVE),
+          tuple(4L, LicenceStatus.INACTIVE),
+          tuple(5L, LicenceStatus.INACTIVE),
+          tuple(6L, LicenceStatus.INACTIVE),
+          tuple(7L, LicenceStatus.INACTIVE),
         ),
       )
 
@@ -72,15 +73,15 @@ class InactivateRecallLicencesIntegrationTest : IntegrationTestBase() {
 
       assertThat(allValues)
         .extracting<Tuple> {
-          Tuple.tuple(it.eventType, it.additionalInformation?.licenceId)
+          tuple(it.eventType, it.additionalInformation?.licenceId)
         }
         .containsExactly(
-          Tuple.tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "1"),
-          Tuple.tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "2"),
-          Tuple.tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "4"),
-          Tuple.tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "6"),
-          Tuple.tuple(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value, "7"),
-          Tuple.tuple(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value, "5"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "1"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "2"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "4"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "6"),
+          tuple(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value, "7"),
+          tuple(LicenceDomainEventType.LICENCE_VARIATION_INACTIVATED.value, "5"),
         )
     }
 
@@ -97,12 +98,12 @@ class InactivateRecallLicencesIntegrationTest : IntegrationTestBase() {
 
     assertThat(remainingLicences)
       .extracting<Tuple> {
-        Tuple.tuple(it.licenceId, it.licenceStatus)
+        tuple(it.licenceId, it.licenceStatus)
       }
       .containsExactlyElementsOf(
         listOf(
-          Tuple.tuple(3L, LicenceStatus.ACTIVE),
-          Tuple.tuple(8L, LicenceStatus.IN_PROGRESS),
+          tuple(3L, LicenceStatus.ACTIVE),
+          tuple(8L, LicenceStatus.IN_PROGRESS),
         ),
       )
   }

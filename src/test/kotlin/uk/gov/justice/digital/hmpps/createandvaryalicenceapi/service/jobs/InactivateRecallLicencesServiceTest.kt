@@ -40,7 +40,7 @@ class InactivateRecallLicencesServiceTest {
   }
 
   @Test
-  fun `should inactivate active licence with a PRRD of today`() {
+  fun `should inactivate active licence`() {
     val licences = listOf(
       aLicence.copy(
         statusCode = LicenceStatus.ACTIVE,
@@ -56,71 +56,7 @@ class InactivateRecallLicencesServiceTest {
     verify(licenceRepository, times(1)).getActiveAndVariedLicencesWhichAreNowRecalls()
   }
 
-  @Test
-  fun `should inactivate active licence with a PRRD of tomorrow`() {
-    val licences = listOf(
-      aLicence.copy(
-        statusCode = LicenceStatus.ACTIVE,
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-      ),
-    )
-    whenever(licenceRepository.getActiveAndVariedLicencesWhichAreNowRecalls()).thenReturn(
-      licences,
-    )
-
-    service.inactivateLicences()
-
-    verify(licenceRepository, times(1)).getActiveAndVariedLicencesWhichAreNowRecalls()
-  }
-
-  @Test
-  fun `should inactivate active and variation licence with a PRRD of today`() {
-    val licences = listOf(
-      aLicence.copy(
-        id = 1L,
-        statusCode = LicenceStatus.ACTIVE,
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-      ),
-      aVariationLicence.copy(
-        variationOfId = 1L,
-        statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-      ),
-    )
-    whenever(licenceRepository.getActiveAndVariedLicencesWhichAreNowRecalls()).thenReturn(
-      licences,
-    )
-
-    service.inactivateLicences()
-
-    verify(licenceRepository, times(1)).getActiveAndVariedLicencesWhichAreNowRecalls()
-  }
-
-  @Test
-  fun `should inactivate active and variation licence with a PRRD of tomorrow`() {
-    val licences = listOf(
-      aLicence.copy(
-        id = 1L,
-        statusCode = LicenceStatus.ACTIVE,
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-      ),
-      aVariationLicence.copy(
-        variationOfId = 1L,
-        statusCode = LicenceStatus.VARIATION_APPROVED,
-        postRecallReleaseDate = LocalDate.now().plusDays(1),
-      ),
-    )
-    whenever(licenceRepository.getActiveAndVariedLicencesWhichAreNowRecalls()).thenReturn(
-      licences,
-    )
-
-    service.inactivateLicences()
-
-    verify(licenceRepository, times(1)).getActiveAndVariedLicencesWhichAreNowRecalls()
-  }
-
   private companion object {
     val aLicence = TestData.createCrdLicence().copy()
-    val aVariationLicence = TestData.createVariationLicence().copy()
   }
 }
