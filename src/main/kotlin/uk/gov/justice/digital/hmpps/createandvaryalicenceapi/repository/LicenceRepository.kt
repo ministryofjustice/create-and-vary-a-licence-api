@@ -175,6 +175,22 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     nativeQuery = true,
   )
   fun getHardStopLicencesNeedingReview(): List<HardStopLicence>
+
+  @Query(
+    """
+      SELECT l
+      FROM Licence l
+      WHERE l.postRecallReleaseDate >= CURRENT_DATE 
+      AND l.statusCode IN (
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE,
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED,
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_REJECTED,
+        uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+      )
+    """,
+  )
+  fun getActiveAndVariedLicencesWhichAreNowRecalls(): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
