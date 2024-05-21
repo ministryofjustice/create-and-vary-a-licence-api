@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -9,8 +10,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Promp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
+import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
 
 @Service
 class NotifyService(
@@ -27,6 +30,7 @@ class NotifyService(
   @Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
+  @Value("\${notify.templates.notifyAttentionNeededLicences}") private val notifyAttentionNeededLicences: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -250,6 +254,22 @@ class NotifyService(
       log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
     } else {
       log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
+    }
+  }
+
+  fun sendAttentionNeededLicencesEmail(
+    emailAddress: String?,
+    fileContents: FileOutputStream,
+    fileName: String,
+  ) {
+    if (emailAddress != null) {
+      val values: Map<String, JSONObject> = mapOf(
+        "linkToDocument" to NotificationClient.prepareUpload(fileContents.toString().toByteArray(), fileName),
+      )
+      sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)
+      log.info("Notification sent to $emailAddress with list of licences that needed attention")
+    } else {
+      log.error("Notification failed (notifyAttentionNeededLicences) - email must be present")
     }
   }
 
