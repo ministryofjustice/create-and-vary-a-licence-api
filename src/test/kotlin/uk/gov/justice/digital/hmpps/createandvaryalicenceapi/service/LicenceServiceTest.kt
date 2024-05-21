@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
@@ -41,7 +40,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
@@ -63,8 +61,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
@@ -365,142 +361,6 @@ class LicenceServiceTest {
       ),
     )
     verify(licenceRepository, times(1)).findAll(any<Specification<EntityLicence>>(), eq(Sort.unsorted()))
-  }
-
-  @Test
-  fun `find recently approved licences matching criteria - returns recently approved licences`() {
-    whenever(licenceRepository.getRecentlyApprovedLicences(any(), any())).thenReturn(
-      listOf(
-        aRecentlyApprovedLicence.copy(
-          statusCode = LicenceStatus.APPROVED,
-          submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
-          submittedBy = com(),
-          updatedBy = com(),
-        ),
-      ),
-    )
-
-    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
-
-    assertThat(licenceSummaries).isEqualTo(
-      listOf(
-        aRecentlyApprovedLicenceSummary.copy(
-          licenceStatus = LicenceStatus.APPROVED,
-          submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
-        ),
-      ),
-    )
-    verify(licenceRepository, times(1)).getRecentlyApprovedLicences(
-      anyList(),
-      any<LocalDate>(),
-    )
-  }
-
-  @Test
-  fun `find recently approved licences matching criteria - returns the original licence for an active variation`() {
-    val aRecentlyApprovedLicence = TestData.createCrdLicence().copy(
-      id = 1,
-      actualReleaseDate = LocalDate.now().minusDays(1),
-      conditionalReleaseDate = LocalDate.now(),
-      approvedByName = "jim smith",
-      statusCode = LicenceStatus.INACTIVE,
-      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      submittedBy = com(),
-      updatedBy = com(),
-      submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-    )
-
-    val activeVariationLicence = createVariationLicence().copy(
-      id = aRecentlyApprovedLicence.id + 1,
-      statusCode = LicenceStatus.ACTIVE,
-      variationOfId = aRecentlyApprovedLicence.id,
-    )
-
-    whenever(licenceRepository.findById(aRecentlyApprovedLicence.id)).thenReturn(
-      Optional.of(
-        aRecentlyApprovedLicence,
-      ),
-    )
-    whenever(
-      licenceRepository.getRecentlyApprovedLicences(
-        anyList(),
-        any<LocalDate>(),
-      ),
-    ).thenReturn(
-      listOf(
-        activeVariationLicence,
-      ),
-    )
-
-    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
-
-    assertThat(licenceSummaries).isEqualTo(
-      listOf(
-        aRecentlyApprovedLicenceSummary.copy(
-          surname = activeVariationLicence.surname,
-          forename = activeVariationLicence.forename,
-          licenceStatus = LicenceStatus.INACTIVE,
-          submittedByFullName = com().fullName,
-          updatedByFullName = com().fullName,
-          submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-        ),
-      ),
-    )
-    verify(licenceRepository, times(1)).getRecentlyApprovedLicences(anyList(), any<LocalDate>())
-  }
-
-  @Test
-  fun `find recently approved licences matching criteria - returns the original licence for an hardstop`() {
-    val aRecentlyApprovedLicence = TestData.createHardStopLicence().copy(
-      id = 1,
-      actualReleaseDate = LocalDate.now().minusDays(1),
-      conditionalReleaseDate = LocalDate.now(),
-      approvedByName = "jim smith",
-      statusCode = LicenceStatus.INACTIVE,
-      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      submittedBy = ca(),
-      updatedBy = com(),
-      submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-    )
-
-    val activeVariationLicence = createVariationLicence().copy(
-      id = aRecentlyApprovedLicence.id + 1,
-      statusCode = LicenceStatus.ACTIVE,
-      variationOfId = aRecentlyApprovedLicence.id,
-    )
-
-    whenever(licenceRepository.findById(aRecentlyApprovedLicence.id)).thenReturn(
-      Optional.of(
-        aRecentlyApprovedLicence,
-      ),
-    )
-    whenever(
-      licenceRepository.getRecentlyApprovedLicences(
-        anyList(),
-        any<LocalDate>(),
-      ),
-    ).thenReturn(
-      listOf(
-        activeVariationLicence,
-      ),
-    )
-
-    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
-
-    assertThat(licenceSummaries).isEqualTo(
-      listOf(
-        aRecentlyApprovedLicenceSummary.copy(
-          kind = LicenceKind.HARD_STOP,
-          surname = activeVariationLicence.surname,
-          forename = activeVariationLicence.forename,
-          licenceStatus = LicenceStatus.INACTIVE,
-          submittedByFullName = com().fullName,
-          updatedByFullName = com().fullName,
-          submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-        ),
-      ),
-    )
-    verify(licenceRepository, times(1)).getRecentlyApprovedLicences(anyList(), any<LocalDate>())
   }
 
   @Test
@@ -2674,112 +2534,6 @@ class LicenceServiceTest {
   }
 
   @Nested
-  inner class `getting licences for approval` {
-
-    @Test
-    fun `Get licences for approval returns correct approved licence summary`() {
-      val prisons = listOf("MDI")
-
-      val aLicence = aLicenceEntity.copy(
-        statusCode = LicenceStatus.SUBMITTED,
-        submittedBy = aCom,
-        submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-        updatedBy = aCom,
-      )
-
-      whenever(licenceRepository.getLicencesReadyForApproval(prisons)).thenReturn(listOf(aLicence))
-
-      val approvedLicenceSummaries = service.getLicencesForApproval(prisons)
-
-      verify(licenceRepository).getLicencesReadyForApproval(prisons)
-
-      assertThat(approvedLicenceSummaries).hasSize(1)
-      assertThat(approvedLicenceSummaries[0]).isEqualTo(aLicenceSummaryApproverView)
-    }
-
-    @Test
-    fun `Get licences for approval are sorted correctly`() {
-      val prisons = listOf("MDI", "ABC")
-
-      val licences = listOf(
-        aLicenceEntity.copy(
-          statusCode = LicenceStatus.SUBMITTED,
-          submittedBy = aCom,
-          updatedBy = aCom,
-          actualReleaseDate = null,
-          conditionalReleaseDate = null,
-        ),
-        aLicenceEntity.copy(
-          id = 2L,
-          prisonCode = "ABC",
-          statusCode = LicenceStatus.SUBMITTED,
-          submittedBy = aCom,
-          actualReleaseDate = LocalDate.of(2024, 3, 11),
-        ),
-        aLicenceEntity.copy(
-          id = 3L,
-          prisonCode = "ABC",
-          statusCode = LicenceStatus.SUBMITTED,
-          submittedBy = aCom,
-          actualReleaseDate = LocalDate.of(2024, 3, 14),
-        ),
-        aLicenceEntity.copy(
-          id = 4L,
-          prisonCode = "MDI",
-          statusCode = LicenceStatus.SUBMITTED,
-          submittedBy = aCom,
-          updatedBy = aPreviousUser,
-          actualReleaseDate = LocalDate.of(2024, 3, 12),
-        ),
-        aLicenceEntity.copy(
-          id = 5L,
-          prisonCode = "MDI",
-          statusCode = LicenceStatus.SUBMITTED,
-          submittedBy = aCom,
-          updatedBy = aPreviousUser,
-          actualReleaseDate = null,
-          conditionalReleaseDate = LocalDate.of(2024, 3, 10),
-        ),
-      )
-
-      whenever(licenceRepository.getLicencesReadyForApproval(prisons)).thenReturn(licences)
-
-      val approvedLicenceSummaries = service.getLicencesForApproval(prisons)
-
-      verify(licenceRepository).getLicencesReadyForApproval(prisons)
-      assertThat(approvedLicenceSummaries).hasSize(5)
-      assertThat(approvedLicenceSummaries).extracting<Long> { it.licenceId }.containsExactly(5, 2, 4, 3, 1)
-    }
-
-    @Test
-    fun `No prison codes when getting licences for approval returns early`() {
-      val response = service.getLicencesForApproval(emptyList())
-      verifyNoInteractions(licenceRepository)
-      assertThat(response).isEmpty()
-    }
-
-    @Test
-    fun `Derived fields are populated`() {
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-      whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
-      whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2022, 1, 3))
-      whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2022, 1, 1))
-
-      whenever(licenceRepository.getLicencesReadyForApproval(listOf("MDI"))).thenReturn(listOf(aLicenceEntity))
-
-      val approvedLicenceSummaries = service.getLicencesForApproval(listOf("MDI"))
-
-      assertThat(approvedLicenceSummaries).hasSize(1)
-      with(approvedLicenceSummaries.first()) {
-        assertThat(isInHardStopPeriod).isTrue()
-        assertThat(isDueForEarlyRelease).isTrue()
-        assertThat(hardStopDate).isEqualTo(LocalDate.of(2022, 1, 3))
-        assertThat(hardStopWarningDate).isEqualTo(LocalDate.of(2022, 1, 1))
-      }
-    }
-  }
-
-  @Nested
   inner class `approving hard stop licences` {
     @Test
     fun `approving a hard stop licence sends a hard stop licence approval email`() {
@@ -3132,11 +2886,6 @@ class LicenceServiceTest {
       )
     }
 
-    val aRecentlyApprovedLicence = aLicenceEntity.copy(
-      actualReleaseDate = LocalDate.now().minusDays(1),
-      conditionalReleaseDate = LocalDate.now(),
-    )
-
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,
       licenceId = 1,
@@ -3218,52 +2967,6 @@ class LicenceServiceTest {
       email = "test@test.com",
       firstName = "Test",
       lastName = "Test",
-    )
-
-    val aLicenceSummaryApproverView = LicenceSummaryApproverView(
-      licenceId = 1,
-      forename = "Bob",
-      surname = "Mortimer",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      licenceStatus = LicenceStatus.SUBMITTED,
-      kind = LicenceKind.CRD,
-      licenceType = LicenceType.AP,
-      nomisId = "A1234AA",
-      crn = "X12345",
-      bookingId = 54321,
-      prisonCode = "MDI",
-      prisonDescription = "Moorland (HMP)",
-      probationAreaCode = "N01",
-      probationAreaDescription = "Wales",
-      probationPduCode = "N01A",
-      probationPduDescription = "Cardiff",
-      probationLauCode = "N01A2",
-      probationLauDescription = "Cardiff South",
-      probationTeamCode = "NA01A2-A",
-      probationTeamDescription = "Cardiff South Team A",
-      comUsername = "smills",
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualReleaseDate = LocalDate.of(2021, 10, 22),
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceEndDate = LocalDate.of(2021, 10, 22),
-      licenceStartDate = LocalDate.of(2021, 10, 22),
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      submittedDate = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
-      approvedByName = "jim smith",
-      licenceVersion = "1.0",
-      versionOf = null,
-      isReviewNeeded = false,
-      updatedByFullName = "X Y",
-      submittedByFullName = "X Y",
-    )
-
-    val aRecentlyApprovedLicenceSummary = aLicenceSummaryApproverView.copy(
-      actualReleaseDate = LocalDate.now().minusDays(1),
-      conditionalReleaseDate = LocalDate.now(),
     )
   }
 }
