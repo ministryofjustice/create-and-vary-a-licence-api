@@ -40,14 +40,12 @@ class NotifyAttentionNeededLicencesService(
     val fileContents =
       FileOutputStream(fileName).apply { writeCsv(notifyLicences) }
 
-
     notifyService.sendAttentionNeededLicencesEmail(
       "nishanth.mahasamudram@digital.justice.gov.uk",
       fileContents,
       fileName,
     )
   }
-
   fun OutputStream.writeCsv(licences: List<NotifyAttentionNeededLicence>) {
     val writer = bufferedWriter()
     writer.write(""""NomsID", "NomsLegalStatus", "ARD"""")
@@ -58,5 +56,4 @@ class NotifyAttentionNeededLicencesService(
     }
     writer.flush()
   }
-
 }

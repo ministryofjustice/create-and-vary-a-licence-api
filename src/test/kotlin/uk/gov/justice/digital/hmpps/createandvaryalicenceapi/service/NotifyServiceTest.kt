@@ -38,6 +38,7 @@ class NotifyServiceTest {
     hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
     editedLicenceTimedOutTemplateId = TEMPLATE_ID,
     hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
+    notifyAttentionNeededLicences = TEMPLATE_ID,
     client = notificationClient,
     internalEmailAddress = INTERNAL_EMAIL_ADDRESS,
     releaseDateService = releaseDateService,
@@ -352,6 +353,7 @@ class NotifyServiceTest {
       hardStopLicenceApprovedTemplateId = TEMPLATE_ID,
       editedLicenceTimedOutTemplateId = TEMPLATE_ID,
       hardStopLicenceReviewOverdueTemplateId = TEMPLATE_ID,
+      notifyAttentionNeededLicences = TEMPLATE_ID,
     ).sendVariationForApprovalEmail(NotifyRequest("", ""), "1", "First", "Last", "crn", "ComName")
 
     verifyNoInteractions(notificationClient)

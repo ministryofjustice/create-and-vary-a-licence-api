@@ -14,7 +14,6 @@ import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-
 @Service
 class NotifyService(
   @Value("\${notify.enabled}") private val enabled: Boolean,

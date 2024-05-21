@@ -71,7 +71,7 @@ hmpps:
       enabled: true
 
 notify:
-  enabled: true
+  enabled: false
 
 hardstop:
   enabled: true
