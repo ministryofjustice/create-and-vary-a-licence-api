@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Promp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
-import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -258,17 +257,17 @@ class NotifyService(
 
   fun sendAttentionNeededLicencesEmail(
     emailAddress: String?,
-    fileContents: FileOutputStream,
+    fileContents: ByteArray?,
     fileName: String,
   ) {
-    if (emailAddress != null) {
+    if (emailAddress != null && fileContents != null) {
       val values: Map<String, JSONObject> = mapOf(
         "linkToDocument" to NotificationClient.prepareUpload(fileContents.toString().toByteArray(), fileName),
       )
       sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)
       log.info("Notification sent to $emailAddress with list of licences that needed attention")
     } else {
-      log.error("Notification failed (notifyAttentionNeededLicences) - email must be present")
+      log.error("Notification failed (notifyAttentionNeededLicences) - email and attention needed licences must be present")
     }
   }
 

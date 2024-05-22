@@ -6,8 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.NotifyAttenti
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import java.io.FileOutputStream
-import java.io.OutputStream
 import java.time.LocalDate
 
 @Service
@@ -37,8 +35,7 @@ class NotifyAttentionNeededLicencesService(
       )
     }
     val fileName = "attentionNeededLicences_" + LocalDate.now() + ".csv"
-    val fileContents =
-      FileOutputStream(fileName).apply { writeCsv(notifyLicences) }
+    val fileContents = makeCsv(notifyLicences)
 
     notifyService.sendAttentionNeededLicencesEmail(
       "nishanth.mahasamudram@digital.justice.gov.uk",
@@ -46,14 +43,13 @@ class NotifyAttentionNeededLicencesService(
       fileName,
     )
   }
-  fun OutputStream.writeCsv(licences: List<NotifyAttentionNeededLicence>) {
-    val writer = bufferedWriter()
-    writer.write(""""NomsID", "NomsLegalStatus", "ARD"""")
-    writer.newLine()
+
+  fun makeCsv(licences: List<NotifyAttentionNeededLicence>): ByteArray? {
+    val csv = StringBuffer()
+    csv.append("NomsID;NomsLegalStatus;ARD\r\n")
     licences.forEach {
-      writer.write("${it.nomsId}, ${it.legalStatus}, \"${it.conditionalReleaseDate}\"")
-      writer.newLine()
+      csv.append("${it.nomsId};${it.legalStatus};${it.conditionalReleaseDate}\r\n")
     }
-    writer.flush()
+    return csv.toString().toByteArray()
   }
 }
