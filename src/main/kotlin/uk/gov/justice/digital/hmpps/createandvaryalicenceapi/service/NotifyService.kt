@@ -262,7 +262,8 @@ class NotifyService(
   ) {
     if (emailAddress != null && fileContents != null) {
       val values: Map<String, JSONObject> = mapOf(
-        "linkToDocument" to NotificationClient.prepareUpload(fileContents.toString().toByteArray(), fileName),
+        "linkToDocument" to NotificationClient.prepareUpload(fileContents, fileName),
+        "link_to_file" to NotificationClient.prepareUpload(fileContents, fileName),
       )
       sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)
       log.info("Notification sent to $emailAddress with list of licences that needed attention")
@@ -325,6 +326,7 @@ class NotifyService(
 
     try {
       client.sendEmail(templateId, emailAddress, values, reference)
+      log.info("Notification - sent email for template ID $templateId ref $reference")
     } catch (e: NotificationClientException) {
       log.error("Notification failed - templateId $templateId to $emailAddress", e)
     }
