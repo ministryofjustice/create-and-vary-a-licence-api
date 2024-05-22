@@ -9,6 +9,9 @@ data class NotifyAttentionNeededLicence(
   @Schema(description = "The prison nomis identifier for this offender", example = "A1234AA")
   val nomsId: String?,
 
+  @Schema(description = "Prison Name", example = "HMP Leeds")
+  var prisonName: String? = null,
+
   @Schema(
     description = "Legal Status",
     example = "SENTENCED",

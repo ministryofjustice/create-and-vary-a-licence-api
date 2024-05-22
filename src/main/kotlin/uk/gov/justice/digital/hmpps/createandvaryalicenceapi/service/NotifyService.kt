@@ -262,7 +262,6 @@ class NotifyService(
   ) {
     if (emailAddress != null && fileContents != null) {
       val values: Map<String, JSONObject> = mapOf(
-        "linkToDocument" to NotificationClient.prepareUpload(fileContents, fileName),
         "link_to_file" to NotificationClient.prepareUpload(fileContents, fileName),
       )
       sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)
