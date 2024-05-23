@@ -37,6 +37,7 @@ class NotifyAttentionNeededLicencesService(
         associatedLegalStatus,
         it.conditionalReleaseDate,
         it.actualReleaseDate,
+        it.licenceStartDate,
       )
     }
       .sortedWith(compareBy({ it.actualReleaseDate }, { it.conditionalReleaseDate }))

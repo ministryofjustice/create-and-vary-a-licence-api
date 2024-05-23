@@ -26,4 +26,7 @@ data class NotifyAttentionNeededLicence(
   @Schema(description = "The actual release date on the licence", example = "12/12/2022")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val actualReleaseDate: LocalDate?,
+
+  @Schema(description = "The date that the licence will start", example = "13/09/2022")
+  val licenceStartDate: LocalDate?,
 )
