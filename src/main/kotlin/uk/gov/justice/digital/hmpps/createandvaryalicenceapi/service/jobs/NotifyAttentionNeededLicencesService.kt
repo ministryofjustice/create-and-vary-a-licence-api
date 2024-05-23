@@ -47,7 +47,7 @@ class NotifyAttentionNeededLicencesService(
 
     notifyService.sendAttentionNeededLicencesEmail(
       emailAddress,
-      fileContents.toString().toByteArray(),
+      fileContents.toByteArray(),
       fileName,
     )
   }

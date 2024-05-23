@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.writeCsv
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.text.StringBuilder
 
 class NotifyAttentionNeededLicencesServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -84,15 +83,14 @@ class NotifyAttentionNeededLicencesServiceTest {
         ),
       ),
     )
-    val cvsData = StringBuilder(
-      "Noms ID,Prison Name,Noms Legal Status,ARD,CRD,Licence Start Date\r\nA1234AA,null,SENTENCED,2021-10-22,2021-10-22,2021-10-22\r\n",
-    )
+    val cvsData =
+      "Noms ID,Prison Name,Noms Legal Status,ARD,CRD,Licence Start Date\r\nA1234AA,null,SENTENCED,2021-10-22,2021-10-22,2021-10-22\r\n"
 
-    assertThat(fileContent.toString()).isEqualTo(cvsData.toString())
+    assertThat(fileContent).isEqualTo(cvsData)
     verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId.toString()))
     verify(notifyService, times(1)).sendAttentionNeededLicencesEmail(
       emailAddress,
-      fileContent.toString().toByteArray(),
+      fileContent.toByteArray(),
       fileName,
     )
   }

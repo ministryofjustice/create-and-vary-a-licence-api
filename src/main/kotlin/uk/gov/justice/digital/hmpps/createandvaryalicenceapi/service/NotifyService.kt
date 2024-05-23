@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -261,7 +260,7 @@ class NotifyService(
     fileName: String,
   ) {
     if (emailAddress != null) {
-      val values: Map<String, JSONObject> = mapOf(
+      val values = mapOf(
         "linkToDocument" to NotificationClient.prepareUpload(fileContents, fileName),
       )
       sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)

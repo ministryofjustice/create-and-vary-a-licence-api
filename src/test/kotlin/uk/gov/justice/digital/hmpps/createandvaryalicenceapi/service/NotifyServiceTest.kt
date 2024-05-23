@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -536,6 +537,33 @@ class NotifyServiceTest {
         lastName = "Doe",
         crn = "A123456",
         licenceId = "1",
+      )
+      verifyNoInteractions(notificationClient)
+    }
+  }
+
+  @Nested
+  inner class `notify attention needed licences` {
+    private val fileContents = ByteArray(0)
+    private val fileName = "attentionNeededLicences_" + LocalDate.now() + ".csv"
+
+    @Test
+    fun `send attention needed licences to cvl support`() {
+      notifyService.sendAttentionNeededLicencesEmail(
+        EMAIL_ADDRESS,
+        fileContents,
+        fileName,
+      )
+
+      verify(notificationClient).sendEmail(eq(TEMPLATE_ID), eq(EMAIL_ADDRESS), any(), eq(null))
+    }
+
+    @Test
+    fun `No email is sent when email address is empty`() {
+      notifyService.sendAttentionNeededLicencesEmail(
+        emailAddress = null,
+        fileContents,
+        fileName,
       )
       verifyNoInteractions(notificationClient)
     }

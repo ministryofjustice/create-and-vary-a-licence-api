@@ -41,7 +41,7 @@ hardstop:
   enabled: true
 
 notify:
-  enabled: true
+  enabled: false
 
 hmpps.sqs:
   provider: localstack
