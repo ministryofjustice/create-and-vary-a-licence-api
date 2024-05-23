@@ -15,7 +15,7 @@ generic-service:
     HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_COMMUNITY_API_URL: "https://community-api.probation.service.justice.gov.uk"
     HMPPS_DOCUMENT_API_URL: "https://document-api.hmpps.service.justice.gov.uk/"
-    HMPPS_PRISON_API_URL: "https://api.prison.service.justice.gov.uk/api"
+    HMPPS_PRISON_API_URL: "https://prison-api.prison.service.justice.gov.uk/api"
     HMPPS_PRISONREGISTER_API_URL: "https://prison-register.hmpps.service.justice.gov.uk"
     HMPPS_PRISONERSEARCH_API_URL: "https://prisoner-search.prison.service.justice.gov.uk"
     HMPPS_PROBATIONSEARCH_API_URL: "https://probation-offender-search.hmpps.service.justice.gov.uk"
