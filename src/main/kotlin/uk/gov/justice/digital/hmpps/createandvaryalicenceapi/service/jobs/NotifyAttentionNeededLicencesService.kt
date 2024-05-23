@@ -40,7 +40,7 @@ class NotifyAttentionNeededLicencesService(
         it.licenceStartDate,
       )
     }
-      .sortedWith(compareBy({ it.actualReleaseDate }, { it.conditionalReleaseDate }))
+      .sortedBy { it.licenceStartDate }
 
     val fileName = "attentionNeededLicences_" + LocalDate.now() + ".csv"
     val fileContents = writeCsv(notifyLicences)
