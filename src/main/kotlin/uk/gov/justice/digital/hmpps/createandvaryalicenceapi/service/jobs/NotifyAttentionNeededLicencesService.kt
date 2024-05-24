@@ -13,7 +13,7 @@ import java.time.LocalDate
 
 @Service
 class NotifyAttentionNeededLicencesService(
-  @Value("\${notify.attentionNeededLicences.emailAddress}") private val emailAddress: String,
+  @Value("\${attentionNeededLicencesEmailAddress}") private val emailAddress: String,
   private val licenceRepository: LicenceRepository,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val notifyService: NotifyService,

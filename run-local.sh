@@ -48,6 +48,7 @@ export DB_SERVER=localhost
 export DB_NAME=create-and-vary-a-licence-db
 export DB_USER=cvl
 export DB_PASS=cvl
+export ATTENTION_NEEDED_LICENCES_EMAIL_ADDRESS=createandvaryalicence@digital.justice.gov.uk
 
 # Provide Notify details to access Notify
 # Match with the API key in hmpps-auth set for its dev profile

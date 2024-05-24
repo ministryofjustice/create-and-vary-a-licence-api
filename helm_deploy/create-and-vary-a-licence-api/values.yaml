@@ -42,6 +42,7 @@ generic-service:
       NOTIFY_API_KEY: "NOTIFY_API_KEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
+      ATTENTION_NEEDED_LICENCES_EMAIL_ADDRESS: "ATTENTION_NEEDED_LICENCES_EMAIL_ADDRESS"
     rds-instance-output:
       DB_SERVER: "rds_instance_address"
       DB_NAME: "database_name"
@@ -60,4 +61,3 @@ generic-prometheus-alerts:
 
 dataExtractorEnabled: true
 
-ATTENTION_NEEDED_LICENCES_EMAIL_ADDRESS: 'createandvaryalicence@digital.justice.gov.uk'
