@@ -59,3 +59,5 @@ generic-prometheus-alerts:
   targetApplication: create-and-vary-a-licence-api
 
 dataExtractorEnabled: true
+
+ATTENTION_NEEDED_LICENCES_EMAIL_ADDRESS: 'createandvaryalicence@digital.justice.gov.uk'

@@ -123,7 +123,7 @@ notify:
     hardStopLicenceReviewOverdue: fd1388a3-8d22-4d51-898f-4cd277ab8314
     notifyAttentionNeededLicences: 9475c999-f569-4ae1-a22c-f8f44dfe667f
   attentionNeededLicences:
-    emailAddress: 'createandvaryalicence@digital.justice.gov.uk'
+    emailAddress: ${ATTENTION_NEEDED_LICENCES_EMAIL_ADDRESS}
 
 # Overridden in production
 internalEmailAddress: 'testemail@probation.gov.uk'
