@@ -1,9 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.NotifyAttentionNeededLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyAttentionNeededLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -18,9 +19,14 @@ class NotifyAttentionNeededLicencesService(
   private val notifyService: NotifyService,
 ) {
 
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
   @Transactional
   fun notifyAttentionNeededLicences() {
     val attentionNeededLicences = licenceRepository.getAttentionNeededLicences()
+    log.info("Job notifyAttentionNeededLicences found ${attentionNeededLicences.size} licences to process")
     if (attentionNeededLicences.isEmpty()) {
       return
     }
@@ -50,5 +56,6 @@ class NotifyAttentionNeededLicencesService(
       fileContents.toByteArray(),
       fileName,
     )
+    log.info("Job notifyAttentionNeededLicences emailed ${attentionNeededLicences.size} licences")
   }
 }
