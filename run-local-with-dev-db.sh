@@ -24,6 +24,7 @@ export DB_NAME=$(kubectl -n create-and-vary-a-licence-api-dev get secret rds-ins
 export DB_USER=$(kubectl -n create-and-vary-a-licence-api-dev get secret rds-instance-output -o json | jq -r '.data.database_username | @base64d')
 export DB_PASS=$(kubectl -n create-and-vary-a-licence-api-dev get secret rds-instance-output -o json | jq -r '.data.database_password | @base64d')
 
+
 # Provide URLs to other dev container-based dependent services
 # Match with ports defined in docker-compose.yml
 export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth

@@ -27,6 +27,7 @@ class NotifyService(
   @Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
+  @Value("\${notify.templates.notifyAttentionNeededLicences}") private val notifyAttentionNeededLicences: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -253,6 +254,22 @@ class NotifyService(
     }
   }
 
+  fun sendAttentionNeededLicencesEmail(
+    emailAddress: String?,
+    fileContents: ByteArray,
+    fileName: String,
+  ) {
+    if (emailAddress != null) {
+      val values = mapOf(
+        "linkToDocument" to NotificationClient.prepareUpload(fileContents, fileName),
+      )
+      sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)
+      log.info("Notification sent to $emailAddress with list of licences that needed attention")
+    } else {
+      log.error("Notification failed (notifyAttentionNeededLicences) - email must be present")
+    }
+  }
+
   internal fun sendLicenceCreateEmail(
     templateId: String,
     emailAddress: String,
@@ -307,6 +324,7 @@ class NotifyService(
 
     try {
       client.sendEmail(templateId, emailAddress, values, reference)
+      log.info("Notification - sent email for template ID $templateId ref $reference")
     } catch (e: NotificationClientException) {
       log.error("Notification failed - templateId $templateId to $emailAddress", e)
     }

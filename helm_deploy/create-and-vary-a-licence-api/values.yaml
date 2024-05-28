@@ -59,3 +59,4 @@ generic-prometheus-alerts:
   targetApplication: create-and-vary-a-licence-api
 
 dataExtractorEnabled: true
+

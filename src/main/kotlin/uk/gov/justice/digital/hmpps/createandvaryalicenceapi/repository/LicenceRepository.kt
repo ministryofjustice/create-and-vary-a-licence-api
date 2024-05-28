@@ -179,6 +179,18 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   @Query(
     """
       SELECT l
+
+        FROM Licence l
+        WHERE (l.statusCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS)
+                AND l.conditionalReleaseDate IS NULL AND l.actualReleaseDate IS NULL)
+        OR (l.statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED AND l.licenceStartDate < CURRENT_DATE)
+    """,
+  )
+  fun getAttentionNeededLicences(): List<Licence>
+
+  @Query(
+    """
+      SELECT l
       FROM Licence l
       WHERE l.postRecallReleaseDate >= CURRENT_DATE 
       AND l.statusCode IN (
