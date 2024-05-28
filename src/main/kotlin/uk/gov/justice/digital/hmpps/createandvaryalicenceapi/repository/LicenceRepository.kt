@@ -179,7 +179,6 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   @Query(
     """
       SELECT l
-
         FROM Licence l
         WHERE (l.statusCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS)
                 AND l.conditionalReleaseDate IS NULL AND l.actualReleaseDate IS NULL)
