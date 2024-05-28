@@ -31,7 +31,10 @@ class NotifyAttentionNeededLicencesService(
       return
     }
 
-    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(attentionNeededLicences.map { it.nomsId!! })
+    val batchedNomsIds = attentionNeededLicences.map { it.nomsId!! }.chunked(500)
+    val prisoners = batchedNomsIds.map {
+      prisonerSearchApiClient.searchPrisonersByNomisIds(it)
+    }.flatten()
 
     val prisonerToLegalStatus = prisoners.associateBy { it.prisonerNumber }
     val notifyLicences = attentionNeededLicences.map {
