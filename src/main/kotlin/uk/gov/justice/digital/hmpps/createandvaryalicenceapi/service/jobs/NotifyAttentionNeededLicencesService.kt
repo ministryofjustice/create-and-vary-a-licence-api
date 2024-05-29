@@ -26,13 +26,13 @@ class NotifyAttentionNeededLicencesService(
 
   @Transactional
   fun notifyAttentionNeededLicences() {
-    val attentionNeededLicences = licenceRepository.getAttentionNeededLicences()
+    val attentionNeededLicences = licenceRepository.getAttentionNeededLicences().distinctBy { it.nomsId }
     log.info("Job notifyAttentionNeededLicences found ${attentionNeededLicences.size} licences to process")
     if (attentionNeededLicences.isEmpty()) {
       return
     }
 
-    val batchedNomsIds = attentionNeededLicences.map { it.nomsId!! }.chunked(Companion.BATCH_SIZE)
+    val batchedNomsIds = attentionNeededLicences.map { it.nomsId!! }.chunked(BATCH_SIZE)
     val prisoners = batchedNomsIds.map {
       prisonerSearchApiClient.searchPrisonersByNomisIds(it)
     }.flatten()
