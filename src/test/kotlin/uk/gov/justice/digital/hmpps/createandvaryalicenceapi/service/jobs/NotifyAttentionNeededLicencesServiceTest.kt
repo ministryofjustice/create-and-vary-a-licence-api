@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder.setContex
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyAttentionNeededLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.writeCsv
@@ -59,8 +59,19 @@ class NotifyAttentionNeededLicencesServiceTest {
   }
 
   @Test
-  fun `notify attention needed licences job should send email if there are licences in attention needed tab`() {
-    whenever(licenceRepository.getAttentionNeededLicences()).thenReturn(listOf(aLicenceEntity))
+  fun `notify attention needed licences job should send email if there are licences in attention needed tab with distinct nomsId's`() {
+    val duplicateRecordWithSameNomsId = aLicenceEntity.copy(
+      nomsId = "A1234AA",
+      conditionalReleaseDate = LocalDate.of(2022, 11, 23),
+      actualReleaseDate = LocalDate.of(2022, 11, 23),
+      licenceStartDate = LocalDate.of(2022, 11, 23),
+    )
+    whenever(licenceRepository.getAttentionNeededLicences()).thenReturn(
+      listOf(
+        aLicenceEntity,
+        duplicateRecordWithSameNomsId,
+      ),
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId.toString()))).thenReturn(
       listOf(aPrisonerSearchPrisoner),
     )
@@ -93,7 +104,7 @@ class NotifyAttentionNeededLicencesServiceTest {
   private companion object {
     val emailAddress = "testemail@probation.gov.uk"
     val fileName = "attentionNeededLicences_" + LocalDate.now() + ".csv"
-    val aLicenceEntity = TestData.createCrdLicence().copy(
+    val aLicenceEntity = createCrdLicence().copy(
       nomsId = "A1234AA",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
