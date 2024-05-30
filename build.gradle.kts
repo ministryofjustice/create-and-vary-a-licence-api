@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.4"
-  kotlin("plugin.spring") version "1.9.23"
-  kotlin("plugin.jpa") version "1.9.23"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.0"
+  kotlin("plugin.spring") version "2.0.0"
+  kotlin("plugin.jpa") version "2.0.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
@@ -49,22 +49,22 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-cache")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:5.0.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:5.1.0-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.2")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
-  runtimeOnly("org.flywaydb:flyway-core")
+  runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.3")
 
-  implementation("com.google.code.gson:gson:2.10.1")
-  implementation("io.arrow-kt:arrow-core:1.2.3")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
+  implementation("com.google.code.gson:gson:2.11.0")
+  implementation("io.arrow-kt:arrow-core:1.2.4")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.5")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.3")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
@@ -81,7 +81,7 @@ dependencies {
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:localstack:1.19.7")
+  testImplementation("org.testcontainers:localstack:1.19.8")
 }
 
 repositories {
@@ -102,9 +102,8 @@ java {
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "21"
-    }
+    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    compilerOptions.freeCompilerArgs = listOf("-Xjvm-default=all")
   }
   withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     reports {
@@ -117,6 +116,13 @@ tasks {
         it is TaskProvider<*> && it.name == "detekt"
       },
     )
+  }
+}
+configurations.matching { it.name == "detekt" }.all {
+  resolutionStrategy.eachDependency {
+    if (requested.group == "org.jetbrains.kotlin") {
+      useVersion(io.gitlab.arturbosch.detekt.getSupportedKotlinVersion())
+    }
   }
 }
 
