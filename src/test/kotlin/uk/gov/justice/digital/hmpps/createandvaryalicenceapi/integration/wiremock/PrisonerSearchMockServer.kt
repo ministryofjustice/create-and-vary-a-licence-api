@@ -4,6 +4,8 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import java.time.DayOfWeek.SATURDAY
+import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 
 class PrisonerSearchMockServer : WireMockServer(8099) {
@@ -75,6 +77,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
+  fun nextWorkingDate() = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }.first()
+
   fun stubSearchPrisonersByNomisIds() {
     stubFor(
       post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
@@ -93,8 +97,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
                   "homeDetentionCurfewEligibilityDate": null,
                   "releaseDate": "${LocalDate.now().plusDays(1)}",
-                  "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
-                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": "${nextWorkingDate()}",
+                  "conditionalReleaseDate": "${nextWorkingDate()}",
                   "paroleEligibilityDate": null,
                   "actualParoleDate" : null,
                   "postRecallReleaseDate": null,
@@ -239,8 +243,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
                   "homeDetentionCurfewEligibilityDate": null,
                   "releaseDate": "${LocalDate.now().plusDays(1)}",
-                  "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
-                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": "${nextWorkingDate()}",
+                  "conditionalReleaseDate": "${nextWorkingDate()}",
                   "paroleEligibilityDate": null,
                   "actualParoleDate" : null,
                   "postRecallReleaseDate": null,

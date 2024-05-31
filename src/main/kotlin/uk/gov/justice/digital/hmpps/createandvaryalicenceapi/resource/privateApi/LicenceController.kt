@@ -44,12 +44,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicenceController(
   private val licenceService: LicenceService,
+  private val prisonApproverService: PrisonApproverService,
   private val updateSentenceDateService: UpdateSentenceDateService,
   private val licenceCreationService: LicenceCreationService,
 ) {
@@ -311,7 +313,7 @@ class LicenceController(
     @RequestBody @Valid
     body: RecentlyApprovedLicencesRequest,
   ): List<LicenceSummaryApproverView> {
-    return licenceService.findRecentlyApprovedLicences(
+    return prisonApproverService.findRecentlyApprovedLicences(
       body.prisonCodes,
     )
   }
@@ -1252,6 +1254,6 @@ class LicenceController(
     @Valid @RequestBody
     body: ApproveLicencesRequest,
   ): List<LicenceSummaryApproverView> {
-    return licenceService.getLicencesForApproval(body.prisonCodes)
+    return prisonApproverService.getLicencesForApproval(body.prisonCodes)
   }
 }

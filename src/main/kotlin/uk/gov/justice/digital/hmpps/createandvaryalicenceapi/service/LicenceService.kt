@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -418,30 +417,6 @@ class LicenceService(
       val matchingLicences =
         licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
       return matchingLicences.map { it.toSummary() }
-    } catch (e: PropertyReferenceException) {
-      throw ValidationException(e.message, e)
-    }
-  }
-
-  @Transactional
-  fun findRecentlyApprovedLicences(
-    prisonCodes: List<String>,
-  ): List<LicenceSummaryApproverView> {
-    try {
-      val releasedAfterDate = LocalDate.now().minusDays(14L)
-      val recentActiveAndApprovedLicences =
-        licenceRepository.getRecentlyApprovedLicences(prisonCodes, releasedAfterDate)
-
-      // if a licence is an active variation then we want to return the original
-      // licence that the variation was created from and not the variation itself
-      val recentlyApprovedLicences = recentActiveAndApprovedLicences.map {
-        if (it.statusCode == ACTIVE && it is VariationLicence) {
-          findOriginalLicenceForVariation(it)
-        } else {
-          it
-        }
-      }
-      return recentlyApprovedLicences.map { it.toApprovalSummaryView() }
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }
@@ -963,22 +938,6 @@ class LicenceService(
     return Pair(firstName, lastName)
   }
 
-  private fun findOriginalLicenceForVariation(variationLicence: VariationLicence): EntityLicence {
-    var originalLicence = variationLicence
-    while (originalLicence.variationOfId != null) {
-      val licence = licenceRepository
-        .findById(originalLicence.variationOfId!!)
-        .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
-      when (licence) {
-        is CrdLicence -> return licence
-        is HardStopLicence -> return licence
-        is VariationLicence -> originalLicence = licence
-        else -> error("Unknown licence type in hierarchy: ${licence.javaClass}")
-      }
-    }
-    error("original licence not found for licence: ${variationLicence.id}")
-  }
-
   @Transactional
   fun inactivateInProgressLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
     val licenceIds = licences.map { it.id }
@@ -1041,16 +1000,6 @@ class LicenceService(
   }
 
   @Transactional
-  fun getLicencesForApproval(prisons: List<String>?): List<LicenceSummaryApproverView> {
-    if (prisons.isNullOrEmpty()) {
-      return emptyList()
-    }
-    val licences = licenceRepository.getLicencesReadyForApproval(prisons)
-      .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
-    return licences.map { it.toApprovalSummaryView() }
-  }
-
-  @Transactional
   fun timeout(licence: CrdLicence, reason: String? = null) {
     val timedOutLicence = licence.timeOut()
     licenceRepository.saveAndFlush(timedOutLicence)
@@ -1101,17 +1050,6 @@ class LicenceService(
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
     )
-
-  private fun EntityLicence.toApprovalSummaryView(): LicenceSummaryApproverView {
-    return transformToApprovalLicenceSummary(
-      licence = this,
-      hardStopDate = releaseDateService.getHardStopDate(this),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
-    )
-  }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

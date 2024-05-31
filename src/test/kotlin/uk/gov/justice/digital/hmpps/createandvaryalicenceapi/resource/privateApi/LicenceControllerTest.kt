@@ -57,6 +57,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -74,6 +75,9 @@ class LicenceControllerTest {
 
   @MockBean
   private lateinit var licenceService: LicenceService
+
+  @MockBean
+  private lateinit var prisonApproverService: PrisonApproverService
 
   @MockBean
   private lateinit var updateSentenceDateService: UpdateSentenceDateService
@@ -95,6 +99,7 @@ class LicenceControllerTest {
       .standaloneSetup(
         LicenceController(
           licenceService,
+          prisonApproverService,
           updateSentenceDateService,
           licenceCreationService,
         ),
@@ -316,7 +321,7 @@ class LicenceControllerTest {
   fun `get recently approved licences by prison code`() {
     val prisonCodes = listOf("LEI")
 
-    whenever(licenceService.findRecentlyApprovedLicences(any())).thenReturn(
+    whenever(prisonApproverService.findRecentlyApprovedLicences(any())).thenReturn(
       listOf(
         aLicenceSummaryApproverView,
       ),
@@ -341,7 +346,7 @@ class LicenceControllerTest {
     assertThat(result.response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
 
-    verify(licenceService, times(1)).findRecentlyApprovedLicences(prisonCodes)
+    verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(prisonCodes)
   }
 
   @Test
@@ -554,7 +559,7 @@ class LicenceControllerTest {
       prisonCodes = listOf("AB1", "AB2"),
     )
 
-    whenever(licenceService.getLicencesForApproval(request.prisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
+    whenever(prisonApproverService.getLicencesForApproval(request.prisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
 
     val result = mvc.perform(
       post("/licence/licences-for-approval")
@@ -568,7 +573,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
 
-    verify(licenceService, times(1)).getLicencesForApproval(request.prisonCodes)
+    verify(prisonApproverService, times(1)).getLicencesForApproval(request.prisonCodes)
   }
 
   private companion object {

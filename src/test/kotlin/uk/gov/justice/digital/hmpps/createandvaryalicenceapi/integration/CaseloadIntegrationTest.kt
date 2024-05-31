@@ -24,7 +24,6 @@ private const val FIND_PRISONERS = "/prisoner-search/prisoner-numbers"
 private const val FIND_PRISONERS_BY_RELEASE_DATE = "/prisoner-search/release-date-by-prison?size=2000"
 
 class CaseloadIntegrationTest : IntegrationTestBase() {
-
   @Nested
   inner class GetPrisoner {
     @Test
