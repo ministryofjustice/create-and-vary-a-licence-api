@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
@@ -115,7 +116,7 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Staff Surname",
           "A01B02C",
           "Test Team",
-          LocalDate.now().plusDays(1),
+          prisonerSearchApiMockServer.nextWorkingDate(),
           null,
           LicenceType.AP,
           LicenceStatus.TIMED_OUT,
@@ -206,7 +207,7 @@ class ComIntegrationTest : IntegrationTestBase() {
           "Staff Surname",
           "A01B02C",
           "Test Team",
-          LocalDate.now().plusDays(1),
+          prisonerSearchApiMockServer.nextWorkingDate(),
           null,
           LicenceType.AP,
           LicenceStatus.TIMED_OUT,
@@ -273,6 +274,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     val probationSearchApiMockServer = ProbationSearchMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
+    val govUkMockServer = GovUkMockServer()
 
     val aProbationUserSearchRequest = ProbationUserSearchRequest(
       "Surname",
@@ -298,6 +300,9 @@ class ComIntegrationTest : IntegrationTestBase() {
       probationSearchApiMockServer.start()
       prisonerSearchApiMockServer.start()
       prisonApiMockServer.start()
+
+      govUkMockServer.start()
+      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
     @JvmStatic
@@ -307,6 +312,7 @@ class ComIntegrationTest : IntegrationTestBase() {
       probationSearchApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
       prisonApiMockServer.stop()
+      govUkMockServer.stop()
     }
   }
 }
