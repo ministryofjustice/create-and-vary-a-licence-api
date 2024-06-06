@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -10,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyServi
 
 @Service
 class HardStopLicenceReviewOverdueService(
-  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
   private val licenceRepository: LicenceRepository,
   private val notifyService: NotifyService,
 ) {
@@ -21,10 +19,6 @@ class HardStopLicenceReviewOverdueService(
 
   @Transactional
   fun sendComReviewEmail() {
-    if (!hardStopEnabled) {
-      log.info("Hard stop is not enabled so the runHardStopLicenceReviewOverdueJob job will not run")
-      return
-    }
     log.info("Job to runHardStopLicenceReviewOverdueJob started")
     val licencesToReview = licenceRepository.getHardStopLicencesNeedingReview()
     if (licencesToReview.isEmpty()) {

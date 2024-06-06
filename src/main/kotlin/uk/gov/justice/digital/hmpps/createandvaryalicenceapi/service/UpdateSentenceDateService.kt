@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,7 +21,6 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class UpdateSentenceDateService(
-  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
   private val licenceRepository: LicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
@@ -59,31 +57,26 @@ class UpdateSentenceDateService(
       staffMember = staffMember,
     )
 
-    if (hardStopEnabled) {
-      val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
-      val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
-      val isLicenceStatusInProgress = updatedLicenceEntity.statusCode == LicenceStatus.IN_PROGRESS
-      val isTimedOut =
-        !licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && isLicenceStatusInProgress
+    val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
+    val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
+    val isLicenceStatusInProgress = updatedLicenceEntity.statusCode == LicenceStatus.IN_PROGRESS
+    val isTimedOut =
+      !licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && isLicenceStatusInProgress
 
-      if (isTimedOut && updatedLicenceEntity is CrdLicence) {
-        licenceService.timeout(updatedLicenceEntity, reason = "due to sentence dates update")
-      } else {
-        licenceRepository.saveAndFlush(updatedLicenceEntity)
-        recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
-      }
-
-      if (licencePreviouslyInHardStopPeriod && !licenceCurrentlyInHardStopPeriod) {
-        val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-          licenceEntity?.bookingId!!,
-          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
-          listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
-        )
-        licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
-      }
+    if (isTimedOut && updatedLicenceEntity is CrdLicence) {
+      licenceService.timeout(updatedLicenceEntity, reason = "due to sentence dates update")
     } else {
       licenceRepository.saveAndFlush(updatedLicenceEntity)
       recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
+    }
+
+    if (licencePreviouslyInHardStopPeriod && !licenceCurrentlyInHardStopPeriod) {
+      val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
+        licenceEntity?.bookingId!!,
+        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
+        listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+      )
+      licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
     }
 
     log.info(

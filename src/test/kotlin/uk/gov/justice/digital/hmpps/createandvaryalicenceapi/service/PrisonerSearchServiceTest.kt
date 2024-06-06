@@ -54,7 +54,6 @@ class PrisonerSearchServiceTest {
       prisonApiClient,
       eligibilityService,
       releaseDateService,
-      hardStopEnabled = true,
     )
 
   @BeforeEach

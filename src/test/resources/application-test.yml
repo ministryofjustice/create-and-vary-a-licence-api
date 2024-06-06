@@ -73,9 +73,6 @@ hmpps:
 notify:
   enabled: false
 
-hardstop:
-  enabled: true
-
 oauth:
   client:
     id: client-id
