@@ -41,7 +41,6 @@ class UpdateSentenceDateServiceTest {
   private val licenceService = mock<LicenceService>()
 
   private val service = UpdateSentenceDateService(
-    hardStopEnabled = true,
     licenceRepository,
     auditEventRepository,
     notifyService,

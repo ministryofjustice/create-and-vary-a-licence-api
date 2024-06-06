@@ -71,7 +71,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -99,7 +98,6 @@ class LicenceServiceTest {
 
   private val service =
     LicenceService(
-      hardStopEnabled = true,
       licenceRepository,
       staffRepository,
       standardConditionRepository,
@@ -850,7 +848,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
         listOf(aLicenceEntity.bookingId!!),
-        TIMED_OUT,
+        LicenceStatus.TIMED_OUT,
       ),
     ).thenReturn(listOf(timedOutLicenceVersion))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -1363,7 +1361,7 @@ class LicenceServiceTest {
     whenever(
       licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
         listOf(approvedLicenceVersion.bookingId!!),
-        TIMED_OUT,
+        LicenceStatus.TIMED_OUT,
       ),
     ).thenReturn(listOf(timedOutVersion))
 
@@ -2808,7 +2806,7 @@ class LicenceServiceTest {
       requiresInput = false,
     )
 
-    val aLicenceEntity = TestData.createCrdLicence().copy(
+    val aLicenceEntity = createCrdLicence().copy(
       id = 1,
       typeCode = LicenceType.AP,
       version = "1.1",

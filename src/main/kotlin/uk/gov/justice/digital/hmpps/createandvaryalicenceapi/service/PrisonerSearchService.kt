@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
@@ -30,7 +29,6 @@ class PrisonerSearchService(
   private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
-  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -154,12 +152,14 @@ class PrisonerSearchService(
     return this.transformToUnstartedRecord(
       releaseDate = prisonOffender.getReleaseDate(),
       licenceType = LicenceType.getLicenceType(prisonOffender),
-      licenceStatus = if (hardStopEnabled && inHardStopPeriod) TIMED_OUT else NOT_STARTED,
+      licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
       isInHardStopPeriod = inHardStopPeriod,
       isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+        sentenceDateHolder,
+      ),
       releaseDateLabel = if (prisonOffender.confirmedReleaseDate != null) "Confirmed release date" else "CRD",
     )
   }

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.mapping.PropertyReferenceException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -63,7 +62,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 
 @Service
 class LicenceService(
-  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
   private val licenceRepository: LicenceRepository,
   private val staffRepository: StaffRepository,
   private val standardConditionRepository: StandardConditionRepository,
@@ -224,7 +222,7 @@ class LicenceService(
       notifyReApprovalNeeded(licenceEntity)
     }
 
-    if (request.status === APPROVED && licenceEntity is HardStopLicence && hardStopEnabled) {
+    if (request.status === APPROVED && licenceEntity is HardStopLicence) {
       notifyComAboutHardstopLicenceApproval(licenceEntity)
     }
 

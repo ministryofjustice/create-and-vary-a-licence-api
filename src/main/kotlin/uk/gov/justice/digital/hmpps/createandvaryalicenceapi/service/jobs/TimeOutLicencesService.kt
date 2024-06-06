@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
@@ -14,7 +13,6 @@ import java.time.LocalDate
 
 @Service
 class TimeOutLicencesService(
-  @Value("\${hardstop.enabled}") private val hardStopEnabled: Boolean,
   private val licenceRepository: LicenceRepository,
   private val releaseDateService: ReleaseDateService,
   private val workingDaysService: WorkingDaysService,
@@ -30,7 +28,7 @@ class TimeOutLicencesService(
   fun timeOutLicences() {
     log.info("Job to runTimeOutLicencesService started")
     val jobExecutionDate = LocalDate.now(clock)
-    if (workingDaysService.isNonWorkingDay(jobExecutionDate) || !hardStopEnabled) {
+    if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
     val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut().filter {

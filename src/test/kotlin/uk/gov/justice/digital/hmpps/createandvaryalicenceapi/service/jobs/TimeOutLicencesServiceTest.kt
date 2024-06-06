@@ -24,7 +24,6 @@ class TimeOutLicencesServiceTest {
   private val licenceService = mock<LicenceService>()
 
   private val service = TimeOutLicencesService(
-    hardStopEnabled = true,
     licenceRepository,
     releaseDateService,
     workingDaysService,

@@ -19,7 +19,6 @@ class HardStopLicenceReviewOverdueServiceTest {
   private val notifyService = mock<NotifyService>()
 
   private val service = HardStopLicenceReviewOverdueService(
-    hardStopEnabled = true,
     licenceRepository,
     notifyService,
   )
