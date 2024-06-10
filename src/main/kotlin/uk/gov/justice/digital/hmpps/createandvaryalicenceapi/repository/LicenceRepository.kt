@@ -126,7 +126,6 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
-            'TIME_SERVED'
         )
         AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
@@ -143,7 +142,6 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
         LEFT JOIN Licence l2 ON l.id = l2.variationOfId
         WHERE l.kind IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP,
-            'TIME_SERVED'
         )
         AND l.statusCode = 'ACTIVE'
         AND l.reviewDate IS NULL
