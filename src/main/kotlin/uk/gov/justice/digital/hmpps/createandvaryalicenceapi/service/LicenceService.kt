@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -1039,6 +1040,17 @@ class LicenceService(
     }
   }
 
+  @Transactional
+  fun deactivateLicenceAndVariations(licenceId: Long, body: DeactivateLicenceAndVariationsRequest) {
+    val licences = licenceRepository.findLicenceAndVariations(licenceId)
+    if (licences.isEmpty()) {
+      log.info("Unable to deactivate licence and variations due to being unable to locate active licence for id: $licenceId")
+      return
+    }
+    val deactivationReason = datesChangedDeactivationReasons[body.reason]
+    inactivateLicences(licences, deactivationReason, false)
+  }
+
   private fun EntityLicence.toSummary() =
     transformToLicenceSummary(
       this,
@@ -1051,5 +1063,9 @@ class LicenceService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+    private val datesChangedDeactivationReasons = mapOf(
+      "RESENTENCED" to "Licence inactivated due to being resentenced",
+      "RECALLED" to "Licence inactivated due to being recalled",
+    )
   }
 }

@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Additi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -2289,6 +2290,99 @@ class LicenceServiceTest {
           USER_EVENT,
         ),
       )
+  }
+
+  @Test
+  fun `deactivateLicenceAndVariations returns when no active licences are found`() {
+    whenever(licenceRepository.findLicenceAndVariations(aLicenceEntity.id)).thenReturn(emptyList())
+
+    service.deactivateLicenceAndVariations(aLicenceEntity.id, DeactivateLicenceAndVariationsRequest("RESENTENCED"))
+    verify(
+      licenceRepository,
+      times(0),
+    ).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+  }
+
+  @Test
+  fun `deactivateLicenceAndVariations deactivates licences and sets appropriate message for resentensed cases`() {
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val activeLicence = aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
+    val variationLicence = aLicenceEntity.copy(
+      id = 2L,
+      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      licenceVersion = "2.0",
+      versionOfId = 1L,
+    )
+    whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(listOf(activeLicence, variationLicence))
+
+    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest("RESENTENCED"))
+
+    verify(
+      licenceRepository,
+      times(1),
+    ).saveAllAndFlush(listOf(activeLicence.copy(statusCode = LicenceStatus.INACTIVE), variationLicence.copy(statusCode = LicenceStatus.INACTIVE)))
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, LicenceStatus.INACTIVE)
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          2L,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence inactivated due to being resentenced for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(listOf(2L, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"))
+  }
+
+  @Test
+  fun `deactivateLicenceAndVariations deactivates licences and sets appropriate message for recalled cases`() {
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val activeLicence = aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
+    val variationLicence = aLicenceEntity.copy(
+      id = 2L,
+      statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+      licenceVersion = "2.0",
+      versionOfId = 1L,
+    )
+    whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(listOf(activeLicence, variationLicence))
+
+    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest("RECALLED"))
+
+    verify(
+      licenceRepository,
+      times(1),
+    ).saveAllAndFlush(listOf(activeLicence.copy(statusCode = LicenceStatus.INACTIVE), variationLicence.copy(statusCode = LicenceStatus.INACTIVE)))
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(variationLicence, LicenceStatus.INACTIVE)
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          2L,
+          "SYSTEM",
+          "SYSTEM",
+          "Licence inactivated due to being recalled for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        ),
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "forenames", "surname")
+      .isEqualTo(listOf(2L, LicenceEventType.SUPERSEDED, "SYSTEM", "SYSTEM"))
   }
 
   @Nested
