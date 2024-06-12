@@ -225,9 +225,9 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
-  fun stubSearchPrisonersByReleaseDate() {
+  fun stubSearchPrisonersByReleaseDate(page: Int) {
     stubFor(
-      post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000"))
+      post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page"))
         .willReturn(
           aResponse().withHeader(
             "Content-Type",
@@ -349,7 +349,33 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "lastName": "Person3",
                   "dateOfBirth": "1987-01-01"
                }
-              ]}
+              ],
+              "pageable": {
+                  "pageSize": 100,
+                  "offset": 0,
+                  "sort": {
+                      "empty": false,
+                      "unsorted": false,
+                      "sorted": true
+                  },
+                  "pageNumber": 0,
+                  "paged": true,
+                  "unpaged": false
+              },
+              "totalElements": 5,
+              "totalPages": 1,
+              "last": true,
+              "size": 2000,
+              "number": 0,
+              "sort": {
+                  "empty": false,
+                  "unsorted": false,
+                  "sorted": true
+              },
+              "first": true,
+              "numberOfElements": 5,
+              "empty": false
+            }
             """.trimIndent(),
           ).withStatus(200),
         ),
