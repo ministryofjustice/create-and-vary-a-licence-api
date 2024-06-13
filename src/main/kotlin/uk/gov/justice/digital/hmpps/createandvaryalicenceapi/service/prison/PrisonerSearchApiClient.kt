@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -37,15 +38,15 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .block() ?: emptyList()
   }
 
-  fun searchPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>): List<PrisonerSearchPrisoner> {
-    if (prisonIds.isEmpty()) return emptyList()
+  fun searchPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>, page: Int = 0): Page<PrisonerSearchPrisoner> {
+    if (prisonIds.isEmpty()) return Page.empty()
     return prisonerSearchApiWebClient
       .post()
-      .uri("/prisoner-search/release-date-by-prison?size=2000")
+      .uri("/prisoner-search/release-date-by-prison?size=2000&page=$page")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(ReleaseDateSearch(earliestReleaseDate = earliestReleaseDate, latestReleaseDate = latestReleaseDate, prisonIds = prisonIds))
       .retrieve()
-      .bodyToMono(typeReference<SearchPaginationResponse>())
-      .block()?.content ?: emptyList()
+      .bodyToMono(typeReference<PageResponse<PrisonerSearchPrisoner>>())
+      .block()?.toPage() ?: Page.empty()
   }
 }
