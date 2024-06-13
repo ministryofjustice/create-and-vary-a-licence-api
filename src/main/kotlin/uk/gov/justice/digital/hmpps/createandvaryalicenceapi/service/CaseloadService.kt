@@ -19,8 +19,8 @@ class CaseloadService(
   fun getPrisonersByNumber(nomisIds: List<String>) =
     prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds).map { it.toCaseloadItem() }
 
-  fun getPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>) =
-    prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds).map { it.toCaseloadItem() }
+  fun getPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>, page: Int = 0) =
+    prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page).map { it.toCaseloadItem() }
 
   fun getPrisoner(nomisId: String) =
     getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)

@@ -60,7 +60,10 @@ abstract class IntegrationTestBase {
   protected val domainEventsTopicSnsClient by lazy { domainEventsTopic.snsClient }
   protected val domainEventsTopicArn by lazy { domainEventsTopic.arn }
 
-  protected val domainEventsQueue by lazy { hmppsQueueService.findByQueueId("domaineventsqueue") ?: throw MissingQueueException("HmppsQueue domaineventsqueue not found") }
+  protected val domainEventsQueue by lazy {
+    hmppsQueueService.findByQueueId("domaineventsqueue")
+      ?: throw MissingQueueException("HmppsQueue domaineventsqueue not found")
+  }
 
   protected val domainEventsSqsClient by lazy { domainEventsQueue.sqsClient }
   protected val domainEventsQueueUrl by lazy { domainEventsQueue.queueUrl }

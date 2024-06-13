@@ -5,6 +5,8 @@ import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.web.config.EnableSpringDataWebSupport
+import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -18,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 @EnableCaching
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 class ResourceServerConfiguration {
 
   @Bean

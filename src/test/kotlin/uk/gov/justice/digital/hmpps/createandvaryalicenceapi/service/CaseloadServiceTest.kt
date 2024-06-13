@@ -11,6 +11,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
@@ -28,9 +29,9 @@ class CaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(prisonerSearchApiClient)
+    reset(prisonerSearchApiClient, releaseDateService)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any())).thenReturn(listOf(prisonerSearchResult()))
+    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(PageImpl(listOf(prisonerSearchResult())))
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
