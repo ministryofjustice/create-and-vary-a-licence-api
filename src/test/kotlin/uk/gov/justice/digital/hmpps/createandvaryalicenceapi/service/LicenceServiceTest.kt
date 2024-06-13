@@ -69,6 +69,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -2296,7 +2297,7 @@ class LicenceServiceTest {
   fun `deactivateLicenceAndVariations returns when no active licences are found`() {
     whenever(licenceRepository.findLicenceAndVariations(aLicenceEntity.id)).thenReturn(emptyList())
 
-    service.deactivateLicenceAndVariations(aLicenceEntity.id, DeactivateLicenceAndVariationsRequest("RESENTENCED"))
+    service.deactivateLicenceAndVariations(aLicenceEntity.id, DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RESENTENCED))
     verify(
       licenceRepository,
       times(0),
@@ -2318,7 +2319,7 @@ class LicenceServiceTest {
     )
     whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(listOf(activeLicence, variationLicence))
 
-    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest("RESENTENCED"))
+    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RESENTENCED))
 
     verify(
       licenceRepository,
@@ -2358,7 +2359,7 @@ class LicenceServiceTest {
     )
     whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(listOf(activeLicence, variationLicence))
 
-    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest("RECALLED"))
+    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RECALLED))
 
     verify(
       licenceRepository,

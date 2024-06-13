@@ -40,7 +40,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
@@ -1048,7 +1047,7 @@ class LicenceService(
       log.info("Unable to deactivate licence and variations due to being unable to locate active licence for id: $licenceId")
       return
     }
-    val deactivationReason = DateChangeLicenceDeativationReason.valueOf(body.reason!!).message
+    val deactivationReason = body.reason.message
     inactivateLicences(licences, deactivationReason, false)
   }
 

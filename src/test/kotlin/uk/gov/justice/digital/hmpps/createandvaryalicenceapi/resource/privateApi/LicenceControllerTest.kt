@@ -60,6 +60,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCrea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -579,7 +580,7 @@ class LicenceControllerTest {
 
   @Test
   fun `deactivate a licence and variations`() {
-    val request = DeactivateLicenceAndVariationsRequest("RECALLED")
+    val request = DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RECALLED)
     mvc.perform(
       post("/licence/id/4/deactivate-licence-and-variations")
         .accept(APPLICATION_JSON)
@@ -587,7 +588,7 @@ class LicenceControllerTest {
         .content(mapper.writeValueAsBytes(request)),
     )
 
-    verify(licenceService, times(1)).deactivateLicenceAndVariations(4, DeactivateLicenceAndVariationsRequest("RECALLED"))
+    verify(licenceService, times(1)).deactivateLicenceAndVariations(4, request)
   }
 
   private companion object {
