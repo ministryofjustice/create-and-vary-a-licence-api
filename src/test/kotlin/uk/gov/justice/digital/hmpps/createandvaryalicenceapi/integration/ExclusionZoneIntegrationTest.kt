@@ -13,14 +13,15 @@ import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.toCheckSum
 import java.time.Duration
 
 class ExclusionZoneIntegrationTest : IntegrationTestBase() {
-
   @Autowired
   lateinit var additionalConditionRepository: AdditionalConditionRepository
 
@@ -41,11 +42,16 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
     val bodyBuilder = MultipartBodyBuilder()
 
+    val fileBytes = fileResource.file.readBytes()
     bodyBuilder
-      .part("file", fileResource.file.readBytes())
+      .part("file", fileBytes)
       .header("Content-Disposition", "form-data; name=file; filename=" + fileResource.filename)
       .header("Content-Type", "application/pdf")
 
+    documentApiMockServer.stubDocumentUploadRequest(
+      "EXCLUSION_ZONE_MAP",
+      """{"licenceId":"2","additionalConditionId":"1","subType":"EXCLUSION_ZONE_MAP_FULL_IMG"}""",
+    )
     webTestClient.post()
       .uri("/exclusion-zone/id/2/condition/id/1/file-upload")
       .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -56,7 +62,9 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     // Read back the single additional condition from the repository
-    val conditions = additionalConditionRepository.findById(1).map { condition -> condition.additionalConditionUploadSummary }.orElseThrow()
+    val conditions =
+      additionalConditionRepository.findById(1).map { condition -> condition.additionalConditionUploadSummary }
+        .orElseThrow()
     assertThat(conditions).hasSize(1)
 
     val uploadCondition = conditions.first()
@@ -71,7 +79,22 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     // Check that the upload detail values are also stored and referenced by the ID column in the summary
     val detailRow = additionalConditionUploadDetailRepository.findById(uploadCondition.uploadDetailId).orElseThrow()
     assertThat(detailRow.fullSizeImage).isNotEmpty
-    assertThat(detailRow.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
+    assertThat(detailRow.originalData).isEqualTo(fileBytes)
+    assertThat(detailRow.fullSizeImageDsUuid).isNotNull()
+    assertThat(detailRow.fullSizeImageDsChecksum).isEqualTo(detailRow.fullSizeImage.toCheckSum())
+
+    documentApiMockServer.stubDocumentRetrieval(detailRow.fullSizeImage!!)
+
+    val response = webTestClient.get()
+      .uri("/exclusion-zone/id/2/condition/id/1/full-size-image")
+      .accept(MediaType.IMAGE_JPEG)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(ByteArray::class.java)
+      .returnResult().responseBody
+
+    assertThat(response.toCheckSum()).isEqualTo(detailRow.fullSizeImage.toCheckSum())
   }
 
   @Test
@@ -174,19 +197,23 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     val body = result.expectBody(ErrorResponse::class.java).returnResult()
     assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
   }
+
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
+    val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      documentApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       govUkApiMockServer.stop()
+      documentApiMockServer.stop()
     }
   }
 }
