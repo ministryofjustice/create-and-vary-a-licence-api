@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
@@ -1037,6 +1038,17 @@ class LicenceService(
         }
       }
     }
+  }
+
+  @Transactional
+  fun deactivateLicenceAndVariations(licenceId: Long, body: DeactivateLicenceAndVariationsRequest) {
+    val licences = licenceRepository.findLicenceAndVariations(licenceId)
+    if (licences.isEmpty()) {
+      log.info("Unable to deactivate licence and variations due to being unable to locate active licence for id: $licenceId")
+      return
+    }
+    val deactivationReason = body.reason.message
+    inactivateLicences(licences, deactivationReason, false)
   }
 
   private fun EntityLicence.toSummary() =

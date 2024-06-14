@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
@@ -59,6 +60,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCrea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -574,6 +576,19 @@ class LicenceControllerTest {
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
 
     verify(prisonApproverService, times(1)).getLicencesForApproval(request.prisonCodes)
+  }
+
+  @Test
+  fun `deactivate a licence and variations`() {
+    val request = DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RECALLED)
+    mvc.perform(
+      post("/licence/id/4/deactivate-licence-and-variations")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+
+    verify(licenceService, times(1)).deactivateLicenceAndVariations(4, request)
   }
 
   private companion object {

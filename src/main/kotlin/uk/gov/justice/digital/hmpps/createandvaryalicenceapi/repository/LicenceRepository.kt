@@ -184,6 +184,17 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """,
   )
   fun getAttentionNeededLicences(): List<Licence>
+
+  @Query(
+    """
+      SELECT l
+        FROM Licence l
+        WHERE (l.id = :licenceId AND l.statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE)
+        OR l.variationOfId = :licenceId
+        AND l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
+    """,
+  )
+  fun findLicenceAndVariations(licenceId: Long): List<Licence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
