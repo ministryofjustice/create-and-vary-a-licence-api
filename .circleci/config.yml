@@ -157,7 +157,7 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - test1
       - hmpps/deploy_env:
           name: deploy_test2
           env: "test2"
