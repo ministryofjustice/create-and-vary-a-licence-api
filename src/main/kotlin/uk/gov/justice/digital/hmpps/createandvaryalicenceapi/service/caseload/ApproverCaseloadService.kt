@@ -13,7 +13,6 @@ class ApproverCaseloadService(
 
   fun getApprovalNeeded(prisons: List<String>): List<LicenceSummaryApproverView> {
     val filteredPrisons = prisons.filterNot { it == "CADM" }
-    log.info(filteredPrisons.toString())
     val licences = prisonApproverService.getLicencesForApproval(filteredPrisons)
     if (licences.isEmpty()) {
       return emptyList()
