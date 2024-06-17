@@ -51,4 +51,19 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       .block()
     return probationOffenderSearchResponse?.get(0) ?: error("Unexpected null response from API")
   }
+
+  fun searchForPeopleByNomsNumber(
+    nomsIds: List<String?>,
+  ): List<OffenderDetail> {
+    if (nomsIds.isEmpty()) return emptyList()
+    val probationOffenderSearchResponse = probationSearchApiClient
+      .post()
+      .uri("/nomsNumbers")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(nomsIds)
+      .retrieve()
+      .bodyToMono(typeReference<List<OffenderDetail>>())
+      .block()
+    return probationOffenderSearchResponse ?: error("Unexpected null response from API")
+  }
 }

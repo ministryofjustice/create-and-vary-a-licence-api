@@ -4,4 +4,5 @@ data class OtherIds(
   val crn: String,
   val croNumber: String? = null,
   val pncNumber: String? = null,
+  val nomsNumber: String? = null,
 )

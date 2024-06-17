@@ -153,7 +153,7 @@ class UpdateSentenceDateService(
         append("LSD ${licenceEntity?.licenceStartDate} ")
         append("LED ${licenceEntity?.licenceExpiryDate} ")
         append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
-        append("TUSED ${licenceEntity?.topupSupervisionExpiryDate}")
+        append("TUSED ${licenceEntity?.topupSupervisionExpiryDate} ")
         append("PRRD ${licenceEntity?.postRecallReleaseDate}")
       },
     )
@@ -168,7 +168,7 @@ class UpdateSentenceDateService(
         append("LSD ${sentenceDatesRequest.licenceStartDate} ")
         append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
         append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
-        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate}")
+        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} ")
         append("PRRD ${sentenceDatesRequest.postRecallReleaseDate}")
       },
     )
