@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -25,24 +25,10 @@ class ApproverCaseloadServiceTest {
   }
 
   @Test
-  fun `CADM prison code is filtered out`() {
+  fun `CADM prison caseload is filtered out`() {
     val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
-
-    whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes.dropLast(1))).thenReturn(
-      listOf(
-        aLicenceSummaryApproverView.copy(
-          licenceId = 1,
-          prisonCode = "ABC",
-        ),
-        aLicenceSummaryApproverView.copy(
-          licenceId = 1,
-          prisonCode = "DEF",
-        ),
-      ),
-    )
-
-    val response = service.getApprovalNeeded(aListOfPrisonCodes)
-    assertThat(response).hasSize(2)
+    service.getApprovalNeeded(aListOfPrisonCodes)
+    verify(prisonApproverService, times(1)).getLicencesForApproval(listOf("ABC", "DEF"))
   }
 
   private companion object {
