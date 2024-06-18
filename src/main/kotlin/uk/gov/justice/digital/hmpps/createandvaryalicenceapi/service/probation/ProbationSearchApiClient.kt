@@ -53,7 +53,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
   }
 
   fun searchForPeopleByNomsNumber(
-    nomsIds: List<String?>,
+    nomsIds: List<String>,
   ): List<OffenderDetail> {
     if (nomsIds.isEmpty()) return emptyList()
     val probationOffenderSearchResponse = probationSearchApiClient

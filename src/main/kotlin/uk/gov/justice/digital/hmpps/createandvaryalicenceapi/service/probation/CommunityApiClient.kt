@@ -36,7 +36,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
       ?: error("Unexpected null response from API")
   }
 
-  fun getStaffDetailByUsername(usernames: List<String>): List<StaffDetails> {
+  fun getStaffDetailsByUsername(usernames: List<String>): List<StaffDetails> {
     val communityApiResponse = communityApiClient
       .post()
       .uri("/secure/staff/list")

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class OffenderManager(
   @JsonProperty("staff")
-  val staffDetail: StaffDetail,
+  val staffDetail: StaffHuman,
   val active: Boolean,
+  val unallocated: Boolean? = false,
 )

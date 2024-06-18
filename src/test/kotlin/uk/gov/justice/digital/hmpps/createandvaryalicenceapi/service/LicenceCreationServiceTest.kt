@@ -44,7 +44,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.O
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
@@ -487,8 +486,10 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = StaffHuman(
                 code = "AB012C",
+                forenames = "Test",
+                surname = "Staff",
               ),
               active = false,
             ),
@@ -519,8 +520,10 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = StaffHuman(
                 code = "XXXXXX",
+                forenames = "Test",
+                surname = "Staff",
               ),
               active = true,
             ),
@@ -1084,8 +1087,10 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = StaffHuman(
                 code = "AB012C",
+                forenames = "Test",
+                surname = "Staff",
               ),
               active = false,
             ),
@@ -1116,8 +1121,10 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = StaffHuman(
                 code = "XXXXXX",
+                forenames = "Test",
+                surname = "Staff",
               ),
               active = true,
             ),
@@ -1232,8 +1239,10 @@ class LicenceCreationServiceTest {
       ),
       offenderManagers = listOf(
         OffenderManager(
-          staffDetail = StaffDetail(
+          staffDetail = StaffHuman(
             code = "AB012C",
+            forenames = "Test",
+            surname = "Staff",
           ),
           active = true,
         ),
@@ -1301,6 +1310,7 @@ class LicenceCreationServiceTest {
       username = "com-user",
       email = "comuser@probation.gov.uk",
       staff = StaffHuman(
+        code = "XXXXXXX",
         forenames = "com",
         surname = "user",
       ),

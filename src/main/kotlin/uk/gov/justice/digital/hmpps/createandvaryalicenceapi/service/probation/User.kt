@@ -9,6 +9,7 @@ data class User(
 )
 
 data class StaffHuman(
+  val code: String,
   val forenames: String?,
   val surname: String?,
 )
