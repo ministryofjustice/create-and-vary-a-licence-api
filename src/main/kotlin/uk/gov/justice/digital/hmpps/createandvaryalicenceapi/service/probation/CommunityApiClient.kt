@@ -36,14 +36,14 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
       ?: error("Unexpected null response from API")
   }
 
-  fun getStaffDetailByUsername(usernames: List<String>): List<StaffDetails> {
+  fun getStaffDetailsByUsername(usernames: List<String>): List<User> {
     val communityApiResponse = communityApiClient
       .post()
       .uri("/secure/staff/list")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(usernames)
       .retrieve()
-      .bodyToMono(typeReference<List<StaffDetails>>())
+      .bodyToMono(typeReference<List<User>>())
       .block()
     return communityApiResponse
       ?: error("Unexpected null response from API")
