@@ -4,5 +4,5 @@ data class StaffDetail(
   val code: String,
   val forenames: String?,
   val surname: String?,
-  val unallocated: Boolean?,
+  val unallocated: Boolean? = false,
 )
