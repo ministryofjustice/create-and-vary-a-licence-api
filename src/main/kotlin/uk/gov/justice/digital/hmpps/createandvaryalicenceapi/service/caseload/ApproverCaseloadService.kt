@@ -44,12 +44,12 @@ class ApproverCaseloadService(
 
     val prisonerRecord: List<Triple<PrisonerSearchPrisoner, OffenderDetail?, LicenceSummaryApproverView?>> =
       nomisRecords.map {
-        Triple(it, getDeliusRecord(it, deliusRecords), getLicenceSummary(it, licences))
+        Triple(it, it.getDeliusRecord(deliusRecords), it.getLicenceSummary(licences))
       }
 
     val caseload = prisonerRecord.map { (nomisRecord, deliusRecord, licenceSummary) ->
       val releaseDate = when (licenceSummary) {
-        null -> selectReleaseDate(nomisRecord)
+        null -> nomisRecord.selectReleaseDate()
         else -> licenceSummary.actualReleaseDate ?: licenceSummary.conditionalReleaseDate
       }
       ApprovalDetails(
@@ -91,17 +91,17 @@ class ApproverCaseloadService(
   }
 }
 
-private fun getDeliusRecord(nomisRecord: PrisonerSearchPrisoner, deliusRecords: List<OffenderDetail>): OffenderDetail? {
-  return deliusRecords.find { it.otherIds.nomsNumber == nomisRecord.prisonerNumber }
+fun PrisonerSearchPrisoner.getDeliusRecord(deliusRecords: List<OffenderDetail>): OffenderDetail? {
+  return deliusRecords.find { it.otherIds.nomsNumber == this.prisonerNumber }
 }
 
-private fun getLicenceSummary(nomisRecord: PrisonerSearchPrisoner, licences: List<LicenceSummaryApproverView>): LicenceSummaryApproverView? {
-  val licenceSummaries = licences.filter { it.nomisId == nomisRecord.prisonerNumber }
+fun PrisonerSearchPrisoner.getLicenceSummary(licences: List<LicenceSummaryApproverView>): LicenceSummaryApproverView? {
+  val licenceSummaries = licences.filter { it.nomisId == this.prisonerNumber }
   return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
 }
 
-private fun selectReleaseDate(nomisRecord: PrisonerSearchPrisoner): LocalDate? {
-  return nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate
+fun PrisonerSearchPrisoner.selectReleaseDate(): LocalDate? {
+  return this.confirmedReleaseDate ?: this.conditionalReleaseDate
 }
 
 private fun findProbationPractitioner(deliusRecord: OffenderDetail?, comUsernameOnLicence: String?, coms: List<User>): ProbationPractitioner? {
