@@ -49,7 +49,7 @@ class ApproverCaseloadService(
 
     val caseload = prisonerRecord.map { (nomisRecord, deliusRecord, licenceSummary) ->
       val releaseDate = when (licenceSummary) {
-        null -> selectReleaseDate(nomisRecord) // you would always have a licence summary here as without it you wouldnt get the nomis ID
+        null -> selectReleaseDate(nomisRecord)
         else -> licenceSummary.actualReleaseDate ?: licenceSummary.conditionalReleaseDate
       }
       ApprovalDetails(
