@@ -489,6 +489,8 @@ class LicenceCreationServiceTest {
             OffenderManager(
               staffDetail = StaffDetail(
                 code = "AB012C",
+                forenames = "Test",
+                surname = "Test",
               ),
               active = false,
             ),
@@ -521,6 +523,8 @@ class LicenceCreationServiceTest {
             OffenderManager(
               staffDetail = StaffDetail(
                 code = "XXXXXX",
+                forenames = "Test",
+                surname = "Test",
               ),
               active = true,
             ),
@@ -1086,6 +1090,8 @@ class LicenceCreationServiceTest {
             OffenderManager(
               staffDetail = StaffDetail(
                 code = "AB012C",
+                forenames = "Test",
+                surname = "Test",
               ),
               active = false,
             ),
@@ -1118,6 +1124,8 @@ class LicenceCreationServiceTest {
             OffenderManager(
               staffDetail = StaffDetail(
                 code = "XXXXXX",
+                forenames = "Test",
+                surname = "Test",
               ),
               active = true,
             ),
@@ -1234,6 +1242,8 @@ class LicenceCreationServiceTest {
         OffenderManager(
           staffDetail = StaffDetail(
             code = "AB012C",
+            forenames = "Test",
+            surname = "Test",
           ),
           active = true,
         ),
