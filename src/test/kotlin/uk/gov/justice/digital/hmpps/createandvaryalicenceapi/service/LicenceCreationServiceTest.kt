@@ -1315,6 +1315,7 @@ class LicenceCreationServiceTest {
         surname = "user",
       ),
       teams = emptyList(),
+      staffCode = "AB00001",
     )
 
     val newCom = CommunityOffenderManager(

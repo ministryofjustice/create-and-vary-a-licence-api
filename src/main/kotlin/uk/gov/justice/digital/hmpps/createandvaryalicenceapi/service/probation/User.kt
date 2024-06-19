@@ -6,6 +6,7 @@ data class User(
   val staffIdentifier: Long?,
   val staff: StaffHuman?,
   val teams: List<Detail>,
+  val staffCode: String?,
 )
 
 data class StaffHuman(
