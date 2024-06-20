@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getReleaseDate
 import java.time.Clock
 import java.time.LocalDate
 
@@ -80,7 +81,7 @@ class EligibilityService(
   }
 
   private fun hasReleaseDateInTheFuture(): EligibilityCheck = early@{
-    val releaseDate = it.confirmedReleaseDate ?: it.conditionalReleaseDate ?: return@early true
+    val releaseDate = it.getReleaseDate() ?: return@early true
     releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
   }
 
