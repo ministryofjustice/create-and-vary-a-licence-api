@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getLicenceStartDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -48,7 +49,7 @@ object LicenceFactory {
     actualReleaseDate = nomisRecord.confirmedReleaseDate,
     sentenceStartDate = nomisRecord.sentenceStartDate,
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
-    licenceStartDate = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate,
+    licenceStartDate = nomisRecord.getLicenceStartDate(),
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
     topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
@@ -98,7 +99,7 @@ object LicenceFactory {
     actualReleaseDate = nomisRecord.confirmedReleaseDate,
     sentenceStartDate = nomisRecord.sentenceStartDate,
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
-    licenceStartDate = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate,
+    licenceStartDate = nomisRecord.getLicenceStartDate(),
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
     topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,

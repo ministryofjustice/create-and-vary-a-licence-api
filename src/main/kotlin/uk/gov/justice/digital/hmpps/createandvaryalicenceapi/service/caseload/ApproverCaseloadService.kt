@@ -44,14 +44,10 @@ class ApproverCaseloadService(
 
     val prisonerRecord: List<Triple<PrisonerSearchPrisoner, OffenderDetail?, LicenceSummaryApproverView?>> =
       nomisRecords.map {
-        Triple(it, it.getDeliusRecord(deliusRecords), it.getLicenceSummary(licences))
+        Triple(it, it.getDeliusRecord(deliusRecords), licences.getLicenceSummary(it))
       }
 
     val caseload = prisonerRecord.map { (nomisRecord, deliusRecord, licenceSummary) ->
-      val releaseDate = when (licenceSummary) {
-        null -> nomisRecord.selectReleaseDate()
-        else -> licenceSummary.actualReleaseDate ?: licenceSummary.conditionalReleaseDate
-      }
       ApprovalDetails(
         deliusRecord = deliusRecord,
         comUsernameOnLicence = licenceSummary?.comUsername,
@@ -60,7 +56,7 @@ class ApproverCaseloadService(
           name = "${nomisRecord.firstName} ${nomisRecord.lastName}".convertToTitleCase(),
           prisonerNumber = nomisRecord.prisonerNumber,
           submittedByFullName = licenceSummary?.submittedByFullName,
-          releaseDate = releaseDate,
+          releaseDate = licenceSummary?.actualReleaseDate ?: licenceSummary?.conditionalReleaseDate,
           urgentApproval = licenceSummary?.isDueToBeReleasedInTheNextTwoWorkingDays,
           approvedBy = licenceSummary?.approvedByName,
           approvedOn = licenceSummary?.approvedDate,
@@ -95,13 +91,9 @@ fun PrisonerSearchPrisoner.getDeliusRecord(deliusRecords: List<OffenderDetail>):
   return deliusRecords.find { it.otherIds.nomsNumber == this.prisonerNumber }
 }
 
-fun PrisonerSearchPrisoner.getLicenceSummary(licences: List<LicenceSummaryApproverView>): LicenceSummaryApproverView? {
-  val licenceSummaries = licences.filter { it.nomisId == this.prisonerNumber }
+fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisRecord: PrisonerSearchPrisoner): LicenceSummaryApproverView? {
+  val licenceSummaries = this.filter { it.nomisId == nomisRecord.prisonerNumber }
   return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
-}
-
-fun PrisonerSearchPrisoner.selectReleaseDate(): LocalDate? {
-  return this.confirmedReleaseDate ?: this.conditionalReleaseDate
 }
 
 private fun findProbationPractitioner(deliusRecord: OffenderDetail?, comUsernameOnLicence: String?, coms: List<User>): ProbationPractitioner? {
@@ -124,13 +116,13 @@ private fun findProbationPractitioner(deliusRecord: OffenderDetail?, comUsername
   }
 }
 
-data class ApprovalDetails(
+private data class ApprovalDetails(
   val deliusRecord: OffenderDetail?,
   val comUsernameOnLicence: String?,
   val licenceSummary: ApprovalLicenceSummary?,
 )
 
-data class ApprovalLicenceSummary(
+private data class ApprovalLicenceSummary(
   val licenceId: Long?,
   val name: String?,
   val prisonerNumber: String?,
