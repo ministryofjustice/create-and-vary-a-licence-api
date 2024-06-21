@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -39,6 +40,271 @@ class ApproverCaseloadServiceTest {
     reset(prisonApproverService, probationSearchApiClient, prisonerSearchApiClient, communityApiClient)
   }
 
+  @Nested
+  inner class `Build approval caseload`() {
+    @Test
+    fun `It builds the approval needed caseload successfully`() {
+      val nomisId = "A1234AA"
+      val comUsernames = listOf("smills")
+
+      whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
+      whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
+        listOf(anOffenderDetailResult),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+
+      assertThat(approvalCases).hasSize(1)
+
+      with(approvalCases.first()) {
+        assertThat(licenceId).isEqualTo(1L)
+        assertThat(name).isEqualTo("Bob Mortimar")
+        assertThat(prisonerNumber).isEqualTo("A1234AA")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        assertThat(isDueForEarlyRelease).isFalse()
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
+        }
+      }
+
+      verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+      verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
+      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
+      verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+    }
+
+    @Test
+    fun `It build the caseload successfully with multiple cases`() {
+      val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
+      val comUsernames = listOf("smills", "jdoe")
+
+      whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceSummaryApproverView,
+          aLicenceSummaryApproverView.copy(
+            licenceId = 2L,
+            bookingId = 12345,
+            nomisId = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+          ),
+          aLicenceSummaryApproverView.copy(
+            licenceId = 3L,
+            bookingId = 67890,
+            nomisId = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "jdoe",
+          ),
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPeopleByNomsNumber(nomisIds)).thenReturn(
+        listOf(
+          anOffenderDetailResult,
+          anOffenderDetailResult.copy(
+            otherIds = OtherIds(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomsNumber = "B1234BB",
+            ),
+            offenderManagers = listOf(
+              OffenderManager(
+                staffDetail = StaffDetail(
+                  code = "DE012F",
+                  forenames = "Test2",
+                  surname = "Test2",
+                  unallocated = false,
+                ),
+                active = true,
+              ),
+            ),
+          ),
+        ),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))).thenReturn(
+        listOf(
+          aPrisonerSearchResult,
+          aPrisonerSearchResult.copy(
+            prisonerNumber = "B1234BB",
+            bookingId = "12345",
+            prisonId = "ABC",
+            locationDescription = "ABC (HMP)",
+            firstName = "John",
+            middleNames = null,
+            lastName = "Doe",
+          ),
+        ),
+      )
+      whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        listOf(
+          aUser,
+          aUser.copy(
+            staffIdentifier = 3000,
+            username = "jdoe",
+            email = "testemail2@probation.gov.uk",
+            staff = StaffHuman(
+              forenames = "Test2",
+              surname = "Test2",
+            ),
+            teams = emptyList(),
+            staffCode = "DE012F",
+          ),
+        ),
+      )
+
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+
+      assertThat(approvalCases).hasSize(2)
+
+      with(approvalCases.first()) {
+        assertThat(licenceId).isEqualTo(1L)
+        assertThat(name).isEqualTo("Bob Mortimar")
+        assertThat(prisonerNumber).isEqualTo("A1234AA")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        assertThat(isDueForEarlyRelease).isFalse()
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("AB012C")
+          assertThat(name).isEqualTo("Test Test")
+        }
+      }
+
+      with(approvalCases.last()) {
+        assertThat(licenceId).isEqualTo(2L)
+        assertThat(name).isEqualTo("John Doe")
+        assertThat(prisonerNumber).isEqualTo("B1234BB")
+        assertThat(submittedByFullName).isEqualTo("X Y")
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
+        assertThat(urgentApproval).isFalse()
+        assertThat(approvedBy).isEqualTo("jim smith")
+        assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
+        assertThat(isDueForEarlyRelease).isFalse()
+        with(probationPractitioner!!) {
+          assertThat(staffCode).isEqualTo("DE012F")
+          assertThat(name).isEqualTo("Test2 Test2")
+        }
+      }
+
+      verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+      verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
+      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))
+      verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+    }
+
+    @Test
+    fun `the caseload is sorted correctly`() {
+      val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
+      val comUsernames = listOf("smills", "jdoe")
+
+      whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+        listOf(
+          aLicenceSummaryApproverView.copy(
+            actualReleaseDate = LocalDate.of(2024, 6, 21),
+          ),
+          aLicenceSummaryApproverView.copy(
+            licenceId = 2L,
+            bookingId = 12345,
+            nomisId = "B1234BB",
+            forename = "John",
+            surname = "Doe",
+            prisonCode = "ABC",
+            prisonDescription = "ABC (HMP)",
+            comUsername = "jdoe",
+            actualReleaseDate = LocalDate.of(2024, 6, 20),
+          ),
+          aLicenceSummaryApproverView.copy(
+            licenceId = 3L,
+            bookingId = 67890,
+            nomisId = "C1234CC",
+            forename = "Jane",
+            surname = "Doe",
+            prisonCode = "MDI",
+            comUsername = "jdoe",
+          ),
+        ),
+      )
+      whenever(probationSearchApiClient.searchForPeopleByNomsNumber(nomisIds)).thenReturn(
+        listOf(
+          anOffenderDetailResult,
+          anOffenderDetailResult.copy(
+            otherIds = OtherIds(
+              crn = "Y12345",
+              croNumber = "DE01/234567F",
+              pncNumber = null,
+              nomsNumber = "B1234BB",
+            ),
+            offenderManagers = listOf(
+              OffenderManager(
+                staffDetail = StaffDetail(
+                  code = "DE012F",
+                  forenames = "Test2",
+                  surname = "Test2",
+                  unallocated = false,
+                ),
+                active = true,
+              ),
+            ),
+          ),
+        ),
+      )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))).thenReturn(
+        listOf(
+          aPrisonerSearchResult,
+          aPrisonerSearchResult.copy(
+            prisonerNumber = "B1234BB",
+            bookingId = "12345",
+            prisonId = "ABC",
+            locationDescription = "ABC (HMP)",
+            firstName = "John",
+            middleNames = null,
+            lastName = "Doe",
+          ),
+        ),
+      )
+      whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        listOf(
+          aUser,
+          aUser.copy(
+            staffIdentifier = 3000,
+            username = "jdoe",
+            email = "testemail2@probation.gov.uk",
+            staff = StaffHuman(
+              forenames = "Test2",
+              surname = "Test2",
+            ),
+            teams = emptyList(),
+            staffCode = "DE012F",
+          ),
+        ),
+      )
+
+      val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
+
+      verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+      verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
+      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))
+      verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+
+      assertThat(approvalCases).hasSize(2)
+      assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(2, 1)
+    }
+  }
+
   @Test
   fun `CADM prison caseload is filtered out`() {
     val aListOfPrisonCodes = listOf("ABC", "DEF", "CADM")
@@ -47,11 +313,69 @@ class ApproverCaseloadServiceTest {
   }
 
   @Test
-  fun `It builds the approval needed caseload`() {
+  fun `Missing NOMIS ID on licence returns an empty caseload`() {
+    whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+      listOf(
+        aLicenceSummaryApproverView.copy(
+          nomisId = null,
+        ),
+      ),
+    )
+
+    val caseload = service.getApprovalNeeded(aListOfPrisonCodes)
+
+    verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+    verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(emptyList())
+    verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(emptyList())
+    verify(communityApiClient, times(1)).getStaffDetailsByUsername(emptyList())
+    assertThat(caseload).isEmpty()
+  }
+
+  @Test
+  fun `Missing NOMIS ID on the delius record returns an empty caseload`() {
+    val nomisId = "A1234AA"
+    whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+      listOf(
+        aLicenceSummaryApproverView.copy(
+          nomisId = nomisId,
+        ),
+      ),
+    )
+    whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
+      listOf(
+        anOffenderDetailResult.copy(
+          otherIds = OtherIds(
+            crn = "X12345",
+            croNumber = "AB01/234567C",
+            pncNumber = null,
+            nomsNumber = null,
+          ),
+        ),
+      ),
+    )
+
+    val caseload = service.getApprovalNeeded(aListOfPrisonCodes)
+
+    verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
+    verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
+    verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(emptyList())
+    verify(communityApiClient, times(1)).getStaffDetailsByUsername(emptyList())
+    assertThat(caseload).isEmpty()
+  }
+
+  @Test
+  fun `ARD is selected above conditional release date for releaseDate`() {
     val nomisId = "A1234AA"
     val comUsernames = listOf("smills")
 
-    whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
+    whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+      listOf(
+        aLicenceSummaryApproverView.copy(
+          actualReleaseDate = LocalDate.of(2024, 6, 20),
+          conditionalReleaseDate = LocalDate.of(2024, 6, 19),
+        ),
+      ),
+    )
     whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
       listOf(anOffenderDetailResult),
     )
@@ -63,25 +387,106 @@ class ApproverCaseloadServiceTest {
     assertThat(approvalCases).hasSize(1)
 
     with(approvalCases.first()) {
-      assertThat(licenceId).isEqualTo(1L)
-      assertThat(name).isEqualTo("Bob Mortimar")
-      assertThat(prisonerNumber).isEqualTo("A1234AA")
-      assertThat(submittedByFullName).isEqualTo("X Y")
-      assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
-      assertThat(urgentApproval).isFalse()
-      assertThat(approvedBy).isEqualTo("jim smith")
-      assertThat(approvedOn).isEqualTo((LocalDateTime.of(2023, 9, 19, 16, 38, 42)))
-      assertThat(isDueForEarlyRelease).isFalse()
-      with(probationPractitioner!!) {
-        assertThat(staffCode).isEqualTo("AB012C")
-        assertThat(name).isEqualTo("Test Test")
-      }
+      assertThat(releaseDate).isEqualTo((LocalDate.of(2024, 6, 20)))
     }
 
     verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
     verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
     verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
     verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+  }
+
+  @Nested
+  inner class `Retrieve the correct probation practitioner`() {
+    @Test
+    fun `The correct com is retrieved`() {
+      val coms = listOf(
+        aUser,
+        aUser.copy(
+          staffIdentifier = 1000,
+          username = "jdoe",
+          email = "testemail2@probation.gov.uk",
+          staff = StaffHuman(
+            forenames = "Test2",
+            surname = "Test2",
+          ),
+          teams = emptyList(),
+          staffCode = "CD012E",
+        ),
+      )
+
+      val com = service.findProbationPractitioner(anOffenderDetailResult, aLicenceSummaryApproverView.comUsername, coms)
+
+      assertThat(com?.staffCode).isEqualTo("AB012C")
+      assertThat(com?.name).isEqualTo("Test Test")
+    }
+
+    @Test
+    fun `If the com is not found in the list of coms, the delius record details are used instead`() {
+      val coms = listOf(
+        aUser.copy(
+          username = "test1",
+          staffCode = "test1",
+          staff = StaffHuman(
+            forenames = "Test1",
+            surname = "Test1",
+          ),
+        ),
+        aUser.copy(
+          username = "test2",
+          staffCode = "test2",
+          staff = StaffHuman(
+            forenames = "Test2",
+            surname = "Test2",
+          ),
+        ),
+      )
+
+      val com = service.findProbationPractitioner(anOffenderDetailResult, aLicenceSummaryApproverView.comUsername, coms)
+
+      assertThat(com?.staffCode).isEqualTo("AB012C")
+      assertThat(com?.name).isEqualTo("Test Test")
+    }
+
+    @Test
+    fun `return null if com is unallocated`() {
+      val coms = listOf(
+        aUser.copy(
+          username = "test1",
+          staffCode = "test1",
+          staff = StaffHuman(
+            forenames = "Test1",
+            surname = "Test1",
+          ),
+        ),
+        aUser.copy(
+          username = "test2",
+          staffCode = "test2",
+          staff = StaffHuman(
+            forenames = "Test2",
+            surname = "Test2",
+          ),
+        ),
+      )
+
+      val anOffenderDetailResult = anOffenderDetailResult.copy(
+        offenderManagers = listOf(
+          OffenderManager(
+            staffDetail = StaffDetail(
+              code = "AB012C",
+              forenames = "Test",
+              surname = "Test",
+              unallocated = true,
+            ),
+            active = true,
+          ),
+        ),
+      )
+
+      val com = service.findProbationPractitioner(anOffenderDetailResult, aLicenceSummaryApproverView.comUsername, coms)
+
+      assertThat(com).isNull()
+    }
   }
 
   private companion object {
