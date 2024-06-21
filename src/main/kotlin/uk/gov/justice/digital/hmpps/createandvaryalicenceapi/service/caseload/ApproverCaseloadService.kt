@@ -79,11 +79,11 @@ class ApproverCaseloadService(
     return approvalCases
   }
 
-  fun PrisonerSearchPrisoner.getDeliusRecord(deliusRecords: List<OffenderDetail>): OffenderDetail? {
+  private fun PrisonerSearchPrisoner.getDeliusRecord(deliusRecords: List<OffenderDetail>): OffenderDetail? {
     return deliusRecords.find { it.otherIds.nomsNumber == prisonerNumber }
   }
 
-  fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisRecord: PrisonerSearchPrisoner): LicenceSummaryApproverView? {
+  private fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisRecord: PrisonerSearchPrisoner): LicenceSummaryApproverView? {
     val licenceSummaries = this.filter { it.nomisId == nomisRecord.prisonerNumber }
     return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
   }

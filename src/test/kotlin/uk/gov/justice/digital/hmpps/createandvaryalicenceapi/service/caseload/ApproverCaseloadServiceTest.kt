@@ -81,7 +81,7 @@ class ApproverCaseloadServiceTest {
     }
 
     @Test
-    fun `It build the caseload successfully with multiple cases`() {
+    fun `It builds the caseload successfully with multiple cases`() {
       val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
       val comUsernames = listOf("smills", "jdoe")
 
