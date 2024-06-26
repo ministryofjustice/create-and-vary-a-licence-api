@@ -72,7 +72,7 @@ class CaseloadControllerTest {
     whenever(approverCaseloadService.getApprovalNeeded(request)).thenReturn(listOf(approvalCase))
 
     val response = mvc.perform(
-      post("/caseload/get-approval-needed")
+      post("/caseload/prison-approver/approval-needed")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content(mapper.writeValueAsBytes(request)),

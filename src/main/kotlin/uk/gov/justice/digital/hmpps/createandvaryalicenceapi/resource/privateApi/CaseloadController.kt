@@ -229,7 +229,7 @@ class CaseloadController(val caseloadService: CaseloadService, val approverCasel
     @Parameter(description = "page of results to return (0 indexed), defaults to first page", required = false) @Valid @RequestParam(value = "page") page: Int = 0,
   ) = caseloadService.getPrisonersByReleaseDate(criteria.earliestReleaseDate!!, criteria.latestReleaseDate!!, criteria.prisonIds!!, page)
 
-  @PostMapping("/caseload/get-approval-needed")
+  @PostMapping("/caseload/prison-approver/approval-needed")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(
     summary = "Returns a caseload waiting for approval",
