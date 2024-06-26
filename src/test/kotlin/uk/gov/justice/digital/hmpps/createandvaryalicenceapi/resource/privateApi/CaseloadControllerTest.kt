@@ -25,15 +25,19 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = [CaseloadGenerationController::class])
+@WebMvcTest(controllers = [CaseloadController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = [CaseloadGenerationController::class])
+@ContextConfiguration(classes = [CaseloadController::class])
 @WebAppConfiguration
-class CaseloadGenerationControllerTest {
+class CaseloadControllerTest {
+
+  @MockBean
+  private lateinit var caseloadService: CaseloadService
 
   @MockBean
   private lateinit var approverCaseloadService: ApproverCaseloadService
@@ -46,10 +50,10 @@ class CaseloadGenerationControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(approverCaseloadService)
+    reset(caseloadService, approverCaseloadService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(CaseloadGenerationController(approverCaseloadService))
+      .standaloneSetup(CaseloadController(caseloadService, approverCaseloadService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
