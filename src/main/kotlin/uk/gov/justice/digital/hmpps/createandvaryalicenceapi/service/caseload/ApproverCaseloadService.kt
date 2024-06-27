@@ -87,7 +87,7 @@ class ApproverCaseloadService(
         isDueForEarlyRelease = it.licenceSummary?.isDueForEarlyRelease,
         probationPractitioner = findProbationPractitioner(it.deliusRecord, it.comUsernameOnLicence, coms),
       )
-    }.sortedWith(compareBy(nullsLast()) { it.releaseDate })
+    }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
 
     return approvalCases
   }
