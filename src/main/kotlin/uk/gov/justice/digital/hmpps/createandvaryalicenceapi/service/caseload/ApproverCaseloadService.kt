@@ -23,13 +23,26 @@ class ApproverCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val communityApiClient: CommunityApiClient,
 ) {
+
   fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
-    val filteredPrisons = prisons.filterNot { it == "CADM" }
-    val licences = prisonApproverService.getLicencesForApproval(filteredPrisons)
+    val licences = prisonApproverService.getLicencesForApproval(prisons.filterOutAdminPrisonCode())
     if (licences.isEmpty()) {
       return emptyList()
     }
+    return createApprovalCaseload(licences)
+  }
 
+  fun getRecentlyApproved(prisons: List<String>): List<ApprovalCase> {
+    val licences = prisonApproverService.findRecentlyApprovedLicences(prisons.filterOutAdminPrisonCode())
+    if (licences.isEmpty()) {
+      return emptyList()
+    }
+    return createApprovalCaseload(licences)
+  }
+
+  private fun List<String>.filterOutAdminPrisonCode() = filterNot { it == "CADM" }
+
+  private fun createApprovalCaseload(licences: List<LicenceSummaryApproverView>): List<ApprovalCase> {
     val nomisIds = licences.mapNotNull { it.nomisId }
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(nomisIds)
     val deliusNomisIds = deliusRecords.mapNotNull { it.otherIds.nomsNumber }
