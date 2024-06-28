@@ -272,6 +272,50 @@ class CaseloadController(val caseloadService: CaseloadService, val approverCasel
   )
   fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) =
     approverCaseloadService.getApprovalNeeded(prisonCodes)
+
+  @PostMapping("/caseload/prison-approver/recently-approved")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns a caseload that has recently been approved",
+    description = "Returns an enriched list of cases which have recently been approved",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases that have recently been approved",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ApprovalCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) =
+    approverCaseloadService.getRecentlyApproved(prisonCodes)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())
