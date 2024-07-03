@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremo
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
 class CommunityApiMockServer : WireMockServer(8093) {
@@ -130,6 +131,81 @@ class CommunityApiMockServer : WireMockServer(8093) {
           }]""",
         ).withStatus(200),
       ),
+    )
+  }
+
+  fun stubGetStaffDetailsByUsername(usernames: List<String> = listOf("Test1NPS")) {
+    stubFor(
+      post(urlEqualTo("/secure/staff/list"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            """
+              [
+                {
+                  "username": "test-client",
+                  "email": "Test1@test.justice.gov.uk",
+                  "telephoneNumber": "020 1111 2222",
+                  "staffCode": "AB00001",
+                  "staffIdentifier": 123456,
+                  "staff": {
+                    "forenames": "Test1 Firstname",
+                    "surname": "Test1 Surname"
+                  },
+                  "teams": [
+                    {
+                      "code": "A01B01",
+                      "description": "OMU A",
+                      "telephone": "OMU A",
+                      "emailAddress": "omu@digital.justice.gov.uk",
+                      "localDeliveryUnit": "PO,CRC - PO",
+                      "teamType": "PO,CRC - PO",
+                      "district": "PO,CRC - PO",
+                      "borough": "PO,CRC - PO",
+                      "startDate": "2024-07-03",
+                      "endDate": "2034-07-03"
+                    }
+                  ],
+                  "probationArea": {
+                    "probationAreaId": 0,
+                    "code": "N01",
+                    "description": "NPS North West",
+                    "nps": true,
+                    "organisation": "PO,CRC - PO",
+                    "institution": {
+                      "institutionId": 0,
+                      "isEstablishment": true,
+                      "code": "string",
+                      "description": "string",
+                      "institutionName": "string",
+                      "establishmentType": "PO,CRC - PO",
+                      "isPrivate": true,
+                      "nomsPrisonInstitutionCode": "string"
+                    },
+                    "teams": [
+                      {
+                        "providerTeamId": 0,
+                        "teamId": 0,
+                        "code": "string",
+                        "description": "string",
+                        "name": "string",
+                        "isPrivate": true,
+                        "externalProvider": "PO,CRC - PO",
+                        "scProvider": "PO,CRC - PO",
+                        "localDeliveryUnit": "PO,CRC - PO",
+                        "district": "PO,CRC - PO",
+                        "borough": "PO,CRC - PO"
+                      }
+                    ]
+                  },
+                  "staffGrade": "PO,CRC - PO"
+                }
+              ]
+            """.trimIndent(),
+          ).withStatus(200),
+        ),
     )
   }
 }

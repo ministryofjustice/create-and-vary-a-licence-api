@@ -190,4 +190,128 @@ class ProbationSearchMockServer : WireMockServer(8094) {
         ),
     )
   }
+
+  fun stubSearchForPersonByNomsNumberForGetApprovalCaseload(nomsNumbers: List<String> = listOf("A1234AB", "A1234BC", "B1234BC")) {
+    stubFor(
+      post(urlEqualTo("/nomsNumbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          )
+            .withBody(
+              """[
+                {
+                  "offenderId": 1,
+                  "otherIds": {
+                    "crn": "A12345",
+                    "nomsNumber": "A1234AB"
+                  },
+                  "offenderManagers": [
+                    {
+                      "active": true,
+                      "staff": {
+                        "code": "staff-code-1",
+                        "forenames": "Test1",
+                        "surname": "Test1",
+                        "unallocated": false
+                      }
+                    }
+                  ]
+                },
+                {
+                  "offenderId": 2,
+                  "otherIds": {
+                    "crn": "B12345",
+                    "nomsNumber": "A1234BC"
+                  },
+                  "offenderManagers": [
+                    {
+                      "active": true,
+                      "staff": {
+                        "code": "staff-code-2",
+                        "forenames": "Test2",
+                        "surname": "Test2",
+                        "unallocated": false
+                      }
+                    }
+                  ]
+                },
+                {
+                  "offenderId": 3,
+                  "otherIds": {
+                    "crn": "C12345",
+                    "nomsNumber": "B1234BC"
+                  },
+                  "offenderManagers": [
+                    {
+                      "active": true,
+                      "staff": {
+                        "code": "staff-code-3",
+                        "forenames": "Test3",
+                        "surname": "Test3",
+                        "unallocated": false
+                      }
+                    }
+                  ]
+                }          
+                ]
+              """.trimMargin(),
+            ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubSearchForPersonByNomsNumberForGetRecentlyApprovedCaseload(nomsNumbers: List<String> = listOf("B1234BB", "F2504MG")) {
+    stubFor(
+      post(urlEqualTo("/nomsNumbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          )
+            .withBody(
+              """[
+                {
+                  "offenderId": 1,
+                  "otherIds": {
+                    "crn": "A12345",
+                    "nomsNumber": "B1234BB"
+                  },
+                  "offenderManagers": [
+                    {
+                      "active": true,
+                      "staff": {
+                        "code": "staff-code-1",
+                        "forenames": "Test1",
+                        "surname": "Test1",
+                        "unallocated": false
+                      }
+                    }
+                  ]
+                },
+                {
+                  "offenderId": 2,
+                  "otherIds": {
+                    "crn": "B12345",
+                    "nomsNumber": "F2504MG"
+                  },
+                  "offenderManagers": [
+                    {
+                      "active": true,
+                      "staff": {
+                        "code": "staff-code-2",
+                        "forenames": "Test2",
+                        "surname": "Test2",
+                        "unallocated": false
+                      }
+                    }
+                  ]
+                }   
+                ]
+              """.trimMargin(),
+            ).withStatus(200),
+        ),
+    )
+  }
 }
