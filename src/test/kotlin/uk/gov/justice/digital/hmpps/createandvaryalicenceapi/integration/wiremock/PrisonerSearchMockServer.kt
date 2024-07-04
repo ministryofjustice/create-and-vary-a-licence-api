@@ -225,6 +225,153 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
+  fun stubSearchPrisonersByNomisIdsForGetApprovalCaseload() {
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            """[
+                {
+                  "prisonerNumber": "A1234AB",
+                  "bookingId": "123",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": "${nextWorkingDate()}",
+                  "conditionalReleaseDate": "${nextWorkingDate()}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "12345A",
+                  "firstName": "Harry",
+                  "lastName": "Hope",
+                  "dateOfBirth": "1985-01-01"
+               },
+               {
+                  "prisonerNumber": "A1234BC",
+                  "bookingId": "456",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": null,
+                  "confirmedReleaseDate": null,
+                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "67890B",
+                  "firstName": "Prisoner",
+                  "lastName": "Seven",
+                  "dateOfBirth": "1986-01-01"
+               },
+               {
+                  "prisonerNumber": "B1234BC",
+                  "bookingId": "789",
+                  "status": "INACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": null,
+                  "topupSupervisionExpiryDate": null,
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": null,
+                  "confirmedReleaseDate": null,
+                  "conditionalReleaseDate": null,
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "12345C",
+                  "firstName": "Prisoner",
+                  "lastName": "Eight",
+                  "dateOfBirth": "1987-01-01"
+               }
+              ]
+            """.trimIndent(),
+          ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubSearchPrisonersByNomisIdsForGetRecentlyApprovedCaseload() {
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            """[
+                {
+                  "prisonerNumber": "B1234BB",
+                  "bookingId": "123",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": "${LocalDate.now().plusDays(1)}",
+                  "confirmedReleaseDate": "${nextWorkingDate()}",
+                  "conditionalReleaseDate": "${nextWorkingDate()}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "MDI",
+                  "bookNumber": "12345A",
+                  "firstName": "Bob",
+                  "lastName": "Bobson",
+                  "dateOfBirth": "1985-01-01"
+               },
+               {
+                  "prisonerNumber": "F2504MG",
+                  "bookingId": "456",
+                  "status": "ACTIVE",
+                  "mostSeriousOffence": "Robbery",
+                  "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+                  "homeDetentionCurfewEligibilityDate": null,
+                  "releaseDate": null,
+                  "confirmedReleaseDate": null,
+                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "paroleEligibilityDate": null,
+                  "actualParoleDate" : null,
+                  "postRecallReleaseDate": null,
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "ABC",
+                  "bookNumber": "67890B",
+                  "firstName": "Jim",
+                  "lastName": "Smith",
+                  "dateOfBirth": "1986-01-01"
+               }
+              ]
+            """.trimIndent(),
+          ).withStatus(200),
+        ),
+    )
+  }
+
   fun stubSearchPrisonersByReleaseDate(page: Int) {
     stubFor(
       post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page"))
