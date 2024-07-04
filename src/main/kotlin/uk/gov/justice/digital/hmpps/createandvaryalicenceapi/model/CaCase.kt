@@ -30,7 +30,7 @@ data class CaCase(
 
   @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
   @JsonFormat(pattern = "dd/MM/yyyy")
-  val releaseDate: LocalDate,
+  val releaseDate: LocalDate?,
 
   @Schema(description = "Label for release date", example = "Confirmed release date")
   val releaseDateLabel: String? = null,
@@ -60,4 +60,4 @@ data class CaCase(
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
 
-)
+  )

@@ -22,4 +22,4 @@ data class ManagedCase(
   val cvlFields: CvlFields,
 )
 
-class DeliusRecord(offenderDetail: OffenderDetail, managedOffenderCrn: ManagedOffenderCrn)
+data class DeliusRecord(val offenderDetail: OffenderDetail, val managedOffenderCrn: ManagedOffenderCrn)

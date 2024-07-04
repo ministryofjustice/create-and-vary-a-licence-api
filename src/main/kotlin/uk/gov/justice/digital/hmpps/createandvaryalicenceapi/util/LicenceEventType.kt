@@ -22,4 +22,6 @@ enum class LicenceEventType {
   VERSION_CREATED,
   NOT_STARTED,
   TIMED_OUT,
+  OOS_BOTUS,
+  OOS_RECALL,
 }
