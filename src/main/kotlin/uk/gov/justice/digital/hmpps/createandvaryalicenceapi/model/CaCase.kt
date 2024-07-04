@@ -59,5 +59,4 @@ data class CaCase(
 
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
-
-  )
+)

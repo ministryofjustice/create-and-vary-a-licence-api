@@ -2,7 +2,16 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.DeliusRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.GroupedByCom
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -10,13 +19,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_BOTUS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_RECALL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isBreachOfTopUpSupervision
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isEligibleEDS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isParoleEligible
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isRecall
 import java.time.Clock
 import java.time.LocalDate
 
@@ -44,7 +58,7 @@ class CaCaseloadService(
       prisonCaseload,
     )
 
-    if (eligibleExistingLicences.size == 0 && eligibleNotStartedLicences.size == 0) {
+    if (eligibleExistingLicences.isEmpty() && eligibleNotStartedLicences.isEmpty()) {
       return CaCaseLoad(cases = emptyList(), showAttentionNeededTab = false)
     }
 
@@ -67,14 +81,14 @@ class CaCaseloadService(
       val com =
         deliusRecords.find { d -> d.otherIds.nomsNumber == caCase.prisonerNumber }?.offenderManagers?.find { om -> om.active }?.staffDetail
       if (com != null && !com.unallocated!!) {
-        caCase.copy(
+        return@map caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.code,
             name = "${com.forenames} ${com.surname}",
           ),
         )
       }
-      caCase
+      return@map caCase
     }
 
     // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
@@ -84,19 +98,19 @@ class CaCaseloadService(
     caCaseList += splitCases.staffUsername.map { caCase ->
       val com = coms.find { com -> com.username == caCase.probationPractitioner?.staffUsername }
       if (com != null) {
-        caCase.copy(
+        return@map caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.staffCode,
             name = "${com.staff?.forenames} ${com.staff?.surname}",
           ),
         )
       }
-      caCase
+      return@map caCase
     }
 
     // If already have COM code and name, no extra calls required
     caCaseList += splitCases.staffCode.map { caCase ->
-      caCase.copy(
+      return@map caCase.copy(
         probationPractitioner = ProbationPractitioner(
           staffCode = caCase.probationPractitioner?.staffCode,
           name = caCase.probationPractitioner?.name,
@@ -107,30 +121,21 @@ class CaCaseloadService(
     return caCaseList
   }
 
-  private fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom {
-    val groupedCases = cases.reduce { acc, caCase ->
-      var groups = acc as GroupedByCom
-      if (groups.staffCode.size == 0) {
-        groups.staffCode = emptyList()
-      }
-      if (groups.staffUsername.size == 0) {
-        groups.staffUsername = emptyList()
-      }
-      if (groups.noComId.size == 0) {
-        groups.noComId = emptyList()
-      }
-
-      if (caCase.probationPractitioner?.staffCode != null) {
-        groups.staffCode += caCase
-      } else if (caCase.probationPractitioner?.staffUsername != null) {
-        groups.staffUsername += caCase
-      } else {
-        groups.noComId += caCase
-      }
-
-      return@reduce groups as CaCase
-    } as GroupedByCom
-    return groupedCases
+  private fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
+    GroupedByCom(
+      staffCode = emptyList(),
+      staffUsername = emptyList(),
+      noComId = emptyList(),
+    ),
+  ) { acc, caCase ->
+    if (caCase.probationPractitioner?.staffCode != null) {
+      acc.staffCode += caCase
+    } else if (caCase.probationPractitioner?.staffUsername != null) {
+      acc.staffUsername += caCase
+    } else {
+      acc.noComId += caCase
+    }
+    return acc
   }
 
   private fun findAndFormatNotStartedLicences(
@@ -174,7 +179,7 @@ class CaCaseloadService(
         name = "${c.nomisRecord?.firstName} ${c.nomisRecord?.lastName}",
         prisonerNumber = c.nomisRecord?.prisonerNumber!!,
         releaseDate = null,
-        releaseDateLabel = if (c.nomisRecord?.confirmedReleaseDate != null) {
+        releaseDateLabel = if (c.nomisRecord.confirmedReleaseDate != null) {
           "Confirmed release date"
         } else {
           "CRD"
@@ -191,13 +196,13 @@ class CaCaseloadService(
       )
     }
 
-    val releaseDate = c.nomisRecord?.confirmedReleaseDate ?: c.nomisRecord?.conditionalReleaseDate
+    val releaseDate = c.nomisRecord.confirmedReleaseDate ?: c.nomisRecord.conditionalReleaseDate
 
     CaCase(
-      name = "${c.nomisRecord?.firstName} ${c.nomisRecord?.lastName}",
-      prisonerNumber = c.nomisRecord?.prisonerNumber!!,
+      name = "${c.nomisRecord.firstName} ${c.nomisRecord.lastName}",
+      prisonerNumber = c.nomisRecord.prisonerNumber!!,
       releaseDate = releaseDate,
-      releaseDateLabel = if (c.nomisRecord?.confirmedReleaseDate != null) {
+      releaseDateLabel = if (c.nomisRecord.confirmedReleaseDate != null) {
         "Confirmed release date"
       } else {
         "CRD"
@@ -229,24 +234,23 @@ class CaCaseloadService(
         )
       }
 
-    if (eligibleOffenders.size == 0) return eligibleOffenders
+    if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
     val hdcStatuses = prisonApiClient.getHdcStatuses(
       eligibleOffenders.map { c -> c.prisoner.bookingId!!.toLong() },
     )
 
     return eligibleOffenders.filter { it ->
-      val hdcRecord = hdcStatuses.find { hdc -> hdc.bookingId == it.prisoner.bookingId!!.toLong() }
+      val hdcRecord = hdcStatuses.find { hdc -> hdc.bookingId == it.prisoner.bookingId?.toLong() }
       return@filter (
-        hdcRecord != null ||
-          hdcRecord?.approvalStatus != "APPROVED" ||
+        hdcRecord?.approvalStatus != "APPROVED" ||
           it.prisoner.homeDetentionCurfewEligibilityDate != null
         )
     }
   }
 
   private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
-    if (licences.size == 0) {
+    if (licences.isEmpty()) {
       return emptyList()
     }
 
@@ -312,7 +316,7 @@ class CaCaseloadService(
     ) {
       return CaViewCasesTab.ATTENTION_NEEDED
     }
-    var isDueToBeReleasedInTheNextTwoWorkingDays =
+    val isDueToBeReleasedInTheNextTwoWorkingDays =
       licence?.isDueToBeReleasedInTheNextTwoWorkingDays ?: cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays
 
     return when {
@@ -323,8 +327,8 @@ class CaCaseloadService(
 
   private fun isAttentionNeeded(
     status: LicenceStatus,
-    licenceStartDate: LocalDate,
-    releaseDate: LocalDate,
+    licenceStartDate: LocalDate?,
+    releaseDate: LocalDate?,
     overrideClock: Clock? = null,
   ): Boolean {
     val now = overrideClock ?: clock
@@ -404,7 +408,7 @@ class CaCaseloadService(
     }
 
     return licences.find { it ->
-      (it.licenceStatus == LicenceStatus.SUBMITTED) || (it.licenceStatus == LicenceStatus.IN_PROGRESS)
+      (it.licenceStatus == SUBMITTED) || (it.licenceStatus == IN_PROGRESS)
     }
   }
 
