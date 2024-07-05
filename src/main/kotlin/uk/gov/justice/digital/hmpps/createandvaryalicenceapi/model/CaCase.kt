@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
 
 @Schema(description = "Describes an CA(OMU) case")
 data class CaCase(
@@ -29,7 +30,7 @@ data class CaCase(
 
   @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
   @JsonFormat(pattern = "dd/MM/yyyy")
-  val releaseDate: String?,
+  val releaseDate: LocalDate,
 
   @Schema(description = "Label for release date", example = "Confirmed release date")
   val releaseDateLabel: String? = null,

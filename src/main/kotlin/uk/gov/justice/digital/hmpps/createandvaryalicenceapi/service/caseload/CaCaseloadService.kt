@@ -142,7 +142,7 @@ class CaCaseloadService(
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
-        releaseDate = releaseDate?.toString() ?: "not found",
+        releaseDate = releaseDate!!,
         releaseDateLabel =
         when (licence.actualReleaseDate) {
           null -> "CRD"
@@ -193,34 +193,12 @@ class CaCaseloadService(
 
     val com = c.deliusRecord?.managedOffenderCrn?.staff
 
-    if (c.nomisRecord?.conditionalReleaseDate == null) {
-      CaCase(
-        name = "${c.nomisRecord?.firstName} ${c.nomisRecord?.lastName}",
-        prisonerNumber = c.nomisRecord?.prisonerNumber!!,
-        releaseDate = null,
-        releaseDateLabel = if (c.nomisRecord.confirmedReleaseDate != null) {
-          "Confirmed release date"
-        } else {
-          "CRD"
-        },
-        licenceStatus = licenceStatus,
-        nomisLegalStatus = c.nomisRecord.legalStatus,
-        isDueForEarlyRelease = c.cvlFields.isDueForEarlyRelease,
-        isInHardStopPeriod = c.cvlFields.isInHardStopPeriod,
-        tabType = determineCaViewCasesTab(c.nomisRecord, c.cvlFields, licence = null),
-        probationPractitioner = ProbationPractitioner(
-          staffCode = com?.code,
-          name = "${com?.forenames} ${com?.surname}",
-        ),
-      )
-    }
-
-    val releaseDate = c.nomisRecord.confirmedReleaseDate ?: c.nomisRecord.conditionalReleaseDate
+    val releaseDate = c.nomisRecord?.confirmedReleaseDate ?: c.nomisRecord?.conditionalReleaseDate
 
     CaCase(
-      name = "${c.nomisRecord.firstName} ${c.nomisRecord.lastName}",
-      prisonerNumber = c.nomisRecord.prisonerNumber!!,
-      releaseDate = releaseDate.toString(),
+      name = "${c.nomisRecord?.firstName} ${c.nomisRecord?.lastName}",
+      prisonerNumber = c.nomisRecord?.prisonerNumber!!,
+      releaseDate = releaseDate!!,
       releaseDateLabel = if (c.nomisRecord.confirmedReleaseDate != null) {
         "Confirmed release date"
       } else {
@@ -284,7 +262,7 @@ class CaCaseloadService(
           licenceVersionOf = licence?.versionOf,
           name = "${licence?.forename} ${licence?.surname}",
           prisonerNumber = licence?.nomisId!!,
-          releaseDate = releaseDate?.toString() ?: "not found",
+          releaseDate = releaseDate!!,
           releaseDateLabel = if (licence.actualReleaseDate != null) {
             "Confirmed release date"
           } else {
