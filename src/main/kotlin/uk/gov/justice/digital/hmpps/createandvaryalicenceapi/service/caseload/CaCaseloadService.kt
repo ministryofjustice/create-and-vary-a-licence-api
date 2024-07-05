@@ -129,16 +129,16 @@ class CaCaseloadService(
     }
   }
 
-  private fun mapCasesToComs(cases: List<CaCase>): List<CaCase> {
-    val splitCases = splitCasesByComDetails(cases)
+  private fun mapCasesToComs(casesToMap: List<CaCase>): List<CaCase> {
+    val cases = splitCasesByComDetails(casesToMap)
 
-    val noComPrisonerNumbers = splitCases.noComId.map { c -> c.prisonerNumber }
+    val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers)
 
     var caCaseList: List<CaCase> = mutableListOf()
 
     // if no code or username, hit delius to find COM details
-    caCaseList += splitCases.noComId.map { caCase ->
+    caCaseList += cases.withNoComId.map { caCase ->
 
       val com =
         deliusRecords.find { d -> d.otherIds.nomsNumber == caCase.prisonerNumber }?.offenderManagers?.find { om -> om.active }?.staffDetail
@@ -154,11 +154,12 @@ class CaCaseloadService(
     }
 
     // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
-    val comUsernames = splitCases.staffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
+    val comUsernames = cases.withStaffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
     val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
 
-    caCaseList += splitCases.staffUsername.map { caCase ->
-      val com = coms.find { com -> com.username == caCase.probationPractitioner?.staffUsername }
+    caCaseList += cases.withStaffUsername.map { caCase ->
+      val com =
+        coms.find { com -> com.username?.lowercase() == caCase.probationPractitioner?.staffUsername?.lowercase() }
       if (com != null) {
         return@map caCase.copy(
           probationPractitioner = ProbationPractitioner(
@@ -171,7 +172,7 @@ class CaCaseloadService(
     }
 
     // If already have COM code and name, no extra calls required
-    caCaseList += splitCases.staffCode.map { caCase ->
+    caCaseList += cases.withStaffCode.map { caCase ->
       return@map caCase.copy(
         probationPractitioner = ProbationPractitioner(
           staffCode = caCase.probationPractitioner?.staffCode,
@@ -185,17 +186,17 @@ class CaCaseloadService(
 
   private fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
     GroupedByCom(
-      staffCode = emptyList(),
-      staffUsername = emptyList(),
-      noComId = emptyList(),
+      withStaffCode = emptyList(),
+      withStaffUsername = emptyList(),
+      withNoComId = emptyList(),
     ),
   ) { acc, caCase ->
     if (caCase.probationPractitioner?.staffCode != null) {
-      acc.staffCode += caCase
+      acc.withStaffCode += caCase
     } else if (caCase.probationPractitioner?.staffUsername != null) {
-      acc.staffUsername += caCase
+      acc.withStaffUsername += caCase
     } else {
-      acc.noComId += caCase
+      acc.withNoComId += caCase
     }
     return acc
   }
