@@ -42,7 +42,7 @@ data class CaCase(
     description = "The type of tab this licence has to be populated",
     example = "RELEASES_IN_NEXT_TWO_WORKING_DAYS",
   )
-  val tabType: CaViewCasesTab,
+  val tabType: CaViewCasesTab? = null,
 
   @Schema(
     description = "Legal Status",

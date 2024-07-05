@@ -371,7 +371,7 @@ class CaseloadController(
     @Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>,
     @Parameter(required = true) @Valid @RequestBody searchString: String,
   ) =
-    caCaseloadService.getProbationView(prisonCodes, searchString)
+    caCaseloadService.getProbationOmuCaseload(prisonCodes, searchString)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())

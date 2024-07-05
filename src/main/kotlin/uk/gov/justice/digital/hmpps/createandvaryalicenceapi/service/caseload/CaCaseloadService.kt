@@ -21,12 +21,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_BOTUS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_RECALL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isBreachOfTopUpSupervision
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isEligibleEDS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isParoleEligible
@@ -43,8 +47,6 @@ class CaCaseloadService(
   private val prisonApiClient: PrisonApiClient,
   private val communityApiClient: CommunityApiClient,
 ) {
-  fun getProbationView(prisons: List<String>, searchString: String?): List<CaCaseLoad> = emptyList()
-
   fun getPrisonOmuCaseload(prisonCaseload: List<String>, searchString: String?): CaCaseLoad {
     val existingLicences = licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
@@ -65,6 +67,66 @@ class CaCaseloadService(
     val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
 
     return buildCaseload(cases, searchString!!, "prison")
+  }
+
+  fun getProbationOmuCaseload(
+    prisonCaseload: List<String>,
+    searchString: String?,
+  ): CaCaseLoad {
+    val statuses = listOf(
+      ACTIVE,
+      VARIATION_APPROVED,
+      VARIATION_IN_PROGRESS,
+      VARIATION_SUBMITTED,
+    )
+    val licences = licenceService.findLicencesMatchingCriteria(
+      LicenceQueryObject(
+        statusCodes = statuses,
+        prisonCodes = prisonCaseload,
+      ),
+    )
+
+    if (licences.isEmpty()) {
+      return CaCaseLoad(cases = emptyList(), showAttentionNeededTab = false)
+    }
+
+    val formattedLicences = formatReleasedLicences(licences)
+    val cases = mapCasesToComs(formattedLicences)
+
+    return buildCaseload(cases, searchString, "probation")
+  }
+
+  private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
+    val groupedLicences = licences.groupBy { it.nomisId }
+    return groupedLicences.map { it ->
+
+      val licence = if (it.value.size > 1) {
+        it.value.find { l -> l.licenceStatus != ACTIVE }
+      } else {
+        it.value[0]
+      }
+      val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
+      CaCase(
+        kind = licence?.kind,
+        licenceId = licence?.licenceId,
+        licenceVersionOf = licence?.versionOf,
+        name = "${licence?.forename} ${licence?.surname}",
+        prisonerNumber = licence?.nomisId!!,
+        releaseDate = releaseDate,
+        releaseDateLabel =
+        when (licence.actualReleaseDate) {
+          null -> "CRD"
+          else -> "Confirmed release date"
+        },
+        licenceStatus = licence.licenceStatus,
+        lastWorkedOnBy = licence.updatedByFullName,
+        isDueForEarlyRelease = licence.isDueForEarlyRelease,
+        isInHardStopPeriod = licence.isInHardStopPeriod,
+        probationPractitioner = ProbationPractitioner(
+          staffUsername = licence.comUsername,
+        ),
+      )
+    }
   }
 
   private fun mapCasesToComs(cases: List<CaCase>): List<CaCase> {
@@ -254,7 +316,7 @@ class CaCaseloadService(
       return emptyList()
     }
 
-    val licenceNomisIds = licences.map { it -> it.nomisId!! }
+    val licenceNomisIds = licences.map { it -> it.nomisId }
     val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
     val nomisEnrichedLicences = this.enrichWithNomisData(licences, prisonersWithLicences)
     return filterExistingLicencesForEligibility(nomisEnrichedLicences)
@@ -374,12 +436,12 @@ class CaCaseloadService(
     )
   }
 
-  private fun getCasesWithoutLicences(cases: List<CaseloadItem>, licenceNomisIds: List<String>): List<ManagedCase> {
-    val casesWithoutLicences = cases.filter { it -> !licenceNomisIds.contains(it.prisoner.prisonerNumber) }
-    return pairNomisRecordsWithDelius(casesWithoutLicences)
-  }
+//  private fun getCasesWithoutLicences(cases: List<CaseloadItem>, licenceNomisIds: List<String>): List<ManagedCase> {
+//    val casesWithoutLicences = cases.filter { it -> !licenceNomisIds.contains(it.prisoner.prisonerNumber) }
+//    return pairNomisRecordsWithDelius(casesWithoutLicences)
+//  }
 
-  private fun buildCaseload(cases: List<CaCase>, searchString: String, view: String): CaCaseLoad {
+  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
     val showAttentionNeededTab = cases.any { it -> it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
     val searchResults = applySearch(searchString, cases)
     val sortResults = applySort(searchResults, view)
@@ -389,15 +451,15 @@ class CaCaseloadService(
     )
   }
 
-  private fun isPastRelease(licence: LicenceSummary, overrideClock: Clock? = null): Boolean {
-    val now = overrideClock ?: clock
-    val today = LocalDate.now(now)
-    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
-    if (releaseDate != null) {
-      return releaseDate < today
-    }
-    return false
-  }
+//  private fun isPastRelease(licence: LicenceSummary, overrideClock: Clock? = null): Boolean {
+//    val now = overrideClock ?: clock
+//    val today = LocalDate.now(now)
+//    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
+//    if (releaseDate != null) {
+//      return releaseDate < today
+//    }
+//    return false
+//  }
 
   private fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {
     if (licences.size == 1) {
