@@ -96,109 +96,15 @@ class CaCaseloadService(
     return buildCaseload(cases, searchString, "probation")
   }
 
-  private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
-    val groupedLicences = licences.groupBy { it.nomisId }
-    return groupedLicences.map { it ->
-
-      val licence = if (it.value.size > 1) {
-        it.value.find { l -> l.licenceStatus != ACTIVE }
-      } else {
-        it.value[0]
-      }
-      val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
-      CaCase(
-        kind = licence?.kind,
-        licenceId = licence?.licenceId,
-        licenceVersionOf = licence?.versionOf,
-        name = "${licence?.forename} ${licence?.surname}",
-        prisonerNumber = licence?.nomisId!!,
-        releaseDate = releaseDate,
-        releaseDateLabel =
-        when (licence.actualReleaseDate) {
-          null -> "CRD"
-          else -> "Confirmed release date"
-        },
-        licenceStatus = licence.licenceStatus,
-        lastWorkedOnBy = licence.updatedByFullName,
-        isDueForEarlyRelease = licence.isDueForEarlyRelease,
-        isInHardStopPeriod = licence.isInHardStopPeriod,
-        probationPractitioner = ProbationPractitioner(
-          staffUsername = licence.comUsername,
-        ),
-      )
-    }
-  }
-
-  private fun mapCasesToComs(casesToMap: List<CaCase>): List<CaCase> {
-    val cases = splitCasesByComDetails(casesToMap)
-
-    val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
-    val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers)
-
-    var caCaseList: List<CaCase> = mutableListOf()
-
-    // if no code or username, hit delius to find COM details
-    caCaseList += cases.withNoComId.map { caCase ->
-
-      val com =
-        deliusRecords.find { d -> d.otherIds.nomsNumber == caCase.prisonerNumber }?.offenderManagers?.find { om -> om.active }?.staffDetail
-      if (com != null && !com.unallocated!!) {
-        return@map caCase.copy(
-          probationPractitioner = ProbationPractitioner(
-            staffCode = com.code,
-            name = "${com.forenames} ${com.surname}",
-          ),
-        )
-      }
-      return@map caCase
+  private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
+    if (licences.isEmpty()) {
+      return emptyList()
     }
 
-    // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
-    val comUsernames = cases.withStaffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
-    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
-
-    caCaseList += cases.withStaffUsername.map { caCase ->
-      val com =
-        coms.find { com -> com.username?.lowercase() == caCase.probationPractitioner?.staffUsername?.lowercase() }
-      if (com != null) {
-        return@map caCase.copy(
-          probationPractitioner = ProbationPractitioner(
-            staffCode = com.staffCode,
-            name = "${com.staff?.forenames} ${com.staff?.surname}",
-          ),
-        )
-      }
-      return@map caCase
-    }
-
-    // If already have COM code and name, no extra calls required
-    caCaseList += cases.withStaffCode.map { caCase ->
-      return@map caCase.copy(
-        probationPractitioner = ProbationPractitioner(
-          staffCode = caCase.probationPractitioner?.staffCode,
-          name = caCase.probationPractitioner?.name,
-        ),
-      )
-    }
-
-    return caCaseList
-  }
-
-  private fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
-    GroupedByCom(
-      withStaffCode = emptyList(),
-      withStaffUsername = emptyList(),
-      withNoComId = emptyList(),
-    ),
-  ) { acc, caCase ->
-    if (caCase.probationPractitioner?.staffCode != null) {
-      acc.withStaffCode += caCase
-    } else if (caCase.probationPractitioner?.staffUsername != null) {
-      acc.withStaffUsername += caCase
-    } else {
-      acc.withNoComId += caCase
-    }
-    return acc
+    val licenceNomisIds = licences.map { it -> it.nomisId }
+    val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
+    val nomisEnrichedLicences = this.enrichWithNomisData(licences, prisonersWithLicences)
+    return filterExistingLicencesForEligibility(nomisEnrichedLicences)
   }
 
   private fun findAndFormatNotStartedLicences(
@@ -218,6 +124,56 @@ class CaCaseloadService(
     val eligiblePrisoners = filterOffendersEligibleForLicence(prisonersWithoutLicences.toList())
     val casesWithoutLicences = pairNomisRecordsWithDelius(eligiblePrisoners)
     return createNotStartedLicenceForCase(casesWithoutLicences)
+  }
+
+  private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
+    val groupedLicences = licences.groupBy { it.nomisId }
+    return groupedLicences.map { it ->
+
+      val licence = if (it.value.size > 1) {
+        it.value.find { l -> l.licenceStatus != ACTIVE }
+      } else {
+        it.value[0]
+      }
+      val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
+      CaCase(
+        kind = licence?.kind,
+        licenceId = licence?.licenceId,
+        licenceVersionOf = licence?.versionOf,
+        name = "${licence?.forename} ${licence?.surname}",
+        prisonerNumber = licence?.nomisId!!,
+        releaseDate = releaseDate?.toString() ?: "not found",
+        releaseDateLabel =
+        when (licence.actualReleaseDate) {
+          null -> "CRD"
+          else -> "Confirmed release date"
+        },
+        licenceStatus = licence.licenceStatus,
+        lastWorkedOnBy = licence.updatedByFullName,
+        isDueForEarlyRelease = licence.isDueForEarlyRelease,
+        isInHardStopPeriod = licence.isInHardStopPeriod,
+        probationPractitioner = ProbationPractitioner(
+          staffUsername = licence.comUsername,
+        ),
+      )
+    }
+  }
+
+  private fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
+    GroupedByCom(
+      withStaffCode = emptyList(),
+      withStaffUsername = emptyList(),
+      withNoComId = emptyList(),
+    ),
+  ) { acc, caCase ->
+    if (caCase.probationPractitioner?.staffCode != null) {
+      acc.withStaffCode += caCase
+    } else if (caCase.probationPractitioner?.staffUsername != null) {
+      acc.withStaffUsername += caCase
+    } else {
+      acc.withNoComId += caCase
+    }
+    return acc
   }
 
   private fun createNotStartedLicenceForCase(cases: List<ManagedCase>): List<CaCase> = cases.map { c ->
@@ -264,7 +220,7 @@ class CaCaseloadService(
     CaCase(
       name = "${c.nomisRecord.firstName} ${c.nomisRecord.lastName}",
       prisonerNumber = c.nomisRecord.prisonerNumber!!,
-      releaseDate = releaseDate,
+      releaseDate = releaseDate.toString(),
       releaseDateLabel = if (c.nomisRecord.confirmedReleaseDate != null) {
         "Confirmed release date"
       } else {
@@ -312,17 +268,6 @@ class CaCaseloadService(
     }
   }
 
-  private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
-    if (licences.isEmpty()) {
-      return emptyList()
-    }
-
-    val licenceNomisIds = licences.map { it -> it.nomisId }
-    val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
-    val nomisEnrichedLicences = this.enrichWithNomisData(licences, prisonersWithLicences)
-    return filterExistingLicencesForEligibility(nomisEnrichedLicences)
-  }
-
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> =
     licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
@@ -339,7 +284,7 @@ class CaCaseloadService(
           licenceVersionOf = licence?.versionOf,
           name = "${licence?.forename} ${licence?.surname}",
           prisonerNumber = licence?.nomisId!!,
-          releaseDate = releaseDate!!,
+          releaseDate = releaseDate?.toString() ?: "not found",
           releaseDateLabel = if (licence.actualReleaseDate != null) {
             "Confirmed release date"
           } else {
@@ -437,31 +382,6 @@ class CaCaseloadService(
     )
   }
 
-//  private fun getCasesWithoutLicences(cases: List<CaseloadItem>, licenceNomisIds: List<String>): List<ManagedCase> {
-//    val casesWithoutLicences = cases.filter { it -> !licenceNomisIds.contains(it.prisoner.prisonerNumber) }
-//    return pairNomisRecordsWithDelius(casesWithoutLicences)
-//  }
-
-  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
-    val showAttentionNeededTab = cases.any { it -> it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
-    val searchResults = applySearch(searchString, cases)
-    val sortResults = applySort(searchResults, view)
-    return CaCaseLoad(
-      cases = sortResults,
-      showAttentionNeededTab,
-    )
-  }
-
-//  private fun isPastRelease(licence: LicenceSummary, overrideClock: Clock? = null): Boolean {
-//    val now = overrideClock ?: clock
-//    val today = LocalDate.now(now)
-//    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
-//    if (releaseDate != null) {
-//      return releaseDate < today
-//    }
-//    return false
-//  }
-
   private fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {
     if (licences.size == 1) {
       return licences[0]
@@ -516,4 +436,84 @@ class CaCaseloadService(
         return listOf(ManagedCase(nomisRecord = prisoner, cvlFields = cvl))
       }
   }
+
+  private fun mapCasesToComs(casesToMap: List<CaCase>): List<CaCase> {
+    val cases = splitCasesByComDetails(casesToMap)
+
+    val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
+    val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers)
+
+    var caCaseList: List<CaCase> = mutableListOf()
+
+    // if no code or username, hit delius to find COM details
+    caCaseList += cases.withNoComId.map { caCase ->
+
+      val com =
+        deliusRecords.find { d -> d.otherIds.nomsNumber == caCase.prisonerNumber }?.offenderManagers?.find { om -> om.active }?.staffDetail
+      if (com != null && !com.unallocated!!) {
+        return@map caCase.copy(
+          probationPractitioner = ProbationPractitioner(
+            staffCode = com.code,
+            name = "${com.forenames} ${com.surname}",
+          ),
+        )
+      }
+      return@map caCase
+    }
+
+    // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
+    val comUsernames = cases.withStaffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
+    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
+
+    caCaseList += cases.withStaffUsername.map { caCase ->
+      val com =
+        coms.find { com -> com.username?.lowercase() == caCase.probationPractitioner?.staffUsername?.lowercase() }
+      if (com != null) {
+        return@map caCase.copy(
+          probationPractitioner = ProbationPractitioner(
+            staffCode = com.staffCode,
+            name = "${com.staff?.forenames} ${com.staff?.surname}",
+          ),
+        )
+      }
+      return@map caCase
+    }
+
+    // If already have COM code and name, no extra calls required
+    caCaseList += cases.withStaffCode.map { caCase ->
+      return@map caCase.copy(
+        probationPractitioner = ProbationPractitioner(
+          staffCode = caCase.probationPractitioner?.staffCode,
+          name = caCase.probationPractitioner?.name,
+        ),
+      )
+    }
+
+    return caCaseList
+  }
+
+  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
+    val showAttentionNeededTab = cases.any { it -> it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
+    val searchResults = applySearch(searchString, cases)
+    val sortResults = applySort(searchResults, view)
+    return CaCaseLoad(
+      cases = sortResults,
+      showAttentionNeededTab,
+    )
+  }
+
+  //  private fun isPastRelease(licence: LicenceSummary, overrideClock: Clock? = null): Boolean {
+//    val now = overrideClock ?: clock
+//    val today = LocalDate.now(now)
+//    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
+//    if (releaseDate != null) {
+//      return releaseDate < today
+//    }
+//    return false
+//  }
+
+  //  private fun getCasesWithoutLicences(cases: List<CaseloadItem>, licenceNomisIds: List<String>): List<ManagedCase> {
+//    val casesWithoutLicences = cases.filter { it -> !licenceNomisIds.contains(it.prisoner.prisonerNumber) }
+//    return pairNomisRecordsWithDelius(casesWithoutLicences)
+//  }
 }
