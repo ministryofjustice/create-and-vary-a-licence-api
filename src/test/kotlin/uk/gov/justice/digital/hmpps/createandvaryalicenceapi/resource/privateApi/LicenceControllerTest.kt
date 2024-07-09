@@ -8,7 +8,6 @@ import org.hamcrest.Matchers.contains
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -41,14 +40,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -58,7 +55,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -77,9 +73,6 @@ class LicenceControllerTest {
 
   @MockBean
   private lateinit var licenceService: LicenceService
-
-  @MockBean
-  private lateinit var prisonApproverService: PrisonApproverService
 
   @MockBean
   private lateinit var updateSentenceDateService: UpdateSentenceDateService
@@ -101,7 +94,6 @@ class LicenceControllerTest {
       .standaloneSetup(
         LicenceController(
           licenceService,
-          prisonApproverService,
           updateSentenceDateService,
           licenceCreationService,
         ),
@@ -320,38 +312,6 @@ class LicenceControllerTest {
   }
 
   @Test
-  fun `get recently approved licences by prison code`() {
-    val prisonCodes = listOf("LEI")
-
-    whenever(prisonApproverService.findRecentlyApprovedLicences(any())).thenReturn(
-      listOf(
-        aLicenceSummaryApproverView,
-      ),
-    )
-
-    val result = mvc.perform(
-      post("/licence/recently-approved")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(
-          mapper.writeValueAsBytes(
-            RecentlyApprovedLicencesRequest(
-              prisonCodes = prisonCodes,
-            ),
-          ),
-        ),
-    )
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString)
-      .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
-
-    verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(prisonCodes)
-  }
-
-  @Test
   fun `update licence status`() {
     mvc.perform(
       put("/licence/id/4/status")
@@ -553,29 +513,6 @@ class LicenceControllerTest {
       .andExpect(status().isOk)
 
     verify(licenceService, times(1)).reviewWithNoVariationRequired(4L)
-  }
-
-  @Test
-  fun `get licences for approval`() {
-    val request = ApproveLicencesRequest(
-      prisonCodes = listOf("AB1", "AB2"),
-    )
-
-    whenever(prisonApproverService.getLicencesForApproval(request.prisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
-
-    val result = mvc.perform(
-      post("/licence/licences-for-approval")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(request)),
-    )
-      .andExpect(status().isOk)
-      .andExpect(content().contentType(APPLICATION_JSON))
-      .andReturn()
-
-    assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummaryApproverView)))
-
-    verify(prisonApproverService, times(1)).getLicencesForApproval(request.prisonCodes)
   }
 
   @Test
