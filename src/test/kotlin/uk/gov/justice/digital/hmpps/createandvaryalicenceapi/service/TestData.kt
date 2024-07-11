@@ -8,9 +8,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -257,5 +264,70 @@ object TestData {
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionStartDate = null,
     croNumber = null,
+  )
+
+  fun caseLoadItem() = CaseloadItem(
+    cvl = CvlFields(
+      licenceType = LicenceType.AP,
+      hardStopDate = LocalDate.of(2023, 10, 12),
+      hardStopWarningDate = LocalDate.of(2023, 10, 11),
+      isInHardStopPeriod = true,
+      isDueForEarlyRelease = true,
+      isEligibleForEarlyRelease = true,
+      isDueToBeReleasedInTheNextTwoWorkingDays = true,
+    ),
+    prisoner = Prisoner(
+      prisonerNumber = "A1234AA",
+      pncNumber = null,
+      croNumber = null,
+      bookingId = "123456",
+      bookNumber = "12345A",
+      firstName = "Bob",
+      middleNames = null,
+      lastName = "Mortimar",
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      status = "ACTIVE IN",
+      inOutStatus = null,
+      prisonId = "MDI",
+      prisonName = null,
+      locationDescription = "HMP Moorland",
+      legalStatus = "SENTENCED",
+      imprisonmentStatus = null,
+      imprisonmentStatusDescription = null,
+      mostSeriousOffence = "Robbery",
+      recall = false,
+      indeterminateSentence = false,
+      sentenceStartDate = LocalDate.of(2018, 10, 22),
+      releaseDate = LocalDate.of(2021, 10, 22),
+      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceExpiryDate = LocalDate.of(2021, 10, 22),
+      licenceExpiryDate = LocalDate.of(2021, 10, 22),
+      homeDetentionCurfewEligibilityDate = null,
+      homeDetentionCurfewActualDate = null,
+      homeDetentionCurfewEndDate = null,
+      topupSupervisionStartDate = null,
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      paroleEligibilityDate = LocalDate.of(2021, 10, 22),
+      postRecallReleaseDate = null,
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      actualParoleDate = null,
+      releaseOnTemporaryLicenceDate = null,
+    ),
+  )
+
+  fun caCase() = CaCase(
+    licenceId = 1,
+    kind = LicenceKind.CRD,
+    name = "Bob Mortimar",
+    prisonerNumber = "A1234AA",
+    releaseDate = LocalDate.of(2021, 10, 22),
+    releaseDateLabel = "Confirmed release date",
+    licenceStatus = LicenceStatus.IN_PROGRESS,
+    nomisLegalStatus = "SENTENCED",
+    lastWorkedOnBy = "John Smith",
+    isDueForEarlyRelease = false,
+    isInHardStopPeriod = false,
+    tabType = CaViewCasesTab.FUTURE_RELEASES,
+    probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
   )
 }

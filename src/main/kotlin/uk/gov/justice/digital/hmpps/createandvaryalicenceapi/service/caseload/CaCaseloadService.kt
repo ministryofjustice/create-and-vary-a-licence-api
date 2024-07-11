@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_BOTUS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_RECALL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
@@ -48,9 +49,18 @@ class CaCaseloadService(
   private val communityApiClient: CommunityApiClient,
 ) {
   fun getPrisonOmuCaseload(prisonCaseload: List<String>, searchString: String?): CaCaseLoad {
+    val statuses = listOf(
+      APPROVED,
+      SUBMITTED,
+      IN_PROGRESS,
+      TIMED_OUT,
+    )
+    val filteredPrisons = prisonCaseload.filterNot { it == "CADM" }
     val existingLicences = licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
-        prisonCodes = prisonCaseload,
+        statusCodes = statuses,
+        prisonCodes = filteredPrisons,
+        sortBy = "conditionalReleaseDate",
       ),
     )
     val eligibleExistingLicences = filterAndFormatExistingLicences(existingLicences)
@@ -66,7 +76,7 @@ class CaCaseloadService(
 
     val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
 
-    return buildCaseload(cases, searchString!!, "prison")
+    return buildCaseload(cases, searchString, "prison")
   }
 
   fun getProbationOmuCaseload(
@@ -159,7 +169,7 @@ class CaCaseloadService(
     }
   }
 
-  private fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
+  fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
     GroupedByCom(
       withStaffCode = emptyList(),
       withStaffUsername = emptyList(),
@@ -173,7 +183,7 @@ class CaCaseloadService(
     } else {
       acc.withNoComId += caCase
     }
-    return acc
+    return@fold acc
   }
 
   private fun createNotStartedLicenceForCase(cases: List<ManagedCase>): List<CaCase> = cases.map { c ->
@@ -188,7 +198,7 @@ class CaCaseloadService(
       // Offender is subject to an active recall - not clickable
       licenceStatus = OOS_RECALL
     } else if (c.cvlFields.isInHardStopPeriod) {
-      licenceStatus = LicenceStatus.TIMED_OUT
+      licenceStatus = TIMED_OUT
     }
 
     val com = c.deliusRecord?.managedOffenderCrn?.staff
@@ -211,16 +221,17 @@ class CaCaseloadService(
       tabType = determineCaViewCasesTab(c.nomisRecord, c.cvlFields, licence = null),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
-        name = "${com?.forenames} ${com?.surname}",
+        name = com?.let { "${it.forenames} ${it.surname}" },
       ),
     )
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<CaseloadItem>): List<CaseloadItem> {
     val eligibleOffenders = offenders
-      .filter { offender -> !isParoleEligible(offender.prisoner.paroleEligibilityDate!!) }
+      .asSequence()
+      .filter { offender -> !isParoleEligible(offender.prisoner.paroleEligibilityDate, clock) }
       .filter { offender -> offender.prisoner.legalStatus != "DEAD" }
-      .filter { offender -> !offender.prisoner.indeterminateSentence!! }
+      .filter { offender -> !(offender.prisoner.indeterminateSentence ?: false) }
       .filter { offender -> offender.prisoner.conditionalReleaseDate != null }
       .filter { offender ->
         isEligibleEDS(
@@ -228,20 +239,23 @@ class CaCaseloadService(
           offender.prisoner.conditionalReleaseDate,
           offender.prisoner.confirmedReleaseDate,
           offender.prisoner.actualParoleDate,
+          clock,
         )
       }
+      .toList()
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
     val hdcStatuses = prisonApiClient.getHdcStatuses(
-      eligibleOffenders.map { c -> c.prisoner.bookingId!!.toLong() },
+      eligibleOffenders.mapNotNull { c -> c.prisoner.bookingId?.toLong() },
     )
 
     return eligibleOffenders.filter { it ->
       val hdcRecord = hdcStatuses.find { hdc -> hdc.bookingId == it.prisoner.bookingId?.toLong() }
       return@filter (
-        hdcRecord?.approvalStatus != "APPROVED" ||
-          it.prisoner.homeDetentionCurfewEligibilityDate != null
+        hdcRecord == null ||
+          hdcRecord.approvalStatus != "APPROVED" ||
+          it.prisoner.homeDetentionCurfewEligibilityDate == null
         )
     }
   }
@@ -255,31 +269,29 @@ class CaCaseloadService(
       val licencesForOffender = licences.filter { l -> l.nomisId === p.prisoner.prisonerNumber }
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
-      return listOf(
-        CaCase(
-          kind = licence?.kind,
-          licenceId = licence?.licenceId,
-          licenceVersionOf = licence?.versionOf,
-          name = "${licence?.forename} ${licence?.surname}",
-          prisonerNumber = licence?.nomisId!!,
-          releaseDate = releaseDate!!,
-          releaseDateLabel = if (licence.actualReleaseDate != null) {
-            "Confirmed release date"
-          } else {
-            "CRD"
-          },
-          licenceStatus = licence.licenceStatus,
-          nomisLegalStatus = p.prisoner.legalStatus,
-          lastWorkedOnBy = licence.updatedByFullName,
-          isDueForEarlyRelease = licence.isDueForEarlyRelease,
-          isInHardStopPeriod = licence.isInHardStopPeriod,
-          tabType = determineCaViewCasesTab(
-            p.prisoner,
-            p.cvl,
-            licence,
-          ),
-          probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
+      return@map CaCase(
+        kind = licence?.kind,
+        licenceId = licence?.licenceId,
+        licenceVersionOf = licence?.versionOf,
+        name = "${licence?.forename} ${licence?.surname}",
+        prisonerNumber = licence?.nomisId!!,
+        releaseDate = releaseDate!!,
+        releaseDateLabel = if (licence.actualReleaseDate != null) {
+          "Confirmed release date"
+        } else {
+          "CRD"
+        },
+        licenceStatus = licence.licenceStatus,
+        nomisLegalStatus = p.prisoner.legalStatus,
+        lastWorkedOnBy = licence.updatedByFullName,
+        isDueForEarlyRelease = licence.isDueForEarlyRelease,
+        isInHardStopPeriod = licence.isInHardStopPeriod,
+        tabType = determineCaViewCasesTab(
+          p.prisoner,
+          p.cvl,
+          licence,
         ),
+        probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
       )
     }
   }
@@ -360,12 +372,12 @@ class CaCaseloadService(
     )
   }
 
-  private fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {
+  fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {
     if (licences.size == 1) {
       return licences[0]
     }
-    if (licences.any { it -> it.licenceStatus == LicenceStatus.TIMED_OUT }) {
-      return licences.find { it -> it.licenceStatus != LicenceStatus.TIMED_OUT }
+    if (licences.any { it -> it.licenceStatus == TIMED_OUT }) {
+      return licences.find { it -> it.licenceStatus != TIMED_OUT }
     }
 
     return licences.find { it ->
@@ -381,7 +393,7 @@ class CaCaseloadService(
     return cases.filter { it ->
       it.name.lowercase().contains(term) ||
         it.prisonerNumber.lowercase().contains(term) ||
-        it.probationPractitioner?.name?.lowercase()!!.contains(term)
+        it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
     }
   }
 
@@ -398,20 +410,18 @@ class CaCaseloadService(
       .map { (prisoner, cvl) ->
         val deliusRecord = deliusRecords.find { d -> d.otherIds.nomsNumber == prisoner.prisonerNumber }
         if (deliusRecord != null) {
-          return listOf(
-            ManagedCase(
-              nomisRecord = prisoner,
-              cvlFields = cvl,
-              deliusRecord = DeliusRecord(
-                deliusRecord,
-                ManagedOffenderCrn(
-                  staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail,
-                ),
+          return@map ManagedCase(
+            nomisRecord = prisoner,
+            cvlFields = cvl,
+            deliusRecord = DeliusRecord(
+              deliusRecord,
+              ManagedOffenderCrn(
+                staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail,
               ),
             ),
           )
         }
-        return listOf(ManagedCase(nomisRecord = prisoner, cvlFields = cvl))
+        return@map ManagedCase(nomisRecord = prisoner, cvlFields = cvl)
       }
   }
 
@@ -432,7 +442,7 @@ class CaCaseloadService(
         return@map caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.code,
-            name = "${com.forenames} ${com.surname}",
+            name = com.let { "${it.forenames} ${it.surname}" },
           ),
         )
       }
@@ -450,7 +460,7 @@ class CaCaseloadService(
         return@map caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.staffCode,
-            name = "${com.staff?.forenames} ${com.staff?.surname}",
+            name = com.staff?.let { "${it.forenames} ${it.surname}" },
           ),
         )
       }

@@ -8,8 +8,8 @@ import java.time.LocalDate
  * Safely compare if two nullable dates are different.
  * Returns true if either date is different or one date is null
  */
-fun isParoleEligible(ped: LocalDate): Boolean {
-  val today = LocalDate.now()
+fun isParoleEligible(ped: LocalDate?, clock: Clock? = null): Boolean {
+  val today = LocalDate.now(clock)
   if (ped == null) return false
   return ped > today
 }
@@ -19,14 +19,12 @@ fun isEligibleEDS(
   crd: LocalDate?,
   ard: LocalDate?,
   apd: LocalDate?,
-  overrideClock: Clock? = null,
+  clock: Clock? = null,
 ): Boolean {
   if (ped == null) return true // All EDSs have PEDs, so if no ped, not an EDS and can stop the check here
   if (crd == null) return false // This should never be hit as a previous filter removes those without CRDs
 
-  val clock = null
-  val now = overrideClock ?: clock
-  val today = LocalDate.now(now)
+  val today = LocalDate.now(clock)
 
   // if PED is in the future, they are OOS
   if (ped > today) return false
@@ -45,19 +43,19 @@ fun isEligibleEDS(
 }
 
 fun isBreachOfTopUpSupervision(offender: ManagedCase): Boolean =
-  offender.nomisRecord?.imprisonmentStatus != null && offender.nomisRecord?.imprisonmentStatus == "BOTUS"
+  offender.nomisRecord?.imprisonmentStatus != null && offender.nomisRecord.imprisonmentStatus == "BOTUS"
 
 fun isRecall(offender: ManagedCase): Boolean {
-  val recall = offender.nomisRecord?.recall!! && offender.nomisRecord.recall == true
-  val crd = offender.nomisRecord.conditionalReleaseDate
-  val prrd = offender.nomisRecord.postRecallReleaseDate
+  val recall = offender.nomisRecord?.recall == true
+  val crd = offender.nomisRecord?.conditionalReleaseDate
+  val prrd = offender.nomisRecord?.postRecallReleaseDate
 
   // If a CRD but no PRRD it should NOT be treated as a recall
   if (crd != null && prrd == null) {
     return false
   }
 
-  if (crd != null && prrd != null) {
+  if (crd != null) {
     val dateCrd = offender.nomisRecord.conditionalReleaseDate
     val datePrrd = offender.nomisRecord.postRecallReleaseDate
     // If the PRRD > CRD - it should be treated as a recall
