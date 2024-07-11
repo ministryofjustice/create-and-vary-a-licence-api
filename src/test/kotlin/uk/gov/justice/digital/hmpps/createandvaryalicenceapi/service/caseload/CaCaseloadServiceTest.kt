@@ -69,7 +69,7 @@ class CaCaseloadServiceTest {
   private val licenceQueryObject = LicenceQueryObject(
     statusCodes = statuses,
     prisonCodes = listOf("BAI"),
-    sortBy = "conditionalReleaseDate",
+//    sortBy = "conditionalReleaseDate",
   )
 
   @BeforeEach

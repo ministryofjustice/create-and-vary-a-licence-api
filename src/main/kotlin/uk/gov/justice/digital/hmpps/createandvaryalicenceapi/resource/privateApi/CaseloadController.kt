@@ -36,7 +36,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.Ap
 )
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-class CaseloadController(val caseloadService: CaseloadService, val approverCaseloadService: ApproverCaseloadService) {
+class CaseloadController(
+  val caseloadService: CaseloadService,
+  val approverCaseloadService: ApproverCaseloadService,
+) {
 
   @PostMapping("/prisoner-search/prisoner-numbers")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")

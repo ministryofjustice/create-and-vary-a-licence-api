@@ -60,7 +60,6 @@ class CaCaseloadService(
       LicenceQueryObject(
         statusCodes = statuses,
         prisonCodes = filteredPrisons,
-        sortBy = "conditionalReleaseDate",
       ),
     )
     val eligibleExistingLicences = filterAndFormatExistingLicences(existingLicences)
