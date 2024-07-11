@@ -36,7 +36,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.*
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 
 class CaCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()

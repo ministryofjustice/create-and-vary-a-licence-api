@@ -25,16 +25,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
@@ -45,14 +42,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
 class LicenceController(
   private val licenceService: LicenceService,
-  private val prisonApproverService: PrisonApproverService,
   private val updateSentenceDateService: UpdateSentenceDateService,
   private val licenceCreationService: LicenceCreationService,
 ) {
@@ -265,57 +260,6 @@ class LicenceController(
         sortBy = sortBy,
         sortOrder = sortOrder,
       ),
-    )
-  }
-
-  @Tag(name = Tags.LICENCES)
-  @PostMapping(value = ["/recently-approved"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Get a list of recently approved licence summaries matching the supplied list of prisons.",
-    description = "Get the recently approved licences matching the supplied list of prisons. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returned matching licence summary details - empty if no matches.",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummaryApproverView::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun getRecentlyApprovedLicences(
-    @RequestBody @Valid
-    body: RecentlyApprovedLicencesRequest,
-  ): List<LicenceSummaryApproverView> {
-    return prisonApproverService.findRecentlyApprovedLicences(
-      body.prisonCodes,
     )
   }
 
@@ -1197,65 +1141,6 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
   ) {
     licenceService.reviewWithNoVariationRequired(licenceId)
-  }
-
-  @Tag(name = Tags.LICENCES)
-  @PostMapping(value = ["/licences-for-approval"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Get a list of licence summaries ready for approval",
-    description = "Get a list of licence summaries ready for approval. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Returned list of licence summary details - empty if no matches.",
-        content = [
-          Content(
-            mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = LicenceSummaryApproverView::class)),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  fun getLicencesForApproval(
-    @Valid @RequestBody
-    body: ApproveLicencesRequest,
-  ): List<LicenceSummaryApproverView> {
-    return prisonApproverService.getLicencesForApproval(body.prisonCodes)
   }
 
   @Tag(name = Tags.LICENCES)

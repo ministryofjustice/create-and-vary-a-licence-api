@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
-import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -22,11 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproveLicencesRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.RecentlyApprovedLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
@@ -409,47 +404,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-recently-approved-licences.sql",
-  )
-  fun `find recently approved licences`() {
-    val result = webTestClient.post()
-      .uri("/licence/recently-approved")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(
-        RecentlyApprovedLicencesRequest(
-          prisonCodes = listOf("MDI", "BMI"),
-        ),
-      )
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(result?.size).isEqualTo(4)
-    assertThat(result)
-      .extracting<Tuple> {
-        tuple(
-          it.licenceId,
-          it.licenceStatus,
-          it.nomisId,
-          it.surname,
-          it.forename,
-          it.prisonCode,
-          it.prisonDescription,
-        )
-      }
-      .contains(
-        tuple(2L, LicenceStatus.APPROVED, "B1234BB", "Bobson", "Bob", "MDI", "Moorland HMP"),
-        tuple(4L, LicenceStatus.ACTIVE, "C1234DD", "Harcourt", "Kate", "BMI", "Birmingham HMP"),
-        tuple(6L, LicenceStatus.INACTIVE, "C1234FF", "Biggs", "Harold", "BMI", "Birmingham HMP"),
-        tuple(10L, LicenceStatus.APPROVED, "F2504MG", "Smith", "Jim", "MDI", "Moorland HMP"),
-      )
-  }
-
-  @Test
-  @Sql(
     "classpath:test_data/seed-approved-licence-1.sql",
   )
   fun `Update the status of approved licence to active and record licence activated event`() {
@@ -699,77 +653,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     fun `Unauthorized (401) when no token is supplied`() {
       webTestClient.post()
         .uri("/licence/id/1/activate-variation")
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
-    }
-  }
-
-  @Nested
-  inner class CheckGetLicencesForApprovals {
-
-    @Test
-    @Sql(
-      "classpath:test_data/seed-submitted-licences.sql",
-    )
-    fun `Get licences for approval`() {
-      val result = webTestClient.post()
-        .uri("/licence/licences-for-approval")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(
-          ApproveLicencesRequest(
-            prisonCodes = listOf("MDI", "ABC"),
-          ),
-        )
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isOk
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBodyList(LicenceSummaryApproverView::class.java)
-        .returnResult().responseBody
-
-      assertThat(result).hasSize(6)
-      assertThat(result)
-        .extracting<Tuple> {
-          tuple(
-            it.licenceId,
-            it.licenceStatus,
-            it.submittedByFullName,
-          )
-        }
-        .containsExactly(
-          tuple(2L, LicenceStatus.SUBMITTED, "Test Client"),
-          tuple(1L, LicenceStatus.SUBMITTED, "Test Client"),
-          tuple(6L, LicenceStatus.SUBMITTED, "Test Client"),
-          tuple(8L, LicenceStatus.SUBMITTED, "Test Client"),
-          tuple(3L, LicenceStatus.SUBMITTED, "Adam AAA"),
-          tuple(7L, LicenceStatus.SUBMITTED, "Test Client"),
-        )
-    }
-
-    @Test
-    fun `Get forbidden (403) when incorrect roles are supplied`() {
-      val result = webTestClient.post()
-        .uri("/licence/licences-for-approval")
-        .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
-        .bodyValue(
-          ApproveLicencesRequest(
-            prisonCodes = listOf("MDI", "ABC"),
-          ),
-        )
-        .exchange()
-        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
-        .expectBody(ErrorResponse::class.java)
-        .returnResult().responseBody
-
-      assertThat(result?.userMessage).contains("Access Denied")
-    }
-
-    @Test
-    fun `Unauthorized (401) when no token is supplied`() {
-      webTestClient.post()
-        .uri("/licence/licences-for-approval")
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())

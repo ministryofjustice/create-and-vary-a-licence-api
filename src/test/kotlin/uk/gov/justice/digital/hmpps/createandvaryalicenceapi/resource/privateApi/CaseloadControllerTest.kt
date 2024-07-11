@@ -63,7 +63,7 @@ class CaseloadControllerTest {
   }
 
   @Test
-  fun `get licences for approval`() {
+  fun `Get licences for approval`() {
     val request = listOf(
       "MDI",
       "ABC",
@@ -87,5 +87,32 @@ class CaseloadControllerTest {
 
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
     verify(approverCaseloadService, times(1)).getApprovalNeeded(request)
+  }
+
+  @Test
+  fun `Get recently approved licences`() {
+    val request = listOf(
+      "MDI",
+      "ABC",
+    )
+
+    val approvalCase = ApprovalCase(
+      licenceId = 1L,
+    )
+
+    whenever(approverCaseloadService.getRecentlyApproved(request)).thenReturn(listOf(approvalCase))
+
+    val response = mvc.perform(
+      post("/caseload/prison-approver/recently-approved")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn().response.contentAsString
+
+    assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
+    verify(approverCaseloadService, times(1)).getRecentlyApproved(request)
   }
 }
