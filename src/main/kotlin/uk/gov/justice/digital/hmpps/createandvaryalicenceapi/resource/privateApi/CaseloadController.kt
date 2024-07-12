@@ -22,13 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 
 @Tag(
   name = Tags.CASELOAD,
@@ -39,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.Ap
 class CaseloadController(
   val caseloadService: CaseloadService,
   val approverCaseloadService: ApproverCaseloadService,
+  val caCaseloadService: CaCaseloadService,
 ) {
 
   @PostMapping("/prisoner-search/prisoner-numbers")
@@ -319,6 +318,100 @@ class CaseloadController(
   )
   fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) =
     approverCaseloadService.getRecentlyApproved(prisonCodes)
+
+  @PostMapping("/caseload/case-admin/prison-view")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns a case admin caseload",
+    description = "Returns an enriched list of cases for people on prison",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases for people on prison",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = CaCaseLoad::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getPrisonView(
+    @Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>,
+    @Parameter(required = true) @Valid @RequestBody searchString: String,
+  ) =
+    caCaseloadService.getPrisonOmuCaseload(prisonCodes, searchString)
+
+  @PostMapping("/caseload/case-admin/probation-view")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns a case admin caseload",
+    description = "Returns an enriched list of cases for people on probation",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases for people on probation",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = CaCaseLoad::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getProbationView(
+    @Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>,
+    @Parameter(required = true) @Valid @RequestBody searchString: String,
+  ) =
+    caCaseloadService.getProbationOmuCaseload(prisonCodes, searchString)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())
