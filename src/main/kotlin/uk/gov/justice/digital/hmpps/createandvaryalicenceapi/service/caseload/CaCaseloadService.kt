@@ -48,14 +48,14 @@ class CaCaseloadService(
   private val prisonApiClient: PrisonApiClient,
   private val communityApiClient: CommunityApiClient,
 ) {
-  fun getPrisonOmuCaseload(prisonCaseload: List<String>, searchString: String?): CaCaseLoad {
+  fun getPrisonOmuCaseload(prisonCaseload: List<String>?, searchString: String?): CaCaseLoad {
     val statuses = listOf(
       APPROVED,
       SUBMITTED,
       IN_PROGRESS,
       TIMED_OUT,
     )
-    val filteredPrisons = prisonCaseload.filterNot { it == "CADM" }
+    val filteredPrisons = prisonCaseload?.filterNot { it == "CADM" }
     val existingLicences = licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
         statusCodes = statuses,
@@ -118,12 +118,12 @@ class CaCaseloadService(
 
   private fun findAndFormatNotStartedLicences(
     licences: List<LicenceSummary>,
-    prisonCaseload: List<String>,
+    prisonCaseload: List<String>?,
   ): List<CaCase> {
     val licenceNomisIds = licences.map { l -> l.nomisId }
     val prisonersApproachingRelease = getPrisonersApproachingRelease(prisonCaseload)
 
-    if (prisonersApproachingRelease.size == 0) {
+    if (prisonersApproachingRelease == null) {
       return emptyList()
     }
 
@@ -356,19 +356,21 @@ class CaCaseloadService(
   }
 
   private fun getPrisonersApproachingRelease(
-    prisonCaseload: List<String>,
+    prisonCaseload: List<String>?,
     overrideClock: Clock? = null,
-  ): Page<CaseloadItem> {
+  ): Page<CaseloadItem>? {
     val now = overrideClock ?: clock
     val weeksToAdd: Long = 4
     val today = LocalDate.now(now)
     val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(weeksToAdd)
-    return caseloadService.getPrisonersByReleaseDate(
-      today,
-      todayPlusFourWeeks,
-      prisonCaseload.toSet(),
-      page = 0,
-    )
+    return prisonCaseload?.toSet()?.let {
+      caseloadService.getPrisonersByReleaseDate(
+        today,
+        todayPlusFourWeeks,
+        it,
+        page = 0,
+      )
+    }
   }
 
   fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {

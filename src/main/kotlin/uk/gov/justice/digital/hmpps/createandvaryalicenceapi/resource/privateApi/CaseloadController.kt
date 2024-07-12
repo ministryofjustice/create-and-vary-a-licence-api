@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 
 @Tag(
   name = Tags.CASELOAD,
@@ -361,10 +362,9 @@ class CaseloadController(
     ],
   )
   fun getPrisonView(
-    @Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>,
-    @Parameter(required = true) @Valid @RequestBody searchString: String,
+    @Parameter(required = true) @Valid @RequestBody caCaseloadSearch: CaCaseloadSearch,
   ) =
-    caCaseloadService.getPrisonOmuCaseload(prisonCodes, searchString)
+    caCaseloadService.getPrisonOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
 
   @PostMapping("/caseload/case-admin/probation-view")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
