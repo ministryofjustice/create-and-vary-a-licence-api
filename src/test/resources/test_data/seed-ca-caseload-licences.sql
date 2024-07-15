@@ -23,7 +23,7 @@ values (1, 'CRD', '1.0', '100', 'A1234AA', 'BAI', 1, 1, 1, 'APPROVED', 'jim', 's
         'AP'),
        (5, 'CRD', '1.0', '500', 'A1234AE', 'BAI', 1, 1, 1, 'ACTIVE', 'prisoner', 'five', '2023-09-29', '2023-09-29',
         'AP'),
-       (6, 'CRD', '1.0', '600', null, 'BAI', 1, 1, 1, 'VARIATION_APPROVED', 'prisoner', 'six', CURRENT_TIMESTAMP,
+       (6, 'CRD', '1.0', '600', 'A1234AF', 'BAI', 1, 1, 1, 'VARIATION_APPROVED', 'prisoner', 'six', CURRENT_TIMESTAMP,
         '2023-09-29', 'AP'),
        (7, 'CRD', '1.0', '700', 'A1234BC', 'ABC', 1, 1, 1, 'VARIATION_IN_PROGRESS', 'prisoner', 'seven', null, null,
         'AP'),

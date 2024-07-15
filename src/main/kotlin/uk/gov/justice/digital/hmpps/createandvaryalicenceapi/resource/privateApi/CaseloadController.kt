@@ -22,7 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
@@ -408,10 +412,9 @@ class CaseloadController(
     ],
   )
   fun getProbationView(
-    @Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>,
-    @Parameter(required = true) @Valid @RequestBody searchString: String,
+    @Parameter(required = true) @Valid @RequestBody caCaseloadSearch: CaCaseloadSearch,
   ) =
-    caCaseloadService.getProbationOmuCaseload(prisonCodes, searchString)
+    caCaseloadService.getProbationOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())

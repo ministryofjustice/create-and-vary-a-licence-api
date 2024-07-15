@@ -79,7 +79,7 @@ class CaCaseloadService(
   }
 
   fun getProbationOmuCaseload(
-    prisonCaseload: List<String>,
+    prisonCaseload: List<String>?,
     searchString: String?,
   ): CaCaseLoad {
     val statuses = listOf(
@@ -263,18 +263,18 @@ class CaCaseloadService(
     licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
   private fun enrichWithNomisData(licences: List<LicenceSummary>, prisoners: List<CaseloadItem>): List<CaCase> {
-    return prisoners.map<CaseloadItem, CaCase> { p ->
-
-      val licencesForOffender = licences.filter { l -> l.nomisId === p.prisoner.prisonerNumber }
+    return prisoners.map { p ->
+      val licencesForOffender = licences.filter { l -> l.nomisId == p.prisoner.prisonerNumber }
+      if (licencesForOffender.isEmpty()) return@map null
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
       return@map CaCase(
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
-        name = "${licence?.forename} ${licence?.surname}",
+        name = licence.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licence?.nomisId!!,
-        releaseDate = releaseDate!!,
+        releaseDate = releaseDate,
         releaseDateLabel = if (licence.actualReleaseDate != null) {
           "Confirmed release date"
         } else {
@@ -292,7 +292,7 @@ class CaCaseloadService(
         ),
         probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
       )
-    }
+    }.filterNotNull()
   }
 
   private fun determineCaViewCasesTab(
@@ -307,8 +307,8 @@ class CaCaseloadService(
     if (licence != null &&
       isAttentionNeeded(
         licence.licenceStatus,
-        licence.licenceStartDate!!,
-        releaseDate!!,
+        licence.licenceStartDate,
+        releaseDate,
       )
     ) {
       return CaViewCasesTab.ATTENTION_NEEDED

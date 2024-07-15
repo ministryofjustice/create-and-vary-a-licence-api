@@ -42,7 +42,7 @@ class CaseloadControllerTest {
 
   @MockBean
   private lateinit var approverCaseloadService: ApproverCaseloadService
-  
+
   @MockBean
   private lateinit var caCaseloadService: CaCaseloadService
 

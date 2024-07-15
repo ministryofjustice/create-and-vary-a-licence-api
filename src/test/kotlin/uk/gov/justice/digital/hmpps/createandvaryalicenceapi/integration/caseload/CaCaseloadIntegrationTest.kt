@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.caseload
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.OK
@@ -12,12 +16,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.Duration
 
 private const val GET_PRISON_CASELOAD = "/caseload/case-admin/prison-view"
 private const val GET_PROBATION_CASELOAD = "/caseload/case-admin/probation-view"
@@ -27,6 +35,12 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
+
+  @BeforeEach
+  fun setupClient() {
+    webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
+    govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
+  }
 
   @Nested
   inner class `Get Prison OMU Caseload` {
@@ -61,8 +75,10 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-ca-caseload-licences.sql",
     )
     fun `Successfully retrieve ca caseload`() {
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
+      prisonApiMockServer.getHdcStatuses()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+      probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
       communityApiMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
@@ -72,15 +88,16 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ApprovalCase>>())
+        .expectBody(typeReference<CaCaseLoad>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(3)
-      with(caseload.first()) {
-        assertThat(name).isEqualTo("Prisoner Seven")
-        assertThat(prisonerNumber).isEqualTo("A1234BC")
-        assertThat(approvedBy).isNull()
-        assertThat(approvedOn).isNull()
+      assertThat(caseload.cases).hasSize(5)
+      with(caseload.cases.first()) {
+        assertThat(name).isEqualTo("harry hope")
+        assertThat(prisonerNumber).isEqualTo("A1234AB")
+        assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
+        assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
+        assertThat(isInHardStopPeriod).isFalse()
       }
     }
   }
@@ -91,7 +108,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Get forbidden (403) when incorrect roles are supplied`() {
       val result = webTestClient.post()
         .uri(GET_PROBATION_CASELOAD)
-        .bodyValue(listOf("ABC123"))
+        .bodyValue(caCaseloadSearch)
         .accept(APPLICATION_JSON)
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
         .exchange()
@@ -107,10 +124,41 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Unauthorized (401) when no token is supplied`() {
       webTestClient.post()
         .uri(GET_PROBATION_CASELOAD)
-        .bodyValue(listOf("ABC123"))
+        .bodyValue(caCaseloadSearch)
         .accept(APPLICATION_JSON)
         .exchange()
         .expectStatus().isEqualTo(UNAUTHORIZED.value())
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+    )
+    fun `Successfully retrieve ca caseload`() {
+      prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
+      prisonApiMockServer.getHdcStatuses()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+      probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
+      communityApiMockServer.stubGetStaffDetailsByUsername()
+
+      val caseload = webTestClient.post()
+        .uri(GET_PROBATION_CASELOAD)
+        .bodyValue(caCaseloadSearch)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<CaCaseLoad>())
+        .returnResult().responseBody!!
+
+      assertThat(caseload.cases).hasSize(2)
+      with(caseload.cases.first()) {
+        assertThat(name).isEqualTo("prisoner five")
+        assertThat(prisonerNumber).isEqualTo("A1234AE")
+        assertThat(licenceStatus).isEqualTo(LicenceStatus.ACTIVE)
+        assertThat(tabType).isNull()
+        assertThat(isInHardStopPeriod).isFalse()
+      }
     }
   }
 
@@ -119,6 +167,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
     val communityApiMockServer = CommunityApiMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -127,7 +176,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.start()
       probationSearchMockServer.start()
       communityApiMockServer.start()
-      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
+      prisonApiMockServer.start()
     }
 
     @JvmStatic
@@ -137,6 +186,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       probationSearchMockServer.stop()
       communityApiMockServer.stop()
       govUkMockServer.stop()
+      prisonApiMockServer.stop()
     }
   }
 }

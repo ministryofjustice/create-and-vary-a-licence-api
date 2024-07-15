@@ -47,4 +47,32 @@ class PrisonApiMockServer : WireMockServer(8091) {
       ),
     )
   }
+
+  fun getHdcStatuses() {
+    stubFor(
+      post(urlEqualTo("/api/offender-sentences/home-detention-curfews/latest"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            """[
+                {
+                  "bookingId": "123",
+                  "passed": false
+               },
+               {
+                  "bookingId": "456",
+                  "passed": true
+               },
+               {
+                  "bookingId": "789",
+                  "passed": true
+               }
+              ]
+            """.trimIndent(),
+          ).withStatus(200),
+        ),
+    )
+  }
 }
