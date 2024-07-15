@@ -6,8 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
@@ -20,7 +18,6 @@ import java.time.LocalDateTime
 class ApproverCaseloadService(
   private val prisonApproverService: PrisonApproverService,
   private val probationSearchApiClient: ProbationSearchApiClient,
-  private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val communityApiClient: CommunityApiClient,
 ) {
 
@@ -45,22 +42,20 @@ class ApproverCaseloadService(
   private fun createApprovalCaseload(licences: List<LicenceSummaryApproverView>): List<ApprovalCase> {
     val nomisIds = licences.mapNotNull { it.nomisId }
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(nomisIds)
-    val deliusNomisIds = deliusRecords.mapNotNull { it.otherIds.nomsNumber }
-    val nomisRecords = prisonerSearchApiClient.searchPrisonersByNomisIds(deliusNomisIds)
 
-    val prisonerRecord: List<Triple<PrisonerSearchPrisoner, OffenderDetail?, LicenceSummaryApproverView?>> =
-      nomisRecords.map {
-        Triple(it, it.getDeliusRecord(deliusRecords), licences.getLicenceSummary(it))
+    val prisonerRecord: List<Pair<OffenderDetail?, LicenceSummaryApproverView?>> =
+      deliusRecords.map {
+        Pair(it, licences.getLicenceSummary(it))
       }
 
-    val caseload = prisonerRecord.map { (nomisRecord, deliusRecord, licenceSummary) ->
+    val caseload = prisonerRecord.map { (deliusRecord, licenceSummary) ->
       ApprovalDetails(
         deliusRecord = deliusRecord,
         comUsernameOnLicence = licenceSummary?.comUsername,
         licenceSummary = ApprovalLicenceSummary(
           licenceId = licenceSummary?.licenceId,
-          name = "${nomisRecord.firstName} ${nomisRecord.lastName}".convertToTitleCase(),
-          prisonerNumber = nomisRecord.prisonerNumber,
+          name = "${licenceSummary?.forename} ${licenceSummary?.surname}".convertToTitleCase(),
+          prisonerNumber = licenceSummary?.nomisId,
           submittedByFullName = licenceSummary?.submittedByFullName,
           releaseDate = licenceSummary?.actualReleaseDate ?: licenceSummary?.conditionalReleaseDate,
           urgentApproval = licenceSummary?.isDueToBeReleasedInTheNextTwoWorkingDays,
@@ -92,12 +87,8 @@ class ApproverCaseloadService(
     return approvalCases
   }
 
-  private fun PrisonerSearchPrisoner.getDeliusRecord(deliusRecords: List<OffenderDetail>): OffenderDetail? {
-    return deliusRecords.find { it.otherIds.nomsNumber == prisonerNumber }
-  }
-
-  private fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisRecord: PrisonerSearchPrisoner): LicenceSummaryApproverView? {
-    val licenceSummaries = this.filter { it.nomisId == nomisRecord.prisonerNumber }
+  private fun List<LicenceSummaryApproverView>.getLicenceSummary(deliusRecord: OffenderDetail): LicenceSummaryApproverView? {
+    val licenceSummaries = this.filter { it.crn == deliusRecord.otherIds.crn }
     return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
   }
 
