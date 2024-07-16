@@ -43,7 +43,7 @@ class ApproverCaseloadService(
     val nomisIds = licences.mapNotNull { it.nomisId }
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(nomisIds)
 
-    val prisonerRecord: List<Pair<OffenderDetail?, LicenceSummaryApproverView?>> =
+    val prisonerRecord: List<Pair<OffenderDetail, LicenceSummaryApproverView?>> =
       deliusRecords.map {
         Pair(it, licences.getLicenceSummary(it))
       }
