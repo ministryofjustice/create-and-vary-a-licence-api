@@ -11,8 +11,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
@@ -30,14 +28,13 @@ import java.time.LocalDateTime
 class ApproverCaseloadServiceTest {
   private val prisonApproverService = mock<PrisonApproverService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
-  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val communityApiClient = mock<CommunityApiClient>()
 
-  private val service = ApproverCaseloadService(prisonApproverService, probationSearchApiClient, prisonerSearchApiClient, communityApiClient)
+  private val service = ApproverCaseloadService(prisonApproverService, probationSearchApiClient, communityApiClient)
 
   @BeforeEach
   fun reset() {
-    reset(prisonApproverService, probationSearchApiClient, prisonerSearchApiClient, communityApiClient)
+    reset(prisonApproverService, probationSearchApiClient, communityApiClient)
   }
 
   @Nested
@@ -53,7 +50,6 @@ class ApproverCaseloadServiceTest {
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
           listOf(anOffenderDetailResult),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(aPrisonerSearchResult))
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
         val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
@@ -62,7 +58,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Mortimar")
+          assertThat(name).isEqualTo("Bob Mortimer")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
@@ -78,7 +74,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
@@ -94,6 +89,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 2L,
               bookingId = 12345,
               nomisId = "B1234BB",
+              crn = "Y12345",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -104,6 +100,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 3L,
               bookingId = 67890,
               nomisId = "C1234CC",
+              crn = "Z12345",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -135,20 +132,6 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))).thenReturn(
-          listOf(
-            aPrisonerSearchResult,
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "B1234BB",
-              bookingId = "12345",
-              prisonId = "ABC",
-              locationDescription = "ABC (HMP)",
-              firstName = "John",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-          ),
-        )
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
@@ -172,7 +155,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Mortimar")
+          assertThat(name).isEqualTo("Bob Mortimer")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
@@ -204,7 +187,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
@@ -222,6 +204,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 2L,
               bookingId = 12345,
               nomisId = "B1234BB",
+              crn = "Y12345",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -233,6 +216,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 3L,
               bookingId = 67890,
               nomisId = "C1234CC",
+              crn = "Z12345",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -264,20 +248,6 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))).thenReturn(
-          listOf(
-            aPrisonerSearchResult,
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "B1234BB",
-              bookingId = "12345",
-              prisonId = "ABC",
-              locationDescription = "ABC (HMP)",
-              firstName = "John",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-          ),
-        )
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
@@ -299,7 +269,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf("A1234AA", "B1234BB"))
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(approvalCases).hasSize(2)
@@ -320,6 +289,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 2L,
               bookingId = 12345,
               nomisId = "B1234BB",
+              crn = "Y12345",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -332,6 +302,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 3L,
               bookingId = 67890,
               nomisId = "C1234CC",
+              crn = "Z12345",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -385,29 +356,6 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)).thenReturn(
-          listOf(
-            aPrisonerSearchResult,
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "B1234BB",
-              bookingId = "12345",
-              prisonId = "ABC",
-              locationDescription = "ABC (HMP)",
-              firstName = "John",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "C1234CC",
-              bookingId = "11111",
-              prisonId = "MDI",
-              locationDescription = "Moorland (HMP)",
-              firstName = "Jane",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-          ),
-        )
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
@@ -430,7 +378,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(nomisIds)
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(approvalCases).hasSize(3)
@@ -459,39 +406,6 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(emptyList())
-      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(emptyList())
-      verify(communityApiClient, times(1)).getStaffDetailsByUsername(emptyList())
-      assertThat(caseload).isEmpty()
-    }
-
-    @Test
-    fun `Missing NOMIS ID on the delius record returns an empty caseload`() {
-      val nomisId = "A1234AA"
-      whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
-        listOf(
-          aLicenceSummaryApproverView.copy(
-            nomisId = nomisId,
-          ),
-        ),
-      )
-      whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
-        listOf(
-          anOffenderDetailResult.copy(
-            otherIds = OtherIds(
-              crn = "X12345",
-              croNumber = "AB01/234567C",
-              pncNumber = null,
-              nomsNumber = null,
-            ),
-          ),
-        ),
-      )
-
-      val caseload = service.getApprovalNeeded(aListOfPrisonCodes)
-
-      verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
-      verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(emptyList())
       verify(communityApiClient, times(1)).getStaffDetailsByUsername(emptyList())
       assertThat(caseload).isEmpty()
     }
@@ -512,7 +426,6 @@ class ApproverCaseloadServiceTest {
       whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
         listOf(anOffenderDetailResult),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(aPrisonerSearchResult))
       whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
       val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
@@ -525,7 +438,6 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
       verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
   }
@@ -550,7 +462,6 @@ class ApproverCaseloadServiceTest {
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
           listOf(anOffenderDetailResult),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(aPrisonerSearchResult))
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
         val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
@@ -559,7 +470,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Mortimar")
+          assertThat(name).isEqualTo("Bob Mortimer")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.now().minusDays(14)))
@@ -575,7 +486,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
@@ -590,6 +500,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 2L,
               bookingId = 12345,
               nomisId = "B1234BB",
+              crn = "Y12345",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -603,6 +514,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 3L,
               bookingId = 67890,
               nomisId = "C1234CC",
+              crn = "Z12345",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -655,28 +567,7 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)).thenReturn(
-          listOf(
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "B1234BB",
-              bookingId = "12345",
-              prisonId = "ABC",
-              locationDescription = "ABC (HMP)",
-              firstName = "John",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "C1234CC",
-              bookingId = "11111",
-              prisonId = "MDI",
-              locationDescription = "Moorland (HMP)",
-              firstName = "Jane",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-          ),
-        )
+
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser.copy(
@@ -732,7 +623,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(nomisIds)
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
@@ -747,6 +637,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 2L,
               bookingId = 12345,
               nomisId = "B1234BB",
+              crn = "Y12345",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -760,6 +651,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 3L,
               bookingId = 67890,
               nomisId = "C1234CC",
+              crn = "Z12345",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -812,28 +704,6 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)).thenReturn(
-          listOf(
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "B1234BB",
-              bookingId = "12345",
-              prisonId = "ABC",
-              locationDescription = "ABC (HMP)",
-              firstName = "John",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "C1234CC",
-              bookingId = "11111",
-              prisonId = "MDI",
-              locationDescription = "Moorland (HMP)",
-              firstName = "Jane",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-          ),
-        )
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser.copy(
@@ -855,7 +725,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(nomisIds)
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(caseload).hasSize(2)
@@ -876,6 +745,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 2L,
               bookingId = 12345,
               nomisId = "B1234BB",
+              crn = "Y12345",
               forename = "John",
               surname = "Doe",
               prisonCode = "ABC",
@@ -888,6 +758,7 @@ class ApproverCaseloadServiceTest {
               licenceId = 3L,
               bookingId = 67890,
               nomisId = "C1234CC",
+              crn = "Z12345",
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
@@ -941,29 +812,6 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)).thenReturn(
-          listOf(
-            aPrisonerSearchResult,
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "B1234BB",
-              bookingId = "12345",
-              prisonId = "ABC",
-              locationDescription = "ABC (HMP)",
-              firstName = "John",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-            aPrisonerSearchResult.copy(
-              prisonerNumber = "C1234CC",
-              bookingId = "11111",
-              prisonId = "MDI",
-              locationDescription = "Moorland (HMP)",
-              firstName = "Jane",
-              middleNames = null,
-              lastName = "Doe",
-            ),
-          ),
-        )
         whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
@@ -986,7 +834,6 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(nomisIds)
         verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(approvalCases).hasSize(3)
@@ -1017,7 +864,6 @@ class ApproverCaseloadServiceTest {
       whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
         listOf(anOffenderDetailResult),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(aPrisonerSearchResult))
       whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
@@ -1030,7 +876,6 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
       verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
 
@@ -1049,7 +894,6 @@ class ApproverCaseloadServiceTest {
       whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
         listOf(anOffenderDetailResult),
       )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId))).thenReturn(listOf(aPrisonerSearchResult))
       whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
@@ -1062,7 +906,6 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(nomisId))
       verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
   }
@@ -1223,37 +1066,6 @@ class ApproverCaseloadServiceTest {
           active = true,
         ),
       ),
-    )
-
-    val aPrisonerSearchResult = PrisonerSearchPrisoner(
-      prisonerNumber = "A1234AA",
-      bookingId = "54321",
-      status = "ACTIVE IN",
-      mostSeriousOffence = "Robbery",
-      licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-      homeDetentionCurfewEligibilityDate = null,
-      releaseDate = LocalDate.of(2021, 10, 22),
-      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      paroleEligibilityDate = null,
-      actualParoleDate = null,
-      postRecallReleaseDate = null,
-      legalStatus = "SENTENCED",
-      indeterminateSentence = false,
-      recall = false,
-      prisonId = "MDI",
-      locationDescription = "HMP Moorland",
-      bookNumber = "12345A",
-      firstName = "Bob",
-      middleNames = null,
-      lastName = "Mortimar",
-      dateOfBirth = LocalDate.of(1985, 12, 28),
-      conditionalReleaseDateOverrideDate = null,
-      sentenceStartDate = LocalDate.of(2018, 10, 22),
-      sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-      topupSupervisionStartDate = null,
-      croNumber = null,
     )
 
     val aUser = User(
