@@ -154,6 +154,80 @@ class CaCaseloadServiceTest {
         verify(caseloadService, times(0)).getPrisonersByNumber(listOf(aLicenceSummary.nomisId))
         verify(caseloadService, times(1)).getPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
+
+      @Test
+      fun `should filter out cases with an existing ACTIVE licence`() {
+        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+          listOf(
+            aLicenceSummary.copy(
+              forename = "Steve",
+              surname = "Cena",
+              nomisId = "AB1234E",
+              licenceId = 2,
+              licenceType = LicenceType.PSS,
+              licenceStatus = LicenceStatus.ACTIVE,
+              isInHardStopPeriod = false,
+              isDueToBeReleasedInTheNextTwoWorkingDays = true,
+              conditionalReleaseDate = twoMonthsFromNow,
+              actualReleaseDate = twoDaysFromNow,
+              isDueForEarlyRelease = true,
+            ),
+          ),
+        )
+
+        whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+          listOf(
+            TestData.caseLoadItem().copy(
+              prisoner = Prisoner(
+                firstName = "Steve",
+                lastName = "Cena",
+                prisonerNumber = "AB1234E",
+                conditionalReleaseDate = twoMonthsFromNow,
+                confirmedReleaseDate = twoDaysFromNow,
+                status = "ACTIVE IN",
+                legalStatus = "SENTENCED",
+              ),
+              cvl = CvlFields(
+                licenceType = LicenceType.AP,
+                isDueForEarlyRelease = true,
+                isInHardStopPeriod = false,
+                isDueToBeReleasedInTheNextTwoWorkingDays = false,
+              ),
+            ),
+          ),
+        )
+
+        whenever(caseloadService.getPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+          PageImpl(
+            listOf(
+              TestData.caseLoadItem().copy(
+                prisoner = Prisoner(
+                  firstName = "Steve",
+                  lastName = "Cena",
+                  prisonerNumber = "AB1234E",
+                  conditionalReleaseDate = twoMonthsFromNow,
+                  confirmedReleaseDate = twoDaysFromNow,
+                  status = "ACTIVE IN",
+                  legalStatus = "SENTENCED",
+                ),
+                cvl = CvlFields(
+                  licenceType = LicenceType.AP,
+                  isDueForEarlyRelease = true,
+                  isInHardStopPeriod = false,
+                  isDueToBeReleasedInTheNextTwoWorkingDays = false,
+                ),
+              ),
+            ),
+          ),
+        )
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        assertThat(prisonOmuCaseload).isEqualTo(
+          CaCaseLoad(
+            cases = emptyList(),
+            showAttentionNeededTab = false,
+          ),
+        )
+      }
     }
 
     @Nested

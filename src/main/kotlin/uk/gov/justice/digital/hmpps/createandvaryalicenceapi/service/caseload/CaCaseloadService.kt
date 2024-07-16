@@ -54,6 +54,7 @@ class CaCaseloadService(
       SUBMITTED,
       IN_PROGRESS,
       TIMED_OUT,
+      ACTIVE,
     )
     val filteredPrisons = prisonCaseload?.filterNot { it == "CADM" }
     val existingLicences = licenceService.findLicencesMatchingCriteria(
@@ -106,13 +107,14 @@ class CaCaseloadService(
   }
 
   private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
-    if (licences.isEmpty()) {
+    val preReleaseLicences = licences.filter { it.licenceStatus != ACTIVE }
+    if (preReleaseLicences.isEmpty()) {
       return emptyList()
     }
 
-    val licenceNomisIds = licences.map { it -> it.nomisId }
+    val licenceNomisIds = preReleaseLicences.map { it.nomisId }
     val prisonersWithLicences = caseloadService.getPrisonersByNumber(licenceNomisIds)
-    val nomisEnrichedLicences = this.enrichWithNomisData(licences, prisonersWithLicences)
+    val nomisEnrichedLicences = this.enrichWithNomisData(preReleaseLicences, prisonersWithLicences)
     return filterExistingLicencesForEligibility(nomisEnrichedLicences)
   }
 
@@ -120,12 +122,8 @@ class CaCaseloadService(
     licences: List<LicenceSummary>,
     prisonCaseload: List<String>?,
   ): List<CaCase> {
-    val licenceNomisIds = licences.map { l -> l.nomisId }
-    val prisonersApproachingRelease = getPrisonersApproachingRelease(prisonCaseload)
-
-    if (prisonersApproachingRelease == null) {
-      return emptyList()
-    }
+    val licenceNomisIds = licences.map { it.nomisId }
+    val prisonersApproachingRelease = getPrisonersApproachingRelease(prisonCaseload) ?: return emptyList()
 
     val prisonersWithoutLicences = prisonersApproachingRelease.filter { p ->
       !licenceNomisIds.contains(p.prisoner.prisonerNumber)
@@ -137,8 +135,7 @@ class CaCaseloadService(
 
   private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
     val groupedLicences = licences.groupBy { it.nomisId }
-    return groupedLicences.map { it ->
-
+    return groupedLicences.map {
       val licence = if (it.value.size > 1) {
         it.value.find { l -> l.licenceStatus != ACTIVE }
       } else {
@@ -233,6 +230,16 @@ class CaCaseloadService(
       .filter { offender -> !(offender.prisoner.indeterminateSentence ?: false) }
       .filter { offender -> offender.prisoner.conditionalReleaseDate != null }
       .filter { offender ->
+        val status = offender.prisoner.status
+        return@filter (status != null && (status.startsWith("ACTIVE") || status == "INACTIVE TRN"))
+      }
+      .filter { offender ->
+        return@filter (
+          offender.prisoner.confirmedReleaseDate
+            ?: offender.prisoner.conditionalReleaseDate
+          )?.isAfter(LocalDate.now()) == true
+      }
+      .filter { offender ->
         isEligibleEDS(
           offender.prisoner.paroleEligibilityDate,
           offender.prisoner.conditionalReleaseDate,
@@ -249,7 +256,7 @@ class CaCaseloadService(
       eligibleOffenders.mapNotNull { c -> c.prisoner.bookingId?.toLong() },
     )
 
-    return eligibleOffenders.filter { it ->
+    return eligibleOffenders.filter {
       val hdcRecord = hdcStatuses.find { hdc -> hdc.bookingId == it.prisoner.bookingId?.toLong() }
       return@filter (
         hdcRecord == null ||
@@ -346,13 +353,7 @@ class CaCaseloadService(
   }
 
   private fun selectReleaseDate(nomisRecord: Prisoner): LocalDate? {
-    val dateString = nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate
-
-    if (dateString == null) {
-      return null
-    }
-
-    return dateString
+    return nomisRecord.confirmedReleaseDate ?: nomisRecord.conditionalReleaseDate
   }
 
   private fun getPrisonersApproachingRelease(
@@ -377,13 +378,11 @@ class CaCaseloadService(
     if (licences.size == 1) {
       return licences[0]
     }
-    if (licences.any { it -> it.licenceStatus == TIMED_OUT }) {
-      return licences.find { it -> it.licenceStatus != TIMED_OUT }
+    if (licences.any { it.licenceStatus == TIMED_OUT }) {
+      return licences.find { it.licenceStatus != TIMED_OUT }
     }
 
-    return licences.find { it ->
-      (it.licenceStatus == SUBMITTED) || (it.licenceStatus == IN_PROGRESS)
-    }
+    return licences.find { (it.licenceStatus == SUBMITTED) || (it.licenceStatus == IN_PROGRESS) }
   }
 
   private fun applySearch(searchString: String?, cases: List<CaCase>): List<CaCase> {
@@ -391,7 +390,7 @@ class CaCaseloadService(
       return cases
     }
     val term = searchString.lowercase()
-    return cases.filter { it ->
+    return cases.filter {
       it.name.lowercase().contains(term) ||
         it.prisonerNumber.lowercase().contains(term) ||
         it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
@@ -399,11 +398,11 @@ class CaCaseloadService(
   }
 
   private fun applySort(cases: List<CaCase>, view: String): List<CaCase> =
-    if (view == "prison") cases.sortedBy { it -> it.releaseDate } else cases.sortedByDescending { it -> it.releaseDate }
+    if (view == "prison") cases.sortedBy { it.releaseDate } else cases.sortedByDescending { it.releaseDate }
 
   private fun pairNomisRecordsWithDelius(prisoners: List<CaseloadItem>): List<ManagedCase> {
     val caseloadNomisIds = prisoners
-      .map { it -> it.prisoner.prisonerNumber!! }
+      .map { it.prisoner.prisonerNumber!! }
 
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(caseloadNomisIds)
 
@@ -482,7 +481,7 @@ class CaCaseloadService(
   }
 
   private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
-    val showAttentionNeededTab = cases.any { it -> it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
+    val showAttentionNeededTab = cases.any { it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
     val searchResults = applySearch(searchString, cases)
     val sortResults = applySort(searchResults, view)
     return CaCaseLoad(
@@ -490,19 +489,4 @@ class CaCaseloadService(
       showAttentionNeededTab,
     )
   }
-
-  //  private fun isPastRelease(licence: LicenceSummary, overrideClock: Clock? = null): Boolean {
-//    val now = overrideClock ?: clock
-//    val today = LocalDate.now(now)
-//    val releaseDate = licence.actualReleaseDate ?: licence.conditionalReleaseDate
-//    if (releaseDate != null) {
-//      return releaseDate < today
-//    }
-//    return false
-//  }
-
-  //  private fun getCasesWithoutLicences(cases: List<CaseloadItem>, licenceNomisIds: List<String>): List<ManagedCase> {
-//    val casesWithoutLicences = cases.filter { it -> !licenceNomisIds.contains(it.prisoner.prisonerNumber) }
-//    return pairNomisRecordsWithDelius(casesWithoutLicences)
-//  }
 }
