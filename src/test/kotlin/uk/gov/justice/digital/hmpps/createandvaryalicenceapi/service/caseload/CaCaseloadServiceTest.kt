@@ -136,6 +136,7 @@ class CaCaseloadServiceTest {
               TestData.caseLoadItem().copy(
                 prisoner = TestData.caseLoadItem().prisoner.copy(
                   prisonerNumber = aLicenceSummary.nomisId,
+                  confirmedReleaseDate = twoMonthsFromNow,
                   conditionalReleaseDate = twoDaysFromNow,
                 ),
               ),

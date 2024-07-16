@@ -237,7 +237,7 @@ class CaCaseloadService(
         return@filter (
           offender.prisoner.confirmedReleaseDate
             ?: offender.prisoner.conditionalReleaseDate
-          )?.isAfter(LocalDate.now()) == true
+          )?.isAfter(LocalDate.now(clock)) == true
       }
       .filter { offender ->
         isEligibleEDS(
