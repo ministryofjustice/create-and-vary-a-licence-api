@@ -91,7 +91,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<CaCaseLoad>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.cases).hasSize(5)
+      assertThat(caseload.cases).hasSize(4)
       with(caseload.cases.first()) {
         assertThat(name).isEqualTo("harry hope")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
