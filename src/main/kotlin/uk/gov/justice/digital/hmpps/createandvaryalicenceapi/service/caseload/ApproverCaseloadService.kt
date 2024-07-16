@@ -88,7 +88,7 @@ class ApproverCaseloadService(
   }
 
   private fun List<LicenceSummaryApproverView>.getLicenceSummary(deliusRecord: OffenderDetail): LicenceSummaryApproverView? {
-    val licenceSummaries = this.filter { it.crn == deliusRecord.otherIds.crn }
+    val licenceSummaries = this.filter { it.nomisId == deliusRecord.otherIds.nomsNumber }
     return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
   }
 
