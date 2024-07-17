@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
@@ -61,7 +60,6 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve approval caseload`() {
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsForGetApprovalCaseload()
       communityApiMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
@@ -118,7 +116,6 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve recently approved caseload`() {
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetRecentlyApprovedCaseload()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsForGetRecentlyApprovedCaseload()
       communityApiMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
@@ -150,7 +147,6 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val prisonerSearchMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
     val communityApiMockServer = CommunityApiMockServer()
     val govUkMockServer = GovUkMockServer()
@@ -158,7 +154,6 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      prisonerSearchMockServer.start()
       probationSearchMockServer.start()
       communityApiMockServer.start()
       govUkMockServer.start()
@@ -168,7 +163,6 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      prisonerSearchMockServer.stop()
       probationSearchMockServer.stop()
       communityApiMockServer.stop()
       govUkMockServer.stop()
