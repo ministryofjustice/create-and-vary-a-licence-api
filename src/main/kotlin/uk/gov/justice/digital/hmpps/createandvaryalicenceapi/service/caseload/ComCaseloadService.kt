@@ -17,9 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffServic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -33,6 +31,11 @@ class ComCaseloadService(
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val staffService: StaffService,
 ) {
+
+  companion object {
+    private const val PROBATION_SEARCH_BATCH_SIZE = 500
+  }
+
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ManagedCase> {
     val managedOffenders = communityApiClient.getManagedOffenders(deliusStaffIdentifier)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
@@ -91,7 +94,7 @@ class ComCaseloadService(
 
   fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
     val crns = caseload.map { c -> c.offenderCrn }
-    val batchedCrns = crns.chunked(500)
+    val batchedCrns = crns.chunked(PROBATION_SEARCH_BATCH_SIZE)
     val batchedOffenders = batchedCrns.map { batch -> probationSearchApiClient.getOffendersByCrn(batch) }
 
     val offenders = batchedOffenders.flatten()
@@ -268,30 +271,6 @@ class ComCaseloadService(
 
   fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> {
     return mapResponsibleComsToCasesWithExclusions(caseload)
-  }
-
-  fun findProbationPractitioner(
-    deliusRecord: OffenderDetail?,
-    comUsernameOnLicence: String?,
-    coms: List<User>,
-  ): ProbationPractitioner? {
-    val responsibleCom = coms.find { com -> com.username?.lowercase() == comUsernameOnLicence?.lowercase() }
-
-    return if (responsibleCom != null) {
-      ProbationPractitioner(
-        staffCode = responsibleCom.staffCode,
-        name = "${responsibleCom.staff?.forenames} ${responsibleCom.staff?.surname}".convertToTitleCase(),
-      )
-    } else {
-      val activeCom = deliusRecord?.offenderManagers?.find { it.active }
-      if (activeCom == null || activeCom.staffDetail.unallocated == true) {
-        return null
-      }
-      ProbationPractitioner(
-        staffCode = activeCom.staffDetail.code,
-        name = "${activeCom.staffDetail.forenames} ${activeCom.staffDetail.surname}".convertToTitleCase(),
-      )
-    }
   }
 
   fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> {
