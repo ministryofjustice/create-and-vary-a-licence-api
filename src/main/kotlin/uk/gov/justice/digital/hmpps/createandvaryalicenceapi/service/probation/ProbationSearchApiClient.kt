@@ -66,4 +66,17 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       .block()
     return probationOffenderSearchResponse ?: error("Unexpected null response from API")
   }
+
+  fun getOffendersByCrn(crns: List<String?>): List<OffenderDetail> {
+    val response = probationSearchApiClient
+      .post()
+      .uri("/crns")
+      .bodyValue(crns)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<OffenderDetail>>())
+      .block()
+
+    return response ?: error("Unexpected null response from probation search API when getting offenders by crn")
+  }
 }
