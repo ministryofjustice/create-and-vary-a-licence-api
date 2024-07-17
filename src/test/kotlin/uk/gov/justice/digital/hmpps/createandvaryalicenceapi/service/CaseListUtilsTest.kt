@@ -21,7 +21,7 @@ import java.time.ZoneId
 class CaseListUtilsTest {
 
   @Nested
-  inner class isParoleEligible {
+  inner class IsParoleEligible {
     @Test
     fun `should return false if ped is null`() {
       val ped = null
@@ -48,7 +48,7 @@ class CaseListUtilsTest {
   }
 
   @Nested
-  inner class isEligibleEDS {
+  inner class IsEligibleEDS {
     @Test
     fun `returns true when PED is not set`() {
       assertThat(isEligibleEDS(null, null, null, null, clock)).isTrue()
@@ -91,7 +91,7 @@ class CaseListUtilsTest {
   }
 
   @Nested
-  inner class isRecall {
+  inner class IsRecall {
     @Test
     fun `returns false if CRD is set and not PRRD`() {
       assertThat(isRecall(managedCase.copy(nomisRecord = Prisoner(postRecallReleaseDate = null)))).isFalse()
@@ -141,7 +141,7 @@ class CaseListUtilsTest {
   }
 
   @Nested
-  inner class isBreachOfTopUpSupervision {
+  inner class IsBreachOfTopUpSupervision {
     @Test
     fun `returns false if imprisonmentStatus is not set`() {
       assertThat(isBreachOfTopUpSupervision(managedCase)).isFalse()

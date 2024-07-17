@@ -991,7 +991,7 @@ class CaCaseloadServiceTest {
             listOf(
               TestData.caseLoadItem().copy(
                 TestData.caseLoadItem().prisoner.copy(
-                  conditionalReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = fiveDaysFromNow,
                   confirmedReleaseDate = twoDaysFromNow,
                   status = "ACTIVE IN",
                   legalStatus = "SENTENCED",
@@ -1055,7 +1055,7 @@ class CaCaseloadServiceTest {
             listOf(
               TestData.caseLoadItem().copy(
                 TestData.caseLoadItem().prisoner.copy(
-                  conditionalReleaseDate = twoMonthsFromNow,
+                  conditionalReleaseDate = fiveDaysFromNow,
                   confirmedReleaseDate = twoDaysFromNow,
                   status = "ACTIVE IN",
                   legalStatus = "SENTENCED",
@@ -1232,6 +1232,7 @@ class CaCaseloadServiceTest {
     val twoDaysFromNow = LocalDate.now(clock).plusDays(2)
     val tenDaysFromNow = LocalDate.now(clock).plusDays(10)
     val twoMonthsFromNow = LocalDate.now(clock).plusMonths(2)
+    val fiveDaysFromNow = LocalDate.now(clock).plusDays(5)
 
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,
