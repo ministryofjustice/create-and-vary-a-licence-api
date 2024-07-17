@@ -30,7 +30,7 @@ fun isEligibleEDS(
   if (ped > today) return false
 
   // if ARD is not between CRD - 4 days and CRD (to account for bank holidays and weekends), then OOS
-  if (ard != null && (crd.minusDays(4) > ard && ard > crd)) {
+  if (ard != null && (crd.minusDays(4) > ard && ard < crd)) {
     return false
   }
 
@@ -56,11 +56,9 @@ fun isRecall(offender: ManagedCase): Boolean {
   }
 
   if (crd != null) {
-    val dateCrd = offender.nomisRecord.conditionalReleaseDate
-    val datePrrd = offender.nomisRecord.postRecallReleaseDate
     // If the PRRD > CRD - it should be treated as a recall
     // If PRRD <= CRD - should not be treated as a recall
-    return datePrrd!!.isAfter(dateCrd)
+    return prrd!!.isAfter(crd)
   }
 
   // Trust the Nomis recall flag as a fallback position - the above rules should always override
