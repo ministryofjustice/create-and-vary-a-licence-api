@@ -144,7 +144,7 @@ class CaCaseloadService(
     val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers)
 
-    var caCaseList: List<CaCase> = mutableListOf()
+    val caCaseList: MutableList<CaCase> = mutableListOf()
 
     // if no code or username, hit delius to find COM details
     caCaseList += cases.withNoComId.map { caCase ->
