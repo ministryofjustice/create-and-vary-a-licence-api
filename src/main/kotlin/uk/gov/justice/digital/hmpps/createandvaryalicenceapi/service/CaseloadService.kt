@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
@@ -9,7 +10,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
-import org.springframework.data.domain.Page
 
 @Service
 class CaseloadService(

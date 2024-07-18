@@ -2,7 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.DeliusRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.GroupedByCom
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
