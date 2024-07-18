@@ -106,6 +106,34 @@ class CaCaseloadService(
     return buildCaseload(cases, searchString, "probation")
   }
 
+  fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
+    GroupedByCom(
+      withStaffCode = emptyList(),
+      withStaffUsername = emptyList(),
+      withNoComId = emptyList(),
+    ),
+  ) { acc, caCase ->
+    if (caCase.probationPractitioner?.staffCode != null) {
+      acc.withStaffCode += caCase
+    } else if (caCase.probationPractitioner?.staffUsername != null) {
+      acc.withStaffUsername += caCase
+    } else {
+      acc.withNoComId += caCase
+    }
+    return@fold acc
+  }
+
+  fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {
+    if (licences.size == 1) {
+      return licences[0]
+    }
+    if (licences.any { it.licenceStatus == TIMED_OUT }) {
+      return licences.find { it.licenceStatus != TIMED_OUT }
+    }
+
+    return licences.find { (it.licenceStatus == SUBMITTED) || (it.licenceStatus == IN_PROGRESS) }
+  }
+
   private fun formatReleasedLicences(licences: List<LicenceSummary>): List<CaCase> {
     val groupedLicences = licences.groupBy { it.nomisId }
     return groupedLicences.map {
@@ -138,7 +166,7 @@ class CaCaseloadService(
     }
   }
 
-  fun mapCasesToComs(casesToMap: List<CaCase>): List<CaCase> {
+  private fun mapCasesToComs(casesToMap: List<CaCase>): List<CaCase> {
     val cases = splitCasesByComDetails(casesToMap)
 
     val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
@@ -193,24 +221,7 @@ class CaCaseloadService(
     return caCaseList
   }
 
-  fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
-    GroupedByCom(
-      withStaffCode = emptyList(),
-      withStaffUsername = emptyList(),
-      withNoComId = emptyList(),
-    ),
-  ) { acc, caCase ->
-    if (caCase.probationPractitioner?.staffCode != null) {
-      acc.withStaffCode += caCase
-    } else if (caCase.probationPractitioner?.staffUsername != null) {
-      acc.withStaffUsername += caCase
-    } else {
-      acc.withNoComId += caCase
-    }
-    return@fold acc
-  }
-
-  fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
+  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
     val showAttentionNeededTab = cases.any { it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
     val searchResults = applySearch(searchString, cases)
     val sortResults = applySort(searchResults, view)
@@ -220,7 +231,7 @@ class CaCaseloadService(
     )
   }
 
-  fun applySearch(searchString: String?, cases: List<CaCase>): List<CaCase> {
+  private fun applySearch(searchString: String?, cases: List<CaCase>): List<CaCase> {
     if (searchString == null) {
       return cases
     }
@@ -232,7 +243,7 @@ class CaCaseloadService(
     }
   }
 
-  fun applySort(cases: List<CaCase>, view: String): List<CaCase> =
+  private fun applySort(cases: List<CaCase>, view: String): List<CaCase> =
     if (view == "prison") cases.sortedBy { it.releaseDate } else cases.sortedByDescending { it.releaseDate }
 
   private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
@@ -422,17 +433,6 @@ class CaCaseloadService(
         page = 0,
       )
     }
-  }
-
-  fun findLatestLicenceSummary(licences: List<LicenceSummary>): LicenceSummary? {
-    if (licences.size == 1) {
-      return licences[0]
-    }
-    if (licences.any { it.licenceStatus == TIMED_OUT }) {
-      return licences.find { it.licenceStatus != TIMED_OUT }
-    }
-
-    return licences.find { (it.licenceStatus == SUBMITTED) || (it.licenceStatus == IN_PROGRESS) }
   }
 
   private fun pairNomisRecordsWithDelius(prisoners: List<CaseloadItem>): List<ManagedCase> {
