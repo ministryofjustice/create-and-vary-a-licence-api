@@ -27,10 +27,10 @@ fun isRecall(offender: ManagedCase): Boolean {
     return false
   }
 
-  if (crd != null) {
+  if (crd != null && prrd != null) {
     // If the PRRD > CRD - it should be treated as a recall
     // If PRRD <= CRD - should not be treated as a recall
-    return prrd!!.isAfter(crd)
+    return prrd.isAfter(crd)
   }
 
   // Trust the Nomis recall flag as a fallback position - the above rules should always override
