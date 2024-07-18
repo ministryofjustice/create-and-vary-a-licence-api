@@ -7,6 +7,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 // TODO : add schema stuff
+// TODO : can we use licency summary?
 data class CaseLoadLicenceSummary(
   val licenceId: Long? = null,
   val licenceStatus: LicenceStatus,

@@ -88,9 +88,8 @@ class ComCaseloadService(
     return caseload
   }
 
-  fun getComReviewCount(deliusStaffIdentifier: Long): ComReviewCount {
-    return staffService.getReviewCounts(deliusStaffIdentifier)
-  }
+  fun getComReviewCount(deliusStaffIdentifier: Long): ComReviewCount =
+    staffService.getReviewCounts(deliusStaffIdentifier)
 
   fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
     val crns = caseload.map { c -> c.offenderCrn }
@@ -123,8 +122,9 @@ class ComCaseloadService(
 
   fun filterOffendersEligibleForLicence(cases: List<ManagedCase>): List<ManagedCase> {
     val eligibleOffenders = cases.filter { case ->
-      case.nomisRecord?.prisonerNumber != null && prisonerSearchService.getIneligibilityReasons(case.nomisRecord.prisonerNumber)
-        .isEmpty()
+      case.nomisRecord?.prisonerNumber != null &&
+        prisonerSearchService.getIneligibilityReasons(case.nomisRecord.prisonerNumber)
+          .isEmpty()
     }
     return eligibleOffenders
   }
@@ -186,8 +186,8 @@ class ComCaseloadService(
     }
   }
 
-  fun transformLicenceSummaryToCaseLoadSummary(licenceSummary: LicenceSummary): CaseLoadLicenceSummary {
-    return CaseLoadLicenceSummary(
+  fun transformLicenceSummaryToCaseLoadSummary(licenceSummary: LicenceSummary): CaseLoadLicenceSummary =
+    CaseLoadLicenceSummary(
       licenceId = licenceSummary.licenceId,
       licenceStatus = licenceSummary.licenceStatus,
       kind = licenceSummary.kind,
@@ -205,10 +205,9 @@ class ComCaseloadService(
       isDueToBeReleasedInTheNextTwoWorkingDays = licenceSummary.isDueToBeReleasedInTheNextTwoWorkingDays,
       isReviewNeeded = licenceSummary.isReviewNeeded,
     )
-  }
 
-  fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> {
-    return managedOffenders.filter { offender ->
+  fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
+    managedOffenders.filter { offender ->
       offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
     }.filter { offender ->
       val releaseDate = offender.nomisRecord?.confirmedReleaseDate ?: offender.nomisRecord?.conditionalReleaseDate
@@ -232,13 +231,11 @@ class ComCaseloadService(
 
       licenceInValidState ?: false
     }
-  }
 
   fun mapResponsibleComsToCasesWithExclusions(caseload: List<ManagedCase>): List<ManagedCase> {
     val comUsernames = caseload.map { case ->
       case.licences?.find { licence -> case.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.comUsername
-        ?: ""
-    }
+    }.filterNotNull()
 
     val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
     return caseload.map { case ->
@@ -254,14 +251,13 @@ class ComCaseloadService(
           ),
         )
       } else {
-        val activeCom = case.deliusRecord?.offenderDetail?.offenderManagers?.find { it.active }
-        if (activeCom == null || activeCom.staffDetail.unallocated == true) {
+        if (case.deliusRecord?.managedOffenderCrn?.staff == null || case.deliusRecord.managedOffenderCrn.staff.unallocated == true) {
           case
         } else {
           case.copy(
             probationPractitioner = ProbationPractitioner(
-              staffCode = activeCom.staffDetail.code,
-              name = " ${activeCom.staffDetail.forenames} ${activeCom.staffDetail.surname}".trim(),
+              staffCode = case.deliusRecord.managedOffenderCrn.staff.code,
+              name = "${case.deliusRecord.managedOffenderCrn.staff.forenames} ${case.deliusRecord.managedOffenderCrn.staff.surname}".trim(),
             ),
           )
         }
@@ -269,44 +265,40 @@ class ComCaseloadService(
     }
   }
 
-  fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> {
-    return mapResponsibleComsToCasesWithExclusions(caseload)
+  fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> =
+    mapResponsibleComsToCasesWithExclusions(caseload)
+
+  fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> = managedOffenders.filter { offender ->
+    offender.licences?.any { licence ->
+      licence.licenceStatus in listOf(
+        LicenceStatus.ACTIVE,
+        LicenceStatus.VARIATION_IN_PROGRESS,
+        LicenceStatus.VARIATION_SUBMITTED,
+        LicenceStatus.VARIATION_APPROVED,
+        LicenceStatus.VARIATION_REJECTED,
+      ) ||
+        licence.isReviewNeeded ?: false
+    } ?: false
   }
 
-  fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> {
-    return managedOffenders.filter { offender ->
-      offender.licences?.any { licence ->
-        licence.licenceStatus in listOf(
+  fun findExistingLicences(nomisIdList: List<String>): List<LicenceSummary> = if (nomisIdList.isEmpty()) {
+    emptyList()
+  } else {
+    licenceService.findLicencesMatchingCriteria(
+      LicenceQueryObject(
+        nomsIds = nomisIdList,
+        statusCodes = listOf(
           LicenceStatus.ACTIVE,
+          LicenceStatus.IN_PROGRESS,
+          LicenceStatus.SUBMITTED,
+          LicenceStatus.APPROVED,
           LicenceStatus.VARIATION_IN_PROGRESS,
           LicenceStatus.VARIATION_SUBMITTED,
           LicenceStatus.VARIATION_APPROVED,
           LicenceStatus.VARIATION_REJECTED,
-        ) || licence.isReviewNeeded ?: false
-      } ?: false
-    }
-  }
-
-  fun findExistingLicences(nomisIdList: List<String>): List<LicenceSummary> {
-    return if (nomisIdList.isEmpty()) {
-      emptyList()
-    } else {
-      licenceService.findLicencesMatchingCriteria(
-        LicenceQueryObject(
-          nomsIds = nomisIdList,
-          statusCodes = listOf(
-            LicenceStatus.ACTIVE,
-            LicenceStatus.IN_PROGRESS,
-            LicenceStatus.SUBMITTED,
-            LicenceStatus.APPROVED,
-            LicenceStatus.VARIATION_IN_PROGRESS,
-            LicenceStatus.VARIATION_SUBMITTED,
-            LicenceStatus.VARIATION_APPROVED,
-            LicenceStatus.VARIATION_REJECTED,
-            LicenceStatus.TIMED_OUT,
-          ),
+          LicenceStatus.TIMED_OUT,
         ),
-      )
-    }
+      ),
+    )
   }
 }
