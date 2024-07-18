@@ -368,7 +368,10 @@ class CaseloadController(
   fun getPrisonView(
     @Parameter(required = true) @Valid @RequestBody caCaseloadSearch: CaCaseloadSearch,
   ) =
-    caCaseloadService.getPrisonOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
+    caCaseloadService.getPrisonOmuCaseload(
+      caCaseloadSearch.prisonCodes,
+      caCaseloadSearch.searchString,
+    )
 
   @PostMapping("/caseload/case-admin/probation-view")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")

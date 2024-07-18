@@ -16,14 +16,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.GroupedByCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
@@ -49,13 +47,15 @@ class CaCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val communityApiClient = mock<CommunityApiClient>()
+  private val eligibilityService = mock<EligibilityService>()
 
   private val service = CaCaseloadService(
     caseloadService,
-    clock,
     probationSearchApiClient,
     licenceService,
     prisonApiClient,
+    eligibilityService,
+    clock,
     communityApiClient,
   )
 
@@ -70,7 +70,7 @@ class CaCaseloadServiceTest {
   private val licenceQueryObject = LicenceQueryObject(
     statusCodes = statuses,
     prisonCodes = listOf("BAI"),
-//    sortBy = "conditionalReleaseDate",
+    sortBy = "conditionalReleaseDate",
   )
 
   @BeforeEach
@@ -93,11 +93,13 @@ class CaCaseloadServiceTest {
       listOf(
         TestData.caseLoadItem(),
         TestData.caseLoadItem().copy(
-          prisoner = Prisoner(
+          prisoner = PrisonerSearchPrisoner(
             prisonerNumber = "A1234AB",
             firstName = "Smith",
             lastName = "Cena",
             legalStatus = "SENTENCED",
+            dateOfBirth = LocalDate.of(1985, 12, 28),
+            mostSeriousOffence = "Robbery",
           ),
         ),
       ),
@@ -107,11 +109,13 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caseLoadItem(),
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               prisonerNumber = "A1234AB",
               firstName = "Smith",
               lastName = "Cena",
               legalStatus = "SENTENCED",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
           ),
         ),
@@ -129,6 +133,9 @@ class CaCaseloadServiceTest {
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
           emptyList(),
+        )
+        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+          true,
         )
         whenever(caseloadService.getPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -333,7 +340,7 @@ class CaCaseloadServiceTest {
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
         listOf(
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               firstName = "Steve",
               lastName = "Cena",
               prisonerNumber = "AB1234E",
@@ -341,6 +348,8 @@ class CaCaseloadServiceTest {
               confirmedReleaseDate = twoDaysFromNow,
               status = "ACTIVE IN",
               legalStatus = "SENTENCED",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
               licenceType = LicenceType.AP,
@@ -356,7 +365,7 @@ class CaCaseloadServiceTest {
         PageImpl(
           listOf(
             TestData.caseLoadItem().copy(
-              prisoner = Prisoner(
+              prisoner = PrisonerSearchPrisoner(
                 firstName = "Steve",
                 lastName = "Cena",
                 prisonerNumber = "AB1234E",
@@ -364,6 +373,8 @@ class CaCaseloadServiceTest {
                 confirmedReleaseDate = twoDaysFromNow,
                 status = "ACTIVE IN",
                 legalStatus = "SENTENCED",
+                dateOfBirth = LocalDate.of(1985, 12, 28),
+                mostSeriousOffence = "Robbery",
               ),
               cvl = CvlFields(
                 licenceType = LicenceType.AP,
@@ -418,7 +429,7 @@ class CaCaseloadServiceTest {
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
         listOf(
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               firstName = "Steve",
               lastName = "Cena",
               prisonerNumber = "AB1234E",
@@ -426,6 +437,8 @@ class CaCaseloadServiceTest {
               confirmedReleaseDate = twoDaysFromNow,
               status = "ACTIVE IN",
               legalStatus = "SENTENCED",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
               licenceType = LicenceType.AP,
@@ -441,7 +454,7 @@ class CaCaseloadServiceTest {
         PageImpl(
           listOf(
             TestData.caseLoadItem().copy(
-              prisoner = Prisoner(
+              prisoner = PrisonerSearchPrisoner(
                 firstName = "Steve",
                 lastName = "Cena",
                 prisonerNumber = "AB1234E",
@@ -449,6 +462,8 @@ class CaCaseloadServiceTest {
                 confirmedReleaseDate = twoDaysFromNow,
                 status = "ACTIVE IN",
                 legalStatus = "SENTENCED",
+                dateOfBirth = LocalDate.of(1985, 12, 28),
+                mostSeriousOffence = "Robbery",
               ),
               cvl = CvlFields(
                 licenceType = LicenceType.AP,
@@ -549,15 +564,21 @@ class CaCaseloadServiceTest {
         ),
       )
 
+      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(
+        true,
+      )
+
       whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
         listOf(
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               firstName = "Steve",
               lastName = "Cena",
               prisonerNumber = "AB1234E",
               status = "ACTIVE IN",
               legalStatus = "IMMIGRATION_DETAINEE",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
               licenceType = LicenceType.AP,
@@ -567,13 +588,15 @@ class CaCaseloadServiceTest {
             ),
           ),
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               firstName = "Dave",
               lastName = "Cena",
               prisonerNumber = "AB1234G",
               conditionalReleaseDate = twoMonthsFromNow,
               status = "ACTIVE IN",
               legalStatus = "SENTENCED",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
               licenceType = LicenceType.AP,
@@ -589,13 +612,15 @@ class CaCaseloadServiceTest {
         PageImpl(
           listOf(
             TestData.caseLoadItem().copy(
-              prisoner = Prisoner(
+              prisoner = PrisonerSearchPrisoner(
                 firstName = "John",
                 lastName = "Cena",
                 prisonerNumber = "AB1234D",
                 conditionalReleaseDate = null,
                 status = "ACTIVE IN",
                 legalStatus = "IMMIGRATION_DETAINEE",
+                dateOfBirth = LocalDate.of(1985, 12, 28),
+                mostSeriousOffence = "Robbery",
               ),
               cvl = CvlFields(
                 licenceType = LicenceType.AP,
@@ -605,12 +630,14 @@ class CaCaseloadServiceTest {
               ),
             ),
             TestData.caseLoadItem().copy(
-              prisoner = Prisoner(
+              prisoner = PrisonerSearchPrisoner(
                 firstName = "Steve",
                 lastName = "Cena",
                 prisonerNumber = "AB1234E",
                 status = "ACTIVE IN",
                 legalStatus = "IMMIGRATION_DETAINEE",
+                dateOfBirth = LocalDate.of(1985, 12, 28),
+                mostSeriousOffence = "Robbery",
               ),
               cvl = CvlFields(
                 licenceType = LicenceType.AP,
@@ -620,13 +647,15 @@ class CaCaseloadServiceTest {
               ),
             ),
             TestData.caseLoadItem().copy(
-              prisoner = Prisoner(
+              prisoner = PrisonerSearchPrisoner(
                 firstName = "Phil",
                 lastName = "Cena",
                 prisonerNumber = "AB1234F",
                 conditionalReleaseDate = tenDaysFromNow,
                 status = "ACTIVE IN",
                 legalStatus = "SENTENCED",
+                dateOfBirth = LocalDate.of(1985, 12, 28),
+                mostSeriousOffence = "Robbery",
               ),
               cvl = CvlFields(
                 licenceType = LicenceType.AP,
@@ -718,11 +747,13 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caseLoadItem(),
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               prisonerNumber = "A1234AB",
               firstName = "Smith",
               lastName = "Cena",
               legalStatus = "SENTENCED",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
           ),
         ),
@@ -731,11 +762,13 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caseLoadItem(),
           TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
+            prisoner = PrisonerSearchPrisoner(
               prisonerNumber = "A1234AB",
               firstName = "Smith",
               lastName = "Cena",
               legalStatus = "SENTENCED",
+              dateOfBirth = LocalDate.of(1985, 12, 28),
+              mostSeriousOffence = "Robbery",
             ),
           ),
         ),
@@ -787,12 +820,14 @@ class CaCaseloadServiceTest {
                 ),
               ),
               TestData.caseLoadItem().copy(
-                prisoner = Prisoner(
+                prisoner = PrisonerSearchPrisoner(
                   prisonerNumber = "A1234AB",
                   firstName = "Smith",
                   lastName = "Cena",
                   legalStatus = "SENTENCED",
                   paroleEligibilityDate = twoDaysFromNow,
+                  dateOfBirth = LocalDate.of(1985, 12, 28),
+                  mostSeriousOffence = "Robbery",
                 ),
               ),
             ),
@@ -986,6 +1021,9 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
           emptyList(),
         )
+        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+          true,
+        )
         whenever(caseloadService.getPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
@@ -1049,6 +1087,9 @@ class CaCaseloadServiceTest {
       fun `should not filter out cases with an approved HDC licence but no HDCED`() {
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
           emptyList(),
+        )
+        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+          true,
         )
         whenever(caseloadService.getPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
@@ -1301,6 +1342,44 @@ class CaCaseloadServiceTest {
       ),
       teams = emptyList(),
       staffCode = "AB00001",
+    )
+
+    val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(
+      prisonerNumber = "AB1234F",
+      pncNumber = null,
+      bookingId = null,
+      status = "ACTIVE IN",
+      mostSeriousOffence = "Robbery",
+      licenceExpiryDate = null,
+      topupSupervisionExpiryDate = null,
+      homeDetentionCurfewEligibilityDate = null,
+      homeDetentionCurfewActualDate = null,
+      homeDetentionCurfewEndDate = null,
+      releaseDate = null,
+      confirmedReleaseDate = null,
+      conditionalReleaseDate = LocalDate.of(2024, 7, 28),
+      paroleEligibilityDate = null,
+      actualParoleDate = null,
+      releaseOnTemporaryLicenceDate = null,
+      postRecallReleaseDate = null,
+      legalStatus = "SENTENCED",
+      indeterminateSentence = null,
+      imprisonmentStatus = null,
+      imprisonmentStatusDescription = null,
+      recall = null,
+      prisonId = null,
+      locationDescription = null,
+      prisonName = null,
+      bookNumber = null,
+      firstName = "Phil",
+      middleNames = null,
+      lastName = "Cena",
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      conditionalReleaseDateOverrideDate = null,
+      sentenceStartDate = null,
+      sentenceExpiryDate = null,
+      topupSupervisionStartDate = null,
+      croNumber = null,
     )
   }
 }

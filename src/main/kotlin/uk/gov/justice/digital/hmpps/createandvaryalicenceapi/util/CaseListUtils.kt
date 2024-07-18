@@ -14,34 +14,6 @@ fun isParoleEligible(ped: LocalDate?, clock: Clock? = null): Boolean {
   return ped > today
 }
 
-fun isEligibleEDS(
-  ped: LocalDate?,
-  crd: LocalDate?,
-  ard: LocalDate?,
-  apd: LocalDate?,
-  clock: Clock? = null,
-): Boolean {
-  if (ped == null) return true // All EDSs have PEDs, so if no ped, not an EDS and can stop the check here
-  if (crd == null) return false // This should never be hit as a previous filter removes those without CRDs
-
-  val today = LocalDate.now(clock)
-
-  // if PED is in the future, they are OOS
-  if (ped > today) return false
-
-  // if ARD is not between CRD - 4 days and CRD (to account for bank holidays and weekends), then OOS
-  if (ard != null && (crd.minusDays(4) > ard && ard < crd)) {
-    return false
-  }
-
-  // an APD with a PED in the past means they were a successful parole applicant on a later attempt, so are OOS
-  if (apd != null) {
-    return false
-  }
-
-  return true
-}
-
 fun isBreachOfTopUpSupervision(offender: ManagedCase): Boolean =
   offender.nomisRecord?.imprisonmentStatus != null && offender.nomisRecord.imprisonmentStatus == "BOTUS"
 

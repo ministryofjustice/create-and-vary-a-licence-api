@@ -5,6 +5,5 @@ data class ManagedOffenderCrn(
   val offenderCrn: String? = null,
   val staff: StaffDetail? = null,
   val staffIdentifier: Long? = null,
-  val team: Team? = null,
   val teamIdentifier: Long? = null,
 )

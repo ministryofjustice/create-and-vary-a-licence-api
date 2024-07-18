@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isBreachOfTopUpSupervision
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isEligibleEDS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isParoleEligible
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isRecall
 import java.time.Clock
@@ -48,53 +47,18 @@ class CaseListUtilsTest {
   }
 
   @Nested
-  inner class IsEligibleEDS {
-    @Test
-    fun `returns true when PED is not set`() {
-      assertThat(isEligibleEDS(null, null, null, null, clock)).isTrue()
-    }
-
-    @Test
-    fun `returns false when PED is set and CRD is not`() {
-      assertThat(isEligibleEDS(oneDayFromNow, null, null, null, clock)).isFalse()
-    }
-
-    @Test
-    fun `returns false when PED is in the future`() {
-      assertThat(isEligibleEDS(oneDayFromNow, twoDayFromNow, null, null, clock)).isFalse()
-    }
-
-    @Test
-    fun `returns true if past PED and ARD is within 4 days of CRD`() {
-      assertThat(isEligibleEDS(yesterday, tenDaysFromNow, LocalDate.now(clock).plusDays(6), null, clock)).isTrue()
-    }
-
-    @Test
-    fun `returns true if past PED and ARD is equal to CRD`() {
-      assertThat(isEligibleEDS(yesterday, tenDaysFromNow, tenDaysFromNow, null, clock)).isTrue()
-    }
-
-    @Test
-    fun `returns false if past PED and ARD is more than 4 days before CRD`() {
-      assertThat(isEligibleEDS(yesterday, tenDaysFromNow, LocalDate.now(clock).plusDays(5), null, clock)).isFalse()
-    }
-
-    @Test
-    fun `returns true if past PED and ARD not set`() {
-      assertThat(isEligibleEDS(yesterday, tenDaysFromNow, null, null, clock)).isTrue()
-    }
-
-    @Test
-    fun `returns false if APD is set`() {
-      assertThat(isEligibleEDS(yesterday, tenDaysFromNow, tenDaysFromNow, nineDaysFromNow, clock)).isFalse()
-    }
-  }
-
-  @Nested
   inner class IsRecall {
     @Test
     fun `returns false if CRD is set and not PRRD`() {
-      assertThat(isRecall(managedCase.copy(nomisRecord = Prisoner(postRecallReleaseDate = null)))).isFalse()
+      assertThat(
+        isRecall(
+          managedCase.copy(
+            nomisRecord = managedCase.nomisRecord?.copy(
+              postRecallReleaseDate = null,
+            ),
+          ),
+        ),
+      ).isFalse()
     }
 
     @Test
@@ -102,7 +66,7 @@ class CaseListUtilsTest {
       assertThat(
         isRecall(
           managedCase.copy(
-            nomisRecord = Prisoner(
+            nomisRecord = managedCase.nomisRecord?.copy(
               postRecallReleaseDate = yesterday,
               conditionalReleaseDate = oneDayFromNow,
             ),
@@ -116,7 +80,7 @@ class CaseListUtilsTest {
       assertThat(
         isRecall(
           managedCase.copy(
-            nomisRecord = Prisoner(
+            nomisRecord = managedCase.nomisRecord?.copy(
               postRecallReleaseDate = oneDayFromNow,
               conditionalReleaseDate = oneDayFromNow,
             ),
@@ -130,7 +94,7 @@ class CaseListUtilsTest {
       assertThat(
         isRecall(
           managedCase.copy(
-            nomisRecord = Prisoner(
+            nomisRecord = managedCase.nomisRecord?.copy(
               postRecallReleaseDate = oneDayFromNow,
               conditionalReleaseDate = yesterday,
             ),
@@ -152,7 +116,7 @@ class CaseListUtilsTest {
       assertThat(
         isBreachOfTopUpSupervision(
           managedCase.copy(
-            nomisRecord = Prisoner(
+            nomisRecord = managedCase.nomisRecord?.copy(
               imprisonmentStatus = "NOT",
             ),
           ),
@@ -165,7 +129,7 @@ class CaseListUtilsTest {
       assertThat(
         isBreachOfTopUpSupervision(
           managedCase.copy(
-            nomisRecord = Prisoner(
+            nomisRecord = managedCase.nomisRecord?.copy(
               imprisonmentStatus = "BOTUS",
             ),
           ),
@@ -183,14 +147,19 @@ class CaseListUtilsTest {
     val yesterday = LocalDate.now(clock).minusDays(1)
     val oneDayFromNow = LocalDate.now(clock).plusDays(1)
     val twoDayFromNow = LocalDate.now(clock).plusDays(2)
-    val nineDaysFromNow = LocalDate.now(clock).plusDays(9)
-    val tenDaysFromNow = LocalDate.now(clock).plusDays(10)
 
     val managedCase = ManagedCase(
-      nomisRecord = Prisoner(
+      nomisRecord = PrisonerSearchPrisoner(
         recall = true,
         conditionalReleaseDate = oneDayFromNow,
         postRecallReleaseDate = twoDayFromNow,
+        firstName = "Steve",
+        lastName = "Cena",
+        prisonerNumber = "AB1234E",
+        status = "ACTIVE IN",
+        legalStatus = "IMMIGRATION_DETAINEE",
+        dateOfBirth = LocalDate.of(1985, 12, 28),
+        mostSeriousOffence = "Robbery",
       ),
       cvlFields = CvlFields(
         licenceType = LicenceType.AP,

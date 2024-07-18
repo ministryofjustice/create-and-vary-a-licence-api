@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import org.springframework.data.domain.Page
 
 @Service
 class CaseloadService(
@@ -24,7 +25,7 @@ class CaseloadService(
     latestReleaseDate: LocalDate,
     prisonIds: Set<String>,
     page: Int = 0,
-  ) =
+  ): Page<CaseloadItem> =
     prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page)
       .map { it.toCaseloadItem() }
 
@@ -34,7 +35,7 @@ class CaseloadService(
   private fun PrisonerSearchPrisoner.toCaseloadItem(): CaseloadItem {
     val sentenceDateHolder = this.toSentenceDateHolder()
     return CaseloadItem(
-      prisoner = this.toPrisoner(),
+      prisoner = this,
       cvl = CvlFields(
         licenceType = LicenceType.getLicenceType(this),
         hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
@@ -42,7 +43,9 @@ class CaseloadService(
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
         isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
-        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+          sentenceDateHolder,
+        ),
       ),
     )
   }

@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -276,7 +275,7 @@ object TestData {
       isEligibleForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
     ),
-    prisoner = Prisoner(
+    prisoner = PrisonerSearchPrisoner(
       prisonerNumber = "A1234AA",
       pncNumber = null,
       croNumber = null,
@@ -287,7 +286,6 @@ object TestData {
       lastName = "Mortimar",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       status = "ACTIVE IN",
-      inOutStatus = null,
       prisonId = "MDI",
       prisonName = null,
       locationDescription = "HMP Moorland",

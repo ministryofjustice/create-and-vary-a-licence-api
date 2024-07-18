@@ -57,7 +57,13 @@ class CaseloadControllerTest {
     reset(caseloadService, approverCaseloadService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(CaseloadController(caseloadService, approverCaseloadService, caCaseloadService))
+      .standaloneSetup(
+        CaseloadController(
+          caseloadService,
+          approverCaseloadService,
+          caCaseloadService,
+        ),
+      )
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
