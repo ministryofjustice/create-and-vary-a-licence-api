@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull
 enum class LicenceType {
   CRD,
   HARD_STOP,
+  HDC,
 }
 
 @Schema(description = "Request object for creating a new licence")

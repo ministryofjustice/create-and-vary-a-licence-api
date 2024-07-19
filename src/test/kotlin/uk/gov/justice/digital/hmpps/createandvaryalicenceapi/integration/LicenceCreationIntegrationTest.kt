@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -231,6 +233,77 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(result?.userMessage).contains("Access Denied")
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  @Nested
+  inner class CreateHdcLicences {
+    @Test
+    fun `Create a HDC licence`() {
+      prisonApiMockServer.stubGetPrison()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+      probationSearchMockServer.stubSearchForPersonOnProbation()
+      communityApiMockServer.stubGetAllOffenderManagers()
+
+      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(standardConditionRepository.count()).isEqualTo(0)
+      assertThat(auditEventRepository.count()).isEqualTo(0)
+
+      val result = webTestClient.post()
+        .uri("/licence/create")
+        .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HDC))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(LicenceCreationResponse::class.java)
+        .returnResult().responseBody
+
+      log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+      assertThat(result?.licenceId).isGreaterThan(0L)
+
+      assertThat(licenceRepository.count()).isEqualTo(1)
+      val licence = licenceRepository.findAll().first()
+      assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+      assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
+      assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
+      assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
+      assertThat(standardConditionRepository.count()).isEqualTo(17) // 9 + 8 of the PSS ones
+      assertThat(additionalConditionRepository.count()).isEqualTo(0)
+      assertThat(auditEventRepository.count()).isEqualTo(1)
+    }
+
+    @Test
+    fun `Unauthorized (401) for creating CRD Licence when no token is supplied`() {
+      webTestClient.post()
+        .uri("/licence/create")
+        .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HDC))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+
+      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(standardConditionRepository.count()).isEqualTo(0)
+    }
+
+    @Test
+    fun `Get forbidden (403) for creating CRD Licence when incorrect roles are supplied`() {
+      val result = webTestClient.post()
+        .uri("/licence/create")
+        .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HDC))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(standardConditionRepository.count()).isEqualTo(0)
+    }
   }
 
   private companion object {

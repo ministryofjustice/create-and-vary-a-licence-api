@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getHdcLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
@@ -135,6 +136,47 @@ class LicenceCreationService(
 
     val additionalConditions = licencePolicyService.getHardStopAdditionalConditions(createdLicence)
     additionalConditionRepository.saveAllAndFlush(additionalConditions)
+
+    recordLicenceCreation(createdBy, createdLicence)
+
+    return LicenceCreationResponse(createdLicence.id)
+  }
+
+  @Transactional
+  fun createHdcLicence(prisonNumber: String): LicenceCreationResponse {
+    if (offenderHasLicenceInFlight(prisonNumber)) {
+      throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+    }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
+    val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
+    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
+    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+
+    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
+      ?: createCom(currentResponsibleOfficerDetails.staffId)
+
+    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
+      ?: error("Staff with username $username not found")
+
+    val licence = LicenceFactory.createHdc(
+      licenceType = getHdcLicenceType(nomisRecord),
+      nomsId = nomisRecord.prisonerNumber,
+      version = licencePolicyService.currentPolicy().version,
+      nomisRecord = nomisRecord,
+      prisonInformation = prisonInformation,
+      currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+      deliusRecord = deliusRecord,
+      responsibleCom = responsibleCom,
+      creator = createdBy,
+    )
+
+    val createdLicence = licenceRepository.saveAndFlush(licence)
+
+    val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
+    standardConditionRepository.saveAllAndFlush(standardConditions)
 
     recordLicenceCreation(createdBy, createdLicence)
 

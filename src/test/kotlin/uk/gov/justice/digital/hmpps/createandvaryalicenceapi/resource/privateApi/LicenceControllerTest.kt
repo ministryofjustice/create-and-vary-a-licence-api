@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Creat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeactivateLicenceAndVariationsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -194,6 +195,25 @@ class LicenceControllerTest {
     assertThat(result.response.contentAsString).isEqualTo(mapper.writeValueAsString(LicenceCreationResponse(1)))
 
     verify(licenceCreationService, times(1)).createHardStopLicence(aCreateLicenceRequest.nomsId)
+  }
+
+  @Test
+  fun `create a HDC licence`() {
+    whenever(licenceCreationService.createHdcLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+
+    val result = mvc.perform(
+      post("/licence/create")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = HDC))),
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
+
+    verify(licenceCreationService, times(1)).createHdcLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
