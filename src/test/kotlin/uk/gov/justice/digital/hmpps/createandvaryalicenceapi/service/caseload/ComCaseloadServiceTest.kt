@@ -269,7 +269,7 @@ class ComCaseloadServiceTest {
       case = caseload[3],
       expectedCrn = "X12353",
       expectedPrisonerNumber = "AB1234N",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceStatus = LicenceStatus.OOS_RECALL,
       expectedLicenceType = LicenceType.PSS,
       expectedConditionalReleaseDate = tenDaysFromNow,
       expectedPostRecallReleaseDate = elevenDaysFromNow,
@@ -592,7 +592,7 @@ class ComCaseloadServiceTest {
       case = caseload[1],
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceStatus = LicenceStatus.OOS_BOTUS,
       expectedLicenceType = LicenceType.PSS,
       expectedConditionalReleaseDate = tenDaysFromNow,
       expectedReleaseDate = tenDaysFromNow,
@@ -728,6 +728,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           comUsername = "sherlockholmes",
+          isReviewNeeded = true,
         ),
       ),
     )
@@ -747,13 +748,12 @@ class ComCaseloadServiceTest {
     val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
-    // TODO : status should be REVIEW_NEEDED
     verifyCase(
       caseload[0],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedNomisStatus = "INACTIVE OUT",
-      expectedLicenceStatus = LicenceStatus.ACTIVE,
+      expectedLicenceStatus = LicenceStatus.REVIEW_NEEDED,
       expectedLicenceType = LicenceType.AP,
       expectedConfirmedReleaseDate = tenDaysFromNow,
       expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
@@ -945,7 +945,6 @@ class ComCaseloadServiceTest {
     val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
 
     assertThat(caseload).hasSize(1)
-    //  TODO: status should be REVIEW_NEEDED
     verifyCase(
       caseload[0],
       expectedCrn = "X12348",
@@ -953,7 +952,7 @@ class ComCaseloadServiceTest {
       expectedNomisStatus = "INACTIVE OUT",
       expectedConfirmedReleaseDate = tenDaysFromNow,
       expectedLicenceType = LicenceType.AP,
-      expectedLicenceStatus = LicenceStatus.ACTIVE,
+      expectedLicenceStatus = LicenceStatus.REVIEW_NEEDED,
       expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
       expectedComUsername = "sherlockholmes",
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),

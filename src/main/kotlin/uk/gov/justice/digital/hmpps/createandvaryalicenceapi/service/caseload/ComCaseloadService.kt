@@ -28,7 +28,6 @@ class ComCaseloadService(
   private val prisonerSearchService: PrisonerSearchService,
   private val probationSearchApiClient: ProbationSearchApiClient,
 ) {
-
   companion object {
     private const val PROBATION_SEARCH_BATCH_SIZE = 500
   }
@@ -127,7 +126,13 @@ class ComCaseloadService(
       val updatedCase: ManagedCase
       val licences = existingLicences.filter { licence -> licence.nomisId == case.nomisRecord?.prisonerNumber }
       if (licences.isNotEmpty()) {
-        updatedCase = case.copy(licences = licences.map { transformLicenceSummaryToCaseLoadSummary(it) })
+        updatedCase = case.copy(
+          licences = licences.map { licence ->
+            val updatedLicence =
+              licence.copy(licenceStatus = if (licence.isReviewNeeded) LicenceStatus.REVIEW_NEEDED else licence.licenceStatus)
+            transformLicenceSummaryToCaseLoadSummary(updatedLicence)
+          },
+        )
       } else {
         // No licences present for this offender - determine how to show them in case lists
         // Determine the likely type of intended licence from the prison record
@@ -135,7 +140,13 @@ class ComCaseloadService(
 
         // Default status (if not overridden below) will show the case as clickable on case lists
         var licenceStatus = LicenceStatus.NOT_STARTED
-        if (case.cvlFields.isInHardStopPeriod) {
+        if (case.nomisRecord.isBreachOfTopUpSupervision()) {
+          // Imprisonment status indicates a breach of top up supervision order - not clickable (yet)
+          licenceStatus = LicenceStatus.OOS_BOTUS
+        } else if (case.nomisRecord.isRecall()) {
+          // Offender is subject to an active recall - not clickable
+          licenceStatus = LicenceStatus.OOS_RECALL
+        } else if (case.cvlFields.isInHardStopPeriod) {
           licenceStatus = LicenceStatus.TIMED_OUT
         }
 
@@ -206,6 +217,8 @@ class ComCaseloadService(
     }.filter { offender ->
       var licenceInValidState = offender.licences?.any { licence ->
         licence.licenceStatus in listOf(
+          LicenceStatus.OOS_RECALL,
+          LicenceStatus.OOS_BOTUS,
           LicenceStatus.NOT_STARTED,
           LicenceStatus.IN_PROGRESS,
           LicenceStatus.SUBMITTED,

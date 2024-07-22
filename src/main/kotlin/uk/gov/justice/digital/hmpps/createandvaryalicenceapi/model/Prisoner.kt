@@ -120,13 +120,7 @@ data class Prisoner(
   val releaseOnTemporaryLicenceDate: LocalDate? = null,
 )
 
-fun Any?.stringOrNull(): Boolean {
-  return true
-}
-
-fun Prisoner?.isBreachOfTopUpSupervision(): Boolean {
-  return this != null && this.imprisonmentStatus == "BOTUS"
-}
+fun Prisoner?.isBreachOfTopUpSupervision(): Boolean = this != null && this.imprisonmentStatus == "BOTUS"
 
 fun Prisoner?.isRecall(): Boolean {
   if (this == null) {
@@ -147,6 +141,8 @@ fun Prisoner?.isRecall(): Boolean {
     if (prrd.isAfter(crd)) {
       return true
     }
+    // If PRRD <= CRD - should not be treated as a recall
+    return false
   }
   // If PRRD <= CRD - should not be treated as a recall
   // Trust the Nomis recall flag as a fallback position - the above rules should always override
