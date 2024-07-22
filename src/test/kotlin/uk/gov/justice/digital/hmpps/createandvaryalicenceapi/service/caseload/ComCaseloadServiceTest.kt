@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
@@ -39,7 +38,6 @@ class ComCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchService = mock<PrisonerSearchService>()
-  private val staffService = mock<StaffService>()
 
   private val service = ComCaseloadService(
     caseloadService,
@@ -47,13 +45,13 @@ class ComCaseloadServiceTest {
     licenceService,
     prisonerSearchService,
     probationSearchApiClient,
-    staffService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
   private val tenDaysFromNow = LocalDate.now().plusDays(10)
   private val nineDaysFromNow = LocalDate.now().plusDays(9)
   private val yesterday = LocalDate.now().minusDays(1)
+  private val deliusStaffIdentifier = 213L
 
   @BeforeEach
   fun reset() {
@@ -61,7 +59,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `It does not call Licence API when no Nomis records are found`() {
+  fun `it does not call the licence service when no NOMIS records are found`() {
     val cases = listOf(ManagedCase(nomisRecord = Prisoner(), cvlFields = CvlFields(LicenceType.AP_PSS)))
     val casesAndLicences = service.mapOffendersToLicences(cases)
 
@@ -74,7 +72,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `It calls the licence service when Nomis records are found`() {
+  fun `it calls the licence service when Nomis records are found`() {
     val cases = listOf(
       ManagedCase(
         nomisRecord = Prisoner(prisonerNumber = "ABC123", conditionalReleaseDate = tenDaysFromNow),
@@ -97,7 +95,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `in the hard stop period Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
+  fun `it sets not started licences to timed out when in the hard stop period`() {
     val cases = listOf(
       ManagedCase(
         nomisRecord = Prisoner(prisonerNumber = "ABC123"),
@@ -118,14 +116,13 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `'It filters invalid data due to mismatch between delius and nomis`() {
+  fun `it filters invalid data due to mismatch between delius and nomis`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(offenderCrn = "X12346"),
       ManagedOffenderCrn(offenderCrn = "X12347"),
       ManagedOffenderCrn(offenderCrn = "X12348"),
     )
 
-    val deliusStaffIdentifier = 3L
     whenever(communityApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
     whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
@@ -157,9 +154,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `It filters offenders who are ineligible for a licence`() {
-    val deliusStaffIdentifier = 21L
-
+  fun `it filters offenders who are ineligible for a licence`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(offenderCrn = "X12348"),
       ManagedOffenderCrn(offenderCrn = "X12349"),
@@ -318,9 +313,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `builds the staff create caseload`() {
-    val deliusStaffIdentifier = 21L
-
+  fun `it builds the staff create caseload`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
@@ -534,7 +527,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `check licence status for recalls and breach of supervision on team create caseload`() {
+  fun `it checks licence status for recalls and breach of supervision on team create caseload`() {
     val selectedTeam = "team C"
 
     val managedOffenders = listOf(
@@ -623,7 +616,6 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    val deliusStaffIdentifier = 3L
     whenever(communityApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
     whenever(
@@ -696,8 +688,6 @@ class ComCaseloadServiceTest {
 
   @Test
   fun `it builds the staff vary caseload with Review Needed status`() {
-    val deliusStaffIdentifier = 21L
-
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
@@ -773,7 +763,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `builds the team vary caseload`() {
+  fun `it builds the team vary caseload`() {
     val selectedTeam = "team C"
 
     val managedOffenders = listOf(
@@ -888,9 +878,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `builds the team vary caseload with Review Needed status`() {
-    val deliusStaffIdentifier = 3L
-
+  fun `it builds the team vary caseload with Review Needed status`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
@@ -973,7 +961,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `batches calls to the community CRN endpoint`() {
+  fun `it should batch calls to the community CRN endpoint`() {
     val selectedTeam = "team C"
 
     val managedOffenders = Array(600) {

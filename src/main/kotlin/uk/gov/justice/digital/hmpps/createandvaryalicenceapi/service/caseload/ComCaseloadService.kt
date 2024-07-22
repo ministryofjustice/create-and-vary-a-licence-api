@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
@@ -13,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
@@ -29,7 +27,6 @@ class ComCaseloadService(
   private val licenceService: LicenceService,
   private val prisonerSearchService: PrisonerSearchService,
   private val probationSearchApiClient: ProbationSearchApiClient,
-  private val staffService: StaffService,
 ) {
 
   companion object {
@@ -79,9 +76,6 @@ class ComCaseloadService(
     caseload = mapResponsibleComsToCases(caseload)
     return caseload
   }
-
-  fun getComReviewCount(deliusStaffIdentifier: Long): ComReviewCount =
-    staffService.getReviewCounts(deliusStaffIdentifier)
 
   fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
     val crns = caseload.map { c -> c.offenderCrn }
