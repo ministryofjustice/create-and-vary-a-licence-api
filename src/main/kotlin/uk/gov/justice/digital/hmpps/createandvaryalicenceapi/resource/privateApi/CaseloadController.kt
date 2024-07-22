@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
@@ -511,6 +512,50 @@ class CaseloadController(
   )
   fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ManagedCase> =
     comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
+
+  @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/com-review-count")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns a caseload that has recently been approved",
+    description = "Returns an enriched list of cases which have recently been approved",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases that have recently been approved",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ApprovalCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getComReviewCount(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long): ComReviewCount =
+    comCaseloadService.getComReviewCount(deliusStaffIdentifier)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())

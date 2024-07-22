@@ -48,11 +48,7 @@ class ComCaseloadService(
   }
 
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>?): List<ManagedCase> {
-    val teamCode = if (teamSelected?.isNotEmpty() == true) {
-      teamSelected.first()
-    } else {
-      probationTeamCodes.first()
-    }
+    val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = communityApiClient.getManagedOffendersByTeam(teamCode)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
     var caseload = pairDeliusRecordsWithNomis(managedOffenderToOffenderDetailMap)
@@ -74,11 +70,7 @@ class ComCaseloadService(
   }
 
   fun getTeamVaryCaseload(probationTeamCodes: List<String>, teamSelected: List<String>?): List<ManagedCase> {
-    val teamCode = if (teamSelected?.isNotEmpty() == true) {
-      teamSelected.first()
-    } else {
-      probationTeamCodes.first()
-    }
+    val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = communityApiClient.getManagedOffendersByTeam(teamCode)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
     var caseload = pairDeliusRecordsWithNomis(managedOffenderToOffenderDetailMap)
@@ -112,7 +104,11 @@ class ComCaseloadService(
       val caseLoadItem =
         nomisRecords.find { prisoner -> prisoner.prisoner.prisonerNumber == offender.offenderDetail.otherIds.nomsNumber }
       if (caseLoadItem != null) {
-        ManagedCase(offender, nomisRecord = caseLoadItem.prisoner, cvlFields = caseLoadItem.cvl)
+        ManagedCase(
+          offender,
+          nomisRecord = caseLoadItem.prisoner,
+          cvlFields = caseLoadItem.cvl,
+        )
       } else {
         null
       }
@@ -131,7 +127,6 @@ class ComCaseloadService(
 
   fun mapOffendersToLicences(cases: List<ManagedCase>): List<ManagedCase> {
     val nomisIdList = cases.mapNotNull { offender -> offender.nomisRecord?.prisonerNumber }
-
     val existingLicences: List<LicenceSummary> = findExistingLicences(nomisIdList)
 
     return cases.map { case ->
@@ -301,4 +296,11 @@ class ComCaseloadService(
       ),
     )
   }
+
+  fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>?): String =
+    if (teamSelected?.isNotEmpty() == true) {
+      teamSelected.first()
+    } else {
+      probationTeamCodes.first()
+    }
 }
