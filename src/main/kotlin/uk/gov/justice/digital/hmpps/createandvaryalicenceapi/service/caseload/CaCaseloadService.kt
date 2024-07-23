@@ -6,14 +6,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getLicenceStartDate
@@ -45,7 +45,7 @@ class CaCaseloadService(
   private val clock: Clock,
   private val communityApiClient: CommunityApiClient,
 ) {
-  fun getPrisonOmuCaseload(prisonCaseload: List<String>, searchString: String?): CaCaseLoad {
+  fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): CaCaseLoad {
     val statuses = listOf(
       APPROVED,
       SUBMITTED,
@@ -78,7 +78,7 @@ class CaCaseloadService(
   }
 
   fun getProbationOmuCaseload(
-    prisonCaseload: List<String>,
+    prisonCaseload: Set<String>,
     searchString: String?,
   ): CaCaseLoad {
     val statuses = listOf(
@@ -90,7 +90,7 @@ class CaCaseloadService(
     val licences = licenceService.findLicencesMatchingCriteria(
       LicenceQueryObject(
         statusCodes = statuses,
-        prisonCodes = prisonCaseload,
+        prisonCodes = prisonCaseload.toList(),
         sortBy = "conditionalReleaseDate",
       ),
     )
@@ -248,7 +248,7 @@ class CaCaseloadService(
 
   private fun findAndFormatNotStartedLicences(
     licences: List<LicenceSummary>,
-    prisonCaseload: List<String>,
+    prisonCaseload: Set<String>,
   ): List<CaCase> {
     val licenceNomisIds = licences.map { it.nomisId }
     val prisonersApproachingRelease = getPrisonersApproachingRelease(prisonCaseload)
@@ -404,14 +404,14 @@ class CaCaseloadService(
   }
 
   private fun getPrisonersApproachingRelease(
-    prisonCaseload: List<String>,
+    prisonCaseload: Set<String>,
     overrideClock: Clock? = null,
   ): Page<CaseloadItem> {
     val now = overrideClock ?: clock
     val weeksToAdd: Long = 4
     val today = LocalDate.now(now)
     val todayPlusFourWeeks = LocalDate.now(now).plusWeeks(weeksToAdd)
-    return prisonCaseload.toSet().let {
+    return prisonCaseload.let {
       caseloadService.getPrisonersByReleaseDate(
         today,
         todayPlusFourWeeks,

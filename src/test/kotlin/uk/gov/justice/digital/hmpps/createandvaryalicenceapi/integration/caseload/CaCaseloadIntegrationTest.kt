@@ -29,7 +29,7 @@ import java.time.Duration
 
 private const val GET_PRISON_CASELOAD = "/caseload/case-admin/prison-view"
 private const val GET_PROBATION_CASELOAD = "/caseload/case-admin/probation-view"
-private val caCaseloadSearch = CaCaseloadSearch(prisonCodes = listOf("BAI"), searchString = null)
+private val caCaseloadSearch = CaCaseloadSearch(prisonCodes = setOf("BAI"), searchString = null)
 
 class CaCaseloadIntegrationTest : IntegrationTestBase() {
 

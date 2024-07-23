@@ -13,5 +13,5 @@ data class CaCaseloadSearch(
     description = "List of Prison Ids (can include OUT and TRN) to restrict the search by. Unrestricted if not supplied or null",
     example = "[\"MDI\"]",
   )
-  val prisonCodes: List<String>,
+  val prisonCodes: Set<String>,
 )

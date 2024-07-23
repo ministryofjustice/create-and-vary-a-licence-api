@@ -152,7 +152,7 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
 
         assertThat(prisonOmuCaseload.cases).hasSize(1)
 
@@ -236,7 +236,7 @@ class CaCaseloadServiceTest {
     inner class `apply Search` {
       @Test
       fun `should successfully search by name`() {
-        assertThat(service.getPrisonOmuCaseload(listOf("BAI"), "Smith")).isEqualTo(
+        assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "Smith")).isEqualTo(
           CaCaseLoad(
             cases = listOf(
               TestData.caCase().copy(
@@ -255,7 +255,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by prison number`() {
-        assertThat(service.getPrisonOmuCaseload(listOf("BAI"), "A1234AA")).isEqualTo(
+        assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "A1234AA")).isEqualTo(
           CaCaseLoad(
             cases = listOf(
               TestData.caCase().copy(
@@ -286,7 +286,7 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
-        assertThat(service.getPrisonOmuCaseload(listOf("BAI"), "com")).isEqualTo(
+        assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "com")).isEqualTo(
           CaCaseLoad(
             cases = listOf(
               TestData.caCase().copy(
@@ -388,7 +388,7 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
       assertThat(prisonOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = emptyList(),
@@ -399,7 +399,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should query for cases being released within 4 weeks`() {
-      service.getPrisonOmuCaseload(listOf("BAI"), "Smith")
+      service.getPrisonOmuCaseload(setOf("BAI"), "Smith")
       verify(caseloadService, times(1)).getPrisonersByReleaseDate(
         LocalDate.now(clock),
         LocalDate.now(clock).plusWeeks(4),
@@ -477,7 +477,7 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
       assertThat(prisonOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = listOf(
@@ -506,7 +506,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should return showAttentionNeededTab false along with caseload if there are no attention needed licences`() {
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
       assertThat(prisonOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = listOf(
@@ -669,7 +669,7 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
       assertThat(prisonOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = listOf(
@@ -775,7 +775,7 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
       assertThat(prisonOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = listOf(
@@ -838,7 +838,7 @@ class CaCaseloadServiceTest {
 
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
@@ -863,7 +863,7 @@ class CaCaseloadServiceTest {
 
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
@@ -894,7 +894,7 @@ class CaCaseloadServiceTest {
 
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
@@ -925,7 +925,7 @@ class CaCaseloadServiceTest {
 
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
@@ -960,7 +960,7 @@ class CaCaseloadServiceTest {
 
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
@@ -1009,7 +1009,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
@@ -1059,7 +1059,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = listOf(
@@ -1126,7 +1126,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        val prisonOmuCaseload = service.getPrisonOmuCaseload(listOf("BAI"), "")
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = listOf(
@@ -1193,7 +1193,7 @@ class CaCaseloadServiceTest {
         ),
       )
 
-      val probationOmuCaseload = service.getProbationOmuCaseload(listOf("BAI"), "")
+      val probationOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")
       assertThat(probationOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = listOf(
