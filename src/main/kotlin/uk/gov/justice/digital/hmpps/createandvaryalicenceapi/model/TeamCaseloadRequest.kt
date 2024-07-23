@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 data class TeamCaseloadRequest(
-  val probationTeamCodes: List<String>,
+  val probationTeamCodes: List<String> = emptyList(),
   val teamSelected: List<String>?,
 )

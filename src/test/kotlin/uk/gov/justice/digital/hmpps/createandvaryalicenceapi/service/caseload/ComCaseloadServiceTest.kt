@@ -1,5 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,6 +42,12 @@ class ComCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchService = mock<PrisonerSearchService>()
+
+  private val objectMapper = ObjectMapper().apply {
+    registerModule(Jdk8Module())
+    registerModule(JavaTimeModule())
+    registerKotlinModule()
+  }
 
   private val service = ComCaseloadService(
     caseloadService,
@@ -189,46 +199,46 @@ class ComCaseloadServiceTest {
     val caseloadItemF = createCaseloadItem("AB1234F", tenDaysFromNow)
     val caseloadItemG = createCaseloadItem("AB1234G", tenDaysFromNow)
     val caseloadItemH = createCaseloadItem("AB1234H", tenDaysFromNow)
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        caseloadItemE.copy(prisoner = caseloadItemE.prisoner.copy(paroleEligibilityDate = yesterday)),
-        caseloadItemF.copy(prisoner = caseloadItemF.prisoner.copy(paroleEligibilityDate = tenDaysFromNow)),
-        caseloadItemG.copy(prisoner = caseloadItemG.prisoner.copy(legalStatus = "DEAD")),
-        caseloadItemH.copy(prisoner = caseloadItemH.prisoner.copy(indeterminateSentence = true)),
-        createCaseloadItem("AB1234I", tenDaysFromNow),
-        createCaseloadItem("AB1234J", tenDaysFromNow),
-        createCaseloadItem("AB1234K", tenDaysFromNow, bookingId = "123"),
-        createCaseloadItem("AB1234L", tenDaysFromNow, bookingId = "123"),
-        // This case tests that recalls are overridden if the PRRD < the conditionalReleaseDate - so NOT_STARTED
-        createCaseloadItem(
-          "AB1234M",
-          tenDaysFromNow,
-          postRecallReleaseDate = nineDaysFromNow,
-          recall = true,
-        ),
-        // This case tests that recalls are NOT overridden if the PRRD > the conditionalReleaseDate - so OOS_RECALL
-        createCaseloadItem(
-          prisonerNumber = "AB1234N",
-          conditionalReleaseDate = tenDaysFromNow,
-          postRecallReleaseDate = elevenDaysFromNow,
-          recall = true,
-        ),
-        // This case tests that recalls are overridden if the PRRD is equal to the conditionalReleaseDate - so NOT_STARTED
-        createCaseloadItem(
-          prisonerNumber = "AB1234P",
-          conditionalReleaseDate = nineDaysFromNow,
-          postRecallReleaseDate = nineDaysFromNow,
-          recall = true,
-        ),
-        // This case tests that recalls are overridden if no PRRD exists and there is only the conditionalReleaseDate - so NOT_STARTED
-        createCaseloadItem("AB1234Q", nineDaysFromNow, recall = true),
-        // This case tests that the case is included when the status is INACTIVE TRN
-        createCaseloadItem("AB1234R", nineDaysFromNow, status = "INACTIVE TRN"),
+    val caseloadItems = listOf(
+      caseloadItemE.copy(prisoner = caseloadItemE.prisoner.copy(paroleEligibilityDate = yesterday)),
+      caseloadItemF.copy(prisoner = caseloadItemF.prisoner.copy(paroleEligibilityDate = tenDaysFromNow)),
+      caseloadItemG.copy(prisoner = caseloadItemG.prisoner.copy(legalStatus = "DEAD")),
+      caseloadItemH.copy(prisoner = caseloadItemH.prisoner.copy(indeterminateSentence = true)),
+      createCaseloadItem("AB1234I", tenDaysFromNow),
+      createCaseloadItem("AB1234J", tenDaysFromNow),
+      createCaseloadItem("AB1234K", tenDaysFromNow, bookingId = "123"),
+      createCaseloadItem("AB1234L", tenDaysFromNow, bookingId = "123"),
+      // This case tests that recalls are overridden if the PRRD < the conditionalReleaseDate - so NOT_STARTED
+      createCaseloadItem(
+        "AB1234M",
+        tenDaysFromNow,
+        postRecallReleaseDate = nineDaysFromNow,
+        recall = true,
       ),
+      // This case tests that recalls are NOT overridden if the PRRD > the conditionalReleaseDate - so OOS_RECALL
+      createCaseloadItem(
+        prisonerNumber = "AB1234N",
+        conditionalReleaseDate = tenDaysFromNow,
+        postRecallReleaseDate = elevenDaysFromNow,
+        recall = true,
+      ),
+      // This case tests that recalls are overridden if the PRRD is equal to the conditionalReleaseDate - so NOT_STARTED
+      createCaseloadItem(
+        prisonerNumber = "AB1234P",
+        conditionalReleaseDate = nineDaysFromNow,
+        postRecallReleaseDate = nineDaysFromNow,
+        recall = true,
+      ),
+      // This case tests that recalls are overridden if no PRRD exists and there is only the conditionalReleaseDate - so NOT_STARTED
+      createCaseloadItem("AB1234Q", nineDaysFromNow, recall = true),
+      // This case tests that the case is included when the status is INACTIVE TRN
+      createCaseloadItem("AB1234R", nineDaysFromNow, status = "INACTIVE TRN"),
     )
 
-    whenever(prisonerSearchService.getIneligibilityReasons("AB1234F")).thenReturn(listOf("is eligible for parole"))
-    whenever(prisonerSearchService.getIneligibilityReasons("AB1234G")).thenReturn(listOf("has incorrect legal status"))
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
+
+    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is eligible for parole"))
+    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[2].prisoner)).thenReturn(listOf("has incorrect legal status"))
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -609,7 +619,6 @@ class ComCaseloadServiceTest {
   @Test
   fun `it builds the staff vary caseload`() {
     val managedOffenders = listOf(
-      // ManagedOffenderCrn(offenderCrn = "X12348", staff = ),
       ManagedOffenderCrn(
         offenderCrn = "X12348",
         staff = StaffHuman(code = "X1234", forenames = "Joe", surname = "Bloggs"),
@@ -644,6 +653,21 @@ class ComCaseloadServiceTest {
         ),
       ),
     )
+    println("xxxxxxxxxxx")
+    println(
+      objectMapper.writeValueAsString(
+        listOf(
+          createCaseloadItem(
+            prisonerNumber = "AB1234E",
+            conditionalReleaseDate = tenDaysFromNow,
+            licenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
+            status = "ACTIVE IN",
+          ),
+          createCaseloadItem(prisonerNumber = "AB1234F", conditionalReleaseDate = tenDaysFromNow),
+        ),
+      ),
+    )
+    println("xxxxxxxxxxx")
 
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(

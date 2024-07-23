@@ -112,7 +112,7 @@ class ComCaseloadService(
   fun filterOffendersEligibleForLicence(cases: List<ManagedCase>): List<ManagedCase> {
     val eligibleOffenders = cases.filter { case ->
       case.nomisRecord?.prisonerNumber != null &&
-        prisonerSearchService.getIneligibilityReasons(case.nomisRecord.prisonerNumber)
+        prisonerSearchService.getIneligibilityReasons(case.nomisRecord)
           .isEmpty()
     }
     return eligibleOffenders

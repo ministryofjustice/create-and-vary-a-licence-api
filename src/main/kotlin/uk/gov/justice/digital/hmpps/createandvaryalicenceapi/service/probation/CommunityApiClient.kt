@@ -49,10 +49,10 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
       ?: error("Unexpected null response from API")
   }
 
-  fun getManagedOffenders(staffId: Long): List<ManagedOffenderCrn> {
+  fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffenderCrn> {
     val communityApiResponse = communityApiClient
       .get()
-      .uri("/secure/staff/staffIdentifier/$staffId/caseload/managedOffenders", staffId)
+      .uri("/secure/staff/staffIdentifier/$staffIdentifier/caseload/managedOffenders", staffIdentifier)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
