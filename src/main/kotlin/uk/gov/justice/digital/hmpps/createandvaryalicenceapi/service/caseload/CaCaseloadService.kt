@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.DeliusRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.GroupedByCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -170,55 +169,44 @@ class CaCaseloadService(
     val cases = splitCasesByComDetails(casesToMap)
 
     val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
-    val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers)
-
-    val caCaseList: MutableList<CaCase> = mutableListOf()
+    val deliusRecords =
+      probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers).associateBy { it.otherIds.nomsNumber }
 
     // if no code or username, hit delius to find COM details
-    caCaseList += cases.withNoComId.map { caCase ->
+    val caCaseListWithNoComId = cases.withNoComId.map { caCase ->
 
-      val com =
-        deliusRecords.find { d -> d.otherIds.nomsNumber == caCase.prisonerNumber }?.offenderManagers?.find { om -> om.active }?.staffDetail
+      val com = deliusRecords[caCase.prisonerNumber]?.offenderManagers?.find { om -> om.active }?.staffDetail
       if (com != null && !com.unallocated!!) {
-        return@map caCase.copy(
+        caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.code,
             name = com.let { "${it.forenames} ${it.surname}" },
           ),
         )
+      } else {
+        caCase
       }
-      return@map caCase
     }
 
     // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
     val comUsernames = cases.withStaffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
-    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
+    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames).associateBy { it.username?.lowercase() }
 
-    caCaseList += cases.withStaffUsername.map { caCase ->
-      val com =
-        coms.find { com -> com.username?.lowercase() == caCase.probationPractitioner?.staffUsername?.lowercase() }
+    val caCaseListWithStaffUsername = cases.withStaffUsername.map { caCase ->
+      val com = coms[caCase.probationPractitioner?.staffUsername?.lowercase()]
       if (com != null) {
-        return@map caCase.copy(
+        caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.staffCode,
             name = com.staff?.let { "${it.forenames} ${it.surname}" },
           ),
         )
+      } else {
+        caCase
       }
-      return@map caCase
     }
 
-    // If already have COM code and name, no extra calls required
-    caCaseList += cases.withStaffCode.map { caCase ->
-      return@map caCase.copy(
-        probationPractitioner = ProbationPractitioner(
-          staffCode = caCase.probationPractitioner?.staffCode,
-          name = caCase.probationPractitioner?.name,
-        ),
-      )
-    }
-
-    return caCaseList
+    return caCaseListWithNoComId + caCaseListWithStaffUsername + cases.withStaffCode
   }
 
   private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
@@ -324,11 +312,9 @@ class CaCaseloadService(
 
     return eligibleOffenders.filter {
       val hdcRecord = hdcStatuses.find { hdc -> hdc.bookingId == it.prisoner.bookingId?.toLong() }
-      return@filter (
-        hdcRecord == null ||
-          hdcRecord.approvalStatus != "APPROVED" ||
-          it.prisoner.homeDetentionCurfewEligibilityDate == null
-        )
+      hdcRecord == null ||
+        hdcRecord.approvalStatus != "APPROVED" ||
+        it.prisoner.homeDetentionCurfewEligibilityDate == null
     }
   }
 
@@ -341,7 +327,7 @@ class CaCaseloadService(
       if (licencesForOffender.isEmpty()) return@map null
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
-      return@map CaCase(
+      CaCase(
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
@@ -445,7 +431,7 @@ class CaCaseloadService(
       .map { (prisoner, cvl) ->
         val deliusRecord = deliusRecords.find { d -> d.otherIds.nomsNumber == prisoner.prisonerNumber }
         if (deliusRecord != null) {
-          return@map ManagedCase(
+          ManagedCase(
             nomisRecord = prisoner,
             cvlFields = cvl,
             deliusRecord = DeliusRecord(
@@ -455,8 +441,15 @@ class CaCaseloadService(
               ),
             ),
           )
+        } else {
+          ManagedCase(nomisRecord = prisoner, cvlFields = cvl)
         }
-        return@map ManagedCase(nomisRecord = prisoner, cvlFields = cvl)
       }
   }
+
+  data class GroupedByCom(
+    var withStaffCode: List<CaCase>,
+    var withStaffUsername: List<CaCase>,
+    var withNoComId: List<CaCase>,
+  )
 }

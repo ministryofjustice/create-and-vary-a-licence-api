@@ -14,7 +14,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.GroupedByCom
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -210,21 +209,21 @@ class CaCaseloadServiceTest {
       @Test
       fun `initialises params to empty arrays if there are no relevant cases`() {
         assertThat(service.splitCasesByComDetails(listOf(caseWithComUsername))).isEqualTo(
-          GroupedByCom(
+          CaCaseloadService.GroupedByCom(
             withStaffCode = emptyList(),
             withStaffUsername = listOf(caseWithComUsername),
             withNoComId = emptyList(),
           ),
         )
         assertThat(service.splitCasesByComDetails(listOf(caseWithComCode))).isEqualTo(
-          GroupedByCom(
+          CaCaseloadService.GroupedByCom(
             withStaffCode = listOf(caseWithComCode),
             withStaffUsername = emptyList(),
             withNoComId = emptyList(),
           ),
         )
         assertThat(service.splitCasesByComDetails(listOf(caseWithNoComId))).isEqualTo(
-          GroupedByCom(
+          CaCaseloadService.GroupedByCom(
             withStaffCode = emptyList(),
             withStaffUsername = emptyList(),
             withNoComId = listOf(caseWithNoComId),
@@ -1360,7 +1359,7 @@ class CaCaseloadServiceTest {
       homeDetentionCurfewEndDate = null,
       releaseDate = null,
       confirmedReleaseDate = null,
-      conditionalReleaseDate = LocalDate.of(2024, 7, 28),
+      conditionalReleaseDate = LocalDate.of(2024, 8, 2),
       paroleEligibilityDate = null,
       actualParoleDate = null,
       releaseOnTemporaryLicenceDate = null,
