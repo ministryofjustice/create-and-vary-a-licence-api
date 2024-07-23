@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -1226,6 +1227,87 @@ class LicenceCreationServiceTest {
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
       verify(auditEventRepository, times(0)).saveAndFlush(any())
       verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+  }
+
+  @Nested
+  inner class CreatingHdcLicences {
+    @BeforeEach
+    fun reset() {
+      reset(
+        licenceRepository,
+        licenceEventRepository,
+        auditEventRepository,
+        probationSearchApiClient,
+        prisonerSearchApiClient,
+        prisonApiClient,
+        communityApiClient,
+      )
+      val authentication = mock<Authentication>()
+      val securityContext = mock<SecurityContext>()
+
+      whenever(authentication.name).thenReturn("smills")
+      whenever(securityContext.authentication).thenReturn(authentication)
+      SecurityContextHolder.setContext(securityContext)
+
+      whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
+
+      whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
+      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+
+      whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
+    }
+
+    @Test
+    fun `service populates licence with expected fields`() {
+      val aPrisonerSearchResult = prisonerSearchResult()
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+
+      service.createHdcLicence(prisonNumber)
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      with(licenceCaptor.value as HdcLicence) {
+        assertThat(kind).isEqualTo(LicenceKind.HDC)
+        assertThat(typeCode).isEqualTo(LicenceType.AP)
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(versionOfId).isNull()
+        assertThat(licenceVersion).isEqualTo("1.0")
+        assertThat(nomsId).isEqualTo(nomsId)
+        assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
+        assertThat(bookingId).isEqualTo(aPrisonerSearchResult.bookingId!!.toLong())
+        assertThat(prisonCode).isEqualTo(aPrisonerSearchResult.prisonId)
+        assertThat(forename).isEqualTo(aPrisonerSearchResult.firstName.convertToTitleCase())
+        assertThat(middleNames).isEqualTo(aPrisonerSearchResult.middleNames?.convertToTitleCase() ?: "")
+        assertThat(surname).isEqualTo(aPrisonerSearchResult.lastName.convertToTitleCase())
+        assertThat(dateOfBirth).isEqualTo(aPrisonerSearchResult.dateOfBirth)
+        assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
+        assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
+        assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+        assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
+        assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
+        assertThat(postRecallReleaseDate).isNull()
+        assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
+        assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
+        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
+        assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
+        assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
+        assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
+        assertThat(probationLauDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.description)
+        assertThat(probationTeamCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.code)
+        assertThat(probationTeamDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.description)
+        assertThat(crn).isEqualTo(anOffenderDetailResult.otherIds.crn)
+        assertThat(pnc).isEqualTo(anOffenderDetailResult.otherIds.pncNumber)
+        assertThat(responsibleCom).isEqualTo(com)
+      }
     }
   }
 
