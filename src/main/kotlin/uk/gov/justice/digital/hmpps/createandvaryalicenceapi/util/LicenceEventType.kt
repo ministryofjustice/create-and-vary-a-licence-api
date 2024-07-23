@@ -24,4 +24,6 @@ enum class LicenceEventType {
   TIMED_OUT,
   OOS_BOTUS,
   OOS_RECALL,
+  HDC_CREATED,
+  HDC_SUBMITTED,
 }
