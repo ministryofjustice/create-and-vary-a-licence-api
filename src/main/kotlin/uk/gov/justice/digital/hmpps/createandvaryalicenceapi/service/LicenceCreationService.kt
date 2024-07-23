@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getHdcLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
@@ -162,7 +161,7 @@ class LicenceCreationService(
       ?: error("Staff with username $username not found")
 
     val licence = LicenceFactory.createHdc(
-      licenceType = getHdcLicenceType(nomisRecord),
+      licenceType = getLicenceType(nomisRecord),
       nomsId = nomisRecord.prisonerNumber,
       version = licencePolicyService.currentPolicy().version,
       nomisRecord = nomisRecord,

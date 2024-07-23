@@ -415,7 +415,7 @@ class LicenceService(
     try {
       val matchingLicences =
         licenceRepository.findAll(licenceQueryObject.toSpecification(), licenceQueryObject.getSort())
-      return matchingLicences.filterNot { it.kind == LicenceKind.HDC }.map { it.toSummary() }
+      return matchingLicences.map { it.toSummary() }
     } catch (e: PropertyReferenceException) {
       throw ValidationException(e.message, e)
     }

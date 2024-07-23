@@ -267,10 +267,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       val licence = licenceRepository.findAll().first()
       assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
-      assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
+      assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
-      assertThat(standardConditionRepository.count()).isEqualTo(17) // 9 + 8 of the PSS ones
+      assertThat(standardConditionRepository.count()).isEqualTo(9)
       assertThat(additionalConditionRepository.count()).isEqualTo(0)
       assertThat(auditEventRepository.count()).isEqualTo(1)
     }

@@ -1274,7 +1274,7 @@ class LicenceCreationServiceTest {
 
       with(licenceCaptor.value as HdcLicence) {
         assertThat(kind).isEqualTo(LicenceKind.HDC)
-        assertThat(typeCode).isEqualTo(LicenceType.AP_PSS)
+        assertThat(typeCode).isEqualTo(LicenceType.AP)
         assertThat(version).isEqualTo("2.1")
         assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
         assertThat(versionOfId).isNull()
