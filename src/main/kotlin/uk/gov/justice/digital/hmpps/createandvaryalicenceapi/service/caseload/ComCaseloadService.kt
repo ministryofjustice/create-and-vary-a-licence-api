@@ -234,7 +234,7 @@ class ComCaseloadService(
       licenceInValidState ?: false
     }
 
-  fun mapResponsibleComsToCasesWithExclusions(caseload: List<ManagedCase>): List<ManagedCase> {
+  private fun mapResponsibleComsToCasesWithExclusions(caseload: List<ManagedCase>): List<ManagedCase> {
     val comUsernames = caseload.map { case ->
       case.licences?.find { licence -> case.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.comUsername
     }.filterNotNull()
@@ -267,23 +267,24 @@ class ComCaseloadService(
     }
   }
 
-  fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> =
+  private fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> =
     mapResponsibleComsToCasesWithExclusions(caseload)
 
-  fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> = managedOffenders.filter { offender ->
-    offender.licences?.any { licence ->
-      licence.licenceStatus in listOf(
-        LicenceStatus.ACTIVE,
-        LicenceStatus.VARIATION_IN_PROGRESS,
-        LicenceStatus.VARIATION_SUBMITTED,
-        LicenceStatus.VARIATION_APPROVED,
-        LicenceStatus.VARIATION_REJECTED,
-      ) ||
-        licence.isReviewNeeded ?: false
-    } ?: false
-  }
+  private fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
+    managedOffenders.filter { offender ->
+      offender.licences?.any { licence ->
+        licence.licenceStatus in listOf(
+          LicenceStatus.ACTIVE,
+          LicenceStatus.VARIATION_IN_PROGRESS,
+          LicenceStatus.VARIATION_SUBMITTED,
+          LicenceStatus.VARIATION_APPROVED,
+          LicenceStatus.VARIATION_REJECTED,
+        ) ||
+          licence.isReviewNeeded ?: false
+      } ?: false
+    }
 
-  fun findExistingLicences(nomisIdList: List<String>): List<LicenceSummary> = if (nomisIdList.isEmpty()) {
+  private fun findExistingLicences(nomisIdList: List<String>): List<LicenceSummary> = if (nomisIdList.isEmpty()) {
     emptyList()
   } else {
     licenceService.findLicencesMatchingCriteria(
@@ -304,7 +305,7 @@ class ComCaseloadService(
     )
   }
 
-  fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>?): String =
+  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>?): String =
     if (teamSelected?.isNotEmpty() == true) {
       teamSelected.first()
     } else {
