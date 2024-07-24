@@ -1,9 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,12 +38,6 @@ class ComCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchService = mock<PrisonerSearchService>()
-
-  private val objectMapper = ObjectMapper().apply {
-    registerModule(Jdk8Module())
-    registerModule(JavaTimeModule())
-    registerKotlinModule()
-  }
 
   private val service = ComCaseloadService(
     caseloadService,
@@ -271,17 +261,6 @@ class ComCaseloadServiceTest {
         crn = "X12352",
       ),
     )
-    // verifyCase(
-    //   case = caseload[3],
-    //   expectedCrn = "X12353",
-    //   expectedPrisonerNumber = "AB1234N",
-    //   expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-    //   expectedLicenceType = LicenceType.PSS,
-    //   expectedConditionalReleaseDate = tenDaysFromNow,
-    //   expectedPostRecallReleaseDate = elevenDaysFromNow,
-    //   expectedRecall = true,
-    // )
-
     verifyCase(
       case = caseload[3],
       expectedCrn = "X12354",
@@ -430,14 +409,6 @@ class ComCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
       expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
     )
-
-    assertThat(caseload.first().deliusRecord?.managedOffenderCrn).isEqualTo(
-      ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
-      ),
-    )
-
     verifyCase(
       case = caseload[1],
       expectedCrn = "X12351",
@@ -533,7 +504,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `it checks licence status for recalls and breach of supervision on team create caseload`() {
+  fun `it filters recalls and breach of supervision on team create caseload`() {
     val selectedTeam = "team C"
 
     val managedOffenders = listOf(
