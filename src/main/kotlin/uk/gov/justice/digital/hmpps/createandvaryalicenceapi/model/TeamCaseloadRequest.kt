@@ -8,5 +8,5 @@ data class TeamCaseloadRequest(
   val probationTeamCodes: List<String> = emptyList(),
 
   @Schema(description = "The teams linked to the user to get the case loads for", example = "[\"teamA\", \"teamC\"]")
-  val teamSelected: List<String>?,
+  val teamSelected: List<String> = emptyList(),
 )

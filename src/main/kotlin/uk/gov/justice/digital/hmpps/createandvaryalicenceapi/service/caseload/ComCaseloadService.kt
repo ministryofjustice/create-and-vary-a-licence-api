@@ -43,7 +43,7 @@ class ComCaseloadService(
     return caseload
   }
 
-  fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>?): List<ManagedCase> {
+  fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ManagedCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = communityApiClient.getManagedOffendersByTeam(teamCode)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
@@ -65,7 +65,7 @@ class ComCaseloadService(
     return caseload
   }
 
-  fun getTeamVaryCaseload(probationTeamCodes: List<String>, teamSelected: List<String>?): List<ManagedCase> {
+  fun getTeamVaryCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ManagedCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = communityApiClient.getManagedOffendersByTeam(teamCode)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
@@ -305,8 +305,8 @@ class ComCaseloadService(
     )
   }
 
-  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>?): String =
-    if (teamSelected?.isNotEmpty() == true) {
+  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>): String =
+    if (teamSelected.isNotEmpty()) {
       teamSelected.first()
     } else {
       probationTeamCodes.first()
