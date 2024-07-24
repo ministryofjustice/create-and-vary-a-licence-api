@@ -25,4 +25,6 @@ enum class LicenceEventType {
   OOS_BOTUS,
   OOS_RECALL,
   REVIEW_NEEDED,
+  HDC_CREATED,
+  HDC_SUBMITTED,
 }

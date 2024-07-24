@@ -141,6 +141,47 @@ class LicenceCreationService(
     return LicenceCreationResponse(createdLicence.id)
   }
 
+  @Transactional
+  fun createHdcLicence(prisonNumber: String): LicenceCreationResponse {
+    if (offenderHasLicenceInFlight(prisonNumber)) {
+      throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+    }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
+    val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
+    val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
+    val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+
+    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
+      ?: createCom(currentResponsibleOfficerDetails.staffId)
+
+    val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
+      ?: error("Staff with username $username not found")
+
+    val licence = LicenceFactory.createHdc(
+      licenceType = getLicenceType(nomisRecord),
+      nomsId = nomisRecord.prisonerNumber,
+      version = licencePolicyService.currentPolicy().version,
+      nomisRecord = nomisRecord,
+      prisonInformation = prisonInformation,
+      currentResponsibleOfficerDetails = currentResponsibleOfficerDetails,
+      deliusRecord = deliusRecord,
+      responsibleCom = responsibleCom,
+      creator = createdBy,
+    )
+
+    val createdLicence = licenceRepository.saveAndFlush(licence)
+
+    val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
+    standardConditionRepository.saveAllAndFlush(standardConditions)
+
+    recordLicenceCreation(createdBy, createdLicence)
+
+    return LicenceCreationResponse(createdLicence.id)
+  }
+
   private fun recordLicenceCreation(
     creator: Creator,
     licence: Licence,

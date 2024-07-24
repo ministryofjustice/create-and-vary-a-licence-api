@@ -38,4 +38,13 @@ enum class LicenceKind(
     { LicenceDomainEventType.LICENCE_ACTIVATED },
     { LicenceDomainEventType.LICENCE_INACTIVATED },
   ),
+
+  HDC(
+    { IN_PROGRESS },
+    { LicenceEventType.HDC_CREATED },
+    { error("HDC licences can not be copied") },
+    { LicenceEventType.HDC_CREATED },
+    { LicenceDomainEventType.LICENCE_ACTIVATED },
+    { LicenceDomainEventType.LICENCE_INACTIVATED },
+  ),
 }
