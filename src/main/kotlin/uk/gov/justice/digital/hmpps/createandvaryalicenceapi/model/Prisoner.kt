@@ -138,12 +138,10 @@ fun Prisoner?.isRecall(): Boolean {
 
   if (crd != null && prrd != null) {
     // If the PRRD > CRD - it should be treated as a recall
-    if (prrd.isAfter(crd)) {
-      return true
-    }
     // If PRRD <= CRD - should not be treated as a recall
-    return false
+    return prrd.isAfter(crd)
   }
+
   // If PRRD <= CRD - should not be treated as a recall
   // Trust the Nomis recall flag as a fallback position - the above rules should always override
   return recall
