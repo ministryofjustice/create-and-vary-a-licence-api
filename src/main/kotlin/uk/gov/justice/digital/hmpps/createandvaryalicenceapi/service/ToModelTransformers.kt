@@ -45,56 +45,54 @@ fun transformToLicenceSummary(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): LicenceSummary {
-  return LicenceSummary(
-    kind = licence.kind,
-    licenceId = licence.id,
-    licenceType = licence.typeCode,
-    licenceStatus = licence.statusCode,
-    nomisId = licence.nomsId!!,
-    surname = licence.surname,
-    forename = licence.forename,
-    crn = licence.crn,
-    dateOfBirth = licence.dateOfBirth,
-    prisonCode = licence.prisonCode,
-    prisonDescription = licence.prisonDescription,
-    probationAreaCode = licence.probationAreaCode,
-    probationAreaDescription = licence.probationAreaDescription,
-    probationPduCode = licence.probationPduCode,
-    probationPduDescription = licence.probationPduDescription,
-    probationLauCode = licence.probationLauCode,
-    probationLauDescription = licence.probationLauDescription,
-    probationTeamCode = licence.probationTeamCode,
-    probationTeamDescription = licence.probationTeamDescription,
-    conditionalReleaseDate = licence.conditionalReleaseDate,
-    actualReleaseDate = licence.actualReleaseDate,
-    sentenceStartDate = licence.sentenceStartDate,
-    sentenceEndDate = licence.sentenceEndDate,
-    licenceStartDate = licence.licenceStartDate,
-    licenceExpiryDate = licence.licenceExpiryDate,
-    topupSupervisionStartDate = licence.topupSupervisionStartDate,
-    topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
-    postRecallReleaseDate = licence.postRecallReleaseDate,
-    comUsername = licence.responsibleCom!!.username,
-    bookingId = licence.bookingId,
-    dateCreated = licence.dateCreated,
-    approvedByName = licence.approvedByName,
-    approvedDate = licence.approvedDate,
-    submittedDate = licence.submittedDate,
-    licenceVersion = licence.licenceVersion,
-    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
-    isReviewNeeded = when (licence) {
-      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-      else -> false
-    },
-    hardStopDate = hardStopDate,
-    hardStopWarningDate = hardStopWarningDate,
-    isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
-    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-    updatedByFullName = licence.getUpdatedByFullName(),
-  )
-}
+): LicenceSummary = LicenceSummary(
+  kind = licence.kind,
+  licenceId = licence.id,
+  licenceType = licence.typeCode,
+  licenceStatus = licence.statusCode,
+  nomisId = licence.nomsId!!,
+  surname = licence.surname,
+  forename = licence.forename,
+  crn = licence.crn,
+  dateOfBirth = licence.dateOfBirth,
+  prisonCode = licence.prisonCode,
+  prisonDescription = licence.prisonDescription,
+  probationAreaCode = licence.probationAreaCode,
+  probationAreaDescription = licence.probationAreaDescription,
+  probationPduCode = licence.probationPduCode,
+  probationPduDescription = licence.probationPduDescription,
+  probationLauCode = licence.probationLauCode,
+  probationLauDescription = licence.probationLauDescription,
+  probationTeamCode = licence.probationTeamCode,
+  probationTeamDescription = licence.probationTeamDescription,
+  conditionalReleaseDate = licence.conditionalReleaseDate,
+  actualReleaseDate = licence.actualReleaseDate,
+  sentenceStartDate = licence.sentenceStartDate,
+  sentenceEndDate = licence.sentenceEndDate,
+  licenceStartDate = licence.licenceStartDate,
+  licenceExpiryDate = licence.licenceExpiryDate,
+  topupSupervisionStartDate = licence.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+  postRecallReleaseDate = licence.postRecallReleaseDate,
+  comUsername = licence.responsibleCom!!.username,
+  bookingId = licence.bookingId,
+  dateCreated = licence.dateCreated,
+  approvedByName = licence.approvedByName,
+  approvedDate = licence.approvedDate,
+  submittedDate = licence.submittedDate,
+  licenceVersion = licence.licenceVersion,
+  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+  isReviewNeeded = when (licence) {
+    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+    else -> false
+  },
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  updatedByFullName = licence.getUpdatedByFullName(),
+)
 
 fun toHardstop(
   licence: HardStopLicence,
@@ -355,14 +353,12 @@ fun toCrd(
 fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> =
   filter { condition -> condition.conditionType == conditionType }.map(::transform)
 
-fun transform(entity: EntityStandardCondition): ModelStandardCondition {
-  return ModelStandardCondition(
-    id = entity.id,
-    code = entity.conditionCode,
-    sequence = entity.conditionSequence,
-    text = entity.conditionText,
-  )
-}
+fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelStandardCondition(
+  id = entity.id,
+  code = entity.conditionCode,
+  sequence = entity.conditionSequence,
+  text = entity.conditionText,
+)
 
 // Transform a list of entity additional conditions to model additional conditions
 fun List<EntityAdditionalCondition>.transformToModelAdditional(
@@ -376,8 +372,8 @@ fun List<EntityAdditionalCondition>.transformToModelAdditional(
     )
   }
 
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition {
-  return ModelAdditionalCondition(
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition =
+  ModelAdditionalCondition(
     id = entity.id,
     code = entity.conditionCode,
     version = entity.conditionVersion,
@@ -389,38 +385,33 @@ fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelA
     uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
     readyToSubmit = readyToSubmit,
   )
-}
 
 // Transform a list of entity additional condition data to model additional condition data
 fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> =
   map(::transform)
 
-fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionData {
-  return ModelAdditionalConditionData(
-    id = entity.id,
-    sequence = entity.dataSequence,
-    field = entity.dataField,
-    value = entity.dataValue,
-  )
-}
+fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionData = ModelAdditionalConditionData(
+  id = entity.id,
+  sequence = entity.dataSequence,
+  field = entity.dataField,
+  value = entity.dataValue,
+)
 
 // Transform a list of entity bespoke conditions to model bespoke conditions
 fun List<EntityBespokeCondition>.transformToModelBespoke(): List<ModelBespokeCondition> = map(::transform)
 
-fun transform(entity: EntityBespokeCondition): ModelBespokeCondition {
-  return ModelBespokeCondition(
-    id = entity.id,
-    sequence = entity.conditionSequence,
-    text = entity.conditionText,
-  )
-}
+fun transform(entity: EntityBespokeCondition): ModelBespokeCondition = ModelBespokeCondition(
+  id = entity.id,
+  sequence = entity.conditionSequence,
+  text = entity.conditionText,
+)
 
 // Transform a list of entity additional condition uploads to model additional condition uploads
 fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> =
   map(::transform)
 
-fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary {
-  return ModelAdditionalConditionUploadSummary(
+fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary =
+  ModelAdditionalConditionUploadSummary(
     id = entity.id,
     filename = entity.filename,
     fileType = entity.fileType,
@@ -430,39 +421,34 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
     thumbnailImage = entity.thumbnailImage?.toBase64(),
     uploadDetailId = entity.uploadDetailId,
   )
-}
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
 
 fun List<EntityAuditEvent>.transformToModelAuditEvents(): List<ModelAuditEvent> = map(::transform)
 
-private fun transform(entity: EntityAuditEvent): ModelAuditEvent {
-  return ModelAuditEvent(
-    id = entity.id,
-    licenceId = entity.licenceId,
-    eventTime = entity.eventTime,
-    username = entity.username,
-    fullName = entity.fullName,
-    eventType = entity.eventType,
-    summary = entity.summary,
-    detail = entity.detail,
-  )
-}
+private fun transform(entity: EntityAuditEvent): ModelAuditEvent = ModelAuditEvent(
+  id = entity.id,
+  licenceId = entity.licenceId,
+  eventTime = entity.eventTime,
+  username = entity.username,
+  fullName = entity.fullName,
+  eventType = entity.eventType,
+  summary = entity.summary,
+  detail = entity.detail,
+)
 
 fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)
 
-fun transform(entity: EntityLicenceEvent): ModelLicenceEvent {
-  return ModelLicenceEvent(
-    id = entity.id,
-    licenceId = entity.licenceId,
-    eventType = entity.eventType,
-    username = entity.username,
-    forenames = entity.forenames,
-    surname = entity.surname,
-    eventDescription = entity.eventDescription,
-    eventTime = entity.eventTime,
-  )
-}
+fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent(
+  id = entity.id,
+  licenceId = entity.licenceId,
+  eventType = entity.eventType,
+  username = entity.username,
+  forenames = entity.forenames,
+  surname = entity.surname,
+  eventDescription = entity.eventDescription,
+  eventTime = entity.eventTime,
+)
 
 fun CaseloadResult.transformToModelFoundProbationRecord(
   licence: Licence?,
@@ -471,33 +457,31 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): ModelFoundProbationRecord {
-  return ModelFoundProbationRecord(
-    kind = licence?.kind,
-    name = "${name.forename} ${name.surname}".convertToTitleCase(),
-    crn = licence?.crn,
-    nomisId = licence?.nomsId,
-    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
-    comStaffCode = manager.code,
-    teamName = manager.team.description ?: licence?.probationTeamDescription,
-    releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate,
-    licenceId = licence?.id,
-    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
-    licenceType = licence?.typeCode,
-    licenceStatus = licence?.statusCode,
-    isOnProbation = licence?.statusCode?.isOnProbation(),
-    hardStopDate = hardStopDate,
-    hardStopWarningDate = hardStopWarningDate,
-    isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
-    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-    releaseDateLabel = if (licence?.actualReleaseDate != null) "Confirmed release date" else "CRD",
-    isReviewNeeded = when (licence) {
-      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-      else -> false
-    },
-  )
-}
+): ModelFoundProbationRecord = ModelFoundProbationRecord(
+  kind = licence?.kind,
+  name = "${name.forename} ${name.surname}".convertToTitleCase(),
+  crn = licence?.crn,
+  nomisId = licence?.nomsId,
+  comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
+  comStaffCode = manager.code,
+  teamName = manager.team.description ?: licence?.probationTeamDescription,
+  releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate,
+  licenceId = licence?.id,
+  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+  licenceType = licence?.typeCode,
+  licenceStatus = licence?.statusCode,
+  isOnProbation = licence?.statusCode?.isOnProbation(),
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  releaseDateLabel = if (licence?.actualReleaseDate != null) "Confirmed release date" else "CRD",
+  isReviewNeeded = when (licence) {
+    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+    else -> false
+  },
+)
 
 fun CaseloadResult.transformToUnstartedRecord(
   releaseDate: LocalDate?,
@@ -509,29 +493,27 @@ fun CaseloadResult.transformToUnstartedRecord(
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
   releaseDateLabel: String,
-): ModelFoundProbationRecord {
-  return ModelFoundProbationRecord(
-    kind = null,
-    name = "${name.forename} ${name.surname}".convertToTitleCase(),
-    crn = identifiers.crn,
-    nomisId = identifiers.noms,
-    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
-    comStaffCode = manager.code,
-    teamName = manager.team.description,
-    releaseDate = releaseDate,
-    licenceId = null,
-    licenceType = licenceType,
-    licenceStatus = licenceStatus,
-    isOnProbation = false,
-    hardStopDate = hardStopDate,
-    hardStopWarningDate = hardStopWarningDate,
-    isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
-    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-    releaseDateLabel = releaseDateLabel,
-    isReviewNeeded = false,
-  )
-}
+): ModelFoundProbationRecord = ModelFoundProbationRecord(
+  kind = null,
+  name = "${name.forename} ${name.surname}".convertToTitleCase(),
+  crn = identifiers.crn,
+  nomisId = identifiers.noms,
+  comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
+  comStaffCode = manager.code,
+  teamName = manager.team.description,
+  releaseDate = releaseDate,
+  licenceId = null,
+  licenceType = licenceType,
+  licenceStatus = licenceStatus,
+  isOnProbation = false,
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  releaseDateLabel = releaseDateLabel,
+  isReviewNeeded = false,
+)
 
 fun Licence.getUpdatedByFullName(): String? {
   val staffMember = this.updatedBy
@@ -563,57 +545,55 @@ fun transformToApprovalLicenceSummary(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): LicenceSummaryApproverView {
-  return LicenceSummaryApproverView(
-    licenceId = licence.id,
-    forename = licence.forename,
-    surname = licence.surname,
-    dateOfBirth = licence.dateOfBirth,
-    licenceStatus = licence.statusCode,
-    kind = licence.kind,
-    licenceType = licence.typeCode,
-    nomisId = licence.nomsId,
-    crn = licence.crn,
-    bookingId = licence.bookingId,
-    prisonCode = licence.prisonCode,
-    prisonDescription = licence.prisonDescription,
-    probationAreaCode = licence.probationAreaCode,
-    probationAreaDescription = licence.probationAreaDescription,
-    probationPduCode = licence.probationPduCode,
-    probationPduDescription = licence.probationPduDescription,
-    probationLauCode = licence.probationLauCode,
-    probationLauDescription = licence.probationLauDescription,
-    probationTeamCode = licence.probationTeamCode,
-    probationTeamDescription = licence.probationTeamDescription,
-    comUsername = licence.responsibleCom!!.username,
-    conditionalReleaseDate = licence.conditionalReleaseDate,
-    actualReleaseDate = licence.actualReleaseDate,
-    sentenceStartDate = licence.sentenceStartDate,
-    sentenceEndDate = licence.sentenceEndDate,
-    licenceStartDate = licence.licenceStartDate,
-    licenceExpiryDate = licence.licenceExpiryDate,
-    topupSupervisionStartDate = licence.topupSupervisionStartDate,
-    topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
-    postRecallReleaseDate = licence.postRecallReleaseDate,
-    dateCreated = licence.dateCreated,
-    submittedDate = licence.submittedDate,
-    approvedDate = licence.approvedDate,
-    approvedByName = licence.approvedByName,
-    licenceVersion = licence.licenceVersion,
-    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
-    isReviewNeeded = when (licence) {
-      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-      else -> false
-    },
-    updatedByFullName = licence.getUpdatedByFullName(),
-    submittedByFullName = licence.getSubmittedByFullName(),
-    hardStopDate = hardStopDate,
-    hardStopWarningDate = hardStopWarningDate,
-    isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
-    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-  )
-}
+): LicenceSummaryApproverView = LicenceSummaryApproverView(
+  licenceId = licence.id,
+  forename = licence.forename,
+  surname = licence.surname,
+  dateOfBirth = licence.dateOfBirth,
+  licenceStatus = licence.statusCode,
+  kind = licence.kind,
+  licenceType = licence.typeCode,
+  nomisId = licence.nomsId,
+  crn = licence.crn,
+  bookingId = licence.bookingId,
+  prisonCode = licence.prisonCode,
+  prisonDescription = licence.prisonDescription,
+  probationAreaCode = licence.probationAreaCode,
+  probationAreaDescription = licence.probationAreaDescription,
+  probationPduCode = licence.probationPduCode,
+  probationPduDescription = licence.probationPduDescription,
+  probationLauCode = licence.probationLauCode,
+  probationLauDescription = licence.probationLauDescription,
+  probationTeamCode = licence.probationTeamCode,
+  probationTeamDescription = licence.probationTeamDescription,
+  comUsername = licence.responsibleCom!!.username,
+  conditionalReleaseDate = licence.conditionalReleaseDate,
+  actualReleaseDate = licence.actualReleaseDate,
+  sentenceStartDate = licence.sentenceStartDate,
+  sentenceEndDate = licence.sentenceEndDate,
+  licenceStartDate = licence.licenceStartDate,
+  licenceExpiryDate = licence.licenceExpiryDate,
+  topupSupervisionStartDate = licence.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+  postRecallReleaseDate = licence.postRecallReleaseDate,
+  dateCreated = licence.dateCreated,
+  submittedDate = licence.submittedDate,
+  approvedDate = licence.approvedDate,
+  approvedByName = licence.approvedByName,
+  licenceVersion = licence.licenceVersion,
+  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+  isReviewNeeded = when (licence) {
+    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+    else -> false
+  },
+  updatedByFullName = licence.getUpdatedByFullName(),
+  submittedByFullName = licence.getSubmittedByFullName(),
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+)
 
 fun PrisonerSearchPrisoner.toPrisoner() = Prisoner(
   prisonerNumber = this.prisonerNumber,
@@ -625,6 +605,43 @@ fun PrisonerSearchPrisoner.toPrisoner() = Prisoner(
   middleNames = this.middleNames,
   lastName = this.lastName,
   dateOfBirth = this.dateOfBirth,
+  status = this.status,
+  prisonId = this.prisonId,
+  locationDescription = this.locationDescription,
+  prisonName = this.prisonName,
+  legalStatus = this.legalStatus,
+  imprisonmentStatus = this.imprisonmentStatus,
+  imprisonmentStatusDescription = this.imprisonmentStatusDescription,
+  mostSeriousOffence = this.mostSeriousOffence,
+  recall = this.recall,
+  indeterminateSentence = this.indeterminateSentence,
+  sentenceStartDate = this.sentenceStartDate,
+  releaseDate = this.releaseDate,
+  confirmedReleaseDate = this.confirmedReleaseDate,
+  sentenceExpiryDate = this.sentenceExpiryDate,
+  licenceExpiryDate = this.licenceExpiryDate,
+  homeDetentionCurfewEligibilityDate = this.homeDetentionCurfewEligibilityDate,
+  homeDetentionCurfewActualDate = this.homeDetentionCurfewActualDate,
+  homeDetentionCurfewEndDate = this.homeDetentionCurfewEndDate,
+  topupSupervisionStartDate = this.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
+  paroleEligibilityDate = this.paroleEligibilityDate,
+  postRecallReleaseDate = this.postRecallReleaseDate,
+  conditionalReleaseDate = this.conditionalReleaseDate,
+  actualParoleDate = this.actualParoleDate,
+  releaseOnTemporaryLicenceDate = this.releaseOnTemporaryLicenceDate,
+)
+
+fun Prisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
+  prisonerNumber = this.prisonerNumber!!,
+  pncNumber = this.pncNumber,
+  croNumber = this.croNumber,
+  bookingId = this.bookingId,
+  bookNumber = this.bookNumber,
+  firstName = this.firstName!!,
+  middleNames = this.middleNames,
+  lastName = this.lastName!!,
+  dateOfBirth = this.dateOfBirth!!,
   status = this.status,
   prisonId = this.prisonId,
   locationDescription = this.locationDescription,

@@ -22,16 +22,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
 
 @Tag(
   name = Tags.CASELOAD,
@@ -43,6 +40,7 @@ class CaseloadController(
   val caseloadService: CaseloadService,
   val approverCaseloadService: ApproverCaseloadService,
   val caCaseloadService: CaCaseloadService,
+  val comCaseloadService: ComCaseloadService,
 ) {
 
   @PostMapping("/prisoner-search/prisoner-numbers")
@@ -140,8 +138,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun findByNumber(@Parameter(required = true) @PathVariable nomsId: String) =
-    caseloadService.getPrisoner(nomsId)
+  fun findByNumber(@Parameter(required = true) @PathVariable nomsId: String) = caseloadService.getPrisoner(nomsId)
 
   @PostMapping("/prisoner-search/release-date-by-prison")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -187,8 +184,12 @@ class CaseloadController(
   @Deprecated("use paginated version")
   fun findByReleaseDate(
     @Parameter(required = true) @Valid @RequestBody criteria: ReleaseDateSearch,
-  ) =
-    caseloadService.getPrisonersByReleaseDate(criteria.earliestReleaseDate!!, criteria.latestReleaseDate!!, criteria.prisonIds!!, page = 0).content
+  ): List<CaseloadItem> = caseloadService.getPrisonersByReleaseDate(
+    criteria.earliestReleaseDate!!,
+    criteria.latestReleaseDate!!,
+    criteria.prisonIds!!,
+    page = 0,
+  ).content
 
   @PostMapping("/release-date-by-prison")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -233,8 +234,16 @@ class CaseloadController(
   )
   fun findByReleaseDatePaginated(
     @Parameter(required = true) @Valid @RequestBody criteria: ReleaseDateSearch,
-    @Parameter(description = "page of results to return (0 indexed), defaults to first page", required = false) @Valid @RequestParam(value = "page") page: Int = 0,
-  ) = caseloadService.getPrisonersByReleaseDate(criteria.earliestReleaseDate!!, criteria.latestReleaseDate!!, criteria.prisonIds!!, page)
+    @Parameter(
+      description = "page of results to return (0 indexed), defaults to first page",
+      required = false,
+    ) @Valid @RequestParam(value = "page") page: Int = 0,
+  ): Page<CaseloadItem> = caseloadService.getPrisonersByReleaseDate(
+    criteria.earliestReleaseDate!!,
+    criteria.latestReleaseDate!!,
+    criteria.prisonIds!!,
+    page,
+  )
 
   @PostMapping("/caseload/prison-approver/approval-needed")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -418,6 +427,182 @@ class CaseloadController(
     @Parameter(required = true) @Valid @RequestBody caCaseloadSearch: CaCaseloadSearch,
   ) =
     caCaseloadService.getProbationOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
+
+  @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns the create caseload for a member of staff",
+    description = "Returns an enriched list of cases which require a licence to be created",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases that require a licence to be created",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) =
+    comCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
+
+  @PostMapping("/caseload/com/team/create-case-load")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns the create caseload for a team",
+    description = "Returns an enriched list of cases which require a licence to be created for a team",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases that require a licence to be created for a team",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ManagedCase> =
+    comCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
+
+  @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns the vary caseload for a member of staff",
+    description = "Returns an enriched list of cases which can have a variation created for a member of staff",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases that can have a variation created",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getStaffVaryCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) =
+    comCaseloadService.getStaffVaryCaseload(deliusStaffIdentifier)
+
+  @PostMapping("/caseload/com/team/vary-case-load")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns the vary caseload for a team",
+    description = "Returns an enriched list of cases which can have a variation created for a team",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases that can have a variation created for a team",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ManagedCase> =
+    comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())

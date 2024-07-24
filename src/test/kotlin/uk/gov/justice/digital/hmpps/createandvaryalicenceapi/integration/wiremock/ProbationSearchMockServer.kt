@@ -191,7 +191,7 @@ class ProbationSearchMockServer : WireMockServer(8094) {
     )
   }
 
-  fun stubSearchForPersonByNomsNumberForGetApprovalCaseload(nomsNumbers: List<String> = listOf("A1234AB", "A1234BC", "B1234BC")) {
+  fun stubSearchForPersonByNomsNumberForGetApprovalCaseload() {
     stubFor(
       post(urlEqualTo("/nomsNumbers"))
         .willReturn(
@@ -262,7 +262,7 @@ class ProbationSearchMockServer : WireMockServer(8094) {
     )
   }
 
-  fun stubSearchForPersonByNomsNumberForGetRecentlyApprovedCaseload(nomsNumbers: List<String> = listOf("B1234BB", "F2504MG")) {
+  fun stubSearchForPersonByNomsNumberForGetRecentlyApprovedCaseload() {
     stubFor(
       post(urlEqualTo("/nomsNumbers"))
         .willReturn(
@@ -311,6 +311,74 @@ class ProbationSearchMockServer : WireMockServer(8094) {
                 ]
               """.trimMargin(),
             ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetOffendersByCrn(response: String? = null) {
+    val offendersJson = response ?: """[
+                {
+                  "offenderId": 1,
+                  "otherIds": {
+                    "crn": "X12348",
+                    "croNumber": null,
+                    "pncNumber": null,
+                    "nomsNumber": "AB1234E"
+                  },
+                  "offenderManagers": []
+                },
+                {
+                  "offenderId": 3,
+                  "otherIds": {
+                    "crn": "X12349",
+                    "croNumber": null,
+                    "pncNumber": null,
+                    "nomsNumber": "AB1234F"
+                  },
+                  "offenderManagers": []
+                },
+                {
+                  "offenderId": 5,
+                  "otherIds": {
+                    "crn": "X12350",
+                    "croNumber": null,
+                    "pncNumber": null,
+                    "nomsNumber": "AB1234G"
+                  },
+                  "offenderManagers": []
+                },
+                {
+                  "offenderId": 6,
+                  "otherIds": {
+                    "crn": "X12351",
+                    "croNumber": null,
+                    "pncNumber": null,
+                    "nomsNumber": "AB1234H"
+                  },
+                  "offenderManagers": []
+                },
+                {
+                  "offenderId": 7,
+                  "otherIds": {
+                    "crn": "X12352",
+                    "croNumber": null,
+                    "pncNumber": null,
+                    "nomsNumber": "AB1234I"
+                  },
+                  "offenderManagers": []
+                }
+              ]
+      
+    """.trimIndent()
+    stubFor(
+      post(urlEqualTo("/crns"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          )
+            .withBody(offendersJson)
+            .withStatus(200),
         ),
     )
   }
