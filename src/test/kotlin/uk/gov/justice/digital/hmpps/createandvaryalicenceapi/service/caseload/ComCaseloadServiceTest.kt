@@ -12,19 +12,13 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -302,23 +296,23 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12349",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12350",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12351",
-        staff = StaffHuman(forenames = null, surname = null, unallocated = true),
+        staff = StaffDetail(forenames = null, surname = null, code = "X1234", unallocated = true),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12352",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
     )
 
@@ -440,11 +434,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12349",
-        staff = StaffHuman(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
+        staff = StaffDetail(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
       ),
     )
 
@@ -510,11 +504,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12349",
-        staff = StaffHuman(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
+        staff = StaffDetail(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
       ),
     )
 
@@ -573,7 +567,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(code = "X1234", forenames = "Joe", surname = "Bloggs"),
+        staff = StaffDetail(code = "X1234", forenames = "Joe", surname = "Bloggs"),
       ),
     )
 
@@ -652,7 +646,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
     )
 
@@ -730,11 +724,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
       ManagedOffenderCrn(
         offenderCrn = "X12349",
-        staff = StaffHuman(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
+        staff = StaffDetail(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
       ),
     )
 
@@ -843,7 +837,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       ),
     )
 
@@ -927,7 +921,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = Array(600) {
       ManagedOffenderCrn(
         offenderCrn = "X12348",
-        staff = StaffHuman(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
       )
     }.asList()
 
