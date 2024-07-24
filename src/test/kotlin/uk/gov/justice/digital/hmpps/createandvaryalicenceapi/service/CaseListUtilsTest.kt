@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isBreachOfTopUpSupervision
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isParoleEligible
@@ -148,7 +148,7 @@ class CaseListUtilsTest {
     val twoDayFromNow = LocalDate.now(clock).plusDays(2)
 
     val managedCase = ManagedCase(
-      nomisRecord = PrisonerSearchPrisoner(
+      nomisRecord = Prisoner(
         recall = true,
         conditionalReleaseDate = oneDayFromNow,
         postRecallReleaseDate = twoDayFromNow,

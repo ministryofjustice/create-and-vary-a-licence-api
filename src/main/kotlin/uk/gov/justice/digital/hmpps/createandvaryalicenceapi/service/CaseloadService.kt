@@ -35,7 +35,7 @@ class CaseloadService(
   private fun PrisonerSearchPrisoner.toCaseloadItem(): CaseloadItem {
     val sentenceDateHolder = this.toSentenceDateHolder()
     return CaseloadItem(
-      prisoner = this,
+      prisoner = this.toPrisoner(),
       cvl = CvlFields(
         licenceType = LicenceType.getLicenceType(this),
         hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),

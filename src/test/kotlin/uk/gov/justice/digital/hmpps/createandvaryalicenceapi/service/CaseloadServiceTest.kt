@@ -15,9 +15,9 @@ import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -63,7 +63,7 @@ class CaseloadServiceTest {
           isDueForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
-        prisoner = PrisonerSearchPrisoner(
+        prisoner = Prisoner(
           prisonerNumber = "A1234AA",
           pncNumber = null,
           croNumber = null,
@@ -118,7 +118,7 @@ class CaseloadServiceTest {
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
-        prisoner = PrisonerSearchPrisoner(
+        prisoner = Prisoner(
           prisonerNumber = "A1234AA",
           pncNumber = null,
           croNumber = null,
@@ -180,7 +180,7 @@ class CaseloadServiceTest {
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
         ),
-        prisoner = PrisonerSearchPrisoner(
+        prisoner = Prisoner(
           prisonerNumber = "A1234AA",
           pncNumber = null,
           croNumber = null,

@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -38,7 +37,7 @@ data class CvlFields(
 @Schema(description = "An item in the caseload")
 data class CaseloadItem(
   @Schema(description = "Details about a prisoner")
-  val prisoner: PrisonerSearchPrisoner,
+  val prisoner: Prisoner,
   @Schema(description = "Additional CVL specific information including derived fields")
   val cvl: CvlFields,
 )
