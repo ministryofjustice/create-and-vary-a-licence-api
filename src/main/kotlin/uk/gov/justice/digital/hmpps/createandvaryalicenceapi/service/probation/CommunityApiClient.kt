@@ -48,4 +48,26 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
     return communityApiResponse
       ?: error("Unexpected null response from API")
   }
+
+  fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffenderCrn> {
+    val communityApiResponse = communityApiClient
+      .get()
+      .uri("/secure/staff/staffIdentifier/$staffIdentifier/caseload/managedOffenders", staffIdentifier)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
+      .block()
+    return communityApiResponse ?: error("Unexpected null response from community API get staff caseload")
+  }
+
+  fun getManagedOffendersByTeam(teamCode: String): List<ManagedOffenderCrn> {
+    val communityApiResponse = communityApiClient
+      .get()
+      .uri("/secure/team/$teamCode/caseload/managedOffenders")
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
+      .block()
+    return communityApiResponse ?: error("Unexpected null response from community API get staff caseload")
+  }
 }

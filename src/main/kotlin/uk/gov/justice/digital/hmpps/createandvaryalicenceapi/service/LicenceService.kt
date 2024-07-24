@@ -462,7 +462,10 @@ class LicenceService(
         activatedLicences,
         "Licence automatically deactivated as the approved licence version was activated",
       )
-      inactivateTimedOutLicenceVersions(activatedLicences, "Licence automatically deactivated as the approved licence version was activated")
+      inactivateTimedOutLicenceVersions(
+        activatedLicences,
+        "Licence automatically deactivated as the approved licence version was activated",
+      )
     }
   }
 

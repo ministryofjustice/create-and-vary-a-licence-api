@@ -38,15 +38,27 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
       .block() ?: emptyList()
   }
 
-  fun searchPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>, page: Int = 0): Page<PrisonerSearchPrisoner> {
+  fun searchPrisonersByReleaseDate(
+    earliestReleaseDate: LocalDate,
+    latestReleaseDate: LocalDate,
+    prisonIds: Set<String>,
+    page: Int = 0,
+  ): Page<PrisonerSearchPrisoner> {
     if (prisonIds.isEmpty()) return Page.empty()
-    return prisonerSearchApiWebClient
+    val result = prisonerSearchApiWebClient
       .post()
       .uri("/prisoner-search/release-date-by-prison?size=2000&page=$page")
       .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(ReleaseDateSearch(earliestReleaseDate = earliestReleaseDate, latestReleaseDate = latestReleaseDate, prisonIds = prisonIds))
+      .bodyValue(
+        ReleaseDateSearch(
+          earliestReleaseDate = earliestReleaseDate,
+          latestReleaseDate = latestReleaseDate,
+          prisonIds = prisonIds,
+        ),
+      )
       .retrieve()
       .bodyToMono(typeReference<PageResponse<PrisonerSearchPrisoner>>())
       .block()?.toPage() ?: Page.empty()
+    return result
   }
 }

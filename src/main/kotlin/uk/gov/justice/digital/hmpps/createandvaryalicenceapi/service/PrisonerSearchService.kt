@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -70,6 +71,14 @@ class PrisonerSearchService(
     return reasons + hdcReasonIfPresent
   }
 
+  fun getIneligibilityReasons(prisoner: Prisoner): List<String> {
+    val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
+    val reasons = eligibilityService.getIneligibilityReasons(prisonerSearchPrisoner)
+    val hdcReasonIfPresent =
+      if (listOf(prisonerSearchPrisoner).findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
+    return reasons + hdcReasonIfPresent
+  }
+
   private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
       licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
@@ -112,7 +121,10 @@ class PrisonerSearchService(
   ): FoundProbationRecord? =
     when {
       licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
-      prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(licence)
+      prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(
+        licence,
+      )
+
       else -> null
     }
 

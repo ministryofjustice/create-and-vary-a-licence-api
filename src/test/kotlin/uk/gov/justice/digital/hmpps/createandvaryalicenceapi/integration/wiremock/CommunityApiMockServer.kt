@@ -134,7 +134,7 @@ class CommunityApiMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetStaffDetailsByUsername(usernames: List<String> = listOf("Test1NPS")) {
+  fun stubGetStaffDetailsByUsername() {
     stubFor(
       post(urlEqualTo("/secure/staff/list"))
         .willReturn(
@@ -206,6 +206,123 @@ class CommunityApiMockServer : WireMockServer(8093) {
             """.trimIndent(),
           ).withStatus(200),
         ),
+    )
+  }
+
+  fun stubGetManagedOffenders(staffIdentifier: Long = 1L) {
+    stubFor(
+      get(urlEqualTo("/secure/staff/staffIdentifier/$staffIdentifier/caseload/managedOffenders")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """
+            [
+              {
+                "offenderCrn": "X12348",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": "X1234",
+                  "forenames": "Joe",
+                  "surname": "Bloggs",
+                  "unallocated": null
+                },
+                "teamIdentifier": null,
+                "team": null
+              },
+              {
+                "offenderCrn": "X12349",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": "X1234",
+                  "forenames": "Joe",
+                  "surname": "Bloggs",
+                  "unallocated": null
+                },
+                "teamIdentifier": null,
+                "team": null
+              },
+              {
+                "offenderCrn": "X12350",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": "X1234",
+                  "forenames": "Joe",
+                  "surname": "Bloggs",
+                  "unallocated": null
+                },
+                "teamIdentifier": null,
+                "team": null
+              },
+              {
+                "offenderCrn": "X12351",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": null,
+                  "forenames": null,
+                  "surname": null,
+                  "unallocated": true
+                },
+                "teamIdentifier": null,
+                "team": null
+              },
+              {
+                "offenderCrn": "X12352",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": "X1234",
+                  "forenames": "Joe",
+                  "surname": "Bloggs",
+                  "unallocated": null
+                },
+                "teamIdentifier": null,
+                "team": null
+              }
+            ]
+          """.trimIndent(),
+        ).withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetManagedOffendersByTeam(teamCode: String) {
+    stubFor(
+      get(urlEqualTo("/secure/team/$teamCode/caseload/managedOffenders")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """
+            [
+              {
+                "offenderCrn": "X12348",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": "X1234",
+                  "forenames": "Joe",
+                  "surname": "Bloggs",
+                  "unallocated": null
+                },
+                "teamIdentifier": null,
+                "team": null
+              },
+              {
+                "offenderCrn": "X12349",
+                "allocationDate": null,
+                "staffIdentifier": null,
+                "staff": {
+                  "code": "X54321",
+                  "forenames": "Sherlock",
+                  "surname": "Holmes",
+                  "unallocated": null
+                },
+                "teamIdentifier": null,
+                "team": null
+              }
+            ]
+          """.trimIndent(),
+        ).withStatus(200),
+      ),
     )
   }
 }
