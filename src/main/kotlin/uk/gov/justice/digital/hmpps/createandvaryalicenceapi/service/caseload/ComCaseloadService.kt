@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.isBreachOfTopUpSupervision
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.isRecall
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -76,7 +75,7 @@ class ComCaseloadService(
     return caseload
   }
 
-  fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
+  private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
     val crns = caseload.map { c -> c.offenderCrn }
     val batchedCrns = crns.chunked(PROBATION_SEARCH_BATCH_SIZE)
     val batchedOffenders = batchedCrns.map { batch -> probationSearchApiClient.getOffendersByCrn(batch) }
@@ -87,7 +86,7 @@ class ComCaseloadService(
     }
   }
 
-  fun pairDeliusRecordsWithNomis(managedOffenders: List<DeliusRecord>): List<ManagedCase> {
+  private fun pairDeliusRecordsWithNomis(managedOffenders: List<DeliusRecord>): List<ManagedCase> {
     val caseloadNomisIds = managedOffenders.filter { offender -> offender.offenderDetail.otherIds.nomsNumber != null }
       .map { offender -> offender.offenderDetail.otherIds.nomsNumber }
 
@@ -109,7 +108,7 @@ class ComCaseloadService(
     return records.filterNotNull()
   }
 
-  fun filterOffendersEligibleForLicence(cases: List<ManagedCase>): List<ManagedCase> {
+  private fun filterOffendersEligibleForLicence(cases: List<ManagedCase>): List<ManagedCase> {
     val eligibleOffenders = cases.filter { case ->
       case.nomisRecord?.prisonerNumber != null &&
         prisonerSearchService.getIneligibilityReasons(case.nomisRecord)
@@ -127,11 +126,7 @@ class ComCaseloadService(
       val licences = existingLicences.filter { licence -> licence.nomisId == case.nomisRecord?.prisonerNumber }
       if (licences.isNotEmpty()) {
         updatedCase = case.copy(
-          licences = licences.map { licence ->
-            val updatedLicence =
-              licence.copy(licenceStatus = if (licence.isReviewNeeded) LicenceStatus.REVIEW_NEEDED else licence.licenceStatus)
-            transformLicenceSummaryToCaseLoadSummary(updatedLicence)
-          },
+          licences = licences.map { transformLicenceSummaryToCaseLoadSummary(it) },
         )
       } else {
         // No licences present for this offender - determine how to show them in case lists
@@ -140,13 +135,7 @@ class ComCaseloadService(
 
         // Default status (if not overridden below) will show the case as clickable on case lists
         var licenceStatus = LicenceStatus.NOT_STARTED
-        if (case.nomisRecord.isBreachOfTopUpSupervision()) {
-          // Imprisonment status indicates a breach of top up supervision order - not clickable (yet)
-          licenceStatus = LicenceStatus.OOS_BOTUS
-        } else if (case.nomisRecord.isRecall()) {
-          // Offender is subject to an active recall - not clickable
-          licenceStatus = LicenceStatus.OOS_RECALL
-        } else if (case.cvlFields.isInHardStopPeriod) {
+        if (case.cvlFields.isInHardStopPeriod) {
           licenceStatus = LicenceStatus.TIMED_OUT
         }
 
@@ -186,7 +175,7 @@ class ComCaseloadService(
     }
   }
 
-  fun transformLicenceSummaryToCaseLoadSummary(licenceSummary: LicenceSummary): CaseLoadLicenceSummary =
+  private fun transformLicenceSummaryToCaseLoadSummary(licenceSummary: LicenceSummary): CaseLoadLicenceSummary =
     CaseLoadLicenceSummary(
       licenceId = licenceSummary.licenceId,
       licenceStatus = licenceSummary.licenceStatus,
@@ -206,7 +195,7 @@ class ComCaseloadService(
       isReviewNeeded = licenceSummary.isReviewNeeded,
     )
 
-  fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
+  private fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
     managedOffenders.filter { offender ->
       offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
     }.filter { offender ->
@@ -215,10 +204,8 @@ class ComCaseloadService(
         LocalDate.now().minusDays(1),
       ) ?: false
     }.filter { offender ->
-      var licenceInValidState = offender.licences?.any { licence ->
+      val validLicenceStatus = offender.licences?.any { licence ->
         licence.licenceStatus in listOf(
-          LicenceStatus.OOS_RECALL,
-          LicenceStatus.OOS_BOTUS,
           LicenceStatus.NOT_STARTED,
           LicenceStatus.IN_PROGRESS,
           LicenceStatus.SUBMITTED,
@@ -226,12 +213,7 @@ class ComCaseloadService(
           LicenceStatus.TIMED_OUT,
         )
       }
-
-      if (licenceInValidState == false) {
-        licenceInValidState = offender.nomisRecord.isBreachOfTopUpSupervision() || offender.nomisRecord.isRecall()
-      }
-
-      licenceInValidState ?: false
+      validLicenceStatus == true && !offender.nomisRecord.isBreachOfTopUpSupervision()
     }
 
   private fun mapResponsibleComsToCasesWithExclusions(caseload: List<ManagedCase>): List<ManagedCase> {

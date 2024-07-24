@@ -195,15 +195,11 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    val caseloadItemE = createCaseloadItem("AB1234E", tenDaysFromNow)
-    val caseloadItemF = createCaseloadItem("AB1234F", tenDaysFromNow)
-    val caseloadItemG = createCaseloadItem("AB1234G", tenDaysFromNow)
-    val caseloadItemH = createCaseloadItem("AB1234H", tenDaysFromNow)
     val caseloadItems = listOf(
-      caseloadItemE.copy(prisoner = caseloadItemE.prisoner.copy(paroleEligibilityDate = yesterday)),
-      caseloadItemF.copy(prisoner = caseloadItemF.prisoner.copy(paroleEligibilityDate = tenDaysFromNow)),
-      caseloadItemG.copy(prisoner = caseloadItemG.prisoner.copy(legalStatus = "DEAD")),
-      caseloadItemH.copy(prisoner = caseloadItemH.prisoner.copy(indeterminateSentence = true)),
+      createCaseloadItem("AB1234E", tenDaysFromNow, paroleEligibilityDate = yesterday),
+      createCaseloadItem("AB1234F", tenDaysFromNow, paroleEligibilityDate = tenDaysFromNow),
+      createCaseloadItem("AB1234G", tenDaysFromNow, legalStatus = "DEAD"),
+      createCaseloadItem("AB1234H", tenDaysFromNow, indeterminateSentence = true),
       createCaseloadItem("AB1234I", tenDaysFromNow),
       createCaseloadItem("AB1234J", tenDaysFromNow),
       createCaseloadItem("AB1234K", tenDaysFromNow, bookingId = "123"),
@@ -215,7 +211,6 @@ class ComCaseloadServiceTest {
         postRecallReleaseDate = nineDaysFromNow,
         recall = true,
       ),
-      // This case tests that recalls are NOT overridden if the PRRD > the conditionalReleaseDate - so OOS_RECALL
       createCaseloadItem(
         prisonerNumber = "AB1234N",
         conditionalReleaseDate = tenDaysFromNow,
@@ -239,10 +234,11 @@ class ComCaseloadServiceTest {
 
     whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is eligible for parole"))
     whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[2].prisoner)).thenReturn(listOf("has incorrect legal status"))
+    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[9].prisoner)).thenReturn(listOf("is a recall case"))
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
-    assertThat(caseload).hasSize(7)
+    assertThat(caseload).hasSize(6)
     verifyCase(
       case = caseload[0],
       expectedCrn = "X12348",
@@ -275,19 +271,19 @@ class ComCaseloadServiceTest {
         crn = "X12352",
       ),
     )
-    verifyCase(
-      case = caseload[3],
-      expectedCrn = "X12353",
-      expectedPrisonerNumber = "AB1234N",
-      expectedLicenceStatus = LicenceStatus.OOS_RECALL,
-      expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
-      expectedPostRecallReleaseDate = elevenDaysFromNow,
-      expectedRecall = true,
-    )
+    // verifyCase(
+    //   case = caseload[3],
+    //   expectedCrn = "X12353",
+    //   expectedPrisonerNumber = "AB1234N",
+    //   expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+    //   expectedLicenceType = LicenceType.PSS,
+    //   expectedConditionalReleaseDate = tenDaysFromNow,
+    //   expectedPostRecallReleaseDate = elevenDaysFromNow,
+    //   expectedRecall = true,
+    // )
 
     verifyCase(
-      case = caseload[4],
+      case = caseload[3],
       expectedCrn = "X12354",
       expectedPrisonerNumber = "AB1234P",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -297,7 +293,7 @@ class ComCaseloadServiceTest {
       expectedRecall = true,
     )
     verifyCase(
-      case = caseload[5],
+      case = caseload[4],
       expectedCrn = "X12355",
       expectedPrisonerNumber = "AB1234Q",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -306,7 +302,7 @@ class ComCaseloadServiceTest {
       expectedRecall = true,
     )
     verifyCase(
-      case = caseload[6],
+      case = caseload[5],
       expectedCrn = "X12356",
       expectedPrisonerNumber = "AB1234R",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -314,7 +310,7 @@ class ComCaseloadServiceTest {
       expectedNomisStatus = "INACTIVE TRN",
       expectedConditionalReleaseDate = nineDaysFromNow,
     )
-    assertThat(caseload[6].deliusRecord?.offenderDetail?.otherIds).isEqualTo(
+    assertThat(caseload[5].deliusRecord?.offenderDetail?.otherIds).isEqualTo(
       OtherIds(
         nomsNumber = "AB1234R",
         crn = "X12356",
@@ -584,7 +580,7 @@ class ComCaseloadServiceTest {
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 
     verify(communityApiClient).getManagedOffendersByTeam("team C")
-    assertThat(caseload).hasSize(2)
+    assertThat(caseload).hasSize(1)
     verifyCase(
       case = caseload[0],
       expectedCrn = "X12348",
@@ -598,21 +594,6 @@ class ComCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
     )
 
-    verifyCase(
-      case = caseload[1],
-      expectedCrn = "X12349",
-      expectedPrisonerNumber = "AB1234F",
-      expectedLicenceStatus = LicenceStatus.OOS_BOTUS,
-      expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
-      expectedReleaseDate = tenDaysFromNow,
-      expectedRecall = true,
-      expectedImprisonmentStatus = "BOTUS",
-      expectedProbationPractitioner = ProbationPractitioner(
-        staffCode = "X54321",
-        name = "Sherlock Holmes",
-      ),
-    )
     verify(communityApiClient).getManagedOffendersByTeam("team C")
   }
 
@@ -653,21 +634,6 @@ class ComCaseloadServiceTest {
         ),
       ),
     )
-    println("xxxxxxxxxxx")
-    println(
-      objectMapper.writeValueAsString(
-        listOf(
-          createCaseloadItem(
-            prisonerNumber = "AB1234E",
-            conditionalReleaseDate = tenDaysFromNow,
-            licenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-            status = "ACTIVE IN",
-          ),
-          createCaseloadItem(prisonerNumber = "AB1234F", conditionalReleaseDate = tenDaysFromNow),
-        ),
-      ),
-    )
-    println("xxxxxxxxxxx")
 
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
@@ -777,7 +743,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedNomisStatus = "INACTIVE OUT",
-      expectedLicenceStatus = LicenceStatus.REVIEW_NEEDED,
+      expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedLicenceType = LicenceType.AP,
       expectedConfirmedReleaseDate = tenDaysFromNow,
       expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
@@ -976,7 +942,7 @@ class ComCaseloadServiceTest {
       expectedNomisStatus = "INACTIVE OUT",
       expectedConfirmedReleaseDate = tenDaysFromNow,
       expectedLicenceType = LicenceType.AP,
-      expectedLicenceStatus = LicenceStatus.REVIEW_NEEDED,
+      expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
       expectedComUsername = "sherlockholmes",
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
@@ -1014,6 +980,9 @@ class ComCaseloadServiceTest {
     releaseDate: LocalDate? = null,
     imprisonmentStatus: String? = null,
     confirmedReleaseDate: LocalDate? = null,
+    paroleEligibilityDate: LocalDate? = null,
+    legalStatus: String? = null,
+    indeterminateSentence: Boolean? = false,
   ): CaseloadItem = CaseloadItem(
     prisoner = Prisoner(
       prisonerNumber = prisonerNumber,
@@ -1027,6 +996,9 @@ class ComCaseloadServiceTest {
       releaseDate = releaseDate,
       imprisonmentStatus = imprisonmentStatus,
       confirmedReleaseDate = confirmedReleaseDate,
+      paroleEligibilityDate = paroleEligibilityDate,
+      legalStatus = legalStatus,
+      indeterminateSentence = indeterminateSentence,
     ),
     cvl = CvlFields(licenceType = LicenceType.PSS),
   )
