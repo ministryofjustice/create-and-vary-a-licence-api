@@ -383,6 +383,7 @@ class LicenceService(
       is CrdLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> licenceEntity.submit(submitter as PrisonUser)
+      is HdcLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
