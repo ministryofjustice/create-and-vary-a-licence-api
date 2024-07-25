@@ -2910,6 +2910,49 @@ class LicenceServiceTest {
 
       verify(licenceRepository, times(1)).findById(1L)
     }
+
+    @Test
+    fun `submitting a HDC licence`() {
+      val hdcLicence = createHdcLicence()
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+
+      assertThat(licenceCaptor.value)
+        .extracting("id", "kind", "statusCode", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(1L, LicenceKind.HDC, LicenceStatus.SUBMITTED, aCom.username, aCom))
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "eventDescription")
+        .isEqualTo(
+          listOf(
+            1L,
+            LicenceEventType.HDC_SUBMITTED,
+            "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
+          ),
+        )
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            1L,
+            "smills",
+            "X Y",
+            "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
+          ),
+        )
+    }
   }
 
   private companion object {
