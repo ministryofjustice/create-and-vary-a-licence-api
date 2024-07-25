@@ -72,7 +72,7 @@ class CaCaseloadService(
     )
 
     if (eligibleExistingLicences.isEmpty() && eligibleNotStartedLicences.isEmpty()) {
-      return CaCaseLoad(cases = emptyList(), showAttentionNeededTab = false)
+      return CaCaseLoad(cases = emptyList())
     }
 
     val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
@@ -99,7 +99,7 @@ class CaCaseloadService(
     )
 
     if (licences.isEmpty()) {
-      return CaCaseLoad(cases = emptyList(), showAttentionNeededTab = false)
+      return CaCaseLoad(cases = emptyList())
     }
 
     val formattedLicences = formatReleasedLicences(licences)
@@ -213,12 +213,10 @@ class CaCaseloadService(
   }
 
   private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
-    val showAttentionNeededTab = cases.any { it.tabType == CaViewCasesTab.ATTENTION_NEEDED }
     val searchResults = applySearch(searchString, cases)
     val sortResults = applySort(searchResults, view)
     return CaCaseLoad(
       cases = sortResults,
-      showAttentionNeededTab,
     )
   }
 

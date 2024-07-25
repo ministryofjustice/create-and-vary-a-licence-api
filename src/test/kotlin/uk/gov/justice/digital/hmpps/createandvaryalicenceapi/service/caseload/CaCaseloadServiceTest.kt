@@ -258,7 +258,6 @@ class CaCaseloadServiceTest {
                 probationPractitioner = ProbationPractitioner(staffUsername = "Andy"),
               ),
             ),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -274,7 +273,6 @@ class CaCaseloadServiceTest {
                 probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
               ),
             ),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -323,7 +321,6 @@ class CaCaseloadServiceTest {
                 ),
               ),
             ),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -394,7 +391,6 @@ class CaCaseloadServiceTest {
       assertThat(prisonOmuCaseload).isEqualTo(
         CaCaseLoad(
           cases = emptyList(),
-          showAttentionNeededTab = false,
         ),
       )
     }
@@ -493,187 +489,6 @@ class CaCaseloadServiceTest {
               isInHardStopPeriod = false,
             ),
           ),
-          showAttentionNeededTab = false,
-        ),
-      )
-    }
-
-    @Test
-    fun `should return showAttentionNeededTab false along with caseload if there are no attention needed licences`() {
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
-      assertThat(prisonOmuCaseload).isEqualTo(
-        CaCaseLoad(
-          cases = listOf(
-            TestData.caCase().copy(
-              name = "John Cena",
-              probationPractitioner = ProbationPractitioner(
-                staffCode = "AB00001",
-                name = "com user",
-                staffIdentifier = null,
-                staffUsername = null,
-              ),
-              lastWorkedOnBy = "X Y",
-            ),
-            TestData.caCase().copy(
-              licenceId = 2,
-              name = "Smith Cena",
-              prisonerNumber = "A1234AB",
-              probationPractitioner = ProbationPractitioner(
-                staffCode = null,
-                name = null,
-                staffIdentifier = null,
-                staffUsername = "Andy",
-              ),
-              lastWorkedOnBy = "X Y",
-            ),
-          ),
-          showAttentionNeededTab = false,
-        ),
-      )
-    }
-
-    @Test
-    fun `should return showAttentionNeededTab true along with caseload if there are attention needed licences`() {
-      whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
-        listOf(
-          aLicenceSummary.copy(
-            forename = "Steve",
-            surname = "Cena",
-            nomisId = "AB1234E",
-            licenceId = 2,
-            licenceType = LicenceType.AP_PSS,
-            licenceStatus = LicenceStatus.APPROVED,
-            isInHardStopPeriod = false,
-            isDueToBeReleasedInTheNextTwoWorkingDays = false,
-            isDueForEarlyRelease = false,
-          ),
-          aLicenceSummary.copy(
-            forename = "Dave",
-            nomisId = "AB1234G",
-            licenceId = 3,
-            licenceType = LicenceType.AP_PSS,
-            licenceStatus = LicenceStatus.SUBMITTED,
-            isInHardStopPeriod = false,
-            isDueToBeReleasedInTheNextTwoWorkingDays = false,
-            conditionalReleaseDate = twoMonthsFromNow,
-          ),
-        ),
-      )
-
-      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(
-        true,
-      )
-
-      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-        listOf(
-          TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
-              firstName = "Steve",
-              lastName = "Cena",
-              prisonerNumber = "AB1234E",
-              status = "ACTIVE IN",
-              legalStatus = "IMMIGRATION_DETAINEE",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-            cvl = CvlFields(
-              licenceType = LicenceType.AP,
-              isDueForEarlyRelease = false,
-              isInHardStopPeriod = false,
-              isDueToBeReleasedInTheNextTwoWorkingDays = false,
-            ),
-          ),
-          TestData.caseLoadItem().copy(
-            prisoner = Prisoner(
-              firstName = "Dave",
-              lastName = "Cena",
-              prisonerNumber = "AB1234G",
-              conditionalReleaseDate = twoMonthsFromNow,
-              status = "ACTIVE IN",
-              legalStatus = "SENTENCED",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-            cvl = CvlFields(
-              licenceType = LicenceType.AP,
-              isDueForEarlyRelease = false,
-              isInHardStopPeriod = false,
-              isDueToBeReleasedInTheNextTwoWorkingDays = false,
-            ),
-          ),
-        ),
-      )
-
-      whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
-        PageImpl(
-          listOf(
-            aPrisonerSearchPrisoner.copy(
-              firstName = "John",
-              lastName = "Cena",
-              prisonerNumber = "AB1234D",
-              conditionalReleaseDate = null,
-              status = "ACTIVE IN",
-              legalStatus = "IMMIGRATION_DETAINEE",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-            aPrisonerSearchPrisoner.copy(
-              firstName = "Steve",
-              lastName = "Cena",
-              prisonerNumber = "AB1234E",
-              status = "ACTIVE IN",
-              legalStatus = "IMMIGRATION_DETAINEE",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-            aPrisonerSearchPrisoner.copy(
-              firstName = "Phil",
-              lastName = "Cena",
-              prisonerNumber = "AB1234F",
-              conditionalReleaseDate = tenDaysFromNow,
-              status = "ACTIVE IN",
-              legalStatus = "SENTENCED",
-              dateOfBirth = LocalDate.of(1985, 12, 28),
-              mostSeriousOffence = "Robbery",
-            ),
-          ),
-        ),
-      )
-      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
-      assertThat(prisonOmuCaseload).isEqualTo(
-        CaCaseLoad(
-          cases = listOf(
-            TestData.caCase().copy(
-              licenceId = 2,
-              name = "Steve Cena",
-              prisonerNumber = "AB1234E",
-              probationPractitioner = ProbationPractitioner(
-                staffCode = "AB00001",
-                name = "com user",
-                staffIdentifier = null,
-                staffUsername = null,
-              ),
-              licenceStatus = LicenceStatus.APPROVED,
-              tabType = CaViewCasesTab.ATTENTION_NEEDED,
-              nomisLegalStatus = "IMMIGRATION_DETAINEE",
-              lastWorkedOnBy = "X Y",
-            ),
-            TestData.caCase().copy(
-              licenceId = 3,
-              name = "Dave Cena",
-              prisonerNumber = "AB1234G",
-              probationPractitioner = ProbationPractitioner(
-                staffCode = "AB00001",
-                name = "com user",
-                staffIdentifier = null,
-                staffUsername = null,
-              ),
-              licenceStatus = LicenceStatus.SUBMITTED,
-              tabType = CaViewCasesTab.FUTURE_RELEASES,
-              lastWorkedOnBy = "X Y",
-            ),
-          ),
-          showAttentionNeededTab = true,
         ),
       )
     }
@@ -757,7 +572,6 @@ class CaCaseloadServiceTest {
               lastWorkedOnBy = "X Y",
             ),
           ),
-          showAttentionNeededTab = false,
         ),
       )
     }
@@ -791,7 +605,6 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -814,7 +627,6 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -837,7 +649,6 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -860,7 +671,6 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -887,7 +697,6 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -928,7 +737,6 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).isEqualTo(
           CaCaseLoad(
             cases = emptyList(),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -987,7 +795,6 @@ class CaCaseloadServiceTest {
                 lastWorkedOnBy = null,
               ),
             ),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -1046,7 +853,6 @@ class CaCaseloadServiceTest {
                 lastWorkedOnBy = null,
               ),
             ),
-            showAttentionNeededTab = false,
           ),
         )
       }
@@ -1157,7 +963,6 @@ class CaCaseloadServiceTest {
               lastWorkedOnBy = "X Y",
             ),
           ),
-          showAttentionNeededTab = false,
         ),
       )
     }
