@@ -25,6 +25,7 @@ class EligibilityService(
     hasActivePrisonStatus() describedAs "is not active in prison",
     hasReleaseDateInTheFuture() describedAs "release date in past",
     !isRecallCase() describedAs "is a recall case",
+    !isBreachOfTopUpSupervision() describedAs "is breach of top up supervision case",
   )
 
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
@@ -98,5 +99,9 @@ class EligibilityService(
 
     // Trust the Nomis recall flag as a fallback position - the above rules should always override
     return@early it.recall ?: error("${it.prisonerNumber} missing recall flag")
+  }
+
+  private fun isBreachOfTopUpSupervision(): EligibilityCheck = early@{
+    it.imprisonmentStatus == "BOTUS"
   }
 }
