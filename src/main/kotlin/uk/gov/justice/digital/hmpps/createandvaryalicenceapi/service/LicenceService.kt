@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
@@ -123,6 +124,18 @@ class LicenceService(
       )
 
       is HardStopLicence -> toHardstop(
+        licence = licence,
+        earliestReleaseDate = earliestReleaseDate,
+        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+        hardStopDate = releaseDateService.getHardStopDate(licence),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+        conditionSubmissionStatus = conditionSubmissionStatus,
+      )
+
+      is HdcLicence -> toHdc(
         licence = licence,
         earliestReleaseDate = earliestReleaseDate,
         isEligibleForEarlyRelease = isEligibleForEarlyRelease,

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -29,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicence as ModelHardstopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
@@ -349,6 +351,93 @@ fun toCrd(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
+fun toHdc(
+  licence: HdcLicence,
+  earliestReleaseDate: LocalDate?,
+  isEligibleForEarlyRelease: Boolean,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
+  conditionSubmissionStatus: Map<String, Boolean>,
+) = ModelHdcLicence(
+  id = licence.id,
+  typeCode = licence.typeCode,
+  version = licence.version,
+  statusCode = licence.statusCode,
+  nomsId = licence.nomsId,
+  bookingNo = licence.bookingNo,
+  bookingId = licence.bookingId,
+  crn = licence.crn,
+  pnc = licence.pnc,
+  cro = licence.cro,
+  prisonCode = licence.prisonCode,
+  prisonDescription = licence.prisonDescription,
+  prisonTelephone = licence.prisonTelephone,
+  forename = licence.forename,
+  middleNames = licence.middleNames,
+  surname = licence.surname,
+  dateOfBirth = licence.dateOfBirth,
+  conditionalReleaseDate = licence.conditionalReleaseDate,
+  actualReleaseDate = licence.actualReleaseDate,
+  sentenceStartDate = licence.sentenceStartDate,
+  sentenceEndDate = licence.sentenceEndDate,
+  licenceStartDate = licence.licenceStartDate,
+  licenceExpiryDate = licence.licenceExpiryDate,
+  topupSupervisionStartDate = licence.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+  postRecallReleaseDate = licence.postRecallReleaseDate,
+  comUsername = licence.responsibleCom!!.username,
+  comStaffId = licence.responsibleCom!!.staffIdentifier,
+  comEmail = licence.responsibleCom!!.email,
+  responsibleComFullName = with(licence.responsibleCom!!) { "$firstName $lastName" },
+  updatedByFullName = licence.getUpdatedByFullName(),
+  probationAreaCode = licence.probationAreaCode,
+  probationAreaDescription = licence.probationAreaDescription,
+  probationPduCode = licence.probationPduCode,
+  probationPduDescription = licence.probationPduDescription,
+  probationLauCode = licence.probationLauCode,
+  probationLauDescription = licence.probationLauDescription,
+  probationTeamCode = licence.probationTeamCode,
+  probationTeamDescription = licence.probationTeamDescription,
+  appointmentPersonType = licence.appointmentPersonType,
+  appointmentPerson = licence.appointmentPerson,
+  appointmentTime = licence.appointmentTime,
+  appointmentTimeType = licence.appointmentTimeType,
+  appointmentAddress = licence.appointmentAddress,
+  appointmentContact = licence.appointmentContact,
+  approvedDate = licence.approvedDate,
+  approvedByUsername = licence.approvedByUsername,
+  approvedByName = licence.approvedByName,
+  submittedDate = licence.submittedDate,
+  supersededDate = licence.supersededDate,
+  dateCreated = licence.dateCreated,
+  createdByUsername = licence.getCreator().username,
+  dateLastUpdated = licence.dateLastUpdated,
+  updatedByUsername = licence.updatedByUsername,
+  standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
+  standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
+    "AP",
+    conditionSubmissionStatus,
+  ),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
+  createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
+  isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
+  isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
+  licenceVersion = licence.licenceVersion,
+  earliestReleaseDate = earliestReleaseDate,
+  isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  submittedByFullName = licence.getSubmittedByFullName(),
+)
+
 // Transform a list of entity standard conditions to model standard conditions
 fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> =
   filter { condition -> condition.conditionType == conditionType }.map(::transform)
@@ -529,6 +618,7 @@ fun Licence.getSubmittedByFullName(): String? {
     is HardStopLicence -> this.submittedBy
     is CrdLicence -> this.submittedBy
     is VariationLicence -> this.submittedBy
+    is HdcLicence -> this.submittedBy
     else -> error("Unexpected licence type: $this")
   }
   return if (staffMember != null) {
