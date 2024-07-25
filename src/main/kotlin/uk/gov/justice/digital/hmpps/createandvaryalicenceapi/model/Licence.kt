@@ -16,16 +16,18 @@ object LicenceKinds {
   const val CRD = "CRD"
   const val VARIATION = "VARIATION"
   const val HARD_STOP = "HARD_STOP"
+  const val HDC = "HDC"
 }
 
 @Schema(
   description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence",
-  oneOf = [CrdLicence::class, VariationLicence::class, HardStopLicence::class],
+  oneOf = [CrdLicence::class, VariationLicence::class, HardStopLicence::class, HdcLicence::class],
   discriminatorProperty = "kind",
   discriminatorMapping = [
     DiscriminatorMapping(value = LicenceKinds.CRD, schema = CrdLicence::class),
     DiscriminatorMapping(value = LicenceKinds.VARIATION, schema = VariationLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.HDC, schema = HdcLicence::class),
   ],
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")

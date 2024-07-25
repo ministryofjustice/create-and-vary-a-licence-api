@@ -64,6 +64,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
@@ -82,6 +83,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as E
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as CrdLicenceModel
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as HdcLicenceModel
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
@@ -2890,6 +2892,23 @@ class LicenceServiceTest {
         )
 
       verifyNoInteractions(notifyService)
+    }
+  }
+
+  @Nested
+  inner class `HDC Licences` {
+    @Test
+    fun `service returns a HDC licence by ID`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
+      whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+        AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+      )
+
+      val licence = service.getLicenceById(1L)
+
+      assertThat(licence).isExactlyInstanceOf(HdcLicenceModel::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
     }
   }
 
