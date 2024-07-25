@@ -216,6 +216,26 @@ class EligibilityServiceTest {
     assertThat(result).containsExactly("has no conditional release date")
   }
 
+  @Test
+  fun `Person with imprisonmentStatus ACTIVE IN - eligible for CVL `() {
+    val result = service.getIneligibilityReasons(
+      aPrisonerSearchResult.copy(
+        imprisonmentStatus = "ACTIVE IN",
+      ),
+    )
+    assertThat(result).isEmpty()
+  }
+
+  @Test
+  fun `Person with imprisonmentStatus BOTUS - not eligible for CVL `() {
+    val result = service.getIneligibilityReasons(
+      aPrisonerSearchResult.copy(
+        imprisonmentStatus = "BOTUS",
+      ),
+    )
+    assertThat(result).containsExactly("is breach of top up supervision case")
+  }
+
   private companion object {
     val clock: Clock = Clock.fixed(Instant.parse("2023-11-03T00:00:00Z"), ZoneId.systemDefault())
 

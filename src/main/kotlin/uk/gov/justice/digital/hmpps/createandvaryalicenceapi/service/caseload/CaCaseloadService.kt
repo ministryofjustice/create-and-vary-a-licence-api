@@ -30,13 +30,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_BOTUS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.OOS_RECALL
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isBreachOfTopUpSupervision
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isRecall
 import java.time.Clock
 import java.time.LocalDate
 
@@ -82,6 +78,16 @@ class CaCaseloadService(
     val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
 
     return buildCaseload(cases, searchString, "prison")
+
+//      .filter {
+//        listOf(
+//          NOT_STARTED,
+//          IN_PROGRESS,
+//          APPROVED,
+//          SUBMITTED,
+//          TIMED_OUT,
+//        ).contains(it.licenceStatus)
+//      }
   }
 
   fun getProbationOmuCaseload(
@@ -273,13 +279,7 @@ class CaCaseloadService(
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
 
-    if (isBreachOfTopUpSupervision(c)) {
-      // Imprisonment status indicates a breach of top up supervision order - not clickable (yet)
-      licenceStatus = OOS_BOTUS
-    } else if (isRecall(c)) {
-      // Offender is subject to an active recall - not clickable
-      licenceStatus = OOS_RECALL
-    } else if (c.cvlFields.isInHardStopPeriod) {
+    if (c.cvlFields.isInHardStopPeriod) {
       licenceStatus = TIMED_OUT
     }
 
