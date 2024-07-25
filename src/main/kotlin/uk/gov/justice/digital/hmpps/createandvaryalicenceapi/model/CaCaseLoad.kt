@@ -7,7 +7,4 @@ data class CaCaseLoad(
 
   @Schema(description = "CA(OMU) cases")
   val cases: List<CaCase>,
-
-  @Schema(description = "show attention needed tab in prison caseload")
-  val showAttentionNeededTab: Boolean = false,
 )
