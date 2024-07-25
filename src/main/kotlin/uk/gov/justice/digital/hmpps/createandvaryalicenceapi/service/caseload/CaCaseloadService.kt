@@ -78,16 +78,6 @@ class CaCaseloadService(
     val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
 
     return buildCaseload(cases, searchString, "prison")
-
-//      .filter {
-//        listOf(
-//          NOT_STARTED,
-//          IN_PROGRESS,
-//          APPROVED,
-//          SUBMITTED,
-//          TIMED_OUT,
-//        ).contains(it.licenceStatus)
-//      }
   }
 
   fun getProbationOmuCaseload(
