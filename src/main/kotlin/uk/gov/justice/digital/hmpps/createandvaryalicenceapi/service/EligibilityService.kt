@@ -102,6 +102,6 @@ class EligibilityService(
   }
 
   private fun isBreachOfTopUpSupervision(): EligibilityCheck = early@{
-    it.imprisonmentStatus != null && it.imprisonmentStatus == "BOTUS"
+    it.imprisonmentStatus == "BOTUS"
   }
 }
