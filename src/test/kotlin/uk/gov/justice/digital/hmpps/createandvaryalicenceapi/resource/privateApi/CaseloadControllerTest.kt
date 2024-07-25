@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
 
 @ExtendWith(SpringExtension::class)
@@ -44,6 +45,9 @@ class CaseloadControllerTest {
   private lateinit var approverCaseloadService: ApproverCaseloadService
 
   @MockBean
+  private lateinit var caCaseloadService: CaCaseloadService
+
+  @MockBean
   private lateinit var comCaseloadService: ComCaseloadService
 
   @Autowired
@@ -57,7 +61,14 @@ class CaseloadControllerTest {
     reset(caseloadService, approverCaseloadService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(CaseloadController(caseloadService, approverCaseloadService, comCaseloadService))
+      .standaloneSetup(
+        CaseloadController(
+          caseloadService,
+          approverCaseloadService,
+          caCaseloadService,
+          comCaseloadService,
+        ),
+      )
       .setControllerAdvice(ControllerAdvice())
       .build()
   }

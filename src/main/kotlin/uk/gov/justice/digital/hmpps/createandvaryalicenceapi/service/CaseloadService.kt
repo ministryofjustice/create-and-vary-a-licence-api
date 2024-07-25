@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
@@ -19,8 +20,14 @@ class CaseloadService(
   fun getPrisonersByNumber(nomisIds: List<String>) =
     prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds).map { it.toCaseloadItem() }
 
-  fun getPrisonersByReleaseDate(earliestReleaseDate: LocalDate, latestReleaseDate: LocalDate, prisonIds: Set<String>, page: Int = 0) =
-    prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page).map { it.toCaseloadItem() }
+  fun getPrisonersByReleaseDate(
+    earliestReleaseDate: LocalDate,
+    latestReleaseDate: LocalDate,
+    prisonIds: Set<String>,
+    page: Int = 0,
+  ): Page<CaseloadItem> =
+    prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page)
+      .map { it.toCaseloadItem() }
 
   fun getPrisoner(nomisId: String) =
     getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
@@ -36,7 +43,9 @@ class CaseloadService(
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
         isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
-        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+          sentenceDateHolder,
+        ),
       ),
     )
   }

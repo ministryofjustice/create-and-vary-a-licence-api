@@ -14,6 +14,8 @@ enum class LicenceStatus {
   VARIATION_APPROVED,
   NOT_STARTED,
   TIMED_OUT,
+  OOS_BOTUS,
+  OOS_RECALL,
   ;
 
   fun isOnProbation() = ON_PROBATION_STATUSES.contains(this)
@@ -33,6 +35,8 @@ enum class LicenceStatus {
       RECALLED -> LicenceEventType.RECALLED
       NOT_STARTED -> LicenceEventType.NOT_STARTED
       TIMED_OUT -> LicenceEventType.TIMED_OUT
+      OOS_BOTUS -> LicenceEventType.OOS_BOTUS
+      OOS_RECALL -> LicenceEventType.OOS_RECALL
     }
 
     val IN_FLIGHT_LICENCES = listOf(

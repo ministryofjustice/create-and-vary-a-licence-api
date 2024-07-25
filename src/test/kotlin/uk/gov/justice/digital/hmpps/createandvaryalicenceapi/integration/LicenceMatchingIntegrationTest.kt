@@ -3,9 +3,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -123,6 +126,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-matching-candidates.sql",
   )
   fun `Get licence matches - by list of prisons and statuses`() {
+    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
     val result = webTestClient.post()
       .uri("/licence/match")
       .accept(MediaType.APPLICATION_JSON)
@@ -204,5 +208,21 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
         tuple(2L, LocalDate.parse("2032-04-28")),
         tuple(1L, LocalDate.parse("2031-04-28")),
       )
+  }
+
+  private companion object {
+    val govUkApiMockServer = GovUkMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      govUkApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      govUkApiMockServer.stop()
+    }
   }
 }

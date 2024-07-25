@@ -23,7 +23,7 @@ data class LicenceSummary(
   val licenceStatus: LicenceStatus,
 
   @Schema(description = "The prison nomis identifier for this offender", example = "A1234AA")
-  val nomisId: String?,
+  val nomisId: String,
 
   @Schema(description = "The offender surname", example = "Smith")
   val surname: String?,

@@ -259,7 +259,7 @@ class CommunityApiMockServer : WireMockServer(8093) {
                 "allocationDate": null,
                 "staffIdentifier": null,
                 "staff": {
-                  "code": null,
+                  "code": "X1234",
                   "forenames": null,
                   "surname": null,
                   "unallocated": true

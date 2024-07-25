@@ -226,12 +226,12 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
         .responseBody
 
       assertThat(caseload).hasSize(5)
-      with(caseload.first()) {
-        assertThat(prisoner).isNotNull
-        with(cvl) {
-          assertThat(licenceType).isEqualTo(LicenceType.AP)
-          assertThat(hardStopDate).isNotNull
-          assertThat(hardStopWarningDate).isNotNull
+      with(caseload?.first()) {
+        assertThat(this?.prisoner).isNotNull
+        with(this?.cvl) {
+          assertThat(this?.licenceType).isEqualTo(LicenceType.AP)
+          assertThat(this?.hardStopDate).isNotNull
+          assertThat(this?.hardStopWarningDate).isNotNull
         }
       }
     }
@@ -297,7 +297,7 @@ class CaseloadIntegrationTest : IntegrationTestBase() {
     fun checkPageMetadata() {
       prisonerSearchApiMockServer.stubSearchPrisonersByReleaseDate(page = 2)
 
-      val caseload = webTestClient.post()
+      webTestClient.post()
         .uri(FIND_PRISONERS_BY_RELEASE_DATE_PAGINATED(2))
         .bodyValue(releaseDateSearch)
         .accept(APPLICATION_JSON)

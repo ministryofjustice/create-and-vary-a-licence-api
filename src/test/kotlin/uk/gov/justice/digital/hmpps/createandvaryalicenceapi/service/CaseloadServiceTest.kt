@@ -25,13 +25,21 @@ class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service = CaseloadService(prisonerSearchApiClient, releaseDateService)
+  private val service =
+    CaseloadService(prisonerSearchApiClient, releaseDateService)
 
   @BeforeEach
   fun reset() {
     reset(prisonerSearchApiClient, releaseDateService)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisonerSearchResult()))
-    whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(PageImpl(listOf(prisonerSearchResult())))
+    whenever(
+      prisonerSearchApiClient.searchPrisonersByReleaseDate(
+        any(),
+        any(),
+        any(),
+        anyOrNull(),
+      ),
+    ).thenReturn(PageImpl(listOf(prisonerSearchResult())))
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
@@ -66,7 +74,6 @@ class CaseloadServiceTest {
           lastName = "Mortimar",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
-          inOutStatus = null,
           prisonId = "MDI",
           prisonName = null,
           locationDescription = "HMP Moorland",
@@ -122,7 +129,6 @@ class CaseloadServiceTest {
           lastName = "Mortimar",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
-          inOutStatus = null,
           prisonId = "MDI",
           prisonName = null,
           locationDescription = "HMP Moorland",
@@ -185,7 +191,6 @@ class CaseloadServiceTest {
           lastName = "Mortimar",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
-          inOutStatus = null,
           prisonId = "MDI",
           locationDescription = "HMP Moorland",
           prisonName = null,

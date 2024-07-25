@@ -50,7 +50,7 @@ fun transformToLicenceSummary(
   licenceId = licence.id,
   licenceType = licence.typeCode,
   licenceStatus = licence.statusCode,
-  nomisId = licence.nomsId,
+  nomisId = licence.nomsId!!,
   surname = licence.surname,
   forename = licence.forename,
   crn = licence.crn,

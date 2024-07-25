@@ -11,5 +11,11 @@ data class ProbationPractitioner(
 
   @Schema(description = "The full name of the probation practitioner", example = "Joe Bloggs")
   @field:NotBlank
-  val name: String,
+  val name: String? = null,
+
+  @Schema(description = "Probation staffIdentifier in nDelius", example = "120003434")
+  val staffIdentifier: Long? = null,
+
+  @Schema(description = "The NOMIS username of the case administrator", example = "jbloggs")
+  val staffUsername: String? = null,
 )

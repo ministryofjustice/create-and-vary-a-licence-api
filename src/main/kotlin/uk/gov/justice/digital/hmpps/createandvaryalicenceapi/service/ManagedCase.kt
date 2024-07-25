@@ -1,6 +1,10 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 
