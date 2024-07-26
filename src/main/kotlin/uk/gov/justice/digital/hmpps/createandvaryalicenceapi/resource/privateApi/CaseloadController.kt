@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
@@ -354,7 +354,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = CaCaseLoad::class)),
+            array = ArraySchema(schema = Schema(implementation = CaCase::class)),
           ),
         ],
       ),
@@ -403,7 +403,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = CaCaseLoad::class)),
+            array = ArraySchema(schema = Schema(implementation = CaCase::class)),
           ),
         ],
       ),
