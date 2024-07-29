@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
@@ -88,11 +88,11 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<CaCaseLoad>())
+        .expectBody(typeReference<List<CaCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.cases).hasSize(4)
-      with(caseload.cases.first()) {
+      assertThat(caseload).hasSize(4)
+      with(caseload.first()) {
         assertThat(name).isEqualTo("harry hope")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
@@ -148,11 +148,11 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<CaCaseLoad>())
+        .expectBody(typeReference<List<CaCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload.cases).hasSize(2)
-      with(caseload.cases.first()) {
+      assertThat(caseload).hasSize(2)
+      with(caseload.first()) {
         assertThat(name).isEqualTo("prisoner five")
         assertThat(prisonerNumber).isEqualTo("A1234AE")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.ACTIVE)

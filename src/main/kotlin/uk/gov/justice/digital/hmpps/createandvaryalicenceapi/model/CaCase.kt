@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -27,7 +28,8 @@ data class CaCase(
   @Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner? = null,
 
-  @Schema(description = "The date on which the prisoner leaves custody", example = "2023-05-02")
+  @Schema(description = "The date on which the prisoner leaves custody", example = "30/11/2022")
+  @JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate? = null,
 
   @Schema(description = "Label for release date", example = "Confirmed release date")

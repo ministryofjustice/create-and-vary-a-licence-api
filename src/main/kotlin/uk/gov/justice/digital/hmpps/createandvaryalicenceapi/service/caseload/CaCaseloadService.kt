@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCaseLoad
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -48,7 +47,7 @@ class CaCaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
 ) {
-  fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): CaCaseLoad {
+  fun getPrisonOmuCaseload(prisonCaseload: Set<String>, searchString: String?): List<CaCase> {
     val statuses = listOf(
       APPROVED,
       SUBMITTED,
@@ -72,7 +71,7 @@ class CaCaseloadService(
     )
 
     if (eligibleExistingLicences.isEmpty() && eligibleNotStartedLicences.isEmpty()) {
-      return CaCaseLoad(cases = emptyList())
+      return emptyList()
     }
 
     val cases = mapCasesToComs(eligibleExistingLicences + eligibleNotStartedLicences)
@@ -83,7 +82,7 @@ class CaCaseloadService(
   fun getProbationOmuCaseload(
     prisonCaseload: Set<String>,
     searchString: String?,
-  ): CaCaseLoad {
+  ): List<CaCase> {
     val statuses = listOf(
       ACTIVE,
       LicenceStatus.VARIATION_APPROVED,
@@ -99,7 +98,7 @@ class CaCaseloadService(
     )
 
     if (licences.isEmpty()) {
-      return CaCaseLoad(cases = emptyList())
+      return emptyList()
     }
 
     val formattedLicences = formatReleasedLicences(licences)
@@ -212,12 +211,10 @@ class CaCaseloadService(
     return caCaseListWithNoComId + caCaseListWithStaffUsername + cases.withStaffCode
   }
 
-  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): CaCaseLoad {
+  private fun buildCaseload(cases: List<CaCase>, searchString: String?, view: String): List<CaCase> {
     val searchResults = applySearch(searchString, cases)
     val sortResults = applySort(searchResults, view)
-    return CaCaseLoad(
-      cases = sortResults,
-    )
+    return sortResults
   }
 
   private fun applySearch(searchString: String?, cases: List<CaCase>): List<CaCase> {
