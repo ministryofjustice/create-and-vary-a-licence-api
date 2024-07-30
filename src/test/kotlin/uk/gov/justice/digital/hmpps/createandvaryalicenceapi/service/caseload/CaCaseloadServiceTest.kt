@@ -138,7 +138,7 @@ class CaCaseloadServiceTest {
     @Nested
     inner class `in the hard stop period` {
       @Test
-      fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
+      fun `Sets status to NOT_STARTED with no licence in CVL`() {
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
           emptyList(),
         )
@@ -167,7 +167,8 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
 
         with(prisonOmuCaseload.first()) {
-          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(name).isEqualTo("Phil Cena")
+          assertThat(licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
           assertThat(isInHardStopPeriod).isTrue()
         }
 
@@ -1033,9 +1034,9 @@ class CaCaseloadServiceTest {
       locationDescription = null,
       prisonName = null,
       bookNumber = null,
-      firstName = "Phil",
+      firstName = "PHIL",
       middleNames = null,
-      lastName = "Cena",
+      lastName = "CENA",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = null,

@@ -9,12 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -22,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Sent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -262,18 +256,14 @@ class CaCaseloadService(
   private fun createNotStartedLicenceForCase(cases: List<ManagedCase>): List<CaCase> = cases.map { c ->
 
     // Default status (if not overridden below) will show the case as clickable on case lists
-    var licenceStatus = NOT_STARTED
-
-    if (c.cvlFields.isInHardStopPeriod) {
-      licenceStatus = TIMED_OUT
-    }
+    val licenceStatus = NOT_STARTED
 
     val com = c.deliusRecord?.managedOffenderCrn?.staff
 
     val releaseDate = c.nomisRecord?.toSentenceDateHolder()?.licenceStartDate
 
     CaCase(
-      name = "${c.nomisRecord?.firstName} ${c.nomisRecord?.lastName}",
+      name = c.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
       prisonerNumber = c.nomisRecord?.prisonerNumber!!,
       releaseDate = releaseDate,
       releaseDateLabel = if (c.nomisRecord.confirmedReleaseDate != null) {
