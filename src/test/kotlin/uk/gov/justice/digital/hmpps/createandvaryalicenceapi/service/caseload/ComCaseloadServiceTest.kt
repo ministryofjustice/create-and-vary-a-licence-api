@@ -10,6 +10,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -67,7 +68,7 @@ class ComCaseloadServiceTest {
     assertThat(casesAndLicences).hasSize(1)
     with(casesAndLicences.first()) {
       assertThat(licences).hasSize(1)
-      assertThat(licences?.get(0)?.licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
+      assertThat(licences[0].licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
     }
     verify(licenceService, never()).findLicencesMatchingCriteria(any())
   }
@@ -90,7 +91,7 @@ class ComCaseloadServiceTest {
     assertThat(casesAndLicences).hasSize(1)
     with(casesAndLicences.first()) {
       assertThat(licences).hasSize(1)
-      assertThat(licences?.get(0)?.licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
+      assertThat(licences[0].licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
     }
     verify(licenceService).findLicencesMatchingCriteria(any())
   }
@@ -111,8 +112,8 @@ class ComCaseloadServiceTest {
       assertThat(nomisRecord?.prisonerNumber).isEqualTo("ABC123")
       assertThat(cvlFields.isInHardStopPeriod).isTrue()
       assertThat(licences).hasSize(1)
-      assertThat(licences?.get(0)?.licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
-      assertThat(licences?.get(0)?.licenceType).isEqualTo(LicenceType.PSS)
+      assertThat(licences[0].licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+      assertThat(licences[0].licenceType).isEqualTo(LicenceType.PSS)
     }
   }
 
@@ -149,8 +150,7 @@ class ComCaseloadServiceTest {
       "AB1234E",
       LicenceStatus.NOT_STARTED,
       LicenceType.PSS,
-      "ACTIVE IN",
-      tenDaysFromNow,
+      expectedReleaseDate = tenDaysFromNow,
     )
   }
 
@@ -187,14 +187,14 @@ class ComCaseloadServiceTest {
     )
 
     val caseloadItems = listOf(
-      createCaseloadItem("AB1234E", tenDaysFromNow, paroleEligibilityDate = yesterday),
+      createCaseloadItem("AB1234E", nineDaysFromNow, paroleEligibilityDate = yesterday),
       createCaseloadItem("AB1234F", tenDaysFromNow, paroleEligibilityDate = tenDaysFromNow),
       createCaseloadItem("AB1234G", tenDaysFromNow, legalStatus = "DEAD"),
       createCaseloadItem("AB1234H", tenDaysFromNow, indeterminateSentence = true),
       createCaseloadItem("AB1234I", tenDaysFromNow),
       createCaseloadItem("AB1234J", tenDaysFromNow),
       createCaseloadItem("AB1234K", tenDaysFromNow, bookingId = "123"),
-      createCaseloadItem("AB1234L", tenDaysFromNow, bookingId = "123"),
+      createCaseloadItem("AB1234L", nineDaysFromNow, bookingId = "123"),
       // This case tests that recalls are overridden if the PRRD < the conditionalReleaseDate - so NOT_STARTED
       createCaseloadItem(
         "AB1234M",
@@ -236,7 +236,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
       case = caseload[1],
@@ -244,57 +244,39 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234L",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
       case = caseload[2],
-      expectedCrn = "X12352",
-      expectedPrisonerNumber = "AB1234M",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
-      expectedPostRecallReleaseDate = nineDaysFromNow,
-      expectedRecall = true,
-    )
-    assertThat(caseload[2].deliusRecord?.offenderDetail?.otherIds).isEqualTo(
-      OtherIds(
-        nomsNumber = "AB1234M",
-        crn = "X12352",
-      ),
-    )
-    verifyCase(
-      case = caseload[3],
       expectedCrn = "X12354",
       expectedPrisonerNumber = "AB1234P",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = nineDaysFromNow,
-      expectedPostRecallReleaseDate = nineDaysFromNow,
-      expectedRecall = true,
+      expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
-      case = caseload[4],
+      case = caseload[3],
       expectedCrn = "X12355",
       expectedPrisonerNumber = "AB1234Q",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = nineDaysFromNow,
-      expectedRecall = true,
+      expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
-      case = caseload[5],
+      case = caseload[4],
       expectedCrn = "X12356",
       expectedPrisonerNumber = "AB1234R",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedNomisStatus = "INACTIVE TRN",
-      expectedConditionalReleaseDate = nineDaysFromNow,
+      expectedReleaseDate = nineDaysFromNow,
     )
-    assertThat(caseload[5].deliusRecord?.offenderDetail?.otherIds).isEqualTo(
-      OtherIds(
-        nomsNumber = "AB1234R",
-        crn = "X12356",
-      ),
+    verifyCase(
+      case = caseload[5],
+      expectedCrn = "X12352",
+      expectedPrisonerNumber = "AB1234M",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.PSS,
+      expectedReleaseDate = tenDaysFromNow,
     )
   }
 
@@ -365,7 +347,7 @@ class ComCaseloadServiceTest {
         ),
         createCaseloadItem(
           prisonerNumber = "AB1234I",
-          conditionalReleaseDate = tenDaysFromNow,
+          conditionalReleaseDate = elevenDaysFromNow,
           topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
           licenceExpiryDate = elevenDaysFromNow,
         ),
@@ -375,13 +357,14 @@ class ComCaseloadServiceTest {
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
         createLicenceSummary(
-          kind = LicenceKind.CRD,
+          crn = "X12352",
           nomisId = "AB1234I",
+          kind = LicenceKind.CRD,
           licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "sherlockholmes",
-          conditionalReleaseDate = LocalDate.now(),
+          conditionalReleaseDate = elevenDaysFromNow,
         ),
       ),
     )
@@ -406,9 +389,8 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
-      expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
     )
     verifyCase(
       case = caseload[1],
@@ -416,7 +398,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234H",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = tenDaysFromNow,
     )
     verifyCase(
       case = caseload[2],
@@ -424,13 +406,11 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234I",
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
       expectedLicenceType = LicenceType.AP_PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = elevenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "Sherlock Holmes",
       ),
-      expectedComUsername = "sherlockholmes",
-      expectedLicenceExpiryDate = elevenDaysFromNow,
     )
   }
 
@@ -482,12 +462,11 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.AP,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X1234",
         name = "Joe Bloggs",
       ),
-      expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
     )
 
     verifyCase(
@@ -496,7 +475,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234F",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
+      expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
         name = "Sherlock Holmes",
@@ -559,10 +538,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
-      expectedConditionalReleaseDate = tenDaysFromNow,
       expectedReleaseDate = tenDaysFromNow,
-      expectedPostRecallReleaseDate = tenDaysFromNow,
-      expectedRecall = true,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
     )
 
@@ -610,8 +586,9 @@ class ComCaseloadServiceTest {
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
         createLicenceSummary(
-          kind = LicenceKind.CRD,
+          crn = "X12348",
           nomisId = "AB1234E",
+          kind = LicenceKind.CRD,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           comUsername = "sherlockholmes",
@@ -639,12 +616,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedConditionalReleaseDate = null,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
-      expectedConfirmedReleaseDate = tenDaysFromNow,
-      expectedNomisStatus = "INACTIVE OUT",
-      expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-      expectedComUsername = "sherlockholmes",
     )
   }
 
@@ -685,10 +657,12 @@ class ComCaseloadServiceTest {
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
         createLicenceSummary(
-          kind = LicenceKind.HARD_STOP,
+          crn = "X12348",
           nomisId = "AB1234E",
+          kind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
+          conditionalReleaseDate = tenDaysFromNow,
           comUsername = "sherlockholmes",
           isReviewNeeded = true,
         ),
@@ -714,12 +688,9 @@ class ComCaseloadServiceTest {
       caseload[0],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
-      expectedNomisStatus = "INACTIVE OUT",
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedLicenceType = LicenceType.AP,
-      expectedConfirmedReleaseDate = tenDaysFromNow,
-      expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-      expectedComUsername = "sherlockholmes",
+      expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
     )
   }
@@ -771,22 +742,24 @@ class ComCaseloadServiceTest {
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
         createLicenceSummary(
-          kind = LicenceKind.VARIATION,
+          crn = "X12348",
           nomisId = "AB1234E",
+          kind = LicenceKind.VARIATION,
           licenceType = LicenceType.PSS,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "joebloggs",
-          conditionalReleaseDate = LocalDate.now(),
+          conditionalReleaseDate = tenDaysFromNow,
         ),
         createLicenceSummary(
-          kind = LicenceKind.VARIATION,
+          crn = "X12349",
           nomisId = "AB1234F",
+          kind = LicenceKind.VARIATION,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           licenceExpiryDate = elevenDaysFromNow,
           comUsername = "sherlockholmes",
-          conditionalReleaseDate = LocalDate.now(),
+          conditionalReleaseDate = tenDaysFromNow,
         ),
       ),
     )
@@ -818,23 +791,18 @@ class ComCaseloadServiceTest {
       caseload[0],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
-      expectedNomisStatus = "INACTIVE OUT",
-      expectedConfirmedReleaseDate = tenDaysFromNow,
       expectedLicenceType = LicenceType.PSS,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-      expectedComUsername = "joebloggs",
+      expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
     )
     verifyCase(
       caseload[1],
       expectedCrn = "X12349",
       expectedPrisonerNumber = "AB1234F",
-      expectedNomisStatus = "INACTIVE OUT",
-      expectedConfirmedReleaseDate = tenDaysFromNow,
-      expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-      expectedComUsername = "sherlockholmes",
+      expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
     )
   }
@@ -880,8 +848,9 @@ class ComCaseloadServiceTest {
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
         createLicenceSummary(
-          kind = LicenceKind.HARD_STOP,
+          crn = "X12348",
           nomisId = "AB1234E",
+          kind = LicenceKind.HARD_STOP,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceExpiryDate = elevenDaysFromNow,
@@ -911,12 +880,9 @@ class ComCaseloadServiceTest {
       caseload[0],
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
-      expectedNomisStatus = "INACTIVE OUT",
-      expectedConfirmedReleaseDate = tenDaysFromNow,
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.ACTIVE,
-      expectedLicenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-      expectedComUsername = "sherlockholmes",
+      expectedReleaseDate = LocalDate.now(),
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
     )
   }
@@ -976,50 +942,21 @@ class ComCaseloadServiceTest {
   )
 
   private fun verifyCase(
-    case: ManagedCase,
+    case: ComCase,
     expectedCrn: String,
     expectedPrisonerNumber: String,
     expectedLicenceStatus: LicenceStatus,
     expectedLicenceType: LicenceType,
-    expectedNomisStatus: String = "ACTIVE IN",
-    expectedConditionalReleaseDate: LocalDate? = null,
-    expectedPostRecallReleaseDate: LocalDate? = null,
     expectedReleaseDate: LocalDate? = null,
-    expectedRecall: Boolean = false,
     expectedProbationPractitioner: ProbationPractitioner? = null,
-    expectedImprisonmentStatus: String? = null,
-    expectedConfirmedReleaseDate: LocalDate? = null,
-    expectedLicenceExpiryDate: LocalDate? = null,
-    expectedComUsername: String? = null,
   ) {
     with(case) {
-      val licence = licences?.get(0)
-      assertThat(deliusRecord?.managedOffenderCrn?.offenderCrn).isEqualTo(expectedCrn)
-      assertThat(nomisRecord?.prisonerNumber).isEqualTo(expectedPrisonerNumber)
-      assertThat(nomisRecord?.status).isEqualTo(expectedNomisStatus)
-      assertThat(licence?.licenceStatus).isEqualTo(expectedLicenceStatus)
-      assertThat(licence?.licenceType).isEqualTo(expectedLicenceType)
-      expectedConditionalReleaseDate.let {
-        assertThat(nomisRecord?.conditionalReleaseDate).isEqualTo(
-          expectedConditionalReleaseDate,
-        )
-      }
-      expectedPostRecallReleaseDate.let {
-        assertThat(nomisRecord?.postRecallReleaseDate).isEqualTo(
-          expectedPostRecallReleaseDate,
-        )
-      }
-      expectedReleaseDate.let { assertThat(nomisRecord?.releaseDate).isEqualTo(expectedReleaseDate) }
-      assertThat(nomisRecord?.recall).isEqualTo(expectedRecall)
+      assertThat(crnNumber).isEqualTo(expectedCrn)
+      assertThat(prisonerNumber).isEqualTo(expectedPrisonerNumber)
+      assertThat(licenceStatus).isEqualTo(expectedLicenceStatus)
+      assertThat(licenceType).isEqualTo(expectedLicenceType)
+      expectedReleaseDate.let { assertThat(releaseDate).isEqualTo(expectedReleaseDate) }
       expectedProbationPractitioner.let { assertThat(probationPractitioner).isEqualTo(expectedProbationPractitioner) }
-      expectedImprisonmentStatus.let { assertThat(nomisRecord?.imprisonmentStatus).isEqualTo(expectedImprisonmentStatus) }
-      expectedConfirmedReleaseDate.let {
-        assertThat(nomisRecord?.confirmedReleaseDate).isEqualTo(
-          expectedConfirmedReleaseDate,
-        )
-      }
-      expectedLicenceExpiryDate.let { assertThat(nomisRecord?.licenceExpiryDate).isEqualTo(expectedLicenceExpiryDate) }
-      expectedComUsername.let { assertThat(licence?.comUsername).isEqualTo(expectedComUsername) }
     }
   }
 
@@ -1030,17 +967,20 @@ class ComCaseloadServiceTest {
   )
 
   private fun createLicenceSummary(
+    crn: String,
     nomisId: String,
     licenceType: LicenceType,
     licenceStatus: LicenceStatus,
     kind: LicenceKind = LicenceKind.CRD,
     licenceExpiryDate: LocalDate? = null,
     comUsername: String? = null,
-    conditionalReleaseDate: LocalDate? = LocalDate.now(),
+    conditionalReleaseDate: LocalDate? = null,
+    confirmedReleaseDate: LocalDate? = null,
     isReviewNeeded: Boolean = false,
   ): LicenceSummary = LicenceSummary(
-    kind = kind,
+    crn = crn,
     nomisId = nomisId,
+    kind = kind,
     licenceId = 1,
     licenceType = licenceType,
     licenceStatus = licenceStatus,
@@ -1051,11 +991,10 @@ class ComCaseloadServiceTest {
     isInHardStopPeriod = false,
     isDueToBeReleasedInTheNextTwoWorkingDays = false,
     conditionalReleaseDate = conditionalReleaseDate,
+    actualReleaseDate = confirmedReleaseDate,
     dateCreated = LocalDateTime.now(),
     updatedByFullName = "X Y",
-    actualReleaseDate = null,
     bookingId = null,
-    crn = null,
     dateOfBirth = null,
     forename = null,
     surname = null,

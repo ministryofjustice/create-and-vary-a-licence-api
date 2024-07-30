@@ -25,12 +25,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
@@ -449,7 +449,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
           ),
         ],
       ),
@@ -493,7 +493,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
           ),
         ],
       ),
@@ -519,7 +519,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ManagedCase> =
+  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> =
     comCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
@@ -537,7 +537,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
           ),
         ],
       ),
@@ -581,7 +581,7 @@ class CaseloadController(
         content = [
           Content(
             mediaType = "application/json",
-            array = ArraySchema(schema = Schema(implementation = ManagedCase::class)),
+            array = ArraySchema(schema = Schema(implementation = ComCase::class)),
           ),
         ],
       ),
@@ -607,7 +607,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ManagedCase> =
+  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> =
     comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
 }
 
