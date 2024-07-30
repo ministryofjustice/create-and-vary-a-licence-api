@@ -263,7 +263,11 @@ class CaCaseloadService(
   private fun createNotStartedLicenceForCase(cases: List<ManagedCase>): List<CaCase> = cases.map { c ->
 
     // Default status (if not overridden below) will show the case as clickable on case lists
-    val licenceStatus = NOT_STARTED
+    var licenceStatus = NOT_STARTED
+
+    if (c.cvlFields.isInHardStopPeriod) {
+      licenceStatus = TIMED_OUT
+    }
 
     val com = c.deliusRecord?.managedOffenderCrn?.staff
 
