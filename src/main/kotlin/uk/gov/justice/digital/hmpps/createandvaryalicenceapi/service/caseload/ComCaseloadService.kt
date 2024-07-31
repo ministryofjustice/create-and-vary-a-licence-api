@@ -154,6 +154,7 @@ class ComCaseloadService(
                 hardStopWarningDate = null,
                 isDueToBeReleasedInTheNextTwoWorkingDays = false,
                 releaseDate = null,
+                isReviewNeeded = false,
               ),
             ),
           )
@@ -170,6 +171,7 @@ class ComCaseloadService(
                 hardStopWarningDate = case.cvlFields.hardStopWarningDate,
                 isDueToBeReleasedInTheNextTwoWorkingDays = case.cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays,
                 releaseDate = case.nomisRecord.confirmedReleaseDate ?: case.nomisRecord.conditionalReleaseDate,
+                isReviewNeeded = false,
               ),
             ),
           )
@@ -269,7 +271,7 @@ class ComCaseloadService(
           LicenceStatus.VARIATION_APPROVED,
           LicenceStatus.VARIATION_REJECTED,
         ) ||
-          licence.isReviewNeeded ?: false
+          licence.isReviewNeeded
       }
     }
 
@@ -318,6 +320,7 @@ class ComCaseloadService(
       isDueForEarlyRelease = managedCase.cvlFields.isDueForEarlyRelease,
       licenceCreationType = licence.licenceCreationType,
       sortDate = licence.releaseDate,
+      isReviewNeeded = licence.isReviewNeeded,
     )
   }.sortedBy { it.sortDate }
 
@@ -372,7 +375,7 @@ class ComCaseloadService(
   private fun transformToVaryCaseload(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
     val licences = managedCase.licences.filter { licence -> licence.licenceStatus != LicenceStatus.TIMED_OUT }
     val licence = if (licences.size > 1) {
-      licences.find { licence -> licence.licenceStatus != LicenceStatus.ACTIVE && licence.isReviewNeeded == false }
+      licences.find { licence -> licence.licenceStatus != LicenceStatus.ACTIVE && licence.isReviewNeeded }
     } else {
       licences.first()
     }
@@ -388,6 +391,7 @@ class ComCaseloadService(
       releaseDate = licence?.releaseDate,
       probationPractitioner = managedCase.probationPractitioner,
       isDueForEarlyRelease = managedCase.cvlFields.isDueForEarlyRelease,
+      isReviewNeeded = licence?.isReviewNeeded ?: false,
     )
   }
 }

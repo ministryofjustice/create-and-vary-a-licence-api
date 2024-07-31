@@ -43,6 +43,9 @@ data class ComCase(
   @Schema(description = "The licence type code", example = "AP")
   val licenceType: LicenceType?,
 
+  @Schema(description = "Is a review of this licence is required", example = "true")
+  val isReviewNeeded: Boolean,
+
   @Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner?,
 

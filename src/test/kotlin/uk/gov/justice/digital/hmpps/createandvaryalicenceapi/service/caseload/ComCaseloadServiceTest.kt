@@ -692,6 +692,7 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedReviewNeeded = true,
     )
   }
 
@@ -884,6 +885,7 @@ class ComCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedReleaseDate = LocalDate.now(),
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedReviewNeeded = true,
     )
   }
 
@@ -949,6 +951,7 @@ class ComCaseloadServiceTest {
     expectedLicenceType: LicenceType,
     expectedReleaseDate: LocalDate? = null,
     expectedProbationPractitioner: ProbationPractitioner? = null,
+    expectedReviewNeeded: Boolean = false,
   ) {
     with(case) {
       assertThat(crnNumber).isEqualTo(expectedCrn)
@@ -957,6 +960,7 @@ class ComCaseloadServiceTest {
       assertThat(licenceType).isEqualTo(expectedLicenceType)
       expectedReleaseDate.let { assertThat(releaseDate).isEqualTo(expectedReleaseDate) }
       expectedProbationPractitioner.let { assertThat(probationPractitioner).isEqualTo(expectedProbationPractitioner) }
+      assertThat(isReviewNeeded).isEqualTo(expectedReviewNeeded)
     }
   }
 
