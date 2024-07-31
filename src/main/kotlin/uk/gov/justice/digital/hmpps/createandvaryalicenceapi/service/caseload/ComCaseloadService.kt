@@ -240,7 +240,7 @@ class ComCaseloadService(
         case.copy(
           probationPractitioner = ProbationPractitioner(
             responsibleCom.staffCode,
-            name = "${responsibleCom.staff?.forenames} ${responsibleCom.staff?.surname}".convertToTitleCase(),
+            name = "${responsibleCom.staff?.forenames} ${responsibleCom.staff?.surname}".trim(),
           ),
         )
       } else {
