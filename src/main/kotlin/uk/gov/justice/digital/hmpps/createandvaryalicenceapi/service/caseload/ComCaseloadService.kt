@@ -42,7 +42,7 @@ class ComCaseloadService(
     caseload = mapOffendersToLicences(caseload)
     caseload = buildCreateCaseload(caseload)
     caseload = mapResponsibleComsToCases(caseload)
-    return createCaseloadViewModel(caseload)
+    return transformToCreateCaseload(caseload)
   }
 
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
@@ -54,7 +54,7 @@ class ComCaseloadService(
     caseload = mapOffendersToLicences(caseload)
     caseload = buildCreateCaseload(caseload)
     caseload = mapResponsibleComsToCases(caseload)
-    return createCaseloadViewModel(caseload)
+    return transformToCreateCaseload(caseload)
   }
 
   fun getStaffVaryCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -64,7 +64,7 @@ class ComCaseloadService(
     caseload = mapOffendersToLicences(caseload)
     caseload = buildVaryCaseload(caseload)
     caseload = mapResponsibleComsToCases(caseload)
-    return createVaryCaseloadViewModel(caseload)
+    return transformToVaryCaseload(caseload)
   }
 
   fun getTeamVaryCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
@@ -75,7 +75,7 @@ class ComCaseloadService(
     caseload = mapOffendersToLicences(caseload)
     caseload = buildVaryCaseload(caseload)
     caseload = mapResponsibleComsToCases(caseload)
-    return createCaseloadViewModel(caseload)
+    return transformToCreateCaseload(caseload)
   }
 
   private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
@@ -301,7 +301,7 @@ class ComCaseloadService(
       probationTeamCodes.first()
     }
 
-  private fun createCaseloadViewModel(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
+  private fun transformToCreateCaseload(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
     val licence = this.findLicenceToDisplay(managedCase)
     ComCase(
       licenceId = licence.licenceId,
@@ -369,7 +369,7 @@ class ComCaseloadService(
     }
   }
 
-  private fun createVaryCaseloadViewModel(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
+  private fun transformToVaryCaseload(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
     val licences = managedCase.licences.filter { licence -> licence.licenceStatus != LicenceStatus.TIMED_OUT }
     val licence = if (licences.size > 1) {
       licences.find { licence -> licence.licenceStatus != LicenceStatus.ACTIVE && licence.isReviewNeeded == false }
