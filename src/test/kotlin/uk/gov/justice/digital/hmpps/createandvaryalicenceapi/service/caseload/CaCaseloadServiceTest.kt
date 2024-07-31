@@ -167,6 +167,7 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
 
         with(prisonOmuCaseload.first()) {
+          assertThat(name).isEqualTo("Phil Cena")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
         }
@@ -1033,9 +1034,9 @@ class CaCaseloadServiceTest {
       locationDescription = null,
       prisonName = null,
       bookNumber = null,
-      firstName = "Phil",
+      firstName = "PHIL",
       middleNames = null,
-      lastName = "Cena",
+      lastName = "CENA",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = null,
