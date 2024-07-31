@@ -321,7 +321,7 @@ class ComCaseloadService(
       licenceCreationType = licence.licenceCreationType,
       isReviewNeeded = licence.isReviewNeeded,
     )
-  }
+  }.sortedBy { it.releaseDate }
 
   private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary {
     val timedOutLicence = case.licences.find { licence -> licence.licenceStatus === LicenceStatus.TIMED_OUT }

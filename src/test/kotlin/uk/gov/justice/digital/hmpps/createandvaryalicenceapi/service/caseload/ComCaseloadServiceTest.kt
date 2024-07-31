@@ -248,14 +248,6 @@ class ComCaseloadServiceTest {
     )
     verifyCase(
       case = caseload[2],
-      expectedCrn = "X12352",
-      expectedPrisonerNumber = "AB1234M",
-      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
-      expectedReleaseDate = tenDaysFromNow,
-    )
-    verifyCase(
-      case = caseload[3],
       expectedCrn = "X12354",
       expectedPrisonerNumber = "AB1234P",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -263,7 +255,7 @@ class ComCaseloadServiceTest {
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
-      case = caseload[4],
+      case = caseload[3],
       expectedCrn = "X12355",
       expectedPrisonerNumber = "AB1234Q",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
@@ -271,12 +263,20 @@ class ComCaseloadServiceTest {
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
-      case = caseload[5],
+      case = caseload[4],
       expectedCrn = "X12356",
       expectedPrisonerNumber = "AB1234R",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
       expectedLicenceType = LicenceType.PSS,
       expectedReleaseDate = nineDaysFromNow,
+    )
+    verifyCase(
+      case = caseload[5],
+      expectedCrn = "X12352",
+      expectedPrisonerNumber = "AB1234M",
+      expectedLicenceStatus = LicenceStatus.NOT_STARTED,
+      expectedLicenceType = LicenceType.PSS,
+      expectedReleaseDate = tenDaysFromNow,
     )
   }
 
