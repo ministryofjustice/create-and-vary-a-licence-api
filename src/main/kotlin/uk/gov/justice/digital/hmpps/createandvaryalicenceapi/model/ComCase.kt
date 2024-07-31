@@ -30,10 +30,6 @@ data class ComCase(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val releaseDate: LocalDate?,
 
-  @Schema(description = "The date on which a list of returned COM cases has been sorted", example = "30/11/2022")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val sortDate: LocalDate? = null,
-
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val licenceId: Long?,
 
