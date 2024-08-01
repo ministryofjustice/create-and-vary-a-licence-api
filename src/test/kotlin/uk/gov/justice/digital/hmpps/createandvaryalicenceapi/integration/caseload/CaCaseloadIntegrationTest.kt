@@ -78,8 +78,8 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
       prisonApiMockServer.getHdcStatuses()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
       communityApiMockServer.stubGetStaffDetailsByUsername()
+      probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
 
       val caseload = webTestClient.post()
         .uri(GET_PRISON_CASELOAD)
@@ -91,7 +91,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         .expectBody(typeReference<List<CaCase>>())
         .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(4)
+      assertThat(caseload).hasSize(3)
       with(caseload.first()) {
         assertThat(name).isEqualTo("harry hope")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
