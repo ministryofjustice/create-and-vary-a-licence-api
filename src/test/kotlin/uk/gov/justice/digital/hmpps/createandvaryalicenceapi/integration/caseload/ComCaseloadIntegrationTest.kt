@@ -16,9 +16,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import kotlin.text.Charsets.UTF_8
 
 private const val DELIUS_STAFF_IDENTIFIER = 3492L
@@ -72,13 +72,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ManagedCase>>())
+        .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(3)
       with(caseload.first()) {
-        assertThat(deliusRecord?.managedOffenderCrn?.offenderCrn).isEqualTo("X12348")
-        assertThat(nomisRecord?.prisonerNumber).isEqualTo("AB1234E")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
   }
@@ -124,13 +124,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ManagedCase>>())
+        .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(2)
       with(caseload.first()) {
-        assertThat(deliusRecord?.managedOffenderCrn?.offenderCrn).isEqualTo("X12348")
-        assertThat(nomisRecord?.prisonerNumber).isEqualTo("AB1234E")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
   }
@@ -177,13 +177,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ManagedCase>>())
+        .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(1)
       with(caseload.first()) {
-        assertThat(deliusRecord?.managedOffenderCrn?.offenderCrn).isEqualTo("X12348")
-        assertThat(nomisRecord?.prisonerNumber).isEqualTo("AB1234E")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
   }
@@ -232,13 +232,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(OK.value())
         .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ManagedCase>>())
+        .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(1)
       with(caseload.first()) {
-        assertThat(deliusRecord?.managedOffenderCrn?.offenderCrn).isEqualTo("X12348")
-        assertThat(nomisRecord?.prisonerNumber).isEqualTo("AB1234E")
+        assertThat(crnNumber).isEqualTo("X12348")
+        assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
     }
   }

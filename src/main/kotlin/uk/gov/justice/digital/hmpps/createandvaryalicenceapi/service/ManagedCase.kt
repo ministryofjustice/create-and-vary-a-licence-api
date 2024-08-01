@@ -17,7 +17,7 @@ data class ManagedCase(
   val nomisRecord: Prisoner? = null,
 
   @Schema(description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence")
-  val licences: List<CaseLoadLicenceSummary>? = null,
+  val licences: List<CaseLoadLicenceSummary> = emptyList(),
 
   @Schema(description = "Describes a probation practitioner on an approval case")
   val probationPractitioner: ProbationPractitioner? = null,

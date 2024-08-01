@@ -69,6 +69,7 @@
     <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
+    <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
     <ID>ReturnCount:StaffService.kt$StaffService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
