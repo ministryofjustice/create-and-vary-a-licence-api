@@ -151,7 +151,7 @@ class CaCaseloadService(
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
-        releaseDate = releaseDate!!,
+        releaseDate = releaseDate,
         releaseDateLabel =
         when (licence.actualReleaseDate) {
           null -> "CRD"
@@ -440,7 +440,7 @@ class CaCaseloadService(
     val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(caseloadNomisIds)
 
     return prisoners
-      .map { prisoner ->
+      .mapNotNull { prisoner ->
         val deliusRecord = deliusRecords.find { d -> d.otherIds.nomsNumber == prisoner.prisonerNumber }
         if (deliusRecord != null) {
           ManagedCase(
@@ -454,7 +454,7 @@ class CaCaseloadService(
             ),
           )
         } else {
-          ManagedCase(nomisRecord = prisoner.toPrisoner(), cvlFields = prisoner.toCaseloadItem().cvl)
+          null
         }
       }
   }

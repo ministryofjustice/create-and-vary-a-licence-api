@@ -716,6 +716,7 @@ class CaCaseloadServiceTest {
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
+                prisonerNumber = "A1234AA",
                 conditionalReleaseDate = fiveDaysFromNow,
                 confirmedReleaseDate = twoDaysFromNow,
                 status = "ACTIVE IN",
@@ -737,6 +738,8 @@ class CaCaseloadServiceTest {
           ),
         )
 
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           listOf(
@@ -744,12 +747,12 @@ class CaCaseloadServiceTest {
               kind = null,
               licenceId = null,
               name = "Phil Cena",
-              prisonerNumber = "AB1234F",
+              prisonerNumber = "A1234AA",
               releaseDate = twoDaysFromNow,
               licenceStatus = LicenceStatus.NOT_STARTED,
               probationPractitioner = ProbationPractitioner(
-                staffCode = null,
-                name = null,
+                staffCode = "X1234",
+                name = "Joe Bloggs",
                 staffIdentifier = null,
                 staffUsername = null,
               ),
@@ -772,6 +775,7 @@ class CaCaseloadServiceTest {
           PageImpl(
             listOf(
               aPrisonerSearchPrisoner.copy(
+                prisonerNumber = "A1234AA",
                 conditionalReleaseDate = fiveDaysFromNow,
                 confirmedReleaseDate = twoDaysFromNow,
                 status = "ACTIVE IN",
@@ -793,6 +797,8 @@ class CaCaseloadServiceTest {
           ),
         )
 
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(
           listOf(
@@ -800,12 +806,12 @@ class CaCaseloadServiceTest {
               kind = null,
               licenceId = null,
               name = "Phil Cena",
-              prisonerNumber = "AB1234F",
+              prisonerNumber = "A1234AA",
               releaseDate = twoDaysFromNow,
               licenceStatus = LicenceStatus.NOT_STARTED,
               probationPractitioner = ProbationPractitioner(
-                staffCode = null,
-                name = null,
+                staffCode = "X1234",
+                name = "Joe Bloggs",
                 staffIdentifier = null,
                 staffUsername = null,
               ),
@@ -814,6 +820,46 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
+      }
+
+      @Test
+      fun `should filter out cases with no deliusRecord`() {
+        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+          emptyList(),
+        )
+        whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
+          true,
+        )
+        whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
+          PageImpl(
+            listOf(
+              aPrisonerSearchPrisoner.copy(
+                prisonerNumber = "A1234AA",
+                conditionalReleaseDate = fiveDaysFromNow,
+                confirmedReleaseDate = twoDaysFromNow,
+                status = "ACTIVE IN",
+                legalStatus = "SENTENCED",
+                homeDetentionCurfewEligibilityDate = null,
+                bookingId = "1234",
+              ),
+            ),
+          ),
+        )
+
+        whenever(prisonApiClient.getHdcStatuses(listOf(1234))).thenReturn(
+          listOf(
+            PrisonerHdcStatus(
+              bookingId = 1234,
+              passed = true,
+              approvalStatus = "APPROVED",
+            ),
+          ),
+        )
+
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(emptyList())
+
+        val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+        assertThat(prisonOmuCaseload).isEmpty()
       }
     }
   }
