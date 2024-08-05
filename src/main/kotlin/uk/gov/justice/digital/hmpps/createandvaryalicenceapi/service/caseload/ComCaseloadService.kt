@@ -75,7 +75,7 @@ class ComCaseloadService(
     caseload = mapOffendersToLicences(caseload)
     caseload = buildVaryCaseload(caseload)
     caseload = mapResponsibleComsToCases(caseload)
-    return transformToCreateCaseload(caseload)
+    return transformToVaryCaseload(caseload)
   }
 
   private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
