@@ -84,7 +84,7 @@ class ComCaseloadService(
 
     val offenders = batchedOffenders.flatten()
     return offenders.map { offender ->
-      DeliusRecord(offender, caseload.find { c -> c.offenderCrn == offender.otherIds.crn }!!)
+      DeliusRecord(offender, caseload.find { case -> case.offenderCrn == offender.otherIds.crn }!!)
     }
   }
 
@@ -112,10 +112,6 @@ class ComCaseloadService(
 
   private fun filterOffendersEligibleForLicence(cases: List<ManagedCase>): List<ManagedCase> {
     val eligibleOffenders = cases.filter { case ->
-      val testing = prisonerSearchService.getIneligibilityReasons(case.nomisRecord!!)
-      if (testing.contains("is a recall case")) {
-        println("got a recall")
-      }
       case.nomisRecord?.prisonerNumber != null &&
         prisonerSearchService.getIneligibilityReasons(case.nomisRecord)
           .isEmpty()
