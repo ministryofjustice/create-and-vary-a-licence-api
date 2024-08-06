@@ -1049,7 +1049,7 @@ class CaCaseloadServiceTest {
         forenames = "com",
         surname = "user",
       ),
-      teams = emptyList(),
+      teams = null,
       staffCode = "AB00001",
     )
 
