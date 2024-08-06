@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.isBreachOfTopUpSupervision
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
@@ -79,13 +78,13 @@ class ComCaseloadService(
   }
 
   private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
-    val crns = caseload.map { c -> c.offenderCrn }
+    val crns = caseload.map { case -> case.offenderCrn }
     val batchedCrns = crns.chunked(PROBATION_SEARCH_BATCH_SIZE)
     val batchedOffenders = batchedCrns.map { batch -> probationSearchApiClient.getOffendersByCrn(batch) }
 
     val offenders = batchedOffenders.flatten()
-    return offenders.map { o ->
-      DeliusRecord(o, caseload.find { c -> c.offenderCrn == o.otherIds.crn }!!)
+    return offenders.map { offender ->
+      DeliusRecord(offender, caseload.find { case -> case.offenderCrn == offender.otherIds.crn }!!)
     }
   }
 
@@ -213,7 +212,7 @@ class ComCaseloadService(
         LocalDate.now().minusDays(1),
       ) ?: false
     }.filter { offender ->
-      val validLicenceStatus = offender.licences.any { licence ->
+      offender.licences.any { licence ->
         licence.licenceStatus in listOf(
           LicenceStatus.NOT_STARTED,
           LicenceStatus.IN_PROGRESS,
@@ -222,13 +221,12 @@ class ComCaseloadService(
           LicenceStatus.TIMED_OUT,
         )
       }
-      validLicenceStatus == true && !offender.nomisRecord.isBreachOfTopUpSupervision()
     }
 
-  private fun mapResponsibleComsToCasesWithExclusions(caseload: List<ManagedCase>): List<ManagedCase> {
-    val comUsernames = caseload.map { case ->
+  private fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> {
+    val comUsernames = caseload.mapNotNull { case ->
       case.licences.find { licence -> case.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.comUsername
-    }.filterNotNull()
+    }
 
     val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
     return caseload.map { case ->
@@ -257,9 +255,6 @@ class ComCaseloadService(
       }
     }
   }
-
-  private fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> =
-    mapResponsibleComsToCasesWithExclusions(caseload)
 
   private fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
     managedOffenders.filter { offender ->

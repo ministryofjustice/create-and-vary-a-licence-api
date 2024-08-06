@@ -509,24 +509,24 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          postRecallReleaseDate = tenDaysFromNow,
-          recall = true,
-        ),
-        createCaseloadItem(
-          prisonerNumber = "AB1234F",
-          conditionalReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          imprisonmentStatus = "BOTUS",
-          recall = true,
-        ),
+    val caseloadItems = listOf(
+      createCaseloadItem(
+        prisonerNumber = "AB1234E",
+        conditionalReleaseDate = tenDaysFromNow,
+        releaseDate = tenDaysFromNow,
+        postRecallReleaseDate = tenDaysFromNow,
+        recall = true,
+      ),
+      createCaseloadItem(
+        prisonerNumber = "AB1234F",
+        conditionalReleaseDate = tenDaysFromNow,
+        releaseDate = tenDaysFromNow,
+        imprisonmentStatus = "BOTUS",
+        recall = true,
       ),
     )
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
+    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is breach of top up supervision case"))
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 
