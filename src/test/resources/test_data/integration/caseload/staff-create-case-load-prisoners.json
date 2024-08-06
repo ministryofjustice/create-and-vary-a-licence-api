@@ -6,16 +6,8 @@
     "dateOfBirth": "1985-01-01",
     "status": "ACTIVE IN",
     "recall": false,
-    "licenceExpiryDate": [
-      2022,
-      12,
-      26
-    ],
-    "conditionalReleaseDate": [
-      2024,
-      8,
-      2
-    ],
+    "licenceExpiryDate": "2022-12-26",
+    "conditionalReleaseDate": "$releaseDate",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
@@ -30,11 +22,7 @@
     "dateOfBirth": "1985-01-01",
     "status": "INACTIVE OUT",
     "recall": false,
-    "conditionalReleaseDate": [
-      2024,
-      8,
-      2
-    ],
+    "conditionalReleaseDate": "$releaseDate",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
@@ -49,11 +37,7 @@
     "dateOfBirth": "1985-01-01",
     "status": "INACTIVE OUT",
     "recall": false,
-    "conditionalReleaseDate": [
-      2024,
-      8,
-      2
-    ],
+    "conditionalReleaseDate": "$releaseDate",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
@@ -68,16 +52,8 @@
     "dateOfBirth": "1985-01-01",
     "status": "ACTIVE IN",
     "recall": false,
-    "topupSupervisionExpiryDate": [
-      2023,
-      6,
-      22
-    ],
-    "conditionalReleaseDate": [
-      2024,
-      8,
-      2
-    ],
+    "topupSupervisionExpiryDate": "2023-06-22",
+    "conditionalReleaseDate": "$releaseDate",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,
@@ -92,21 +68,9 @@
     "dateOfBirth": "1985-01-01",
     "status": "ACTIVE IN",
     "recall": false,
-    "licenceExpiryDate": [
-      2024,
-      8,
-      3
-    ],
-    "topupSupervisionExpiryDate": [
-      2023,
-      6,
-      22
-    ],
-    "conditionalReleaseDate": [
-      2024,
-      8,
-      2
-    ],
+    "licenceExpiryDate": "2024-08-03",
+    "topupSupervisionExpiryDate": "2023-06-22",
+    "conditionalReleaseDate": "$releaseDate",
     "licenceType": "PSS",
     "indeterminateSentence": false,
     "isInHardStopPeriod": false,

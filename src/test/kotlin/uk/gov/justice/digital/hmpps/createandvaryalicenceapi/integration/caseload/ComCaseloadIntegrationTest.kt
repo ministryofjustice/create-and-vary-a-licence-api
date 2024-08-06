@@ -19,6 +19,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.text.Charsets.UTF_8
 
 private const val DELIUS_STAFF_IDENTIFIER = 3492L
@@ -64,7 +66,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       communityApiMockServer.stubGetStaffDetailsByUsername()
       communityApiMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       probationSearchMockServer.stubGetOffendersByCrn()
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("staff-create-case-load-prisoners"))
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("staff-create-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ),
+      )
 
       val caseload = webTestClient.get()
         .uri(GET_STAFF_CREATE_CASELOAD)
@@ -115,7 +123,13 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       communityApiMockServer.stubGetStaffDetailsByUsername()
       communityApiMockServer.stubGetManagedOffendersByTeam("teamC")
       probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-create-case-load-prisoners"))
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("team-create-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ),
+      )
 
       val caseload = webTestClient.post()
         .uri(GET_TEAM_CREATE_CASELOAD)
@@ -223,7 +237,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       communityApiMockServer.stubGetStaffDetailsByUsername()
       communityApiMockServer.stubGetManagedOffendersByTeam("teamC")
       probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-create-case-load-prisoners"))
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-vary-case-load-prisoners"))
 
       val caseload = webTestClient.post()
         .uri(GET_TEAM_VARY_CASELOAD)
