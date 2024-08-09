@@ -229,7 +229,7 @@ class ConditionController(
   @Operation(
     summary = "Remove additional conditions from the licence.",
     description = "Remove any instances of the additional conditions with the supplied condition codes from the licence. " +
-      "This includes any existing accompanying data per condition. "+
+      "This includes any existing accompanying data per condition. " +
       "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
     security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )

@@ -238,19 +238,19 @@ class LicenceConditionServiceTest {
     }
 
     @Test
-    fun `delete single additional condition by code`(){
+    fun `delete single additional condition by code`() {
       whenever(licenceRepository.findById(1L))
-          .thenReturn(
-            Optional.of(
-              aLicenceEntity.copy(
-                additionalConditions = listOf(
-                  additionalCondition(1, "code1"),
-                  additionalCondition(2, "code2"),
-                  additionalCondition(3, "code3"),
-                ),
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                additionalCondition(1, "code1"),
+                additionalCondition(2, "code2"),
+                additionalCondition(3, "code3"),
               ),
             ),
-          )
+          ),
+        )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.deleteAdditionalConditionsByCode(1L, DeleteAdditionalConditionsByCodeRequest(listOf("code2")))
@@ -272,7 +272,7 @@ class LicenceConditionServiceTest {
     }
 
     @Test
-    fun `delete multiple additional conditions by code`(){
+    fun `delete multiple additional conditions by code`() {
       whenever(licenceRepository.findById(1L))
         .thenReturn(
           Optional.of(
