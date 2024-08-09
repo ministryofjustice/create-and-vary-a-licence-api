@@ -371,7 +371,7 @@ class ComCaseloadService(
   private fun transformToVaryCaseload(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
     val licences = managedCase.licences.filter { licence -> licence.licenceStatus != LicenceStatus.TIMED_OUT }
     val licence = if (licences.size > 1) {
-      licences.find { licence -> licence.licenceStatus != LicenceStatus.ACTIVE && licence.isReviewNeeded }
+      licences.find { licence -> licence.licenceStatus != LicenceStatus.ACTIVE && !licence.isReviewNeeded }
     } else {
       licences.first()
     }

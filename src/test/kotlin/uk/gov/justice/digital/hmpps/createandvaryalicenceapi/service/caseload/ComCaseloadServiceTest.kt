@@ -547,7 +547,7 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `it builds the staff vary caseload`() {
+  fun `it builds the staff vary caseload where there is a single licence`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         offenderCrn = "X12348",
@@ -586,6 +586,89 @@ class ComCaseloadServiceTest {
 
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
       listOf(
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP,
+          licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+          comUsername = "sherlockholmes",
+        ),
+      ),
+    )
+
+    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+      listOf(
+        User(
+          username = "sherlockholmes",
+          staffCode = "X54321",
+          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
+          teams = emptyList(),
+          staffIdentifier = null,
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffVaryCaseload(deliusStaffIdentifier)
+    assertThat(caseload).hasSize(1)
+    verifyCase(
+      caseload[0],
+      expectedCrn = "X12348",
+      expectedPrisonerNumber = "AB1234E",
+      expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
+      expectedLicenceType = LicenceType.AP,
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+    )
+  }
+
+  @Test
+  fun `it builds the staff vary caseload where there are multiple licences`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        offenderCrn = "X12348",
+        staff = StaffDetail(code = "X1234", forenames = "Joe", surname = "Bloggs"),
+      ),
+    )
+
+    whenever(communityApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+
+    whenever(
+      probationSearchApiClient.getOffendersByCrn(
+        managedOffenders.map
+          { it.offenderCrn },
+      ),
+    ).thenReturn(
+      listOf(
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+      ),
+    )
+
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      listOf(
+        createCaseloadItem(
+          prisonerNumber = "AB1234E",
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = tenDaysFromNow,
+          licenceExpiryDate = LocalDate.of(
+            2022,
+            Month.DECEMBER,
+            26,
+          ),
+          status = "INACTIVE OUT",
+        ),
+      ),
+    )
+
+    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+      listOf(
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP,
+          licenceStatus = LicenceStatus.ACTIVE,
+          comUsername = "sherlockholmes",
+        ),
         createLicenceSummary(
           crn = "X12348",
           nomisId = "AB1234E",
