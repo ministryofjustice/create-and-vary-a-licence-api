@@ -31,6 +31,7 @@ class ComCaseloadService(
 ) {
   companion object {
     private const val PROBATION_SEARCH_BATCH_SIZE = 500
+    private const val PRISONER_SEARCH_BATCH_SIZE = 500
   }
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -90,10 +91,11 @@ class ComCaseloadService(
 
   private fun pairDeliusRecordsWithNomis(managedOffenders: List<DeliusRecord>): List<ManagedCase> {
     val caseloadNomisIds = managedOffenders.filter { offender -> offender.offenderDetail.otherIds.nomsNumber != null }
-      .map { offender -> offender.offenderDetail.otherIds.nomsNumber }
+      .mapNotNull { offender -> offender.offenderDetail.otherIds.nomsNumber }
+    val batchedNomisIds = caseloadNomisIds.chunked(PRISONER_SEARCH_BATCH_SIZE)
+    val batchedNomisRecords = batchedNomisIds.map { batch -> caseloadService.getPrisonersByNumber(batch) }
 
-    val nomisRecords = caseloadService.getPrisonersByNumber(caseloadNomisIds.filterNotNull())
-
+    val nomisRecords = batchedNomisRecords.flatten()
     val records = managedOffenders.map { offender ->
       val caseLoadItem =
         nomisRecords.find { prisoner -> prisoner.prisoner.prisonerNumber == offender.offenderDetail.otherIds.nomsNumber }
