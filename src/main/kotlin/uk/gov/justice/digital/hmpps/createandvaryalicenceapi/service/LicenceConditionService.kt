@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -117,6 +118,17 @@ class LicenceConditionService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     deleteConditions(licenceEntity, listOf(conditionId), emptyList(), emptyList())
+  }
+
+  @Transactional
+  fun deleteAdditionalConditionsByCode(licenceId: Long, request: DeleteAdditionalConditionsByCodeRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val conditionIds = licenceEntity.additionalConditions.filter {
+      request.conditionCodes.contains(it.conditionCode)
+    }.map { it.id }
+    deleteConditions(licenceEntity, conditionIds, emptyList(), emptyList())
   }
 
   @Transactional
