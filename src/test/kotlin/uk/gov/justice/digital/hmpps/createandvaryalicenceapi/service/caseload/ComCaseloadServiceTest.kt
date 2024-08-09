@@ -1016,6 +1016,7 @@ class ComCaseloadServiceTest {
 
     service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
     verify(probationSearchApiClient, times(3)).getOffendersByCrn(any())
+    verify(caseloadService, times(3)).getPrisonersByNumber(any())
   }
 
   private fun createCaseloadItem(
