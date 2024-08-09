@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
@@ -57,7 +58,7 @@ class ComCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(communityApiClient, licenceService, prisonerSearchService)
+    reset(communityApiClient, licenceService, prisonerSearchService, probationSearchApiClient)
   }
 
   @Test
@@ -976,7 +977,7 @@ class ComCaseloadServiceTest {
   fun `it should batch calls to the community CRN endpoint`() {
     val selectedTeam = "team C"
 
-    val managedOffenders = Array(600) {
+    val managedOffenders = Array(1100) {
       ManagedOffenderCrn(
         offenderCrn = "X12348",
         staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
@@ -989,6 +990,32 @@ class ComCaseloadServiceTest {
 
     service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
     verify(communityApiClient).getManagedOffendersByTeam(selectedTeam)
+    verify(probationSearchApiClient, times(3)).getOffendersByCrn(any())
+  }
+
+  @Test
+  fun `it should batch calls to the get prisoners by prisoner number service`() {
+    val selectedTeam = "team C"
+
+    val managedOffenders = Array(1500) {
+      ManagedOffenderCrn(
+        offenderCrn = "X12348",
+        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+      )
+    }.asList()
+
+    whenever(
+      communityApiClient.getManagedOffendersByTeam(selectedTeam),
+    ).thenReturn(managedOffenders)
+
+    whenever(probationSearchApiClient.getOffendersByCrn(any())).thenReturn(
+      Array(500) {
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348")
+      }.asList(),
+    )
+
+    service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
+    verify(probationSearchApiClient, times(3)).getOffendersByCrn(any())
   }
 
   private fun createCaseloadItem(
