@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AllAdd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -235,6 +236,73 @@ class LicenceConditionServiceTest {
       verifyNoInteractions(licenceRepository)
       verifyNoInteractions(staffRepository)
     }
+
+    @Test
+    fun `delete single additional condition by code`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                additionalCondition(1, "code1"),
+                additionalCondition(2, "code2"),
+                additionalCondition(3, "code3"),
+              ),
+            ),
+          ),
+        )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      service.deleteAdditionalConditionsByCode(1L, DeleteAdditionalConditionsByCodeRequest(listOf("code2")))
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
+
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+        additionalCondition(1, "code1"),
+        additionalCondition(3, "code3"),
+      )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(aCom.username, aCom))
+    }
+
+    @Test
+    fun `delete multiple additional conditions by code`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                additionalCondition(1, "code1"),
+                additionalCondition(2, "code2"),
+                additionalCondition(3, "code3"),
+              ),
+            ),
+          ),
+        )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      service.deleteAdditionalConditionsByCode(1L, DeleteAdditionalConditionsByCodeRequest(listOf("code2", "code1")))
+
+      val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
+
+      assertThat(licenceCaptor.value.additionalConditions).containsExactly(
+        additionalCondition(3, "code3"),
+      )
+
+      // Verify last contact info is recorded
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(aCom.username, aCom))
+    }
   }
 
   @Nested
@@ -392,10 +460,10 @@ class LicenceConditionServiceTest {
     }
   }
 
-  private fun additionalCondition(id: Long) = AdditionalCondition(
+  private fun additionalCondition(id: Long, code: String = "code") = AdditionalCondition(
     id = id,
     conditionVersion = "1.0",
-    conditionCode = "code",
+    conditionCode = code,
     conditionSequence = 5,
     conditionCategory = "oldCategory",
     conditionText = "oldText",
