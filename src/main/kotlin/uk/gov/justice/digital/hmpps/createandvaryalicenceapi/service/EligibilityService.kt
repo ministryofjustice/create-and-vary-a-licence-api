@@ -50,7 +50,9 @@ class EligibilityService(
 
   private fun isOnIndeterminateSentence(): EligibilityCheck = {
     val isIndeterminateSentence = it.indeterminateSentence ?: false
-    if(it.indeterminateSentence === null) { log.warn("${it.prisonerNumber} missing indeterminateSentence") }
+    if (it.indeterminateSentence === null) {
+      log.warn("${it.prisonerNumber} missing indeterminateSentence")
+    }
     isIndeterminateSentence
   }
 
