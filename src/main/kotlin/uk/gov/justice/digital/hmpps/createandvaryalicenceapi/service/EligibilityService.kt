@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getLicenceStartDate
@@ -48,7 +49,11 @@ class EligibilityService(
   private fun hasCorrectLegalStatus(): EligibilityCheck = { it.legalStatus != "DEAD" }
 
   private fun isOnIndeterminateSentence(): EligibilityCheck = {
-    it.indeterminateSentence ?: error("${it.prisonerNumber} missing indeterminateSentence")
+    val isIndeterminateSentence = it.indeterminateSentence ?: false
+    if (it.indeterminateSentence === null) {
+      log.warn("${it.prisonerNumber} missing indeterminateSentence")
+    }
+    isIndeterminateSentence
   }
 
   private fun hasConditionalReleaseDate(): EligibilityCheck = { it.conditionalReleaseDate != null }
@@ -103,5 +108,9 @@ class EligibilityService(
 
   private fun isBreachOfTopUpSupervision(): EligibilityCheck = early@{
     it.imprisonmentStatus == "BOTUS"
+  }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 }
