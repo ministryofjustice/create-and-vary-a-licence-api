@@ -59,6 +59,17 @@ class EligibilityServiceTest {
   }
 
   @Test
+  fun `isIndeterminateSentence is null - eligible for CVL`() {
+    val reasons = service.getIneligibilityReasons(
+      aPrisonerSearchResult.copy(
+        indeterminateSentence = null,
+      ),
+    )
+
+    assertThat(reasons).isEmpty()
+  }
+
+  @Test
   fun `Person does not have a conditional release date - not eligible for CVL `() {
     val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
