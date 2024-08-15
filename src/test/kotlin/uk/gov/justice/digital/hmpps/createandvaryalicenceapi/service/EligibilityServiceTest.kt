@@ -206,6 +206,17 @@ class EligibilityServiceTest {
   }
 
   @Test
+  fun `Recall flag is null in NOMIS - not ineligibile due to recall`() {
+    val result = service.getIneligibilityReasons(
+      aPrisonerSearchResult.copy(
+        conditionalReleaseDate = null,
+        recall = null,
+      ),
+    )
+    assertThat(result).containsExactly("has no conditional release date")
+  }
+
+  @Test
   fun `Person has no ARD and a CRD in the past - not eligible for CVL `() {
     val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(

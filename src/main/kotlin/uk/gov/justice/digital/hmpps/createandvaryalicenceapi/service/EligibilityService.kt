@@ -49,11 +49,10 @@ class EligibilityService(
   private fun hasCorrectLegalStatus(): EligibilityCheck = { it.legalStatus != "DEAD" }
 
   private fun isOnIndeterminateSentence(): EligibilityCheck = {
-    val isIndeterminateSentence = it.indeterminateSentence ?: false
-    if (it.indeterminateSentence === null) {
+    if (it.indeterminateSentence == null) {
       log.warn("${it.prisonerNumber} missing indeterminateSentence")
     }
-    isIndeterminateSentence
+    it.indeterminateSentence ?: false
   }
 
   private fun hasConditionalReleaseDate(): EligibilityCheck = { it.conditionalReleaseDate != null }
@@ -103,7 +102,10 @@ class EligibilityService(
     }
 
     // Trust the Nomis recall flag as a fallback position - the above rules should always override
-    return@early it.recall ?: error("${it.prisonerNumber} missing recall flag")
+    if (it.recall == null) {
+      log.warn("${it.prisonerNumber} missing recall flag")
+    }
+    return@early it.recall ?: false
   }
 
   private fun isBreachOfTopUpSupervision(): EligibilityCheck = early@{
