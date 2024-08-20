@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -18,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
@@ -52,9 +52,7 @@ class LicenceCreationService(
 
   @Transactional
   fun createLicence(prisonNumber: String): LicenceCreationResponse {
-    if (offenderHasLicenceInFlight(prisonNumber)) {
-      throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
-    }
+    verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -93,9 +91,7 @@ class LicenceCreationService(
 
   @Transactional
   fun createHardStopLicence(prisonNumber: String): LicenceCreationResponse {
-    if (offenderHasLicenceInFlight(prisonNumber)) {
-      throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
-    }
+    verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -143,9 +139,7 @@ class LicenceCreationService(
 
   @Transactional
   fun createHdcLicence(prisonNumber: String): LicenceCreationResponse {
-    if (offenderHasLicenceInFlight(prisonNumber)) {
-      throw ValidationException("A licence already exists for person with prison number: $prisonNumber (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
-    }
+    verifyNoInFlightLicence(prisonNumber)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -208,10 +202,20 @@ class LicenceCreationService(
     )
   }
 
-  private fun offenderHasLicenceInFlight(nomsId: String): Boolean {
-    val inFlight =
+  private fun verifyNoInFlightLicence(nomsId: String) {
+    val inflightLicences =
       licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED))
-    return inFlight.isNotEmpty()
+
+    if (inflightLicences.isNotEmpty()) {
+      val currentInflightLicence = when {
+        inflightLicences.size == 1 -> inflightLicences.first()
+        else -> inflightLicences.first { it.statusCode != APPROVED }
+      }
+      throw ResourceAlreadyExistsException(
+        message = "A licence already exists for person with prison number: $nomsId (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)",
+        existingResourceId = currentInflightLicence.id,
+      )
+    }
   }
 
   private fun createCom(staffId: Long): CommunityOffenderManager {

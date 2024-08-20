@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
-import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -32,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
@@ -51,7 +51,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.REJECTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
@@ -133,7 +137,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
         assertThat(version).isEqualTo("2.1")
-        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(versionOfId).isNull()
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
@@ -180,8 +184,8 @@ class LicenceCreationServiceTest {
 
       service.createLicence(prisonNumber)
 
-      val l = listOf(LicenceStatus.IN_PROGRESS)
-      assertThat(l).allMatch { it == LicenceStatus.IN_PROGRESS }
+      val l = listOf(IN_PROGRESS)
+      assertThat(l).allMatch { it == IN_PROGRESS }
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)
@@ -459,21 +463,53 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws a validation exception if an in progress licence exists for this person`() {
+      val existingLicence = TestData.createCrdLicence().copy(statusCode = APPROVED)
       whenever(
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             prisonNumber,
-            listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
           ),
-      ).thenReturn(listOf(TestData.createCrdLicence()))
+      ).thenReturn(listOf(existingLicence))
 
-      val exception = assertThrows<ValidationException> {
+      val exception = assertThrows<ResourceAlreadyExistsException> {
         service.createLicence(prisonNumber)
       }
 
       assertThat(exception)
-        .isInstanceOf(ValidationException::class.java)
+        .isInstanceOf(ResourceAlreadyExistsException::class.java)
         .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+
+      assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws a validation exception if an in progress licence exists for this person and chose non approved version`() {
+      val approvedLicence = TestData.createCrdLicence().copy(statusCode = APPROVED)
+      val notApprovedLicence = TestData.createCrdLicence().copy(statusCode = SUBMITTED)
+
+      whenever(
+        licenceRepository
+          .findAllByNomsIdAndStatusCodeIn(
+            prisonNumber,
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
+          ),
+      ).thenReturn(listOf(approvedLicence, notApprovedLicence))
+
+      val exception = assertThrows<ResourceAlreadyExistsException> {
+        service.createLicence(prisonNumber)
+      }
+
+      assertThat(exception)
+        .isInstanceOf(ResourceAlreadyExistsException::class.java)
+        .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+
+      assertThat(exception.existingResourceId).isEqualTo(notApprovedLicence.id)
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -675,7 +711,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.HARD_STOP)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
         assertThat(version).isEqualTo("2.1")
-        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
         assertThat(bookingNo).isEqualTo(aPrisonerSearchResult.bookNumber)
@@ -909,7 +945,7 @@ class LicenceCreationServiceTest {
       whenever(
         licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
           listOf(aPrisonerSearchResult.bookingId!!.toLong()),
-          LicenceStatus.TIMED_OUT,
+          TIMED_OUT,
         ),
       ).thenReturn(listOf(previousLicence))
 
@@ -1060,21 +1096,24 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws a validation exception if an in progress licence exists for this person`() {
+      val existingLicence = TestData.createCrdLicence()
+
       whenever(
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
             prisonNumber,
-            listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.REJECTED),
+            listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
           ),
-      ).thenReturn(listOf(TestData.createCrdLicence()))
+      ).thenReturn(listOf(existingLicence))
 
-      val exception = assertThrows<ValidationException> {
+      val exception = assertThrows<ResourceAlreadyExistsException> {
         service.createHardStopLicence(prisonNumber)
       }
 
       assertThat(exception)
-        .isInstanceOf(ValidationException::class.java)
+        .isInstanceOf(ResourceAlreadyExistsException::class.java)
         .withFailMessage("A licence already exists for this person (IN_PROGRESS, SUBMITTED, APPROVED or REJECTED)")
+      assertThat(exception.existingResourceId).isEqualTo(existingLicence.id)
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1276,7 +1315,7 @@ class LicenceCreationServiceTest {
         assertThat(kind).isEqualTo(LicenceKind.HDC)
         assertThat(typeCode).isEqualTo(LicenceType.AP)
         assertThat(version).isEqualTo("2.1")
-        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(statusCode).isEqualTo(IN_PROGRESS)
         assertThat(versionOfId).isNull()
         assertThat(licenceVersion).isEqualTo("1.0")
         assertThat(nomsId).isEqualTo(nomsId)
