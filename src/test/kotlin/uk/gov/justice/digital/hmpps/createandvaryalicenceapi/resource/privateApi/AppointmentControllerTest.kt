@@ -216,7 +216,7 @@ class AppointmentControllerTest {
       put("/licence/id/4/contact-number")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
+        .content(mapper.writeValueAsBytes("")),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))
@@ -241,7 +241,7 @@ class AppointmentControllerTest {
       put("/licence/id/4/appointment-address")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes({ })),
+        .content(mapper.writeValueAsBytes("")),
     )
       .andExpect(status().isBadRequest)
       .andExpect(content().contentType(APPLICATION_JSON))

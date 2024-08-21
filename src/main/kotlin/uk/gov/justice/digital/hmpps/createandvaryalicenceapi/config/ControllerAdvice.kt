@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 
 @RestControllerAdvice
 class ControllerAdvice {
@@ -107,7 +108,7 @@ class ControllerAdvice {
   }
 
   @ExceptionHandler(ValidationException::class, MethodArgumentNotValidException::class)
-  fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
+  fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
     return ResponseEntity
       .status(HttpStatus.BAD_REQUEST)
@@ -116,6 +117,21 @@ class ControllerAdvice {
           status = HttpStatus.BAD_REQUEST.value(),
           userMessage = "Validation failure: ${e.message}",
           developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(ResourceAlreadyExistsException::class)
+  fun handleResourceAlreadyExists(e: ResourceAlreadyExistsException): ResponseEntity<EntityAlreadyExistsResponse> {
+    log.info("ResourceAlreadyExistsException: {}, resource: {}", e.message, e.existingResourceId)
+    return ResponseEntity
+      .status(HttpStatus.CONFLICT)
+      .body(
+        EntityAlreadyExistsResponse(
+          status = HttpStatus.CONFLICT.value(),
+          userMessage = "Validation failure: ${e.message}",
+          developerMessage = e.message,
+          existingResourceId = e.existingResourceId,
         ),
       )
   }
@@ -155,4 +171,30 @@ data class ErrorResponse(
     moreInfo: String? = null,
   ) :
     this(status.value(), errorCode, userMessage, developerMessage, moreInfo)
+}
+
+data class EntityAlreadyExistsResponse(
+  @get:JsonView(Views.SubjectAccessRequest::class)
+  val status: Int,
+  @get:JsonView(Views.SubjectAccessRequest::class)
+  val errorCode: Int? = null,
+  @get:JsonView(Views.SubjectAccessRequest::class)
+  val userMessage: String? = null,
+  @get:JsonView(Views.SubjectAccessRequest::class)
+  val developerMessage: String? = null,
+  @get:JsonView(Views.SubjectAccessRequest::class)
+  val moreInfo: String? = null,
+  @get:JsonView(Views.SubjectAccessRequest::class)
+  val existingResourceId: Long,
+
+) {
+  constructor(
+    status: HttpStatus,
+    errorCode: Int? = null,
+    userMessage: String? = null,
+    developerMessage: String? = null,
+    moreInfo: String? = null,
+    existingResourceId: Long,
+  ) :
+    this(status.value(), errorCode, userMessage, developerMessage, moreInfo, existingResourceId)
 }

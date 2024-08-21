@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EntityAlreadyExistsResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -84,6 +86,42 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-prison-case-administrator.sql",
+  )
+  fun `Cannot create two inflight licences`() {
+    prisonApiMockServer.stubGetPrison()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    probationSearchMockServer.stubSearchForPersonOnProbation()
+    communityApiMockServer.stubGetAllOffenderManagers()
+
+    val result = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceCreationResponse::class.java)
+      .returnResult().responseBody!!
+
+    val secondAttempt = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "A1234AA", type = CRD))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(EntityAlreadyExistsResponse::class.java)
+      .returnResult().responseBody!!
+
+    assertThat(result.licenceId).isEqualTo(secondAttempt.existingResourceId)
+    assertThat(licenceRepository.count()).isEqualTo(1)
   }
 
   @Test
