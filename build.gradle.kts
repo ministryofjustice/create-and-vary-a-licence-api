@@ -1,16 +1,14 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.3"
-  kotlin("plugin.spring") version "2.0.0"
-  kotlin("plugin.jpa") version "2.0.0"
+  kotlin("plugin.spring") version "2.0.10"
+  kotlin("plugin.jpa") version "2.0.10"
   id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
-dependencyCheck {
-  suppressionFiles.add("detekt-suppressions.xml")
-}
+
 val integrationTest = task<Test>("integrationTest") {
   description = "Integration tests"
   group = "verification"
@@ -47,6 +45,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("org.springframework.security:spring-security-config:6.3.2")
 
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:5.1.0-RELEASE")
