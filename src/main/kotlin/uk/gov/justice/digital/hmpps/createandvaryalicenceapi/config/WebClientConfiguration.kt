@@ -24,6 +24,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String,
   @Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
+  @Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
 ) {
   @Bean
   fun oauthApiHealthWebClient(): WebClient {
@@ -150,5 +151,23 @@ class WebClientConfiguration(
   @Bean
   fun govUkWebClient(): WebClient {
     return WebClient.builder().baseUrl(govUkApiUrl).build()
+  }
+
+  @Bean
+  fun oauthHdcApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(hdcApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
   }
 }
