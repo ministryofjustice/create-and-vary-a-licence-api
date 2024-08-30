@@ -11,12 +11,8 @@ class HdcService(
 ) {
 
   @Transactional
-  fun getHdcLicenceData(bookingId: String?): HdcLicenceData? {
-    if (bookingId == null) {
-      return null
-    }
-
-    val licenceData = this.hdcApiClient.getByBookingId(bookingId.toLong())
+  fun getHdcLicenceData(bookingId: Long): HdcLicenceData? {
+    val licenceData = this.hdcApiClient.getByBookingId(bookingId)
 
     return HdcLicenceData(
       curfewAddress = licenceData?.curfewAddress,

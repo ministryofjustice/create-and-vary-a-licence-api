@@ -59,7 +59,7 @@ class HdcControllerTest {
 
   @Test
   fun `get HDC licence data by booking ID`() {
-    whenever(hdcService.getHdcLicenceData("123456")).thenReturn(someHdcLicenceData)
+    whenever(hdcService.getHdcLicenceData(123456)).thenReturn(someHdcLicenceData)
 
     val request = get("/hdc/curfew/bookingId/123456")
       .accept(MediaType.APPLICATION_JSON)
@@ -73,7 +73,7 @@ class HdcControllerTest {
     assertThat(result.response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(someHdcLicenceData))
 
-    verify(hdcService, times(1)).getHdcLicenceData("123456")
+    verify(hdcService, times(1)).getHdcLicenceData(123456)
   }
 
   private companion object {

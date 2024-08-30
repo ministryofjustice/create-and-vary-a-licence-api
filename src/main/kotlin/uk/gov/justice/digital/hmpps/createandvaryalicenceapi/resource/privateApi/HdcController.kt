@@ -40,11 +40,6 @@ class HdcController(private val hdcService: HdcService) {
         description = "The HDC curfew information was retrieved",
       ),
       ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
         responseCode = "401",
         description = "Unauthorised, requires a valid Oauth2 token",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
@@ -54,10 +49,20 @@ class HdcController(private val hdcService: HdcService) {
         description = "Forbidden, requires an appropriate role",
         content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
       ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The curfew details for this booking ID were not found.",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
     ],
   )
   fun getHdcLicenceData(
-    @Parameter(required = true) @PathVariable("bookingId") bookingId: String,
+    @Parameter(required = true) @PathVariable("bookingId") bookingId: Long,
   ) =
     this.hdcService.getHdcLicenceData(bookingId)
 }

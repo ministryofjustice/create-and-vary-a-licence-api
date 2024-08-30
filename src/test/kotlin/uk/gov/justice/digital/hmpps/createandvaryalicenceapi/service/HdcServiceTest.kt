@@ -7,7 +7,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewHours
@@ -29,16 +28,9 @@ class HdcServiceTest {
   }
 
   @Test
-  fun `getHdcLicenceData returns early if booking ID is null`() {
-    val result = service.getHdcLicenceData(null)
-    assertThat(result).isNull()
-    verifyNoInteractions(hdcApiClient)
-  }
-
-  @Test
   fun `getHdcLicenceData returns HDC licence data successfully`() {
     whenever(hdcApiClient.getByBookingId(1L)).thenReturn(someHdcLicenceData)
-    val result = service.getHdcLicenceData("1")
+    val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
@@ -53,7 +45,7 @@ class HdcServiceTest {
         curfewAddress = null,
       ),
     )
-    val result = service.getHdcLicenceData("1")
+    val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isNull()
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
@@ -68,7 +60,7 @@ class HdcServiceTest {
         firstNightCurfewHours = null,
       ),
     )
-    val result = service.getHdcLicenceData("1")
+    val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isNull()
@@ -83,7 +75,7 @@ class HdcServiceTest {
         curfewHours = null,
       ),
     )
-    val result = service.getHdcLicenceData("1")
+    val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
@@ -101,7 +93,7 @@ class HdcServiceTest {
         curfewAddress = anAddress,
       ),
     )
-    val result = service.getHdcLicenceData("1")
+    val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(anAddress)
     verify(hdcApiClient, times(1)).getByBookingId(1L)

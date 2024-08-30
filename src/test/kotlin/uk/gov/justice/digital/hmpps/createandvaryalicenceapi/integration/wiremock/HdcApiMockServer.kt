@@ -43,4 +43,11 @@ class HdcApiMockServer : WireMockServer(8100) {
       ),
     )
   }
+
+  fun stubGetHdcLicenceDataNotFound(bookingId: Long = 123456) {
+    stubFor(
+      get(urlEqualTo("/licence/hdc/$bookingId"))
+        .willReturn(aResponse().withStatus(404)),
+    )
+  }
 }

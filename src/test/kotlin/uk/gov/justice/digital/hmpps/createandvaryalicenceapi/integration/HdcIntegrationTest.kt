@@ -89,6 +89,23 @@ class HdcIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
     }
+
+    @Test
+    fun `Service throws a 404 and not a 500 when a 404 is received from the HDC API`() {
+      hdcApiMockServer.stubGetHdcLicenceDataNotFound(111111)
+      val exception = webTestClient.get()
+        .uri("/hdc/curfew/bookingId/111111")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isNotFound
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(exception!!.status).isEqualTo(HttpStatus.NOT_FOUND.value())
+      assertThat(exception.userMessage).isEqualTo("Not found: No licence data found for 111111")
+      assertThat(exception.developerMessage).isEqualTo("No licence data found for 111111")
+    }
   }
 
   private companion object {
