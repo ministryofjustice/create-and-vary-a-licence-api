@@ -15,17 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopCutoffDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.BankHolidayService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import java.time.LocalDate
 
 @RestController
 @RequestMapping("/", produces = [MediaType.APPLICATION_JSON_VALUE])
 class DatesController(
   private val bankHolidayService: BankHolidayService,
-  private val releaseDateService: ReleaseDateService,
 ) {
 
   @Tag(name = Tags.ANCILLARY)
@@ -43,7 +40,12 @@ class DatesController(
       ApiResponse(
         responseCode = "200",
         description = "Bank Holidays retrieved",
-        content = [Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = LocalDate::class)))],
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = LocalDate::class)),
+          ),
+        ],
       ),
       ApiResponse(
         responseCode = "401",
@@ -63,42 +65,4 @@ class DatesController(
     ],
   )
   fun getBankHolidaysForEnglandAndWales() = this.bankHolidayService.getBankHolidaysForEnglandAndWales()
-
-  @Tag(name = Tags.ANCILLARY)
-  @GetMapping(value = ["/current-hard-stop-cutoff-date"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @ResponseBody
-  @Operation(
-    summary = "Get current hard stop cut-off date for licence to be timed out",
-    description = "The last date that a probation practitioner can edit a licence by. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "returns cutoff date",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = HardStopCutoffDate::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun currentHardStopCutoffDate(): HardStopCutoffDate {
-    return HardStopCutoffDate(releaseDateService.getCutOffDateForLicenceTimeOut())
-  }
 }
