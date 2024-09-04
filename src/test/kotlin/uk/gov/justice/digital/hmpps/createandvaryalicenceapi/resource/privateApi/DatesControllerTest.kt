@@ -18,12 +18,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.BankHolidayService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import java.time.LocalDate
 
 @ExtendWith(SpringExtension::class)
@@ -37,18 +35,15 @@ class DatesControllerTest {
   @MockBean
   private lateinit var bankHolidayService: BankHolidayService
 
-  @MockBean
-  private lateinit var releaseDateService: ReleaseDateService
-
   @Autowired
   private lateinit var mvc: MockMvc
 
   @BeforeEach
   fun reset() {
-    reset(bankHolidayService, releaseDateService)
+    reset(bankHolidayService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(DatesController(bankHolidayService, releaseDateService))
+      .standaloneSetup(DatesController(bankHolidayService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -67,24 +62,5 @@ class DatesControllerTest {
     mvc.perform(request).andExpect(status().isOk)
 
     verify(bankHolidayService, times(1)).getBankHolidaysForEnglandAndWales()
-  }
-
-  @Test
-  fun `get hard stop cut-off date for licence to time out`() {
-    val expectedCutoffDate = LocalDate.parse("2023-12-05")
-    whenever(releaseDateService.getCutOffDateForLicenceTimeOut()).thenReturn(
-      expectedCutoffDate,
-    )
-
-    val request = get("/current-hard-stop-cutoff-date")
-      .accept(MediaType.APPLICATION_JSON)
-      .contentType(MediaType.APPLICATION_JSON)
-
-    mvc.perform(request).andExpect(status().isOk)
-      .andExpect(
-        jsonPath("\$.cutoffDate").value("05/12/2023"),
-      )
-
-    verify(releaseDateService, times(1)).getCutOffDateForLicenceTimeOut()
   }
 }
