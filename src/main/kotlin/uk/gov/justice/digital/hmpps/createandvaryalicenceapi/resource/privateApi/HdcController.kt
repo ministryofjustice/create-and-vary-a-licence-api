@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 
 @RestController
 @RequestMapping("/hdc", produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -38,6 +39,7 @@ class HdcController(private val hdcService: HdcService) {
       ApiResponse(
         responseCode = "200",
         description = "The HDC curfew information was retrieved",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = HdcLicenceData::class))],
       ),
       ApiResponse(
         responseCode = "401",

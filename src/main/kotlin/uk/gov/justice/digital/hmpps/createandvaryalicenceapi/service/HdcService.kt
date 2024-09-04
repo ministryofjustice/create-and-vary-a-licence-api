@@ -15,9 +15,9 @@ class HdcService(
     val licenceData = this.hdcApiClient.getByBookingId(bookingId)
 
     return HdcLicenceData(
-      curfewAddress = licenceData?.curfewAddress,
-      firstNightCurfewHours = licenceData?.firstNightCurfewHours,
-      curfewHours = licenceData?.curfewHours,
+      curfewAddress = licenceData.curfewAddress,
+      firstNightCurfewHours = licenceData.firstNightCurfewHours,
+      curfewHours = licenceData.curfewHours,
     )
   }
 }

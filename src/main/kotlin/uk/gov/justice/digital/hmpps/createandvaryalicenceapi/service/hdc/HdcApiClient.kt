@@ -17,7 +17,7 @@ class HdcApiClient(@Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClien
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getByBookingId(bookingId: Long): HdcLicenceData? {
+  fun getByBookingId(bookingId: Long): HdcLicenceData {
     return hdcApiWebClient
       .get()
       .uri("/licence/hdc/$bookingId")
@@ -25,7 +25,7 @@ class HdcApiClient(@Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClien
       .retrieve()
       .bodyToMono(HdcLicenceData::class.java)
       .onErrorResume { propagate404Response(it, bookingId) }
-      .block()
+      .block()!!
   }
 
   private fun <API_RESPONSE_BODY_TYPE> propagate404Response(exception: Throwable, bookingId: Long): Mono<API_RESPONSE_BODY_TYPE> =
