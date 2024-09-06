@@ -15,7 +15,7 @@ class HdcApiMockServer : WireMockServer(8100) {
               "addressLine1": "123 Test Street",
               "addressLine2": null,
               "addressTown": "Test Area",
-              "postcode": "AB1 2CD"
+              "postCode": "AB1 2CD"
             },
             "firstNightCurfewHours": {
               "firstNightFrom": "15:00",
