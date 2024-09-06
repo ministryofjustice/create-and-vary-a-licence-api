@@ -19,7 +19,7 @@ class HdcApiMockServer : WireMockServer(8100) {
             },
             "firstNightCurfewHours": {
               "firstNightFrom": "15:00",
-              "firstNightTo": "07:00"
+              "firstNightUntil": "07:00"
             },
             "curfewHours": {
               "mondayFrom": "19:00",
