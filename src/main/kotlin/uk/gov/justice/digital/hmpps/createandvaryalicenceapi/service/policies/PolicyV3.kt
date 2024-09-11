@@ -23,15 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
 
-val HARD_STOP_CONDITION = AdditionalConditionAp(
-  category = "Making or maintaining contact with a person",
-  categoryShort = "Contact with a person",
-  code = "d5998ca1-62a2-4409-88cd-3137d893c2a0",
-  requiresInput = false,
-  text = "Not to approach or communicate with any victims of your offences without the prior approval of your supervising officer.",
-)
-
-val POLICY_V2_1 = LicencePolicy(
+val POLICY_V3 = LicencePolicy(
   additionalConditions = AdditionalConditions(
     ap = listOf(
       AdditionalConditionAp(
@@ -109,30 +101,38 @@ val POLICY_V2_1 = LicencePolicy(
             type = RADIO,
           ),
           Input(
-            label = "Select the relevant age",
+            label = "Enter the relevant age",
             name = "age",
-            options = listOf(
-              Option(
-                value = "16",
-              ),
-              Option(
-                value = "18",
-              ),
-            ),
-            type = RADIO,
+            type = TEXT,
           ),
         ),
         requiresInput = true,
         text = "Not to reside (not even to stay for one night) in the same household as [ANY / ANY FEMALE / ANY MALE] child under the age of [INSERT AGE] without the prior approval of your supervising officer.",
         tpl = "Not to reside (not even to stay for one night) in the same household as {gender} child under the age of {age} without the prior approval of your supervising officer.",
-        type = "RestrictionOfResidency",
+        type = "RestrictionOfResidencyPolicyV3",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
         categoryShort = "Contact with a person",
         code = "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
-        requiresInput = false,
-        text = "Attend all appointments arranged for you with a psychiatrist / psychologist / medical practitioner, unless otherwise approved by your supervising officer.",
+        inputs = listOf(
+          Input(
+            case = LOWER,
+            label = "Select all the relevant options",
+            listType = "AND",
+            name = "appointmentType",
+            options = listOf(
+              Option("Psychiatrist"),
+              Option("Psychologist"),
+              Option("Medical practitioner"),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "Attend all appointments arranged for you with a [PSYCHIATRIST / PSYCHOLOGIST / MEDICAL PRACTITIONER] unless otherwise approved by your supervising officer.",
+        tpl = "Attend all appointments arranged for you with a {appointmentType} unless otherwise approved by your supervising officer.",
+        type = "MedicalAppointmentType",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -140,13 +140,6 @@ val POLICY_V2_1 = LicencePolicy(
         code = "9ae2a336-3491-4667-aaed-dd852b09b4b9",
         requiresInput = false,
         text = "Receive home visits from a Mental Health Worker.",
-      ),
-      AdditionalConditionAp(
-        category = "Making or maintaining contact with a person",
-        categoryShort = "Contact with a person",
-        code = "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
-        requiresInput = false,
-        text = "Attend appointments, as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -206,15 +199,7 @@ val POLICY_V2_1 = LicencePolicy(
           Input(
             label = "Select the relevant age",
             name = "age",
-            options = listOf(
-              Option(
-                value = "16 years",
-              ),
-              Option(
-                value = "18 years",
-              ),
-            ),
-            type = RADIO,
+            type = TEXT,
           ),
           Input(
             case = CAPITALISED,
@@ -227,7 +212,7 @@ val POLICY_V2_1 = LicencePolicy(
         requiresInput = true,
         text = "Not to have unsupervised contact with [ANY / ANY FEMALE / ANY MALE] children under the age of [INSERT AGE] without the prior approval of your supervising officer and / or [INSERT NAME OF APPROPRIATE SOCIAL SERVICES DEPARTMENT] except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
         tpl = "Not to have unsupervised contact with {gender} children under the age of {age} without the prior approval of your supervising officer{socialServicesDepartment} except where that contact is inadvertent and not reasonably avoidable in the course of lawful daily life.",
-        type = "UnsupervisedContact",
+        type = "UnsupervisedContactPolicyV3",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
@@ -280,7 +265,28 @@ val POLICY_V2_1 = LicencePolicy(
         tpl = "Not to associate with any person currently or formerly associated with {nameOfOrganisation} without the prior approval of your supervising officer.",
         type = "NamedOrganisation",
       ),
+      AdditionalConditionAp(
+        category = "Making or maintaining contact with a person",
+        categoryShort = "Contact with a person",
+        code = "48c4ae87-b8d8-45d1-aded-daefe8ad07fe",
+        requiresInput = false,
+        text = "Not to engage or attempt to engage with commercial sexual services. Including companionship/friendship style services. This includes all services whether sexual/intimate or not.",
+      ),
       HARD_STOP_CONDITION,
+      AdditionalConditionAp(
+        category = "Making or maintaining contact with a person",
+        categoryShort = "Contact with a person",
+        code = "86e7a2cb-33b5-4079-84a4-f6579347c890",
+        requiresInput = false,
+        text = "Not to approach or contact any employee, contractor or volunteer working on behalf of HM Prison and Probation Service directly or indirectly outside of appointments/reporting requirements without the prior approval of your supervising officer.",
+      ),
+      AdditionalConditionAp(
+        category = "Making or maintaining contact with a person",
+        categoryShort = "Contact with a person",
+        code = "1905aa46-59dd-4eb7-b009-81467cc8c426",
+        requiresInput = false,
+        text = "Not to attempt to bribe, blackmail or coerce employee, contractor or volunteer working on behalf of HM Prison and Probation Service directly or indirectly to undertake actions on your behalf.",
+      ),
       AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
         categoryShort = "Programmes or activities",
@@ -292,31 +298,16 @@ val POLICY_V2_1 = LicencePolicy(
             name = "behaviourProblems",
             options = listOf(
               Option(
-                value = "alcohol",
+                value = "sexual offending",
               ),
               Option(
-                value = "drug",
-              ),
-              Option(
-                value = "sexual",
-              ),
-              Option(
-                value = "violent",
+                value = "violent offending",
               ),
               Option(
                 value = "gambling",
               ),
               Option(
-                value = "solvent abuse",
-              ),
-              Option(
-                value = "anger",
-              ),
-              Option(
-                value = "debt",
-              ),
-              Option(
-                value = "prolific offending behaviour",
+                value = "prolific offending",
               ),
               Option(
                 value = "offending behaviour",
@@ -326,8 +317,8 @@ val POLICY_V2_1 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your alcohol / drug / sexual / violent / gambling / solvent abuse / anger / debt / prolific / offending behaviour problems.",
-        tpl = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems} problems.",
+        text = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your [SEXUAL OFFENDING / VIOLENT OFFENDING / GAMBLING / PROLIFIC OFFENDING / OFFENDING BEHAVIOUR].",
+        tpl = "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems}.",
         type = "BehaviourProblems",
       ),
       AdditionalConditionAp(
@@ -338,21 +329,13 @@ val POLICY_V2_1 = LicencePolicy(
           Input(
             label = "Select the relevant age",
             name = "age",
-            options = listOf(
-              Option(
-                value = "16 years",
-              ),
-              Option(
-                value = "18 years",
-              ),
-            ),
-            type = RADIO,
+            type = TEXT,
           ),
         ),
         requiresInput = true,
         text = "Not to undertake work or other organised activity which will involve a person under the age of [INSERT AGE], either on a paid or unpaid basis without the prior approval of your supervising officer.",
         tpl = "Not to undertake work or other organised activity which will involve a person under the age of {age}, either on a paid or unpaid basis without the prior approval of your supervising officer.",
-        type = "WorkingWithChildren",
+        type = "WorkingWithChildrenPolicyV3",
       ),
       AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
@@ -362,32 +345,52 @@ val POLICY_V2_1 = LicencePolicy(
         text = "To engage with the Integrated Offender Management Team, and follow their instructions.",
       ),
       AdditionalConditionAp(
-        category = "Possession, ownership, control or inspection of specified items or documents",
-        categoryShort = "Items and documents",
-        code = "8e52e16e-1abf-4251-baca-2fabfcb243d0",
-        requiresInput = false,
-        text = "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+        category = "Participation in, or co-operation with, a programme or set of activities",
+        categoryShort = "Programmes or activities",
+        code = "625feb82-a5ab-4490-82e9-241218f775c5",
+        inputs = listOf(
+          Input(
+            label = "Select all that apply",
+            listType = "AND",
+            name = "services",
+            options = listOf(
+              Option(
+                value = "housing",
+              ),
+              Option(
+                value = "benefits",
+              ),
+
+              Option(
+                value = "early help",
+              ),
+
+              Option(
+                value = "children's services",
+              ),
+
+              Option(
+                value = "your support networks",
+              ),
+
+              Option(
+                value = "an education provider",
+              ),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "To comply with any requirements specified by your supervising officer to register and engage with [HOUSING / BENEFITS / EARLY HELP / CHILDREN'S SERVICES / YOUR SUPPORT NETWORKS / AN EDUCATION PROVIDER].",
+        tpl = "To comply with any requirements specified by your supervising officer to register and engage with {services}.",
+        type = "RegisterForServices",
       ),
       AdditionalConditionAp(
-        category = "Possession, ownership, control or inspection of specified items or documents",
-        categoryShort = "Items and documents",
-        code = "72d281c3-b194-43ab-812d-fea0683ada65",
+        category = "Participation in, or co-operation with, a programme or set of activities",
+        categoryShort = "Programmes or activities",
+        code = "b149bc47-b279-427b-9ddc-c472fdc74ba5",
         requiresInput = false,
-        text = "Not to own or possess a mobile phone with a photographic function without the prior approval of your supervising officer.",
-      ),
-      AdditionalConditionAp(
-        category = "Possession, ownership, control or inspection of specified items or documents",
-        categoryShort = "Items and documents",
-        code = "ed607a91-fe3a-4816-8eb9-b447c945935c",
-        requiresInput = false,
-        text = "Not to own or use a camera without the prior approval of your supervising officer.",
-      ),
-      AdditionalConditionAp(
-        category = "Possession, ownership, control or inspection of specified items or documents",
-        categoryShort = "Items and documents",
-        code = "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
-        requiresInput = false,
-        text = "To make any device capable of making or storing digital images (including a camera and a mobile phone with a camera function) available for inspection upon request.",
+        text = "To attend and engage with any appointments with staff at Job Centre Plus, unless otherwise approved by your supervising officer.",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -407,8 +410,32 @@ val POLICY_V2_1 = LicencePolicy(
         category = "Possession, ownership, control or inspection of specified items or documents",
         categoryShort = "Items and documents",
         code = "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
-        requiresInput = false,
-        text = "Not to delete the usage history on any internet enabled device or computer used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        inputs = listOf(
+          Input(
+            label = "Select all that apply",
+            listType = "OR",
+            name = "deviceTypes",
+            options = listOf(
+              Option(
+                value = "internet enabled device",
+              ),
+              Option(
+                value = "computer",
+              ),
+              Option(
+                value = "mobile phone",
+              ),
+              Option(
+                value = "digital cameras",
+              ),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERAS] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        tpl = "Not to delete the usage history on any {deviceTypes} used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        type = "UsageHistory",
       ),
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
@@ -439,7 +466,7 @@ val POLICY_V2_1 = LicencePolicy(
         category = "Disclosure of information",
         code = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
         requiresInput = false,
-        text = "Notify your supervising officer of any developing relationships, including the ending of any relationships.",
+        text = "Notify your supervising officer of any developing relationships, including status changes such as engagement, marriage, pregnancies or the ending of any relationships, and disclose the details of the person you are in a relationship with.",
       ),
       AdditionalConditionAp(
         category = "Disclosure of information",
@@ -455,9 +482,27 @@ val POLICY_V2_1 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Disclosure of information",
-        code = "8686a815-b7f0-43b6-9886-f01df6a48773",
-        requiresInput = false,
-        text = "Provide your supervising officer with the details of any bank accounts to which you are a signatory and of any credit cards you possess. You must also notify your supervising officer when becoming a signatory to any new bank account or credit card, and provide the account/card details. This condition will be reviewed on a monthly basis and may be amended or removed if it is felt that the level of risk that you present has reduced appropriately.",
+        code = "fcc61f29-cdab-4906-86ae-7e62afed7567",
+        inputs = listOf(
+          Input(
+            label = "Select all that apply",
+            listType = "AND",
+            name = "accountTypes",
+            options = listOf(
+              Option(
+                value = "bank accounts",
+              ),
+              Option(
+                value = "crypto currency accounts or wallets",
+              ),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
+        tpl = "Provide your supervising officer with the details of any {accountTypes} to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
+        type = "BankAccountDetails",
       ),
       AdditionalConditionAp(
         category = "Curfew arrangement",
@@ -591,20 +636,15 @@ val POLICY_V2_1 = LicencePolicy(
         code = "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
         inputs = listOf(
           Input(
-            label = "Enter the name of the area shown on the map",
-            name = "outOfBoundArea",
-            type = TEXT,
-          ),
-          Input(
             label = "Select a PDF map of the area this person must not enter",
             name = "outOfBoundFilename",
             type = FILE_UPLOAD,
           ),
         ),
         requiresInput = true,
-        text = "Not to enter the area of [CLEARLY SPECIFIED AREA], as defined by the attached map, without the prior approval of your supervising officer.",
-        tpl = "Not to enter the area of {outOfBoundArea}, as defined by the attached map, without the prior approval of your supervising officer.",
-        type = "OutOfBoundsRegion",
+        text = "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
+        tpl = "Not to enter the area as defined by the attached map without the prior approval of your supervising officer.",
+        type = "OutOfBoundsRegionPolicyV3",
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
@@ -682,15 +722,35 @@ val POLICY_V2_1 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Freedom of movement",
-        code = "bb401b88-2137-4154-be4a-5e05c168638a",
-        requiresInput = false,
-        text = "On release to be escorted by police to Approved Premises.",
-      ),
-      AdditionalConditionAp(
-        category = "Freedom of movement",
         code = "5d0416a9-a4ce-4b2c-8636-0b7abaa3680a",
         requiresInput = false,
         text = "To only attend places of worship which have been previously agreed with your supervising officer.",
+      ),
+      AdditionalConditionAp(
+        category = "Freedom of movement",
+        code = "99195049-f355-46fb-b7d8-aef87a1b19c5",
+        inputs = listOf(
+          Input(
+            label = "Enter the name of the event",
+            name = "eventName",
+            type = TEXT,
+          ),
+          Input(
+            label = "Select a PDF map of the area this person must not enter",
+            name = "outOfBoundFilename",
+            type = FILE_UPLOAD,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to enter the area as defined by the attached map, during the period that [NAME OF EVENT] takes place, including all occasions that the event takes place, without the prior permission of your supervising officer.",
+        tpl = "Not to enter the area as defined by the attached map, during the period that {eventName} takes place, including all occasions that the event takes place, without the prior permission of your supervising officer.",
+        type = "OutOfBoundsEvent",
+      ),
+      AdditionalConditionAp(
+        category = "Freedom of movement",
+        code = "1e9a66c6-f083-4c29-b209-b625252afbe5",
+        requiresInput = false,
+        text = "Notify your supervising officer of any travel outside of your home county, including on public transport, prior to any such journey taking place unless otherwise specified by your supervising officer.",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
@@ -698,10 +758,26 @@ val POLICY_V2_1 = LicencePolicy(
         code = "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
         inputs = listOf(
           Input(
-            case = CAPITALISED,
-            label = "Enter name of approved premises",
-            name = "approvedPremises",
-            type = TEXT,
+            label = "Choose what information to enter",
+            name = "addressOrGeneric",
+            options = listOf(
+              Option(
+                value = "The approved premises where you reside",
+              ),
+              Option(
+                value = "Name of approved premises",
+                conditional = Conditional(
+                  inputs = listOf(
+                    ConditionalInput(
+                      label = "Enter name of approved premises",
+                      name = "approvedPremises",
+                      type = TEXT,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            type = RADIO,
           ),
           Input(
             label = "Select when the person needs to report",
@@ -797,9 +873,9 @@ val POLICY_V2_1 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Report to staff at [NAME OF APPROVED PREMISES] at [TIME / DAILY], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
+        text = "Report to staff at [THE APPROVED PREMISES WHERE YOU RESIDE / NAME OF APPROVED PREMISES] at [TIME / DAILY / OTHER], unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on a [WEEKLY / MONTHLY / ETC] basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
         tpl = "Report to staff at {approvedPremises} at {reportingTime}{reportingTime1}{reportingTime2} {alternativeReportingFrequency || reportingFrequency}, unless otherwise authorised by your supervising officer. This condition will be reviewed by your supervising officer on {alternativeReviewPeriod || reviewPeriod} basis and may be amended or removed if it is felt that the level of risk you present has reduced appropriately.",
-        type = "ReportToApprovedPremises",
+        type = "ReportToApprovedPremisesPolicyV3",
       ),
       AdditionalConditionAp(
         category = "Supervision in the community by the supervising officer, or other responsible officer, or organisation",
@@ -918,6 +994,105 @@ val POLICY_V2_1 = LicencePolicy(
         text = "Not to participate directly or indirectly in organising and/or contributing to any demonstration, meeting, gathering or website without the prior approval of your supervising officer. This condition will be reviewed on a monthly basis and may be amended or removed if your risk is assessed as having changed.",
       ),
       AdditionalConditionAp(
+        category = "Restriction of specified conduct or specified acts",
+        categoryShort = "Restriction of conduct or acts",
+        code = "985d339a-b652-40e3-b0a8-5aafd5e121f1",
+        requiresInput = false,
+        text = "Not to partake in gambling, or making payments for other games of chance without the prior permission of your supervising officer.",
+      ),
+      AdditionalConditionAp(
+        category = "Restriction of specified conduct or specified acts",
+        categoryShort = "Restriction of conduct or acts",
+        code = "3b6b7c4f-6c06-438f-97a4-03c4167484dc",
+        inputs = listOf(
+          Input(
+            label = "Select when to contact the supervising officer",
+            name = "contactType",
+            options = listOf(
+              Option(
+                value = "Notify your supervising officer if you",
+              ),
+              Option(
+                value = "Request permission from your supervising officer before you",
+              ),
+            ),
+            type = RADIO,
+          ),
+          Input(
+            label = "Select all that apply",
+            listType = "OR",
+            name = "contentTypes",
+            options = listOf(
+              Option(
+                value = "social networking",
+              ),
+              Option(
+                value = "video sharing",
+              ),
+              Option(
+                value = "online chat-rooms",
+              ),
+              Option(
+                value = "podcasts",
+              ),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "[NOTIFY YOUR SUPERVISING OFFICER IF YOU / REQUEST PERMISSION FROM YOUR SUPERVISING OFFICER BEFORE YOU] upload, add, modify or stream any material on any site or app related to [SOCIAL NETWORKING / VIDEO SHARING / ONLINE CHAT-ROOMS / PODCASTS].",
+        tpl = "{contactType} upload, add, modify or stream any material on any site or app related to {contentTypes}.",
+        type = "TypesOfWebsites",
+      ),
+      AdditionalConditionAp(
+        category = "Restriction of specified conduct or specified acts",
+        categoryShort = "Restriction of conduct or acts",
+        code = "50c8c01e-ec95-45f9-ad48-efa89c4faec0",
+        inputs = listOf(
+          Input(
+            label = "Enter the type of website or app",
+            name = "contentType",
+            type = TEXT,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to access any site or app related to [TYPE OF WEBSITE/APP] on any devices without the permission of your supervising officer.",
+        tpl = "Not to access any site or app related to {contentType} on any devices without the permission of your supervising officer.",
+        type = "WebsiteAccess",
+      ),
+
+      AdditionalConditionAp(
+        category = "Restriction of specified conduct or specified acts",
+        categoryShort = "Restriction of conduct or acts",
+        code = "762677a4-4593-4bd2-a4bc-55d49b4c4230",
+        inputs = listOf(
+          Input(
+            label = "Select all that apply",
+            listType = "OR",
+            name = "services",
+            options = listOf(
+              Option(
+                value = "virtual private networks (VPNs)",
+              ),
+              Option(
+                value = "cloud storage",
+              ),
+              Option(
+                value = "virtual desktops",
+              ),
+              Option(
+                value = "automatic deletion of content"
+              )
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to use or install software related to [VIRTUAL PRIVATE NETWORKS (VPNs) / CLOUD STORAGE / VIRTUAL DESKTOPS / AUTOMATIC DELETION OF CONTENT] on any approved devices without the permission of your supervising officer.",
+        tpl = "Not to use or install software related to {services} on any approved devices without the permission of your supervising officer.",
+        type = "DigitalServices",
+      ),
+      AdditionalConditionAp(
         category = "Extremism",
         code = "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
         requiresInput = false,
@@ -954,10 +1129,37 @@ val POLICY_V2_1 = LicencePolicy(
         text = "To comply with any instruction given by your supervising officer requiring you to attend polygraph testing. To participate in polygraph sessions and examinations as instructed by or under the authority of your supervising officer and to comply with any instruction given to you during a polygraph session by the person conducting the polygraph.",
       ),
       AdditionalConditionAp(
-        category = "Drug testing",
+        category = "Drug, alcohol and solvent abuse",
         code = "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
         requiresInput = false,
         text = "Attend a location, as required by your supervising officer, to give a sample of oral fluid / urine in order to test whether you have any specified Class A and specified Class B drugs in your body, for the purpose of ensuring that you are complying with the condition of your licence requiring you to be of good behaviour. Do not take any action that could hamper or frustrate the drug testing process.",
+      ),
+      AdditionalConditionAp(
+        category = "Drug, alcohol and solvent abuse",
+        code = "f1d2888b-be86-4732-8874-44cb867865c2",
+        inputs = listOf(
+          Input(
+            label = "Select all that apply",
+            listType = "AND",
+            name = "substanceTypes",
+            options = listOf(
+              Option(
+                value = "a controlled drug",
+              ),
+              Option(
+                value = "alcohol",
+              ),
+              Option(
+                value = "solvents",
+              ),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A  CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
+        tpl = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, {substanceTypes}.",
+        type = "SubstanceMisuse",
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1064,6 +1266,75 @@ val POLICY_V2_1 = LicencePolicy(
         requiresInput = false,
         text = "You must let the police search you if they ask. You must also let them search a vehicle you are with, like a car or a motorbike.",
       ),
+      AdditionalConditionAp(
+        category = "Serious organised crime",
+        code = "e8478345-019a-4335-9656-73a77ffd3c42",
+        inputs = listOf(
+          Input(
+            label = "Enter the value in £",
+            name = "value",
+            type = TEXT,
+          ),
+        ),
+        requiresInput = true,
+        text = "Not to have cash in your possession in excess of the value of [VALUE IN £] without the prior approval of your supervising officer.",
+        tpl = "Not to have cash in your possession in excess of the value of £{value} without the prior approval of your supervising officer.",
+        type = "CashInPossession",
+      ),
+      AdditionalConditionAp(
+        category = "Serious organised crime",
+        code = "001328d0-d8bb-48ca-9f99-9c305081d0a2",
+        inputs = listOf(
+          Input(
+            label = "Enter the value in £",
+            name = "value",
+            type = TEXT,
+          ),
+        ),
+        requiresInput = true,
+        text = "Provide your supervising officer with details of any assets, property or possessions worth over [VALUE IN £].",
+        tpl = "Provide your supervising officer with details of any assets, property or possessions worth over £{value}.",
+        type = "ValueOfAssets",
+      ),
+      AdditionalConditionAp(
+        category = "Serious organised crime",
+        code = "a9ef7376-2ab6-4490-a568-a275f4f649ab",
+        inputs = listOf(
+          Input(
+            label = "Select all that apply",
+            listType = "AND",
+            name = "evidenceOfIncome",
+            options = listOf(
+              Option(
+                value = "payslips",
+              ),
+              Option(
+                value = "bank statements",
+              ),
+              Option(
+                value = "details of all forms of income",
+              ),
+            ),
+            type = CHECK,
+          ),
+        ),
+        requiresInput = true,
+        text = "Provide your supervising officer with copies of your [PAYSLIPS / BANK STATEMENTS / DETAILS OF ALL FORMS OF INCOME] upon their request and no less than once a month.",
+        tpl = "Provide your supervising officer with copies of your {evidenceOfIncome} upon their request and no less than once a month.",
+        type = "EvidenceOfIncome",
+      ),
+      AdditionalConditionAp(
+        category = "Serious organised crime",
+        code = "62e035ff-e755-472b-8047-3c5ea1d5b74e",
+        requiresInput = false,
+        text = "Provide your supervising officer with details of any money transfers which you initiate or receive.",
+      ),
+      AdditionalConditionAp(
+        category = "Serious organised crime",
+        code = "4e52fd9c-d436-4f82-9032-7813b130f620",
+        requiresInput = false,
+        text = "Provide your supervising officer with the details of the full postal addresses of all premises and storage facilities, including business addresses, to which you have a right of access.",
+      ),
     ),
     pss = listOf(
       AdditionalConditionPss(
@@ -1130,6 +1401,12 @@ val POLICY_V2_1 = LicencePolicy(
       replacements = listOf(
         "0a370862-5426-49c1-b6d4-3d074d78a81a",
         "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
+      ),
+    ),
+    ChangeHint(
+      previousCode = "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
+      replacements = listOf(
+        "f1d2888b-be86-4732-8874-44cb867865c2",
       ),
     ),
   ),
@@ -1207,5 +1484,5 @@ val POLICY_V2_1 = LicencePolicy(
       ),
     ),
   ),
-  version = "2.1",
+  version = "3.0",
 )
