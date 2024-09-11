@@ -13,13 +13,7 @@ class ReleaseDateService(
   private val workingDaysService: WorkingDaysService,
   @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
-  @Value("\${maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus:2}") private val maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus: Int = 2,
 ) {
-
-  fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
-    return maxNumberOfWorkingDaysToUpdateLicenceTimeOutStatus.workingDaysAfter(LocalDate.now(now ?: clock))
-  }
-
   fun isInHardStopPeriod(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): Boolean {
     val now = overrideClock ?: clock
     val hardStopDate = getHardStopDate(sentenceDateHolder)
@@ -52,7 +46,11 @@ class ReleaseDateService(
   fun getEarliestReleaseDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
     val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate ?: return null
     return when {
-      isEligibleForEarlyRelease(sentenceDateHolder) -> getEarliestDateBefore(maxNumberOfWorkingDaysAllowedForEarlyRelease, releaseDate)
+      isEligibleForEarlyRelease(sentenceDateHolder) -> getEarliestDateBefore(
+        maxNumberOfWorkingDaysAllowedForEarlyRelease,
+        releaseDate,
+      )
+
       else -> releaseDate
     }
   }
@@ -91,7 +89,8 @@ class ReleaseDateService(
   }
 
   private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
-    val date = if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
+    val date =
+      if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
     return 2.workingDaysBefore(date)
   }
 

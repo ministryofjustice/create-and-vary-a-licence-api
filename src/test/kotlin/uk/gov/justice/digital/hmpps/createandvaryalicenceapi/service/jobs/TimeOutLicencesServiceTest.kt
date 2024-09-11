@@ -54,7 +54,6 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(releaseDateService, times(0)).getCutOffDateForLicenceTimeOut()
     verify(licenceRepository, times(0)).getAllLicencesToTimeOut()
   }
 

@@ -37,6 +37,10 @@ hmpps:
     api:
       url: "https://document-api-dev.hmpps.service.justice.gov.uk"
 
+  hdc:
+    api:
+      url: "https://hdc-api-dev.hmpps.service.justice.gov.uk"
+
 notify:
   enabled: false
 
