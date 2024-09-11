@@ -1081,8 +1081,8 @@ val POLICY_V3 = LicencePolicy(
                 value = "virtual desktops",
               ),
               Option(
-                value = "automatic deletion of content"
-              )
+                value = "automatic deletion of content",
+              ),
             ),
             type = CHECK,
           ),
