@@ -16,7 +16,7 @@ object Fields {
    * Some fields are only used for display purposes, e.g: expanding conditional inputs.
    * These fields do not contribute to the licence and should not be played back to the user.
    */
-  val NON_CONTRIBUTING_FIELDS = setOf("numberOfCurfews", "nameTypeAndOrAddress")
+  val NON_CONTRIBUTING_FIELDS = setOf("numberOfCurfews", "nameTypeAndOrAddress", "addressOrGeneric")
 }
 
 enum class InputType(@JsonValue val description: String) {
