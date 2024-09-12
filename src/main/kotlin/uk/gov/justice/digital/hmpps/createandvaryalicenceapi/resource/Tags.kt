@@ -9,6 +9,7 @@ class Tags {
     const val COM = "Community Offender Manager"
     const val EVENTS = "Events"
     const val EXCLUSION_ZONES = "Exclusion zones"
+    const val HDC = "HDC"
     const val JOBS = "Jobs"
     const val LICENCES = "Licences"
     const val LICENCE_CONDITIONS = "Licence Conditions"

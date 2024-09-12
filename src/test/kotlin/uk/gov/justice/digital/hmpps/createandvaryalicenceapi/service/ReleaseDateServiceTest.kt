@@ -42,6 +42,10 @@ class ReleaseDateServiceTest {
     )
   }
 
+  fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
+    return workingDaysService.workingDaysAfter(LocalDate.now(now)).take(2).last()
+  }
+
   @Nested
   inner class `Earliest release date` {
     @Test
@@ -229,21 +233,21 @@ class ReleaseDateServiceTest {
     @Test
     fun `should return cut-off date as 2018-03-14 when job execution date is 2018-03-12`() {
       val now = createClock("2018-03-12T00:00:00Z")
-      val cutOffDate = service.getCutOffDateForLicenceTimeOut(now)
+      val cutOffDate = getCutOffDateForLicenceTimeOut(now)
       assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-14")))
     }
 
     @Test
     fun `should return cut-off date as 2018-03-20 when job execution date is 2018-03-16 as weekend comes in between`() {
       val now = createClock("2018-03-16T00:00:00Z")
-      val cutOffDate = service.getCutOffDateForLicenceTimeOut(now)
+      val cutOffDate = getCutOffDateForLicenceTimeOut(now)
       assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-20")))
     }
 
     @Test
     fun `should return cut-off date as 2018-03-28 when job execution date is 2018-03-23 as weekend and one bank holiday comes in between`() {
       val now = createClock("2018-03-23T00:00:00Z")
-      val cutOffDate = service.getCutOffDateForLicenceTimeOut(now)
+      val cutOffDate = getCutOffDateForLicenceTimeOut(now)
       assertTrue(cutOffDate.isEqual(LocalDate.parse("2018-03-28")))
     }
   }
@@ -265,7 +269,7 @@ class ReleaseDateServiceTest {
     @Test
     fun `licence is not in hard stop period if ARD is after the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = service.getCutOffDateForLicenceTimeOut(now)
+      val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
         actualReleaseDate = cutOff.plusDays(1),
@@ -278,7 +282,7 @@ class ReleaseDateServiceTest {
     @Test
     fun `licence is in hard stop period if ARD is before the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
-      val cutOff = service.getCutOffDateForLicenceTimeOut(now)
+      val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
         actualReleaseDate = cutOff.minusDays(1),
@@ -291,10 +295,11 @@ class ReleaseDateServiceTest {
     @Test
     fun `licence is in hard stop period if ARD is at the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
+      val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
-        conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
+        actualReleaseDate = cutOff,
+        conditionalReleaseDate = cutOff,
       )
 
       assertThat(service.isInHardStopPeriod(licence, now)).isTrue
@@ -328,10 +333,11 @@ class ReleaseDateServiceTest {
     @Test
     fun `licence is in hard stop period if ARD is absent but CRD is at the timeout threshold`() {
       val now = createClock("2018-03-12T00:00:00Z")
+      val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
         actualReleaseDate = null,
-        conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
+        conditionalReleaseDate = cutOff,
       )
 
       assertThat(service.isInHardStopPeriod(licence, now)).isTrue
@@ -340,10 +346,11 @@ class ReleaseDateServiceTest {
     @Test
     fun `returns false if CRD is absent`() {
       val now = createClock("2018-03-12T00:00:00Z")
+      val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
         actualReleaseDate = null,
-        conditionalReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
+        conditionalReleaseDate = cutOff,
         licenceStartDate = null,
       )
 
@@ -353,9 +360,10 @@ class ReleaseDateServiceTest {
     @Test
     fun `returns false if licence start date is absent`() {
       val now = createClock("2018-03-12T00:00:00Z")
+      val cutOff = getCutOffDateForLicenceTimeOut(now)
 
       val licence = createCrdLicence().copy(
-        actualReleaseDate = service.getCutOffDateForLicenceTimeOut(now),
+        actualReleaseDate = cutOff,
         conditionalReleaseDate = null,
       )
 

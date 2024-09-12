@@ -69,6 +69,10 @@ hmpps:
     api:
       url: http://localhost:8099/api
       enabled: true
+  hdc:
+    api:
+      url: http://localhost:8100
+      enabled: true
 
 notify:
   enabled: false
