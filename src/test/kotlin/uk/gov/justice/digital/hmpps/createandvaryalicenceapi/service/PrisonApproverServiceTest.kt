@@ -191,6 +191,60 @@ class PrisonApproverServiceTest {
     verify(licenceRepository, times(1)).getRecentlyApprovedLicences(anyList(), any<LocalDate>())
   }
 
+  @Test
+  fun `find recently approved licences matching criteria - returns the original licence for a HDC licence`() {
+    val aRecentlyApprovedLicence = TestData.createHdcLicence().copy(
+      id = 1,
+      actualReleaseDate = LocalDate.now().minusDays(1),
+      conditionalReleaseDate = LocalDate.now(),
+      approvedByName = "jim smith",
+      statusCode = LicenceStatus.INACTIVE,
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+      submittedBy = com(),
+      updatedBy = com(),
+      submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+    )
+
+    val activeVariationLicence = createVariationLicence().copy(
+      id = aRecentlyApprovedLicence.id + 1,
+      statusCode = LicenceStatus.ACTIVE,
+      variationOfId = aRecentlyApprovedLicence.id,
+    )
+
+    whenever(licenceRepository.findById(aRecentlyApprovedLicence.id)).thenReturn(
+      Optional.of(
+        aRecentlyApprovedLicence,
+      ),
+    )
+    whenever(
+      licenceRepository.getRecentlyApprovedLicences(
+        anyList(),
+        any<LocalDate>(),
+      ),
+    ).thenReturn(
+      listOf(
+        activeVariationLicence,
+      ),
+    )
+
+    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
+
+    assertThat(licenceSummaries).isEqualTo(
+      listOf(
+        aRecentlyApprovedLicenceSummary.copy(
+          kind = LicenceKind.HDC,
+          surname = activeVariationLicence.surname,
+          forename = activeVariationLicence.forename,
+          licenceStatus = LicenceStatus.INACTIVE,
+          submittedByFullName = com().fullName,
+          updatedByFullName = com().fullName,
+          submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+        ),
+      ),
+    )
+    verify(licenceRepository, times(1)).getRecentlyApprovedLicences(anyList(), any<LocalDate>())
+  }
+
   @Nested
   inner class `getting licences for approval` {
 
