@@ -395,6 +395,13 @@ val POLICY_V3 = LicencePolicy(
       AdditionalConditionAp(
         category = "Possession, ownership, control or inspection of specified items or documents",
         categoryShort = "Items and documents",
+        code = "8e52e16e-1abf-4251-baca-2fabfcb243d0",
+        requiresInput = false,
+        text = "Not to own or possess more than one mobile phone or SIM card without the prior approval of your supervising officer and to provide your supervising officer with details of that mobile telephone or one you have regular use of, including the IMEI number and the SIM card that you possess.",
+      ),
+      AdditionalConditionAp(
+        category = "Possession, ownership, control or inspection of specified items or documents",
+        categoryShort = "Items and documents",
         code = "5fa04bbf-6b7c-4b65-9388-a0115cd365a6",
         requiresInput = false,
         text = "To surrender your passport(s) to your supervising officer and to notify your supervising officer of any intention to apply for a new passport.",
