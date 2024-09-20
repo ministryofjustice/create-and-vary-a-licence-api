@@ -12,7 +12,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
@@ -63,8 +63,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Successfully retrieve staff create caseload`() {
-      communityApiMockServer.stubGetStaffDetailsByUsername()
-      communityApiMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       probationSearchMockServer.stubGetOffendersByCrn()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
@@ -120,8 +120,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Successfully retrieve team create caseload`() {
-      communityApiMockServer.stubGetStaffDetailsByUsername()
-      communityApiMockServer.stubGetManagedOffendersByTeam("teamC")
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffendersByTeam("teamC")
       probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
@@ -180,8 +180,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-variation-licence-for-staff-vary-caseload.sql",
     )
     fun `Successfully retrieve staff vary caseload`() {
-      communityApiMockServer.stubGetStaffDetailsByUsername()
-      communityApiMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       probationSearchMockServer.stubGetOffendersByCrn()
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("staff-vary-case-load-prisoners"))
 
@@ -234,8 +234,8 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       "classpath:test_data/seed-variation-licence-for-team-vary-caseload.sql",
     )
     fun `Successfully retrieve team vary caseload`() {
-      communityApiMockServer.stubGetStaffDetailsByUsername()
-      communityApiMockServer.stubGetManagedOffendersByTeam("teamC")
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffendersByTeam("teamC")
       probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-vary-case-load-prisoners"))
 
@@ -260,7 +260,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
   private companion object {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
-    val communityApiMockServer = CommunityApiMockServer()
+    val deliusMockServer = DeliusMockServer()
     val govUkMockServer = GovUkMockServer()
 
     @JvmStatic
@@ -268,7 +268,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun startMocks() {
       prisonerSearchApiMockServer.start()
       probationSearchMockServer.start()
-      communityApiMockServer.start()
+      deliusMockServer.start()
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
@@ -278,7 +278,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonerSearchApiMockServer.stop()
       probationSearchMockServer.stop()
-      communityApiMockServer.stop()
+      deliusMockServer.stop()
       govUkMockServer.stop()
     }
   }

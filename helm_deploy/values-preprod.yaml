@@ -13,7 +13,7 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/oauth/token"
-    HMPPS_COMMUNITY_API_URL: "https://community-api.pre-prod.delius.probation.hmpps.dsd.io"
+    HMPPS_DELIUS_API_URL: "https://create-and-vary-a-licence-and-delius-preprod.hmpps.service.justice.gov.uk"
     HMPPS_DOCUMENT_API_URL: "https://document-api-preprod.hmpps.service.justice.gov.uk/"
     HMPPS_HDC_API_URL: "https://hdc-api-preprod.hmpps.service.justice.gov.uk/"
     HMPPS_PRISON_API_URL: "https://prison-api-preprod.prison.service.justice.gov.uk/api"

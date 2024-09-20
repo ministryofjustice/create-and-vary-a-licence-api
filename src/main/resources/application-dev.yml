@@ -23,7 +23,7 @@ hmpps:
   prisonregister:
     api:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
-  community:
+  delius:
     api:
        url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
   probationsearch:

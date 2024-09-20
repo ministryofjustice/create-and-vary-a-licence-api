@@ -1,13 +1,16 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 
 @Component
-class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiClient: WebClient) {
+class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val communityApiClient: WebClient) {
 
   fun getTeamsCodesForUser(staffIdentifier: Long): List<String> {
     val communityApiResponse = getStaffByIdentifier(staffIdentifier)
@@ -18,19 +21,26 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   fun getStaffByIdentifier(staffIdentifier: Long): User? =
     communityApiClient
       .get()
-      .uri("/secure/staff/staffIdentifier/{staffIdentifier}", staffIdentifier)
+      .uri("/staff/byid/$staffIdentifier", staffIdentifier)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(User::class.java)
       .block()
 
-  fun getAllOffenderManagers(crn: String): List<CommunityOrPrisonOffenderManager> {
+  fun getOffenderManager(crn: String): CommunityOrPrisonOffenderManager? {
     val communityApiResponse = communityApiClient
       .get()
-      .uri("/secure/offenders/crn/{crn}/allOffenderManagers", crn)
+      .uri("/probation-case/{crn}/responsible-community-manager", crn)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
-      .bodyToMono(typeReference<List<CommunityOrPrisonOffenderManager>>())
+      .bodyToMono(typeReference<CommunityOrPrisonOffenderManager>())
+      .onErrorResume {
+        when { it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
+          Mono.empty()
+        }
+        else -> Mono.error(it)
+        }
+      }
       .block()
     return communityApiResponse
       ?: error("Unexpected null response from API")
@@ -39,7 +49,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   fun getStaffDetailsByUsername(usernames: List<String>): List<User> {
     val communityApiResponse = communityApiClient
       .post()
-      .uri("/secure/staff/list")
+      .uri("/staff")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(usernames)
       .retrieve()
@@ -52,7 +62,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffenderCrn> {
     val communityApiResponse = communityApiClient
       .get()
-      .uri("/secure/staff/staffIdentifier/$staffIdentifier/caseload/managedOffenders", staffIdentifier)
+      .uri("/staff/byid/$staffIdentifier/caseload/managed-offenders", staffIdentifier)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<ManagedOffenderCrn>>())
@@ -63,7 +73,7 @@ class CommunityApiClient(@Qualifier("oauthCommunityApiClient") val communityApiC
   fun getManagedOffendersByTeam(teamCode: String): List<ManagedOffenderCrn> {
     val communityApiResponse = communityApiClient
       .get()
-      .uri("/secure/team/$teamCode/caseload/managedOffenders")
+      .uri("/team/$teamCode/caseload/managed-offenders")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<ManagedOffenderCrn>>())

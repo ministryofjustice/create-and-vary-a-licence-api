@@ -20,14 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -37,14 +30,14 @@ import java.time.Month
 
 class ComCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
-  private val communityApiClient = mock<CommunityApiClient>()
+  private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceService = mock<LicenceService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchService = mock<PrisonerSearchService>()
 
   private val service = ComCaseloadService(
     caseloadService,
-    communityApiClient,
+    deliusApiClient,
     licenceService,
     prisonerSearchService,
     probationSearchApiClient,
@@ -58,7 +51,7 @@ class ComCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(communityApiClient, licenceService, prisonerSearchService, probationSearchApiClient)
+    reset(deliusApiClient, licenceService, prisonerSearchService, probationSearchApiClient)
   }
 
   @Test
@@ -121,14 +114,14 @@ class ComCaseloadServiceTest {
   @Test
   fun `it filters invalid data due to mismatch between delius and nomis`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(offenderCrn = "X12346"),
-      ManagedOffenderCrn(offenderCrn = "X12347"),
-      ManagedOffenderCrn(offenderCrn = "X12348"),
+      ManagedOffenderCrn(crn = "X12346"),
+      ManagedOffenderCrn(crn = "X12347"),
+      ManagedOffenderCrn(crn = "X12348"),
     )
 
-    whenever(communityApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(id = 1, crn = "X12346", nomsNumber = "AB1234D"),
         createOffenderDetail(id = 2, crn = "X12347"),
@@ -158,22 +151,22 @@ class ComCaseloadServiceTest {
   @Test
   fun `it filters offenders who are ineligible for a licence`() {
     val managedOffenders = listOf(
-      ManagedOffenderCrn(offenderCrn = "X12348"),
-      ManagedOffenderCrn(offenderCrn = "X12349"),
-      ManagedOffenderCrn(offenderCrn = "X12350"),
-      ManagedOffenderCrn(offenderCrn = "X12351"),
-      ManagedOffenderCrn(offenderCrn = "X12352"),
-      ManagedOffenderCrn(offenderCrn = "X12353"),
-      ManagedOffenderCrn(offenderCrn = "X12354"),
-      ManagedOffenderCrn(offenderCrn = "X12355"),
-      ManagedOffenderCrn(offenderCrn = "X12356"),
+      ManagedOffenderCrn(crn = "X12348"),
+      ManagedOffenderCrn(crn = "X12349"),
+      ManagedOffenderCrn(crn = "X12350"),
+      ManagedOffenderCrn(crn = "X12351"),
+      ManagedOffenderCrn(crn = "X12352"),
+      ManagedOffenderCrn(crn = "X12353"),
+      ManagedOffenderCrn(crn = "X12354"),
+      ManagedOffenderCrn(crn = "X12355"),
+      ManagedOffenderCrn(crn = "X12356"),
     )
 
     whenever(
-      communityApiClient.getManagedOffenders(deliusStaffIdentifier),
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
         createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
@@ -285,32 +278,32 @@ class ComCaseloadServiceTest {
   fun `it builds the staff create caseload`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12349",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12349",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 2L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12350",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12350",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 3L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12351",
-        staff = StaffDetail(forenames = null, surname = null, code = "X1234", unallocated = true),
+        crn = "X12351",
+        staff = StaffDetail(name = Name(forename = null, surname = null), code = "X1234", unallocated = true, id = 4L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12352",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12352",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 5L),
       ),
     )
 
     whenever(
-      communityApiClient.getManagedOffenders(deliusStaffIdentifier),
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
         createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
@@ -370,14 +363,13 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
           username = "sherlockholmes",
-          staffCode = "X54321",
-          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
           teams = emptyList(),
-          staffIdentifier = null,
         ),
       ),
     )
@@ -421,20 +413,20 @@ class ComCaseloadServiceTest {
 
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12349",
-        staff = StaffDetail(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
+        crn = "X12349",
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321", id = 2L),
       ),
     )
 
     whenever(
-      communityApiClient.getManagedOffendersByTeam(selectedTeam),
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
         createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
@@ -455,7 +447,7 @@ class ComCaseloadServiceTest {
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
-    verify(communityApiClient).getManagedOffendersByTeam(selectedTeam)
+    verify(deliusApiClient).getManagedOffendersByTeam(selectedTeam)
     assertThat(caseload).hasSize(2)
     verifyCase(
       case = caseload[0],
@@ -490,20 +482,20 @@ class ComCaseloadServiceTest {
 
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12349",
-        staff = StaffDetail(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
+        crn = "X12349",
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321", id = 1L),
       ),
     )
 
     whenever(
-      communityApiClient.getManagedOffendersByTeam(selectedTeam),
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
         createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
@@ -531,7 +523,7 @@ class ComCaseloadServiceTest {
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 
-    verify(communityApiClient).getManagedOffendersByTeam("team C")
+    verify(deliusApiClient).getManagedOffendersByTeam("team C")
     assertThat(caseload).hasSize(1)
     verifyCase(
       case = caseload[0],
@@ -543,24 +535,24 @@ class ComCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
     )
 
-    verify(communityApiClient).getManagedOffendersByTeam("team C")
+    verify(deliusApiClient).getManagedOffendersByTeam("team C")
   }
 
   @Test
   fun `it builds the staff vary caseload where there is a single licence`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(code = "X1234", forenames = "Joe", surname = "Bloggs"),
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"), id = 1L),
       ),
     )
 
-    whenever(communityApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
     whenever(
       probationSearchApiClient.getOffendersByCrn(
         managedOffenders.map
-          { it.offenderCrn },
+          { it.crn },
       ),
     ).thenReturn(
       listOf(
@@ -597,14 +589,13 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
           username = "sherlockholmes",
-          staffCode = "X54321",
-          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
-          teams = emptyList(),
-          staffIdentifier = null,
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
+          teams = emptyList()
         ),
       ),
     )
@@ -625,17 +616,17 @@ class ComCaseloadServiceTest {
   fun `it builds the staff vary caseload where there are multiple licences`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(code = "X1234", forenames = "Joe", surname = "Bloggs"),
+        crn = "X12348",
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"), id = 1L),
       ),
     )
 
-    whenever(communityApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
     whenever(
       probationSearchApiClient.getOffendersByCrn(
         managedOffenders.map
-          { it.offenderCrn },
+          { it.crn },
       ),
     ).thenReturn(
       listOf(
@@ -680,14 +671,13 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
           username = "sherlockholmes",
-          staffCode = "X54321",
-          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
           teams = emptyList(),
-          staffIdentifier = null,
         ),
       ),
     )
@@ -708,15 +698,15 @@ class ComCaseloadServiceTest {
   fun `it builds the staff vary caseload with Review Needed status`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
       ),
     )
 
     whenever(
-      communityApiClient.getManagedOffenders(deliusStaffIdentifier),
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
       ),
@@ -753,14 +743,13 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
           username = "sherlockholmes",
-          staffCode = "X54321",
-          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
-          teams = emptyList(),
-          staffIdentifier = null,
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
+          teams = emptyList()
         ),
       ),
     )
@@ -786,20 +775,20 @@ class ComCaseloadServiceTest {
 
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
       ),
       ManagedOffenderCrn(
-        offenderCrn = "X12349",
-        staff = StaffDetail(forenames = "Sherlock", surname = "Holmes", code = "X54321"),
+        crn = "X12349",
+        staff = StaffDetail(name = Name(forename ="Sherlock", surname = "Holmes"), code = "X54321", id = 2L),
       ),
     )
 
     whenever(
-      communityApiClient.getManagedOffendersByTeam(selectedTeam),
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
         createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
@@ -849,28 +838,26 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
           username = "sherlockholmes",
-          staffCode = "X54321",
-          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
           teams = emptyList(),
-          staffIdentifier = null,
         ),
         User(
           username = "joebloggs",
-          staffCode = "X1234",
-          staff = StaffHuman(forenames = "Joe", surname = "Bloggs"),
+          code = "X1234",
+          name = Name(forename = "Joe", surname = "Bloggs"),
           teams = emptyList(),
-          staffIdentifier = null,
         ),
       ),
     )
 
     val caseload = service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
-    verify(communityApiClient).getManagedOffendersByTeam("team C")
+    verify(deliusApiClient).getManagedOffendersByTeam("team C")
     assertThat(caseload).hasSize(2)
     verifyCase(
       caseload[0],
@@ -896,16 +883,16 @@ class ComCaseloadServiceTest {
   fun `it builds the team vary caseload with Review Needed status`() {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
       ),
     )
 
     whenever(
-      communityApiClient.getManagedOffenders(deliusStaffIdentifier),
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.offenderCrn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
         createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
       ),
@@ -946,14 +933,13 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
           username = "sherlockholmes",
-          staffCode = "X54321",
-          staff = StaffHuman(forenames = "Sherlock", surname = "Holmes"),
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
           teams = emptyList(),
-          staffIdentifier = null,
         ),
       ),
     )
@@ -979,17 +965,17 @@ class ComCaseloadServiceTest {
 
     val managedOffenders = Array(1100) {
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail( id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))
       )
     }.asList()
 
     whenever(
-      communityApiClient.getManagedOffendersByTeam(selectedTeam),
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
     service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
-    verify(communityApiClient).getManagedOffendersByTeam(selectedTeam)
+    verify(deliusApiClient).getManagedOffendersByTeam(selectedTeam)
     verify(probationSearchApiClient, times(3)).getOffendersByCrn(any())
   }
 
@@ -999,13 +985,13 @@ class ComCaseloadServiceTest {
 
     val managedOffenders = Array(1500) {
       ManagedOffenderCrn(
-        offenderCrn = "X12348",
-        staff = StaffDetail(forenames = "Joe", surname = "Bloggs", code = "X1234"),
+        crn = "X12348",
+        staff = StaffDetail( id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))
       )
     }.asList()
 
     whenever(
-      communityApiClient.getManagedOffendersByTeam(selectedTeam),
+      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
     whenever(probationSearchApiClient.getOffendersByCrn(any())).thenReturn(

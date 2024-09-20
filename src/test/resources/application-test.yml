@@ -56,7 +56,7 @@ hmpps:
   prisonregister:
     api:
       url: http://localhost:8092/api
-  community:
+  delius:
     api:
       url: http://localhost:8093
   probationsearch:

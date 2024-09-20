@@ -21,23 +21,23 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonU
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.TeamCountsDto
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 
 class StaffServiceTest {
   private val staffRepository = mock<StaffRepository>()
-  private val communityApiClient = mock<CommunityApiClient>()
+  private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
 
   private val service =
     StaffService(
       staffRepository,
-      communityApiClient,
+      deliusApiClient,
       licenceRepository,
     )
 
   @BeforeEach
   fun reset() {
-    reset(staffRepository, communityApiClient, licenceRepository)
+    reset(staffRepository, deliusApiClient, licenceRepository)
     whenever(staffRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
   }
 
@@ -208,14 +208,14 @@ class StaffServiceTest {
         ),
       )
       whenever(staffRepository.findByStaffIdentifier(any())).thenReturn(com)
-      whenever(communityApiClient.getTeamsCodesForUser(any())).thenReturn(teamCodes)
+      whenever(deliusApiClient.getTeamsCodesForUser(any())).thenReturn(teamCodes)
       whenever(licenceRepository.getLicenceReviewCountForCom(any())).thenReturn(1L)
       whenever(licenceRepository.getLicenceReviewCountForTeams(any())).thenReturn(teamCountsDto)
 
       val result = service.getReviewCounts(com.staffIdentifier)
 
       verify(staffRepository, times(1)).findByStaffIdentifier(3000)
-      verify(communityApiClient, times(1)).getTeamsCodesForUser(3000)
+      verify(deliusApiClient, times(1)).getTeamsCodesForUser(3000)
       verify(licenceRepository, times(1)).getLicenceReviewCountForCom(com)
       verify(licenceRepository, times(1)).getLicenceReviewCountForTeams(teamCodes)
 
@@ -236,7 +236,7 @@ class StaffServiceTest {
       }
 
       verify(staffRepository, times(1)).findByStaffIdentifier(3000)
-      verifyNoInteractions(communityApiClient)
+      verifyNoInteractions(deliusApiClient)
       verifyNoInteractions(licenceRepository)
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)

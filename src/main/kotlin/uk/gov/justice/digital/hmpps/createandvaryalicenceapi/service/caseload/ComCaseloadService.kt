@@ -1,21 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseLoadLicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -24,7 +16,7 @@ import java.time.LocalDate
 @Service
 class ComCaseloadService(
   private val caseloadService: CaseloadService,
-  private val communityApiClient: CommunityApiClient,
+  private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
   private val prisonerSearchService: PrisonerSearchService,
   private val probationSearchApiClient: ProbationSearchApiClient,
@@ -35,7 +27,7 @@ class ComCaseloadService(
   }
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
-    val managedOffenders = communityApiClient.getManagedOffenders(deliusStaffIdentifier)
+    val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenderToOffenderDetailMap)
     var caseload = filterOffendersEligibleForLicence(deliusAndNomisRecords)
@@ -47,7 +39,7 @@ class ComCaseloadService(
 
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
-    val managedOffenders = communityApiClient.getManagedOffendersByTeam(teamCode)
+    val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
     var caseload = pairDeliusRecordsWithNomis(managedOffenderToOffenderDetailMap)
     caseload = filterOffendersEligibleForLicence(caseload)
@@ -58,7 +50,7 @@ class ComCaseloadService(
   }
 
   fun getStaffVaryCaseload(deliusStaffIdentifier: Long): List<ComCase> {
-    val managedOffenders = communityApiClient.getManagedOffenders(deliusStaffIdentifier)
+    val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
     var caseload = pairDeliusRecordsWithNomis(managedOffenderToOffenderDetailMap)
     caseload = mapOffendersToLicences(caseload)
@@ -69,7 +61,7 @@ class ComCaseloadService(
 
   fun getTeamVaryCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
-    val managedOffenders = communityApiClient.getManagedOffendersByTeam(teamCode)
+    val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
     val managedOffenderToOffenderDetailMap = mapManagedOffenderRecordToOffenderDetail(managedOffenders)
     var caseload = pairDeliusRecordsWithNomis(managedOffenderToOffenderDetailMap)
     caseload = mapOffendersToLicences(caseload)
@@ -79,13 +71,13 @@ class ComCaseloadService(
   }
 
   private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
-    val crns = caseload.map { case -> case.offenderCrn }
+    val crns = caseload.map { case -> case.crn }
     val batchedCrns = crns.chunked(PROBATION_SEARCH_BATCH_SIZE)
     val batchedOffenders = batchedCrns.map { batch -> probationSearchApiClient.getOffendersByCrn(batch) }
 
     val offenders = batchedOffenders.flatten()
     return offenders.map { offender ->
-      DeliusRecord(offender, caseload.find { case -> case.offenderCrn == offender.otherIds.crn }!!)
+      DeliusRecord(offender, caseload.find { case -> case.crn == offender.otherIds.crn }!!)
     }
   }
 
@@ -148,7 +140,7 @@ class ComCaseloadService(
               CaseLoadLicenceSummary(
                 licenceStatus = licenceStatus,
                 licenceType = licenceType,
-                crn = case.deliusRecord?.managedOffenderCrn?.offenderCrn,
+                crn = case.deliusRecord?.managedOffenderCrn?.crn,
                 nomisId = case.nomisRecord.prisonerNumber,
                 name = name,
                 hardStopDate = null,
@@ -165,7 +157,7 @@ class ComCaseloadService(
               CaseLoadLicenceSummary(
                 licenceStatus = licenceStatus,
                 licenceType = licenceType,
-                crn = case.deliusRecord?.managedOffenderCrn?.offenderCrn,
+                crn = case.deliusRecord?.managedOffenderCrn?.crn,
                 nomisId = case.nomisRecord.prisonerNumber,
                 name = name,
                 hardStopDate = case.cvlFields.hardStopDate,
@@ -230,7 +222,7 @@ class ComCaseloadService(
       case.licences.find { licence -> case.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.comUsername
     }
 
-    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
+    val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames)
     return caseload.map { case ->
       val responsibleCom = coms.find { com ->
         com.username?.lowercase() == case.licences.find { licence -> case.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.comUsername?.lowercase()
@@ -239,8 +231,8 @@ class ComCaseloadService(
       if (responsibleCom != null) {
         case.copy(
           probationPractitioner = ProbationPractitioner(
-            responsibleCom.staffCode,
-            name = "${responsibleCom.staff?.forenames} ${responsibleCom.staff?.surname}".trim(),
+            responsibleCom.code,
+            name = responsibleCom.name?.fullName(),
           ),
         )
       } else {
@@ -250,7 +242,7 @@ class ComCaseloadService(
           case.copy(
             probationPractitioner = ProbationPractitioner(
               staffCode = case.deliusRecord.managedOffenderCrn.staff.code,
-              name = "${case.deliusRecord.managedOffenderCrn.staff.forenames} ${case.deliusRecord.managedOffenderCrn.staff.surname}".trim(),
+              name = case.deliusRecord.managedOffenderCrn.staff.name?.fullName(),
             ),
           )
         }
