@@ -8,4 +8,3 @@ data class ManagedOffenderCrn(
   val staff: StaffDetail? = null,
   val team: TeamDetail? = null,
 )
-

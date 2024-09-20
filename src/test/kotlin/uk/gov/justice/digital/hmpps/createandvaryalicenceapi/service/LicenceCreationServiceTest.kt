@@ -38,7 +38,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Phon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -517,7 +527,7 @@ class LicenceCreationServiceTest {
               staffDetail = StaffDetail(
                 code = "AB012C",
                 name = Name(forename = "Test", surname = "Test"),
-                id = 1L
+                id = 1L,
               ),
               active = false,
             ),
@@ -551,7 +561,7 @@ class LicenceCreationServiceTest {
               staffDetail = StaffDetail(
                 code = "XXXXXX",
                 name = Name(forename = "Test", surname = "Test"),
-                id = 1L
+                id = 1L,
               ),
               active = true,
             ),
@@ -1121,7 +1131,7 @@ class LicenceCreationServiceTest {
               staffDetail = StaffDetail(
                 code = "AB012C",
                 name = Name(forename = "Test", surname = "Test"),
-                id = 1L
+                id = 1L,
               ),
               active = false,
             ),
@@ -1155,7 +1165,7 @@ class LicenceCreationServiceTest {
               staffDetail = StaffDetail(
                 code = "XXXXXX",
                 name = Name(forename = "Test", surname = "Test"),
-                id = 1L
+                id = 1L,
               ),
               active = true,
             ),
@@ -1354,7 +1364,7 @@ class LicenceCreationServiceTest {
           staffDetail = StaffDetail(
             code = "AB012C",
             name = Name(forename = "Test", surname = "Test"),
-            id = 1L
+            id = 1L,
           ),
           active = true,
         ),

@@ -35,10 +35,11 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val communityApiClient:
       .retrieve()
       .bodyToMono(typeReference<CommunityOrPrisonOffenderManager>())
       .onErrorResume {
-        when { it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
-          Mono.empty()
-        }
-        else -> Mono.error(it)
+        when {
+          it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
+            Mono.empty()
+          }
+          else -> Mono.error(it)
         }
       }
       .block()

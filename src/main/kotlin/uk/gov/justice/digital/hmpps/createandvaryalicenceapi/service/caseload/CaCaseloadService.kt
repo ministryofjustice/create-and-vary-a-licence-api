@@ -289,8 +289,8 @@ class CaCaseloadService(
       isInHardStopPeriod = c.cvlFields.isInHardStopPeriod,
       tabType = determineCaViewCasesTab(c.nomisRecord, c.cvlFields, licence = null),
       probationPractitioner = ProbationPractitioner(
-          staffCode = com?.code,
-          name = com?.name?.fullName(),
+        staffCode = com?.code,
+        name = com?.name?.fullName(),
       ),
     )
   }

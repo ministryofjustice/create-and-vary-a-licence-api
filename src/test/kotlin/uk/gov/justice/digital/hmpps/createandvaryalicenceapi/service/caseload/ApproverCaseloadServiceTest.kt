@@ -11,7 +11,14 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -117,7 +124,7 @@ class ApproverCaseloadServiceTest {
                     code = "DE012F",
                     name = Name(forename = "Test2", surname = "Test2"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -233,7 +240,7 @@ class ApproverCaseloadServiceTest {
                     code = "DE012F",
                     name = Name(forename = "Test2", surname = "Test2"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -322,7 +329,7 @@ class ApproverCaseloadServiceTest {
                     code = "DE012F",
                     name = Name(forename = "Test2", surname = "Test2"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -341,7 +348,7 @@ class ApproverCaseloadServiceTest {
                     code = "GH012I",
                     name = Name(forename = "Test3", surname = "Test3"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -533,7 +540,7 @@ class ApproverCaseloadServiceTest {
                     code = "DE012F",
                     name = Name(forename = "Test2", surname = "Test2"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -552,7 +559,7 @@ class ApproverCaseloadServiceTest {
                     code = "GH012I",
                     name = Name(forename = "Test3", surname = "Test3"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -670,7 +677,7 @@ class ApproverCaseloadServiceTest {
                     code = "DE012F",
                     name = Name(forename = "Test2", surname = "Test2"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -689,7 +696,7 @@ class ApproverCaseloadServiceTest {
                     code = "GH012I",
                     name = Name(forename = "Test3", surname = "Test3"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -778,7 +785,7 @@ class ApproverCaseloadServiceTest {
                     code = "DE012F",
                     name = Name(forename = "Test2", surname = "Test2"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -797,7 +804,7 @@ class ApproverCaseloadServiceTest {
                     code = "GH012I",
                     name = Name(forename = "Test3", surname = "Test3"),
                     unallocated = false,
-                    id = 1L
+                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -983,7 +990,7 @@ class ApproverCaseloadServiceTest {
               code = "AB012C",
               name = Name(forename = "Test", surname = "Test"),
               unallocated = true,
-              id = 1L
+              id = 1L,
             ),
             active = true,
           ),
@@ -1054,7 +1061,7 @@ class ApproverCaseloadServiceTest {
             code = "AB012C",
             name = Name(forename = "Test", surname = "Test"),
             unallocated = false,
-            id = 1L
+            id = 1L,
           ),
           active = true,
         ),

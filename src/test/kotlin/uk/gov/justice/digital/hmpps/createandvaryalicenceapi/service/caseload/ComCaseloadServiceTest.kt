@@ -20,7 +20,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -595,7 +602,7 @@ class ComCaseloadServiceTest {
           username = "sherlockholmes",
           code = "X54321",
           name = Name(forename = "Sherlock", surname = "Holmes"),
-          teams = emptyList()
+          teams = emptyList(),
         ),
       ),
     )
@@ -749,7 +756,7 @@ class ComCaseloadServiceTest {
           username = "sherlockholmes",
           code = "X54321",
           name = Name(forename = "Sherlock", surname = "Holmes"),
-          teams = emptyList()
+          teams = emptyList(),
         ),
       ),
     )
@@ -780,7 +787,7 @@ class ComCaseloadServiceTest {
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename ="Sherlock", surname = "Holmes"), code = "X54321", id = 2L),
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321", id = 2L),
       ),
     )
 
@@ -966,7 +973,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = Array(1100) {
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail( id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))
+        staff = StaffDetail(id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       )
     }.asList()
 
@@ -986,7 +993,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = Array(1500) {
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail( id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"))
+        staff = StaffDetail(id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       )
     }.asList()
 

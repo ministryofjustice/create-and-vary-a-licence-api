@@ -1031,9 +1031,10 @@ class CaCaseloadServiceTest {
       offenderManagers = listOf(
         OffenderManager(
           active = true,
-          staffDetail = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"),
+          staffDetail = StaffDetail(
+            name = Name(forename = "Joe", surname = "Bloggs"),
             code = "X1234",
-            id = 1L
+            id = 1L,
           ),
         ),
       ),
