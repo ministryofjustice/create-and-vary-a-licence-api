@@ -535,7 +535,7 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
         service.createLicence(prisonNumber)
@@ -553,6 +553,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
@@ -575,7 +576,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No responsible officer details found for NOMSID")
+        .hasMessage("No active offender manager found for NOMSID")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1139,7 +1140,7 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
         service.createHardStopLicence(prisonNumber)
@@ -1157,6 +1158,7 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
@@ -1179,7 +1181,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No responsible officer details found for NOMSID")
+        .hasMessage("No active offender manager found for NOMSID")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())

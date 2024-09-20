@@ -237,7 +237,7 @@ class LicenceCreationService(
     prisonNumber: String,
   ): CommunityOrPrisonOffenderManager =
     deliusApiClient.getOffenderManager(deliusRecord.otherIds.crn)
-      ?: error("No responsible officer details found for $prisonNumber")
+      ?: error("No active offender manager found for $prisonNumber")
 
   private fun missing(staffId: Long, field: String): Nothing =
     error("staff with staff identifier: '$staffId', missing $field")
