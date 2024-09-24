@@ -202,7 +202,7 @@ class CaCaseloadService(
         caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.code,
-            name = com.name?.let { "${it.forename} ${it.surname}" },
+            name = com.name?.fullName(),
           ),
         )
       } else {
