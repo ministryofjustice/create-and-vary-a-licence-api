@@ -119,7 +119,20 @@ object LicenceFactory {
     substituteOfId = timedOutLicence?.id,
   )
 
-  fun createCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
+  fun createCrdCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
+    with(licence) {
+      return licence.copy(
+        id = -1,
+        dateCreated = LocalDateTime.now(),
+        statusCode = IN_PROGRESS,
+        licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
+        versionOfId = licence.id,
+        createdBy = creator,
+      )
+    }
+  }
+
+  fun createHdcCopyToEdit(licence: HdcLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
         id = -1,
