@@ -564,19 +564,10 @@ class LicenceService(
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
-    if (licence is HdcLicence) {
-      val copyToEdit = LicenceFactory.createHdcCopyToEdit(licence, creator)
-      val licenceCopy = populateCopyAndAudit(HDC, licence, copyToEdit, creator)
-      notifyReApprovalNeeded(licence)
-
-      return licenceCopy.toSummary()
-    } else {
-      val copyToEdit = LicenceFactory.createCrdCopyToEdit(licence as CrdLicence, creator)
-      val licenceCopy = populateCopyAndAudit(CRD, licence, copyToEdit, creator)
-      notifyReApprovalNeeded(licence)
-
-      return licenceCopy.toSummary()
-    }
+    val copyToEdit = if (licence is HdcLicence) LicenceFactory.createHdcCopyToEdit(licence, creator) else LicenceFactory.createCrdCopyToEdit(licence as CrdLicence, creator)
+    val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
+    notifyReApprovalNeeded(licence)
+    return licenceCopy.toSummary()
   }
 
   @Transactional
