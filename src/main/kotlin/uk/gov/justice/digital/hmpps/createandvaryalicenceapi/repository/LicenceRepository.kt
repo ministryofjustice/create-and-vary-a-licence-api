@@ -30,8 +30,12 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT l
         FROM Licence l
-        WHERE l.statusCode IN :status
-        AND l.id IN :versionOfId
+        WHERE l.kind IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+        )
+        AND l.versionOfId IN :versionOfId
+        AND l.statusCode IN :status
     """,
   )
   fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<Licence>
