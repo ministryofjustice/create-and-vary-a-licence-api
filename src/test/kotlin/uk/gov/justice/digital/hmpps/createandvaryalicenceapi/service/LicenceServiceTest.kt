@@ -596,6 +596,95 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `update HDC licence status to APPROVED deactivates previous version of HDC licence`() {
+    val newLicenceId = 23L
+    val fullName = "user 1"
+    val firstVersionOfLicence = anHdcLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      approvedByUsername = aCom.username,
+      approvedByName = fullName,
+      approvedDate = LocalDateTime.now(),
+    )
+    val newVersionOfLicence =
+      anHdcLicenceEntity.copy(
+        id = newLicenceId,
+        statusCode = LicenceStatus.IN_PROGRESS,
+        versionOfId = anHdcLicenceEntity.id,
+      )
+
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(firstVersionOfLicence))
+    whenever(licenceRepository.findById(newLicenceId)).thenReturn(Optional.of(newVersionOfLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    service.updateLicenceStatus(
+      newLicenceId,
+      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = fullName),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
+      .isEqualTo(listOf(firstVersionOfLicence.id, LicenceStatus.INACTIVE, aCom.username, null, aCom))
+
+    assertThat(licenceCaptor.allValues[1])
+      .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
+      .isEqualTo(listOf(newVersionOfLicence.id, LicenceStatus.APPROVED, aCom.username, fullName))
+    assertThat(licenceCaptor.allValues[1].approvedDate).isAfter(LocalDateTime.now().minusMinutes(5L))
+
+    assertThat(eventCaptor.allValues[0])
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(
+        listOf(
+          firstVersionOfLicence.id,
+          LicenceEventType.SUPERSEDED,
+          "Licence deactivated as a newer version was approved for ${anHdcLicenceEntity.forename} ${anHdcLicenceEntity.surname}",
+        ),
+      )
+
+    assertThat(eventCaptor.allValues[1])
+      .extracting("licenceId", "eventType", "eventDescription")
+      .isEqualTo(
+        listOf(
+          newVersionOfLicence.id,
+          LicenceEventType.APPROVED,
+          "Licence updated to APPROVED for ${newVersionOfLicence.forename} ${newVersionOfLicence.surname}",
+        ),
+      )
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          firstVersionOfLicence.id,
+          aCom.username,
+          "${aCom.firstName} ${aCom.lastName}",
+          "Licence set to INACTIVE for ${anHdcLicenceEntity.forename} ${anHdcLicenceEntity.surname}",
+          USER_EVENT,
+        ),
+      )
+
+    assertThat(auditCaptor.allValues[1])
+      .extracting("licenceId", "username", "fullName", "summary", "eventType")
+      .isEqualTo(
+        listOf(
+          newVersionOfLicence.id,
+          aCom.username,
+          "${aCom.firstName} ${aCom.lastName}",
+          "Licence approved for ${anHdcLicenceEntity.forename} ${anHdcLicenceEntity.surname}",
+          USER_EVENT,
+        ),
+      )
+  }
+
+  @Test
   fun `update licence status to APPROVED works for HardStop licence`() {
     val hardstopLicence = createHardStopLicence().copy(
       id = 1L,
@@ -610,7 +699,11 @@ class LicenceServiceTest {
 
     service.updateLicenceStatus(
       1L,
-      StatusUpdateRequest(status = LicenceStatus.APPROVED, username = aCom.username, fullName = hardstopLicence.approvedByName),
+      StatusUpdateRequest(
+        status = LicenceStatus.APPROVED,
+        username = aCom.username,
+        fullName = hardstopLicence.approvedByName,
+      ),
     )
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1432,7 +1525,10 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), deactivateInProgressVersions = true)
+    service.inactivateLicences(
+      listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)),
+      deactivateInProgressVersions = true,
+    )
 
     verify(
       licenceRepository,
@@ -1463,7 +1559,11 @@ class LicenceServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
 
-    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), "Test reason", deactivateInProgressVersions = true)
+    service.inactivateLicences(
+      listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)),
+      "Test reason",
+      deactivateInProgressVersions = true,
+    )
 
     verify(
       licenceRepository,
@@ -1503,7 +1603,10 @@ class LicenceServiceTest {
       ),
     ).thenReturn(listOf(inProgressLicenceVersion))
 
-    service.inactivateLicences(listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)), deactivateInProgressVersions = true)
+    service.inactivateLicences(
+      listOf(aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)),
+      deactivateInProgressVersions = true,
+    )
 
     verify(
       licenceRepository,
@@ -2300,7 +2403,10 @@ class LicenceServiceTest {
   fun `deactivateLicenceAndVariations returns when no active licences are found`() {
     whenever(licenceRepository.findLicenceAndVariations(aLicenceEntity.id)).thenReturn(emptyList())
 
-    service.deactivateLicenceAndVariations(aLicenceEntity.id, DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RESENTENCED))
+    service.deactivateLicenceAndVariations(
+      aLicenceEntity.id,
+      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RESENTENCED),
+    )
     verify(
       licenceRepository,
       times(0),
@@ -2320,14 +2426,27 @@ class LicenceServiceTest {
       licenceVersion = "2.0",
       versionOfId = 1L,
     )
-    whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(listOf(activeLicence, variationLicence))
+    whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(
+      listOf(
+        activeLicence,
+        variationLicence,
+      ),
+    )
 
-    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RESENTENCED))
+    service.deactivateLicenceAndVariations(
+      activeLicence.id,
+      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RESENTENCED),
+    )
 
     verify(
       licenceRepository,
       times(1),
-    ).saveAllAndFlush(listOf(activeLicence.copy(statusCode = LicenceStatus.INACTIVE), variationLicence.copy(statusCode = LicenceStatus.INACTIVE)))
+    ).saveAllAndFlush(
+      listOf(
+        activeLicence.copy(statusCode = LicenceStatus.INACTIVE),
+        variationLicence.copy(statusCode = LicenceStatus.INACTIVE),
+      ),
+    )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, LicenceStatus.INACTIVE)
@@ -2360,14 +2479,27 @@ class LicenceServiceTest {
       licenceVersion = "2.0",
       versionOfId = 1L,
     )
-    whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(listOf(activeLicence, variationLicence))
+    whenever(licenceRepository.findLicenceAndVariations(activeLicence.id)).thenReturn(
+      listOf(
+        activeLicence,
+        variationLicence,
+      ),
+    )
 
-    service.deactivateLicenceAndVariations(activeLicence.id, DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RECALLED))
+    service.deactivateLicenceAndVariations(
+      activeLicence.id,
+      DeactivateLicenceAndVariationsRequest(DateChangeLicenceDeativationReason.RECALLED),
+    )
 
     verify(
       licenceRepository,
       times(1),
-    ).saveAllAndFlush(listOf(activeLicence.copy(statusCode = LicenceStatus.INACTIVE), variationLicence.copy(statusCode = LicenceStatus.INACTIVE)))
+    ).saveAllAndFlush(
+      listOf(
+        activeLicence.copy(statusCode = LicenceStatus.INACTIVE),
+        variationLicence.copy(statusCode = LicenceStatus.INACTIVE),
+      ),
+    )
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(domainEventsService, times(1)).recordDomainEvent(activeLicence, LicenceStatus.INACTIVE)
@@ -2482,7 +2614,15 @@ class LicenceServiceTest {
     @Test
     fun happyPathWhenNotHardstop() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createCrdLicence().copy(id = 1L)))
-      whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(createVariationLicence().copy(id = 2L, variationOfId = 1L, statusCode = LicenceStatus.VARIATION_APPROVED)))
+      whenever(licenceRepository.findById(2L)).thenReturn(
+        Optional.of(
+          createVariationLicence().copy(
+            id = 2L,
+            variationOfId = 1L,
+            statusCode = LicenceStatus.VARIATION_APPROVED,
+          ),
+        ),
+      )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.activateVariation(2L)
@@ -2520,8 +2660,23 @@ class LicenceServiceTest {
 
     @Test
     fun happyPathWhenVaryingHardStopLicence() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHardStopLicence().copy(id = 1L, reviewDate = null)))
-      whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(createVariationLicence().copy(id = 2L, variationOfId = 1L, statusCode = LicenceStatus.VARIATION_APPROVED)))
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(
+          createHardStopLicence().copy(
+            id = 1L,
+            reviewDate = null,
+          ),
+        ),
+      )
+      whenever(licenceRepository.findById(2L)).thenReturn(
+        Optional.of(
+          createVariationLicence().copy(
+            id = 2L,
+            variationOfId = 1L,
+            statusCode = LicenceStatus.VARIATION_APPROVED,
+          ),
+        ),
+      )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
       service.activateVariation(2L)
@@ -2575,7 +2730,15 @@ class LicenceServiceTest {
 
     @Test
     fun attemptingToVaryNonApprovedVariation() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createVariationLicence().copy(id = 2L, variationOfId = 1L, statusCode = LicenceStatus.VARIATION_IN_PROGRESS)))
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(
+          createVariationLicence().copy(
+            id = 2L,
+            variationOfId = 1L,
+            statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+          ),
+        ),
+      )
 
       service.activateVariation(1L)
 
@@ -2919,7 +3082,10 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
-      service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
+      service.submitLicence(
+        1L,
+        listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")),
+      )
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
