@@ -990,7 +990,7 @@ class ApproverCaseloadServiceTest {
               code = "AB012C",
               forenames = "Test",
               surname = "Test",
-              unallocated = false,
+              unallocated = true,
             ),
             active = true,
           ),
