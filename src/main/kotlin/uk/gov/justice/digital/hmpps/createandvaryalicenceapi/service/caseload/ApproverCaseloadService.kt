@@ -6,10 +6,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -18,7 +19,7 @@ import java.time.LocalDateTime
 class ApproverCaseloadService(
   private val prisonApproverService: PrisonApproverService,
   private val probationSearchApiClient: ProbationSearchApiClient,
-  private val communityApiClient: CommunityApiClient,
+  private val deliusApiClient: DeliusApiClient,
 ) {
 
   fun getApprovalNeeded(prisons: List<String>): List<ApprovalCase> {
@@ -67,7 +68,7 @@ class ApproverCaseloadService(
     }
 
     val comUsernames = caseload.mapNotNull { it.comUsernameOnLicence }
-    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames)
+    val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames)
 
     val approvalCases = caseload.map {
       ApprovalCase(
@@ -101,8 +102,8 @@ class ApproverCaseloadService(
 
     return if (responsibleCom != null) {
       ProbationPractitioner(
-        staffCode = responsibleCom.staffCode,
-        name = "${responsibleCom.staff?.forenames} ${responsibleCom.staff?.surname}".convertToTitleCase(),
+        staffCode = responsibleCom.code,
+        name = responsibleCom.name?.fullName()?.convertToTitleCase(),
       )
     } else {
       val activeCom = deliusRecord?.offenderManagers?.find { it.active }

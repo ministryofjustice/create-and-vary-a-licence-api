@@ -11,13 +11,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import java.time.LocalDateTime
 
 @Service
 class StaffService(
   private val staffRepository: StaffRepository,
-  private val communityApiClient: CommunityApiClient,
+  private val deliusApiClient: DeliusApiClient,
   private val licenceRepository: LicenceRepository,
 ) {
 
@@ -92,7 +92,7 @@ class StaffService(
     val com = this.staffRepository.findByStaffIdentifier(staffIdentifier)
       ?: error("Staff with identifier $staffIdentifier not found")
 
-    val teamCodes = this.communityApiClient.getTeamsCodesForUser(staffIdentifier)
+    val teamCodes = this.deliusApiClient.getTeamsCodesForUser(staffIdentifier)
 
     val comReviewCount = this.licenceRepository.getLicenceReviewCountForCom(com)
 

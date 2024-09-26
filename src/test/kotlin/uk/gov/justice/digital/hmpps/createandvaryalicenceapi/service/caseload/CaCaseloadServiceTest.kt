@@ -28,13 +28,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -52,7 +52,7 @@ class CaCaseloadServiceTest {
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val licenceService = mock<LicenceService>()
   private val prisonApiClient = mock<PrisonApiClient>()
-  private val communityApiClient = mock<CommunityApiClient>()
+  private val deliusApiClient = mock<DeliusApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
@@ -64,7 +64,7 @@ class CaCaseloadServiceTest {
     prisonApiClient,
     eligibilityService,
     clock,
-    communityApiClient,
+    deliusApiClient,
     prisonerSearchApiClient,
     releaseDateService,
   )
@@ -85,7 +85,7 @@ class CaCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(caseloadService, probationSearchApiClient, licenceService, prisonApiClient, communityApiClient)
+    reset(caseloadService, probationSearchApiClient, licenceService, prisonApiClient, deliusApiClient)
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
       listOf(
         aLicenceSummary,
@@ -129,7 +129,7 @@ class CaCaseloadServiceTest {
         ),
       ),
     )
-    whenever(communityApiClient.getStaffDetailsByUsername(any())).thenReturn(listOf(comUser))
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(listOf(comUser))
     whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
   }
 
@@ -1031,7 +1031,7 @@ class CaCaseloadServiceTest {
       offenderManagers = listOf(
         OffenderManager(
           active = true,
-          staffDetail = StaffDetail(
+          staffDetail = ProbationSearchStaffDetail(
             forenames = "Joe",
             surname = "Bloggs",
             code = "X1234",
@@ -1042,15 +1042,15 @@ class CaCaseloadServiceTest {
 
     val aProbationPractitioner = ProbationPractitioner(staffCode = "DEF456")
     val comUser = User(
-      staffIdentifier = 2000,
+      id = 2000L,
       username = "com-user",
       email = "comuser@probation.gov.uk",
-      staff = StaffHuman(
-        forenames = "com",
+      name = Name(
+        forename = "com",
         surname = "user",
       ),
       teams = null,
-      staffCode = "AB00001",
+      code = "AB00001",
     )
 
     val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(

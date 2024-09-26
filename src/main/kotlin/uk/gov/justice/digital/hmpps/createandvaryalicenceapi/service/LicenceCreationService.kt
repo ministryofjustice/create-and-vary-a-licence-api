@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -44,7 +44,7 @@ class LicenceCreationService(
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
-  private val communityApiClient: CommunityApiClient,
+  private val deliusApiClient: DeliusApiClient,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -61,8 +61,8 @@ class LicenceCreationService(
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
-      ?: createCom(currentResponsibleOfficerDetails.staffId)
+    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
+      ?: createCom(currentResponsibleOfficerDetails.id)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
@@ -100,8 +100,8 @@ class LicenceCreationService(
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
-      ?: createCom(currentResponsibleOfficerDetails.staffId)
+    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
+      ?: createCom(currentResponsibleOfficerDetails.id)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
@@ -148,8 +148,8 @@ class LicenceCreationService(
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
 
-    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.staffId)
-      ?: createCom(currentResponsibleOfficerDetails.staffId)
+    val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
+      ?: createCom(currentResponsibleOfficerDetails.id)
 
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as CommunityOffenderManager?
       ?: error("Staff with username $username not found")
@@ -220,14 +220,14 @@ class LicenceCreationService(
 
   private fun createCom(staffId: Long): CommunityOffenderManager {
     log.info("Creating com record for staff with identifier: $staffId")
-    val com = communityApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
+    val com = deliusApiClient.getStaffByIdentifier(staffId) ?: missing(staffId, "record in delius")
     return staffRepository.saveAndFlush(
       CommunityOffenderManager(
         staffIdentifier = staffId,
         username = com.username?.uppercase() ?: missing(staffId, "username"),
         email = com.email,
-        firstName = com.staff?.forenames,
-        lastName = com.staff?.surname,
+        firstName = com.name?.forename,
+        lastName = com.name?.surname,
       ),
     )
   }
@@ -235,15 +235,9 @@ class LicenceCreationService(
   private fun getCurrentResponsibleOfficer(
     deliusRecord: OffenderDetail,
     prisonNumber: String,
-  ): CommunityOrPrisonOffenderManager {
-    val offenderManagers = communityApiClient.getAllOffenderManagers(deliusRecord.otherIds.crn)
-    val currentActiveOffenderManager = deliusRecord.offenderManagers.find { it.active } ?: error(
-      "No active offender manager found for $prisonNumber",
-    )
-    return offenderManagers.find {
-      it.staffCode == currentActiveOffenderManager.staffDetail.code
-    } ?: error("No responsible officer details found for $prisonNumber")
-  }
+  ): CommunityOrPrisonOffenderManager =
+    deliusApiClient.getOffenderManager(deliusRecord.otherIds.crn)
+      ?: error("No active offender manager found for $prisonNumber")
 
   private fun missing(staffId: Long, field: String): Nothing =
     error("staff with staff identifier: '$staffId', missing $field")

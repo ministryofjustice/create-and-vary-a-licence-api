@@ -13,7 +13,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
@@ -60,7 +60,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve approval caseload`() {
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
-      communityApiMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
         .uri("/caseload/prison-approver/approval-needed")
@@ -116,7 +116,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     )
     fun `Successfully retrieve recently approved caseload`() {
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetRecentlyApprovedCaseload()
-      communityApiMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
         .uri("/caseload/prison-approver/recently-approved")
@@ -148,14 +148,14 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val probationSearchMockServer = ProbationSearchMockServer()
-    val communityApiMockServer = CommunityApiMockServer()
+    val deliusMockServer = DeliusMockServer()
     val govUkMockServer = GovUkMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       probationSearchMockServer.start()
-      communityApiMockServer.start()
+      deliusMockServer.start()
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
@@ -164,7 +164,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       probationSearchMockServer.stop()
-      communityApiMockServer.stop()
+      deliusMockServer.stop()
       govUkMockServer.stop()
     }
   }

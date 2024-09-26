@@ -20,9 +20,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -44,7 +47,7 @@ class CaCaseloadService(
   private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
   private val clock: Clock,
-  private val communityApiClient: CommunityApiClient,
+  private val deliusApiClient: DeliusApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val releaseDateService: ReleaseDateService,
 ) {
@@ -193,15 +196,15 @@ class CaCaseloadService(
 
     // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
     val comUsernames = cases.withStaffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
-    val coms = communityApiClient.getStaffDetailsByUsername(comUsernames).associateBy { it.username?.lowercase() }
+    val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames).associateBy { it.username?.lowercase() }
 
     val caCaseListWithStaffUsername = cases.withStaffUsername.map { caCase ->
       val com = coms[caCase.probationPractitioner?.staffUsername?.lowercase()]
       if (com != null) {
         caCase.copy(
           probationPractitioner = ProbationPractitioner(
-            staffCode = com.staffCode,
-            name = com.staff?.let { "${it.forenames} ${it.surname}" },
+            staffCode = com.code,
+            name = com.name?.fullName(),
           ),
         )
       } else {
@@ -289,7 +292,7 @@ class CaCaseloadService(
       tabType = determineCaViewCasesTab(c.nomisRecord, c.cvlFields, licence = null),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
-        name = com?.let { "${it.forenames} ${it.surname}" },
+        name = com?.name?.fullName(),
       ),
     )
   }
@@ -449,7 +452,16 @@ class CaCaseloadService(
             deliusRecord = DeliusRecord(
               deliusRecord,
               ManagedOffenderCrn(
-                staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail,
+                staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail?.let {
+                  StaffDetail(
+                    code = it.code,
+                    name = Name(
+                      forename = it.forenames,
+                      surname = it.surname,
+                    ),
+                    unallocated = it.unallocated,
+                  )
+                },
               ),
             ),
           )

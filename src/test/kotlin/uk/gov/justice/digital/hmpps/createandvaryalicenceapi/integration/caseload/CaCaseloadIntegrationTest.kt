@@ -14,7 +14,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -78,7 +78,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
       prisonApiMockServer.getHdcStatuses()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-      communityApiMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetStaffDetailsByUsername()
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
 
       val caseload = webTestClient.post()
@@ -139,7 +139,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.getHdcStatuses()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
-      communityApiMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetStaffDetailsByUsername()
 
       val caseload = webTestClient.post()
         .uri(GET_PROBATION_CASELOAD)
@@ -166,7 +166,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     val govUkMockServer = GovUkMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
-    val communityApiMockServer = CommunityApiMockServer()
+    val deliusMockServer = DeliusMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmStatic
@@ -175,7 +175,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
       govUkMockServer.start()
       prisonerSearchMockServer.start()
       probationSearchMockServer.start()
-      communityApiMockServer.start()
+      deliusMockServer.start()
       prisonApiMockServer.start()
     }
 
@@ -184,7 +184,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonerSearchMockServer.stop()
       probationSearchMockServer.stop()
-      communityApiMockServer.stop()
+      deliusMockServer.stop()
       govUkMockServer.stop()
       prisonApiMockServer.stop()
     }

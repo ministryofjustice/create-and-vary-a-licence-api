@@ -1,17 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
 data class User(
-  val email: String? = null,
-  val username: String?,
-  val staffIdentifier: Long?,
-  val staff: StaffHuman? = null,
-  val teams: List<Detail>? = null,
-  val staffCode: String? = null,
-)
-
-data class StaffHuman(
+  val id: Long? = null,
   val code: String? = null,
-  val forenames: String?,
-  val surname: String?,
+  val name: Name? = null,
+  val teams: List<Detail>? = null,
+  val username: String?,
+  val email: String? = null,
   val unallocated: Boolean? = null,
 )

@@ -9,7 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
@@ -106,7 +106,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-hard-stop-licences.sql",
   )
   fun `Get counts of cases needing a review`() {
-    communityApiMockServer.stubGetTeamCodesForUser(2000)
+    deliusMockServer.stubGetTeamCodesForUser(2000)
 
     val resultObject = webTestClient.get()
       .uri("/com/2000/review-counts")
@@ -136,7 +136,7 @@ class StaffIntegrationTest : IntegrationTestBase() {
   }
 
   private companion object {
-    val communityApiMockServer = CommunityApiMockServer()
+    val deliusMockServer = DeliusMockServer()
 
     val updateCom = UpdateComRequest(
       staffIdentifier = 2000,
@@ -155,13 +155,13 @@ class StaffIntegrationTest : IntegrationTestBase() {
     @JvmStatic
     @BeforeAll
     fun startMocks() {
-      communityApiMockServer.start()
+      deliusMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
-      communityApiMockServer.stop()
+      deliusMockServer.stop()
     }
   }
 }

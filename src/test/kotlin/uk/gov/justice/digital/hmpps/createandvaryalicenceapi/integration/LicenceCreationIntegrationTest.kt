@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.EntityAlread
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.CommunityApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -56,7 +56,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
-    communityApiMockServer.stubGetAllOffenderManagers()
+    deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -96,7 +96,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
-    communityApiMockServer.stubGetAllOffenderManagers()
+    deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
       .uri("/licence/create")
@@ -162,7 +162,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
-    communityApiMockServer.stubGetAllOffenderManagers()
+    deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -204,7 +204,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
-    communityApiMockServer.stubGetAllOffenderManagers()
+    deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(1)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -280,7 +280,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stubGetPrison()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       probationSearchMockServer.stubSearchForPersonOnProbation()
-      communityApiMockServer.stubGetAllOffenderManagers()
+      deliusMockServer.stubGetOffenderManager()
 
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -349,7 +349,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
-    val communityApiMockServer = CommunityApiMockServer()
+    val deliusMockServer = DeliusMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -358,7 +358,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.start()
       prisonerSearchMockServer.start()
       probationSearchMockServer.start()
-      communityApiMockServer.start()
+      deliusMockServer.start()
     }
 
     @JvmStatic
@@ -368,7 +368,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
       probationSearchMockServer.stop()
-      communityApiMockServer.stop()
+      deliusMockServer.stop()
     }
   }
 }

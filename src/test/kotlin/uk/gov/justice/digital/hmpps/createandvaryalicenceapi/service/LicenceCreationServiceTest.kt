@@ -38,15 +38,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Phon
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -74,7 +74,7 @@ class LicenceCreationServiceTest {
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
-  private val communityApiClient = mock<CommunityApiClient>()
+  private val deliusApiClient = mock<DeliusApiClient>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -87,7 +87,7 @@ class LicenceCreationServiceTest {
     probationSearchApiClient,
     prisonerSearchApiClient,
     prisonApiClient,
-    communityApiClient,
+    deliusApiClient,
   )
 
   @Nested
@@ -102,7 +102,7 @@ class LicenceCreationServiceTest {
         probationSearchApiClient,
         prisonerSearchApiClient,
         prisonApiClient,
-        communityApiClient,
+        deliusApiClient,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -115,7 +115,7 @@ class LicenceCreationServiceTest {
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
@@ -157,8 +157,8 @@ class LicenceCreationServiceTest {
         assertThat(postRecallReleaseDate).isNull()
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
@@ -240,7 +240,7 @@ class LicenceCreationServiceTest {
         listOf(prisoner),
       )
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       service.createLicence(prisonNumber)
 
@@ -524,10 +524,11 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "AB012C",
                 forenames = "Test",
                 surname = "Test",
+                unallocated = false,
               ),
               active = false,
             ),
@@ -535,7 +536,7 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
         service.createLicence(prisonNumber)
@@ -553,15 +554,17 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "XXXXXX",
                 forenames = "Test",
                 surname = "Test",
+                unallocated = false,
               ),
               active = true,
             ),
@@ -575,7 +578,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No responsible officer details found for NOMSID")
+        .hasMessage("No active offender manager found for NOMSID")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -588,7 +591,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
@@ -610,20 +613,20 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
-      whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
+      whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
       whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
       service.createLicence(prisonNumber)
 
       argumentCaptor<CommunityOffenderManager>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.staffIdentifier).isEqualTo(comUser.staffIdentifier)
+        assertThat(firstValue.staffIdentifier).isEqualTo(comUser.id)
         assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
         assertThat(firstValue.email).isEqualTo(comUser.email)
-        assertThat(firstValue.firstName).isEqualTo(comUser.staff!!.forenames)
-        assertThat(firstValue.lastName).isEqualTo(comUser.staff!!.surname)
+        assertThat(firstValue.firstName).isEqualTo(comUser.name!!.forename)
+        assertThat(firstValue.lastName).isEqualTo(comUser.name!!.surname)
       }
 
       argumentCaptor<CrdLicence>().apply {
@@ -645,7 +648,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
@@ -677,7 +680,7 @@ class LicenceCreationServiceTest {
         probationSearchApiClient,
         prisonerSearchApiClient,
         prisonApiClient,
-        communityApiClient,
+        deliusApiClient,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -690,7 +693,7 @@ class LicenceCreationServiceTest {
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
       whenever(staffRepository.findByUsernameIgnoreCase(prisonUser.username)).thenReturn(prisonUser)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
@@ -729,8 +732,8 @@ class LicenceCreationServiceTest {
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
@@ -810,7 +813,7 @@ class LicenceCreationServiceTest {
         listOf(prisoner),
       )
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       service.createHardStopLicence(prisonNumber)
 
@@ -1128,10 +1131,11 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "AB012C",
                 forenames = "Test",
                 surname = "Test",
+                unallocated = false,
               ),
               active = false,
             ),
@@ -1139,7 +1143,7 @@ class LicenceCreationServiceTest {
         ),
       )
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
         service.createHardStopLicence(prisonNumber)
@@ -1157,15 +1161,17 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service throws an error if no responsible officer details found for this person`() {
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "XXXXXX",
                 forenames = "Test",
                 surname = "Test",
+                unallocated = false,
               ),
               active = true,
             ),
@@ -1179,7 +1185,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("No responsible officer details found for NOMSID")
+        .hasMessage("No active offender manager found for NOMSID")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1192,7 +1198,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
@@ -1214,20 +1220,20 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
-      whenever(communityApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
+      whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
       whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
       service.createHardStopLicence(prisonNumber)
 
       argumentCaptor<CommunityOffenderManager>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.staffIdentifier).isEqualTo(comUser.staffIdentifier)
+        assertThat(firstValue.staffIdentifier).isEqualTo(comUser.id)
         assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
         assertThat(firstValue.email).isEqualTo(comUser.email)
-        assertThat(firstValue.firstName).isEqualTo(comUser.staff!!.forenames)
-        assertThat(firstValue.lastName).isEqualTo(comUser.staff!!.surname)
+        assertThat(firstValue.firstName).isEqualTo(comUser.name!!.forename)
+        assertThat(firstValue.lastName).isEqualTo(comUser.name!!.surname)
       }
 
       argumentCaptor<HardStopLicence>().apply {
@@ -1249,7 +1255,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(prisonerSearchResult()))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
       whenever(staffRepository.findByUsernameIgnoreCase(prisonUser.username)).thenReturn(null)
@@ -1280,7 +1286,7 @@ class LicenceCreationServiceTest {
         probationSearchApiClient,
         prisonerSearchApiClient,
         prisonApiClient,
-        communityApiClient,
+        deliusApiClient,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -1293,7 +1299,7 @@ class LicenceCreationServiceTest {
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
-      whenever(communityApiClient.getAllOffenderManagers(any())).thenReturn(listOf(aCommunityOrPrisonOffenderManager))
+      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
@@ -1335,8 +1341,8 @@ class LicenceCreationServiceTest {
         assertThat(postRecallReleaseDate).isNull()
         assertThat(prisonDescription).isEqualTo(somePrisonInformation.description)
         assertThat(prisonTelephone).isEqualTo(somePrisonInformation.getPrisonContactNumber())
-        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.code)
-        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.probationArea.description)
+        assertThat(probationAreaCode).isEqualTo(aCommunityOrPrisonOffenderManager.provider.code)
+        assertThat(probationAreaDescription).isEqualTo(aCommunityOrPrisonOffenderManager.provider.description)
         assertThat(probationPduCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.code)
         assertThat(probationPduDescription).isEqualTo(aCommunityOrPrisonOffenderManager.team.borough.description)
         assertThat(probationLauCode).isEqualTo(aCommunityOrPrisonOffenderManager.team.district.code)
@@ -1361,10 +1367,11 @@ class LicenceCreationServiceTest {
       ),
       offenderManagers = listOf(
         OffenderManager(
-          staffDetail = StaffDetail(
+          staffDetail = ProbationSearchStaffDetail(
             code = "AB012C",
             forenames = "Test",
             surname = "Test",
+            unallocated = false,
           ),
           active = true,
         ),
@@ -1392,8 +1399,8 @@ class LicenceCreationServiceTest {
 
     val aCommunityOrPrisonOffenderManager =
       CommunityOrPrisonOffenderManager(
-        staffCode = "AB012C",
-        staffId = 2000L,
+        code = "AB012C",
+        id = 2000L,
         team = TeamDetail(
           code = "NA01A2-A",
           description = "Cardiff South Team A",
@@ -1406,7 +1413,7 @@ class LicenceCreationServiceTest {
             description = "Cardiff South",
           ),
         ),
-        probationArea = Detail(
+        provider = Detail(
           code = "N01",
           description = "Wales",
         ),
@@ -1428,15 +1435,15 @@ class LicenceCreationServiceTest {
     )
 
     val comUser = User(
-      staffIdentifier = 2000,
+      id = 2000,
       username = "com-user",
       email = "comuser@probation.gov.uk",
-      staff = StaffHuman(
-        forenames = "com",
+      name = Name(
+        forename = "com",
         surname = "user",
       ),
       teams = emptyList(),
-      staffCode = "AB00001",
+      code = "AB00001",
     )
 
     val newCom = CommunityOffenderManager(

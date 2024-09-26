@@ -11,13 +11,13 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffHuman
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -28,13 +28,13 @@ import java.time.LocalDateTime
 class ApproverCaseloadServiceTest {
   private val prisonApproverService = mock<PrisonApproverService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
-  private val communityApiClient = mock<CommunityApiClient>()
+  private val deliusApiClient = mock<DeliusApiClient>()
 
-  private val service = ApproverCaseloadService(prisonApproverService, probationSearchApiClient, communityApiClient)
+  private val service = ApproverCaseloadService(prisonApproverService, probationSearchApiClient, deliusApiClient)
 
   @BeforeEach
   fun reset() {
-    reset(prisonApproverService, probationSearchApiClient, communityApiClient)
+    reset(prisonApproverService, probationSearchApiClient, deliusApiClient)
   }
 
   @Nested
@@ -50,7 +50,7 @@ class ApproverCaseloadServiceTest {
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
           listOf(anOffenderDetailResult),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
         val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
 
@@ -74,7 +74,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
       @Test
@@ -120,7 +120,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
                     forenames = "Test2",
                     surname = "Test2",
@@ -132,19 +132,19 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
             aUser.copy(
-              staffIdentifier = 3000,
+              id = 3000,
               username = "jdoe",
               email = "testemail2@probation.gov.uk",
-              staff = StaffHuman(
-                forenames = "Test2",
+              name = Name(
+                forename = "Test2",
                 surname = "Test2",
               ),
               teams = emptyList(),
-              staffCode = "DE012F",
+              code = "DE012F",
             ),
           ),
         )
@@ -187,7 +187,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
       @Test
@@ -236,7 +236,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
                     forenames = "Test2",
                     surname = "Test2",
@@ -248,19 +248,19 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
             aUser.copy(
-              staffIdentifier = 3000,
+              id = 3000,
               username = "jdoe",
               email = "testemail2@probation.gov.uk",
-              staff = StaffHuman(
-                forenames = "Test2",
+              name = Name(
+                forename = "Test2",
                 surname = "Test2",
               ),
               teams = emptyList(),
-              staffCode = "DE012F",
+              code = "DE012F",
             ),
           ),
         )
@@ -269,7 +269,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(approvalCases).hasSize(2)
         assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(2, 1)
@@ -325,7 +325,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
                     forenames = "Test2",
                     surname = "Test2",
@@ -344,7 +344,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
                     forenames = "Test3",
                     surname = "Test3",
@@ -356,19 +356,19 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
             aUser.copy(
-              staffIdentifier = 3000,
+              id = 3000,
               username = "jdoe",
               email = "testemail2@probation.gov.uk",
-              staff = StaffHuman(
-                forenames = "Test2",
+              name = Name(
+                forename = "Test2",
                 surname = "Test2",
               ),
               teams = emptyList(),
-              staffCode = "DE012F",
+              code = "DE012F",
             ),
             aUser,
           ),
@@ -378,7 +378,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(approvalCases).hasSize(3)
         assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(3, 2, 1)
@@ -406,7 +406,7 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(emptyList())
-      verify(communityApiClient, times(1)).getStaffDetailsByUsername(emptyList())
+      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(emptyList())
       assertThat(caseload).isEmpty()
     }
 
@@ -426,7 +426,7 @@ class ApproverCaseloadServiceTest {
       whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
         listOf(anOffenderDetailResult),
       )
-      whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
       val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
 
@@ -438,7 +438,7 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
   }
 
@@ -462,7 +462,7 @@ class ApproverCaseloadServiceTest {
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
           listOf(anOffenderDetailResult),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
         val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -486,7 +486,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
       @Test
@@ -536,10 +536,10 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
                     forenames = "Test2",
-                    surname = "Test2",
+                    surname = "Test",
                     unallocated = false,
                   ),
                   active = true,
@@ -555,7 +555,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
                     forenames = "Test3",
                     surname = "Test3",
@@ -568,18 +568,18 @@ class ApproverCaseloadServiceTest {
           ),
         )
 
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser.copy(
-              staffIdentifier = 3000,
+              id = 3000,
               username = "jdoe",
               email = "testemail2@probation.gov.uk",
-              staff = StaffHuman(
-                forenames = "Test2",
+              name = Name(
+                forename = "Test2",
                 surname = "Test2",
               ),
               teams = emptyList(),
-              staffCode = "DE012F",
+              code = "DE012F",
             ),
             aUser,
           ),
@@ -623,7 +623,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
       }
 
       @Test
@@ -673,10 +673,10 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
                     forenames = "Test2",
-                    surname = "Test2",
+                    surname = "Test",
                     unallocated = false,
                   ),
                   active = true,
@@ -692,7 +692,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
                     forenames = "Test3",
                     surname = "Test3",
@@ -704,18 +704,18 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser.copy(
-              staffIdentifier = 3000,
+              id = 3000,
               username = "jdoe",
               email = "testemail2@probation.gov.uk",
-              staff = StaffHuman(
-                forenames = "Test2",
+              name = Name(
+                forename = "Test2",
                 surname = "Test2",
               ),
               teams = emptyList(),
-              staffCode = "DE012F",
+              code = "DE012F",
             ),
             aUser,
           ),
@@ -725,7 +725,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(caseload).hasSize(2)
         assertThat(caseload).extracting<Long> { it.licenceId }.containsExactly(3, 2)
@@ -781,10 +781,10 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
                     forenames = "Test2",
-                    surname = "Test2",
+                    surname = "Test",
                     unallocated = false,
                   ),
                   active = true,
@@ -800,7 +800,7 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
                     forenames = "Test3",
                     surname = "Test3",
@@ -812,19 +812,19 @@ class ApproverCaseloadServiceTest {
             ),
           ),
         )
-        whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
             aUser,
             aUser.copy(
-              staffIdentifier = 3000,
+              id = 3000,
               username = "jdoe",
               email = "testemail2@probation.gov.uk",
-              staff = StaffHuman(
-                forenames = "Test2",
+              name = Name(
+                forename = "Test2",
                 surname = "Test2",
               ),
               teams = emptyList(),
-              staffCode = "DE012F",
+              code = "DE012F",
             ),
             aUser,
           ),
@@ -834,7 +834,7 @@ class ApproverCaseloadServiceTest {
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
         verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(nomisIds)
-        verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+        verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
 
         assertThat(approvalCases).hasSize(3)
         assertThat(approvalCases).extracting<Long> { it.licenceId }.containsExactly(3, 2, 1)
@@ -864,7 +864,7 @@ class ApproverCaseloadServiceTest {
       whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
         listOf(anOffenderDetailResult),
       )
-      whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -876,7 +876,7 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
 
     @Test
@@ -894,7 +894,7 @@ class ApproverCaseloadServiceTest {
       whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
         listOf(anOffenderDetailResult),
       )
-      whenever(communityApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -906,7 +906,7 @@ class ApproverCaseloadServiceTest {
 
       verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
       verify(probationSearchApiClient, times(1)).searchForPeopleByNomsNumber(listOf(nomisId))
-      verify(communityApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
+      verify(deliusApiClient, times(1)).getStaffDetailsByUsername(comUsernames)
     }
   }
 
@@ -917,15 +917,15 @@ class ApproverCaseloadServiceTest {
       val coms = listOf(
         aUser,
         aUser.copy(
-          staffIdentifier = 1000,
+          id = 1000,
           username = "jdoe",
           email = "testemail2@probation.gov.uk",
-          staff = StaffHuman(
-            forenames = "Test2",
+          name = Name(
+            forename = "Test2",
             surname = "Test2",
           ),
           teams = emptyList(),
-          staffCode = "CD012E",
+          code = "CD012E",
         ),
       )
 
@@ -940,17 +940,17 @@ class ApproverCaseloadServiceTest {
       val coms = listOf(
         aUser.copy(
           username = "test1",
-          staffCode = "test1",
-          staff = StaffHuman(
-            forenames = "Test1",
+          code = "test1",
+          name = Name(
+            forename = "Test1",
             surname = "Test1",
           ),
         ),
         aUser.copy(
           username = "test2",
-          staffCode = "test2",
-          staff = StaffHuman(
-            forenames = "Test2",
+          code = "test2",
+          name = Name(
+            forename = "Test2",
             surname = "Test2",
           ),
         ),
@@ -967,17 +967,17 @@ class ApproverCaseloadServiceTest {
       val coms = listOf(
         aUser.copy(
           username = "test1",
-          staffCode = "test1",
-          staff = StaffHuman(
-            forenames = "Test1",
+          code = "test1",
+          name = Name(
+            forename = "Test1",
             surname = "Test1",
           ),
         ),
         aUser.copy(
           username = "test2",
-          staffCode = "test2",
-          staff = StaffHuman(
-            forenames = "Test2",
+          code = "test2",
+          name = Name(
+            forename = "Test2",
             surname = "Test2",
           ),
         ),
@@ -986,7 +986,7 @@ class ApproverCaseloadServiceTest {
       val anOffenderDetailResult = anOffenderDetailResult.copy(
         offenderManagers = listOf(
           OffenderManager(
-            staffDetail = StaffDetail(
+            staffDetail = ProbationSearchStaffDetail(
               code = "AB012C",
               forenames = "Test",
               surname = "Test",
@@ -1057,7 +1057,7 @@ class ApproverCaseloadServiceTest {
       ),
       offenderManagers = listOf(
         OffenderManager(
-          staffDetail = StaffDetail(
+          staffDetail = ProbationSearchStaffDetail(
             code = "AB012C",
             forenames = "Test",
             surname = "Test",
@@ -1069,15 +1069,15 @@ class ApproverCaseloadServiceTest {
     )
 
     val aUser = User(
-      staffIdentifier = 2000,
+      id = 2000,
       username = "smills",
       email = "testemail@probation.gov.uk",
-      staff = StaffHuman(
-        forenames = "Test",
+      name = Name(
+        forename = "Test",
         surname = "Test",
       ),
       teams = emptyList(),
-      staffCode = "AB012C",
+      code = "AB012C",
     )
   }
 }

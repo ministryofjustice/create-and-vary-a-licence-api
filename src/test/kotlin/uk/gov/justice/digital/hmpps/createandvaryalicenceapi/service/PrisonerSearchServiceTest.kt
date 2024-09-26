@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
@@ -38,7 +38,7 @@ import java.time.LocalDate
 
 class PrisonerSearchServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
-  private val communityApiClient = mock<CommunityApiClient>()
+  private val deliusApiClient = mock<DeliusApiClient>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
@@ -48,7 +48,7 @@ class PrisonerSearchServiceTest {
   private val service =
     PrisonerSearchService(
       licenceRepository,
-      communityApiClient,
+      deliusApiClient,
       probationSearchApiClient,
       prisonerSearchApiClient,
       prisonApiClient,
@@ -60,7 +60,7 @@ class PrisonerSearchServiceTest {
   fun reset() {
     reset(
       licenceRepository,
-      communityApiClient,
+      deliusApiClient,
       probationSearchApiClient,
       prisonerSearchApiClient,
       prisonApiClient,
@@ -71,7 +71,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -79,11 +79,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("X12345", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -112,7 +112,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(eligibilityService).isEligibleForCvl(
@@ -160,7 +160,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload with results sorted`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -177,11 +177,11 @@ class PrisonerSearchServiceTest {
     ).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -214,7 +214,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
       listOf(
         ProbationSearchSortByRequest(SearchField.SURNAME.probationSearchApiSortType, "asc"),
         ProbationSearchSortByRequest(SearchField.COM_FORENAME.probationSearchApiSortType, "desc"),
@@ -242,7 +242,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload with latest licence selected`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -250,11 +250,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -293,7 +293,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
     val resultsList = result.results
     val offender = resultsList.first()
@@ -332,7 +332,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders on probation on a staff member's caseload with latest licence selected`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -340,11 +340,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("X12345", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -379,7 +379,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
     verifyNoInteractions(prisonApiClient)
     verifyNoInteractions(prisonerSearchApiClient)
@@ -422,7 +422,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders on probation on a staff member's caseload with no CRD should use ARD`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -430,11 +430,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -467,7 +467,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verifyNoInteractions(eligibilityService)
@@ -509,7 +509,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence (NOT_STARTED)`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -517,11 +517,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -553,7 +553,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -605,7 +605,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence where NOMIS ID is not populated`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -613,11 +613,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", null),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -645,7 +645,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verifyNoInteractions(prisonerSearchApiClient)
@@ -664,7 +664,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence sets PSS licence type correctly `() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -672,11 +672,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -710,7 +710,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -759,7 +759,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence sets AP licence type correctly where there is no TUSED`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -767,11 +767,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -805,7 +805,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -857,7 +857,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence sets AP licence type correctly where TUSED before LED`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -865,11 +865,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -904,7 +904,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -956,7 +956,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence sets AP_PSS licence type correctly`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -964,11 +964,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1003,7 +1003,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1055,7 +1055,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence without any release date data should be ignored`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1063,11 +1063,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1102,7 +1102,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1129,7 +1129,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence with no CRD should use release date`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1137,11 +1137,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1175,7 +1175,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1227,7 +1227,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence and ineligible for CVL`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1235,11 +1235,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1271,7 +1271,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1298,7 +1298,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence, eligible for CVL and is a non approved HDC case`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1306,11 +1306,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1350,7 +1350,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1402,7 +1402,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence, eligible for CVL and is an approved HDC case`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1410,11 +1410,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1456,7 +1456,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1483,7 +1483,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `search for offenders in prison on a staff member's caseload without a licence, eligible for CVL, HDC case but without HDCED`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1491,11 +1491,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1527,7 +1527,7 @@ class PrisonerSearchServiceTest {
 
     verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      communityApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
     )
 
     verify(prisonerSearchApiClient).searchPrisonersByNomisIds(
@@ -1579,7 +1579,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `hard stop dates are populated for non-started licences`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1587,11 +1587,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1629,7 +1629,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `hard stop dates are populated for started licences`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1637,11 +1637,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1691,7 +1691,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `Kind and version of are populated for started CRD licences`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1699,11 +1699,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1728,7 +1728,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `Release date is ARD when it exists for search results where a licence exists`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1736,11 +1736,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1772,7 +1772,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `Release date is CRD when ARD does not exist for search results where a licence exists`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1780,11 +1780,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1816,7 +1816,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `Release date label and is review needed are populated for not started CRD licences`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1824,11 +1824,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1852,7 +1852,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `Release date label reads 'CRD' when no confirmed release date is provided by NOMIS for not started CRD licences`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1860,11 +1860,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
@@ -1894,7 +1894,7 @@ class PrisonerSearchServiceTest {
 
   @Test
   fun `Release date label and is review needed are populated for started hard stop licence`() {
-    whenever(communityApiClient.getTeamsCodesForUser(2000)).thenReturn(
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
       ),
@@ -1902,11 +1902,11 @@ class PrisonerSearchServiceTest {
     whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
       listOf(
         CaseloadResult(
-          Name("Test", "Surname"),
+          Name("Test", surname = "Surname"),
           Identifiers("A123456", "A1234AA"),
           Manager(
             "A01B02C",
-            Name("Staff", "Surname"),
+            Name("Staff", surname = "Surname"),
             Detail("A01B02", "Test Team"),
           ),
           "2023/05/24",
