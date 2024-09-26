@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
@@ -2953,6 +2954,138 @@ class LicenceServiceTest {
           ),
         )
     }
+
+    @Test
+    fun `editing an approved HDC licence creates and saves a new licence version`() {
+      whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+        CommunityOffenderManager(
+          -1,
+          1,
+          "user",
+          null,
+          null,
+          null,
+        ),
+      )
+      whenever(licencePolicyService.currentPolicy()).thenReturn(
+        LicencePolicy(
+          "2.1",
+          standardConditions = StandardConditions(emptyList(), emptyList()),
+          additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+          changeHints = emptyList(),
+        ),
+      )
+      val approvedLicence = anHdcLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(approvedLicence),
+      )
+      whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+      val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+      service.editLicence(1L)
+
+      verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+      with(licenceCaptor.value as HdcLicence) {
+        assertThat(version).isEqualTo("2.1")
+        assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+        assertThat(versionOfId).isEqualTo(1)
+        assertThat(licenceVersion).isEqualTo("1.1")
+      }
+
+      verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+      assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.HDC_VERSION_CREATED)
+      assertThat(licenceEventCaptor.value.eventDescription).isEqualTo("A new licence version was created for ${approvedLicence.forename} ${approvedLicence.surname} from ID ${approvedLicence.id}")
+      verify(auditEventRepository).saveAndFlush(auditEventCaptor.capture())
+      assertThat(auditEventCaptor.value.summary).isEqualTo("New licence version created for ${approvedLicence.forename} ${approvedLicence.surname}")
+    }
+
+    @Test
+    fun `editing an approved HDC licence creates and saves a new licence version returns all conditions`() {
+      whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+        CommunityOffenderManager(
+          -1,
+          1,
+          "user",
+          null,
+          null,
+          null,
+        ),
+      )
+      whenever(licencePolicyService.currentPolicy()).thenReturn(
+        LicencePolicy(
+          "2.1",
+          standardConditions = StandardConditions(emptyList(), emptyList()),
+          additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+          changeHints = emptyList(),
+        ),
+      )
+
+      val approvedLicence = anHdcLicenceEntity.copy(
+        statusCode = LicenceStatus.APPROVED,
+        additionalConditions = additionalConditions,
+      )
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(approvedLicence),
+      )
+
+      whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
+
+      val newAdditionalConditionsCaptor = argumentCaptor<List<AdditionalCondition>>()
+      service.editLicence(1L)
+      verify(additionalConditionRepository, times(2)).saveAll(newAdditionalConditionsCaptor.capture())
+      assertThat(newAdditionalConditionsCaptor.firstValue.size).isEqualTo(2)
+      assertThat(newAdditionalConditionsCaptor.firstValue.first().conditionType).isEqualTo(LicenceType.AP.toString())
+      assertThat(newAdditionalConditionsCaptor.firstValue.last().conditionType).isEqualTo(LicenceType.PSS.toString())
+    }
+
+    @Test
+    fun `attempting to editing an HDC licence with status other than approved results in validation exception `() {
+      val activeLicence = anHdcLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(activeLicence),
+      )
+
+      val exception = assertThrows<ValidationException> { service.editLicence(1L) }
+      assertThat(exception).isInstanceOf(ValidationException::class.java)
+      assertThat(exception).message().isEqualTo("Can only edit APPROVED licences")
+    }
+
+    @Test
+    fun `editing an approved licence which already has an in progress version returns that version`() {
+      whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+        CommunityOffenderManager(
+          -1,
+          1,
+          "user",
+          null,
+          null,
+          null,
+        ),
+      )
+      val approvedLicence = anHdcLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
+      val inProgressLicenceVersion =
+        approvedLicence.copy(id = 9032, statusCode = LicenceStatus.IN_PROGRESS, versionOfId = approvedLicence.id)
+      whenever(licenceRepository.findById(1L)).thenReturn(
+        Optional.of(approvedLicence),
+      )
+      whenever(
+        licenceRepository.findAllByVersionOfIdInAndStatusCodeIn(
+          listOf(approvedLicence.id),
+          listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED),
+        ),
+      )
+        .thenReturn(
+          listOf(inProgressLicenceVersion),
+        )
+
+      val newLicenceVersion = service.editLicence(1L)
+      assertNotNull(newLicenceVersion)
+      assertThat(newLicenceVersion.licenceId).isEqualTo(inProgressLicenceVersion.id)
+
+      verify(licenceRepository, never()).save(any())
+    }
   }
 
   private companion object {
@@ -2978,6 +3111,84 @@ class LicenceServiceTest {
       prisonDescription = "Moorland (HMP)",
       forename = "Bob",
       surname = "Mortimer",
+      dateOfBirth = LocalDate.of(1985, 12, 28),
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      actualReleaseDate = LocalDate.of(2021, 10, 22),
+      sentenceStartDate = LocalDate.of(2018, 10, 22),
+      sentenceEndDate = LocalDate.of(2021, 10, 22),
+      licenceStartDate = LocalDate.of(2021, 10, 22),
+      licenceExpiryDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+      topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+      probationAreaCode = "N01",
+      probationAreaDescription = "Wales",
+      probationPduCode = "N01A",
+      probationPduDescription = "Cardiff",
+      probationLauCode = "N01A2",
+      probationLauDescription = "Cardiff South",
+      probationTeamCode = "NA01A2-A",
+      probationTeamDescription = "Cardiff South Team A",
+      dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+      standardConditions = emptyList(),
+      responsibleCom = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      ),
+      createdBy = CommunityOffenderManager(
+        staffIdentifier = 2000,
+        username = "smills",
+        email = "testemail@probation.gov.uk",
+        firstName = "X",
+        lastName = "Y",
+      ),
+      approvedByName = "jim smith",
+      approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+    ).let {
+      it.copy(
+        standardConditions = listOf(
+          EntityStandardCondition(
+            id = 1,
+            conditionCode = "goodBehaviour",
+            conditionSequence = 1,
+            conditionText = "Be of good behaviour",
+            licence = it,
+          ),
+          EntityStandardCondition(
+            id = 2,
+            conditionCode = "notBreakLaw",
+            conditionSequence = 2,
+            conditionText = "Do not break any law",
+            licence = it,
+          ),
+          EntityStandardCondition(
+            id = 3,
+            conditionCode = "attendMeetings",
+            conditionSequence = 3,
+            conditionText = "Attend meetings",
+            licence = it,
+          ),
+        ),
+      )
+    }
+
+    val anHdcLicenceEntity = createHdcLicence().copy(
+      id = 1,
+      typeCode = LicenceType.AP,
+      version = "1.1",
+      statusCode = LicenceStatus.IN_PROGRESS,
+      nomsId = "A1234AA",
+      bookingNo = "123456",
+      bookingId = 54321,
+      crn = "X12345",
+      pnc = "2019/123445",
+      cro = "12345",
+      prisonCode = "MDI",
+      prisonDescription = "Moorland (HMP)",
+      forename = "John",
+      surname = "Smith",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),

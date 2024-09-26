@@ -19,13 +19,26 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
-  fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<CrdLicence>
   fun findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(bookingId: List<Long>, status: LicenceStatus): List<CrdLicence>
   fun findAllByBookingIdAndStatusCodeInAndKindIn(
     bookingId: Long,
     status: List<LicenceStatus>,
     kind: List<LicenceKind>,
   ): List<Licence>
+
+  @Query(
+    """
+    SELECT l
+        FROM Licence l
+        WHERE l.kind IN (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC,
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+        )
+        AND l.versionOfId IN :versionOfId
+        AND l.statusCode IN :status
+    """,
+  )
+  fun findAllByVersionOfIdInAndStatusCodeIn(versionOfId: List<Long>, status: List<LicenceStatus>): List<Licence>
 
   @Query(
     """
