@@ -83,7 +83,11 @@ fun transformToLicenceSummary(
   approvedDate = licence.approvedDate,
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
-  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+  versionOf = when (licence) {
+    is CrdLicence -> licence.versionOfId
+    is HdcLicence -> licence.versionOfId
+    else -> null
+  },
   isReviewNeeded = when (licence) {
     is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
     else -> false

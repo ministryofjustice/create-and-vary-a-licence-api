@@ -23,5 +23,6 @@ enum class LicenceEventType {
   NOT_STARTED,
   TIMED_OUT,
   HDC_CREATED,
+  HDC_VERSION_CREATED,
   HDC_SUBMITTED,
 }

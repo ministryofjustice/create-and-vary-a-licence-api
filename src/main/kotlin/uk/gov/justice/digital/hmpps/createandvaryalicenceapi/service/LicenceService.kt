@@ -43,7 +43,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -549,7 +548,7 @@ class LicenceService(
     val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licence !is CrdLicence) error("Trying to edit licence for non-crd licence: $licenceId")
+    if (licence !is CrdLicence && licence !is HdcLicence) error("Trying to edit licence for non-crd non-hdc licence: $licenceId")
 
     if (licence.statusCode != APPROVED) {
       throw ValidationException("Can only edit APPROVED licences")
@@ -562,10 +561,10 @@ class LicenceService(
     }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
-    val copyToEdit = LicenceFactory.createCopyToEdit(licence, creator)
-    val licenceCopy = populateCopyAndAudit(CRD, licence, copyToEdit, creator)
-    notifyReApprovalNeeded(licence)
 
+    val copyToEdit = if (licence is HdcLicence) LicenceFactory.createHdcCopyToEdit(licence, creator) else LicenceFactory.createCrdCopyToEdit(licence as CrdLicence, creator)
+    val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
+    notifyReApprovalNeeded(licence)
     return licenceCopy.toSummary()
   }
 
