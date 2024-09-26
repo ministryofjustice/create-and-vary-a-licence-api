@@ -46,7 +46,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.O
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
@@ -524,10 +524,11 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "AB012C",
-                name = Name(forename = "Test", surname = "Test"),
-                id = 1L,
+                forenames = "Test",
+                surname = "Test",
+                unallocated = false,
               ),
               active = false,
             ),
@@ -559,10 +560,11 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "XXXXXX",
-                name = Name(forename = "Test", surname = "Test"),
-                id = 1L,
+                forenames = "Test",
+                surname = "Test",
+                unallocated = false,
               ),
               active = true,
             ),
@@ -1129,10 +1131,11 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "AB012C",
-                name = Name(forename = "Test", surname = "Test"),
-                id = 1L,
+                forenames = "Test",
+                surname = "Test",
+                unallocated = false,
               ),
               active = false,
             ),
@@ -1164,10 +1167,11 @@ class LicenceCreationServiceTest {
         anOffenderDetailResult.copy(
           offenderManagers = listOf(
             OffenderManager(
-              staffDetail = StaffDetail(
+              staffDetail = ProbationSearchStaffDetail(
                 code = "XXXXXX",
-                name = Name(forename = "Test", surname = "Test"),
-                id = 1L,
+                forenames = "Test",
+                surname = "Test",
+                unallocated = false,
               ),
               active = true,
             ),
@@ -1363,10 +1367,11 @@ class LicenceCreationServiceTest {
       ),
       offenderManagers = listOf(
         OffenderManager(
-          staffDetail = StaffDetail(
+          staffDetail = ProbationSearchStaffDetail(
             code = "AB012C",
-            name = Name(forename = "Test", surname = "Test"),
-            id = 1L,
+            forenames = "Test",
+            surname = "Test",
+            unallocated = false,
           ),
           active = true,
         ),

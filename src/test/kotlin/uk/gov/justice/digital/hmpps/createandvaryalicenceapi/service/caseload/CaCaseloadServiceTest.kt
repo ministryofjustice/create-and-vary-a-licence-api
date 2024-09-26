@@ -34,7 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.O
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -1031,10 +1031,10 @@ class CaCaseloadServiceTest {
       offenderManagers = listOf(
         OffenderManager(
           active = true,
-          staffDetail = StaffDetail(
-            name = Name(forename = "Joe", surname = "Bloggs"),
+          staffDetail = ProbationSearchStaffDetail(
+            forenames = "Joe",
+            surname = "Bloggs",
             code = "X1234",
-            id = 1L,
           ),
         ),
       ),

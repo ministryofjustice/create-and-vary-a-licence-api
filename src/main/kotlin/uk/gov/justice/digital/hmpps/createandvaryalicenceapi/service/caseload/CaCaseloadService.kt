@@ -457,9 +457,9 @@ class CaCaseloadService(
                     code = it.code,
                     name = Name(
                       forename = it.forenames,
-                      surname = it.surname
+                      surname = it.surname,
                     ),
-                    unallocated = it.unallocated
+                    unallocated = it.unallocated,
                   )
                 },
               ),
