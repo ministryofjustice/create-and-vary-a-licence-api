@@ -171,6 +171,7 @@ class LicenceService(
         when (licenceEntity) {
           is VariationLicence -> error("Cannot approve a Variation licence: ${licenceEntity.id}")
           is CrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
+          is HdcLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
         }
         approvedByUser = request.username
         approvedByName = request.fullName
@@ -334,38 +335,54 @@ class LicenceService(
     }
   }
 
-  private fun deactivatePreviousLicenceVersion(licence: CrdLicence, fullName: String?, staffMember: Staff?) {
-    val previousVersionId = licence.versionOfId
+  private fun deactivatePreviousLicenceVersion(licence: EntityLicence, fullName: String?, staffMember: Staff?) {
+    val previousVersionId = when (licence) {
+      is CrdLicence -> licence.versionOfId
+      is HdcLicence -> licence.versionOfId
+      else -> null
+    }
 
-    if (previousVersionId != null) {
-      val previousLicenceVersion =
-        licenceRepository.findById(previousVersionId)
-          .orElseThrow { EntityNotFoundException("$previousVersionId") }
+    if (previousVersionId == null) {
+      return
+    }
 
-      if (previousLicenceVersion !is CrdLicence) error("Trying to inactivate non-crd licence: $previousVersionId")
+    val previousLicenceVersion =
+      licenceRepository.findById(previousVersionId)
+        .orElseThrow { EntityNotFoundException("$previousVersionId") }
 
-      val updatedLicence = previousLicenceVersion.copy(
+    val updatedLicence = when (previousLicenceVersion) {
+      is CrdLicence -> previousLicenceVersion.copy(
         dateLastUpdated = LocalDateTime.now(),
         updatedByUsername = staffMember?.username ?: SYSTEM_USER,
         statusCode = INACTIVE,
         updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
-      licenceRepository.saveAndFlush(updatedLicence)
 
-      val (firstName, lastName) = splitName(fullName)
-      licenceEventRepository.saveAndFlush(
-        EntityLicenceEvent(
-          licenceId = previousVersionId,
-          eventType = LicenceEventType.SUPERSEDED,
-          username = staffMember?.username ?: SYSTEM_USER,
-          forenames = firstName,
-          surname = lastName,
-          eventDescription = "Licence deactivated as a newer version was approved for ${licence.forename} ${licence.surname}",
-        ),
+      is HdcLicence -> previousLicenceVersion.copy(
+        dateLastUpdated = LocalDateTime.now(),
+        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+        statusCode = INACTIVE,
+        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
 
-      auditStatusChange(updatedLicence, staffMember)
+      else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
+
+    licenceRepository.saveAndFlush(updatedLicence)
+
+    val (firstName, lastName) = splitName(fullName)
+    licenceEventRepository.saveAndFlush(
+      EntityLicenceEvent(
+        licenceId = previousVersionId,
+        eventType = LicenceEventType.SUPERSEDED,
+        username = staffMember?.username ?: SYSTEM_USER,
+        forenames = firstName,
+        surname = lastName,
+        eventDescription = "Licence deactivated as a newer version was approved for ${licence.forename} ${licence.surname}",
+      ),
+    )
+
+    auditStatusChange(updatedLicence, staffMember)
   }
 
   @Transactional
@@ -562,7 +579,14 @@ class LicenceService(
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
-    val copyToEdit = if (licence is HdcLicence) LicenceFactory.createHdcCopyToEdit(licence, creator) else LicenceFactory.createCrdCopyToEdit(licence as CrdLicence, creator)
+    val copyToEdit = if (licence is HdcLicence) {
+      LicenceFactory.createHdcCopyToEdit(
+        licence,
+        creator,
+      )
+    } else {
+      LicenceFactory.createCrdCopyToEdit(licence as CrdLicence, creator)
+    }
     val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
     notifyReApprovalNeeded(licence)
     return licenceCopy.toSummary()
