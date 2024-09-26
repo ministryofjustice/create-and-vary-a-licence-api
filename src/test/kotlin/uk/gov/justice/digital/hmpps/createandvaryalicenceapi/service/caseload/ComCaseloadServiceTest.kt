@@ -286,23 +286,23 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 2L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12350",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 3L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12351",
-        staff = StaffDetail(name = Name(forename = null, surname = null), code = "X1234", unallocated = true, id = 4L),
+        staff = StaffDetail(name = Name(forename = null, surname = null), code = "X1234", unallocated = true),
       ),
       ManagedOffenderCrn(
         crn = "X12352",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 5L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
 
@@ -421,11 +421,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321", id = 2L),
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
       ),
     )
 
@@ -490,11 +490,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
       ),
     )
 
@@ -550,7 +550,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"), id = 1L),
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
 
@@ -624,7 +624,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs"), id = 1L),
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       ),
     )
 
@@ -706,7 +706,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
 
@@ -783,11 +783,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321", id = 2L),
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
       ),
     )
 
@@ -891,7 +891,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234", id = 1L),
+        staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
       ),
     )
 
@@ -973,7 +973,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = Array(1100) {
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       )
     }.asList()
 
@@ -993,7 +993,7 @@ class ComCaseloadServiceTest {
     val managedOffenders = Array(1500) {
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(id = 1L, code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
+        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
       )
     }.asList()
 

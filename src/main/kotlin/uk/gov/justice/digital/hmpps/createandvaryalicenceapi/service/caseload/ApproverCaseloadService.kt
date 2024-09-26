@@ -112,7 +112,7 @@ class ApproverCaseloadService(
       }
       ProbationPractitioner(
         staffCode = activeCom.staffDetail.code,
-        name = activeCom.staffDetail.name?.fullName()?.convertToTitleCase(),
+        name = "${activeCom.staffDetail.forenames} ${activeCom.staffDetail.surname}".convertToTitleCase(),
       )
     }
   }

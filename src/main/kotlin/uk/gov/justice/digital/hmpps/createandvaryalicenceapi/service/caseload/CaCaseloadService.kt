@@ -22,7 +22,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
@@ -184,7 +186,7 @@ class CaCaseloadService(
         caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.code,
-            name = com.name?.fullName(),
+            name = com.let { "${it.forenames} ${it.surname}" },
           ),
         )
       } else {
@@ -450,7 +452,16 @@ class CaCaseloadService(
             deliusRecord = DeliusRecord(
               deliusRecord,
               ManagedOffenderCrn(
-                staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail,
+                staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail?.let {
+                  StaffDetail(
+                    code = it.code,
+                    name = Name(
+                      forename = it.forenames,
+                      surname = it.surname
+                    ),
+                    unallocated = it.unallocated
+                  )
+                },
               ),
             ),
           )

@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.O
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -120,11 +120,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
-                    name = Name(forename = "Test2", surname = "Test2"),
+                    forenames = "Test2",
+                    surname = "Test2",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -236,11 +236,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
-                    name = Name(forename = "Test2", surname = "Test2"),
+                    forenames = "Test2",
+                    surname = "Test2",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -325,11 +325,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
-                    name = Name(forename = "Test2", surname = "Test2"),
+                    forenames = "Test2",
+                    surname = "Test2",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -344,11 +344,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
-                    name = Name(forename = "Test3", surname = "Test3"),
+                    forenames = "Test3",
+                    surname = "Test3",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -536,11 +536,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
-                    name = Name(forename = "Test2", surname = "Test2"),
+                    forenames = "Test2",
+                    surname = "Test",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -555,11 +555,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
-                    name = Name(forename = "Test3", surname = "Test3"),
+                    forenames = "Test3",
+                    surname = "Test3",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -673,11 +673,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
-                    name = Name(forename = "Test2", surname = "Test2"),
+                    forenames = "Test2",
+                    surname = "Test",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -692,11 +692,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
-                    name = Name(forename = "Test3", surname = "Test3"),
+                    forenames = "Test3",
+                    surname = "Test3",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -781,11 +781,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "DE012F",
-                    name = Name(forename = "Test2", surname = "Test2"),
+                    forenames = "Test2",
+                    surname = "Test",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -800,11 +800,11 @@ class ApproverCaseloadServiceTest {
               ),
               offenderManagers = listOf(
                 OffenderManager(
-                  staffDetail = StaffDetail(
+                  staffDetail = ProbationSearchStaffDetail(
                     code = "GH012I",
-                    name = Name(forename = "Test3", surname = "Test3"),
+                    forenames = "Test3",
+                    surname = "Test3",
                     unallocated = false,
-                    id = 1L,
                   ),
                   active = true,
                 ),
@@ -986,11 +986,11 @@ class ApproverCaseloadServiceTest {
       val anOffenderDetailResult = anOffenderDetailResult.copy(
         offenderManagers = listOf(
           OffenderManager(
-            staffDetail = StaffDetail(
+            staffDetail = ProbationSearchStaffDetail(
               code = "AB012C",
-              name = Name(forename = "Test", surname = "Test"),
-              unallocated = true,
-              id = 1L,
+              forenames = "Test",
+              surname = "Test",
+              unallocated = false,
             ),
             active = true,
           ),
@@ -1057,11 +1057,11 @@ class ApproverCaseloadServiceTest {
       ),
       offenderManagers = listOf(
         OffenderManager(
-          staffDetail = StaffDetail(
+          staffDetail = ProbationSearchStaffDetail(
             code = "AB012C",
-            name = Name(forename = "Test", surname = "Test"),
+            forenames = "Test",
+            surname = "Test",
             unallocated = false,
-            id = 1L,
           ),
           active = true,
         ),
