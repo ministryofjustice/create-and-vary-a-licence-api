@@ -229,6 +229,9 @@ data class HdcLicence(
   @Schema(description = "The username of the person who last updated this licence", example = "X34433")
   override val updatedByUsername: String? = null,
 
+  @Schema(description = "The curfew times for this licence")
+  val curfewTimes: HdcCurfewTimes? = null,
+
   @Schema(description = "The list of standard licence conditions on this licence")
   override val standardLicenceConditions: List<StandardCondition>? = emptyList(),
 
