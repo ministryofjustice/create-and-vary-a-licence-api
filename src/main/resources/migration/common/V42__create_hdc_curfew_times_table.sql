@@ -5,7 +5,7 @@ CREATE TABLE hdc_curfew_times(
                             from_time time,
                             until_day varchar(9),
                             until_time time,
-                            curfew_times_sequence integer,  -- the sequence of the data for these curfew hours - starting at 1
+                            curfew_times_sequence integer,  -- the sequence of the data for these curfew times - starting at 1
                             created_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
