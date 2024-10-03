@@ -77,7 +77,6 @@ class HdcLicence(
   updatedBy: Staff? = null,
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  @JoinColumn(name = "licence_id", nullable = false)
   @OrderBy("curfewTimesSequence")
   val curfewTimes: List<HdcCurfewTimes> = emptyList(),
 
