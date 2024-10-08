@@ -290,7 +290,7 @@ val POLICY_V3 = LicencePolicy(
       AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
         categoryShort = "Programmes or activities",
-        code = "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+        code = "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         inputs = listOf(
           Input(
             label = "Select all that apply",
@@ -1164,7 +1164,7 @@ val POLICY_V3 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A  CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
+        text = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
         tpl = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, {substanceTypes}.",
         type = "SubstanceMisuse",
       ),
@@ -1438,6 +1438,13 @@ val POLICY_V3 = LicencePolicy(
       previousCode = "bb401b88-2137-4154-be4a-5e05c168638a",
       replacements = emptyList(),
     ),
+    ChangeHint(
+      previousCode = "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+      replacements = listOf(
+        "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
+        "f1d2888b-be86-4732-8874-44cb867865c2"
+      ),
+    )
   ),
   standardConditions = StandardConditions(
     standardConditionsAp = listOf(
