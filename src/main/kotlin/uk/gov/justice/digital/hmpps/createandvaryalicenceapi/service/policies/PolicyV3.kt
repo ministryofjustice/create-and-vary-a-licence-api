@@ -1442,9 +1442,9 @@ val POLICY_V3 = LicencePolicy(
       previousCode = "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
       replacements = listOf(
         "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
-        "f1d2888b-be86-4732-8874-44cb867865c2"
+        "f1d2888b-be86-4732-8874-44cb867865c2",
       ),
-    )
+    ),
   ),
   standardConditions = StandardConditions(
     standardConditionsAp = listOf(
