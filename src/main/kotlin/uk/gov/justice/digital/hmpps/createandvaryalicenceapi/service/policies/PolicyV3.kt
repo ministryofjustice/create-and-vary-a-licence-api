@@ -290,7 +290,7 @@ val POLICY_V3 = LicencePolicy(
       AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
         categoryShort = "Programmes or activities",
-        code = "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+        code = "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         inputs = listOf(
           Input(
             label = "Select all that apply",
@@ -489,7 +489,7 @@ val POLICY_V3 = LicencePolicy(
       ),
       AdditionalConditionAp(
         category = "Disclosure of information",
-        code = "fcc61f29-cdab-4906-86ae-7e62afed7567",
+        code = "8686a815-b7f0-43b6-9886-f01df6a48773",
         inputs = listOf(
           Input(
             label = "Select all that apply",
@@ -1164,7 +1164,7 @@ val POLICY_V3 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A  CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
+        text = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
         tpl = "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, {substanceTypes}.",
         type = "SubstanceMisuse",
       ),
@@ -1413,6 +1413,35 @@ val POLICY_V3 = LicencePolicy(
     ChangeHint(
       previousCode = "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
       replacements = listOf(
+        "f1d2888b-be86-4732-8874-44cb867865c2",
+      ),
+    ),
+    ChangeHint(
+      previousCode = "72d281c3-b194-43ab-812d-fea0683ada65",
+      replacements = listOf(
+        "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
+      ),
+    ),
+    ChangeHint(
+      previousCode = "ed607a91-fe3a-4816-8eb9-b447c945935c",
+      replacements = listOf(
+        "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
+      ),
+    ),
+    ChangeHint(
+      previousCode = "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
+      replacements = listOf(
+        "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
+      ),
+    ),
+    ChangeHint(
+      previousCode = "bb401b88-2137-4154-be4a-5e05c168638a",
+      replacements = emptyList(),
+    ),
+    ChangeHint(
+      previousCode = "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+      replacements = listOf(
+        "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         "f1d2888b-be86-4732-8874-44cb867865c2",
       ),
     ),
