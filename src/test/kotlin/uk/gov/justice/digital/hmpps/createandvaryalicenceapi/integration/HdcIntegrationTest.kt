@@ -1,12 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -116,7 +114,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
             LocalTime.of(7, 0),
             LocalDateTime.of(2024, 8, 14, 9, 0),
           ),
-          HdcCurfewTimes (
+          HdcCurfewTimes(
             1L,
             TestData.createHdcLicence(),
             7,
@@ -248,7 +246,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           LocalTime.of(8, 0),
           LocalDateTime.of(2024, 8, 14, 9, 0),
         ),
-        HdcCurfewTimes (
+        HdcCurfewTimes(
           1L,
           TestData.createHdcLicence(),
           7,

@@ -51,7 +51,7 @@ class HdcControllerTest {
     mvc.perform(
       get("/hdc/curfew/bookingId/123456")
         .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
 

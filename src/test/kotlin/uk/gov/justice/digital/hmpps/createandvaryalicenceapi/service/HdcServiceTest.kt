@@ -9,8 +9,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewTimesRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
@@ -19,6 +17,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLice
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 
 class HdcServiceTest {
   private val hdcApiClient = mock<HdcApiClient>()
@@ -27,7 +27,7 @@ class HdcServiceTest {
   private val service =
     HdcService(
       hdcApiClient,
-      hdcCurfewTimesRepository
+      hdcCurfewTimesRepository,
     )
 
   @BeforeEach
@@ -49,9 +49,11 @@ class HdcServiceTest {
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully hdcCurfewTimesRepository`() {
-    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(someHdcLicenceData.copy(
-      curfewTimes = emptyList()
-    ))
+    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
+      someHdcLicenceData.copy(
+        curfewTimes = emptyList(),
+      ),
+    )
     whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(anEntitySetOfCurfewTimes)
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull

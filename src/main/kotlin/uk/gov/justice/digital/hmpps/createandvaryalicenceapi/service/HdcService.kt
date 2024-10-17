@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformTo
 @Service
 class HdcService(
   private val hdcApiClient: HdcApiClient,
-  private val hdcCurfewTimesRepository: HdcCurfewTimesRepository
+  private val hdcCurfewTimesRepository: HdcCurfewTimesRepository,
 ) {
 
   @Transactional
