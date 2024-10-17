@@ -6,5 +6,5 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTim
 
 @Repository
 interface HdcCurfewTimesRepository : JpaRepository<HdcCurfewTimes, Long> {
-  fun findByLicenceId(licenceId: Long?): List<HdcCurfewTimes?>
+  fun findByLicenceId(licenceId: Long?): List<HdcCurfewTimes>
 }
