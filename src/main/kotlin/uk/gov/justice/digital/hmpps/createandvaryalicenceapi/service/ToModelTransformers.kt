@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary as ModelAdditionalConditionUploadSummary
@@ -34,6 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -513,6 +515,18 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
     description = entity.description,
     thumbnailImage = entity.thumbnailImage?.toBase64(),
     uploadDetailId = entity.uploadDetailId,
+  )
+
+// Transform a list of hdc curfew times to model hdc curfew times
+fun List<EntityHdcCurfewTimes>.transformToModelCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)
+
+private fun transform(entity: EntityHdcCurfewTimes): ModelHdcCurfewTimes = ModelHdcCurfewTimes(
+  id = entity.id,
+  curfewTimesSequence = entity.curfewTimesSequence,
+  fromDay = entity.fromDay,
+  fromTime = entity.fromTime,
+  untilDay = entity.untilDay,
+  untilTime = entity.untilTime,
   )
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))

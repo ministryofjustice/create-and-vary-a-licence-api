@@ -11,33 +11,62 @@ class HdcApiMockServer : WireMockServer(8100) {
       get(urlEqualTo("/licence/hdc/$bookingId")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
-            "curfewAddress": {
-              "addressLine1": "123 Test Street",
-              "addressLine2": null,
-              "addressTown": "Test Area",
-              "postCode": "AB1 2CD"
-            },
-            "firstNightCurfewHours": {
-              "firstNightFrom": "15:00",
-              "firstNightUntil": "07:00"
-            },
-            "curfewHours": {
-              "mondayFrom": "19:00",
-              "mondayUntil": "07:00",
-              "tuesdayFrom": "19:00",
-              "tuesdayUntil": "07:00",
-              "wednesdayFrom": "19:00",
-              "wednesdayUntil": "07:00",
-              "thursdayFrom": "19:00",
-              "thursdayUntil": "07:00",
-              "fridayFrom": "19:00",
-              "fridayUntil": "07:00",
-              "saturdayFrom": "19:00",
-              "saturdayUntil": "07:00",
-              "sundayFrom": "19:00",
-              "sundayUntil": "07:00"
-            }
-          }
+            "licenceId": "1",
+  "curfewAddress": {
+    "addressLine1": "123 Test Street",
+    "addressLine2": null,
+    "addressTown": "Test Area",
+    "postCode": "AB1 2CD"
+  },
+  "firstNightCurfewHours": {
+    "firstNightFrom": "15:00",
+    "firstNightUntil": "07:00"
+  },
+  "curfewTimes": [
+    {
+      "fromDay": "MONDAY",
+      "fromTime": "19:00",
+      "untilDay": "TUESDAY",
+      "untilTime": "07:00"
+    },
+    {
+      "fromDay": "TUESDAY",
+      "fromTime": "19:00",
+      "untilDay": "WEDNESDAY",
+      "untilTime": "07:00"
+    },
+    {
+      "fromDay": "WEDNESDAY",
+      "fromTime": "19:00",
+      "untilDay": "THURSDAY",
+      "untilTime": "07:00"
+    },
+    {
+      "fromDay": "THURSDAY",
+      "fromTime": "19:00",
+      "untilDay": "FRIDAY",
+      "untilTime": "07:00"
+    },
+    {
+      "fromDay": "FRIDAY",
+      "fromTime": "19:00",
+      "untilDay": "SATURDAY",
+      "untilTime": "07:00"
+    },
+    {
+      "fromDay": "SATURDAY",
+      "fromTime": "19:00",
+      "untilDay": "SUNDAY",
+      "untilTime": "07:00"
+    },
+    {
+      "fromDay": "SUNDAY",
+      "fromTime": "19:00",
+      "untilDay": "MONDAY",
+      "untilTime": "07:00"
+    }
+  ]
+}
           """.trimMargin(),
         ).withStatus(200),
       ),

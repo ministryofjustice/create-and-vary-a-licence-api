@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -8,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -24,9 +27,11 @@ data class HdcCurfewTimes(
   var licence: Licence,
 
   var curfewTimesSequence: Int? = null,
-  val fromDay: LocalTime? = null,
+  @Enumerated(EnumType.STRING)
+  val fromDay: DayOfWeek? = null,
   val fromTime: LocalTime? = null,
-  val untilDay: LocalTime? = null,
+  @Enumerated(EnumType.STRING)
+  val untilDay: DayOfWeek? = null,
   val untilTime: LocalTime? = null,
   val createdTimestamp: LocalDateTime? = null,
 ) {

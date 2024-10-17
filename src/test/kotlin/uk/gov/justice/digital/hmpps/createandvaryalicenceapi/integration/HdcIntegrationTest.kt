@@ -1,18 +1,24 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewHours
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
+import java.time.DayOfWeek
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class HdcIntegrationTest : IntegrationTestBase() {
 
@@ -47,22 +53,79 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "07:00",
         ),
       )
-      assertThat(result.curfewHours).isEqualTo(
-        CurfewHours(
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
+
+      assertThat(result.curfewTimes).isEqualTo(
+        listOf(
+          HdcCurfewTimes(
+            1L,
+            TestData.createHdcLicence(),
+            1,
+            DayOfWeek.MONDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.TUESDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            TestData.createHdcLicence(),
+            2,
+            DayOfWeek.TUESDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.WEDNESDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            TestData.createHdcLicence(),
+            3,
+            DayOfWeek.WEDNESDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.THURSDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            TestData.createHdcLicence(),
+            4,
+            DayOfWeek.THURSDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.FRIDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            TestData.createHdcLicence(),
+            5,
+            DayOfWeek.FRIDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.SATURDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            TestData.createHdcLicence(),
+            6,
+            DayOfWeek.SATURDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.SUNDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
+          HdcCurfewTimes (
+            1L,
+            TestData.createHdcLicence(),
+            7,
+            DayOfWeek.SUNDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.MONDAY,
+            LocalTime.of(7, 0),
+            LocalDateTime.of(2024, 8, 14, 9, 0),
+          ),
         ),
       )
     }
@@ -122,5 +185,79 @@ class HdcIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       hdcApiMockServer.stop()
     }
+
+    val curfewTimes =
+      listOf(
+        HdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          1,
+          DayOfWeek.MONDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.TUESDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          2,
+          DayOfWeek.TUESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          3,
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.THURSDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          4,
+          DayOfWeek.THURSDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.FRIDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          5,
+          DayOfWeek.FRIDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SATURDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          6,
+          DayOfWeek.SATURDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SUNDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        HdcCurfewTimes (
+          1L,
+          TestData.createHdcLicence(),
+          7,
+          DayOfWeek.SUNDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.MONDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+      )
   }
 }
