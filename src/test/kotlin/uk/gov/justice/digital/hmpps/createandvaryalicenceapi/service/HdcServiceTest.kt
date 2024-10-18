@@ -33,22 +33,23 @@ class HdcServiceTest {
   @BeforeEach
   fun reset() {
     reset(hdcApiClient)
+    reset(hdcCurfewTimesRepository)
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully hdcApiClient`() {
+  fun `getHdcLicenceData returns HDC licence data successfully from hdcApiClient`() {
     whenever(hdcApiClient.getByBookingId(1L)).thenReturn(someHdcLicenceData)
-    whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(emptyList<EntityHdcCurfewTimes>())
+    whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(emptyList())
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewTimes).isEqualTo(anEntitySetOfCurfewTimes)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(1L)
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully hdcCurfewTimesRepository`() {
+  fun `getHdcLicenceData returns HDC licence data successfully from hdcCurfewTimesRepository`() {
     whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
       someHdcLicenceData.copy(
         curfewTimes = emptyList(),
@@ -59,7 +60,7 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewTimes).isEqualTo(anEntitySetOfCurfewTimes)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(1L)
   }
 
@@ -70,12 +71,12 @@ class HdcServiceTest {
         curfewAddress = null,
       ),
     )
-    whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(emptyList<EntityHdcCurfewTimes>())
+    whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(emptyList())
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isNull()
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewTimes).isEqualTo(anEntitySetOfCurfewTimes)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(1L)
   }
 
@@ -86,17 +87,17 @@ class HdcServiceTest {
         firstNightCurfewHours = null,
       ),
     )
-    whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(emptyList<EntityHdcCurfewTimes>())
+    whenever(hdcCurfewTimesRepository.findByLicenceId(anyLong())).thenReturn(emptyList())
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isNull()
-    assertThat(result?.curfewTimes).isEqualTo(anEntitySetOfCurfewTimes)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
     verify(hdcApiClient, times(1)).getByBookingId(1L)
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully when there are no curfew hours`() {
+  fun `getHdcLicenceData returns HDC licence data successfully when there are no curfew times`() {
     whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
       someHdcLicenceData.copy(
         curfewTimes = emptyList(),
