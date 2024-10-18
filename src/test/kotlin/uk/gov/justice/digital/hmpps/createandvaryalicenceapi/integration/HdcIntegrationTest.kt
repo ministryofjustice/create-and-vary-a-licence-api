@@ -9,10 +9,12 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewHours
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
+import java.time.DayOfWeek
+import java.time.LocalTime
 
 class HdcIntegrationTest : IntegrationTestBase() {
 
@@ -47,22 +49,65 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "07:00",
         ),
       )
-      assertThat(result.curfewHours).isEqualTo(
-        CurfewHours(
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
-          "19:00",
-          "07:00",
+
+      assertThat(result.curfewTimes).isEqualTo(
+        listOf(
+          HdcCurfewTimes(
+            1L,
+            1,
+            DayOfWeek.MONDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.TUESDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            2,
+            DayOfWeek.TUESDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.WEDNESDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            3,
+            DayOfWeek.WEDNESDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.THURSDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            4,
+            DayOfWeek.THURSDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.FRIDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            5,
+            DayOfWeek.FRIDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.SATURDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            6,
+            DayOfWeek.SATURDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.SUNDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            1L,
+            7,
+            DayOfWeek.SUNDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.MONDAY,
+            LocalTime.of(7, 0),
+          ),
         ),
       )
     }
