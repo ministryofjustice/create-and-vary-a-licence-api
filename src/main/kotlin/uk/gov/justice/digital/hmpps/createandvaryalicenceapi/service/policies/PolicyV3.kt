@@ -500,6 +500,9 @@ val POLICY_V3 = LicencePolicy(
                 value = "bank accounts",
               ),
               Option(
+                value = "credit cards",
+              ),
+              Option(
                 value = "crypto currency accounts or wallets",
               ),
             ),
