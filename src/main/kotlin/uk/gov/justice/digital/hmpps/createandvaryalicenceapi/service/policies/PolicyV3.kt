@@ -85,7 +85,7 @@ val POLICY_V3 = LicencePolicy(
         inputs = listOf(
           Input(
             case = LOWER,
-            label = "Select the relevant text",
+            label = "Select gender",
             name = "gender",
             options = listOf(
               Option(
@@ -101,7 +101,7 @@ val POLICY_V3 = LicencePolicy(
             type = RADIO,
           ),
           Input(
-            label = "Enter the relevant age",
+            label = "Enter an age up to 18",
             name = "age",
             type = TEXT,
           ),
@@ -181,7 +181,7 @@ val POLICY_V3 = LicencePolicy(
         inputs = listOf(
           Input(
             case = LOWER,
-            label = "Select the relevant gender",
+            label = "Select gender",
             name = "gender",
             options = listOf(
               Option(
@@ -197,7 +197,7 @@ val POLICY_V3 = LicencePolicy(
             type = RADIO,
           ),
           Input(
-            label = "Select the relevant age",
+            label = "Enter an age up to 18",
             name = "age",
             type = TEXT,
           ),
@@ -327,7 +327,7 @@ val POLICY_V3 = LicencePolicy(
         code = "9da214a3-c6ae-45e1-a465-12e22adf7c87",
         inputs = listOf(
           Input(
-            label = "Select the relevant age",
+            label = "Enter an age up to 18",
             name = "age",
             type = TEXT,
           ),
@@ -433,14 +433,14 @@ val POLICY_V3 = LicencePolicy(
                 value = "mobile phone",
               ),
               Option(
-                value = "digital cameras",
+                value = "digital camera",
               ),
             ),
             type = CHECK,
           ),
         ),
         requiresInput = true,
-        text = "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERAS] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        text = "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         tpl = "Not to delete the usage history on any {deviceTypes} used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         type = "UsageHistory",
       ),
