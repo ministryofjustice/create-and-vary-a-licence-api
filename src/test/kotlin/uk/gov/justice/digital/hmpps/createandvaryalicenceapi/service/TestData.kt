@@ -285,7 +285,10 @@ object TestData {
       lastName = "Y",
     ),
   ).let {
-    it.copy(standardConditions = someEntityStandardConditions(it))
+    it.copy(
+      standardConditions = someEntityStandardConditions(it),
+      curfewTimes = emptyList(),
+    )
   }
 
   fun prisonerSearchResult() = PrisonerSearchPrisoner(

@@ -8,39 +8,66 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewHours
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
+import java.time.DayOfWeek
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.util.Optional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 
 class HdcServiceTest {
   private val hdcApiClient = mock<HdcApiClient>()
+  private val licenceRepository = mock<LicenceRepository>()
 
   private val service =
     HdcService(
       hdcApiClient,
+      licenceRepository,
     )
 
   @BeforeEach
   fun reset() {
+    reset(licenceRepository)
     reset(hdcApiClient)
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully`() {
-    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(someHdcLicenceData)
+  fun `getHdcLicenceData returns HDC licence data successfully from hdcApiClient`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewHours).isEqualTo(aSetOfCurfewHours)
-    verify(hdcApiClient, times(1)).getByBookingId(1L)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
+  }
+
+  @Test
+  fun `getHdcLicenceData returns HDC licence data with curfew times successfully from licenceRepository`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntityWithCurfewTimes))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
+      someHdcLicenceData.copy(
+        curfewTimes = emptyList(),
+      ),
+    )
+    val result = service.getHdcLicenceData(1)
+    assertThat(result).isNotNull
+    assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
+    assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully when there is no curfew address`() {
-    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
         curfewAddress = null,
       ),
@@ -49,13 +76,14 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isNull()
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewHours).isEqualTo(aSetOfCurfewHours)
-    verify(hdcApiClient, times(1)).getByBookingId(1L)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
   fun `getHdcLicenceData returns HDC licence data successfully when there are no first night curfew hours`() {
-    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
         firstNightCurfewHours = null,
       ),
@@ -64,23 +92,24 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isNull()
-    assertThat(result?.curfewHours).isEqualTo(aSetOfCurfewHours)
-    verify(hdcApiClient, times(1)).getByBookingId(1L)
+    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully when there are no curfew hours`() {
-    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
+  fun `getHdcLicenceData returns HDC licence data successfully when there are no curfew times`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
-        curfewHours = null,
+        curfewTimes = emptyList(),
       ),
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewHours).isNull()
-    verify(hdcApiClient, times(1)).getByBookingId(1L)
+    assertThat(result?.curfewTimes).isEmpty()
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   @Test
@@ -88,7 +117,8 @@ class HdcServiceTest {
     val anAddress = aCurfewAddress.copy(
       addressLine2 = null,
     )
-    whenever(hdcApiClient.getByBookingId(1L)).thenReturn(
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
         curfewAddress = anAddress,
       ),
@@ -96,10 +126,12 @@ class HdcServiceTest {
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(anAddress)
-    verify(hdcApiClient, times(1)).getByBookingId(1L)
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
   private companion object {
+    val aLicenceEntity = TestData.createHdcLicence()
+
     val aCurfewAddress = CurfewAddress(
       "1 Test Street",
       "Test Area",
@@ -112,27 +144,151 @@ class HdcServiceTest {
       "08:00",
     )
 
-    val aSetOfCurfewHours = CurfewHours(
-      "20:00",
-      "08:00",
-      "20:00",
-      "08:00",
-      "20:00",
-      "08:00",
-      "20:00",
-      "08:00",
-      "20:00",
-      "08:00",
-      "20:00",
-      "08:00",
-      "20:00",
-      "08:00",
-    )
+    val anEntitySetOfCurfewTimes =
+      listOf(
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          1,
+          DayOfWeek.MONDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.TUESDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          2,
+          DayOfWeek.TUESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          3,
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.THURSDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          4,
+          DayOfWeek.THURSDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.FRIDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          5,
+          DayOfWeek.FRIDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SATURDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          6,
+          DayOfWeek.SATURDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SUNDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+        EntityHdcCurfewTimes(
+          1L,
+          TestData.createHdcLicence(),
+          7,
+          DayOfWeek.SUNDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.MONDAY,
+          LocalTime.of(8, 0),
+          LocalDateTime.of(2024, 8, 14, 9, 0),
+        ),
+      )
+
+    val aModelSetOfCurfewTimes =
+      listOf(
+        ModelHdcCurfewTimes(
+          1L,
+          1,
+          DayOfWeek.MONDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.TUESDAY,
+          LocalTime.of(8, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          2,
+          DayOfWeek.TUESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(8, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          3,
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.THURSDAY,
+          LocalTime.of(8, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          4,
+          DayOfWeek.THURSDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.FRIDAY,
+          LocalTime.of(8, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          5,
+          DayOfWeek.FRIDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SATURDAY,
+          LocalTime.of(8, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          6,
+          DayOfWeek.SATURDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SUNDAY,
+          LocalTime.of(8, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          7,
+          DayOfWeek.SUNDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.MONDAY,
+          LocalTime.of(8, 0),
+        ),
+      )
+
+    val aLicenceEntityWithCurfewTimes = TestData.createHdcLicence().copy().let {
+      it.copy(
+        curfewTimes = anEntitySetOfCurfewTimes,
+      )
+    }
 
     val someHdcLicenceData = HdcLicenceData(
+      licenceId = 1L,
       aCurfewAddress,
       aSetOfFirstNightCurfewHours,
-      aSetOfCurfewHours,
+      aModelSetOfCurfewTimes,
     )
   }
 }

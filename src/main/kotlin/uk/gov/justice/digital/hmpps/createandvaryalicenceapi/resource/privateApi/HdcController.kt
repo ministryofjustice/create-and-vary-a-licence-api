@@ -25,7 +25,7 @@ class HdcController(private val hdcService: HdcService) {
 
   @Tag(name = Tags.HDC)
   @GetMapping(
-    value = ["/curfew/bookingId/{bookingId}"],
+    value = ["/curfew/licenceId/{licenceId}"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -53,7 +53,7 @@ class HdcController(private val hdcService: HdcService) {
       ),
       ApiResponse(
         responseCode = "404",
-        description = "The curfew details for this booking ID were not found.",
+        description = "The curfew details for this licence ID were not found.",
         content = [
           Content(
             mediaType = "application/json",
@@ -64,7 +64,7 @@ class HdcController(private val hdcService: HdcService) {
     ],
   )
   fun getHdcLicenceData(
-    @Parameter(required = true) @PathVariable("bookingId") bookingId: Long,
+    @Parameter(required = true) @PathVariable("licenceId") licenceId: Long,
   ) =
-    this.hdcService.getHdcLicenceData(bookingId)
+    this.hdcService.getHdcLicenceData(licenceId)
 }

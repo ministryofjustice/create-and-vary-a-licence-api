@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -72,6 +75,10 @@ class HdcLicence(
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
   updatedBy: Staff? = null,
+
+  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OrderBy("curfewTimesSequence")
+  val curfewTimes: List<HdcCurfewTimes> = emptyList(),
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
@@ -193,6 +200,7 @@ class HdcLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager? = this.responsibleCom,
+    curfewTimes: List<HdcCurfewTimes> = this.curfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     versionOfId: Long? = this.versionOfId,
@@ -253,6 +261,7 @@ class HdcLicence(
       additionalConditions = additionalConditions,
       bespokeConditions = bespokeConditions,
       responsibleCom = responsibleCom,
+      curfewTimes = curfewTimes,
       submittedBy = submittedBy,
       createdBy = createdBy,
       versionOfId = versionOfId,
@@ -471,6 +480,7 @@ class HdcLicence(
       "additionalConditions=$additionalConditions, " +
       "bespokeConditions=$bespokeConditions, " +
       "responsibleCom=$responsibleCom, " +
+      "curfewTimes=$curfewTimes, " +
       "submittedBy=$submittedBy, " +
       "createdBy=$createdBy, " +
       "createdBy=$createdBy, " +

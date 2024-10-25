@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
@@ -30,6 +31,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord as ModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicence as ModelHardstopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
@@ -514,6 +516,18 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
     thumbnailImage = entity.thumbnailImage?.toBase64(),
     uploadDetailId = entity.uploadDetailId,
   )
+
+// Transform a list of entity hdc curfew times to model hdc curfew times
+fun List<EntityHdcCurfewTimes>.transformToModelCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)
+
+private fun transform(entity: EntityHdcCurfewTimes): ModelHdcCurfewTimes = ModelHdcCurfewTimes(
+  id = entity.id,
+  curfewTimesSequence = entity.curfewTimesSequence,
+  fromDay = entity.fromDay,
+  fromTime = entity.fromTime,
+  untilDay = entity.untilDay,
+  untilTime = entity.untilTime,
+)
 
 fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
 
