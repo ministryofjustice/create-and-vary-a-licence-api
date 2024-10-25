@@ -13,14 +13,13 @@ class HdcService(
   private val hdcApiClient: HdcApiClient,
   private val hdcCurfewTimesRepository: HdcCurfewTimesRepository,
   private val licenceRepository: LicenceRepository,
-  ) {
+) {
 
   @Transactional
   fun getHdcLicenceData(licenceId: Long): HdcLicenceData? {
-
-   val licence = licenceRepository
+    val licence = licenceRepository
       .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("No licence data found for ${licenceId}") }
+      .orElseThrow { EntityNotFoundException("No licence data found for $licenceId") }
 
     val curfewTimes = hdcCurfewTimesRepository.findByLicenceId(licenceId)
 
