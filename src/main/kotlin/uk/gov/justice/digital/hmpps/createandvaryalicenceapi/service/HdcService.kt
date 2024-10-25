@@ -21,11 +21,10 @@ class HdcService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("No licence data found for $licenceId") }
 
-    println(licence)
     val curfewTimes = hdcCurfewTimesRepository.findByLicenceId(licenceId)
-    println(curfewTimes)
+
     val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
-    println(licenceData)
+
     return if (curfewTimes.isNotEmpty()) {
       HdcLicenceData(
         licenceId = licenceData.licenceId,
