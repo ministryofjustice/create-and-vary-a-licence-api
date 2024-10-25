@@ -176,7 +176,7 @@
         "inputs": [
           {
             "type": "radio",
-            "label": "Select the relevant text",
+            "label": "Select gender",
             "name": "gender",
             "listType": null,
             "options": [
@@ -201,7 +201,7 @@
           },
           {
             "type": "text",
-            "label": "Enter the relevant age",
+            "label": "Enter an age up to 18",
             "name": "age",
             "listType": null,
             "options": null,
@@ -327,7 +327,7 @@
         "inputs": [
           {
             "type": "radio",
-            "label": "Select the relevant gender",
+            "label": "Select gender",
             "name": "gender",
             "listType": null,
             "options": [
@@ -352,7 +352,7 @@
           },
           {
             "type": "text",
-            "label": "Select the relevant age",
+            "label": "Enter an age up to 18",
             "name": "age",
             "listType": null,
             "options": null,
@@ -507,7 +507,7 @@
         "skippable": false
       },
       {
-        "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+        "code": "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         "category": "Participation in, or co-operation with, a programme or set of activities",
         "text": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your [SEXUAL OFFENDING / VIOLENT OFFENDING / GAMBLING / PROLIFIC OFFENDING / OFFENDING BEHAVIOUR].",
         "tpl": "To comply with any requirements specified by your supervising officer for the purpose of ensuring that you address your {behaviourProblems}.",
@@ -561,7 +561,7 @@
         "inputs": [
           {
             "type": "text",
-            "label": "Select the relevant age",
+            "label": "Enter an age up to 18",
             "name": "age",
             "listType": null,
             "options": null,
@@ -690,7 +690,7 @@
       {
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
         "category": "Possession, ownership, control or inspection of specified items or documents",
-        "text": "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERAS] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
+        "text": "Not to delete the usage history on any [INTERNET ENABLED DEVICE / COMPUTER / MOBILE PHONE / DIGITAL CAMERA] used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         "tpl": "Not to delete the usage history on any {deviceTypes} used and to allow such items to be inspected as requested. Such inspection may include removal of the device for inspection and the installation of monitoring software.",
         "requiresInput": true,
         "inputs": [
@@ -713,7 +713,7 @@
                 "conditional": null
               },
               {
-                "value": "digital cameras",
+                "value": "digital camera",
                 "conditional": null
               }
             ],
@@ -805,7 +805,7 @@
         "skippable": false
       },
       {
-        "code": "fcc61f29-cdab-4906-86ae-7e62afed7567",
+        "code": "8686a815-b7f0-43b6-9886-f01df6a48773",
         "category": "Disclosure of information",
         "text": "Provide your supervising officer with the details of any [BANK ACCOUNTS / CREDIT CARDS / CRYPTO CURRENCY ACCOUNTS OR WALLETS] to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
         "tpl": "Provide your supervising officer with the details of any {accountTypes} to which you have access or control over, including those held by a third party. You must also notify your supervising officer when you have access or control over any new accounts/wallets, and provide the details.",
@@ -819,6 +819,10 @@
             "options": [
               {
                 "value": "bank accounts",
+                "conditional": null
+              },
+              {
+                "value": "credit cards",
                 "conditional": null
               },
               {
@@ -1792,7 +1796,7 @@
       {
         "code": "f1d2888b-be86-4732-8874-44cb867865c2",
         "category": "Drug, alcohol and solvent abuse",
-        "text": "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A  CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
+        "text": "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, [A CONTROLLED DRUG / ALCOHOL / SOLVENTS].",
         "tpl": "Attend a location, as directed by your supervising officer, to address your dependency on, or propensity to misuse, {substanceTypes}.",
         "requiresInput": true,
         "inputs": [
@@ -2209,6 +2213,35 @@
     {
       "previousCode": "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
       "replacements": [
+        "f1d2888b-be86-4732-8874-44cb867865c2"
+      ]
+    },
+    {
+      "previousCode": "72d281c3-b194-43ab-812d-fea0683ada65",
+      "replacements": [
+        "3932e5c9-4d21-4251-a747-ce6dc52dc9c0"
+      ]
+    },
+    {
+      "previousCode": "ed607a91-fe3a-4816-8eb9-b447c945935c",
+      "replacements": [
+        "3932e5c9-4d21-4251-a747-ce6dc52dc9c0"
+      ]
+    },
+    {
+      "previousCode": "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
+      "replacements": [
+        "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556"
+      ]
+    },
+    {
+      "previousCode": "bb401b88-2137-4154-be4a-5e05c168638a",
+      "replacements": []
+    },
+    {
+      "previousCode": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
+      "replacements": [
+        "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
         "f1d2888b-be86-4732-8874-44cb867865c2"
       ]
     }
