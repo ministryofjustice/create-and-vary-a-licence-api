@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
 class HdcApiMockServer : WireMockServer(8100) {
-  fun stubGetHdcLicenceData(bookingId: Long = 123456) {
+  fun stubGetHdcLicenceData(bookingId: Long = 54321){
     stubFor(
       get(urlEqualTo("/licence/hdc/$bookingId")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
@@ -87,7 +87,7 @@ class HdcApiMockServer : WireMockServer(8100) {
     )
   }
 
-  fun stubGetHdcLicenceDataNotFound(bookingId: Long = 123456) {
+  fun stubGetHdcLicenceDataNotFound(bookingId: Long = 54321) {
     stubFor(
       get(urlEqualTo("/licence/hdc/$bookingId"))
         .willReturn(aResponse().withStatus(404)),
