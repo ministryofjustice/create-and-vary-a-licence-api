@@ -517,7 +517,7 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
     uploadDetailId = entity.uploadDetailId,
   )
 
-// Transform a list of hdc curfew times to model hdc curfew times
+// Transform a list of entity hdc curfew times to model hdc curfew times
 fun List<EntityHdcCurfewTimes>.transformToModelCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)
 
 private fun transform(entity: EntityHdcCurfewTimes): ModelHdcCurfewTimes = ModelHdcCurfewTimes(

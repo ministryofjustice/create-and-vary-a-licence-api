@@ -28,12 +28,12 @@ class HdcApiClient(@Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClien
       .block()!!
   }
 
-  private fun <API_RESPONSE_BODY_TYPE> propagate404Response(exception: Throwable, bookingId: Long): Mono<API_RESPONSE_BODY_TYPE> =
+  private fun <API_RESPONSE_BODY_TYPE> propagate404Response(exception: Throwable, licenceId: Long): Mono<API_RESPONSE_BODY_TYPE> =
     with(exception) {
       when {
         this is WebClientResponseException && statusCode == NOT_FOUND -> {
           log.info("No resource found when calling hdc-api ${request?.uri?.path}")
-          Mono.error(EntityNotFoundException("No licence data found for $bookingId"))
+          Mono.error(EntityNotFoundException("No licence data found for $licenceId"))
         }
         else -> Mono.error(exception)
       }

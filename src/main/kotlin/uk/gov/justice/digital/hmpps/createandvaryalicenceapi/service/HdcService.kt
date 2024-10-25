@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewTimesRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 
@@ -10,27 +12,33 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLice
 class HdcService(
   private val hdcApiClient: HdcApiClient,
   private val hdcCurfewTimesRepository: HdcCurfewTimesRepository,
-) {
+  private val licenceRepository: LicenceRepository,
+  ) {
 
   @Transactional
-  fun getHdcLicenceData(bookingId: Long): HdcLicenceData? {
-    val licenceData = this.hdcApiClient.getByBookingId(bookingId)
+  fun getHdcLicenceData(licenceId: Long): HdcLicenceData? {
 
-    val curfewTimes = hdcCurfewTimesRepository.findByLicenceId(licenceData.licenceId)
+   val licence = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("No licence data found for ${licenceId}") }
 
-    return if (curfewTimes.isEmpty()) {
+    val curfewTimes = hdcCurfewTimesRepository.findByLicenceId(licenceId)
+
+    val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
+
+    return if (curfewTimes.isNotEmpty()) {
       HdcLicenceData(
         licenceId = licenceData.licenceId,
         curfewAddress = licenceData.curfewAddress,
         firstNightCurfewHours = licenceData.firstNightCurfewHours,
-        curfewTimes = licenceData.curfewTimes,
+        curfewTimes = curfewTimes.transformToModelCurfewTimes(),
       )
     } else {
       HdcLicenceData(
         licenceId = licenceData.licenceId,
         curfewAddress = licenceData.curfewAddress,
         firstNightCurfewHours = licenceData.firstNightCurfewHours,
-        curfewTimes = curfewTimes.transformToModelCurfewTimes(),
+        curfewTimes = licenceData.curfewTimes,
       )
     }
   }

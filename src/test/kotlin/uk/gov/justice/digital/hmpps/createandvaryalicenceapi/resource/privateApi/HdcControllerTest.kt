@@ -47,9 +47,9 @@ class HdcControllerTest {
   }
 
   @Test
-  fun `get HDC licence data by booking ID`() {
+  fun `get HDC licence data by licence ID`() {
     mvc.perform(
-      get("/hdc/curfew/bookingId/123456")
+      get("/hdc/curfew/licenceId/123456")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON),
     )
