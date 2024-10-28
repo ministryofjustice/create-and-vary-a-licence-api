@@ -60,14 +60,14 @@ data class LicenceConditionChanges(
 @Service
 class LicencePolicyService(
   @Value("\${policyv3.enabled}") private val policyV3Enabled: Boolean,
-  private var policies: List<LicencePolicy>
+  private var policies: List<LicencePolicy>,
 ) {
 
-  init{
-    policies = if(policyV3Enabled){
+  init {
+    policies = if (policyV3Enabled) {
       listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3)
     } else {
-      listOf (POLICY_V1_0, POLICY_V2_0, POLICY_V2_1)
+      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1)
     }
   }
 
