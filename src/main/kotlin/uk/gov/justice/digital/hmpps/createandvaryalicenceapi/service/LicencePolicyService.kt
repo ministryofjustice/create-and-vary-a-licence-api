@@ -59,8 +59,8 @@ data class LicenceConditionChanges(
 
 @Service
 class LicencePolicyService(
-  @Value("\${policyv3.enabled}") private val policyV3Enabled: Boolean,
-  private var policies: List<LicencePolicy>,
+  @Value("\${policyv3.enabled}") private val policyV3Enabled: Boolean = false,
+  private var policies: List<LicencePolicy> = emptyList(),
 ) {
 
   init {
