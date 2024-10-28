@@ -270,7 +270,7 @@ val POLICY_V3 = LicencePolicy(
         categoryShort = "Contact with a person",
         code = "48c4ae87-b8d8-45d1-aded-daefe8ad07fe",
         requiresInput = false,
-        text = "Not to engage or attempt to engage with commercial sexual services. Including companionship/friendship style services. This includes all services whether sexual/intimate or not.",
+        text = "Not to engage with or attempt to engage with commercial sexual services. This includes companionship/friendship style services, and all services whether sexual or not.",
       ),
       HARD_STOP_CONDITION,
       AdditionalConditionAp(
@@ -278,14 +278,14 @@ val POLICY_V3 = LicencePolicy(
         categoryShort = "Contact with a person",
         code = "86e7a2cb-33b5-4079-84a4-f6579347c890",
         requiresInput = false,
-        text = "Not to approach or contact any employee, contractor or volunteer working on behalf of HM Prison and Probation Service directly or indirectly outside of appointments/reporting requirements without the prior approval of your supervising officer.",
+        text = "Not to approach, contact or undertake any type of relationship with any employee, contractor or volunteer working on behalf of HM Prison and Probation Service directly or indirectly outside of supervision in appointments/reporting requirements without the prior permission of your supervising officer.",
       ),
       AdditionalConditionAp(
         category = "Making or maintaining contact with a person",
         categoryShort = "Contact with a person",
         code = "1905aa46-59dd-4eb7-b009-81467cc8c426",
         requiresInput = false,
-        text = "Not to attempt to bribe, blackmail or coerce employee, contractor or volunteer working on behalf of HM Prison and Probation Service directly or indirectly to undertake actions on your behalf.",
+        text = "Not to attempt to bribe, blackmail or coerce any employee, contractor or volunteer working on behalf of HM Prison and Probation Service directly or indirectly to undertake actions on your behalf.",
       ),
       AdditionalConditionAp(
         category = "Participation in, or co-operation with, a programme or set of activities",
@@ -1098,8 +1098,8 @@ val POLICY_V3 = LicencePolicy(
           ),
         ),
         requiresInput = true,
-        text = "Not to use or install software related to [VIRTUAL PRIVATE NETWORKS (VPNs) / CLOUD STORAGE / VIRTUAL DESKTOPS / AUTOMATIC DELETION OF CONTENT] on any approved devices without the permission of your supervising officer.",
-        tpl = "Not to use or install software related to {services} on any approved devices without the permission of your supervising officer.",
+        text = "Not to use or install software or permit installation of software on any of your approved devices related to [VIRTUAL PRIVATE NETWORKS (VPNs) / CLOUD STORAGE / VIRTUAL DESKTOPS / AUTOMATIC DELETION OF CONTENT], without the prior permission of your supervising officer.",
+        tpl = "Not to use or install software or permit installation of software on any of your approved devices related to {services}, without the prior permission of your supervising officer.",
         type = "DigitalServices",
       ),
       AdditionalConditionAp(
