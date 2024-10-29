@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HA
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
@@ -65,7 +65,7 @@ class LicencePolicyService(
 
   init {
     policies = if (policyV3Enabled) {
-      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3)
+      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0)
     } else {
       listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1)
     }

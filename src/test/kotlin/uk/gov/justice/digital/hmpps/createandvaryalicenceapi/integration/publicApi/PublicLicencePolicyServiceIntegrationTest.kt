@@ -57,6 +57,19 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `get policy v3 by version number`() {
+      val result = webTestClient.get()
+        .uri("/public/policy/3.0")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_VIEW_LICENCES")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody()
+        .json(policy("V3"), true)
+    }
+
+    @Test
     fun `Get policy by version number is role protected`() {
       val result = webTestClient.get()
         .uri("/public/policy/2.1")
