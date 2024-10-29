@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
 
-val POLICY_V3 = LicencePolicy(
+val POLICY_V3_0 = LicencePolicy(
   additionalConditions = AdditionalConditions(
     ap = listOf(
       AdditionalConditionAp(

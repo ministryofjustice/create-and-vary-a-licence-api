@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HA
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
@@ -56,7 +58,18 @@ data class LicenceConditionChanges(
 )
 
 @Service
-class LicencePolicyService(private val policies: List<LicencePolicy> = listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1)) {
+class LicencePolicyService(
+  @Value("\${policyv3.enabled}") private val policyV3Enabled: Boolean = false,
+  private var policies: List<LicencePolicy> = emptyList(),
+) {
+
+  init {
+    policies = if (policyV3Enabled) {
+      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1, POLICY_V3_0)
+    } else {
+      listOf(POLICY_V1_0, POLICY_V2_0, POLICY_V2_1)
+    }
+  }
 
   fun currentPolicy(): LicencePolicy = policies.maxBy { it.version }
   fun policyByVersion(version: String): LicencePolicy = policies.find { it.version == version }
