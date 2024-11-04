@@ -298,6 +298,7 @@ object TestData {
     mostSeriousOffence = "Robbery",
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewActualDate = null,
     homeDetentionCurfewEligibilityDate = null,
     releaseDate = LocalDate.of(2021, 10, 22),
     confirmedReleaseDate = LocalDate.of(2021, 10, 22),

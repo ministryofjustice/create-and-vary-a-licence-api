@@ -1308,7 +1308,10 @@ class LicenceCreationServiceTest {
 
     @Test
     fun `service populates licence with expected fields`() {
-      val aPrisonerSearchResult = prisonerSearchResult()
+      val aPrisonerSearchResult = prisonerSearchResult().copy(
+        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
+      )
+
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
 
@@ -1336,6 +1339,7 @@ class LicenceCreationServiceTest {
         assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
         assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
+        assertThat(homeDetentionCurfewActualDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewActualDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
         assertThat(postRecallReleaseDate).isNull()

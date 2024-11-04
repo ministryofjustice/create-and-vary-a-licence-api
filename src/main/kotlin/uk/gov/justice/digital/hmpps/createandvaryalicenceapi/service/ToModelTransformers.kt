@@ -391,6 +391,7 @@ fun toHdc(
   sentenceEndDate = licence.sentenceEndDate,
   licenceStartDate = licence.licenceStartDate,
   licenceExpiryDate = licence.licenceExpiryDate,
+  homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,
   topupSupervisionStartDate = licence.topupSupervisionStartDate,
   topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
   postRecallReleaseDate = licence.postRecallReleaseDate,

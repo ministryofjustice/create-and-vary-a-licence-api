@@ -231,6 +231,7 @@ object LicenceFactory {
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
     licenceStartDate = nomisRecord.getLicenceStartDate(),
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
+    homeDetentionCurfewActualDate = nomisRecord.homeDetentionCurfewActualDate,
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
     topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
     postRecallReleaseDate = nomisRecord.postRecallReleaseDate,

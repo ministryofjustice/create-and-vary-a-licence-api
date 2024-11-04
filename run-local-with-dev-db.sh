@@ -32,6 +32,8 @@ export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
+# Add policy v3 enabled flag
+export POLICYV3_ENABLED=false
 
 # Run the application with stdout and dev profiles active
 echo "DB port forward 5432:5432"
