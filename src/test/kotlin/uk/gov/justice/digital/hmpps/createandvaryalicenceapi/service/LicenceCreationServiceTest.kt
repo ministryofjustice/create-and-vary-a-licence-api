@@ -1309,7 +1309,7 @@ class LicenceCreationServiceTest {
     @Test
     fun `service populates licence with expected fields`() {
       val aPrisonerSearchResult = prisonerSearchResult().copy(
-        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22)
+        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
