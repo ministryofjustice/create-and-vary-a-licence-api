@@ -43,6 +43,7 @@ class HdcLicence(
   licenceStartDate: LocalDate? = null,
   licenceExpiryDate: LocalDate? = null,
   licenceActivatedDate: LocalDateTime? = null,
+  val homeDetentionCurfewActualDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
   postRecallReleaseDate: LocalDate? = null,
@@ -171,6 +172,7 @@ class HdcLicence(
     licenceStartDate: LocalDate? = this.licenceStartDate,
     licenceExpiryDate: LocalDate? = this.licenceExpiryDate,
     licenceActivatedDate: LocalDateTime? = this.licenceActivatedDate,
+    homeDetentionCurfewActualDate: LocalDate? = this.homeDetentionCurfewActualDate,
     topupSupervisionStartDate: LocalDate? = this.topupSupervisionStartDate,
     topupSupervisionExpiryDate: LocalDate? = this.topupSupervisionExpiryDate,
     postRecallReleaseDate: LocalDate? = this.postRecallReleaseDate,
@@ -232,6 +234,7 @@ class HdcLicence(
       licenceStartDate = licenceStartDate,
       licenceExpiryDate = licenceExpiryDate,
       licenceActivatedDate = licenceActivatedDate,
+      homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
       topupSupervisionStartDate = topupSupervisionStartDate,
       topupSupervisionExpiryDate = topupSupervisionExpiryDate,
       postRecallReleaseDate = postRecallReleaseDate,
@@ -452,6 +455,7 @@ class HdcLicence(
       "licenceStartDate=$licenceStartDate, " +
       "licenceExpiryDate=$licenceExpiryDate, " +
       "licenceActivatedDate=$licenceActivatedDate, " +
+      "homeDetentionCurfewActualDate=$homeDetentionCurfewActualDate, " +
       "topupSupervisionStartDate=$topupSupervisionStartDate, " +
       "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
       "probationAreaCode=$probationAreaCode, " +
