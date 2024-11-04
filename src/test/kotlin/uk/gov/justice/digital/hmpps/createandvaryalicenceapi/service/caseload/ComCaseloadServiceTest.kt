@@ -102,7 +102,7 @@ class ComCaseloadServiceTest {
     val cases = listOf(
       ManagedCase(
         nomisRecord = Prisoner(prisonerNumber = "ABC123"),
-        cvlFields = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.PSS),
+        cvlFields = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.AP),
       ),
     )
 
@@ -114,7 +114,7 @@ class ComCaseloadServiceTest {
       assertThat(cvlFields.isInHardStopPeriod).isTrue()
       assertThat(licences).hasSize(1)
       assertThat(licences[0].licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
-      assertThat(licences[0].licenceType).isEqualTo(LicenceType.PSS)
+      assertThat(licences[0].licenceType).isEqualTo(LicenceType.AP)
     }
   }
 
@@ -150,7 +150,7 @@ class ComCaseloadServiceTest {
       "X12348",
       "AB1234E",
       LicenceStatus.NOT_STARTED,
-      LicenceType.PSS,
+      LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
     )
   }
@@ -236,7 +236,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
@@ -244,7 +244,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12351",
       expectedPrisonerNumber = "AB1234L",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
@@ -252,7 +252,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12354",
       expectedPrisonerNumber = "AB1234P",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
@@ -260,7 +260,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12355",
       expectedPrisonerNumber = "AB1234Q",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
@@ -268,7 +268,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12356",
       expectedPrisonerNumber = "AB1234R",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = nineDaysFromNow,
     )
     verifyCase(
@@ -276,7 +276,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12352",
       expectedPrisonerNumber = "AB1234M",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
     )
   }
@@ -445,10 +445,13 @@ class ComCaseloadServiceTest {
         createCaseloadItem(
           prisonerNumber = "AB1234E",
           conditionalReleaseDate = tenDaysFromNow,
-          licenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
           status = "ACTIVE IN",
         ),
-        createCaseloadItem(prisonerNumber = "AB1234F", conditionalReleaseDate = tenDaysFromNow),
+        createCaseloadItem(
+          prisonerNumber = "AB1234F",
+          conditionalReleaseDate = tenDaysFromNow,
+          topupSupervisionExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
+        ),
       ),
     )
 
@@ -537,7 +540,7 @@ class ComCaseloadServiceTest {
       expectedCrn = "X12348",
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.NOT_STARTED,
-      expectedLicenceType = LicenceType.PSS,
+      expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
     )
