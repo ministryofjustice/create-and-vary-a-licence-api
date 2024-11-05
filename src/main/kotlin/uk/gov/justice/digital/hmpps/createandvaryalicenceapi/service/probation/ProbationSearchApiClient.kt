@@ -17,6 +17,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
     teamCodes: List<String>,
     sortBy: List<ProbationSearchSortByRequest> = emptyList(),
   ): List<CaseloadResult> {
+    if (teamCodes.isEmpty()) return emptyList()
     val sortOptions = sortBy.ifEmpty { listOf(ProbationSearchSortByRequest()) }
 
     val licenceCaseLoadRequestBody = LicenceCaseloadSearchRequest(
@@ -68,6 +69,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
   }
 
   fun getOffendersByCrn(crns: List<String?>): List<OffenderDetail> {
+    if (crns.isEmpty()) return emptyList()
     val response = probationSearchApiClient
       .post()
       .uri("/crns")
