@@ -1358,6 +1358,28 @@ class LicenceCreationServiceTest {
         assertThat(responsibleCom).isEqualTo(com)
       }
     }
+
+    @Test
+    fun `service throws an error if HDC licence type is PSS`() {
+      val aPrisonerSearchResult = prisonerSearchResult().copy(
+        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
+        licenceExpiryDate = null,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHdcLicence(prisonNumber)
+      }
+
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java).hasMessage("HDC Licence for A1234AA can not be of type PSS")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
   }
 
   private companion object {
