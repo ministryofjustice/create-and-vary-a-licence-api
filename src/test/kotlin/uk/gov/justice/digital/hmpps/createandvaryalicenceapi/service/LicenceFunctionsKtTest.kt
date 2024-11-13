@@ -64,7 +64,7 @@ class LicenceFunctionsKtTest {
 
   @Test
   fun `Sentence Changes should return for material change for HDCAD update to HDC licence`() {
-    val licence = testHdcLicence.copy(homeDetentionCurfewActualDate = fiveDaysAgo,)
+    val licence = testHdcLicence.copy(homeDetentionCurfewActualDate = fiveDaysAgo)
 
     assertThat(
       licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewActualDate = fourDaysAgo)),
