@@ -57,6 +57,7 @@ class LicenceFunctionsKtTest {
         tussdChanged = false,
         tusedChanged = false,
         prrdChanged = false,
+        hdcadChanged = false,
         isMaterial = true,
       ),
     )
@@ -96,6 +97,7 @@ class LicenceFunctionsKtTest {
         tussdChanged = false,
         tusedChanged = false,
         prrdChanged = false,
+        hdcadChanged = false,
         isMaterial = false,
       ),
     )
@@ -115,6 +117,7 @@ class LicenceFunctionsKtTest {
         tussdChanged = false,
         tusedChanged = false,
         prrdChanged = true,
+        hdcadChanged = false,
         isMaterial = true,
       ),
     )
@@ -136,6 +139,7 @@ class LicenceFunctionsKtTest {
         tussdChanged = false,
         tusedChanged = false,
         prrdChanged = false,
+        hdcadChanged = false,
         isMaterial = true,
       ),
     )
