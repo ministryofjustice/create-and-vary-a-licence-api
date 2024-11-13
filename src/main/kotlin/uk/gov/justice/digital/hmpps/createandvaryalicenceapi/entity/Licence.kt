@@ -234,6 +234,7 @@ abstract class Licence(
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
     postRecallReleaseDate: LocalDate?,
+    homeDetentionCurfewActualDate: LocalDate?,
     staffMember: Staff?,
   ): Licence
 

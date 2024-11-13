@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -15,6 +16,7 @@ data class SentenceChanges(
   val tusedChanged: Boolean,
   val prrdChanged: Boolean,
   val isMaterial: Boolean,
+  val hdcadChanged: Boolean? = null,
 )
 
 fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest): SentenceChanges {
@@ -26,6 +28,14 @@ fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest): Sentenc
   val tusedChanged =
     nullableDatesDiffer(newSentence.topupSupervisionExpiryDate, this.topupSupervisionExpiryDate)
   val prrdChanged = nullableDatesDiffer(newSentence.postRecallReleaseDate, this.postRecallReleaseDate)
+
+  if (this is HdcLicence) {
+    val hdcadChanged = nullableDatesDiffer(newSentence.homeDetentionCurfewActualDate, this.homeDetentionCurfewActualDate)
+
+    val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || prrdChanged || hdcadChanged || (sedChanged && this.statusCode == LicenceStatus.APPROVED))
+    return SentenceChanges(lsdChanged, ledChanged, sedChanged, tussdChanged, tusedChanged, prrdChanged, isMaterial, hdcadChanged)
+  }
+
   val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || prrdChanged || (sedChanged && this.statusCode == LicenceStatus.APPROVED))
 
   return SentenceChanges(lsdChanged, ledChanged, sedChanged, tussdChanged, tusedChanged, prrdChanged, isMaterial)

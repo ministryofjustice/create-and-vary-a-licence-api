@@ -13,7 +13,7 @@ class LicenceFunctionsKtTest {
   private val fourDaysAgo = LocalDate.now().minusDays(4)
   private val tomorrow = LocalDate.now().plusDays(1)
 
-  private val testLicence = TestData.createCrdLicence().copy(
+  private val testCrdLicence = TestData.createCrdLicence().copy(
     statusCode = LicenceStatus.APPROVED,
     licenceStartDate = fiveDaysAgo,
     licenceExpiryDate = fiveDaysAgo,
@@ -23,17 +23,29 @@ class LicenceFunctionsKtTest {
     typeCode = LicenceType.AP_PSS,
   )
 
+  private val testHdcLicence = TestData.createHdcLicence().copy(
+    statusCode = LicenceStatus.APPROVED,
+    licenceStartDate = fiveDaysAgo,
+    licenceExpiryDate = fiveDaysAgo,
+    sentenceEndDate = fiveDaysAgo,
+    topupSupervisionStartDate = fiveDaysAgo,
+    topupSupervisionExpiryDate = fiveDaysAgo,
+    homeDetentionCurfewActualDate = fiveDaysAgo,
+    typeCode = LicenceType.AP_PSS,
+  )
+
   private val testSentenceChanges = UpdateSentenceDatesRequest(
     licenceStartDate = fiveDaysAgo,
     licenceExpiryDate = fiveDaysAgo,
     sentenceEndDate = fiveDaysAgo,
     topupSupervisionStartDate = fiveDaysAgo,
     topupSupervisionExpiryDate = fiveDaysAgo,
+    homeDetentionCurfewActualDate = null,
   )
 
   @Test
   fun `Sentence Changes should return for material change for LED update`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
 
     assertThat(
       licence.getSentenceChanges(testSentenceChanges.copy(licenceExpiryDate = fourDaysAgo)),
@@ -51,8 +63,28 @@ class LicenceFunctionsKtTest {
   }
 
   @Test
+  fun `Sentence Changes should return for material change for HDCAD update to HDC licence`() {
+    val licence = testHdcLicence.copy(homeDetentionCurfewActualDate = fiveDaysAgo,)
+
+    assertThat(
+      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewActualDate = fourDaysAgo)),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = false,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        prrdChanged = false,
+        hdcadChanged = true,
+        isMaterial = true,
+      ),
+    )
+  }
+
+  @Test
   fun `Sentence Changes should return no material change for SED when licence is not approved`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.IN_PROGRESS)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.IN_PROGRESS)
 
     assertThat(
       licence.getSentenceChanges(testSentenceChanges.copy(sentenceEndDate = fourDaysAgo)),
@@ -71,7 +103,7 @@ class LicenceFunctionsKtTest {
 
   @Test
   fun `Sentence Changes should return material change for PPRD update`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
 
     assertThat(
       licence.getSentenceChanges(testSentenceChanges.copy(postRecallReleaseDate = fourDaysAgo)),
@@ -90,7 +122,7 @@ class LicenceFunctionsKtTest {
 
   @Test
   fun `Sentence Changes should return material change for SED when licence is approved`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.APPROVED)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.APPROVED)
 
     assertThat(
       licence.getSentenceChanges(
@@ -111,42 +143,42 @@ class LicenceFunctionsKtTest {
 
   @Test
   fun `Sentence ARD change for ACTIVE licence returns new INACTIVE status`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
     assertThat(licence.calculateStatusCode(testSentenceChanges.copy(actualReleaseDate = tomorrow)))
       .isEqualTo(LicenceStatus.INACTIVE)
   }
 
   @Test
   fun `Sentence CRD change for ACTIVE licence returns new INACTIVE status`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
     assertThat(licence.calculateStatusCode(testSentenceChanges.copy(conditionalReleaseDate = tomorrow)))
       .isEqualTo(LicenceStatus.INACTIVE)
   }
 
   @Test
   fun `Sentence CRD change for IN_PROGRESS licence returns current status`() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.IN_PROGRESS)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.IN_PROGRESS)
     assertThat(licence.calculateStatusCode(testSentenceChanges.copy(conditionalReleaseDate = tomorrow)))
       .isEqualTo(LicenceStatus.IN_PROGRESS)
   }
 
   @Test
   fun `Sentence PPRD change for ACTIVE AP_PSS licence returns INACTIVE status `() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
     assertThat(licence.calculateStatusCode(testSentenceChanges.copy(postRecallReleaseDate = tomorrow)))
       .isEqualTo(LicenceStatus.INACTIVE)
   }
 
   @Test
   fun `Sentence PPRD change for ACTIVE AP licence returns INACTIVE status `() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.AP)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.AP)
     assertThat(licence.calculateStatusCode(testSentenceChanges.copy(postRecallReleaseDate = tomorrow)))
       .isEqualTo(LicenceStatus.INACTIVE)
   }
 
   @Test
   fun `Sentence PPRD change for ACTIVE PSS licence returns current status `() {
-    val licence = testLicence.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.PSS)
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE, typeCode = LicenceType.PSS)
     assertThat(licence.calculateStatusCode(testSentenceChanges.copy(postRecallReleaseDate = tomorrow)))
       .isEqualTo(LicenceStatus.ACTIVE)
   }

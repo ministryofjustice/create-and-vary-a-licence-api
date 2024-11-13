@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -39,23 +40,25 @@ class UpdateSentenceDateService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
+
     logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
 
     val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
 
     val updatedLicenceEntity = licenceEntity.updateLicenceDates(
-      status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
-      conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
-      actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
-      sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
-      sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
-      licenceStartDate = sentenceDatesRequest.licenceStartDate,
-      licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
-      topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
-      topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
-      postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
-      staffMember = staffMember,
-    )
+        status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
+        conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
+        actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
+        sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
+        sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
+        licenceStartDate = sentenceDatesRequest.licenceStartDate,
+        licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
+        topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
+        postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
+        homeDetentionCurfewActualDate = sentenceDatesRequest.homeDetentionCurfewActualDate,
+        staffMember = staffMember,
+      )
 
     val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
     val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
@@ -88,6 +91,9 @@ class UpdateSentenceDateService(
         append("TUSSD ${sentenceChanges.tussdChanged} ")
         append("TUSED ${sentenceChanges.tusedChanged} ")
         append("PRRD ${sentenceChanges.prrdChanged} ")
+        if (licenceEntity is HdcLicence) {
+          append("HDCAD ${sentenceChanges.hdcadChanged} ")
+        }
         append("isMaterial ${sentenceChanges.isMaterial}")
       },
     )
@@ -155,6 +161,9 @@ class UpdateSentenceDateService(
         append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
         append("TUSED ${licenceEntity?.topupSupervisionExpiryDate} ")
         append("PRRD ${licenceEntity?.postRecallReleaseDate}")
+        if (licenceEntity is HdcLicence) {
+          append("HDCAD ${licenceEntity.homeDetentionCurfewActualDate} ")
+        }
       },
     )
 
@@ -170,6 +179,9 @@ class UpdateSentenceDateService(
         append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
         append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} ")
         append("PRRD ${sentenceDatesRequest.postRecallReleaseDate}")
+        if (licenceEntity is HdcLicence) {
+          append("HDCAD ${sentenceDatesRequest.homeDetentionCurfewActualDate} ")
+        }
       },
     )
   }

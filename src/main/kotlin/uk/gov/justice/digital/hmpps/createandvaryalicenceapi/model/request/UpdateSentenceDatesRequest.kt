@@ -41,4 +41,8 @@ data class UpdateSentenceDatesRequest(
   @Schema(description = "The date when a person is recalled to prison, after being released on a license", example = "06/06/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val postRecallReleaseDate: LocalDate? = null,
+
+  @Schema(description = "The person's actual home detention curfew date", example = "06/06/2023")
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val homeDetentionCurfewActualDate: LocalDate? = null,
 )
