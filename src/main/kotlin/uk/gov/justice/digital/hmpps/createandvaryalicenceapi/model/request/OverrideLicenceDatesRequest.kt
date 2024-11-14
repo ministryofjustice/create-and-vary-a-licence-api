@@ -53,6 +53,13 @@ data class OverrideLicenceDatesRequest(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val postRecallReleaseDate: LocalDate? = null,
 
+  @Schema(
+    description = "The person's actual home detention curfew date",
+    example = "06/06/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val homeDetentionCurfewActualDate: LocalDate? = null,
+
   @Schema(description = "Reason for overriding the licence dates")
   @NotEmpty
   val reason: String,

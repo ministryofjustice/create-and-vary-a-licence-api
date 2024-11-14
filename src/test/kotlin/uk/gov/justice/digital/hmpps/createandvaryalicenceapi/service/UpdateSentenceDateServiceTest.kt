@@ -72,7 +72,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `update sentence dates persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -80,7 +80,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -145,16 +145,16 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
+      aCrdLicenceEntity.responsibleCom?.email,
+      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
       mapOf(
         "Release date has changed to 11 September 2023" to true,
         "Licence end date has changed to 11 September 2024" to true,
@@ -169,8 +169,93 @@ class UpdateSentenceDateServiceTest {
   }
 
   @Test
+  fun `update sentence dates persists the updated HDCAD if HDC licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "APPROVED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aHdcLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        homeDetentionCurfewActualDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate",
+        "actualReleaseDate",
+        "sentenceStartDate",
+        "sentenceEndDate",
+        "licenceStartDate",
+        "licenceExpiryDate",
+        "topupSupervisionStartDate",
+        "topupSupervisionExpiryDate",
+        "postRecallReleaseDate",
+        "homeDetentionCurfewActualDate",
+        "updatedByUsername",
+        "updatedBy",
+      )
+      .isEqualTo(
+        listOf(
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2021-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2023-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2024-09-11"),
+          LocalDate.parse("2025-09-11"),
+          LocalDate.parse("2025-09-11"),
+          LocalDate.parse("2025-09-11"),
+          aCom.username,
+          aCom,
+        ),
+      )
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          "Sentence dates updated for ${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
+        ),
+      )
+
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
   fun `update sentence dates still sends email if HDC licence is not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(Mono.empty())
 
     service.updateSentenceDates(
@@ -192,7 +277,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `update sentence dates does not email if HDC licence is Approved`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -200,7 +285,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "APPROVED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aHdcLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -217,6 +302,7 @@ class UpdateSentenceDateServiceTest {
         licenceExpiryDate = LocalDate.parse("2024-09-11"),
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        homeDetentionCurfewActualDate = LocalDate.parse("2023-09-11"),
       ),
     )
 
@@ -225,7 +311,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `update sentence dates does not email if Licence BookingId is missing`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(bookingId = null)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(bookingId = null)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -233,7 +319,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = false,
         ),
       ),
@@ -258,7 +344,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `update sentence dates persists the updated entity with null dates`() {
-    val licence = aLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
+    val licence = aCrdLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
@@ -267,7 +353,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = false,
         ),
       ),
@@ -350,7 +436,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -358,7 +444,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -394,15 +480,15 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
+      aCrdLicenceEntity.responsibleCom?.email,
+      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
       mapOf(
         "Release date has changed to 11 September 2023" to true,
         "Licence end date has changed to 11 September 2024" to true,
@@ -417,7 +503,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -425,7 +511,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -461,15 +547,15 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
+      aCrdLicenceEntity.responsibleCom?.email,
+      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
       mapOf(
         "Release date has changed to 11 September 2023" to true,
         "Licence end date has changed to 11 September 2024" to true,
@@ -484,7 +570,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `should not set the license status to inactive if existing license is not active`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -492,7 +578,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -527,16 +613,16 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
+      aCrdLicenceEntity.responsibleCom?.email,
+      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
       mapOf(
         "Release date has changed to 11 September 2023" to true,
         "Licence end date has changed to 11 September 2024" to true,
@@ -551,7 +637,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -559,7 +645,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -595,16 +681,16 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
+      aCrdLicenceEntity.responsibleCom?.email,
+      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
       mapOf(
         "Release date has changed to 11 September 2023" to true,
         "Licence end date has changed to 11 September 2024" to true,
@@ -619,7 +705,7 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
       Mono.just(
         PrisonerHdcStatus(
@@ -627,7 +713,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -663,16 +749,16 @@ class UpdateSentenceDateServiceTest {
           1L,
           "SYSTEM",
           "SYSTEM",
-          "Sentence dates updated for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
         ),
       )
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aLicenceEntity.responsibleCom?.email,
-      "${aLicenceEntity.responsibleCom?.firstName} ${aLicenceEntity.responsibleCom?.lastName}",
-      "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
-      aLicenceEntity.crn,
+      aCrdLicenceEntity.responsibleCom?.email,
+      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
+      aCrdLicenceEntity.crn,
       mapOf(
         "Release date has changed to 11 September 2023" to true,
         "Licence end date has changed to 11 September 2024" to true,
@@ -689,7 +775,7 @@ class UpdateSentenceDateServiceTest {
   fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(
-        aLicenceEntity.copy(
+        aCrdLicenceEntity.copy(
           updatedBy = aPreviousUser,
         ),
       ),
@@ -701,7 +787,7 @@ class UpdateSentenceDateServiceTest {
           approvalStatus = "REJECTED",
           refusedReason = null,
           checksPassedDate = null,
-          bookingId = aLicenceEntity.bookingId!!,
+          bookingId = aCrdLicenceEntity.bookingId!!,
           passed = true,
         ),
       ),
@@ -761,7 +847,7 @@ class UpdateSentenceDateServiceTest {
   inner class `timing out licences` {
     @Test
     fun `should time out if the licence is now in hard stop period but previously was not`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
       whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
         Mono.just(
           PrisonerHdcStatus(
@@ -769,7 +855,7 @@ class UpdateSentenceDateServiceTest {
             approvalStatus = "REJECTED",
             refusedReason = null,
             checksPassedDate = null,
-            bookingId = aLicenceEntity.bookingId!!,
+            bookingId = aCrdLicenceEntity.bookingId!!,
             passed = true,
           ),
         ),
@@ -801,7 +887,7 @@ class UpdateSentenceDateServiceTest {
     fun `should not time out if the licence is not an in progress licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(
-          aLicenceEntity.copy(
+          aCrdLicenceEntity.copy(
             statusCode = LicenceStatus.SUBMITTED,
           ),
         ),
@@ -813,7 +899,7 @@ class UpdateSentenceDateServiceTest {
             approvalStatus = "REJECTED",
             refusedReason = null,
             checksPassedDate = null,
-            bookingId = aLicenceEntity.bookingId!!,
+            bookingId = aCrdLicenceEntity.bookingId!!,
             passed = true,
           ),
         ),
@@ -848,7 +934,7 @@ class UpdateSentenceDateServiceTest {
             approvalStatus = "REJECTED",
             refusedReason = null,
             checksPassedDate = null,
-            bookingId = aLicenceEntity.bookingId!!,
+            bookingId = aCrdLicenceEntity.bookingId!!,
             passed = true,
           ),
         ),
@@ -875,7 +961,7 @@ class UpdateSentenceDateServiceTest {
 
     @Test
     fun `should inactivate a licence if the licence was in hard stop period but is no longer in hard stop period`() {
-      val inHardStopLicence = aLicenceEntity.copy(
+      val inHardStopLicence = aCrdLicenceEntity.copy(
         statusCode = LicenceStatus.TIMED_OUT,
         conditionalReleaseDate = LocalDate.now(),
         actualReleaseDate = LocalDate.now(),
@@ -901,7 +987,7 @@ class UpdateSentenceDateServiceTest {
             approvalStatus = "REJECTED",
             refusedReason = null,
             checksPassedDate = null,
-            bookingId = aLicenceEntity.bookingId!!,
+            bookingId = aCrdLicenceEntity.bookingId!!,
             passed = true,
           ),
         ),
@@ -940,7 +1026,8 @@ class UpdateSentenceDateServiceTest {
   }
 
   private companion object {
-    val aLicenceEntity = TestData.createCrdLicence()
+    val aCrdLicenceEntity = TestData.createCrdLicence()
+    val aHdcLicenceEntity = TestData.createHdcLicence()
     val aCom = TestData.com()
     val aPreviousUser = CommunityOffenderManager(
       staffIdentifier = 4000,

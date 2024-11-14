@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -54,6 +55,7 @@ class UpdateSentenceDateService(
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
       postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
+      homeDetentionCurfewActualDate = sentenceDatesRequest.homeDetentionCurfewActualDate,
       staffMember = staffMember,
     )
 
@@ -88,6 +90,9 @@ class UpdateSentenceDateService(
         append("TUSSD ${sentenceChanges.tussdChanged} ")
         append("TUSED ${sentenceChanges.tusedChanged} ")
         append("PRRD ${sentenceChanges.prrdChanged} ")
+        if (licenceEntity is HdcLicence) {
+          append("HDCAD ${sentenceChanges.hdcadChanged} ")
+        }
         append("isMaterial ${sentenceChanges.isMaterial}")
       },
     )
@@ -155,6 +160,9 @@ class UpdateSentenceDateService(
         append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
         append("TUSED ${licenceEntity?.topupSupervisionExpiryDate} ")
         append("PRRD ${licenceEntity?.postRecallReleaseDate}")
+        if (licenceEntity is HdcLicence) {
+          append("HDCAD ${licenceEntity.homeDetentionCurfewActualDate} ")
+        }
       },
     )
 
@@ -170,6 +178,9 @@ class UpdateSentenceDateService(
         append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
         append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} ")
         append("PRRD ${sentenceDatesRequest.postRecallReleaseDate}")
+        if (licenceEntity is HdcLicence) {
+          append("HDCAD ${sentenceDatesRequest.homeDetentionCurfewActualDate} ")
+        }
       },
     )
   }

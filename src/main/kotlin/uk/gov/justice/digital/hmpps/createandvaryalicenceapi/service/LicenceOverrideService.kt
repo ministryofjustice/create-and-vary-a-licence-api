@@ -153,6 +153,7 @@ class LicenceOverrideService(
       topupSupervisionStartDate = request.topupSupervisionStartDate,
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
       postRecallReleaseDate = request.postRecallReleaseDate,
+      homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
       staffMember = staffMember,
     )
 

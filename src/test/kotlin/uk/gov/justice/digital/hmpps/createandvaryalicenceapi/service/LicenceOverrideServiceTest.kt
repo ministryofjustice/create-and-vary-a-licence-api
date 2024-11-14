@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -398,6 +399,64 @@ class LicenceOverrideServiceTest {
   }
 
   @Test
+  fun `Override dates updates HDC licence dates`() {
+    whenever(licenceRepository.findById(approvedHdcLicenceA.id)).thenReturn(Optional.of(approvedHdcLicenceA))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    val request = OverrideLicenceDatesRequest(
+      conditionalReleaseDate = LocalDate.now(),
+      actualReleaseDate = LocalDate.now(),
+      sentenceStartDate = LocalDate.now(),
+      sentenceEndDate = LocalDate.now(),
+      licenceStartDate = LocalDate.now(),
+      licenceExpiryDate = LocalDate.now(),
+      topupSupervisionStartDate = LocalDate.now(),
+      topupSupervisionExpiryDate = LocalDate.now(),
+      postRecallReleaseDate = LocalDate.now(),
+      homeDetentionCurfewActualDate = LocalDate.now(),
+      reason = "Test override dates",
+    )
+
+    licenceOverrideService.changeDates(
+      approvedHdcLicenceA.id,
+      request,
+    )
+
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    assertThat(licenceCaptor.value)
+      .extracting(
+        "conditionalReleaseDate", "actualReleaseDate",
+        "sentenceStartDate", "sentenceEndDate", "licenceStartDate", "licenceExpiryDate",
+        "topupSupervisionStartDate", "topupSupervisionExpiryDate", "postRecallReleaseDate",
+        "homeDetentionCurfewActualDate", "updatedByUsername", "updatedBy",
+      )
+      .isEqualTo(
+        listOf(
+          request.conditionalReleaseDate, request.actualReleaseDate, request.sentenceStartDate,
+          request.sentenceEndDate, request.licenceStartDate, request.licenceExpiryDate,
+          request.topupSupervisionStartDate, request.topupSupervisionExpiryDate, request.postRecallReleaseDate,
+          request.homeDetentionCurfewActualDate, aCom.username, aCom,
+        ),
+      )
+
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary")
+      .isEqualTo(
+        listOf(
+          approvedHdcLicenceA.id,
+          aCom.username,
+          AuditEventType.USER_EVENT,
+          "Sentence dates overridden for John Smith: ${request.reason}",
+        ),
+      )
+  }
+
+  @Test
   fun `updating user is retained and username is set to SYSTEM_USER when a staff member cannot be found`() {
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(
       Optional.of(
@@ -470,6 +529,9 @@ class LicenceOverrideServiceTest {
       statusCode = APPROVED,
     )
     val approvedLicenceB = createCrdLicence().copy(
+      statusCode = APPROVED,
+    )
+    val approvedHdcLicenceA = createHdcLicence().copy(
       statusCode = APPROVED,
     )
     val activeVariationLicence = createVariationLicence().copy(

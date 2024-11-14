@@ -258,6 +258,7 @@ object TestData {
     sentenceEndDate = LocalDate.of(2021, 10, 22),
     licenceStartDate = LocalDate.of(2021, 10, 22),
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
     topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     probationAreaCode = "N01",

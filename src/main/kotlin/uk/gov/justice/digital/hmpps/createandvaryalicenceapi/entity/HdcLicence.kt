@@ -373,6 +373,7 @@ class HdcLicence(
     topupSupervisionStartDate: LocalDate?,
     topupSupervisionExpiryDate: LocalDate?,
     postRecallReleaseDate: LocalDate?,
+    homeDetentionCurfewActualDate: LocalDate?,
     staffMember: Staff?,
   ) = copy(
     statusCode = status ?: this.statusCode,
@@ -385,6 +386,7 @@ class HdcLicence(
     topupSupervisionStartDate = topupSupervisionStartDate,
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
     postRecallReleaseDate = postRecallReleaseDate,
+    homeDetentionCurfewActualDate = homeDetentionCurfewActualDate ?: this.homeDetentionCurfewActualDate,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,
