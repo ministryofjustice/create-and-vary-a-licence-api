@@ -386,7 +386,7 @@ class HdcLicence(
     topupSupervisionStartDate = topupSupervisionStartDate,
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
     postRecallReleaseDate = postRecallReleaseDate,
-    homeDetentionCurfewActualDate = homeDetentionCurfewActualDate ?: this.homeDetentionCurfewActualDate,
+    homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,

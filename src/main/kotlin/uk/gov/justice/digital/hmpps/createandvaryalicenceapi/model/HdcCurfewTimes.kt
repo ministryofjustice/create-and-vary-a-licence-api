@@ -14,7 +14,7 @@ data class HdcCurfewTimes(
   @Schema(description = "Sequence of this curfew time within the curfew times", example = "1")
   val curfewTimesSequence: Int? = null,
 
-  @Schema(description = "The day on which this curfew starts for this curfew time", example = "01:00:00")
+  @Schema(description = "The day on which this curfew starts for this curfew time", example = "MONDAY")
   @get:JsonView(Views.SubjectAccessRequest::class)
   val fromDay: DayOfWeek? = null,
 
@@ -22,7 +22,7 @@ data class HdcCurfewTimes(
   @get:JsonView(Views.SubjectAccessRequest::class)
   val fromTime: LocalTime? = null,
 
-  @Schema(description = "The day on which this curfew ends for this curfew time", example = "01:00:00")
+  @Schema(description = "The day on which this curfew ends for this curfew time", example = "MONDAY")
   @get:JsonView(Views.SubjectAccessRequest::class)
   val untilDay: DayOfWeek? = null,
 
