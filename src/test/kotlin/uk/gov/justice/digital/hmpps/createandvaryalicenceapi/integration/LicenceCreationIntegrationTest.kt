@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.LocalDate
 
 class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
@@ -279,7 +278,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @Test
     fun `Create a AP HDC licence`() {
       prisonApiMockServer.stubGetPrison()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCResult(null, null)
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
 
@@ -315,10 +314,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Create a AP_PSS HDC licence`() {
-      val led = LocalDate.now()
-      val tused = LocalDate.now().plusDays(1)
       prisonApiMockServer.stubGetPrison()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCResult(led, tused)
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPPSSResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
 
@@ -354,8 +351,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Service throws error when PSS HDC licence`() {
-      val tused = LocalDate.now().plusDays(1)
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCResult(null, tused)
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCPSSResult()
 
       val exception = webTestClient.post()
         .uri("/licence/create")
@@ -368,8 +364,8 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
         .returnResult().responseBody
 
       assertThat(exception!!.status).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value())
-      assertThat(exception.userMessage).isEqualTo("HDC Licence for NOMSID can not be of type PSS")
-      assertThat(exception.developerMessage).isEqualTo("HDC Licence for NOMSID can not be of type PSS")
+      assertThat(exception.userMessage).isEqualTo("Unexpected error: HDC Licence for A1234AA can not be of type PSS")
+      assertThat(exception.developerMessage).isEqualTo("HDC Licence for A1234AA can not be of type PSS")
     }
 
     @Test
