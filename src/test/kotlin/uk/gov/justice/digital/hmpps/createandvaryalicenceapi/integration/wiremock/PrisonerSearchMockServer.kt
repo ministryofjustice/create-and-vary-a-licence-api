@@ -214,6 +214,47 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
+  fun stubSearchPrisonersByNomisIdsHDCResult(licenceExpiryDate: LocalDate?, topupSupervisionExpiryDate: LocalDate?, prisonerSearchResponse: String? = null) {
+    val json = prisonerSearchResponse ?: """[
+            {
+              "prisonerNumber": "A1234AA",
+              "bookingId": "123",
+              "status": "ACTIVE",
+              "mostSeriousOffence": "Robbery",
+              "licenceExpiryDate": "$licenceExpiryDate",
+              "topupSupervisionExpiryDate": "$topupSupervisionExpiryDate",
+              "homeDetentionCurfewEligibilityDate": null,
+              "releaseDate": "${LocalDate.now().plusDays(1)}",
+              "confirmedReleaseDate": "${nextWorkingDate()}",
+              "conditionalReleaseDate": "${nextWorkingDate()}",
+              "paroleEligibilityDate": null,
+              "actualParoleDate" : null,
+              "postRecallReleaseDate": null,
+              "legalStatus": "SENTENCED",
+              "indeterminateSentence": false,
+              "recall": false,
+              "prisonId": "ABC",
+              "bookNumber": "12345A",
+              "firstName": "Test1",
+              "lastName": "Person1",
+              "dateOfBirth": "1985-01-01"
+           }         
+          ]
+    """.trimIndent()
+
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            json,
+          ).withStatus(200),
+        ),
+    )
+  }
+
   fun stubSearchPrisonersByNomisIdsNoResult() {
     stubFor(
       post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
