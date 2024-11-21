@@ -276,9 +276,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Nested
   inner class CreateHdcLicences {
     @Test
-    fun `Create a HDC licence`() {
+    fun `Create a AP HDC licence`() {
       prisonApiMockServer.stubGetPrison()
-      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
 
@@ -309,8 +309,63 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
       assertThat(standardConditionRepository.count()).isEqualTo(9)
-      assertThat(additionalConditionRepository.count()).isEqualTo(0)
       assertThat(auditEventRepository.count()).isEqualTo(1)
+    }
+
+    @Test
+    fun `Create a AP_PSS HDC licence`() {
+      prisonApiMockServer.stubGetPrison()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPPSSResult()
+      probationSearchMockServer.stubSearchForPersonOnProbation()
+      deliusMockServer.stubGetOffenderManager()
+
+      assertThat(licenceRepository.count()).isEqualTo(0)
+      assertThat(standardConditionRepository.count()).isEqualTo(0)
+      assertThat(auditEventRepository.count()).isEqualTo(0)
+
+      val result = webTestClient.post()
+        .uri("/licence/create")
+        .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HDC))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(LicenceCreationResponse::class.java)
+        .returnResult().responseBody
+
+      log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
+
+      assertThat(result?.licenceId).isGreaterThan(0L)
+
+      assertThat(licenceRepository.count()).isEqualTo(1)
+      val licence = licenceRepository.findAll().first()
+      assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+      assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
+      assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
+      assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
+      assertThat(standardConditionRepository.count()).isEqualTo(17)
+      assertThat(auditEventRepository.count()).isEqualTo(1)
+    }
+
+    @Test
+    fun `Service throws error when PSS HDC licence`() {
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCPSSResult()
+
+      val exception = webTestClient.post()
+        .uri("/licence/create")
+        .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = HDC))
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().is5xxServerError
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(exception!!.status).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value())
+      assertThat(exception.userMessage).isEqualTo("Unexpected error: HDC Licence for A1234AA can not be of type PSS")
+      assertThat(exception.developerMessage).isEqualTo("HDC Licence for A1234AA can not be of type PSS")
     }
 
     @Test
