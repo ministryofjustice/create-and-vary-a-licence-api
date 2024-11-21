@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getLicenceStartDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
@@ -77,6 +76,14 @@ class PrisonerSearchService(
     val hdcReasonIfPresent =
       if (listOf(prisonerSearchPrisoner).findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
     return reasons + hdcReasonIfPresent
+  }
+
+  fun searchPrisonersByPrisonNumbers(prisonNumbers: List<String>): List<PrisonerSearchPrisoner> {
+    if (prisonNumbers.isEmpty()) {
+      return emptyList()
+    }
+
+    return this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
   }
 
   private fun getLicence(result: CaseloadResult): Licence? {
@@ -161,7 +168,7 @@ class PrisonerSearchService(
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(
-      releaseDate = prisonOffender.getLicenceStartDate(),
+      releaseDate = releaseDateService.getLicenceStartDate(prisonOffender),
       licenceType = LicenceType.getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),

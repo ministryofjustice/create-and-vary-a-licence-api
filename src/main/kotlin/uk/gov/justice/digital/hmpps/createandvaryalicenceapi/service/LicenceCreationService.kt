@@ -46,6 +46,7 @@ class LicenceCreationService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
+  private val releaseDateService: ReleaseDateService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -61,6 +62,7 @@ class LicenceCreationService(
     val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -78,6 +80,7 @@ class LicenceCreationService(
       deliusRecord = deliusRecord,
       responsibleCom = responsibleCom,
       creator = createdBy,
+      licenceStartDate = licenceStartDate,
     )
 
     val createdLicence = licenceRepository.saveAndFlush(licence)
@@ -100,6 +103,7 @@ class LicenceCreationService(
     val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -123,6 +127,7 @@ class LicenceCreationService(
       responsibleCom = responsibleCom,
       creator = createdBy,
       timedOutLicence = timedOutLicence,
+      licenceStartDate = licenceStartDate,
     )
 
     val createdLicence = licenceRepository.saveAndFlush(licence)
@@ -151,6 +156,7 @@ class LicenceCreationService(
     val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
@@ -168,6 +174,7 @@ class LicenceCreationService(
       deliusRecord = deliusRecord,
       responsibleCom = responsibleCom,
       creator = createdBy,
+      licenceStartDate = licenceStartDate,
     )
 
     val createdLicence = licenceRepository.saveAndFlush(licence)

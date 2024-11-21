@@ -544,6 +544,10 @@ class PrisonerSearchServiceTest {
       true,
     )
 
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
+    )
+
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -701,6 +705,10 @@ class PrisonerSearchServiceTest {
       true,
     )
 
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
+    )
+
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -794,6 +802,10 @@ class PrisonerSearchServiceTest {
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
+    )
+
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
     )
 
     val request = ProbationUserSearchRequest(
@@ -895,6 +907,10 @@ class PrisonerSearchServiceTest {
       true,
     )
 
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
+    )
+
     val request = ProbationUserSearchRequest(
       "Test",
       2000,
@@ -992,6 +1008,10 @@ class PrisonerSearchServiceTest {
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
+    )
+
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
     )
 
     val request = ProbationUserSearchRequest(
@@ -1164,6 +1184,10 @@ class PrisonerSearchServiceTest {
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
+    )
+
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
     )
 
     val request = ProbationUserSearchRequest(
@@ -1339,6 +1363,10 @@ class PrisonerSearchServiceTest {
       listOf(
         aPrisonerHdcStatus,
       ),
+    )
+
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(
+      LocalDate.parse("2023-09-14"),
     )
 
     val request = ProbationUserSearchRequest(
@@ -1517,6 +1545,8 @@ class PrisonerSearchServiceTest {
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
     )
+
+    whenever(releaseDateService.getLicenceStartDate(any())).thenReturn(LocalDate.parse("2023-09-14"))
 
     val request = ProbationUserSearchRequest(
       "Test",

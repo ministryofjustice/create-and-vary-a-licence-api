@@ -75,6 +75,7 @@ class LicenceCreationServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -88,6 +89,7 @@ class LicenceCreationServiceTest {
     prisonerSearchApiClient,
     prisonApiClient,
     deliusApiClient,
+    releaseDateService,
   )
 
   @Nested
@@ -103,6 +105,7 @@ class LicenceCreationServiceTest {
         prisonerSearchApiClient,
         prisonApiClient,
         deliusApiClient,
+        releaseDateService,
       )
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
@@ -208,45 +211,6 @@ class LicenceCreationServiceTest {
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is present`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDate = LocalDate.now().plusDays(2),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createLicence(prisonNumber)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is absent`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = null,
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
-
-      service.createLicence(prisonNumber)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
       }
     }
 
@@ -781,45 +745,6 @@ class LicenceCreationServiceTest {
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is present`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDate = LocalDate.now().plusDays(2),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createHardStopLicence(prisonNumber)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is absent`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = null,
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
-
-      service.createHardStopLicence(prisonNumber)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
       }
     }
 

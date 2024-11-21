@@ -76,6 +76,7 @@ class LicenceService(
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
   private val domainEventsService: DomainEventsService,
+  private val prisonerSearchService: PrisonerSearchService,
 ) {
 
   @Transactional
@@ -155,6 +156,47 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     updateLicenceStatus(licenceEntity, request)
+  }
+
+  @Transactional
+  fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long? = 0): Long {
+    val licences = licenceRepository.findLicencesToBatchUpdateLsd(numberOfLicences, lastUpdatedLicenceId)
+    val maxLicenceId = licences.maxOf { it.id }
+    val prisonNumbers = licences
+      .mapNotNull { it.nomsId }
+
+    if (prisonNumbers.isEmpty()) {
+      return maxLicenceId
+    }
+
+    val prisoners = this.prisonerSearchService.searchPrisonersByPrisonNumbers(prisonNumbers)
+    val prisonersToLSDs = releaseDateService.getLicenceStartDates(prisoners)
+
+    licences.map {
+      val licenceStartDate = prisonersToLSDs[it.nomsId]
+      val hdced = if (it is HdcLicence) {
+        it.homeDetentionCurfewActualDate
+      } else {
+        null
+      }
+      val updatedLicence = it.updateLicenceDates(
+        status = it.statusCode,
+        conditionalReleaseDate = it.conditionalReleaseDate,
+        actualReleaseDate = it.actualReleaseDate,
+        sentenceStartDate = it.sentenceStartDate,
+        sentenceEndDate = it.sentenceEndDate,
+        licenceStartDate = licenceStartDate,
+        licenceExpiryDate = it.licenceExpiryDate,
+        topupSupervisionStartDate = it.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = it.topupSupervisionExpiryDate,
+        postRecallReleaseDate = it.postRecallReleaseDate,
+        homeDetentionCurfewActualDate = hdced,
+        staffMember = null,
+      )
+      licenceRepository.saveAndFlush(updatedLicence)
+    }
+
+    return maxLicenceId
   }
 
   private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest) {

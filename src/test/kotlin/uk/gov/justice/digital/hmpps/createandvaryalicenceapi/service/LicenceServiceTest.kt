@@ -100,6 +100,7 @@ class LicenceServiceTest {
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val domainEventsService = mock<DomainEventsService>()
+  private val prisonerSearchService = mock<PrisonerSearchService>()
 
   private val service =
     LicenceService(
@@ -116,6 +117,7 @@ class LicenceServiceTest {
       omuService,
       releaseDateService,
       domainEventsService,
+      prisonerSearchService,
     )
 
   @BeforeEach
