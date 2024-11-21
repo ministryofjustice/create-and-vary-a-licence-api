@@ -77,9 +77,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
-  fun nextWorkingDate() =
-    generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
-      .first()
+  fun nextWorkingDate() = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
+    .first()
 
   fun stubSearchPrisonersByNomisIds(prisonerSearchResponse: String? = null) {
     val json = prisonerSearchResponse ?: """[
@@ -198,6 +197,129 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
               "lastName": "Person3",
               "dateOfBirth": "1987-01-01"
            }
+          ]
+    """.trimIndent()
+
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            json,
+          ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubSearchPrisonersByNomisIdsHDCAPResult(prisonerSearchResponse: String? = null) {
+    val json = prisonerSearchResponse ?: """[
+            {
+              "prisonerNumber": "A1234AA",
+              "bookingId": "123",
+              "status": "ACTIVE",
+              "mostSeriousOffence": "Robbery",
+              "licenceExpiryDate": null,
+              "topupSupervisionExpiryDate": null,
+              "homeDetentionCurfewEligibilityDate": null,
+              "releaseDate": "${LocalDate.now().plusDays(1)}",
+              "confirmedReleaseDate": "${nextWorkingDate()}",
+              "conditionalReleaseDate": "${nextWorkingDate()}",
+              "paroleEligibilityDate": null,
+              "actualParoleDate" : null,
+              "postRecallReleaseDate": null,
+              "legalStatus": "SENTENCED",
+              "indeterminateSentence": false,
+              "recall": false,
+              "prisonId": "ABC",
+              "bookNumber": "12345A",
+              "firstName": "Test1",
+              "lastName": "Person1",
+              "dateOfBirth": "1985-01-01"
+           }         
+          ]
+    """.trimIndent()
+
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            json,
+          ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubSearchPrisonersByNomisIdsHDCAPPSSResult(prisonerSearchResponse: String? = null) {
+    val json = prisonerSearchResponse ?: """[
+            {
+              "prisonerNumber": "A1234AA",
+              "bookingId": "123",
+              "status": "ACTIVE",
+              "mostSeriousOffence": "Robbery",
+              "licenceExpiryDate": "${LocalDate.now()}",
+              "topupSupervisionExpiryDate": "${LocalDate.now().plusDays(1)}",
+              "homeDetentionCurfewEligibilityDate": "${LocalDate.now().plusDays(1)}",
+              "releaseDate": "${LocalDate.now().plusDays(1)}",
+              "confirmedReleaseDate": "${nextWorkingDate()}",
+              "conditionalReleaseDate": "${nextWorkingDate()}",
+              "paroleEligibilityDate": null,
+              "actualParoleDate" : null,
+              "postRecallReleaseDate": null,
+              "legalStatus": "SENTENCED",
+              "indeterminateSentence": false,
+              "recall": false,
+              "prisonId": "ABC",
+              "bookNumber": "12345A",
+              "firstName": "Test1",
+              "lastName": "Person1",
+              "dateOfBirth": "1985-01-01"
+           }         
+          ]
+    """.trimIndent()
+
+    stubFor(
+      post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
+        .willReturn(
+          aResponse().withHeader(
+            "Content-Type",
+            "application/json",
+          ).withBody(
+            json,
+          ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubSearchPrisonersByNomisIdsHDCPSSResult(prisonerSearchResponse: String? = null) {
+    val json = prisonerSearchResponse ?: """[
+            {
+              "prisonerNumber": "A1234AA",
+              "bookingId": "123",
+              "status": "ACTIVE",
+              "mostSeriousOffence": "Robbery",
+              "licenceExpiryDate": null,
+              "topupSupervisionExpiryDate": "${LocalDate.now().plusDays(1)}",
+              "homeDetentionCurfewEligibilityDate": "${LocalDate.now().plusDays(1)}",
+              "releaseDate": "${LocalDate.now().plusDays(1)}",
+              "confirmedReleaseDate": "${nextWorkingDate()}",
+              "conditionalReleaseDate": "${nextWorkingDate()}",
+              "paroleEligibilityDate": null,
+              "actualParoleDate" : null,
+              "postRecallReleaseDate": null,
+              "legalStatus": "SENTENCED",
+              "indeterminateSentence": false,
+              "recall": false,
+              "prisonId": "ABC",
+              "bookNumber": "12345A",
+              "firstName": "Test1",
+              "lastName": "Person1",
+              "dateOfBirth": "1985-01-01"
+           }         
           ]
     """.trimIndent()
 
