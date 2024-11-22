@@ -15,7 +15,7 @@ class IS91DeterminationService(
   }
 
   fun isIS91Case(prisoner: PrisonerSearchPrisoner): Boolean {
-    if(prisoner.mostSeriousOffence == OFFENCE_DESCRIPTION){
+    if (prisoner.mostSeriousOffence == OFFENCE_DESCRIPTION) {
       return true
     }
     return isBookingWithIS91Outcome(prisoner.bookingId?.toLong())
@@ -34,7 +34,7 @@ class IS91DeterminationService(
   }
 
   private fun isBookingWithIS91Outcome(bookingId: Long?): Boolean {
-    if(bookingId == null){
+    if (bookingId == null) {
       return false
     }
     val courtEventOutcomes = prisonApiClient.getCourtEventOutcomes(listOf(bookingId))

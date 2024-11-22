@@ -26,7 +26,7 @@ class IS91DeterminationServiceTest {
   }
 
   @Nested
-  inner class getIS91AndExtraditionBookingIds(){
+  inner class GetIS91AndExtraditionBookingIds() {
     @Test
     fun `Returns the booking IDs of licences with an illegal immigrant offence code`() {
       val expectedIS91s = listOf(54321L, 54322L)
@@ -73,7 +73,7 @@ class IS91DeterminationServiceTest {
   }
 
   @Nested
-  inner class isIS91Case(){
+  inner class IsIS91Case() {
     @Test
     fun `Returns true for a case with an illegal immigrant offence code`() {
       val prisoner = aPrisonerSearchResult.copy(bookingId = "54322", mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE")
@@ -90,7 +90,7 @@ class IS91DeterminationServiceTest {
     @ValueSource(strings = ["3006", "4022", "5500", "5502"])
     fun `Returns true for a case with an IS91 related court outcome code`(outcomeCode: String) {
       whenever(prisonApiClient.getCourtEventOutcomes(listOf(54322))).thenReturn(
-        listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = outcomeCode))
+        listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = outcomeCode)),
       )
       val prisoner = aPrisonerSearchResult.copy(bookingId = "54322")
       assertThat(service.isIS91Case(prisoner)).isTrue()
@@ -99,19 +99,18 @@ class IS91DeterminationServiceTest {
     @Test
     fun `Returns false for a case with any other court outcome code`() {
       whenever(prisonApiClient.getCourtEventOutcomes(listOf(54322))).thenReturn(
-        listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = "1234"))
+        listOf(CourtEventOutcome(bookingId = 43566, eventId = 1, outcomeReasonCode = "1234")),
       )
       val prisoner = aPrisonerSearchResult.copy(bookingId = "54322")
       assertThat(service.isIS91Case(prisoner)).isFalse()
     }
 
     @Test
-    fun `Returns false if the case has no booking ID`(){
+    fun `Returns false if the case has no booking ID`() {
       val prisoner = aPrisonerSearchResult.copy(bookingId = null)
       assertThat(service.isIS91Case(prisoner)).isFalse()
     }
   }
-
 
   private val aPrisonerSearchResult = PrisonerSearchPrisoner(
     prisonerNumber = "A1234AA",
