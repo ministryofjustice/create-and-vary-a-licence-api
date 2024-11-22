@@ -96,7 +96,7 @@ class ReleaseDateService(
     return if (
       ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
       nomisRecord.paroleEligibilityDate != null && nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) ||
-      iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord)).isNotEmpty()
+      iS91DeterminationService.isIS91Case(nomisRecord)
     ) {
       nomisRecord.determineAltLicenceStartDate()
     } else {

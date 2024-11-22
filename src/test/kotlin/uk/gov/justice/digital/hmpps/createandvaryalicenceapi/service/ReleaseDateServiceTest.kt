@@ -944,7 +944,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 21),
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
       }
@@ -979,7 +979,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
@@ -1014,7 +1014,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 21),
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
@@ -1049,7 +1049,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 10, 23),
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
       }
@@ -1084,7 +1084,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = null,
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
@@ -1119,7 +1119,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2018, 11, 29),
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
       }
@@ -1154,7 +1154,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 12, 4),
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
       }
@@ -1189,7 +1189,7 @@ class ReleaseDateServiceTest {
           confirmedReleaseDate = LocalDate.of(2021, 12, 3),
         )
 
-        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nomisRecord))).thenReturn(listOf(123456))
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
       }
