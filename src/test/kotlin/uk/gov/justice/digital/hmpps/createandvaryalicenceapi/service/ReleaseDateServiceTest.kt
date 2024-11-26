@@ -6,17 +6,21 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
 class ReleaseDateServiceTest {
+  private val iS91DeterminationService = mock<IS91DeterminationService>()
   private val bankHolidayService = mock<BankHolidayService>()
   private val workingDaysService = WorkingDaysService(bankHolidayService)
 
@@ -24,6 +28,7 @@ class ReleaseDateServiceTest {
     ReleaseDateService(
       clock,
       workingDaysService,
+      iS91DeterminationService,
     )
 
   @BeforeEach
@@ -376,7 +381,7 @@ class ReleaseDateServiceTest {
     val thisClock = createClock("2024-04-22T00:00:00Z")
     val today = LocalDate.now(thisClock)
 
-    private val service = ReleaseDateService(clock = thisClock, workingDaysService)
+    private val service = ReleaseDateService(clock = thisClock, workingDaysService, iS91DeterminationService)
 
     @Test
     fun `false if there is no release date`() {
@@ -828,6 +833,366 @@ class ReleaseDateServiceTest {
 
       val isEligibleForEarlyRelease = service.isEligibleForEarlyRelease(actualReleaseDate)
       assertThat(isEligibleForEarlyRelease).isFalse
+    }
+  }
+
+  @Nested
+  inner class `Licence start date`() {
+    @Nested
+    inner class `Determine licence start date`() {
+      @Test
+      fun `returns null if CRD is null`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+      }
+
+      @Test
+      fun `returns CRD if ARD is null and CRD is a working day`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = null,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the ARD if it is before the CRD`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 9, 1),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 9, 1))
+      }
+
+      @Test
+      fun `returns the ARD if the ARD is equal to the CRD`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is after CRD`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns last working day before CRD if the ARD is invalid and CRD is a bank holiday or weekend`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      // Check to make sure it doesn't return workingCrd
+      @Test
+      fun `returns the ARD when ARD and CRD are both the same non-working day`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2018, 12, 4),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 12, 4))
+      }
+    }
+
+    @Nested
+    inner class `Determine alternative licence start date`() {
+      @ParameterizedTest(name = "returns null for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns null if there is no CRD when the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = LocalDate.of(2021, 10, 10),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+      }
+
+      @Test
+      fun `returns null if there is no CRD when PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+      }
+
+      @Test
+      fun `returns null if there is no CRD when it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
+      }
+
+      @ParameterizedTest(name = "returns CRD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns the CRD if the ARD is null when the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = null,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is null when PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = null,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is null when it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = null,
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @ParameterizedTest(name = "returns CRD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns the CRD if the ARD is before the CRD when the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is before the CRD when PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is before the CRD when it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @ParameterizedTest(name = "returns CRD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns the CRD if the ARD is after the CRD when the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is after the CRD when PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @Test
+      fun `returns the CRD if the ARD is after the CRD when it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
+      }
+
+      @ParameterizedTest(name = "returns last working day before CRD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend when the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = null,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      @Test
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend when PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = null,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      @Test
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend when it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = null,
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      @ParameterizedTest(name = "returns last working day before CRD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2018, 11, 29),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      @Test
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2018, 11, 29),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      @Test
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2018, 11, 29),
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
+      }
+
+      @ParameterizedTest(name = "returns ARD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns ARD when the CRD and ARD are the same non-working day and the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 12, 4),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
+      }
+
+      @Test
+      fun `returns ARD when the CRD and ARD are the same non-working day and PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 12, 4),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
+      }
+
+      @Test
+      fun `returns ARD when the CRD and ARD are the same non-working day and it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 12, 4),
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
+      }
+
+      @ParameterizedTest(name = "returns ARD for {0}")
+      @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
+      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and the legal status is one of note`(legalStatus: String) {
+        val nomisRecord = prisonerSearchResult().copy(
+          legalStatus = legalStatus,
+          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 12, 3),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
+      }
+
+      @Test
+      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and PED is in the past`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
+          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 12, 3),
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
+      }
+
+      @Test
+      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and it is an IS91 case`() {
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
+          confirmedReleaseDate = LocalDate.of(2021, 12, 3),
+        )
+
+        whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
+
+        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
+      }
     }
   }
 

@@ -3,14 +3,18 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
+
+val ALT_OUTCOME_CODES = listOf("IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED")
 
 @Service
 class ReleaseDateService(
   private val clock: Clock,
   private val workingDaysService: WorkingDaysService,
+  private val iS91DeterminationService: IS91DeterminationService,
   @Value("\${maxNumberOfWorkingDaysAllowedForEarlyRelease:3}") private val maxNumberOfWorkingDaysAllowedForEarlyRelease: Int = 3,
   @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
 ) {
@@ -88,6 +92,18 @@ class ReleaseDateService(
     }
   }
 
+  fun getLicenceStartDate(nomisRecord: PrisonerSearchPrisoner): LocalDate? {
+    return if (
+      ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
+      nomisRecord.paroleEligibilityDate != null && nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) ||
+      iS91DeterminationService.isIS91Case(nomisRecord)
+    ) {
+      nomisRecord.determineAltLicenceStartDate()
+    } else {
+      nomisRecord.determineLicenceStartDate()
+    }
+  }
+
   private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
     val date =
       if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
@@ -119,4 +135,40 @@ class ReleaseDateService(
     .last()
 
   private fun LocalDate.isNonWorkingDay() = workingDaysService.isNonWorkingDay(this)
+
+  private fun PrisonerSearchPrisoner.determineAltLicenceStartDate(): LocalDate? {
+    if (conditionalReleaseDate == null) return null
+
+    val workingDayCrd = getWorkingDayCrd()
+
+    return if (
+      confirmedReleaseDate == null ||
+      confirmedReleaseDate.isBefore(workingDayCrd) ||
+      confirmedReleaseDate.isAfter(conditionalReleaseDate)
+    ) {
+      workingDayCrd
+    } else {
+      confirmedReleaseDate
+    }
+  }
+
+  private fun PrisonerSearchPrisoner.determineLicenceStartDate(): LocalDate? {
+    if (conditionalReleaseDate == null) return null
+
+    return if (confirmedReleaseDate == null || confirmedReleaseDate.isAfter(conditionalReleaseDate)) {
+      getWorkingDayCrd()
+    } else {
+      confirmedReleaseDate
+    }
+  }
+
+  private fun PrisonerSearchPrisoner.getWorkingDayCrd(): LocalDate? {
+    if (conditionalReleaseDate == null) return null
+
+    return if (conditionalReleaseDate.isNonWorkingDay()) {
+      1.workingDaysBefore(conditionalReleaseDate)
+    } else {
+      conditionalReleaseDate
+    }
+  }
 }
