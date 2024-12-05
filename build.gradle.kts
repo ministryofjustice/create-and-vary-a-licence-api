@@ -48,7 +48,7 @@ dependencies {
   implementation("org.springframework.security:spring-security-config:6.3.2")
 
   // GOVUK Notify:
-  implementation("uk.gov.service.notify:notifications-java-client:5.1.0-RELEASE")
+  implementation("uk.gov.service.notify:notifications-java-client:5.2.1-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
   implementation("org.apache.pdfbox:pdfbox:3.0.3")
@@ -63,7 +63,7 @@ dependencies {
   implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.0")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.2.0")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
