@@ -326,7 +326,7 @@ class ComCaseloadService(
     val hardStopLicence = case.licences.find { licence -> licence.kind === LicenceKind.HARD_STOP }
 
     if (timedOutLicence?.versionOf != null) {
-      val previouslyApproved = case.licences.find { licence -> licence.licenceId === timedOutLicence.versionOf }
+      val previouslyApproved = case.licences.find { licence -> licence.licenceId == timedOutLicence.versionOf }
       if (previouslyApproved != null) {
         return previouslyApproved.copy(
           licenceStatus = LicenceStatus.TIMED_OUT,
