@@ -1,9 +1,7 @@
 version: 2.1
-
 orbs:
   hmpps: ministryofjustice/hmpps@10
   codecov: codecov/codecov@3.2.0
-
 parameters:
   alerts-slack-channel:
     type: string
@@ -17,7 +15,6 @@ parameters:
   localstack-version:
     type: string
     default: "3.0.2"
-
 jobs:
   validate:
     executor:
@@ -43,7 +40,6 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
-
   detekt:
     executor:
       name: hmpps/java
@@ -58,7 +54,6 @@ jobs:
           command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" detekt
       - store_artifacts:
           path: build/reports/detekt
-
   integration-test:
     executor:
       name: hmpps/localstack
@@ -81,7 +76,6 @@ jobs:
           path: build/test-results
       - store_artifacts:
           path: build/reports/tests
-
 workflows:
   version: 2
   build-test-and-deploy:
@@ -170,42 +164,3 @@ workflows:
             branches:
               only:
                 - main
-  security:
-    triggers:
-      - schedule:
-          cron: "16 5 * * 1-5"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - hmpps/gradle_owasp_dependency_check:
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          jdk_tag: << pipeline.parameters.java-version >>
-          context:
-            - hmpps-common-vars
-      - hmpps/trivy_latest_scan:
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - hmpps-common-vars
-      - hmpps/veracode_pipeline_scan:
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - veracode-credentials
-            - hmpps-common-vars
-  security-weekly:
-    triggers:
-      - schedule:
-          cron: "44 5 * * 1"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - hmpps/veracode_policy_scan:
-          slack_channel: << pipeline.parameters.alerts-slack-channel >>
-          context:
-            - veracode-credentials
-            - hmpps-common-vars
-
-
