@@ -3,9 +3,6 @@ orbs:
   hmpps: ministryofjustice/hmpps@10
   codecov: codecov/codecov@3.2.0
 parameters:
-  alerts-slack-channel:
-    type: string
-    default: cvl_alerts_security
   releases-slack-channel:
     type: string
     default: the_elephants_devs
