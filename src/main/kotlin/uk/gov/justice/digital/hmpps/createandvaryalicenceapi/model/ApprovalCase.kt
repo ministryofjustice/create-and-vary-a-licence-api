@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -39,4 +40,7 @@ data class ApprovalCase(
 
   @Schema(description = "The details for the active supervising probation officer")
   val probationPractitioner: ProbationPractitioner? = null,
+
+  @Schema(description = "Type of this licence")
+  val kind: LicenceKind? = null,
 )
