@@ -3,10 +3,13 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
+import io.swagger.v3.oas.models.media.Schema
 import org.springdoc.core.models.GroupedOpenApi
+import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.LocalTime
 
 @Configuration
 class OpenApiConfiguration(buildProperties: BuildProperties) {
@@ -39,8 +42,7 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
   @Bean
   fun publicGroupedConfig(): GroupedOpenApi = GroupedOpenApi.builder()
     .group("public")
-    .addOpenApiCustomizer {
-        a ->
+    .addOpenApiCustomizer { a ->
       a.info(
         Info()
           .title("Create and Vary a Licence Public API")
@@ -57,8 +59,10 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
     .build()
 
   @Bean
-  fun customOpenAPI(): OpenAPI? = OpenAPI()
-    .info(
+  fun customOpenAPI(): OpenAPI {
+    SpringDocUtils.getConfig()
+      .replaceWithSchema(LocalTime::class.java, Schema<LocalTime>().type("string").format("HH:mm").example("00:00"))
+    return OpenAPI().info(
       Info()
         .title("Create and Vary a Licence API")
         .version(version)
@@ -69,4 +73,5 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
             .email("feedback@digital.justice.gov.uk"),
         ),
     )
+  }
 }
