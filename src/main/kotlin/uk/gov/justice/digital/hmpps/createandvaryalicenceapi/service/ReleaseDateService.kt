@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -92,8 +93,10 @@ class ReleaseDateService(
     }
   }
 
-  fun getLicenceStartDate(nomisRecord: PrisonerSearchPrisoner): LocalDate? {
-    return if (
+  fun getLicenceStartDate(nomisRecord: PrisonerSearchPrisoner, licenceKind: LicenceKind? = LicenceKind.CRD): LocalDate? {
+    return if(licenceKind == LicenceKind.HDC) {
+      nomisRecord.homeDetentionCurfewActualDate
+    } else if (
       ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
       nomisRecord.paroleEligibilityDate != null && nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) ||
       iS91DeterminationService.isIS91Case(nomisRecord)
