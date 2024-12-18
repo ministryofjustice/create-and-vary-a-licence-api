@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -838,6 +839,17 @@ class ReleaseDateServiceTest {
 
   @Nested
   inner class `Licence start date`() {
+    @Test
+    fun `returns HDCAD for HDC licences`() {
+      val nomisRecord = prisonerSearchResult().copy(
+        conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+        confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+        homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 10),
+      )
+
+      assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.HDC)).isEqualTo(LocalDate.of(2021, 10, 10))
+    }
+
     @Nested
     inner class `Determine licence start date`() {
       @Test
