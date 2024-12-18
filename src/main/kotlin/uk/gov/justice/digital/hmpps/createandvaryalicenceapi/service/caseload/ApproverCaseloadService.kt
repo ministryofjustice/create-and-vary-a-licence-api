@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.O
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -63,6 +64,7 @@ class ApproverCaseloadService(
           approvedBy = licenceSummary?.approvedByName,
           approvedOn = licenceSummary?.approvedDate,
           isDueForEarlyRelease = licenceSummary?.isDueForEarlyRelease,
+          kind = licenceSummary?.kind,
         ),
       )
     }
@@ -82,6 +84,7 @@ class ApproverCaseloadService(
         approvedOn = it.licenceSummary?.approvedOn,
         isDueForEarlyRelease = it.licenceSummary?.isDueForEarlyRelease,
         probationPractitioner = findProbationPractitioner(it.deliusRecord, it.comUsernameOnLicence, coms),
+        kind = it.licenceSummary?.kind,
       )
     }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
 
@@ -133,5 +136,6 @@ class ApproverCaseloadService(
     val approvedBy: String?,
     val approvedOn: LocalDateTime?,
     val isDueForEarlyRelease: Boolean?,
+    val kind: LicenceKind?,
   )
 }

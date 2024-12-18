@@ -70,6 +70,7 @@ class ApproverCaseloadServiceTest {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
           }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
         }
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
@@ -167,6 +168,7 @@ class ApproverCaseloadServiceTest {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
           }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
         }
 
         with(approvalCases.last()) {
@@ -183,6 +185,7 @@ class ApproverCaseloadServiceTest {
             assertThat(staffCode).isEqualTo("DE012F")
             assertThat(name).isEqualTo("Test2 Test2")
           }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
         }
 
         verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
@@ -482,6 +485,7 @@ class ApproverCaseloadServiceTest {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
           }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
         }
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
@@ -603,6 +607,7 @@ class ApproverCaseloadServiceTest {
             assertThat(staffCode).isEqualTo("DE012F")
             assertThat(name).isEqualTo("Test2 Test2")
           }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
         }
 
         with(caseload.last()) {
@@ -619,6 +624,7 @@ class ApproverCaseloadServiceTest {
             assertThat(staffCode).isEqualTo("AB012C")
             assertThat(name).isEqualTo("Test Test")
           }
+          assertThat(kind).isEqualTo(LicenceKind.CRD)
         }
 
         verify(prisonApproverService, times(1)).findRecentlyApprovedLicences(aListOfPrisonCodes)
