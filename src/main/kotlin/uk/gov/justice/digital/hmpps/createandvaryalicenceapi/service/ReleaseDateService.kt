@@ -94,7 +94,7 @@ class ReleaseDateService(
   }
 
   fun getLicenceStartDate(nomisRecord: PrisonerSearchPrisoner, licenceKind: LicenceKind? = LicenceKind.CRD): LocalDate? {
-    return if(licenceKind == LicenceKind.HDC) {
+    return if (licenceKind == LicenceKind.HDC) {
       nomisRecord.homeDetentionCurfewActualDate
     } else if (
       ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||

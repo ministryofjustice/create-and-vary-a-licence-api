@@ -840,11 +840,11 @@ class ReleaseDateServiceTest {
   @Nested
   inner class `Licence start date`() {
     @Test
-    fun `returns HDCAD for HDC licences`(){
+    fun `returns HDCAD for HDC licences`() {
       val nomisRecord = prisonerSearchResult().copy(
         conditionalReleaseDate = LocalDate.of(2021, 10, 21),
         confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-        homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 10)
+        homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 10),
       )
 
       assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.HDC)).isEqualTo(LocalDate.of(2021, 10, 10))
