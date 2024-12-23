@@ -94,7 +94,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
         licenceStartDate = LocalDate.parse("2023-09-11"),
         licenceExpiryDate = null,
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       ),
     ).accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk
@@ -140,7 +140,9 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(response.title).isEqualTo("Incorrect dates for new licence type: PSS")
     assertThat(response.properties).isEqualTo(
       mapOf(
-        "LED" to "PRESENT_DATE",
+        "fieldErrors" to mapOf(
+          "LED" to "IS_PRESENT",
+        ),
       ),
     )
   }
@@ -159,8 +161,8 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   fun `Get forbidden (403) when incorrect roles are supplied`() {
     val result = webTestClient.post().uri("/licence/id/1/override/type")
       .bodyValue(OverrideLicenceTypeRequest(licenceType = LicenceType.AP, reason = "Some Reason"))
-      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG"))).exchange()
-      .expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value()).expectBody(ErrorResponse::class.java)
+      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .exchange().expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value()).expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
     assertThat(result?.userMessage).contains("Access Denied")
