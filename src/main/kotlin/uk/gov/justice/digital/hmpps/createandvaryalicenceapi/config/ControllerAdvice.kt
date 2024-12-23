@@ -5,6 +5,8 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.BAD_REQUEST
+import org.springframework.http.ProblemDetail
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
@@ -16,6 +18,7 @@ import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 
 @RestControllerAdvice
 class ControllerAdvice {
@@ -134,6 +137,15 @@ class ControllerAdvice {
           existingResourceId = e.existingResourceId,
         ),
       )
+  }
+
+  @ExceptionHandler(DetailedValidationException::class)
+  fun handleDetailedValidationException(exception: DetailedValidationException): ResponseEntity<ProblemDetail> {
+    val problemDetail = ProblemDetail.forStatus(BAD_REQUEST)
+    problemDetail.title = exception.title
+    problemDetail.detail = exception.message
+    exception.errors.forEach { problemDetail.setProperty(it.first, it.second) }
+    return ResponseEntity.status(BAD_REQUEST).body(problemDetail)
   }
 
   @ExceptionHandler(Exception::class)
