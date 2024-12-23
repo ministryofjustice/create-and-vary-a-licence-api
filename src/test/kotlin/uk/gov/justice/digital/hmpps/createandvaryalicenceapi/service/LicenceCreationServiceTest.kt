@@ -154,7 +154,7 @@ class LicenceCreationServiceTest {
         assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
         assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
         assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
-        assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10,10))
+        assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10, 10))
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)

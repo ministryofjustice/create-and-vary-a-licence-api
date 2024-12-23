@@ -88,7 +88,7 @@ class EligibilityServiceTest {
     val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
-        paroleEligibilityDate = LocalDate.now(clock).minusDays(10)
+        paroleEligibilityDate = LocalDate.now(clock).minusDays(10),
       ),
     )
     assertThat(result).containsExactlyInAnyOrder("release date in past", "is on non-eligible EDS")
