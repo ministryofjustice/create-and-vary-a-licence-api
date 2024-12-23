@@ -48,7 +48,7 @@ abstract class Licence(
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  val typeCode: LicenceType = LicenceType.AP,
+  var typeCode: LicenceType = LicenceType.AP,
 
   var version: String? = null,
 

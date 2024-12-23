@@ -7,7 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
@@ -31,18 +30,7 @@ class LicenceOverrideService(
 ) {
 
   companion object {
-    private val log = LoggerFactory.getLogger(LicenceOverrideService::class.java)
-  }
-
-  /**
-   * @return Licence
-   * @throws EntityNotFoundException if not licence is found for licenceId
-   */
-  @Transactional
-  fun getLicenceById(licenceId: Long): Licence? {
-    return licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    private val log = LoggerFactory.getLogger(this::class.java)
   }
 
   /**
@@ -51,7 +39,7 @@ class LicenceOverrideService(
    */
   @Transactional
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
-    val licence = getLicenceById(licenceId)
+    val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
 
     val username = SecurityContextHolder.getContext().authentication.name
 
