@@ -871,6 +871,7 @@ class CaCaseloadServiceTest {
       whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
         listOf(
           aLicenceSummary.copy(
+            licenceStartDate = twoDaysFromNow,
             actualReleaseDate = twoDaysFromNow,
           ),
           aLicenceSummary.copy(
@@ -880,6 +881,7 @@ class CaCaseloadServiceTest {
             forename = "Smith",
             surname = "Cena",
             comUsername = "Andy",
+            licenceStartDate = tenDaysFromNow,
             actualReleaseDate = tenDaysFromNow,
           ),
           aLicenceSummary.copy(
@@ -889,6 +891,7 @@ class CaCaseloadServiceTest {
             forename = "Andy",
             surname = "Smith",
             comUsername = "Andy",
+            licenceStartDate = twoMonthsFromNow,
             actualReleaseDate = twoMonthsFromNow,
           ),
           aLicenceSummary.copy(
@@ -898,6 +901,7 @@ class CaCaseloadServiceTest {
             forename = "John",
             surname = "Smith",
             comUsername = "Andy",
+            licenceStartDate = oneDayFromNow,
             actualReleaseDate = oneDayFromNow,
           ),
         ),
