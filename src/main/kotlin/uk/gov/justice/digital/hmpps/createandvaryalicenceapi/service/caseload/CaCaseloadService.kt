@@ -147,18 +147,18 @@ class CaCaseloadService(
       } else {
         it.value[0]
       }
-      val releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate
+
       CaCase(
         kind = licence?.kind,
         licenceId = licence?.licenceId,
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
-        releaseDate = releaseDate,
+        releaseDate = licence?.licenceStartDate,
         releaseDateLabel =
-        when (licence.actualReleaseDate) {
-          null -> "CRD"
-          else -> "Confirmed release date"
+        when (licence.licenceStartDate) {
+          licence.actualReleaseDate -> "Confirmed release date"
+          else -> "CRD"
         },
         licenceStatus = licence.licenceStatus,
         lastWorkedOnBy = licence.updatedByFullName,

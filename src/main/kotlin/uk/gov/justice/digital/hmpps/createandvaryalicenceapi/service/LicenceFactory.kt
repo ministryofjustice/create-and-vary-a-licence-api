@@ -9,12 +9,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getLicenceStartDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 object LicenceFactory {
@@ -29,6 +29,7 @@ object LicenceFactory {
     deliusRecord: OffenderDetail,
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
+    licenceStartDate: LocalDate?,
   ) = CrdLicence(
     typeCode = licenceType,
     version = version,
@@ -50,7 +51,7 @@ object LicenceFactory {
     actualReleaseDate = nomisRecord.confirmedReleaseDate,
     sentenceStartDate = nomisRecord.sentenceStartDate,
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
-    licenceStartDate = nomisRecord.getLicenceStartDate(),
+    licenceStartDate = licenceStartDate,
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
     topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
@@ -79,6 +80,7 @@ object LicenceFactory {
     creator: PrisonUser,
     responsibleCom: CommunityOffenderManager,
     timedOutLicence: CrdLicence?,
+    licenceStartDate: LocalDate?,
   ) = HardStopLicence(
     typeCode = licenceType,
     version = version,
@@ -100,7 +102,7 @@ object LicenceFactory {
     actualReleaseDate = nomisRecord.confirmedReleaseDate,
     sentenceStartDate = nomisRecord.sentenceStartDate,
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
-    licenceStartDate = nomisRecord.getLicenceStartDate(),
+    licenceStartDate = licenceStartDate,
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
     topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
@@ -208,6 +210,7 @@ object LicenceFactory {
     deliusRecord: OffenderDetail,
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
+    licenceStartDate: LocalDate?,
   ) = HdcLicence(
     typeCode = licenceType,
     version = version,
@@ -229,7 +232,7 @@ object LicenceFactory {
     actualReleaseDate = nomisRecord.confirmedReleaseDate,
     sentenceStartDate = nomisRecord.sentenceStartDate,
     sentenceEndDate = nomisRecord.sentenceExpiryDate,
-    licenceStartDate = nomisRecord.getLicenceStartDate(),
+    licenceStartDate = licenceStartDate,
     licenceExpiryDate = nomisRecord.licenceExpiryDate,
     homeDetentionCurfewActualDate = nomisRecord.homeDetentionCurfewActualDate,
     topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,

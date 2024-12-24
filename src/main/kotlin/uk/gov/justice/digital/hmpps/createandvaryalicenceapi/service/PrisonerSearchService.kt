@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.getLicenceStartDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
@@ -160,8 +159,10 @@ class PrisonerSearchService(
     val sentenceDateHolder = prisonOffender.toSentenceDateHolder()
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonOffender)
+
     return this.transformToUnstartedRecord(
-      releaseDate = prisonOffender.getLicenceStartDate(),
+      releaseDate = licenceStartDate,
       licenceType = LicenceType.getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
@@ -171,7 +172,10 @@ class PrisonerSearchService(
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),
-      releaseDateLabel = if (prisonOffender.confirmedReleaseDate != null) "Confirmed release date" else "CRD",
+      releaseDateLabel = when (licenceStartDate) {
+        prisonOffender.confirmedReleaseDate -> "Confirmed release date"
+        else -> "CRD"
+      },
     )
   }
 
