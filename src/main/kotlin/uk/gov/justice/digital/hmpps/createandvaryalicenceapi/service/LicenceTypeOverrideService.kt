@@ -11,14 +11,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.MISSING_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.PRESENT_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_IN_PAST
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_MISSING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_PRESENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
@@ -47,7 +49,7 @@ class LicenceTypeOverrideService(
     getIncorrectDates(newType, licence).takeIf { it.isNotEmpty() }?.let { errors ->
       throw DetailedValidationException(
         title = "Incorrect dates for new licence type: $newType",
-        errors = errors.map { it.dateName to it.errorType.name },
+        errors = mapOf("fieldErrors" to errors.associate { it.dateName to it.errorType }),
       )
     }
 
@@ -102,23 +104,25 @@ class LicenceTypeOverrideService(
     val errors = mutableSetOf<IncorrectDate>()
     when (licenceType) {
       AP -> {
-        if (led == null) errors.add(IncorrectDate("LED", MISSING_DATE))
-        if (tused != null) errors.add(IncorrectDate("TUSED", PRESENT_DATE))
+        if (led == null) errors.add(IncorrectDate("LED", IS_MISSING))
+        if (tused != null) errors.add(IncorrectDate("TUSED", IS_PRESENT))
       }
 
       PSS -> {
-        if (led != null) errors.add(IncorrectDate("LED", PRESENT_DATE))
-        if (tused == null) errors.add(IncorrectDate("TUSED", MISSING_DATE))
+        if (led != null) errors.add(IncorrectDate("LED", IS_PRESENT))
+        if (tused == null) errors.add(IncorrectDate("TUSED", IS_MISSING))
+        if (tused != null && tused < LocalDate.now()) errors.add(IncorrectDate("TUSED", IS_IN_PAST))
       }
 
       AP_PSS -> {
-        if (led == null) errors.add(IncorrectDate("LED", MISSING_DATE))
-        if (tused == null) errors.add(IncorrectDate("TUSED", MISSING_DATE))
+        if (led == null) errors.add(IncorrectDate("LED", IS_MISSING))
+        if (tused == null) errors.add(IncorrectDate("TUSED", IS_MISSING))
+        if (tused != null && tused < LocalDate.now()) errors.add(IncorrectDate("TUSED", IS_IN_PAST))
       }
     }
     return errors
   }
 
-  enum class ErrorType { MISSING_DATE, PRESENT_DATE }
+  enum class ErrorType { IS_MISSING, IS_PRESENT, IS_IN_PAST }
   data class IncorrectDate(val dateName: String, val errorType: ErrorType)
 }

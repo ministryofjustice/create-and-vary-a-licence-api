@@ -28,6 +28,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_IN_PAST
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_MISSING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_PRESENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
@@ -87,7 +90,14 @@ class LicenceTypeOverrideServiceTest {
 
       assertThat(error.title).isEqualTo("Incorrect dates for new licence type: AP")
       assertThat(error.message).isEqualTo("Incorrect dates for new licence type: AP")
-      assertThat(error.errors).isEqualTo(listOf("LED" to "MISSING_DATE", "TUSED" to "PRESENT_DATE"))
+      assertThat(error.errors).isEqualTo(
+        mapOf(
+          "fieldErrors" to mapOf(
+            "LED" to IS_MISSING,
+            "TUSED" to IS_PRESENT,
+          ),
+        ),
+      )
     }
 
     @Test
@@ -104,7 +114,7 @@ class LicenceTypeOverrideServiceTest {
 
       assertThat(error.title).isEqualTo("Incorrect dates for new licence type: AP")
       assertThat(error.message).isEqualTo("Incorrect dates for new licence type: AP")
-      assertThat(error.errors).isEqualTo(listOf("TUSED" to "PRESENT_DATE"))
+      assertThat(error.errors).isEqualTo(mapOf("fieldErrors" to mapOf("TUSED" to IS_PRESENT)))
     }
 
     @Test
@@ -202,14 +212,45 @@ class LicenceTypeOverrideServiceTest {
 
       assertThat(error.title).isEqualTo("Incorrect dates for new licence type: PSS")
       assertThat(error.message).isEqualTo("Incorrect dates for new licence type: PSS")
-      assertThat(error.errors).isEqualTo(listOf("LED" to "PRESENT_DATE", "TUSED" to "MISSING_DATE"))
+      assertThat(error.errors).isEqualTo(
+        mapOf(
+          "fieldErrors" to mapOf(
+            "LED" to IS_PRESENT,
+            "TUSED" to IS_MISSING,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `throws exception when TUSED date in past`() {
+      val licence = apLicenceWithAllConditions.copy(
+        licenceExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().minusDays(1),
+      )
+      whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
+
+      val error = assertThrows<DetailedValidationException> {
+        licenceOverrideService.changeType(licence.id, PSS, "Test change to PSS")
+      }
+
+      assertThat(error.title).isEqualTo("Incorrect dates for new licence type: PSS")
+      assertThat(error.message).isEqualTo("Incorrect dates for new licence type: PSS")
+      assertThat(error.errors).isEqualTo(
+        mapOf(
+          "fieldErrors" to mapOf(
+            "LED" to IS_PRESENT,
+            "TUSED" to IS_IN_PAST,
+          ),
+        ),
+      )
     }
 
     @Test
     fun `throws exception from AP_PSS and dates not updated`() {
       val licence = apAndPssLicenceWithAllConditions.copy(
         licenceExpiryDate = LocalDate.of(2021, 1, 2),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       )
       whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
 
@@ -219,14 +260,14 @@ class LicenceTypeOverrideServiceTest {
 
       assertThat(error.title).isEqualTo("Incorrect dates for new licence type: PSS")
       assertThat(error.message).isEqualTo("Incorrect dates for new licence type: PSS")
-      assertThat(error.errors).isEqualTo(listOf("LED" to "PRESENT_DATE"))
+      assertThat(error.errors).isEqualTo(mapOf("fieldErrors" to mapOf("LED" to IS_PRESENT)))
     }
 
     @Test
     fun `successfully converts from AP`() {
       val licence = apLicenceWithAllConditions.copy(
         licenceExpiryDate = null,
-        topupSupervisionExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       )
       whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
 
@@ -255,7 +296,7 @@ class LicenceTypeOverrideServiceTest {
     fun `successfully converts from AP_PSS`() {
       val licence = apAndPssLicenceWithAllConditions.copy(
         licenceExpiryDate = null,
-        topupSupervisionExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       )
       whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
 
@@ -311,14 +352,14 @@ class LicenceTypeOverrideServiceTest {
 
       assertThat(error.title).isEqualTo("Incorrect dates for new licence type: AP_PSS")
       assertThat(error.message).isEqualTo("Incorrect dates for new licence type: AP_PSS")
-      assertThat(error.errors).isEqualTo(listOf("TUSED" to "MISSING_DATE"))
+      assertThat(error.errors).isEqualTo(mapOf("fieldErrors" to mapOf("TUSED" to IS_MISSING)))
     }
 
     @Test
     fun `throws exception from PSS and dates not updated`() {
       val licence = pssLicenceWithAllConditions.copy(
         licenceExpiryDate = null,
-        topupSupervisionExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       )
       whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
 
@@ -328,14 +369,38 @@ class LicenceTypeOverrideServiceTest {
 
       assertThat(error.title).isEqualTo("Incorrect dates for new licence type: AP_PSS")
       assertThat(error.message).isEqualTo("Incorrect dates for new licence type: AP_PSS")
-      assertThat(error.errors).isEqualTo(listOf("LED" to "MISSING_DATE"))
+      assertThat(error.errors).isEqualTo(mapOf("fieldErrors" to mapOf("LED" to IS_MISSING)))
+    }
+
+    @Test
+    fun `throws exception when TUSED date in past`() {
+      val licence = pssLicenceWithAllConditions.copy(
+        licenceExpiryDate = null,
+        topupSupervisionExpiryDate = LocalDate.now().minusDays(1),
+      )
+      whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
+
+      val error = assertThrows<DetailedValidationException> {
+        licenceOverrideService.changeType(licence.id, AP_PSS, "Test change to AP_PSS")
+      }
+
+      assertThat(error.title).isEqualTo("Incorrect dates for new licence type: AP_PSS")
+      assertThat(error.message).isEqualTo("Incorrect dates for new licence type: AP_PSS")
+      assertThat(error.errors).isEqualTo(
+        mapOf(
+          "fieldErrors" to mapOf(
+            "LED" to IS_MISSING,
+            "TUSED" to IS_IN_PAST,
+          ),
+        ),
+      )
     }
 
     @Test
     fun `successfully converts from AP`() {
       val licence = apLicenceWithAllConditions.copy(
         licenceExpiryDate = LocalDate.of(2021, 1, 2),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       )
       whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
 
@@ -365,7 +430,7 @@ class LicenceTypeOverrideServiceTest {
     fun `successfully converts from PSS`() {
       val licence = pssLicenceWithAllConditions.copy(
         licenceExpiryDate = LocalDate.of(2021, 1, 2),
-        topupSupervisionExpiryDate = LocalDate.of(2021, 1, 2),
+        topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       )
       whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
 

@@ -144,7 +144,7 @@ class ControllerAdvice {
     val problemDetail = ProblemDetail.forStatus(BAD_REQUEST)
     problemDetail.title = exception.title
     problemDetail.detail = exception.message
-    exception.errors.forEach { problemDetail.setProperty(it.first, it.second) }
+    exception.errors.forEach { problemDetail.setProperty(it.key, it.value) }
     return ResponseEntity.status(BAD_REQUEST).body(problemDetail)
   }
 
