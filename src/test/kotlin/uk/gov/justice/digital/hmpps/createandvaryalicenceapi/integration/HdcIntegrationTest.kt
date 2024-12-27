@@ -53,8 +53,8 @@ class HdcIntegrationTest : IntegrationTestBase() {
       )
       assertThat(result.firstNightCurfewHours).isEqualTo(
         FirstNight(
-          "15:00",
-          "07:00",
+          LocalTime.of(15, 0),
+          LocalTime.of(7, 0),
         ),
       )
 

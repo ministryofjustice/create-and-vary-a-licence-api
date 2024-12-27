@@ -140,8 +140,8 @@ class HdcServiceTest {
     )
 
     val aSetOfFirstNightCurfewHours = FirstNight(
-      "16:00",
-      "08:00",
+      LocalTime.of(16, 0),
+      LocalTime.of(8, 0),
     )
 
     val anEntitySetOfCurfewTimes =
