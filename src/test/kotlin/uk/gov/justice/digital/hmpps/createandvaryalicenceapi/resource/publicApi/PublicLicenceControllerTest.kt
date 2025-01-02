@@ -14,11 +14,11 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
@@ -51,7 +51,7 @@ import java.time.LocalDateTime
 @WebAppConfiguration
 class PublicLicenceControllerTest {
 
-  @MockBean
+  @MockitoBean
   private lateinit var publicLicenceService: PublicLicenceService
 
   @Autowired
@@ -210,7 +210,12 @@ class PublicLicenceControllerTest {
 
   private companion object {
     private val bespokeCondition = listOf(BespokeCondition("You should not visit Y"))
-    private val standardConditions = listOf(StandardCondition("fda24aa9-a2b0-4d49-9c87-23b0a7be4013", " as reasonably required by your supervisor, to give a sample of oral fluid"))
+    private val standardConditions = listOf(
+      StandardCondition(
+        "fda24aa9-a2b0-4d49-9c87-23b0a7be4013",
+        " as reasonably required by your supervisor, to give a sample of oral fluid",
+      ),
+    )
     private val additionalConditions = listOf(
       GenericAdditionalCondition(
         type = "STANDARD",
