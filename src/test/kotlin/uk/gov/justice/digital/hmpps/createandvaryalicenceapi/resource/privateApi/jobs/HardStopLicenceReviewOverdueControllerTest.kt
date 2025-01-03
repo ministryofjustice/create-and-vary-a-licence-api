@@ -8,10 +8,10 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.HardSt
 @ContextConfiguration(classes = [HardStopLicenceReviewOverdueController::class])
 @WebAppConfiguration
 class HardStopLicenceReviewOverdueControllerTest {
-  @MockBean
+  @MockitoBean
   private lateinit var hardStopLicenceReviewOverdueService: HardStopLicenceReviewOverdueService
 
   @Autowired

@@ -2,15 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
 class UnapprovedLicenceIntegrationTest : IntegrationTestBase() {
 
-  @MockBean
+  @MockitoBean
   lateinit var notifyService: NotifyService
 
   @Test

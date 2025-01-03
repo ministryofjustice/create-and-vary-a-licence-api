@@ -11,12 +11,13 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
+import org.springframework.test.json.JsonCompareMode.STRICT
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -47,7 +48,7 @@ import java.time.LocalDateTime
 @WebAppConfiguration
 class SubjectAccessRequestControllerTest {
 
-  @MockBean
+  @MockitoBean
   private lateinit var subjectAccessRequestService: SubjectAccessRequestService
 
   @Autowired
@@ -94,7 +95,7 @@ class SubjectAccessRequestControllerTest {
 
     mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent("crdLicence"), true))
+      .andExpect(content().json(serializedSarContent("crdLicence"), STRICT))
       .andReturn()
   }
 
@@ -118,7 +119,7 @@ class SubjectAccessRequestControllerTest {
     )
     mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent("variationLicence"), true))
+      .andExpect(content().json(serializedSarContent("variationLicence"), STRICT))
       .andReturn()
   }
 
@@ -147,7 +148,7 @@ class SubjectAccessRequestControllerTest {
     )
     mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent("hardstopLicence"), true))
+      .andExpect(content().json(serializedSarContent("hardstopLicence"), STRICT))
       .andReturn()
   }
 
