@@ -9,8 +9,8 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
@@ -36,7 +36,7 @@ class UpdateSentenceIntegrationTest : IntegrationTestBase() {
   @Autowired
   lateinit var licenceEventRepository: LicenceEventRepository
 
-  @MockBean
+  @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
 
   @BeforeEach
