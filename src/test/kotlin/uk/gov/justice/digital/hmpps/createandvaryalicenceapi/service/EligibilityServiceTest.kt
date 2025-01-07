@@ -13,7 +13,7 @@ import java.time.ZoneId
 
 class EligibilityServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
-  private val service = EligibilityService(clock, releaseDateService)
+  private val service = EligibilityService(clock)
 
   @Test
   fun `Person is eligible for CVL`() {
