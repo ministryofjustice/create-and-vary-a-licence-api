@@ -32,6 +32,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member and the teams they are in, search for offenders within their teams`() {
     deliusMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -83,6 +84,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -174,6 +176,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -226,6 +229,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -255,6 +259,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(prisonerWithSentenceSpent))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")

@@ -67,6 +67,7 @@ class PrisonerSearchServiceTest {
       eligibilityService,
       releaseDateService,
     )
+    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.parse("2023-09-14"))
   }
 
   @Test

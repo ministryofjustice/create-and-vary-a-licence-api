@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
 import java.time.Instant
@@ -9,8 +12,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 class EligibilityServiceTest {
-
-  private val service = EligibilityService(clock)
+  private val releaseDateService = mock<ReleaseDateService>()
+  private val service = EligibilityService(clock, releaseDateService)
 
   @Test
   fun `Person is eligible for CVL`() {
@@ -81,12 +84,14 @@ class EligibilityServiceTest {
 
   @Test
   fun `Person is on ineligible EDS - ARD is outside threshold in the past - not eligible for CVL `() {
+    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.now(clock).minusDays(5))
     val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         confirmedReleaseDate = LocalDate.now(clock).minusDays(5),
+        paroleEligibilityDate = LocalDate.now(clock).minusDays(10),
       ),
     )
-    assertThat(result).containsExactly("release date in past")
+    assertThat(result).containsExactly("is on non-eligible EDS")
   }
 
   @Test
@@ -154,21 +159,10 @@ class EligibilityServiceTest {
   }
 
   @Test
-  fun `Person has a confirmed release date (ARD) in the past - not eligible for CVL `() {
-    val result = service.getIneligibilityReasons(
-      aPrisonerSearchResult.copy(
-        confirmedReleaseDate = LocalDate.now(clock).minusDays(1),
-      ),
-    )
-    assertThat(result).containsExactly("release date in past")
-  }
-
-  @Test
   fun `Person has a conditional release date (CRD) in the past - not eligible for CVL `() {
     val result = service.getIneligibilityReasons(
       aPrisonerSearchResult.copy(
         conditionalReleaseDate = LocalDate.now(clock).minusDays(1),
-        confirmedReleaseDate = null,
       ),
     )
     assertThat(result).containsExactly("release date in past")
@@ -214,17 +208,6 @@ class EligibilityServiceTest {
       ),
     )
     assertThat(result).containsExactly("has no conditional release date")
-  }
-
-  @Test
-  fun `Person has no ARD and a CRD in the past - not eligible for CVL `() {
-    val result = service.getIneligibilityReasons(
-      aPrisonerSearchResult.copy(
-        confirmedReleaseDate = null,
-        conditionalReleaseDate = LocalDate.now(clock).minusDays(10),
-      ),
-    )
-    assertThat(result).containsExactly("release date in past")
   }
 
   @Test
