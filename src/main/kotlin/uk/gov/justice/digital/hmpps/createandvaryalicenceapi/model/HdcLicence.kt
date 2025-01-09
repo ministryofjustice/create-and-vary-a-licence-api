@@ -111,6 +111,13 @@ data class HdcLicence(
   val homeDetentionCurfewActualDate: LocalDate? = null,
 
   @Schema(
+    description = "The offender’s home detention curfew end date",
+    example = "06/05/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val homeDetentionCurfewEndDate: LocalDate? = null,
+
+  @Schema(
     description = "The date when the post sentence supervision period starts, from prison services",
     example = "06/05/2023",
   )

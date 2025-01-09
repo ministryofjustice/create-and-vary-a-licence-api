@@ -1310,6 +1310,7 @@ class LicenceCreationServiceTest {
     fun `service populates licence with expected fields`() {
       val aPrisonerSearchResult = prisonerSearchResult().copy(
         homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
+        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
@@ -1340,6 +1341,7 @@ class LicenceCreationServiceTest {
         assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
         assertThat(homeDetentionCurfewActualDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewActualDate)
+        assertThat(homeDetentionCurfewEndDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewEndDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
         assertThat(postRecallReleaseDate).isNull()
@@ -1373,7 +1375,8 @@ class LicenceCreationServiceTest {
         service.createHdcLicence(prisonNumber)
       }
 
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java).hasMessage("HDC Licence for A1234AA can not be of type PSS")
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("HDC Licence for A1234AA can not be of type PSS")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
