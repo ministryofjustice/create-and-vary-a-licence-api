@@ -132,6 +132,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
+    prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
 
@@ -151,6 +152,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from prisoner search`() {
+    prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()

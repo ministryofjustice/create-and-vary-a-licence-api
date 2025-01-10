@@ -2,7 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>ComplexCondition:ReleaseDateService.kt$ReleaseDateService$ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) || nomisRecord.paroleEligibilityDate != null &amp;&amp; nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) || iS91BookingIds.contains(nomisRecord.bookingId?.toLong())</ID>
+    <ID>ComplexCondition:ReleaseDateService.kt$ReleaseDateService$ALT_OUTCOME_CODES.contains(it.legalStatus) || it.paroleEligibilityDate != null &amp;&amp; it.paroleEligibilityDate.isBefore(LocalDate.now()) || iS91BookingIds.contains(it.bookingId?.toLong())</ID>
     <ID>ComplexCondition:ReleaseDateService.kt$ReleaseDateService$ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) || nomisRecord.paroleEligibilityDate != null &amp;&amp; nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) || iS91DeterminationService.isIS91Case(nomisRecord)</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>

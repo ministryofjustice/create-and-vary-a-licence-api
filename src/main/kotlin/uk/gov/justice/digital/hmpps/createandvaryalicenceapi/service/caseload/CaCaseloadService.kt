@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.f
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -267,7 +266,7 @@ class CaCaseloadService(
 
   private fun createNotStartedLicenceForCase(cases: List<ManagedCase>): List<CaCase> {
     val prisonerSearchPrisoners = cases.mapNotNull { c -> c.nomisRecord?.toPrisonerSearchPrisoner() }
-    val licenceStartDates = releaseDateService.getLicenceStartDates(prisonerSearchPrisoners.associateWith { LicenceKind.CRD })
+    val licenceStartDates = releaseDateService.getLicenceStartDates(prisonerSearchPrisoners)
     return cases.map { c ->
 
       // Default status (if not overridden below) will show the case as clickable on case lists

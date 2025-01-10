@@ -1210,13 +1210,7 @@ class ReleaseDateServiceTest {
 
     @Nested
     inner class `getLicenceStartDates - bulk calculations`() {
-      private val cases = mapOf(
-        // HDC
-        prisonerSearchResult().copy(
-          prisonerNumber = "H1234DC",
-          bookingId = "123456",
-          homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 10),
-        ) to LicenceKind.HDC,
+      private val cases = listOf(
         // IS91 Legal status
         prisonerSearchResult().copy(
           prisonerNumber = "I9123SL",
@@ -1224,7 +1218,7 @@ class ReleaseDateServiceTest {
           legalStatus = "IMMIGRATION_DETAINEE",
           conditionalReleaseDate = LocalDate.of(2021, 10, 21),
           confirmedReleaseDate = LocalDate.of(2021, 10, 20),
-        ) to LicenceKind.CRD,
+        ),
         // Remand legal status
         prisonerSearchResult().copy(
           prisonerNumber = "R1234MD",
@@ -1232,7 +1226,7 @@ class ReleaseDateServiceTest {
           legalStatus = "REMAND",
           conditionalReleaseDate = LocalDate.of(2021, 10, 21),
           confirmedReleaseDate = LocalDate.of(2021, 10, 20),
-        ) to LicenceKind.CRD,
+        ),
         // Convicted unsentenced legal status
         prisonerSearchResult().copy(
           prisonerNumber = "C1234NV",
@@ -1240,28 +1234,27 @@ class ReleaseDateServiceTest {
           legalStatus = "CONVICTED_UNSENTENCED",
           conditionalReleaseDate = LocalDate.of(2021, 10, 21),
           confirmedReleaseDate = LocalDate.of(2021, 10, 20),
-        ) to LicenceKind.CRD,
+        ),
         // IS91 booking ID
         prisonerSearchResult().copy(
           prisonerNumber = "I9123SB",
           bookingId = "567890",
           conditionalReleaseDate = LocalDate.of(2021, 10, 21),
           confirmedReleaseDate = LocalDate.of(2021, 10, 20),
-        ) to LicenceKind.CRD,
+        ),
         // Standard case
         prisonerSearchResult().copy(
           prisonerNumber = "S1234TD",
           bookingId = "678901",
           conditionalReleaseDate = LocalDate.of(2021, 10, 21),
           confirmedReleaseDate = LocalDate.of(2021, 10, 20),
-        ) to LicenceKind.CRD,
+        ),
       )
 
       @Test
       fun `returns a map of nomis ID to licence start date`() {
         whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(any())).thenReturn(listOf(567890))
         val expectedResponse = mapOf(
-          "H1234DC" to LocalDate.of(2021, 10, 10),
           "I9123SL" to LocalDate.of(2021, 10, 21),
           "R1234MD" to LocalDate.of(2021, 10, 21),
           "C1234NV" to LocalDate.of(2021, 10, 21),
