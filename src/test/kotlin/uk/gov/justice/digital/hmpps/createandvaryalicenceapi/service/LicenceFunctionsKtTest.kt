@@ -31,6 +31,7 @@ class LicenceFunctionsKtTest {
     topupSupervisionStartDate = fiveDaysAgo,
     topupSupervisionExpiryDate = fiveDaysAgo,
     homeDetentionCurfewActualDate = fiveDaysAgo,
+    homeDetentionCurfewEndDate = fiveDaysAgo,
     typeCode = LicenceType.AP_PSS,
   )
 
@@ -40,7 +41,8 @@ class LicenceFunctionsKtTest {
     sentenceEndDate = fiveDaysAgo,
     topupSupervisionStartDate = fiveDaysAgo,
     topupSupervisionExpiryDate = fiveDaysAgo,
-    homeDetentionCurfewActualDate = null,
+    homeDetentionCurfewActualDate = fiveDaysAgo,
+    homeDetentionCurfewEndDate = fiveDaysAgo,
   )
 
   @Test
@@ -58,6 +60,7 @@ class LicenceFunctionsKtTest {
         tusedChanged = false,
         prrdChanged = false,
         hdcadChanged = false,
+        hdcEndDateChanged = false,
         isMaterial = true,
       ),
     )
@@ -78,6 +81,28 @@ class LicenceFunctionsKtTest {
         tusedChanged = false,
         prrdChanged = false,
         hdcadChanged = true,
+        hdcEndDateChanged = false,
+        isMaterial = true,
+      ),
+    )
+  }
+
+  @Test
+  fun `Sentence Changes should return for material change for HDC end date update to HDC licence`() {
+    val licence = testHdcLicence.copy(homeDetentionCurfewEndDate = fiveDaysAgo)
+
+    assertThat(
+      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewEndDate = fourDaysAgo)),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = false,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        prrdChanged = false,
+        hdcadChanged = false,
+        hdcEndDateChanged = true,
         isMaterial = true,
       ),
     )
@@ -98,6 +123,7 @@ class LicenceFunctionsKtTest {
         tusedChanged = false,
         prrdChanged = false,
         hdcadChanged = false,
+        hdcEndDateChanged = false,
         isMaterial = false,
       ),
     )
@@ -118,6 +144,7 @@ class LicenceFunctionsKtTest {
         tusedChanged = false,
         prrdChanged = true,
         hdcadChanged = false,
+        hdcEndDateChanged = false,
         isMaterial = true,
       ),
     )
@@ -140,6 +167,7 @@ class LicenceFunctionsKtTest {
         tusedChanged = false,
         prrdChanged = false,
         hdcadChanged = false,
+        hdcEndDateChanged = false,
         isMaterial = true,
       ),
     )

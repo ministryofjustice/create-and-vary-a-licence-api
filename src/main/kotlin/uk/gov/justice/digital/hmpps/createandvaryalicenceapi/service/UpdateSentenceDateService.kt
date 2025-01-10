@@ -56,6 +56,7 @@ class UpdateSentenceDateService(
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
       postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
       homeDetentionCurfewActualDate = sentenceDatesRequest.homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = sentenceDatesRequest.homeDetentionCurfewEndDate,
       staffMember = staffMember,
     )
 
@@ -92,6 +93,7 @@ class UpdateSentenceDateService(
         append("PRRD ${sentenceChanges.prrdChanged} ")
         if (licenceEntity is HdcLicence) {
           append("HDCAD ${sentenceChanges.hdcadChanged} ")
+          append("HDCAD ${sentenceChanges.hdcEndDateChanged} ")
         }
         append("isMaterial ${sentenceChanges.isMaterial}")
       },
@@ -108,39 +110,64 @@ class UpdateSentenceDateService(
     licenceId: Long,
     sentenceChanges: SentenceChanges,
   ) {
-    updatedLicenceEntity.bookingId?.let {
-      prisonApiClient.getHdcStatus(it).defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
-        .filter { h -> h.approvalStatus != "APPROVED" }.subscribe {
-          log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
-          notifyService.sendDatesChangedEmail(
-            licenceId.toString(),
-            licenceEntity.responsibleCom?.email,
-            "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
-            "${licenceEntity.forename} ${licenceEntity.surname}",
-            licenceEntity.crn,
-            mapOf(
-              "Release date has changed to ${updatedLicenceEntity.licenceStartDate?.format(dateFormat)}" to sentenceChanges.lsdChanged,
-              "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate?.format(dateFormat)}" to sentenceChanges.ledChanged,
-              "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate?.format(dateFormat)}" to sentenceChanges.sedChanged,
-              "Top up supervision start date has changed to ${
-                updatedLicenceEntity.topupSupervisionStartDate?.format(
-                  dateFormat,
-                )
-              }" to sentenceChanges.tussdChanged,
-              "Top up supervision end date has changed to ${
-                updatedLicenceEntity.topupSupervisionExpiryDate?.format(
-                  dateFormat,
-                )
-              }" to sentenceChanges.tusedChanged,
-              "Post recall release date has changed to ${
-                updatedLicenceEntity.postRecallReleaseDate?.format(
-                  dateFormat,
-                )
-              }" to sentenceChanges.prrdChanged,
-            ),
-          )
-        }
+    val notifyCom = updatedLicenceEntity is HdcLicence || isNotApprovedForHdc(updatedLicenceEntity)
+    if (!notifyCom) {
+      log.info("Not notifying COM as now approved for HDC for $licenceId")
+      return
     }
+    log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
+    notifyService.sendDatesChangedEmail(
+      licenceId.toString(),
+      licenceEntity.responsibleCom?.email,
+      "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+      "${licenceEntity.forename} ${licenceEntity.surname}",
+      licenceEntity.crn,
+      mapOf(
+        "Release date has changed to ${updatedLicenceEntity.licenceStartDate?.format(dateFormat)}" to sentenceChanges.lsdChanged,
+        "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate?.format(dateFormat)}" to sentenceChanges.ledChanged,
+        "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate?.format(dateFormat)}" to sentenceChanges.sedChanged,
+        "Top up supervision start date has changed to ${
+          updatedLicenceEntity.topupSupervisionStartDate?.format(
+            dateFormat,
+          )
+        }" to sentenceChanges.tussdChanged,
+        "Top up supervision end date has changed to ${
+          updatedLicenceEntity.topupSupervisionExpiryDate?.format(
+            dateFormat,
+          )
+        }" to sentenceChanges.tusedChanged,
+        "Post recall release date has changed to ${
+          updatedLicenceEntity.postRecallReleaseDate?.format(
+            dateFormat,
+          )
+        }" to sentenceChanges.prrdChanged,
+        "HDC actual date has changed to ${
+          if (updatedLicenceEntity is HdcLicence) {
+            updatedLicenceEntity.homeDetentionCurfewActualDate?.format(
+              dateFormat,
+            )
+          } else {
+            null
+          }
+        }" to sentenceChanges.hdcadChanged,
+        "HDC end date has changed to ${
+          if (updatedLicenceEntity is HdcLicence) {
+            updatedLicenceEntity.homeDetentionCurfewEndDate?.format(
+              dateFormat,
+            )
+          } else {
+            null
+          }
+        }" to sentenceChanges.hdcEndDateChanged,
+      ),
+    )
+  }
+
+  private fun isNotApprovedForHdc(updatedLicenceEntity: Licence): Boolean {
+    val hdcStatus = prisonApiClient.getHdcStatus(updatedLicenceEntity.bookingId!!)
+      .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
+      .block()!!
+    return hdcStatus.approvalStatus != "APPROVED"
   }
 
   private fun logUpdate(
@@ -202,6 +229,7 @@ class UpdateSentenceDateService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
-    const val LICENCE_DEACTIVATION_HARD_STOP = "Licence automatically inactivated as licence is no longer in hard stop period"
+    const val LICENCE_DEACTIVATION_HARD_STOP =
+      "Licence automatically inactivated as licence is no longer in hard stop period"
   }
 }

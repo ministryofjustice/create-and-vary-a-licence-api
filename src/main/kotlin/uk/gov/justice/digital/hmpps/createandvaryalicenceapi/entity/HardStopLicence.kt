@@ -360,6 +360,7 @@ class HardStopLicence(
     topupSupervisionExpiryDate: LocalDate?,
     postRecallReleaseDate: LocalDate?,
     homeDetentionCurfewActualDate: LocalDate?,
+    homeDetentionCurfewEndDate: LocalDate?,
     staffMember: Staff?,
   ) = copy(
     statusCode = status ?: this.statusCode,

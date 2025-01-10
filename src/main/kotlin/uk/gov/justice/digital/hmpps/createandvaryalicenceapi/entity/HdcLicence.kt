@@ -44,6 +44,7 @@ class HdcLicence(
   licenceExpiryDate: LocalDate? = null,
   licenceActivatedDate: LocalDateTime? = null,
   val homeDetentionCurfewActualDate: LocalDate? = null,
+  val homeDetentionCurfewEndDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,
   postRecallReleaseDate: LocalDate? = null,
@@ -173,6 +174,7 @@ class HdcLicence(
     licenceExpiryDate: LocalDate? = this.licenceExpiryDate,
     licenceActivatedDate: LocalDateTime? = this.licenceActivatedDate,
     homeDetentionCurfewActualDate: LocalDate? = this.homeDetentionCurfewActualDate,
+    homeDetentionCurfewEndDate: LocalDate? = this.homeDetentionCurfewEndDate,
     topupSupervisionStartDate: LocalDate? = this.topupSupervisionStartDate,
     topupSupervisionExpiryDate: LocalDate? = this.topupSupervisionExpiryDate,
     postRecallReleaseDate: LocalDate? = this.postRecallReleaseDate,
@@ -235,6 +237,7 @@ class HdcLicence(
       licenceExpiryDate = licenceExpiryDate,
       licenceActivatedDate = licenceActivatedDate,
       homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = homeDetentionCurfewEndDate,
       topupSupervisionStartDate = topupSupervisionStartDate,
       topupSupervisionExpiryDate = topupSupervisionExpiryDate,
       postRecallReleaseDate = postRecallReleaseDate,
@@ -374,6 +377,7 @@ class HdcLicence(
     topupSupervisionExpiryDate: LocalDate?,
     postRecallReleaseDate: LocalDate?,
     homeDetentionCurfewActualDate: LocalDate?,
+    homeDetentionCurfewEndDate: LocalDate?,
     staffMember: Staff?,
   ) = copy(
     statusCode = status ?: this.statusCode,
@@ -387,6 +391,7 @@ class HdcLicence(
     topupSupervisionExpiryDate = topupSupervisionExpiryDate,
     postRecallReleaseDate = postRecallReleaseDate,
     homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+    homeDetentionCurfewEndDate = homeDetentionCurfewEndDate,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,
@@ -458,6 +463,7 @@ class HdcLicence(
       "licenceExpiryDate=$licenceExpiryDate, " +
       "licenceActivatedDate=$licenceActivatedDate, " +
       "homeDetentionCurfewActualDate=$homeDetentionCurfewActualDate, " +
+      "homeDetentionCurfewEndDate=$homeDetentionCurfewEndDate, " +
       "topupSupervisionStartDate=$topupSupervisionStartDate, " +
       "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
       "probationAreaCode=$probationAreaCode, " +
