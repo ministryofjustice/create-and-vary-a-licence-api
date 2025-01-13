@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlProbationSearchRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
@@ -204,3 +203,9 @@ class PrisonerSearchService(
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
     )
 }
+
+private data class CvlProbationSearchRecord(
+  val caseloadResult: CaseloadResult,
+  val prisonerSearchPrisoner: PrisonerSearchPrisoner?,
+  val licence: Licence? = null,
+)
