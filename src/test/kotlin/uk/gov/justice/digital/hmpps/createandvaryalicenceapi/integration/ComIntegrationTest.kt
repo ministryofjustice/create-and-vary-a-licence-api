@@ -32,6 +32,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   fun `Given a staff member and the teams they are in, search for offenders within their teams`() {
     deliusMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -83,6 +84,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -130,6 +132,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
+    prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
 
@@ -149,6 +152,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from prisoner search`() {
+    prisonApiMockServer.stubGetCourtOutcomes()
     deliusMockServer.stubGetTeamCodesForUser()
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
@@ -174,6 +178,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -226,6 +231,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")
@@ -255,6 +261,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(prisonerWithSentenceSpent))
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
+    prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
       .uri("/com/case-search")

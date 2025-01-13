@@ -540,6 +540,8 @@ class PrisonerSearchServiceTest {
       ),
     )
 
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
     whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
       true,
     )
@@ -697,6 +699,8 @@ class PrisonerSearchServiceTest {
       ),
     )
 
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
     )
@@ -791,6 +795,8 @@ class PrisonerSearchServiceTest {
         ),
       ),
     )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
@@ -891,6 +897,8 @@ class PrisonerSearchServiceTest {
       ),
     )
 
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
     )
@@ -989,6 +997,8 @@ class PrisonerSearchServiceTest {
         ),
       ),
     )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
@@ -1162,6 +1172,8 @@ class PrisonerSearchServiceTest {
       ),
     )
 
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
     )
@@ -1330,6 +1342,8 @@ class PrisonerSearchServiceTest {
         ),
       ),
     )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
@@ -1513,6 +1527,8 @@ class PrisonerSearchServiceTest {
         aPrisonerSearchResult,
       ),
     )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
       true,
@@ -1840,6 +1856,9 @@ class PrisonerSearchServiceTest {
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
       .thenReturn(listOf(aPrisonerSearchResult))
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
@@ -1882,6 +1901,9 @@ class PrisonerSearchServiceTest {
           ),
         ),
       )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
