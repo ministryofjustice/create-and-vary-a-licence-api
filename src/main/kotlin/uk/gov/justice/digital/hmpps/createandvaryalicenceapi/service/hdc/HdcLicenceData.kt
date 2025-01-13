@@ -6,5 +6,5 @@ data class HdcLicenceData(
   val licenceId: Long? = null,
   val curfewAddress: CurfewAddress? = null,
   val firstNightCurfewHours: FirstNight? = null,
-  val curfewTimes: List<HdcCurfewTimes?> = emptyList(),
+  val curfewTimes: List<HdcCurfewTimes>? = null,
 )
