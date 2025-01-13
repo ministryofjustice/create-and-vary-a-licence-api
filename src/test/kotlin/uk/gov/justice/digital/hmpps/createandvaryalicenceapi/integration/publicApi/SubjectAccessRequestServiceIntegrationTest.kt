@@ -49,7 +49,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.content?.licences?.first()).extracting(
       "id",
-      "kind",
       "nomsId",
       "bookingId",
       "createdByUsername",
@@ -57,7 +56,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
       .isEqualTo(
         listOf(
           1L,
-          LicenceKinds.CRD,
           "A1234AA",
           12345L,
           "test-client",

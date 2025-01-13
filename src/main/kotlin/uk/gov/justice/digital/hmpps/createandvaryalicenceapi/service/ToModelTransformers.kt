@@ -33,9 +33,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbatio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicence as ModelHardstopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as ModelLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AuditEvent as SarAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence as SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.LicenceEvent as SarLicenceEvent
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -445,6 +449,35 @@ fun toHdc(
   submittedByFullName = licence.getSubmittedByFullName(),
 )
 
+fun transformToSarLicence(licence: ModelLicence) = SarLicence(
+  id = licence.id,
+  typeCode = licence.typeCode,
+  statusCode = licence.statusCode,
+  nomsId = licence.nomsId,
+  dateLastUpdated = licence.dateLastUpdated,
+  bookingId = licence.bookingId,
+  appointmentPerson = licence.appointmentPerson,
+  appointmentTime = licence.appointmentTime,
+  appointmentTimeType = licence.appointmentTimeType,
+  appointmentAddress = licence.appointmentAddress,
+  appointmentContact = licence.appointmentContact,
+  approvedDate = licence.approvedDate,
+  approvedByUsername = licence.approvedByUsername,
+  submittedDate = licence.submittedDate,
+  approvedByName = licence.approvedByName,
+  supersededDate = licence.supersededDate,
+  dateCreated = licence.dateCreated,
+  createdByUsername = licence.createdByUsername,
+  updatedByUsername = licence.updatedByUsername,
+  standardLicenceConditions = licence.standardLicenceConditions,
+  standardPssConditions = licence.standardPssConditions,
+  additionalLicenceConditions = licence.additionalLicenceConditions,
+  additionalPssConditions = licence.additionalPssConditions,
+  bespokeConditions = licence.bespokeConditions,
+  createdByFullName = licence.createdByFullName,
+  licenceVersion = licence.licenceVersion,
+)
+
 // Transform a list of entity standard conditions to model standard conditions
 fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> =
   filter { condition -> condition.conditionType == conditionType }.map(::transform)
@@ -545,10 +578,34 @@ private fun transform(entity: EntityAuditEvent): ModelAuditEvent = ModelAuditEve
   detail = entity.detail,
 )
 
+fun List<EntityAuditEvent>.transformToSarAuditEvents(): List<SarAuditEvent> = map(::transformToSarAuditEvents)
+
+fun transformToSarAuditEvents(entity: EntityAuditEvent): SarAuditEvent = SarAuditEvent(
+  licenceId = entity.licenceId,
+  eventTime = entity.eventTime,
+  username = entity.username,
+  fullName = entity.fullName,
+  eventType = entity.eventType,
+  summary = entity.summary,
+  detail = entity.detail,
+)
+
 fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)
 
 fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent(
   id = entity.id,
+  licenceId = entity.licenceId,
+  eventType = entity.eventType,
+  username = entity.username,
+  forenames = entity.forenames,
+  surname = entity.surname,
+  eventDescription = entity.eventDescription,
+  eventTime = entity.eventTime,
+)
+
+fun List<EntityLicenceEvent>.transformToSarLicenceEvents(): List<SarLicenceEvent> = map(::transformToSarLicenceEvents)
+
+fun transformToSarLicenceEvents(entity: EntityLicenceEvent): SarLicenceEvent = SarLicenceEvent(
   licenceId = entity.licenceId,
   eventType = entity.eventType,
   username = entity.username,

@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -59,7 +60,7 @@ class SubjectAccessRequestServiceTest {
 
     assertThat(sarContent).isExactlyInstanceOf(SarContent::class.java)
 
-    assertThat(sarContent?.content?.licences?.first()).isEqualTo(modelLicence)
+    assertThat(sarContent?.content?.licences?.first()).isEqualTo(transformToSarLicence(modelLicence))
 
     verify(licenceRepository, times(1)).findAllByNomsId("A12345")
     verify(licenceService, times(1)).getLicenceById(1L)
