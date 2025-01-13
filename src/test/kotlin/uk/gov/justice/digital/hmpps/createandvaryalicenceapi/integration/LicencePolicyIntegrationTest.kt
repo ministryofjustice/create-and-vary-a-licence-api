@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.test.json.JsonCompareMode.STRICT
 import java.nio.charset.StandardCharsets.UTF_8
 
 class LicencePolicyIntegrationTest : IntegrationTestBase() {
@@ -19,7 +20,7 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
-      .json(policy("V1"), true)
+      .json(policy("V1"), STRICT)
   }
 
   @Test
@@ -32,7 +33,7 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
-      .json(policy("V2"), true)
+      .json(policy("V2"), STRICT)
   }
 
   @Test
@@ -45,7 +46,7 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
-      .json(policy("V2_1"), true)
+      .json(policy("V2_1"), STRICT)
   }
 
   @Test
@@ -58,6 +59,6 @@ class LicencePolicyIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody()
-      .json(policy("V3"), true)
+      .json(policy("V3"), STRICT)
   }
 }

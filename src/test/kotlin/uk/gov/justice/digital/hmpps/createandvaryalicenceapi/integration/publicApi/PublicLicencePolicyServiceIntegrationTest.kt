@@ -1,10 +1,11 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.test.json.JsonCompareMode.STRICT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import java.nio.charset.StandardCharsets
@@ -12,7 +13,8 @@ import java.nio.charset.StandardCharsets
 class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
 
   fun policy(v: String) =
-    this.javaClass.getResourceAsStream("/test_data/publicApi/licencePolicy/policy$v.json")!!.bufferedReader(StandardCharsets.UTF_8).readText()
+    this.javaClass.getResourceAsStream("/test_data/publicApi/licencePolicy/policy$v.json")!!
+      .bufferedReader(StandardCharsets.UTF_8).readText()
 
   @Nested
   inner class `Get policy by version number` {
@@ -27,7 +29,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .json(policy("V1"), true)
+        .json(policy("V1"), STRICT)
     }
 
     @Test
@@ -40,7 +42,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .json(policy("V2"), true)
+        .json(policy("V2"), STRICT)
     }
 
     @Test
@@ -53,7 +55,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .json(policy("V2_1"), true)
+        .json(policy("V2_1"), STRICT)
     }
 
     @Test
@@ -66,7 +68,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .json(policy("V3"), true)
+        .json(policy("V3"), STRICT)
     }
 
     @Test
@@ -80,7 +82,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectBody(ErrorResponse::class.java)
         .returnResult().responseBody
 
-      Assertions.assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result?.userMessage).contains("Access Denied")
     }
 
     @Test
@@ -93,7 +95,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectStatus().isOk
         .expectHeader().contentType(MediaType.APPLICATION_JSON)
         .expectBody()
-        .json(policy("V3"), true)
+        .json(policy("V3"), STRICT)
     }
 
     @Test
@@ -107,7 +109,7 @@ class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
         .expectBody(ErrorResponse::class.java)
         .returnResult().responseBody
 
-      Assertions.assertThat(result?.userMessage).contains("Access Denied")
+      assertThat(result?.userMessage).contains("Access Denied")
     }
   }
 }

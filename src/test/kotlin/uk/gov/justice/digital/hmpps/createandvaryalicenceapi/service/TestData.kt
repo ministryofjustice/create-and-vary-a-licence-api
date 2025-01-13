@@ -301,6 +301,7 @@ object TestData {
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     homeDetentionCurfewActualDate = null,
     homeDetentionCurfewEligibilityDate = null,
+    homeDetentionCurfewEndDate = null,
     releaseDate = LocalDate.of(2021, 10, 22),
     confirmedReleaseDate = LocalDate.of(2021, 10, 22),
     conditionalReleaseDate = LocalDate.of(2021, 10, 22),

@@ -14,7 +14,20 @@
     "destination": "console"
   },
   "sampling": {
-    "percentage": 100
+    "percentage": 100,
+    "overrides": [
+      {
+        "telemetryType": "exception",
+        "attributes": [
+          {
+            "key": "exception.type",
+            "value": "java.util.concurrent.CompletionException",
+            "matchType": "strict"
+          }
+        ],
+        "percentage": 10
+      }
+    ]
   },
   "preview": {
     "sampling": {

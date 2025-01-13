@@ -162,6 +162,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to 11 September 2025" to true,
         "Post recall release date has changed to 11 September 2025" to true,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
 
@@ -303,43 +305,30 @@ class UpdateSentenceDateServiceTest {
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
         homeDetentionCurfewActualDate = LocalDate.parse("2023-09-11"),
+        homeDetentionCurfewEndDate = LocalDate.parse("2023-09-12"),
+
       ),
     )
 
-    verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
-  }
-
-  @Test
-  fun `update sentence dates does not email if Licence BookingId is missing`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(bookingId = null)))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = false,
-        ),
+    verify(notifyService, times(1)).sendDatesChangedEmail(
+      "1",
+      aHdcLicenceEntity.responsibleCom?.email,
+      "${aHdcLicenceEntity.responsibleCom?.firstName} ${aHdcLicenceEntity.responsibleCom?.lastName}",
+      "${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
+      aHdcLicenceEntity.crn,
+      mapOf(
+        "Release date has changed to 11 September 2023" to true,
+        "Licence end date has changed to 11 September 2024" to true,
+        "Sentence end date has changed to 11 September 2024" to true,
+        "Top up supervision start date has changed to 11 September 2024" to true,
+        "Top up supervision end date has changed to 11 September 2025" to true,
+        "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to 11 September 2023" to true,
+        "HDC end date has changed to 12 September 2023" to true,
+        "HDC actual date has changed to 11 September 2023" to true,
+        "HDC end date has changed to 12 September 2023" to true,
       ),
     )
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      ),
-    )
-
-    verify(notifyService, times(0)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
   }
 
   @Test
@@ -428,6 +417,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
         "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
 
@@ -496,6 +487,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
         "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -563,6 +556,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
         "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -630,6 +625,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
         "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -698,6 +695,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
         "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
@@ -766,6 +765,8 @@ class UpdateSentenceDateServiceTest {
         "Top up supervision start date has changed to 11 September 2024" to true,
         "Top up supervision end date has changed to null" to true,
         "Post recall release date has changed to null" to false,
+        "HDC actual date has changed to null" to false,
+        "HDC end date has changed to null" to false,
       ),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)

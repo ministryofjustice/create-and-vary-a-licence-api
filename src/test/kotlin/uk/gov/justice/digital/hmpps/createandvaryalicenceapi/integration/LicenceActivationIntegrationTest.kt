@@ -10,8 +10,8 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class LicenceActivationIntegrationTest : IntegrationTestBase() {
-  @MockBean
+  @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
 
   @Autowired
@@ -47,15 +47,16 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(7)).publishDomainEvent(capture())
 
-      assertThat(allValues).extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }.containsExactly(
-        tuple(LICENCE_ACTIVATED.value, "1"),
-        tuple(LICENCE_ACTIVATED.value, "2"),
-        tuple(LICENCE_ACTIVATED.value, "3"),
-        tuple(LICENCE_ACTIVATED.value, "7"),
-        tuple(LICENCE_INACTIVATED.value, "4"),
-        tuple(LICENCE_INACTIVATED.value, "5"),
-        tuple(LICENCE_INACTIVATED.value, "6"),
-      )
+      assertThat(allValues).extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }
+        .containsExactly(
+          tuple(LICENCE_ACTIVATED.value, "1"),
+          tuple(LICENCE_ACTIVATED.value, "2"),
+          tuple(LICENCE_ACTIVATED.value, "3"),
+          tuple(LICENCE_ACTIVATED.value, "7"),
+          tuple(LICENCE_INACTIVATED.value, "4"),
+          tuple(LICENCE_INACTIVATED.value, "5"),
+          tuple(LICENCE_INACTIVATED.value, "6"),
+        )
     }
 
     val activatedLicences = webTestClient.post()

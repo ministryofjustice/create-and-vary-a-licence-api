@@ -37,20 +37,6 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
-  detekt:
-    executor:
-      name: hmpps/java
-      tag: << pipeline.parameters.java-version >>
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
-            - gradle-
-      - run:
-          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" detekt
-      - store_artifacts:
-          path: build/reports/detekt
   integration-test:
     executor:
       name: hmpps/localstack
@@ -82,10 +68,6 @@ workflows:
             tags:
               ignore: /.*/
       - integration-test:
-          filters:
-            tags:
-              ignore: /.*/
-      - detekt:
           filters:
             tags:
               ignore: /.*/

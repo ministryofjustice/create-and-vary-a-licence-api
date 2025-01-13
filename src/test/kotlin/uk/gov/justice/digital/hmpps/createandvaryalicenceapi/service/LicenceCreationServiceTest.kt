@@ -75,6 +75,7 @@ class LicenceCreationServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -88,6 +89,7 @@ class LicenceCreationServiceTest {
     prisonerSearchApiClient,
     prisonApiClient,
     deliusApiClient,
+    releaseDateService,
   )
 
   @Nested
@@ -127,6 +129,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2022, 10, 10))
 
       service.createLicence(prisonNumber)
 
@@ -151,6 +154,7 @@ class LicenceCreationServiceTest {
         assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
         assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
         assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10, 10))
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
@@ -168,85 +172,6 @@ class LicenceCreationServiceTest {
         assertThat(crn).isEqualTo(anOffenderDetailResult.otherIds.crn)
         assertThat(pnc).isEqualTo(anOffenderDetailResult.otherIds.pncNumber)
         assertThat(responsibleCom).isEqualTo(com)
-      }
-    }
-
-    @Test
-    fun `populates licence with crd when crd override present`() {
-      val prisoner = prisonerSearchResult().copy(
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createLicence(prisonNumber)
-
-      val l = listOf(IN_PROGRESS)
-      assertThat(l).allMatch { it == IN_PROGRESS }
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with CRD date when CRD override is absent`() {
-      val prisoner = prisonerSearchResult().copy(
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDateOverrideDate = null,
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createLicence(prisonNumber)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is present`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDate = LocalDate.now().plusDays(2),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createLicence(prisonNumber)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is absent`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = null,
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
-
-      service.createLicence(prisonNumber)
-
-      argumentCaptor<CrdLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
       }
     }
 
@@ -704,6 +629,7 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult()
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2022, 10, 10))
 
       service.createHardStopLicence(prisonNumber)
 
@@ -727,6 +653,7 @@ class LicenceCreationServiceTest {
         assertThat(actualReleaseDate).isEqualTo(aPrisonerSearchResult.confirmedReleaseDate)
         assertThat(sentenceStartDate).isEqualTo(aPrisonerSearchResult.sentenceStartDate)
         assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
+        assertThat(licenceStartDate).isEqualTo(LocalDate.of(2022, 10, 10))
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
@@ -743,83 +670,6 @@ class LicenceCreationServiceTest {
         assertThat(crn).isEqualTo(anOffenderDetailResult.otherIds.crn)
         assertThat(pnc).isEqualTo(anOffenderDetailResult.otherIds.pncNumber)
         assertThat(responsibleCom).isEqualTo(com)
-      }
-    }
-
-    @Test
-    fun `populates licence with crd when crd override present`() {
-      val prisoner = prisonerSearchResult().copy(
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDateOverrideDate = LocalDate.now().plusDays(2),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createHardStopLicence(prisonNumber)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDateOverrideDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with CRD date when CRD override is absent`() {
-      val prisoner = prisonerSearchResult().copy(
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDateOverrideDate = null,
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createHardStopLicence(prisonNumber)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.conditionalReleaseDate).isEqualTo(prisoner.conditionalReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is present`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = LocalDate.now().plusDays(1),
-        conditionalReleaseDate = LocalDate.now().plusDays(2),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-
-      service.createHardStopLicence(prisonNumber)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.confirmedReleaseDate)
-      }
-    }
-
-    @Test
-    fun `Populates licence with start date when confirmed release date is absent`() {
-      val prisoner = prisonerSearchResult().copy(
-        confirmedReleaseDate = null,
-        conditionalReleaseDate = LocalDate.now().plusDays(1),
-      )
-      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(
-        listOf(prisoner),
-      )
-      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityOrPrisonOffenderManager)
-
-      service.createHardStopLicence(prisonNumber)
-
-      argumentCaptor<HardStopLicence>().apply {
-        verify(licenceRepository, times(1)).saveAndFlush(capture())
-        assertThat(firstValue.licenceStartDate).isEqualTo(prisoner.conditionalReleaseDate)
       }
     }
 
@@ -1310,6 +1160,7 @@ class LicenceCreationServiceTest {
     fun `service populates licence with expected fields`() {
       val aPrisonerSearchResult = prisonerSearchResult().copy(
         homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
+        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
@@ -1340,6 +1191,7 @@ class LicenceCreationServiceTest {
         assertThat(sentenceEndDate).isEqualTo(aPrisonerSearchResult.sentenceExpiryDate)
         assertThat(licenceExpiryDate).isEqualTo(aPrisonerSearchResult.licenceExpiryDate)
         assertThat(homeDetentionCurfewActualDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewActualDate)
+        assertThat(homeDetentionCurfewEndDate).isEqualTo(aPrisonerSearchResult.homeDetentionCurfewEndDate)
         assertThat(topupSupervisionStartDate).isEqualTo(aPrisonerSearchResult.topupSupervisionStartDate)
         assertThat(topupSupervisionExpiryDate).isEqualTo(aPrisonerSearchResult.topupSupervisionExpiryDate)
         assertThat(postRecallReleaseDate).isNull()
@@ -1373,7 +1225,8 @@ class LicenceCreationServiceTest {
         service.createHdcLicence(prisonNumber)
       }
 
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java).hasMessage("HDC Licence for A1234AA can not be of type PSS")
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("HDC Licence for A1234AA can not be of type PSS")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())

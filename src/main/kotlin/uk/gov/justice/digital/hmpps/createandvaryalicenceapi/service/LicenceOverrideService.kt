@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
@@ -113,6 +114,11 @@ class LicenceOverrideService(
         append("TUSSD ${licence.topupSupervisionStartDate} ")
         append("TUSED ${licence.topupSupervisionExpiryDate}")
         append("PRRD ${licence.postRecallReleaseDate}")
+        append("PRRD ${licence.postRecallReleaseDate}")
+        if (licence is HdcLicence) {
+          append("HDCAD ${licence.homeDetentionCurfewActualDate}")
+          append("HDCEndDate ${licence.homeDetentionCurfewEndDate}")
+        }
       },
     )
 
@@ -128,6 +134,10 @@ class LicenceOverrideService(
         append("TUSSD ${request.topupSupervisionStartDate} ")
         append("TUSED ${request.topupSupervisionExpiryDate}")
         append("PRRD ${request.postRecallReleaseDate}")
+        if (licence is HdcLicence) {
+          append("HDCAD ${request.homeDetentionCurfewActualDate}")
+          append("HDCEndDate ${request.homeDetentionCurfewEndDate}")
+        }
       },
     )
 
@@ -142,6 +152,8 @@ class LicenceOverrideService(
       topupSupervisionExpiryDate = request.topupSupervisionExpiryDate,
       postRecallReleaseDate = request.postRecallReleaseDate,
       homeDetentionCurfewActualDate = request.homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = request.homeDetentionCurfewEndDate,
+
       staffMember = staffMember,
     )
 

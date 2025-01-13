@@ -49,6 +49,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Change licence type`() {
     prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
@@ -119,6 +120,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Fail to change licence type due to invalid dates`() {
     prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()

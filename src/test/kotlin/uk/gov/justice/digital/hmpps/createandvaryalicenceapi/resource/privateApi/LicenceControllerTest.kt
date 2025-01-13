@@ -15,10 +15,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
@@ -71,13 +71,13 @@ import java.time.LocalDateTime
 @WebAppConfiguration
 class LicenceControllerTest {
 
-  @MockBean
+  @MockitoBean
   private lateinit var licenceService: LicenceService
 
-  @MockBean
+  @MockitoBean
   private lateinit var updateSentenceDateService: UpdateSentenceDateService
 
-  @MockBean
+  @MockitoBean
   private lateinit var licenceCreationService: LicenceCreationService
 
   @Autowired
@@ -179,7 +179,9 @@ class LicenceControllerTest {
 
   @Test
   fun `create a Hard Stop licence`() {
-    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+    whenever(licenceCreationService.createHardStopLicence(aCreateLicenceRequest.nomsId)).thenReturn(
+      LicenceCreationResponse(1),
+    )
 
     val result = mvc.perform(
       post("/licence/create")
