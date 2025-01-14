@@ -13,7 +13,7 @@ data class SarLicenceEvent(
   )
   val licenceId: Long? = null,
 
-  @Schema(description = "The licence event type", example = "LicenceEventType.VARIATION_SUBMITTED")
+  @Schema(description = "The licence event type", example = "Created")
   val eventType: LicenceEventType? = null,
 
   @Schema(
