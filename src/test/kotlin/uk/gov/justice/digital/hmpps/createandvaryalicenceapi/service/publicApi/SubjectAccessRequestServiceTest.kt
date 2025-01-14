@@ -8,8 +8,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -60,7 +58,7 @@ class SubjectAccessRequestServiceTest {
 
     assertThat(sarContent).isExactlyInstanceOf(SarContent::class.java)
 
-    assertThat(sarContent?.content?.licences?.first()).isEqualTo(transformToSarLicence(modelLicence))
+    assertThat(sarContent?.content?.sarLicences?.first()).isEqualTo(transformToSarLicence(modelLicence))
 
     verify(licenceRepository, times(1)).findAllByNomsId("A12345")
     verify(licenceService, times(1)).getLicenceById(1L)
@@ -206,21 +204,6 @@ class SubjectAccessRequestServiceTest {
       dateLastUpdated = LocalDateTime.of(2023, 10, 11, 12, 0, 0),
       updatedByUsername = "testupdater",
       createdBy = aCom,
-    )
-
-    val someAdditionalConditionData = listOf(
-      AdditionalConditionData(
-        id = 1,
-        dataField = "outOfBoundArea",
-        dataValue = "Bristol town centre",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
-      ),
-      AdditionalConditionData(
-        id = 2,
-        dataField = "outOfBoundFile",
-        dataValue = "test.pdf",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
-      ),
     )
   }
 }

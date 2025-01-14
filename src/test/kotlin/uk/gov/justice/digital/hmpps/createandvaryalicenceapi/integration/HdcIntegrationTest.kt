@@ -24,7 +24,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
   lateinit var licenceRepository: LicenceRepository
 
   @Nested
-  inner class GetHdcLicenceData {
+  inner class GetHdcSarLicenceData {
 
     @Test
     @Sql(

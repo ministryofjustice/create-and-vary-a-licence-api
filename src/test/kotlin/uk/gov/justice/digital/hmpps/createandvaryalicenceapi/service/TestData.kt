@@ -23,8 +23,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence as SarLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.StandardCondition as SarStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence as SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition as SarStandardCondition
 
 object TestData {
 
@@ -331,7 +331,7 @@ object TestData {
     standardPssConditions = emptyList(),
     additionalLicenceConditions = emptyList(),
     additionalPssConditions = emptyList(),
-    bespokeConditions = emptyList(),
+    sarBespokeConditions = emptyList(),
     createdByFullName = "X Y",
     licenceVersion = "1.0",
   )

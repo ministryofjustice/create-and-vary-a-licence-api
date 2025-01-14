@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarAuditEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarLicenceEvents
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AuditEvent as SarAuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.LicenceEvent as SarLicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent as SarAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceEvent as SarLicenceEvent
 
 @Service
 class SubjectAccessRequestService(
@@ -43,8 +43,8 @@ class SubjectAccessRequestService(
     log.debug("SAR licences: {}", sarLicences)
     return SarContent(
       Content(
-        licences = sarLicences,
-        auditEvents = auditEvents,
+        sarLicences = sarLicences,
+        sarAuditEvents = auditEvents,
         licencesEvents = licenceEvents,
       ),
     )

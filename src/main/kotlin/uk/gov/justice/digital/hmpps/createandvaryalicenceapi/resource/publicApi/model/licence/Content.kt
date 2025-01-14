@@ -3,20 +3,20 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.LicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceEvent
 
 @Schema(description = "The list of licences, audit events and licence events")
 data class Content(
   @Schema(description = "The list of licence events")
-  val licences: List<Licence>,
+  val sarLicences: List<SarLicence>,
 
   @Schema(description = "The list of audit events")
-  val auditEvents: List<AuditEvent>,
+  val sarAuditEvents: List<SarAuditEvent>,
 
   @Schema(description = "The list of licence events")
-  val licencesEvents: List<LicenceEvent>,
+  val licencesEvents: List<SarLicenceEvent>,
 )
 
 @Schema(description = "The Sar Content holds the prisoner details")

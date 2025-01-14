@@ -37,14 +37,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as Mo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AdditionalCondition as SarAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AdditionalConditionData as SarAdditionalConditionData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AdditionalConditionUploadSummary as SarAdditionalConditionUploadSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AuditEvent as SarAuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.BespokeCondition as SarBespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence as SarLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.LicenceEvent as SarLicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.StandardCondition as SarStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalCondition as SarAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionData as SarAdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAdditionalConditionUploadSummary as SarAdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent as SarAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarBespokeCondition as SarBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence as SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceEvent as SarLicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition as SarStandardCondition
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -479,7 +479,7 @@ fun transformToSarLicence(licence: ModelLicence) = SarLicence(
   standardPssConditions = licence.standardPssConditions?.transformToSarStandardConditions(),
   additionalLicenceConditions = licence.additionalLicenceConditions.transformToSarAdditionalConditions(),
   additionalPssConditions = licence.additionalPssConditions.transformToSarAdditionalConditions(),
-  bespokeConditions = licence.bespokeConditions.transformToSarBespokeCondition(),
+  sarBespokeConditions = licence.bespokeConditions.transformToSarBespokeCondition(),
   createdByFullName = licence.createdByFullName,
   licenceVersion = licence.licenceVersion,
 )
