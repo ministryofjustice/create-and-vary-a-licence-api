@@ -58,7 +58,7 @@ class SubjectAccessRequestServiceTest {
 
     assertThat(sarContent).isExactlyInstanceOf(SarContent::class.java)
 
-    assertThat(sarContent?.content?.sarLicences?.first()).isEqualTo(transformToSarLicence(modelLicence))
+    assertThat(sarContent?.content?.licences?.first()).isEqualTo(transformToSarLicence(modelLicence))
 
     verify(licenceRepository, times(1)).findAllByNomsId("A12345")
     verify(licenceService, times(1)).getLicenceById(1L)

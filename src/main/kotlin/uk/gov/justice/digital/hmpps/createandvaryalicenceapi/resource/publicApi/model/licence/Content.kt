@@ -10,10 +10,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 @Schema(description = "The list of licences, audit events and licence events")
 data class Content(
   @Schema(description = "The list of licence events")
-  val sarLicences: List<SarLicence>,
+  val licences: List<SarLicence>,
 
   @Schema(description = "The list of audit events")
-  val sarAuditEvents: List<SarAuditEvent>,
+  val auditEvents: List<SarAuditEvent>,
 
   @Schema(description = "The list of licence events")
   val licencesEvents: List<SarLicenceEvent>,

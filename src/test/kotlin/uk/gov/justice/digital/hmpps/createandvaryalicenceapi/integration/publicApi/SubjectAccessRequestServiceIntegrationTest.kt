@@ -46,7 +46,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     val result = resultList?.first()
 
-    assertThat(result?.content?.sarLicences?.first()).extracting(
+    assertThat(result?.content?.licences?.first()).extracting(
       "id",
       "nomsId",
       "bookingId",
@@ -61,7 +61,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
         ),
       )
 
-    assertThat(result?.content?.sarAuditEvents?.first()).extracting(
+    assertThat(result?.content?.auditEvents?.first()).extracting(
       "licenceId",
       "username",
       "eventType",

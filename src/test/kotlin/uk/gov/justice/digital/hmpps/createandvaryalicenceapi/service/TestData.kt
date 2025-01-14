@@ -331,7 +331,7 @@ object TestData {
     standardPssConditions = emptyList(),
     additionalLicenceConditions = emptyList(),
     additionalPssConditions = emptyList(),
-    sarBespokeConditions = emptyList(),
+    bespokeConditions = emptyList(),
     createdByFullName = "X Y",
     licenceVersion = "1.0",
   )

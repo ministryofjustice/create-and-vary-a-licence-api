@@ -479,7 +479,7 @@ fun transformToSarLicence(licence: ModelLicence) = SarLicence(
   standardPssConditions = licence.standardPssConditions?.transformToSarStandardConditions(),
   additionalLicenceConditions = licence.additionalLicenceConditions.transformToSarAdditionalConditions(),
   additionalPssConditions = licence.additionalPssConditions.transformToSarAdditionalConditions(),
-  sarBespokeConditions = licence.bespokeConditions.transformToSarBespokeCondition(),
+  bespokeConditions = licence.bespokeConditions.transformToSarBespokeCondition(),
   createdByFullName = licence.createdByFullName,
   licenceVersion = licence.licenceVersion,
 )
@@ -530,6 +530,30 @@ fun List<ModelStandardCondition>.transformToSarStandardConditions(): List<SarSta
 fun transformToSarStandardConditions(entity: ModelStandardCondition): SarStandardCondition = SarStandardCondition(
   code = entity.code,
   text = entity.text,
+)
+
+fun List<EntityAuditEvent>.transformToSarAuditEvents(): List<SarAuditEvent> = map(::transformToSarAuditEvents)
+
+fun transformToSarAuditEvents(entity: EntityAuditEvent): SarAuditEvent = SarAuditEvent(
+  licenceId = entity.licenceId,
+  eventTime = entity.eventTime,
+  username = entity.username,
+  fullName = entity.fullName,
+  eventType = entity.eventType,
+  summary = entity.summary,
+  detail = entity.detail,
+)
+
+fun List<EntityLicenceEvent>.transformToSarLicenceEvents(): List<SarLicenceEvent> = map(::transformToSarLicenceEvents)
+
+fun transformToSarLicenceEvents(entity: EntityLicenceEvent): SarLicenceEvent = SarLicenceEvent(
+  licenceId = entity.licenceId,
+  eventType = entity.eventType,
+  username = entity.username,
+  forenames = entity.forenames,
+  surname = entity.surname,
+  eventDescription = entity.eventDescription,
+  eventTime = entity.eventTime,
 )
 
 // Transform a list of entity standard conditions to model standard conditions
@@ -632,34 +656,10 @@ private fun transform(entity: EntityAuditEvent): ModelAuditEvent = ModelAuditEve
   detail = entity.detail,
 )
 
-fun List<EntityAuditEvent>.transformToSarAuditEvents(): List<SarAuditEvent> = map(::transformToSarAuditEvents)
-
-fun transformToSarAuditEvents(entity: EntityAuditEvent): SarAuditEvent = SarAuditEvent(
-  licenceId = entity.licenceId,
-  eventTime = entity.eventTime,
-  username = entity.username,
-  fullName = entity.fullName,
-  eventType = entity.eventType,
-  summary = entity.summary,
-  detail = entity.detail,
-)
-
 fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)
 
 fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent(
   id = entity.id,
-  licenceId = entity.licenceId,
-  eventType = entity.eventType,
-  username = entity.username,
-  forenames = entity.forenames,
-  surname = entity.surname,
-  eventDescription = entity.eventDescription,
-  eventTime = entity.eventTime,
-)
-
-fun List<EntityLicenceEvent>.transformToSarLicenceEvents(): List<SarLicenceEvent> = map(::transformToSarLicenceEvents)
-
-fun transformToSarLicenceEvents(entity: EntityLicenceEvent): SarLicenceEvent = SarLicenceEvent(
   licenceId = entity.licenceId,
   eventType = entity.eventType,
   username = entity.username,

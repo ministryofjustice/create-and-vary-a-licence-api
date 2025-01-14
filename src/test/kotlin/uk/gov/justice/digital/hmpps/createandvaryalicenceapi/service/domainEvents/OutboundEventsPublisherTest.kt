@@ -45,7 +45,7 @@ class OutboundEventsPublisherTest {
   )
 
   @Nested
-  inner class SarLicenceActivatedDomainEvent {
+  inner class LicenceActivatedDomainEvent {
     @Test
     fun `publishes licence activated event to SNS`() {
       whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
@@ -156,7 +156,7 @@ class OutboundEventsPublisherTest {
   }
 
   @Nested
-  inner class SarLicenceInactivatedDomainEvent {
+  inner class LicenceInactivatedDomainEvent {
     @Test
     fun `publishes licence inactivated event to SNS`() {
       whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)
@@ -273,7 +273,7 @@ class OutboundEventsPublisherTest {
   }
 
   @Nested
-  inner class SarLicenceDomainEventWithoutIdentifiers {
+  inner class LicenceDomainEventWithoutIdentifiers {
     @Test
     fun `licence activated event publishes to SNS without CRN`() {
       whenever(hmppsQueueServiceMock.findByTopicId("domainevents")).thenReturn(mockHmppsTopic)

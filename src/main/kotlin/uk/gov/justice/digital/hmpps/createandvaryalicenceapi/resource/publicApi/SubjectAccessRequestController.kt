@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -72,7 +71,6 @@ class SubjectAccessRequestController(private val subjectAccessRequestService: Su
     @RequestParam(name = "prn", required = false) prn: String?,
     @RequestParam(name = "crn", required = false) crn: String?,
   ): ResponseEntity<Any> {
-    val log = LoggerFactory.getLogger(this::class.java)
     val httpStatusWithIncorrectRequest = 209
     check(!(crn != null && prn != null)) { "Only supports search by single identifier." }
 
@@ -87,7 +85,6 @@ class SubjectAccessRequestController(private val subjectAccessRequestService: Su
     }
 
     val result = prn?.let { subjectAccessRequestService.getSarRecordsById(it) }
-    log.debug("result: {}", result)
     return if (result == null) {
       ResponseEntity.status(HttpStatus.NO_CONTENT).body(
         ErrorResponse(
