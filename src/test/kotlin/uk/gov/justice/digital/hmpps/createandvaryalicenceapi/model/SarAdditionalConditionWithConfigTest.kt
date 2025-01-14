@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapConditio
 class SarAdditionalConditionWithConfigTest {
 
   @Nested
-  inner class mapConditionsToConfig {
+  inner class `mapConditionsToConfig` {
     @Test
     fun `maps conditions and policy together`() {
       assertThat(
@@ -36,7 +36,7 @@ class SarAdditionalConditionWithConfigTest {
   }
 
   @Nested
-  inner class checkConditionsReadyToSubmit {
+  inner class `checkConditionsReadyToSubmit` {
     @Test
     fun `returns if there are no conditions on the licence`() {
       assertThat(
@@ -149,7 +149,7 @@ class SarAdditionalConditionWithConfigTest {
   }
 
   @Nested
-  inner class checkConditionReadyToSubmit {
+  inner class `checkConditionReadyToSubmit` {
     @Test
     fun `returns true for a condition that has inputs`() {
       assertThat(

@@ -10,10 +10,12 @@ enum class LicenceType {
   AP {
     override fun conditionTypes() = setOf(AP.name)
   },
+
   @Schema(description = "All purpose & post sentence supervision")
   AP_PSS {
     override fun conditionTypes() = setOf(AP.name, PSS.name)
   },
+
   @Schema(description = "post sentence supervision")
   PSS {
     override fun conditionTypes() = setOf(PSS.name)
@@ -23,17 +25,17 @@ enum class LicenceType {
   abstract fun conditionTypes(): Set<String>
 
   companion object {
-    fun getLicenceType(nomisRecord: PrisonerSearchPrisoner): LicenceType{
+    fun getLicenceType(nomisRecord: PrisonerSearchPrisoner): LicenceType {
       val topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate
-        return when {
-          nomisRecord.licenceExpiryDate == null && topupSupervisionExpiryDate == null -> AP
-          nomisRecord.licenceExpiryDate == null -> PSS
-          topupSupervisionExpiryDate == null || topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
-          else -> AP_PSS
-        }
+      return when {
+        nomisRecord.licenceExpiryDate == null && topupSupervisionExpiryDate == null -> AP
+        nomisRecord.licenceExpiryDate == null -> PSS
+        topupSupervisionExpiryDate == null || topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
+        else -> AP_PSS
+      }
     }
 
-    fun getLicenceType(nomisRecord: Prisoner): LicenceType{
+    fun getLicenceType(nomisRecord: Prisoner): LicenceType {
       val topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate
       return when {
         nomisRecord.licenceExpiryDate == null && topupSupervisionExpiryDate == null -> AP

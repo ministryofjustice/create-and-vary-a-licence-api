@@ -65,7 +65,7 @@ class SarLicencePolicyServiceTest() {
   }
 
   @Nested
-  inner class getAllSarAdditionalConditions {
+  inner class `getAllSarAdditionalConditions` {
     @Test
     fun `builds object containing conditions for all policy versions`() {
       val allPolicyVersions = licencePolicyService.allPolicies().map { it.version }
@@ -85,7 +85,7 @@ class SarLicencePolicyServiceTest() {
   }
 
   @Nested
-  inner class getHardStopSarAdditionalConditions {
+  inner class `getHardStopSarAdditionalConditions` {
     @Test
     fun `get Hardstop conditions for PSS`() {
       val pssLicence = TestData.createCrdLicence().copy(typeCode = PSS)
