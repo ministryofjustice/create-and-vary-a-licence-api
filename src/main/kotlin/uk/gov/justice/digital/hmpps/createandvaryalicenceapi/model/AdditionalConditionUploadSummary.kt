@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
@@ -14,27 +13,22 @@ data class AdditionalConditionUploadSummary(
     description = "The original file name uploaded for this condition on this licence",
     example = "exclusion-zone.pdf",
   )
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val filename: String? = null,
 
   @Schema(description = "The file type uploaded for this condition on this licence", example = "application/pdf")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val fileType: String? = null,
 
   @Schema(description = "The original file size in bytes", example = "27566")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val fileSize: Int = 0,
 
   @Schema(description = "The date and time this file was uploaded", example = "12/12/2021 10:35")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val uploadedTime: LocalDateTime = LocalDateTime.now(),
 
   @Schema(
     description = "The description provided in this document",
     example = "A description of the exclusion zone boundaries",
   )
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val description: String? = null,
 
   @Schema(
@@ -44,7 +38,6 @@ data class AdditionalConditionUploadSummary(
   val thumbnailImage: String? = null,
 
   @Schema(description = "The id which references the original file data and full size image", example = "9999")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val uploadDetailId: Long,
 ) {
   override fun equals(other: Any?): Boolean {

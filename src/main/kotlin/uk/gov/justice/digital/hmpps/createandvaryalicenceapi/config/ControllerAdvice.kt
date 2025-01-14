@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config
 
-import com.fasterxml.jackson.annotation.JsonView
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 
@@ -164,15 +162,10 @@ class ControllerAdvice {
 }
 
 data class ErrorResponse(
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val status: Int,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val errorCode: Int? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val userMessage: String? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val developerMessage: String? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val moreInfo: String? = null,
 ) {
   constructor(
@@ -186,17 +179,11 @@ data class ErrorResponse(
 }
 
 data class EntityAlreadyExistsResponse(
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val status: Int,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val errorCode: Int? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val userMessage: String? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val developerMessage: String? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val moreInfo: String? = null,
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val existingResourceId: Long,
 
 ) {

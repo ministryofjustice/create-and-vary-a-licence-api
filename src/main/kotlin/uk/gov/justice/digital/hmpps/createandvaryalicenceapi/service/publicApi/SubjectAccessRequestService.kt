@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
-import org.slf4j.LoggerFactory
 import jakarta.transaction.Transactional
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
@@ -23,6 +23,7 @@ class SubjectAccessRequestService(
   private val auditEventRepository: AuditEventRepository,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
+
   @Transactional
   fun getSarRecordsById(nomisId: String): SarContent? {
     val licences =

@@ -37,9 +37,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence as Mo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AdditionalCondition as SarAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AdditionalConditionData as SarAdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AdditionalConditionUploadSummary as SarAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.AuditEvent as SarAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.BespokeCondition as SarBespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence as SarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.LicenceEvent as SarLicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.StandardCondition as SarStandardCondition
 
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
@@ -469,13 +474,61 @@ fun transformToSarLicence(licence: ModelLicence) = SarLicence(
   dateCreated = licence.dateCreated,
   createdByUsername = licence.createdByUsername,
   updatedByUsername = licence.updatedByUsername,
-  standardLicenceConditions = licence.standardLicenceConditions,
-  standardPssConditions = licence.standardPssConditions,
-  additionalLicenceConditions = licence.additionalLicenceConditions,
-  additionalPssConditions = licence.additionalPssConditions,
-  bespokeConditions = licence.bespokeConditions,
+  standardLicenceConditions = licence.standardLicenceConditions?.transformToSarStandardConditions(),
+  standardPssConditions = licence.standardPssConditions?.transformToSarStandardConditions(),
+  additionalLicenceConditions = licence.additionalLicenceConditions.transformToSarAdditionalConditions(),
+  additionalPssConditions = licence.additionalPssConditions.transformToSarAdditionalConditions(),
+  bespokeConditions = licence.bespokeConditions.transformToSarBespokeCondition(),
   createdByFullName = licence.createdByFullName,
   licenceVersion = licence.licenceVersion,
+)
+
+fun List<ModelBespokeCondition>.transformToSarBespokeCondition(): List<SarBespokeCondition> =
+  map(::transformToSarBespokeCondition)
+
+fun transformToSarBespokeCondition(entity: ModelBespokeCondition): SarBespokeCondition = SarBespokeCondition(
+  text = entity.text,
+)
+
+fun List<ModelAdditionalCondition>.transformToSarAdditionalConditions(): List<SarAdditionalCondition> =
+  map(::transformToSarAdditionalConditions)
+
+fun transformToSarAdditionalConditions(entity: ModelAdditionalCondition): SarAdditionalCondition = SarAdditionalCondition(
+  code = entity.code,
+  version = entity.version,
+  category = entity.category,
+  expandedText = entity.expandedText,
+  data = entity.data.transformToSarAdditionalConditionData(),
+  uploadSummary = entity.uploadSummary.transformToSarAdditionalConditionUploadSummary(),
+  readyToSubmit = entity.readyToSubmit,
+)
+
+fun List<ModelAdditionalConditionUploadSummary>.transformToSarAdditionalConditionUploadSummary(): List<SarAdditionalConditionUploadSummary> =
+  map(::transformToSarAdditionalConditionUploadSummary)
+
+fun transformToSarAdditionalConditionUploadSummary(entity: ModelAdditionalConditionUploadSummary): SarAdditionalConditionUploadSummary = SarAdditionalConditionUploadSummary(
+  filename = entity.filename,
+  fileType = entity.fileType,
+  fileSize = entity.fileSize,
+  uploadedTime = entity.uploadedTime,
+  description = entity.description,
+  uploadDetailId = entity.uploadDetailId,
+)
+
+fun List<ModelAdditionalConditionData>.transformToSarAdditionalConditionData(): List<SarAdditionalConditionData> =
+  map(::transformToSarAdditionalConditionData)
+
+fun transformToSarAdditionalConditionData(entity: ModelAdditionalConditionData): SarAdditionalConditionData = SarAdditionalConditionData(
+  field = entity.field,
+  value = entity.value,
+)
+
+fun List<ModelStandardCondition>.transformToSarStandardConditions(): List<SarStandardCondition> =
+  map(::transformToSarStandardConditions)
+
+fun transformToSarStandardConditions(entity: ModelStandardCondition): SarStandardCondition = SarStandardCondition(
+  code = entity.code,
+  text = entity.text,
 )
 
 // Transform a list of entity standard conditions to model standard conditions

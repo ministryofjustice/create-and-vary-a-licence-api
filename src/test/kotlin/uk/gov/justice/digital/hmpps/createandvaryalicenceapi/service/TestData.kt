@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -18,14 +17,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
-
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence as SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Licence as SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.StandardCondition as SarStandardCondition
 
 object TestData {
 
@@ -56,19 +55,6 @@ object TestData {
     additionalConditionData = emptyList(),
     additionalConditionUploadSummary = emptyList(),
     conditionCategory = HARD_STOP_CONDITION.categoryShort,
-  )
-
-  fun sarAdditionalCondition(licence: Licence) = ModelAdditionalCondition(
-    id = 2L,
-    code = HARD_STOP_CONDITION.code,
-    version = licence.version!!,
-    category = HARD_STOP_CONDITION.categoryShort,
-    sequence = 1,
-    text = HARD_STOP_CONDITION.text,
-    expandedText = HARD_STOP_CONDITION.text,
-    data = emptyList(),
-    uploadSummary = emptyList(),
-    readyToSubmit = true,
   )
 
   fun someEntityStandardConditions(licence: Licence) =
@@ -328,13 +314,26 @@ object TestData {
     createdByUsername = "smills",
     dateLastUpdated = null,
     updatedByUsername = null,
-    standardLicenceConditions = someEntityStandardConditions(createCrdLicence()).transformToModelStandard("AP"),
+    standardLicenceConditions = listOf(
+      SarStandardCondition(
+        code = "goodBehaviour",
+        text = "Be of good behaviour",
+      ),
+      SarStandardCondition(
+        code = "notBreakLaw",
+        text = "Do not break any law",
+      ),
+      SarStandardCondition(
+        code = "attendMeetings",
+        text = "Attend meetings",
+      ),
+    ),
     standardPssConditions = emptyList(),
     additionalLicenceConditions = emptyList(),
     additionalPssConditions = emptyList(),
     bespokeConditions = emptyList(),
     createdByFullName = "X Y",
-    licenceVersion = "1.0"
+    licenceVersion = "1.0",
   )
 
   fun prisonerSearchResult() = PrisonerSearchPrisoner(

@@ -49,21 +49,27 @@
         "eventTime": "11/10/2023 12:00:00",
         "username": "USER",
         "fullName": "First Last",
-        "eventType": "USER_EVENT"
+        "eventType": "USER_EVENT",
+        "summary":"Summary1",
+        "detail":"Detail1"
       },
       {
         "licenceId": 1,
         "eventTime": "11/10/2023 12:01:00",
         "username": "USER",
         "fullName": "First Last",
-        "eventType": "USER_EVENT"
+        "eventType": "USER_EVENT",
+        "summary":"Summary2",
+        "detail":"Detail2"
       },
       {
         "licenceId": 1,
         "eventTime": "11/10/2023 12:02:00",
         "username": "CUSER",
         "fullName": "First Last",
-        "eventType": "SYSTEM_EVENT"
+        "eventType": "SYSTEM_EVENT",
+        "summary":"Summary3",
+        "detail":"Detail3"
       }
     ],
     "licencesEvents": [

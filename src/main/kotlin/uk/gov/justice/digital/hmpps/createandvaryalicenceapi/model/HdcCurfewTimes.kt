@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 
-import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -15,18 +14,14 @@ data class HdcCurfewTimes(
   val curfewTimesSequence: Int? = null,
 
   @Schema(description = "The day on which this curfew starts for this curfew time", example = "MONDAY")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val fromDay: DayOfWeek? = null,
 
   @Schema(description = "The time at which this curfew starts on the fromDay", example = "01:00:00")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val fromTime: LocalTime? = null,
 
   @Schema(description = "The day on which this curfew ends for this curfew time", example = "MONDAY")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val untilDay: DayOfWeek? = null,
 
   @Schema(description = "The time at which this curfew ends on the untilDay", example = "01:00:00")
-  @get:JsonView(Views.SubjectAccessRequest::class)
   val untilTime: LocalTime? = null,
 )
