@@ -77,6 +77,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve ca caseload`() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
       prisonApiMockServer.getHdcStatuses()
+      prisonApiMockServer.stubGetCourtOutcomes()
       prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
       deliusMockServer.stubGetStaffDetailsByUsername()
       probationSearchMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()

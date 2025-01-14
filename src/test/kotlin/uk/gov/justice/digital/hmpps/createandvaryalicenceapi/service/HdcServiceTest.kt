@@ -97,18 +97,18 @@ class HdcServiceTest {
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully when there are no curfew times`() {
+  fun `getHdcLicenceData returns HDC licence data successfully when no recorded curfew times`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
       someHdcLicenceData.copy(
-        curfewTimes = emptyList(),
+        curfewTimes = null,
       ),
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
     assertThat(result?.firstNightCurfewHours).isEqualTo(aSetOfFirstNightCurfewHours)
-    assertThat(result?.curfewTimes).isEmpty()
+    assertThat(result?.curfewTimes).isNull()
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
   }
 
@@ -140,8 +140,8 @@ class HdcServiceTest {
     )
 
     val aSetOfFirstNightCurfewHours = FirstNight(
-      "16:00",
-      "08:00",
+      LocalTime.of(16, 0),
+      LocalTime.of(8, 0),
     )
 
     val anEntitySetOfCurfewTimes =

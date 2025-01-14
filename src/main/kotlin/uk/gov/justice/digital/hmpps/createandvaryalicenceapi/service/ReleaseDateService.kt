@@ -107,6 +107,22 @@ class ReleaseDateService(
     }
   }
 
+  fun getLicenceStartDates(records: List<PrisonerSearchPrisoner?>): Map<String, LocalDate?> {
+    val prisoners = records.filterNotNull()
+    val iS91BookingIds: List<Long> = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
+    return prisoners.associate {
+      it.prisonerNumber to if (
+        ALT_OUTCOME_CODES.contains(it.legalStatus) ||
+        it.paroleEligibilityDate != null && it.paroleEligibilityDate.isBefore(LocalDate.now()) ||
+        iS91BookingIds.contains(it.bookingId?.toLong())
+      ) {
+        it.determineAltLicenceStartDate()
+      } else {
+        it.determineLicenceStartDate()
+      }
+    }
+  }
+
   private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
     val date =
       if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate

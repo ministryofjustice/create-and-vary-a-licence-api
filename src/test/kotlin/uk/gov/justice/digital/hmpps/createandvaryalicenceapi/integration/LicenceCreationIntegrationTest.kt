@@ -54,6 +54,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Create a CRD licence`() {
     prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
@@ -94,6 +95,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   )
   fun `Cannot create two inflight licences`() {
     prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
@@ -160,6 +162,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   )
   fun `Create a Hard Stop licence`() {
     prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
@@ -203,6 +206,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   fun `Create a Hard Stop licence which is replacing timed out licence`() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetCourtOutcomes()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
 

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
@@ -1204,6 +1205,63 @@ class ReleaseDateServiceTest {
         whenever(iS91DeterminationService.isIS91Case(nomisRecord)).thenReturn(true)
 
         assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
+      }
+    }
+
+    @Nested
+    inner class `getLicenceStartDates - bulk calculations`() {
+      private val cases = listOf(
+        // IS91 Legal status
+        prisonerSearchResult().copy(
+          prisonerNumber = "I9123SL",
+          bookingId = "234567",
+          legalStatus = "IMMIGRATION_DETAINEE",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        ),
+        // Remand legal status
+        prisonerSearchResult().copy(
+          prisonerNumber = "R1234MD",
+          bookingId = "345678",
+          legalStatus = "REMAND",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        ),
+        // Convicted unsentenced legal status
+        prisonerSearchResult().copy(
+          prisonerNumber = "C1234NV",
+          bookingId = "456789",
+          legalStatus = "CONVICTED_UNSENTENCED",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        ),
+        // IS91 booking ID
+        prisonerSearchResult().copy(
+          prisonerNumber = "I9123SB",
+          bookingId = "567890",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        ),
+        // Standard case
+        prisonerSearchResult().copy(
+          prisonerNumber = "S1234TD",
+          bookingId = "678901",
+          conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+          confirmedReleaseDate = LocalDate.of(2021, 10, 20),
+        ),
+      )
+
+      @Test
+      fun `returns a map of nomis ID to licence start date`() {
+        whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(any())).thenReturn(listOf(567890))
+        val expectedResponse = mapOf(
+          "I9123SL" to LocalDate.of(2021, 10, 21),
+          "R1234MD" to LocalDate.of(2021, 10, 21),
+          "C1234NV" to LocalDate.of(2021, 10, 21),
+          "I9123SB" to LocalDate.of(2021, 10, 21),
+          "S1234TD" to LocalDate.of(2021, 10, 20),
+        )
+        assertThat(service.getLicenceStartDates(cases)).isEqualTo(expectedResponse)
       }
     }
   }

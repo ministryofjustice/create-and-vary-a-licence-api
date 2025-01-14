@@ -16,6 +16,7 @@ data class SentenceChanges(
   val tusedChanged: Boolean,
   val prrdChanged: Boolean,
   val hdcadChanged: Boolean,
+  val hdcEndDateChanged: Boolean,
   val isMaterial: Boolean,
 )
 
@@ -28,11 +29,27 @@ fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest): Sentenc
   val tusedChanged =
     nullableDatesDiffer(newSentence.topupSupervisionExpiryDate, this.topupSupervisionExpiryDate)
   val prrdChanged = nullableDatesDiffer(newSentence.postRecallReleaseDate, this.postRecallReleaseDate)
-  val hdcadChanged = this is HdcLicence && nullableDatesDiffer(newSentence.homeDetentionCurfewActualDate, this.homeDetentionCurfewActualDate)
+  val hdcadChanged = this is HdcLicence && nullableDatesDiffer(
+    newSentence.homeDetentionCurfewActualDate,
+    this.homeDetentionCurfewActualDate,
+  )
+  val hdcEndDateChanged =
+    this is HdcLicence && nullableDatesDiffer(newSentence.homeDetentionCurfewEndDate, this.homeDetentionCurfewEndDate)
 
-  val isMaterial = (lsdChanged || ledChanged || tussdChanged || tusedChanged || prrdChanged || hdcadChanged || (sedChanged && this.statusCode == LicenceStatus.APPROVED))
+  val isMaterial =
+    (lsdChanged || ledChanged || tussdChanged || tusedChanged || prrdChanged || hdcadChanged || hdcEndDateChanged || (sedChanged && this.statusCode == LicenceStatus.APPROVED))
 
-  return SentenceChanges(lsdChanged, ledChanged, sedChanged, tussdChanged, tusedChanged, prrdChanged, hdcadChanged, isMaterial)
+  return SentenceChanges(
+    lsdChanged,
+    ledChanged,
+    sedChanged,
+    tussdChanged,
+    tusedChanged,
+    prrdChanged,
+    hdcadChanged,
+    hdcEndDateChanged,
+    isMaterial,
+  )
 }
 
 /**
