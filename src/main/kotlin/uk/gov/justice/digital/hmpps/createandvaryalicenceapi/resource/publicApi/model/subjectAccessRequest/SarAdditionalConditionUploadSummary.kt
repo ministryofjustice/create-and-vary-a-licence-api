@@ -28,7 +28,4 @@ data class SarAdditionalConditionUploadSummary(
     example = "A description of the exclusion zone boundaries",
   )
   val description: String? = null,
-
-  @Schema(description = "The id which references the original file data and full size image", example = "9999")
-  val uploadDetailId: Long,
 )

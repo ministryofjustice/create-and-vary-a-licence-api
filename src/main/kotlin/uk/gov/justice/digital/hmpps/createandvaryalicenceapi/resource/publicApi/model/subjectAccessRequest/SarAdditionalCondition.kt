@@ -20,12 +20,6 @@ data class SarAdditionalCondition(
   )
   val expandedText: String? = null,
 
-  @Schema(description = "The list of data items entered for this additional condition")
-  val data: List<SarAdditionalConditionData> = emptyList(),
-
   @Schema(description = "The list of file upload summary for this additional condition")
   val uploadSummary: List<SarAdditionalConditionUploadSummary> = emptyList(),
-
-  @Schema(description = "Whether the condition is ready to submit for approval")
-  val readyToSubmit: Boolean?,
 )

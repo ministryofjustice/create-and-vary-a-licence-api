@@ -2,9 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service1")
@@ -13,11 +10,11 @@ data class SarLicence(
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
 
-  @Schema(description = "The licence type code", example = "AP")
-  val typeCode: LicenceType = LicenceType.AP,
+  @Schema(description = "The licence type code", example = "All purpose")
+  val typeCode: SarLicenceType = SarLicenceType.AP,
 
-  @Schema(description = "The current status code for this licence", example = "IN_PROGRESS")
-  val statusCode: LicenceStatus?,
+  @Schema(description = "The current status code for this licence", example = "The licence is in progress and has not yet been submitted for approval")
+  val statusCode: SarLicenceStatus?,
 
   @Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
   val nomsId: String?,
@@ -32,8 +29,8 @@ data class SarLicence(
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
   val appointmentTime: LocalDateTime?,
 
-  @Schema(description = "The type of appointment time of the initial appointment", example = "SPECIFIC_DATE_TIME")
-  val appointmentTimeType: AppointmentTimeType?,
+  @Schema(description = "The type of appointment time of the initial appointment", example = "Specific date time")
+  val appointmentTimeType: SarAppointmentTimeType?,
 
   @Schema(description = "The address of initial appointment", example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN")
   val appointmentAddress: String?,

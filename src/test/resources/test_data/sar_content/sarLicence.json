@@ -3,8 +3,8 @@
     "licences": [
       {
         "id": 1,
-        "typeCode": "AP",
-        "statusCode": "IN_PROGRESS",
+        "typeCode": "All purpose",
+        "statusCode": "The licence is in progress and has not yet been submitted for approval",
         "nomsId": "A1234AA",
         "bookingId": 54321,
         "appointmentPerson": null,
@@ -49,7 +49,7 @@
         "eventTime": "11/10/2023 12:00:00",
         "username": "USER",
         "fullName": "First Last",
-        "eventType": "USER_EVENT",
+        "eventType": "User event",
         "summary":"Summary1",
         "detail":"Detail1"
       },
@@ -58,7 +58,7 @@
         "eventTime": "11/10/2023 12:01:00",
         "username": "USER",
         "fullName": "First Last",
-        "eventType": "USER_EVENT",
+        "eventType": "User event",
         "summary":"Summary2",
         "detail":"Detail2"
       },
@@ -67,7 +67,7 @@
         "eventTime": "11/10/2023 12:02:00",
         "username": "CUSER",
         "fullName": "First Last",
-        "eventType": "SYSTEM_EVENT",
+        "eventType": "System event",
         "summary":"Summary3",
         "detail":"Detail3"
       }
@@ -75,7 +75,7 @@
     "licencesEvents": [
       {
         "licenceId": 1,
-        "eventType": "SUBMITTED",
+        "eventType": "Submitted",
         "username": "smills",
         "forenames": "Stephen",
         "surname": "Mills",

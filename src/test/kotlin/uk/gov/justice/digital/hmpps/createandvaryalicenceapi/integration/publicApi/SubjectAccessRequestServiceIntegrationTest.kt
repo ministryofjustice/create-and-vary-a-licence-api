@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.Integra
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
@@ -72,7 +72,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
         listOf(
           1L,
           "USER",
-          AuditEventType.USER_EVENT,
+          SarAuditEventType.USER_EVENT,
           "Summary1",
           "Detail1",
         ),
