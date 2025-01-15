@@ -98,6 +98,7 @@
     <ID>TooManyFunctions:ReleaseDateService.kt$ReleaseDateService</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
+    <ID>TooManyFunctions:ToSarModelTransfer.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.ToSarModelTransfer.kt</ID>
     <ID>TooManyFunctions:VariationLicence.kt$VariationLicence : Licence</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
   </CurrentIssues>
