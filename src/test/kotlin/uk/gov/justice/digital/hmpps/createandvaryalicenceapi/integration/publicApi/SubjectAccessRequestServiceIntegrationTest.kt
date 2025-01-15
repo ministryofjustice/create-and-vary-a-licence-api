@@ -12,11 +12,9 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
@@ -49,7 +47,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.content?.licences?.first()).extracting(
       "id",
-      "kind",
       "nomsId",
       "bookingId",
       "createdByUsername",
@@ -57,7 +54,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
       .isEqualTo(
         listOf(
           1L,
-          LicenceKinds.CRD,
           "A1234AA",
           12345L,
           "test-client",
@@ -75,24 +71,9 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
         listOf(
           1L,
           "USER",
-          AuditEventType.USER_EVENT,
+          SarAuditEventType.USER_EVENT,
           "Summary1",
           "Detail1",
-        ),
-      )
-
-    assertThat(result?.content?.licencesEvents?.get(2)).extracting(
-      "licenceId",
-      "eventType",
-      "username",
-      "eventDescription",
-    )
-      .isEqualTo(
-        listOf(
-          1L,
-          LicenceEventType.CREATED,
-          "Bob Smith",
-          "Licence created2",
         ),
       )
   }

@@ -72,6 +72,7 @@
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
+    <ID>NewLineAtEndOfFile:LicenceType.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.kt</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
     <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
@@ -98,6 +99,7 @@
     <ID>TooManyFunctions:ReleaseDateService.kt$ReleaseDateService</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
+    <ID>TooManyFunctions:ToSarModelTransfer.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.ToSarModelTransfer.kt</ID>
     <ID>TooManyFunctions:VariationLicence.kt$VariationLicence : Licence</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
   </CurrentIssues>

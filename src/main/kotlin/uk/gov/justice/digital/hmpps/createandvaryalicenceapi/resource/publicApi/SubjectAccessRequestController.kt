@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
-import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -18,9 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Views
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
 
 @RestController
@@ -29,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.S
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class SubjectAccessRequestController(private val subjectAccessRequestService: SubjectAccessRequestService) {
   @GetMapping(value = ["/subject-access-request"])
-  @JsonView(Views.SubjectAccessRequest::class)
   @ResponseBody
   @Operation(
     summary = "Get a list of licences and audits summaries matching the nomis Prison Reference Number(prn).",

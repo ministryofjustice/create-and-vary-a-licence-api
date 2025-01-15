@@ -14,6 +14,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
@@ -291,6 +295,48 @@ object TestData {
       curfewTimes = emptyList(),
     )
   }
+
+  fun createSarLicence() = SarLicence(
+    id = 1,
+    typeCode = SarLicenceType.AP,
+    statusCode = SarLicenceStatus.IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingId = 54321,
+    appointmentPerson = null,
+    appointmentTime = null,
+    appointmentTimeType = null,
+    appointmentAddress = null,
+    appointmentContact = null,
+    approvedDate = null,
+    approvedByUsername = null,
+    submittedDate = null,
+    approvedByName = null,
+    supersededDate = null,
+    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    createdByUsername = "smills",
+    dateLastUpdated = null,
+    updatedByUsername = null,
+    standardLicenceConditions = listOf(
+      SarStandardCondition(
+        code = "goodBehaviour",
+        text = "Be of good behaviour",
+      ),
+      SarStandardCondition(
+        code = "notBreakLaw",
+        text = "Do not break any law",
+      ),
+      SarStandardCondition(
+        code = "attendMeetings",
+        text = "Attend meetings",
+      ),
+    ),
+    standardPssConditions = emptyList(),
+    additionalLicenceConditions = emptyList(),
+    additionalPssConditions = emptyList(),
+    bespokeConditions = emptyList(),
+    createdByFullName = "X Y",
+    licenceVersion = "1.0",
+  )
 
   fun prisonerSearchResult() = PrisonerSearchPrisoner(
     prisonerNumber = "A1234AA",

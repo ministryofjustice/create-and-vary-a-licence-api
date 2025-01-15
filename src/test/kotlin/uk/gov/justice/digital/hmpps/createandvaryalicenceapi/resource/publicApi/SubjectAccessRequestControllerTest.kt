@@ -24,20 +24,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Content
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarAuditEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toCrd
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toHardstop
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.nio.charset.StandardCharsets
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @ExtendWith(SpringExtension::class)
@@ -71,84 +65,20 @@ class SubjectAccessRequestControllerTest {
 
   @Test
   fun `get a Subject Access Request Content for CRD Licence`() {
+    val licences = listOf(TestData.createSarLicence())
+    val auditEvents = aListOfAuditEvents.transformToSarAuditEvents()
     whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
       SarContent(
         Content(
-          licences = listOf(
-            toCrd(
-              TestData.createCrdLicence(),
-              LocalDate.now(),
-              isEligibleForEarlyRelease = false,
-              isInHardStopPeriod = false,
-              isDueForEarlyRelease = false,
-              isDueToBeReleasedInTheNextTwoWorkingDays = false,
-              hardStopDate = null,
-              hardStopWarningDate = null,
-              conditionSubmissionStatus = emptyMap(),
-            ),
-          ),
-          auditEvents = aListOfAuditEvents,
-          licencesEvents = aListOfLicenceEvents,
+          licences,
+          auditEvents,
         ),
       ),
     )
 
     mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
       .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent("crdLicence"), STRICT))
-      .andReturn()
-  }
-
-  @Test
-  fun `get a Subject Access Request Content for Variation Licence`() {
-    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
-      SarContent(
-        Content(
-          licences = listOf(
-            toVariation(
-              TestData.createVariationLicence(),
-              LocalDate.now(),
-              false,
-              emptyMap(),
-            ),
-          ),
-          auditEvents = aListOfAuditEvents,
-          licencesEvents = aListOfLicenceEvents,
-        ),
-      ),
-    )
-    mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent("variationLicence"), STRICT))
-      .andReturn()
-  }
-
-  @Test
-  fun `get a Subject Access Request Content for Hardstop Licence`() {
-    whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
-      SarContent(
-        Content(
-          licences = listOf(
-            toHardstop(
-              TestData.createHardStopLicence(),
-              LocalDate.now(),
-              isEligibleForEarlyRelease = false,
-              isInHardStopPeriod = false,
-              isDueForEarlyRelease = false,
-              isDueToBeReleasedInTheNextTwoWorkingDays = false,
-              hardStopDate = null,
-              hardStopWarningDate = null,
-              conditionSubmissionStatus = mapOf(HARD_STOP_CONDITION.code to true),
-            ),
-          ),
-          auditEvents = aListOfAuditEvents,
-          licencesEvents = aListOfLicenceEvents,
-        ),
-      ),
-    )
-    mvc.perform(get("/subject-access-request?prn=G4169UO").accept(MediaType.APPLICATION_JSON))
-      .andExpect(status().isOk)
-      .andExpect(content().json(serializedSarContent("hardstopLicence"), STRICT))
+      .andExpect(content().json(serializedSarContent("sarLicence"), STRICT))
       .andReturn()
   }
 
@@ -220,18 +150,6 @@ class SubjectAccessRequestControllerTest {
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Summary3",
         detail = "Detail3",
-      ),
-    )
-
-    val aListOfLicenceEvents = listOf(
-      LicenceEvent(
-        licenceId = 1,
-        eventType = LicenceEventType.SUBMITTED,
-        username = "smills",
-        forenames = "Stephen",
-        surname = "Mills",
-        eventDescription = "Licence submitted for approval",
-        eventTime = LocalDateTime.of(2023, 10, 11, 12, 3),
       ),
     )
   }

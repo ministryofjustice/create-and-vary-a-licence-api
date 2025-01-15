@@ -1,16 +1,12 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotEmpty
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
 
 @Schema(description = "Describes an audit event request")
-data class AuditEvent(
-  @Schema(description = "The internal ID of the audit event", example = "1234")
-  val id: Long? = null,
-
+data class SarAuditEvent(
   @Schema(
     description = "The internal ID of the licence that this event related to, or null if unrelated to a licence",
     example = "1234",
@@ -33,8 +29,8 @@ data class AuditEvent(
   )
   val fullName: String? = "SYSTEM",
 
-  @Schema(description = "The event type. One of SYSTEM_EVENT or USER_EVENT", example = "USER_EVENT")
-  val eventType: AuditEventType = AuditEventType.USER_EVENT,
+  @Schema(description = "The event type. One of SYSTEM_EVENT or USER_EVENT", example = "User event")
+  val eventType: SarAuditEventType = SarAuditEventType.USER_EVENT,
 
   @Schema(description = "A summary of the action taken", example = "Updated a bespoke condition")
   @NotEmpty

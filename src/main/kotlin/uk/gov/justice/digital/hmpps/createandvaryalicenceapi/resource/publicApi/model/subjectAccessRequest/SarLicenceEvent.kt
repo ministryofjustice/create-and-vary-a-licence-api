@@ -1,23 +1,19 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.time.LocalDateTime
 
 @Schema(description = "Describes an event that was related to a licence")
-data class LicenceEvent(
-  @Schema(description = "The internal ID of the licence event", example = "1234")
-  val id: Long? = null,
-
+data class SarLicenceEvent(
   @Schema(
     description = "The internal ID of the licence that this event relates to",
     example = "1234",
   )
   val licenceId: Long? = null,
 
-  @Schema(description = "The licence event type", example = "LicenceEventType.VARIATION_SUBMITTED")
-  val eventType: LicenceEventType? = null,
+  @Schema(description = "The licence event type", example = "Created")
+  val eventType: SarLicenceEventType? = null,
 
   @Schema(
     description = "The username related to this event or SYSTEM if an automated event",
