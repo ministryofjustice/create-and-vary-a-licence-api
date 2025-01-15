@@ -18,24 +18,18 @@ enum class LicenceType {
   abstract fun conditionTypes(): Set<String>
 
   companion object {
-    fun getLicenceType(nomisRecord: PrisonerSearchPrisoner): LicenceType {
-      val topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate
-      return when {
-        nomisRecord.licenceExpiryDate == null && topupSupervisionExpiryDate == null -> AP
-        nomisRecord.licenceExpiryDate == null -> PSS
-        topupSupervisionExpiryDate == null || topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
-        else -> AP_PSS
-      }
+    fun getLicenceType(nomisRecord: PrisonerSearchPrisoner) = when {
+      nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP
+      nomisRecord.licenceExpiryDate == null -> PSS
+      nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
+      else -> AP_PSS
     }
 
-    fun getLicenceType(nomisRecord: Prisoner): LicenceType {
-      val topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate
-      return when {
-        nomisRecord.licenceExpiryDate == null && topupSupervisionExpiryDate == null -> AP
-        nomisRecord.licenceExpiryDate == null -> PSS
-        topupSupervisionExpiryDate == null || topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
-        else -> AP_PSS
-      }
+    fun getLicenceType(nomisRecord: Prisoner) = when {
+      nomisRecord.licenceExpiryDate == null && nomisRecord.topupSupervisionExpiryDate == null -> AP
+      nomisRecord.licenceExpiryDate == null -> PSS
+      nomisRecord.topupSupervisionExpiryDate == null || nomisRecord.topupSupervisionExpiryDate <= nomisRecord.licenceExpiryDate -> AP
+      else -> AP_PSS
     }
   }
 }
