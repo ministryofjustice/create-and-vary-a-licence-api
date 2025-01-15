@@ -4,7 +4,7 @@
       {
         "id": 1,
         "typeCode": "All purpose",
-        "statusCode": "The licence is in progress and has not yet been submitted for approval",
+        "statusCode": "In progress",
         "nomsId": "A1234AA",
         "bookingId": 54321,
         "appointmentPerson": null,

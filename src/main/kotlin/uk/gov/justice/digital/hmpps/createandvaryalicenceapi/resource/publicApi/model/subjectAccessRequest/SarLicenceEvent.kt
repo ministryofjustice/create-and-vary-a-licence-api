@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.time.LocalDateTime
 
 @Schema(description = "Describes an event that was related to a licence")
@@ -14,7 +13,7 @@ data class SarLicenceEvent(
   val licenceId: Long? = null,
 
   @Schema(description = "The licence event type", example = "Created")
-  val eventType: LicenceEventType? = null,
+  val eventType: SarLicenceEventType? = null,
 
   @Schema(
     description = "The username related to this event or SYSTEM if an automated event",

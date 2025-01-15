@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
-class SarLicenceTypeTest {
+class LicenceTypeTest {
   val companion = LicenceType.Companion
 
   @Nested

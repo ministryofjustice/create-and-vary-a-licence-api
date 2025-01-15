@@ -18,7 +18,7 @@ data class SarAdditionalCondition(
     description = "The condition text with the users data inserted into the template",
     example = "You must not enter the location Tesco Superstore",
   )
-  val expandedText: String? = null,
+  val text: String? = null,
 
   @Schema(description = "The list of file upload summary for this additional condition")
   val uploadSummary: List<SarAdditionalConditionUploadSummary> = emptyList(),

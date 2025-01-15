@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Content
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarAuditEvents
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarLicenceEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarAuditEvents
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarLicenceEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEvent as SarAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceEvent as SarLicenceEvent
 
@@ -31,7 +31,7 @@ class SubjectAccessRequestService(
     val licenceIds = licences.map { it.id }
     val auditEvents = getAuditEvents(licenceIds)
     val licenceEvents = getLicenceEvents(licenceIds)
-    val sarLicences = licences.map { transformToSarLicence(licenceService.getLicenceById(it.id)) }
+    val sarLicences = licences.map { licenceService.getLicenceById(it.id) }.transformToSarLicence()
 
     return SarContent(
       Content(

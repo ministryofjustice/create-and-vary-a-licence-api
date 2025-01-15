@@ -13,10 +13,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToSarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -155,7 +155,6 @@ class SubjectAccessRequestServiceTest {
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       dateCreated = LocalDateTime.of(2023, 10, 11, 11, 30),
       dateLastUpdated = LocalDateTime.of(2023, 10, 11, 11, 30),
-
       comUsername = "X12345",
       comStaffId = 12345,
       comEmail = "stephen.mills@nps.gov.uk",

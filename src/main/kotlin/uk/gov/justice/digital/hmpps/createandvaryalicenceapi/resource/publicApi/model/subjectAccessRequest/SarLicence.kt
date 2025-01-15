@@ -13,7 +13,7 @@ data class SarLicence(
   @Schema(description = "The licence type code", example = "All purpose")
   val typeCode: SarLicenceType = SarLicenceType.AP,
 
-  @Schema(description = "The current status code for this licence", example = "The licence is in progress and has not yet been submitted for approval")
+  @Schema(description = "The current status code for this licence", example = "In progress")
   val statusCode: SarLicenceStatus?,
 
   @Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
@@ -83,7 +83,7 @@ data class SarLicence(
   val additionalPssConditions: List<SarAdditionalCondition> = emptyList(),
 
   @Schema(description = "The list of bespoke conditions on this licence")
-  val bespokeConditions: List<SarBespokeCondition> = emptyList(),
+  val bespokeConditions: List<String> = emptyList(),
 
   @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
   val createdByFullName: String?,
