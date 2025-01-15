@@ -31,7 +31,6 @@ class SubjectAccessRequestServiceTest {
   private val service = SubjectAccessRequestService(
     licenceService,
     licenceRepository,
-    licenceEventRepository,
     auditEventRepository,
   )
 

@@ -25,15 +25,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.Content
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarAuditEvents
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarLicenceEvents
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.SubjectAccessRequestService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
@@ -70,13 +67,11 @@ class SubjectAccessRequestControllerTest {
   fun `get a Subject Access Request Content for CRD Licence`() {
     val licences = listOf(TestData.createSarLicence())
     val auditEvents = aListOfAuditEvents.transformToSarAuditEvents()
-    val licencesEvents = aListOfLicenceEvents.transformToSarLicenceEvents()
     whenever(subjectAccessRequestService.getSarRecordsById("G4169UO")).thenReturn(
       SarContent(
         Content(
           licences,
           auditEvents,
-          licencesEvents,
         ),
       ),
     )
@@ -155,18 +150,6 @@ class SubjectAccessRequestControllerTest {
         eventType = AuditEventType.SYSTEM_EVENT,
         summary = "Summary3",
         detail = "Detail3",
-      ),
-    )
-
-    val aListOfLicenceEvents = listOf(
-      LicenceEvent(
-        licenceId = 1,
-        eventType = LicenceEventType.SUBMITTED,
-        username = "smills",
-        forenames = "Stephen",
-        surname = "Mills",
-        eventDescription = "Licence submitted for approval",
-        eventTime = LocalDateTime.of(2023, 10, 11, 12, 3),
       ),
     )
   }

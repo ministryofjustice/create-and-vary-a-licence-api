@@ -71,17 +71,6 @@
         "summary":"Summary3",
         "detail":"Detail3"
       }
-    ],
-    "licencesEvents": [
-      {
-        "licenceId": 1,
-        "eventType": "Submitted",
-        "username": "smills",
-        "forenames": "Stephen",
-        "surname": "Mills",
-        "eventDescription": "Licence submitted for approval",
-        "eventTime": "11/10/2023 12:03:00"
-      }
     ]
   }
 }

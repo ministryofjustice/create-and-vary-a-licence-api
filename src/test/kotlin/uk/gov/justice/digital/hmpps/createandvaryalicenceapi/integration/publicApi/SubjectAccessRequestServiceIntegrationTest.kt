@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarAuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceEventType
 
 class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
@@ -75,21 +74,6 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
           SarAuditEventType.USER_EVENT,
           "Summary1",
           "Detail1",
-        ),
-      )
-
-    assertThat(result?.content?.licencesEvents?.get(2)).extracting(
-      "licenceId",
-      "eventType",
-      "username",
-      "eventDescription",
-    )
-      .isEqualTo(
-        listOf(
-          1L,
-          SarLicenceEventType.CREATED,
-          "Bob Smith",
-          "Licence created2",
         ),
       )
   }

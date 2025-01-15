@@ -11,9 +11,6 @@ data class Content(
 
   @Schema(description = "The list of audit events")
   val auditEvents: List<SarAuditEvent>,
-
-  @Schema(description = "The list of licence events")
-  val licencesEvents: List<SarLicenceEvent>,
 )
 
 @Schema(description = "The Sar Content holds the prisoner details")
