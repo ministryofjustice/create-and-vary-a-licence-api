@@ -201,7 +201,7 @@ class ApproverCaseloadServiceTest {
         whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
             aLicenceSummaryApproverView.copy(
-              actualReleaseDate = LocalDate.of(2024, 6, 21),
+              licenceStartDate = LocalDate.of(2024, 6, 21),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 2L,
@@ -213,7 +213,7 @@ class ApproverCaseloadServiceTest {
               prisonCode = "ABC",
               prisonDescription = "ABC (HMP)",
               comUsername = "jdoe",
-              actualReleaseDate = LocalDate.of(2024, 6, 20),
+              licenceStartDate = LocalDate.of(2024, 6, 20),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -286,7 +286,7 @@ class ApproverCaseloadServiceTest {
         whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
             aLicenceSummaryApproverView.copy(
-              actualReleaseDate = LocalDate.of(2024, 6, 21),
+              licenceStartDate = LocalDate.of(2024, 6, 21),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 2L,
@@ -299,7 +299,7 @@ class ApproverCaseloadServiceTest {
               prisonDescription = "ABC (HMP)",
               comUsername = "jdoe",
               licenceStatus = LicenceStatus.APPROVED,
-              actualReleaseDate = LocalDate.of(2024, 6, 20),
+              licenceStartDate = LocalDate.of(2024, 6, 20),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -311,8 +311,7 @@ class ApproverCaseloadServiceTest {
               prisonCode = "MDI",
               comUsername = "smills",
               licenceStatus = LicenceStatus.ACTIVE,
-              actualReleaseDate = null,
-              conditionalReleaseDate = null,
+              licenceStartDate = null,
             ),
           ),
         )
@@ -414,7 +413,7 @@ class ApproverCaseloadServiceTest {
     }
 
     @Test
-    fun `ARD is selected above conditional release date for releaseDate`() {
+    fun `LSD is selected for releaseDate`() {
       val nomisId = "A1234AA"
       val comUsernames = listOf("smills")
 
@@ -423,6 +422,7 @@ class ApproverCaseloadServiceTest {
           aLicenceSummaryApproverView.copy(
             actualReleaseDate = LocalDate.of(2024, 6, 20),
             conditionalReleaseDate = LocalDate.of(2024, 6, 19),
+            licenceStartDate = LocalDate.of(2024, 6, 18),
           ),
         ),
       )
@@ -436,7 +436,7 @@ class ApproverCaseloadServiceTest {
       assertThat(approvalCases).hasSize(1)
 
       with(approvalCases.first()) {
-        assertThat(releaseDate).isEqualTo((LocalDate.of(2024, 6, 20)))
+        assertThat(releaseDate).isEqualTo((LocalDate.of(2024, 6, 18)))
       }
 
       verify(prisonApproverService, times(1)).getLicencesForApproval(aListOfPrisonCodes)
@@ -457,8 +457,7 @@ class ApproverCaseloadServiceTest {
 
         val aLicenceSummaryApproverView = aLicenceSummaryApproverView.copy(
           licenceStatus = LicenceStatus.APPROVED,
-          actualReleaseDate = LocalDate.now().minusDays(14),
-          conditionalReleaseDate = LocalDate.now().minusDays(14),
+          licenceStartDate = LocalDate.now().minusDays(14),
         )
 
         whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
@@ -511,8 +510,7 @@ class ApproverCaseloadServiceTest {
               prisonDescription = "ABC (HMP)",
               comUsername = "jdoe",
               licenceStatus = LicenceStatus.APPROVED,
-              actualReleaseDate = LocalDate.now().minusDays(14),
-              conditionalReleaseDate = LocalDate.now().minusDays(14),
+              licenceStartDate = LocalDate.now().minusDays(14),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -524,8 +522,7 @@ class ApproverCaseloadServiceTest {
               prisonCode = "MDI",
               comUsername = "smills",
               licenceStatus = LicenceStatus.ACTIVE,
-              actualReleaseDate = LocalDate.now().minusDays(14),
-              conditionalReleaseDate = LocalDate.now().minusDays(14),
+              licenceStartDate = LocalDate.now().minusDays(14),
             ),
           ),
         )
@@ -650,8 +647,7 @@ class ApproverCaseloadServiceTest {
               prisonDescription = "ABC (HMP)",
               comUsername = "jdoe",
               licenceStatus = LicenceStatus.APPROVED,
-              actualReleaseDate = LocalDate.now().minusDays(13),
-              conditionalReleaseDate = LocalDate.now().minusDays(13),
+              licenceStartDate = LocalDate.now().minusDays(13),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -663,8 +659,7 @@ class ApproverCaseloadServiceTest {
               prisonCode = "MDI",
               comUsername = "smills",
               licenceStatus = LicenceStatus.ACTIVE,
-              actualReleaseDate = LocalDate.now().minusDays(14),
-              conditionalReleaseDate = LocalDate.now().minusDays(14),
+              licenceStartDate = LocalDate.now().minusDays(14),
             ),
           ),
         )
@@ -745,7 +740,7 @@ class ApproverCaseloadServiceTest {
         whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
           listOf(
             aLicenceSummaryApproverView.copy(
-              actualReleaseDate = LocalDate.of(2024, 6, 21),
+              licenceStartDate = LocalDate.of(2024, 6, 21),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 2L,
@@ -758,7 +753,7 @@ class ApproverCaseloadServiceTest {
               prisonDescription = "ABC (HMP)",
               comUsername = "jdoe",
               licenceStatus = LicenceStatus.APPROVED,
-              actualReleaseDate = LocalDate.of(2024, 6, 20),
+              licenceStartDate = LocalDate.of(2024, 6, 20),
             ),
             aLicenceSummaryApproverView.copy(
               licenceId = 3L,
@@ -770,8 +765,7 @@ class ApproverCaseloadServiceTest {
               prisonCode = "MDI",
               comUsername = "smills",
               licenceStatus = LicenceStatus.ACTIVE,
-              actualReleaseDate = null,
-              conditionalReleaseDate = null,
+              licenceStartDate = null,
             ),
           ),
         )
@@ -855,15 +849,14 @@ class ApproverCaseloadServiceTest {
     }
 
     @Test
-    fun `a null release date is returned when an ARD or CRD is not set`() {
+    fun `a null release date is returned when LSD is not set`() {
       val nomisId = "A1234AA"
       val comUsernames = listOf("smills")
 
       whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
         listOf(
           aLicenceSummaryApproverView.copy(
-            actualReleaseDate = null,
-            conditionalReleaseDate = null,
+            licenceStartDate = null,
           ),
         ),
       )

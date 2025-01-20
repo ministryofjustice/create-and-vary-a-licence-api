@@ -59,7 +59,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT l
         FROM Licence l 
-        WHERE (l.actualReleaseDate <= CURRENT_DATE OR l.conditionalReleaseDate <= CURRENT_DATE) 
+        WHERE l.licenceStartDate <= CURRENT_DATE
         AND l.statusCode = 'APPROVED'
     """,
   )
@@ -74,7 +74,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
         )
-        AND (COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) > :releasedAfterDate)
+        AND l.licenceStartDate > :releasedAfterDate
         ORDER BY l.conditionalReleaseDate ASC
     """,
   )

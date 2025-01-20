@@ -421,93 +421,6 @@ class PrisonerSearchServiceTest {
   }
 
   @Test
-  fun `search for offenders on probation on a staff member's caseload with no CRD should use ARD`() {
-    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
-      listOf(
-        "A01B02",
-      ),
-    )
-    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
-      listOf(
-        CaseloadResult(
-          Name("Test", surname = "Surname"),
-          Identifiers("A123456", "A1234AA"),
-          Manager(
-            "A01B02C",
-            Name("Staff", surname = "Surname"),
-            Detail("A01B02", "Test Team"),
-          ),
-          "2023/05/24",
-        ),
-      ),
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        (
-          listOf(
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.ACTIVE,
-            ),
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
-              conditionalReleaseDate = null,
-              actualReleaseDate = LocalDate.parse("2023-07-27"),
-            ),
-          )
-          ),
-      )
-
-    val request = ProbationUserSearchRequest(
-      "Test",
-      2000,
-    )
-
-    val result = service.searchForOffenderOnStaffCaseload(request)
-
-    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
-      request.query,
-      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
-    )
-
-    verifyNoInteractions(eligibilityService)
-
-    val resultsList = result.results
-    val offender = resultsList.first()
-    val inPrisonCount = result.inPrisonCount
-    val onProbationCount = result.onProbationCount
-
-    assertThat(resultsList).isNotEmpty
-    assertThat(resultsList.size).isEqualTo(1)
-
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "X12345",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-07-27"),
-          1L,
-          LicenceType.AP,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          true,
-        ),
-      )
-
-    assertThat(inPrisonCount).isEqualTo(0)
-    assertThat(onProbationCount).isEqualTo(1)
-  }
-
-  @Test
   fun `search for offenders in prison on a staff member's caseload without a licence (NOT_STARTED)`() {
     whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
@@ -1743,7 +1656,7 @@ class PrisonerSearchServiceTest {
   }
 
   @Test
-  fun `Release date is ARD when it exists for search results where a licence exists`() {
+  fun `Release date is LSD`() {
     whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
@@ -1770,6 +1683,7 @@ class PrisonerSearchServiceTest {
           createHardStopLicence().copy(
             conditionalReleaseDate = LocalDate.of(2024, 4, 29),
             actualReleaseDate = LocalDate.of(2024, 4, 28),
+            licenceStartDate = LocalDate.of(2024, 4, 27),
           ),
         ),
       )
@@ -1781,52 +1695,7 @@ class PrisonerSearchServiceTest {
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
 
     with(result.results.first()) {
-      assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 4, 28))
-      assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
-    }
-  }
-
-  @Test
-  fun `Release date is CRD when ARD does not exist for search results where a licence exists`() {
-    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
-      listOf(
-        "A01B02",
-      ),
-    )
-    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
-      listOf(
-        CaseloadResult(
-          Name("Test", surname = "Surname"),
-          Identifiers("A123456", "A1234AA"),
-          Manager(
-            "A01B02C",
-            Name("Staff", surname = "Surname"),
-            Detail("A01B02", "Test Team"),
-          ),
-          "2023/05/24",
-        ),
-      ),
-    )
-
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        listOf(
-          createHardStopLicence().copy(
-            conditionalReleaseDate = LocalDate.of(2024, 4, 29),
-            actualReleaseDate = null,
-          ),
-        ),
-      )
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(listOf(aPrisonerSearchResult))
-    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
-
-    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
-
-    with(result.results.first()) {
-      assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 4, 29))
-      assertThat(releaseDateLabel).isEqualTo("CRD")
+      assertThat(releaseDate).isEqualTo(LocalDate.of(2024, 4, 27))
     }
   }
 
@@ -1855,7 +1724,14 @@ class PrisonerSearchServiceTest {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(listOf(aPrisonerSearchResult))
+      .thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            confirmedReleaseDate = LocalDate.of(2023, 9, 14),
+            conditionalReleaseDate = LocalDate.of(2023, 9, 15),
+          ),
+        ),
+      )
 
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
@@ -1870,7 +1746,7 @@ class PrisonerSearchServiceTest {
   }
 
   @Test
-  fun `Release date label reads 'CRD' when no confirmed release date is provided by NOMIS for not started CRD licences`() {
+  fun `Release date label reads 'CRD' when licence start date matches CRD`() {
     whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
       listOf(
         "A01B02",
@@ -1898,6 +1774,7 @@ class PrisonerSearchServiceTest {
         listOf(
           aPrisonerSearchResult.copy(
             confirmedReleaseDate = null,
+            conditionalReleaseDate = LocalDate.of(2023, 9, 14),
           ),
         ),
       )
@@ -1910,7 +1787,96 @@ class PrisonerSearchServiceTest {
 
     with(result.results.first()) {
       assertThat(releaseDateLabel).isEqualTo("CRD")
-      assertThat(isReviewNeeded).isFalse
+    }
+  }
+
+  @Test
+  fun `Release date label reads 'Confirmed release date' when licence start date matches ARD`() {
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", surname = "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", surname = "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            confirmedReleaseDate = LocalDate.of(2023, 9, 14),
+            conditionalReleaseDate = LocalDate.of(2023, 9, 15),
+          ),
+        ),
+      )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
+    }
+  }
+
+  @Test
+  fun `Release date label reads 'CRD' when licence start date does not match either ARD or CRD`() {
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(
+        CaseloadResult(
+          Name("Test", surname = "Surname"),
+          Identifiers("A123456", "A1234AA"),
+          Manager(
+            "A01B02C",
+            Name("Staff", surname = "Surname"),
+            Detail("A01B02", "Test Team"),
+          ),
+          "2023/05/24",
+        ),
+      ),
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
+      .thenReturn(
+        listOf(
+          aPrisonerSearchResult.copy(
+            confirmedReleaseDate = LocalDate.of(2023, 9, 14),
+            conditionalReleaseDate = LocalDate.of(2023, 9, 15),
+          ),
+        ),
+      )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 16)))
+
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+
+    val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
+
+    with(result.results.first()) {
+      assertThat(releaseDateLabel).isEqualTo("CRD")
     }
   }
 
