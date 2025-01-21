@@ -45,7 +45,7 @@ OffenderService(
         it.statusCode === LicenceStatus.NOT_STARTED || it.statusCode === LicenceStatus.IN_PROGRESS
       }
     ) {
-      val releaseDate = offenderLicences[0].actualReleaseDate ?: offenderLicences[0].conditionalReleaseDate
+      val releaseDate = offenderLicences[0].licenceStartDate
       if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
         val prisoner = listOf(
           PrisonerForRelease(

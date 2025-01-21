@@ -80,7 +80,7 @@ class CaCaseloadServiceTest {
   private val licenceQueryObject = LicenceQueryObject(
     statusCodes = statuses,
     prisonCodes = listOf("BAI"),
-    sortBy = "conditionalReleaseDate",
+    sortBy = "licenceStartDate",
   )
 
   @BeforeEach
@@ -410,6 +410,7 @@ class CaCaseloadServiceTest {
             licenceStatus = LicenceStatus.IN_PROGRESS,
             isInHardStopPeriod = false,
             isDueToBeReleasedInTheNextTwoWorkingDays = true,
+            licenceStartDate = twoDaysFromNow,
             conditionalReleaseDate = twoMonthsFromNow,
             actualReleaseDate = twoDaysFromNow,
             isDueForEarlyRelease = true,
@@ -472,6 +473,7 @@ class CaCaseloadServiceTest {
               staffUsername = null,
             ),
             releaseDate = twoDaysFromNow,
+            releaseDateLabel = "Confirmed release date",
             tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             nomisLegalStatus = "SENTENCED",
             lastWorkedOnBy = "X Y",
@@ -487,8 +489,9 @@ class CaCaseloadServiceTest {
       whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
-            conditionalReleaseDate = twoDaysFromNow,
-            actualReleaseDate = tenDaysFromNow,
+            conditionalReleaseDate = tenDaysFromNow,
+            actualReleaseDate = twoMonthsFromNow,
+            licenceStartDate = tenDaysFromNow,
           ),
           aLicenceSummary.copy(
             licenceId = 2,
@@ -499,6 +502,7 @@ class CaCaseloadServiceTest {
             comUsername = "Andy",
             conditionalReleaseDate = tenDaysFromNow,
             actualReleaseDate = twoDaysFromNow,
+            licenceStartDate = twoDaysFromNow,
           ),
         ),
       )
@@ -540,6 +544,7 @@ class CaCaseloadServiceTest {
             name = "Smith Cena",
             prisonerNumber = "A1234AB",
             releaseDate = twoDaysFromNow,
+            releaseDateLabel = "Confirmed release date",
             probationPractitioner = ProbationPractitioner(
               staffCode = null,
               name = null,
@@ -551,6 +556,7 @@ class CaCaseloadServiceTest {
           TestData.caCase().copy(
             name = "John Cena",
             releaseDate = tenDaysFromNow,
+            releaseDateLabel = "CRD",
             probationPractitioner = ProbationPractitioner(
               staffCode = "AB00001",
               name = "com user",

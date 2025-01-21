@@ -388,81 +388,55 @@ class ReleaseDateServiceTest {
     @Test
     fun `false if there is no release date`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = null,
+        licenceStartDate = null,
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
     }
 
     @Test
-    fun `false when CRD is yesterday`() {
+    fun `false when LSD is yesterday`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.minusDays(1),
+        licenceStartDate = today.minusDays(1),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
     }
 
     @Test
-    fun `true when CRD is today`() {
+    fun `true when LSD is today`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today,
+        licenceStartDate = today,
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
 
     @Test
-    fun `true when CRD is 1 day in the future`() {
+    fun `true when LSD is 1 day in the future`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.plusDays(1),
+        licenceStartDate = today.plusDays(1),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
 
     @Test
-    fun `true when CRD is 2 working days in the future`() {
+    fun `true when LSD is 2 working days in the future`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.plusDays(2),
+        licenceStartDate = today.plusDays(2),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
 
     @Test
-    fun `false when CRD is more than 2 working days in the future`() {
+    fun `false when LSD is more than 2 working days in the future`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.plusDays(3),
+        licenceStartDate = today.plusDays(3),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
-    }
-
-    @Test
-    fun `takes the earliest date when ard is earliest`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = today.plusDays(2),
-        conditionalReleaseDate = today.plusDays(3),
-      )
-
-      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
-    }
-
-    @Test
-    fun `takes the earliest date when crd is earliest`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = today.plusDays(3),
-        conditionalReleaseDate = today.plusDays(2),
-      )
-
-      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
   }
 

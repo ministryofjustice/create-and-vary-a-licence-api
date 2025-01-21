@@ -59,7 +59,7 @@ class ApproverCaseloadService(
           name = "${licenceSummary?.forename} ${licenceSummary?.surname}".convertToTitleCase(),
           prisonerNumber = licenceSummary?.nomisId,
           submittedByFullName = licenceSummary?.submittedByFullName,
-          releaseDate = licenceSummary?.actualReleaseDate ?: licenceSummary?.conditionalReleaseDate,
+          releaseDate = licenceSummary?.licenceStartDate,
           urgentApproval = licenceSummary?.isDueToBeReleasedInTheNextTwoWorkingDays,
           approvedBy = licenceSummary?.approvedByName,
           approvedOn = licenceSummary?.approvedDate,

@@ -201,7 +201,7 @@ class ComCaseloadService(
       hardStopWarningDate = licenceSummary.hardStopWarningDate,
       hardStopDate = licenceSummary.hardStopDate,
       licenceStartDate = licenceSummary.licenceStartDate,
-      releaseDate = licenceSummary.actualReleaseDate ?: licenceSummary.conditionalReleaseDate,
+      releaseDate = licenceSummary.licenceStartDate,
       isDueToBeReleasedInTheNextTwoWorkingDays = licenceSummary.isDueToBeReleasedInTheNextTwoWorkingDays,
       isReviewNeeded = licenceSummary.isReviewNeeded,
     )

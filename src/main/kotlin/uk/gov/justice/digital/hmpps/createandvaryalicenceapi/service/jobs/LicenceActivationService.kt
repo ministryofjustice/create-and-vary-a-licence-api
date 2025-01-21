@@ -59,7 +59,7 @@ class LicenceActivationService(
 
   private fun determineEligibleLicencesToActivate(licences: List<LicenceWithPrisoner>): Pair<List<Licence>, List<Licence>> {
     val (iS91Licences, standardLicences) = filterLicencesIntoTypes(licences)
-    val iS91LicencesToActivate = iS91Licences.filter { it.licence.isPassedIS91ReleaseDate() }
+    val iS91LicencesToActivate = iS91Licences.filter { it.licence.licenceStartDate != null && it.licence.licenceStartDate!! <= LocalDate.now() }
     val standardLicencesToActivate = standardLicences.filter { it.isStandardLicenceForActivation() }
     return Pair(iS91LicencesToActivate.map { it.licence }, standardLicencesToActivate.map { it.licence })
   }
@@ -71,27 +71,10 @@ class LicenceActivationService(
     return Pair(iS91AndExtraditionLicences, standardLicences)
   }
 
-  private fun Licence.isPassedIS91ReleaseDate(): Boolean {
-    val actualReleaseDate = this.actualReleaseDate
-    val conditionalReleaseDate = this.conditionalReleaseDate ?: return false
-
-    // If ARD within CRD minus 4 days and CRD (inclusive), use ARD
-    val releaseDate = if (actualReleaseDate != null &&
-      !actualReleaseDate.isBefore(conditionalReleaseDate.minusDays(4)) &&
-      !actualReleaseDate.isAfter(conditionalReleaseDate)
-    ) {
-      actualReleaseDate
-    } else {
-      conditionalReleaseDate
-    }
-
-    return releaseDate <= LocalDate.now()
-  }
-
   private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean {
     return (
-      licence.actualReleaseDate != null &&
-        licence.actualReleaseDate!! <= LocalDate.now() &&
+      licence.licenceStartDate != null &&
+        licence.licenceStartDate!! <= LocalDate.now() &&
         prisoner.status?.startsWith("INACTIVE") == true
       )
   }

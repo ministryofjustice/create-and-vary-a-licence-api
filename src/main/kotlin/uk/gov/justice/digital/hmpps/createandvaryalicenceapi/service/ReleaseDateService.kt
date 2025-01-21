@@ -42,10 +42,8 @@ class ReleaseDateService(
   }
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
-    val earliestReleaseDate = listOfNotNull(actualReleaseDate, conditionalReleaseDate).minOrNull() ?: return false
-    return LocalDate.now(clock) >= 2.workingDaysBefore(earliestReleaseDate) && LocalDate.now(clock) <= earliestReleaseDate
+    val licenceStartDate = sentenceDateHolder.licenceStartDate ?: return false
+    return LocalDate.now(clock) >= 2.workingDaysBefore(licenceStartDate) && LocalDate.now(clock) <= licenceStartDate
   }
 
   fun getEarliestReleaseDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {

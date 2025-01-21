@@ -565,31 +565,39 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): ModelFoundProbationRecord = ModelFoundProbationRecord(
-  kind = licence?.kind,
-  name = "${name.forename} ${name.surname}".convertToTitleCase(),
-  crn = licence?.crn,
-  nomisId = licence?.nomsId,
-  comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
-  comStaffCode = manager.code,
-  teamName = manager.team.description ?: licence?.probationTeamDescription,
-  releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate,
-  licenceId = licence?.id,
-  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
-  licenceType = licence?.typeCode,
-  licenceStatus = licence?.statusCode,
-  isOnProbation = licence?.statusCode?.isOnProbation(),
-  hardStopDate = hardStopDate,
-  hardStopWarningDate = hardStopWarningDate,
-  isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
-  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-  releaseDateLabel = if (licence?.actualReleaseDate != null) "Confirmed release date" else "CRD",
-  isReviewNeeded = when (licence) {
-    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-    else -> false
-  },
-)
+): ModelFoundProbationRecord {
+  val hdcad = if (licence is HdcLicence) licence.homeDetentionCurfewActualDate else null
+  return ModelFoundProbationRecord(
+    kind = licence?.kind,
+    name = "${name.forename} ${name.surname}".convertToTitleCase(),
+    crn = licence?.crn,
+    nomisId = licence?.nomsId,
+    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
+    comStaffCode = manager.code,
+    teamName = manager.team.description ?: licence?.probationTeamDescription,
+    releaseDate = licence?.licenceStartDate,
+    licenceId = licence?.id,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    licenceType = licence?.typeCode,
+    licenceStatus = licence?.statusCode,
+    isOnProbation = licence?.statusCode?.isOnProbation(),
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
+    isDueForEarlyRelease = isDueForEarlyRelease,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+    releaseDateLabel = when (licence?.licenceStartDate) {
+      null -> "CRD"
+      licence.actualReleaseDate -> "Confirmed release date"
+      hdcad -> "HDCAD"
+      else -> "CRD"
+    },
+    isReviewNeeded = when (licence) {
+      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+      else -> false
+    },
+  )
+}
 
 fun CaseloadResult.transformToUnstartedRecord(
   releaseDate: LocalDate?,

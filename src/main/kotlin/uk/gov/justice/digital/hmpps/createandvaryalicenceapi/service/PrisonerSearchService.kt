@@ -187,6 +187,7 @@ class PrisonerSearchService(
         sentenceDateHolder,
       ),
       releaseDateLabel = when (licenceStartDate) {
+        prisonOffender.homeDetentionCurfewActualDate -> "HDCAD"
         prisonOffender.confirmedReleaseDate -> "Confirmed release date"
         else -> "CRD"
       },
