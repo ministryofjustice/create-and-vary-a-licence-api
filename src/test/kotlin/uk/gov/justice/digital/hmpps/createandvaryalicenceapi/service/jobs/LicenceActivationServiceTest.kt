@@ -103,8 +103,15 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for non-HDC, IS91 licences to be activated on LSD`() {
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
+  fun `licence activation job calls for non-HDC, IS91 licences to be activated on CRD`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          conditionalReleaseDate = LocalDate.now(),
+          actualReleaseDate = LocalDate.now().plusDays(10),
+        ),
+      ),
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
