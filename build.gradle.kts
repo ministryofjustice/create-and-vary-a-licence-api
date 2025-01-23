@@ -27,7 +27,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-cache")
-  implementation("org.springframework.security:spring-security-config:6.3.2")
+  implementation("org.springframework.security:spring-security-config:6.3.5")
 
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:5.2.1-RELEASE")
