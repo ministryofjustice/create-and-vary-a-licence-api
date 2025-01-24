@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 
-class DeactivateLicencesTest : IntegrationTestBase() {
+class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
   @MockitoBean
   private lateinit var eventsPublisher: OutboundEventsPublisher
 

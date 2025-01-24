@@ -45,7 +45,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence( l.crn, l.forename, l.surname, com.firstName , com.lastName , com.email)
         FROM CrdLicence l 
         JOIN l.submittedBy com
-        WHERE (l.actualReleaseDate = CURRENT_DATE OR l.conditionalReleaseDate = CURRENT_DATE) 
+        WHERE (l.licenceStartDate = CURRENT_DATE) 
         AND l.statusCode = 'SUBMITTED'
         AND (
             (EXISTS (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')) 
@@ -127,7 +127,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
         )
-        AND COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) < CURRENT_DATE
+        AND l.licenceStartDate < CURRENT_DATE
     """,
   )
   fun getDraftLicencesPassedReleaseDate(): List<Licence>
@@ -192,7 +192,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
       SELECT l
         FROM Licence l
         WHERE (l.statusCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS)
-                AND l.conditionalReleaseDate IS NULL AND l.actualReleaseDate IS NULL)
+                AND l.licenceStartDate IS NULL)
         OR (l.statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED AND l.licenceStartDate < CURRENT_DATE)
     """,
   )
