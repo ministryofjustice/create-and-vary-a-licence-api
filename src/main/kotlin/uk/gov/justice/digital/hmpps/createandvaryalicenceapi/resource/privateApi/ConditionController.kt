@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceConditionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 
 import org.springframework.stereotype.Service
 import java.time.DayOfWeek

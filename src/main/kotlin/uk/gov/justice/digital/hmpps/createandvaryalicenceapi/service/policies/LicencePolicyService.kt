@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
@@ -12,11 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAddit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V3_0
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.licencePolicyChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
@@ -77,7 +73,11 @@ class LicencePolicyService(
 
   fun allPolicies(): List<LicencePolicy> = policies
 
-  fun compareLicenceWithPolicy(licence: ModelLicence, previousPolicy: LicencePolicy, currentPolicy: LicencePolicy): List<LicenceConditionChanges> {
+  fun compareLicenceWithPolicy(
+    licence: ModelLicence,
+    previousPolicy: LicencePolicy,
+    currentPolicy: LicencePolicy,
+  ): List<LicenceConditionChanges> {
     if (previousPolicy.version == currentPolicy.version) return emptyList()
     val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
     return licencePolicyChanges(

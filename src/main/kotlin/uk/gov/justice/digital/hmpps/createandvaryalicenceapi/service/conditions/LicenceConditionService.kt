@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
@@ -21,6 +21,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transform
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditionalData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 
 @Service

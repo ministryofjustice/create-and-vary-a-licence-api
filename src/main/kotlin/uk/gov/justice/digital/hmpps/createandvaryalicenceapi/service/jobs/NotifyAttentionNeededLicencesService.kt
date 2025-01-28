@@ -5,10 +5,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyAttentionNeededLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.writeCsv
 import java.time.LocalDate
 
 @Service
@@ -53,7 +51,7 @@ class NotifyAttentionNeededLicencesService(
       .sortedBy { it.licenceStartDate }
 
     val fileName = "attentionNeededLicences_" + LocalDate.now() + ".csv"
-    val fileContents = writeCsv(notifyLicences)
+    val fileContents = notifyLicences.toCsv()
 
     notifyService.sendAttentionNeededLicencesEmail(
       emailAddress,
@@ -62,4 +60,22 @@ class NotifyAttentionNeededLicencesService(
     )
     log.info("Job notifyAttentionNeededLicences emailed ${attentionNeededLicences.size} licences")
   }
+
+  fun List<NotifyAttentionNeededLicence>.toCsv(): String {
+    val csv = StringBuilder()
+    csv.append("Noms ID,Prison Name,Noms Legal Status,ARD,CRD,Licence Start Date\r\n")
+    this.forEach {
+      csv.append("${it.nomsId},${it.prisonName},${it.legalStatus},${it.actualReleaseDate},${it.conditionalReleaseDate},${it.licenceStartDate}\r\n")
+    }
+    return csv.toString()
+  }
+
+  data class NotifyAttentionNeededLicence(
+    val nomsId: String?,
+    var prisonName: String? = null,
+    var legalStatus: String? = null,
+    val conditionalReleaseDate: LocalDate?,
+    val actualReleaseDate: LocalDate?,
+    val licenceStartDate: LocalDate?,
+  )
 }

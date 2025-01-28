@@ -4,11 +4,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.IAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicenceCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.NEW_OPTIONS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REMOVED_NO_REPLACEMENTS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REPLACED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.TEXT_CHANGE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.DELETED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.NEW_OPTIONS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REMOVED_NO_REPLACEMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REPLACED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.TEXT_CHANGE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicenceConditionChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.SuggestedCondition
 
 /**
  * This will return a list of all changes that need to be addressed as part of migrating a licence from one version of the policy to another.

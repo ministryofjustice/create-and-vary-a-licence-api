@@ -9,9 +9,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Replacements
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REMOVED_NO_REPLACEMENTS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REPLACED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.DELETED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REMOVED_NO_REPLACEMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REPLACED
 
 class SuggestedReplacementsTest {
 

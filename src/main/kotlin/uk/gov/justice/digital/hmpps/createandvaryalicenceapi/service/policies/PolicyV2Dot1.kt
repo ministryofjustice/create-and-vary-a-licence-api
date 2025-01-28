@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditionPss
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
 
 val HARD_STOP_CONDITION = AdditionalConditionAp(
   category = "Making or maintaining contact with a person",

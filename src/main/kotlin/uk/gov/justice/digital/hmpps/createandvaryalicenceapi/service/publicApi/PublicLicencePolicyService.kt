@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy as PublicLicencePolicy
 
 @Service

@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REMOVED_NO_REPLACEMENTS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REPLACED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.DELETED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REMOVED_NO_REPLACEMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REPLACED
 
 data class Replacements(
   val code: String,

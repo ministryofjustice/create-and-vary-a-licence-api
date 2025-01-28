@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -12,12 +11,10 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder.setContext
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyAttentionNeededLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.writeCsv
 import java.time.LocalDate
 
 class NotifyAttentionNeededLicencesServiceTest {
@@ -77,26 +74,14 @@ class NotifyAttentionNeededLicencesServiceTest {
     )
 
     service.notifyAttentionNeededLicences()
-    val fileContent = writeCsv(
-      listOf(
-        NotifyAttentionNeededLicence(
-          aLicenceEntity.nomsId,
-          aPrisonerSearchPrisoner.prisonName,
-          aPrisonerSearchPrisoner.legalStatus,
-          aLicenceEntity.conditionalReleaseDate,
-          aLicenceEntity.actualReleaseDate,
-          aLicenceEntity.licenceStartDate,
-        ),
-      ),
-    )
+
     val cvsData =
       "Noms ID,Prison Name,Noms Legal Status,ARD,CRD,Licence Start Date\r\nA1234AA,null,SENTENCED,2021-10-22,2021-10-22,2021-10-22\r\n"
 
-    assertThat(fileContent).isEqualTo(cvsData)
     verify(prisonerSearchApiClient, times(1)).searchPrisonersByNomisIds(listOf(aLicenceEntity.nomsId.toString()))
     verify(notifyService, times(1)).sendAttentionNeededLicencesEmail(
       emailAddress,
-      fileContent.toByteArray(),
+      cvsData.toByteArray(),
       fileName,
     )
   }

@@ -15,6 +15,8 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.Instant
@@ -1043,7 +1045,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns last working day before CRD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns last working day before CRD if CRD is a bank holiday or weekend when the legal status is one of note`(legalStatus: String) {
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend when the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2018, 12, 4),
@@ -1078,7 +1082,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns last working day before CRD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when the legal status is one of note`(legalStatus: String) {
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2018, 12, 4),
@@ -1113,7 +1119,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns ARD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns ARD when the CRD and ARD are the same non-working day and the legal status is one of note`(legalStatus: String) {
+      fun `returns ARD when the CRD and ARD are the same non-working day and the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2021, 12, 4),
@@ -1148,7 +1156,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns ARD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and the legal status is one of note`(legalStatus: String) {
+      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2021, 12, 4),

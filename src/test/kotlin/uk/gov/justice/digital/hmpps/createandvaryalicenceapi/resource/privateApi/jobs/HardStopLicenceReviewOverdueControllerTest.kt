@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateAp
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +37,7 @@ class HardStopLicenceReviewOverdueControllerTest {
 
   @BeforeEach
   fun reset() {
-    org.mockito.kotlin.reset(hardStopLicenceReviewOverdueService)
+    reset(hardStopLicenceReviewOverdueService)
 
     mvc = MockMvcBuilders
       .standaloneSetup(HardStopLicenceReviewOverdueController(hardStopLicenceReviewOverdueService))

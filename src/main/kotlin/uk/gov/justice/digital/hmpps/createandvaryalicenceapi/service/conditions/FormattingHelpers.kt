@@ -1,9 +1,9 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import com.fasterxml.jackson.annotation.JsonValue
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.UPPER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.UPPER
 
 fun String?.getPlaceholderNames(): List<String> =
   this?.let {

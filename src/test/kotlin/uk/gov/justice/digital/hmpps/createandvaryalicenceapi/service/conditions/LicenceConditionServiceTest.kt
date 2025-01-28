@@ -1,8 +1,8 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple.tuple
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -20,11 +20,10 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
@@ -43,8 +42,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import java.util.Optional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 
 class LicenceConditionServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -443,11 +446,12 @@ class LicenceConditionServiceTest {
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventAddAdditionalConditionOfSameType(any(), any(), any())
 
-      assertThat(licenceCaptor.value.additionalConditions).extracting("id", "conditionCode", "conditionSequence")
+      assertThat(licenceCaptor.value.additionalConditions)
+        .extracting("id", "conditionCode", "conditionSequence")
         .containsExactly(
-          tuple(1L, "code", 5),
-          tuple(3L, "code3", 6),
-          tuple(-1L, "code", 7),
+          Tuple.tuple(1L, "code", 5),
+          Tuple.tuple(3L, "code3", 6),
+          Tuple.tuple(-1L, "code", 7),
         )
 
       // Verify last contact info is recorded
@@ -565,7 +569,7 @@ class LicenceConditionServiceTest {
           1L,
           UpdateAdditionalConditionDataRequest(
             data = listOf(
-              uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+              AdditionalConditionData(
                 field = "field1",
                 value = "value1",
                 sequence = 0,
@@ -603,7 +607,7 @@ class LicenceConditionServiceTest {
           1L,
           UpdateAdditionalConditionDataRequest(
             data = listOf(
-              uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+              AdditionalConditionData(
                 field = "field1",
                 value = "value1",
                 sequence = 0,
@@ -642,7 +646,7 @@ class LicenceConditionServiceTest {
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
-          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+          AdditionalConditionData(
             field = "field1",
             value = "value1",
             sequence = 0,
@@ -662,7 +666,7 @@ class LicenceConditionServiceTest {
 
       assertThat(conditionCaptor.value.expandedConditionText).isEqualTo("expanded text")
       assertThat(conditionCaptor.value.additionalConditionData).containsExactly(
-        AdditionalConditionData(
+        EntityAdditionalConditionData(
           id = -1,
           additionalCondition = anAdditionalConditionEntity,
           dataSequence = 0,
@@ -702,7 +706,7 @@ class LicenceConditionServiceTest {
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
-          uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData(
+          AdditionalConditionData(
             field = "field1",
             value = "value1",
             sequence = 0,
@@ -758,8 +762,9 @@ class LicenceConditionServiceTest {
 
       assertThat(licenceCaptor.value)
         .extracting("updatedByUsername", "updatedBy")
-        .isEqualTo(listOf(SYSTEM_USER, aPreviousUser))
-      assertThat(licenceCaptor.value).extracting("bespokeConditions").isEqualTo(emptyList<BespokeCondition>())
+        .isEqualTo(listOf(Licence.Companion.SYSTEM_USER, aPreviousUser))
+      assertThat(licenceCaptor.value).extracting("bespokeConditions")
+        .isEqualTo(emptyList<BespokeCondition>())
 
       // Verify new bespoke conditions are added in their place
       bespokeEntities.forEach { bespoke ->
@@ -774,7 +779,7 @@ class LicenceConditionServiceTest {
     val aLicenceEntity = TestData.createCrdLicence()
 
     val someAdditionalConditionData = listOf(
-      AdditionalConditionData(
+      EntityAdditionalConditionData(
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
@@ -783,7 +788,7 @@ class LicenceConditionServiceTest {
     )
 
     val someDifferentAdditionalConditionData = listOf(
-      AdditionalConditionData(
+      EntityAdditionalConditionData(
         id = 2,
         dataField = "dataField",
         dataValue = "dataValue2",

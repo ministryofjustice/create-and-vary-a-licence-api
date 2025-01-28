@@ -1,8 +1,7 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.nullableDatesDiffer
 import java.time.LocalDate
 
 class DateFunctionsTest {
