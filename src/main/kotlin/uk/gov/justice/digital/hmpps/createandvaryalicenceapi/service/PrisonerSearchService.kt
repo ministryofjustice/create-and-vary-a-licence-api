@@ -172,7 +172,7 @@ class PrisonerSearchService(
   }
 
   private fun CaseloadResult.toUnstartedRecord(prisonOffender: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): FoundProbationRecord {
-    val sentenceDateHolder = prisonOffender.toSentenceDateHolder()
+    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(

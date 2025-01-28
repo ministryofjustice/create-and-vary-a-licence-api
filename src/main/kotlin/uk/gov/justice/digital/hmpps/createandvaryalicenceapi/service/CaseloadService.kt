@@ -17,23 +17,31 @@ class CaseloadService(
   private val releaseDateService: ReleaseDateService,
 ) {
 
-  fun getPrisonersByNumber(nomisIds: List<String>) =
-    prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds).map { it.toCaseloadItem() }
+  fun getPrisonersByNumber(nomisIds: List<String>): List<CaseloadItem> {
+    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
+    val licenceStartDates = releaseDateService.getLicenceStartDates(prisoners)
+    return prisoners.map { it.toCaseloadItem(licenceStartDates[it.prisonerNumber]) }
+  }
 
   fun getPrisonersByReleaseDate(
     earliestReleaseDate: LocalDate,
     latestReleaseDate: LocalDate,
     prisonIds: Set<String>,
     page: Int = 0,
-  ): Page<CaseloadItem> =
-    prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page)
-      .map { it.toCaseloadItem() }
+  ): Page<CaseloadItem> {
+    val prisoners = prisonerSearchApiClient.searchPrisonersByReleaseDate(earliestReleaseDate, latestReleaseDate, prisonIds, page)
+    val licenceStartDates = releaseDateService.getLicenceStartDates(prisoners.mapNotNull { it })
+    return prisoners.map {
+      val licenceStartDate = licenceStartDates[it.prisonerNumber]
+      it.toCaseloadItem(licenceStartDate)
+    }
+  }
 
   fun getPrisoner(nomisId: String) =
     getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
 
-  private fun PrisonerSearchPrisoner.toCaseloadItem(): CaseloadItem {
-    val sentenceDateHolder = this.toSentenceDateHolder()
+  private fun PrisonerSearchPrisoner.toCaseloadItem(licenceStartDate: LocalDate?): CaseloadItem {
+    val sentenceDateHolder = this.toSentenceDateHolder(licenceStartDate)
     return CaseloadItem(
       prisoner = this.toPrisoner(),
       cvl = CvlFields(
