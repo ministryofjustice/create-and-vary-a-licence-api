@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -15,8 +15,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TIME_PICKER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.CAPITALISED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case.LOWER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.CAPITALISED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case.LOWER
 
 class ConditionFormatterTest {
   private val conditionFormatter = ConditionFormatter()

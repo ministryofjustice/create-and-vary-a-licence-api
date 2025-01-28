@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -20,10 +22,7 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.lang.IllegalArgumentException
 import javax.imageio.ImageIO
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail as EntityAdditionalConditionUploadDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 
 @Service
 class ExclusionZoneService(
@@ -72,7 +71,7 @@ class ExclusionZoneService(
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
 
-    val uploadDetail = EntityAdditionalConditionUploadDetail(
+    val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id,
       originalData = file.bytes,
@@ -81,7 +80,7 @@ class ExclusionZoneService(
 
     val savedDetail = additionalConditionUploadDetailRepository.saveAndFlush(uploadDetail)
 
-    val uploadSummary = EntityAdditionalConditionUploadSummary(
+    val uploadSummary = AdditionalConditionUploadSummary(
       additionalCondition = additionalCondition,
       filename = file.originalFilename,
       fileType = file.contentType,

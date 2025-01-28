@@ -1,13 +1,11 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.GovUkApiClient
 import java.time.LocalDate
 
 class BankHolidayServiceTest {
@@ -17,7 +15,7 @@ class BankHolidayServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(govUkApiClient)
+    org.mockito.kotlin.reset(govUkApiClient)
     whenever(govUkApiClient.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 

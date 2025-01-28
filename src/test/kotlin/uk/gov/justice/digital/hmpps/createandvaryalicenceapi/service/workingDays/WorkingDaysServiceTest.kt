@@ -1,11 +1,10 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
@@ -15,12 +14,12 @@ class WorkingDaysServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(bankHolidayService)
+    org.mockito.kotlin.reset(bankHolidayService)
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(someBankHolidays)
   }
 
   @Nested
-  inner class `weekends` {
+  inner class Weekends {
     @Test
     fun `is date on the weekend`() {
       val today = LocalDate.of(2024, 3, 23)

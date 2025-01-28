@@ -1,12 +1,13 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.getSuggestedReplacements
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.DELETED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.NEW_OPTIONS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REMOVED_NO_REPLACEMENTS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.REPLACED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ConditionChangeType.TEXT_CHANGE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditionChanges
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.DELETED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.NEW_OPTIONS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REMOVED_NO_REPLACEMENTS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.REPLACED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.TEXT_CHANGE
 
 // This doesn't actually assert anything but dumps the differences between different versions of the policy
 class PolicyVersionDifferencesTest() {
@@ -68,6 +69,7 @@ class PolicyVersionDifferencesTest() {
             """.trimIndent()
           text += "\n"
         }
+
         NEW_OPTIONS -> {
           text +=
             """
@@ -92,6 +94,7 @@ class PolicyVersionDifferencesTest() {
             text += " * $suggestedCondition\n"
           }
         }
+
         DELETED -> {
           text +=
             """

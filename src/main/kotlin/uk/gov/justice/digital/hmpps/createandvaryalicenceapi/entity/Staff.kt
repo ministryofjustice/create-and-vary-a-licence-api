@@ -13,7 +13,7 @@ import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.time.LocalDateTime
 import java.util.Objects

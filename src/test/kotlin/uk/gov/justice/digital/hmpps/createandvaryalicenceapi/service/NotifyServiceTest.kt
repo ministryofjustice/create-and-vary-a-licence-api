@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
@@ -23,7 +22,7 @@ import java.time.Month
 
 class NotifyServiceTest {
   private val notificationClient = mock<NotificationClient>()
-  private val releaseDateService = Mockito.mock<ReleaseDateService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val notifyService = NotifyService(
     enabled = true,

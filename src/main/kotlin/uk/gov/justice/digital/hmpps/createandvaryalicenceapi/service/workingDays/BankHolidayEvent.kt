@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.bankHolidays
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
