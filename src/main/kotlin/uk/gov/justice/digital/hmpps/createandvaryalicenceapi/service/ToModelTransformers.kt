@@ -101,6 +101,10 @@ fun transformToLicenceSummary(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   updatedByFullName = licence.getUpdatedByFullName(),
+  homeDetentionCurfewActualDate = when (licence) {
+    is HdcLicence -> licence.homeDetentionCurfewActualDate
+    else -> null
+  },
 )
 
 fun toHardstop(
@@ -448,8 +452,7 @@ fun toHdc(
 )
 
 // Transform a list of entity standard conditions to model standard conditions
-fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map(::transform)
+fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> = filter { condition -> condition.conditionType == conditionType }.map(::transform)
 
 fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelStandardCondition(
   id = entity.id,
@@ -462,31 +465,28 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelSt
 fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
   conditionSubmissionStatus: Map<String, Boolean>,
-): List<ModelAdditionalCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map {
-    transform(
-      it,
-      conditionSubmissionStatus[it.conditionCode]!!,
-    )
-  }
-
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition =
-  ModelAdditionalCondition(
-    id = entity.id,
-    code = entity.conditionCode,
-    version = entity.conditionVersion,
-    category = entity.conditionCategory,
-    sequence = entity.conditionSequence,
-    text = entity.conditionText,
-    expandedText = entity.expandedConditionText,
-    data = entity.additionalConditionData.transformToModelAdditionalData(),
-    uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
-    readyToSubmit = readyToSubmit,
+): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
+  transform(
+    it,
+    conditionSubmissionStatus[it.conditionCode]!!,
   )
+}
+
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
+  id = entity.id,
+  code = entity.conditionCode,
+  version = entity.conditionVersion,
+  category = entity.conditionCategory,
+  sequence = entity.conditionSequence,
+  text = entity.conditionText,
+  expandedText = entity.expandedConditionText,
+  data = entity.additionalConditionData.transformToModelAdditionalData(),
+  uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
+  readyToSubmit = readyToSubmit,
+)
 
 // Transform a list of entity additional condition data to model additional condition data
-fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> =
-  map(::transform)
+fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> = map(::transform)
 
 fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionData = ModelAdditionalConditionData(
   id = entity.id,
@@ -505,20 +505,18 @@ fun transform(entity: EntityBespokeCondition): ModelBespokeCondition = ModelBesp
 )
 
 // Transform a list of entity additional condition uploads to model additional condition uploads
-fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> =
-  map(::transform)
+fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> = map(::transform)
 
-fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary =
-  ModelAdditionalConditionUploadSummary(
-    id = entity.id,
-    filename = entity.filename,
-    fileType = entity.fileType,
-    fileSize = entity.fileSize,
-    uploadedTime = entity.uploadedTime,
-    description = entity.description,
-    thumbnailImage = entity.thumbnailImage?.toBase64(),
-    uploadDetailId = entity.uploadDetailId,
-  )
+fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary = ModelAdditionalConditionUploadSummary(
+  id = entity.id,
+  filename = entity.filename,
+  fileType = entity.fileType,
+  fileSize = entity.fileSize,
+  uploadedTime = entity.uploadedTime,
+  description = entity.description,
+  thumbnailImage = entity.thumbnailImage?.toBase64(),
+  uploadDetailId = entity.uploadDetailId,
+)
 
 // Transform a list of entity hdc curfew times to model hdc curfew times
 fun List<EntityHdcCurfewTimes>.transformToModelCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)

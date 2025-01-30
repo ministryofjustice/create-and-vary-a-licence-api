@@ -186,4 +186,11 @@ data class LicenceSummary(
 
   @Schema(description = "The full name of the person who last updated this licence", example = "Jane Jones")
   val updatedByFullName: String? = null,
+
+  @Schema(
+    description = "The person’s actual home detention curfew date",
+    example = "30/01/2025",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val homeDetentionCurfewActualDate: LocalDate? = null,
 )
