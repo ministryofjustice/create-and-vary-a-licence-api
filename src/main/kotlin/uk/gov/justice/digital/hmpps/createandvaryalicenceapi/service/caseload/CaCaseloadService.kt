@@ -268,7 +268,10 @@ class CaCaseloadService(
     return createNotStartedLicenceForCase(casesWithoutLicences, licenceStartDates)
   }
 
-  private fun createNotStartedLicenceForCase(cases: List<ManagedCase>, licenceStartDates: Map<String, LocalDate?>): List<CaCase> = cases.map { c ->
+  private fun createNotStartedLicenceForCase(
+    cases: List<ManagedCase>,
+    licenceStartDates: Map<String, LocalDate?>,
+  ): List<CaCase> = cases.map { c ->
 
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
@@ -434,7 +437,10 @@ class CaCaseloadService(
     )
   }
 
-  private fun pairNomisRecordsWithDelius(prisoners: List<PrisonerSearchPrisoner>, licenceStartDates: Map<String, LocalDate?>): List<ManagedCase> {
+  private fun pairNomisRecordsWithDelius(
+    prisoners: List<PrisonerSearchPrisoner>,
+    licenceStartDates: Map<String, LocalDate?>,
+  ): List<ManagedCase> {
     val caseloadNomisIds = prisoners
       .map { it.prisonerNumber }
 
