@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -15,7 +16,7 @@ class BankHolidayServiceTest {
 
   @BeforeEach
   fun reset() {
-    org.mockito.kotlin.reset(govUkApiClient)
+    reset(govUkApiClient)
     whenever(govUkApiClient.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 

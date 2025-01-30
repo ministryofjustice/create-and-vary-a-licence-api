@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -43,13 +44,13 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
     assertThat(inactiveLicences?.size).isEqualTo(4)
     assertThat(inactiveLicences)
       .extracting<Tuple> {
-        Tuple.tuple(it.licenceId, it.licenceStatus)
+        tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        Tuple.tuple(2L, LicenceStatus.INACTIVE),
-        Tuple.tuple(5L, LicenceStatus.INACTIVE),
-        Tuple.tuple(6L, LicenceStatus.INACTIVE),
-        Tuple.tuple(7L, LicenceStatus.INACTIVE),
+        tuple(2L, LicenceStatus.INACTIVE),
+        tuple(5L, LicenceStatus.INACTIVE),
+        tuple(6L, LicenceStatus.INACTIVE),
+        tuple(7L, LicenceStatus.INACTIVE),
       )
 
     val remainingLicences = webTestClient.post()
@@ -64,12 +65,12 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
     assertThat(remainingLicences?.size).isEqualTo(3)
     assertThat(remainingLicences)
       .extracting<Tuple> {
-        Tuple.tuple(it.licenceId, it.licenceStatus)
+        tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        Tuple.tuple(1L, LicenceStatus.APPROVED),
-        Tuple.tuple(3L, LicenceStatus.ACTIVE),
-        Tuple.tuple(4L, LicenceStatus.IN_PROGRESS),
+        tuple(1L, LicenceStatus.APPROVED),
+        tuple(3L, LicenceStatus.ACTIVE),
+        tuple(4L, LicenceStatus.IN_PROGRESS),
       )
   }
 

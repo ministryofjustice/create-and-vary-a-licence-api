@@ -18,7 +18,7 @@ class EligibilityService(
 
   val checks = listOf(
     !isPersonParoleEligible() describedAs "is eligible for parole",
-    hasCorrectLegalStatus() describedAs "has incorrect legal status",
+    isNotDead() describedAs "has died",
     !isOnIndeterminateSentence() describedAs "is on indeterminate sentence",
     hasConditionalReleaseDate() describedAs "has no conditional release date",
     isEligibleIfOnAnExtendedDeterminateSentence() describedAs "is on non-eligible EDS",
@@ -45,7 +45,7 @@ class EligibilityService(
     return@early false
   }
 
-  private fun hasCorrectLegalStatus(): EligibilityCheck = { it.legalStatus != "DEAD" }
+  private fun isNotDead(): EligibilityCheck = { it.legalStatus != "DEAD" }
 
   private fun isOnIndeterminateSentence(): EligibilityCheck = {
     if (it.indeterminateSentence == null) {

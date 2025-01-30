@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -449,9 +449,9 @@ class LicenceConditionServiceTest {
       assertThat(licenceCaptor.value.additionalConditions)
         .extracting("id", "conditionCode", "conditionSequence")
         .containsExactly(
-          Tuple.tuple(1L, "code", 5),
-          Tuple.tuple(3L, "code3", 6),
-          Tuple.tuple(-1L, "code", 7),
+          tuple(1L, "code", 5),
+          tuple(3L, "code3", 6),
+          tuple(-1L, "code", 7),
         )
 
       // Verify last contact info is recorded
