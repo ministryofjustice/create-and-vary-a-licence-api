@@ -48,7 +48,7 @@ class EligibilityServiceTest {
         legalStatus = "DEAD",
       ),
     )
-    assertThat(result).containsExactly("has incorrect legal status")
+    assertThat(result).containsExactly("has died")
   }
 
   @Test

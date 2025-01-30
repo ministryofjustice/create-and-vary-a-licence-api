@@ -11,6 +11,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 
 @Component
 class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val communityApiClient: WebClient) {
+  companion object {
+    private const val STAFF_EMAIL_BATCH = 500
+  }
 
   fun getTeamsCodesForUser(staffIdentifier: Long): List<String> {
     val communityApiResponse = getStaffByIdentifier(staffIdentifier)
@@ -39,12 +42,31 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val communityApiClient:
           it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
             Mono.empty()
           }
+
           else -> Mono.error(it)
         }
       }
       .block()
     return communityApiResponse
       ?: error("Unexpected null response from API")
+  }
+
+  fun getStaffEmails(crns: List<String>): List<StaffEmail> {
+    if (crns.isEmpty()) return emptyList()
+
+    val batchedCrns = crns.chunked(STAFF_EMAIL_BATCH)
+    val results = batchedCrns.map { batch ->
+      communityApiClient
+        .post()
+        .uri("/probation-case/responsible-community-manager")
+        .bodyValue(batch)
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .bodyToMono(typeReference<List<StaffEmail>>())
+        .block() ?: error("Unexpected null response from API")
+    }
+
+    return results.flatten()
   }
 
   fun getStaffDetailsByUsername(usernames: List<String>): List<User> {

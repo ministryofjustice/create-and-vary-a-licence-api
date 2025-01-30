@@ -49,6 +49,7 @@
     <ID>LongParameterList:NotifyService.kt$NotifyService$(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String)</ID>
     <ID>LongParameterList:PrisonUser.kt$PrisonUser$( id: Long? = this.id, username: String = this.username, email: String? = this.email, firstName: String? = this.firstName, lastName: String? = this.lastName, lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp, )</ID>
     <ID>LongParameterList:PrisonerSearchService.kt$PrisonerSearchService$( private val licenceRepository: LicenceRepository, private val deliusApiClient: DeliusApiClient, private val probationSearchApiClient: ProbationSearchApiClient, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val prisonApiClient: PrisonApiClient, private val eligibilityService: EligibilityService, private val releaseDateService: ReleaseDateService, )</ID>
+    <ID>LongParameterList:PromptComService.kt$PromptComService$( private val licenceRepository: LicenceRepository, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val probationSearchApiClient: ProbationSearchApiClient, private val eligibilityService: EligibilityService, private val releaseDateService: ReleaseDateService, private val prisonApiClient: PrisonApiClient, private val deliusApiClient: DeliusApiClient, )</ID>
     <ID>LongParameterList:Staff.kt$Staff$( @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @NotNull var id: Long? = -1, @NotNull @Enumerated(EnumType.STRING) @Column(name = "kind", insertable = false, updatable = false) var kind: StaffKind, @Column(unique = true) override val username: String, val email: String?, override val firstName: String?, override val lastName: String?, val lastUpdatedTimestamp: LocalDateTime? = null, )</ID>
     <ID>LongParameterList:ToModelTransformers.kt$( licence: CrdLicence, earliestReleaseDate: LocalDate?, isEligibleForEarlyRelease: Boolean, hardStopDate: LocalDate?, hardStopWarningDate: LocalDate?, isInHardStopPeriod: Boolean, isDueForEarlyRelease: Boolean, isDueToBeReleasedInTheNextTwoWorkingDays: Boolean, conditionSubmissionStatus: Map&lt;String, Boolean&gt;, )</ID>
     <ID>LongParameterList:ToModelTransformers.kt$( licence: EntityLicence, hardStopDate: LocalDate?, hardStopWarningDate: LocalDate?, isInHardStopPeriod: Boolean, isDueForEarlyRelease: Boolean, isDueToBeReleasedInTheNextTwoWorkingDays: Boolean, )</ID>
@@ -68,6 +69,7 @@
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$500</ID>
     <ID>MagicNumber:LicenceActivationService.kt$LicenceActivationService$4</ID>
     <ID>MagicNumber:ProbationSearchApiClient.kt$ProbationSearchApiClient$2000</ID>
+    <ID>MagicNumber:PromptComService.kt$PromptComService$4</ID>
     <ID>MagicNumber:SubjectAccessRequestController.kt$SubjectAccessRequestController$209</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
@@ -100,6 +102,8 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToSarModelTransfer.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.ToSarModelTransfer.kt</ID>
     <ID>TooManyFunctions:VariationLicence.kt$VariationLicence : Licence</ID>
+    <ID>TopLevelPropertyNaming:PromptComService.kt$private const val lng = 4</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
+    <ID>UnusedPrivateProperty:PromptComService.kt$private const val lng = 4</ID>
   </CurrentIssues>
 </SmellBaseline>
