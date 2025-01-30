@@ -68,6 +68,7 @@ class SendLicenceCreationPromptsController {
         "      \"\"\".trimIndent(),\n" +
         "    )",
     )
+    // This will need to be refactored when ready to be re-enabled, as it will currently list HDC licences as potentially eligible for early release
 //     notifyService.sendInitialLicenceCreateEmails(body)
   }
 

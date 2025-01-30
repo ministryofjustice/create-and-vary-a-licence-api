@@ -48,9 +48,10 @@ class ReleaseDateService(
   }
 
   fun getEarliestReleaseDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate ?: return null
+    val releaseDate = sentenceDateHolder.licenceStartDate ?: return null
     return when {
-      isEligibleForEarlyRelease(sentenceDateHolder) -> getEarliestDateBefore(
+      releaseDate == sentenceDateHolder.homeDetentionCurfewActualDate -> releaseDate
+      isEligibleForEarlyRelease(releaseDate) -> getEarliestDateBefore(
         maxNumberOfWorkingDaysAllowedForEarlyRelease,
         releaseDate,
       )
@@ -69,7 +70,11 @@ class ReleaseDateService(
   }
 
   fun isEligibleForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate
+    val releaseDate = sentenceDateHolder.licenceStartDate
+
+    // Temporary check to prevent HDC licences being marked as early release until we can get kind before creation
+    if (releaseDate == sentenceDateHolder.homeDetentionCurfewActualDate) return false
+
     return releaseDate != null && isEligibleForEarlyRelease(releaseDate)
   }
 

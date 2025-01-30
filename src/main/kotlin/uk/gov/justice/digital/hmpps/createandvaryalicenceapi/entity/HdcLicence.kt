@@ -43,7 +43,7 @@ class HdcLicence(
   licenceStartDate: LocalDate? = null,
   licenceExpiryDate: LocalDate? = null,
   licenceActivatedDate: LocalDateTime? = null,
-  val homeDetentionCurfewActualDate: LocalDate? = null,
+  override val homeDetentionCurfewActualDate: LocalDate? = null,
   val homeDetentionCurfewEndDate: LocalDate? = null,
   topupSupervisionStartDate: LocalDate? = null,
   topupSupervisionExpiryDate: LocalDate? = null,

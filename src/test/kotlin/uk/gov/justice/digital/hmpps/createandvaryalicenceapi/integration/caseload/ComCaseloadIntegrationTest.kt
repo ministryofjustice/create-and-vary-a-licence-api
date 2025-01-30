@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
@@ -73,6 +74,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           releaseDate,
         ),
       )
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       val caseload = webTestClient.get()
         .uri(GET_STAFF_CREATE_CASELOAD)
@@ -130,6 +132,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
           releaseDate,
         ),
       )
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       val caseload = webTestClient.post()
         .uri(GET_TEAM_CREATE_CASELOAD)
@@ -184,6 +187,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
       probationSearchMockServer.stubGetOffendersByCrn()
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("staff-vary-case-load-prisoners"))
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       val caseload = webTestClient.get()
         .uri(GET_STAFF_VARY_CASELOAD)
@@ -238,6 +242,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
       probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-vary-case-load-prisoners"))
+      prisonApiMockServer.stubGetCourtOutcomes()
 
       val caseload = webTestClient.post()
         .uri(GET_TEAM_VARY_CASELOAD)
@@ -262,6 +267,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     val probationSearchMockServer = ProbationSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val govUkMockServer = GovUkMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -271,6 +277,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       deliusMockServer.start()
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
+      prisonApiMockServer.start()
     }
 
     @JvmStatic
@@ -280,6 +287,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       probationSearchMockServer.stop()
       deliusMockServer.stop()
       govUkMockServer.stop()
+      prisonApiMockServer.stop()
     }
   }
 }
