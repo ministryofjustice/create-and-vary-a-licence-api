@@ -12,11 +12,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecor
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -29,6 +31,7 @@ class ComCaseloadService(
   private val licenceService: LicenceService,
   private val prisonerSearchService: PrisonerSearchService,
   private val probationSearchApiClient: ProbationSearchApiClient,
+  private val releaseDateService: ReleaseDateService,
 ) {
   companion object {
     private const val PROBATION_SEARCH_BATCH_SIZE = 500
@@ -125,10 +128,13 @@ class ComCaseloadService(
   fun mapOffendersToLicences(cases: List<ManagedCase>): List<ManagedCase> {
     val nomisIdList = cases.mapNotNull { offender -> offender.nomisRecord?.prisonerNumber }
     val existingLicences: List<LicenceSummary> = findExistingLicences(nomisIdList)
+    val casesToLicences = cases.filter { it.nomisRecord != null }.associateWith {
+      existingLicences.filter { licence -> it.nomisRecord!!.prisonerNumber == licence.nomisId }
+    }
+    val licenceStartDates = getLicenceStartDates(casesToLicences)
 
-    return cases.map { case ->
+    return casesToLicences.map { (case, licences) ->
       val updatedCase: ManagedCase
-      val licences = existingLicences.filter { licence -> licence.nomisId == case.nomisRecord?.prisonerNumber }
       if (licences.isNotEmpty()) {
         updatedCase = case.copy(
           licences = licences.map { transformLicenceSummaryToCaseLoadSummary(it) },
@@ -172,7 +178,7 @@ class ComCaseloadService(
                 hardStopDate = case.cvlFields.hardStopDate,
                 hardStopWarningDate = case.cvlFields.hardStopWarningDate,
                 isDueToBeReleasedInTheNextTwoWorkingDays = case.cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays,
-                releaseDate = case.nomisRecord.confirmedReleaseDate ?: case.nomisRecord.conditionalReleaseDate,
+                releaseDate = licenceStartDates[case.nomisRecord.prisonerNumber],
                 isReviewNeeded = false,
               ),
             ),
@@ -210,7 +216,7 @@ class ComCaseloadService(
     managedOffenders.filter { offender ->
       offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
     }.filter { offender ->
-      val releaseDate = offender.nomisRecord?.confirmedReleaseDate ?: offender.nomisRecord?.conditionalReleaseDate
+      val releaseDate = offender.licences.find { licence -> offender.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.releaseDate
       releaseDate?.isAfter(
         LocalDate.now().minusDays(1),
       ) ?: false
@@ -390,5 +396,13 @@ class ComCaseloadService(
       isDueForEarlyRelease = managedCase.cvlFields.isDueForEarlyRelease,
       isReviewNeeded = licence?.isReviewNeeded ?: false,
     )
+  }
+
+  private fun getLicenceStartDates(casesToLicences: Map<ManagedCase, List<LicenceSummary>>): Map<String, LocalDate?> {
+    val prisonerSearchPrisonersWithoutLicences = casesToLicences.filter { (_, licences) ->
+      licences.isEmpty()
+    }.map { (case, _) -> case.nomisRecord!!.toPrisonerSearchPrisoner() }
+
+    return releaseDateService.getLicenceStartDates(prisonerSearchPrisonersWithoutLicences)
   }
 }
