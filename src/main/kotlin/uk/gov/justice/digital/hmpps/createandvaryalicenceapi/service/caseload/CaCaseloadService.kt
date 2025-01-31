@@ -157,6 +157,8 @@ class CaCaseloadService(
         releaseDate = licence?.licenceStartDate,
         releaseDateLabel =
         when (licence.licenceStartDate) {
+          null -> "CRD"
+          licence.homeDetentionCurfewActualDate -> "HDCAD"
           licence.actualReleaseDate -> "Confirmed release date"
           else -> "CRD"
         },
@@ -233,8 +235,7 @@ class CaCaseloadService(
     }
   }
 
-  private fun applySort(cases: List<CaCase>, view: String): List<CaCase> =
-    if (view == "prison") cases.sortedBy { it.releaseDate } else cases.sortedByDescending { it.releaseDate }
+  private fun applySort(cases: List<CaCase>, view: String): List<CaCase> = if (view == "prison") cases.sortedBy { it.releaseDate } else cases.sortedByDescending { it.releaseDate }
 
   private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
     val preReleaseLicences = licences.filter { it.licenceStatus != ACTIVE }
@@ -267,41 +268,42 @@ class CaCaseloadService(
     return createNotStartedLicenceForCase(casesWithoutLicences, licenceStartDates)
   }
 
-  private fun createNotStartedLicenceForCase(cases: List<ManagedCase>, licenceStartDates: Map<String, LocalDate?>): List<CaCase> {
-    return cases.map { c ->
+  private fun createNotStartedLicenceForCase(
+    cases: List<ManagedCase>,
+    licenceStartDates: Map<String, LocalDate?>,
+  ): List<CaCase> = cases.map { c ->
 
-      // Default status (if not overridden below) will show the case as clickable on case lists
-      var licenceStatus = NOT_STARTED
+    // Default status (if not overridden below) will show the case as clickable on case lists
+    var licenceStatus = NOT_STARTED
 
-      if (c.cvlFields.isInHardStopPeriod) {
-        licenceStatus = TIMED_OUT
-      }
-
-      val com = c.deliusRecord?.managedOffenderCrn?.staff
-
-      val releaseDate = licenceStartDates[c.nomisRecord?.prisonerNumber]
-
-      CaCase(
-        name = c.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
-        prisonerNumber = c.nomisRecord?.prisonerNumber!!,
-        releaseDate = releaseDate,
-        releaseDateLabel = when (releaseDate) {
-          null -> "CRD"
-          c.nomisRecord.confirmedReleaseDate -> "Confirmed release date"
-          c.nomisRecord.homeDetentionCurfewActualDate -> "HDCAD"
-          else -> "CRD"
-        },
-        licenceStatus = licenceStatus,
-        nomisLegalStatus = c.nomisRecord.legalStatus,
-        isDueForEarlyRelease = c.cvlFields.isDueForEarlyRelease,
-        isInHardStopPeriod = c.cvlFields.isInHardStopPeriod,
-        tabType = determineCaViewCasesTab(c.cvlFields, releaseDate, licence = null),
-        probationPractitioner = ProbationPractitioner(
-          staffCode = com?.code,
-          name = com?.name?.fullName(),
-        ),
-      )
+    if (c.cvlFields.isInHardStopPeriod) {
+      licenceStatus = TIMED_OUT
     }
+
+    val com = c.deliusRecord?.managedOffenderCrn?.staff
+
+    val releaseDate = licenceStartDates[c.nomisRecord?.prisonerNumber]
+
+    CaCase(
+      name = c.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
+      prisonerNumber = c.nomisRecord?.prisonerNumber!!,
+      releaseDate = releaseDate,
+      releaseDateLabel = when (releaseDate) {
+        null -> "CRD"
+        c.nomisRecord.confirmedReleaseDate -> "Confirmed release date"
+        c.nomisRecord.homeDetentionCurfewActualDate -> "HDCAD"
+        else -> "CRD"
+      },
+      licenceStatus = licenceStatus,
+      nomisLegalStatus = c.nomisRecord.legalStatus,
+      isDueForEarlyRelease = c.cvlFields.isDueForEarlyRelease,
+      isInHardStopPeriod = c.cvlFields.isInHardStopPeriod,
+      tabType = determineCaViewCasesTab(c.cvlFields, releaseDate, licence = null),
+      probationPractitioner = ProbationPractitioner(
+        staffCode = com?.code,
+        name = com?.name?.fullName(),
+      ),
+    )
   }
 
   private fun filterOffendersEligibleForLicence(offenders: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
@@ -321,8 +323,7 @@ class CaCaseloadService(
     }
   }
 
-  private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> =
-    licences.filter { l -> l.nomisLegalStatus != "DEAD" }
+  private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
   private fun enrichWithNomisData(licences: List<LicenceSummary>, prisoners: List<CaseloadItem>): List<CaCase> {
     return prisoners.map { p ->
@@ -436,7 +437,10 @@ class CaCaseloadService(
     )
   }
 
-  private fun pairNomisRecordsWithDelius(prisoners: List<PrisonerSearchPrisoner>, licenceStartDates: Map<String, LocalDate?>): List<ManagedCase> {
+  private fun pairNomisRecordsWithDelius(
+    prisoners: List<PrisonerSearchPrisoner>,
+    licenceStartDates: Map<String, LocalDate?>,
+  ): List<ManagedCase> {
     val caseloadNomisIds = prisoners
       .map { it.prisonerNumber }
 

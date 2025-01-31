@@ -985,6 +985,40 @@ class CaCaseloadServiceTest {
     }
   }
 
+  @Test
+  fun `should use HDCAD as release label where a HDCAD is set`() {
+    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+      listOf(
+        aLicenceSummary.copy(
+          licenceStartDate = oneDayFromNow,
+          homeDetentionCurfewActualDate = oneDayFromNow,
+        ),
+      ),
+    )
+
+    val probationOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")
+    assertThat(probationOmuCaseload).isEqualTo(
+      listOf(
+        TestData.caCase().copy(
+          licenceId = 1,
+          name = "John Cena",
+          prisonerNumber = "A1234AA",
+          releaseDate = oneDayFromNow,
+          tabType = null,
+          nomisLegalStatus = null,
+          probationPractitioner = ProbationPractitioner(
+            staffCode = "AB00001",
+            name = "com user",
+            staffIdentifier = null,
+            staffUsername = null,
+          ),
+          lastWorkedOnBy = "X Y",
+          releaseDateLabel = "HDCAD",
+        ),
+      ),
+    )
+  }
+
   private companion object {
     private fun createClock(timestamp: String) = Clock.fixed(Instant.parse(timestamp), ZoneId.systemDefault())
 
