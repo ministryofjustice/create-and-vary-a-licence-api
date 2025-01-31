@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
@@ -41,6 +42,7 @@ class ComCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchService = mock<PrisonerSearchService>()
+  private val releaseDateService = mock<ReleaseDateService>()
 
   private val service = ComCaseloadService(
     caseloadService,
@@ -48,6 +50,7 @@ class ComCaseloadServiceTest {
     licenceService,
     prisonerSearchService,
     probationSearchApiClient,
+    releaseDateService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
@@ -62,23 +65,22 @@ class ComCaseloadServiceTest {
   }
 
   @Test
-  fun `it does not call the licence service when no NOMIS records are found`() {
-    val cases = listOf(ManagedCase(nomisRecord = Prisoner(), cvlFields = CvlFields(LicenceType.AP_PSS)))
+  fun `it filters out cases with no NOMIS record`() {
+    val cases = listOf(ManagedCase(nomisRecord = null, cvlFields = CvlFields(LicenceType.AP_PSS)))
     val casesAndLicences = service.mapOffendersToLicences(cases)
 
-    assertThat(casesAndLicences).hasSize(1)
-    with(casesAndLicences.first()) {
-      assertThat(licences).hasSize(1)
-      assertThat(licences[0].licenceStatus).isEqualTo(LicenceStatus.NOT_STARTED)
-    }
+    assertThat(casesAndLicences).hasSize(0)
     verify(licenceService, never()).findLicencesMatchingCriteria(any())
   }
 
   @Test
   fun `it calls the licence service when Nomis records are found`() {
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf("ABC123" to tenDaysFromNow),
+    )
     val cases = listOf(
       ManagedCase(
-        nomisRecord = Prisoner(prisonerNumber = "ABC123", conditionalReleaseDate = tenDaysFromNow),
+        nomisRecord = Prisoner(prisonerNumber = "ABC123", firstName = "Bob", lastName = "Smith", dateOfBirth = LocalDate.of(1970, 1, 1), conditionalReleaseDate = tenDaysFromNow),
         cvlFields = CvlFields(
           hardStopDate = LocalDate.of(2023, Month.FEBRUARY, 3),
           hardStopWarningDate = LocalDate.of(2023, Month.FEBRUARY, 1),
@@ -99,9 +101,12 @@ class ComCaseloadServiceTest {
 
   @Test
   fun `it sets not started licences to timed out when in the hard stop period`() {
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf("ABC123" to tenDaysFromNow),
+    )
     val cases = listOf(
       ManagedCase(
-        nomisRecord = Prisoner(prisonerNumber = "ABC123"),
+        nomisRecord = Prisoner(prisonerNumber = "ABC123", firstName = "Bob", lastName = "Smith", dateOfBirth = LocalDate.of(1970, 1, 1)),
         cvlFields = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.AP),
       ),
     )
@@ -139,6 +144,12 @@ class ComCaseloadServiceTest {
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
       listOf(
         createCaseloadItem("AB1234E", tenDaysFromNow),
+      ),
+    )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "AB1234E" to tenDaysFromNow,
       ),
     )
 
@@ -184,6 +195,17 @@ class ComCaseloadServiceTest {
         createOffenderDetail(id = 9L, nomsNumber = "AB1234P", crn = "X12354"),
         createOffenderDetail(id = 10L, nomsNumber = "AB1234Q", crn = "X12355"),
         createOffenderDetail(id = 11L, nomsNumber = "AB1234R", crn = "X12356"),
+      ),
+    )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "AB1234E" to nineDaysFromNow,
+        "AB1234L" to nineDaysFromNow,
+        "AB1234M" to tenDaysFromNow,
+        "AB1234P" to nineDaysFromNow,
+        "AB1234Q" to nineDaysFromNow,
+        "AB1234R" to nineDaysFromNow,
       ),
     )
 
@@ -281,6 +303,105 @@ class ComCaseloadServiceTest {
     )
   }
 
+  // isn't working properly
+  @Test
+  fun `it filters out cases passed LSD`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(
+        crn = "X12348",
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+      ),
+      ManagedOffenderCrn(
+        crn = "X12349",
+        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+      ),
+    )
+
+    whenever(
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
+    ).thenReturn(managedOffenders)
+
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
+      listOf(
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(1L, nomsNumber = "AB1234F", crn = "X12349"),
+      ),
+    )
+
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      listOf(
+        createCaseloadItem(
+          prisonerNumber = "AB1234E",
+          conditionalReleaseDate = tenDaysFromNow,
+          releaseDate = tenDaysFromNow,
+          licenceExpiryDate = LocalDate.of(
+            2022,
+            Month.DECEMBER,
+            26,
+          ),
+        ),
+        createCaseloadItem(
+          prisonerNumber = "AB1234F",
+          conditionalReleaseDate = tenDaysFromNow,
+          releaseDate = tenDaysFromNow,
+          licenceExpiryDate = LocalDate.of(
+            2022,
+            Month.DECEMBER,
+            26,
+          ),
+        ),
+      ),
+    )
+
+    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+      listOf(
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP_PSS,
+          licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "sherlockholmes",
+          licenceStartDate = LocalDate.now().minusDays(2),
+        ),
+        createLicenceSummary(
+          crn = "X12349",
+          nomisId = "AB1234F",
+          kind = LicenceKind.CRD,
+          licenceType = LicenceType.AP_PSS,
+          licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "sherlockholmes",
+          licenceStartDate = tenDaysFromNow,
+        ),
+      ),
+    )
+
+    whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
+      listOf(
+        User(
+          username = "sherlockholmes",
+          code = "X54321",
+          name = Name(forename = "Sherlock", surname = "Holmes"),
+          teams = emptyList(),
+        ),
+      ),
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+    assertThat(caseload).hasSize(1)
+    verifyCase(
+      case = caseload[0],
+      expectedCrn = "X12349",
+      expectedPrisonerNumber = "AB1234F",
+      expectedLicenceStatus = LicenceStatus.SUBMITTED,
+      expectedLicenceType = LicenceType.AP_PSS,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+    )
+  }
+
   @Test
   fun `it builds the staff create caseload`() {
     val managedOffenders = listOf(
@@ -325,6 +446,7 @@ class ComCaseloadServiceTest {
         createCaseloadItem(
           prisonerNumber = "AB1234E",
           conditionalReleaseDate = tenDaysFromNow,
+          releaseDate = tenDaysFromNow,
           licenceExpiryDate = LocalDate.of(
             2022,
             Month.DECEMBER,
@@ -334,21 +456,25 @@ class ComCaseloadServiceTest {
         createCaseloadItem(
           prisonerNumber = "AB1234F",
           conditionalReleaseDate = tenDaysFromNow,
+          releaseDate = tenDaysFromNow,
           status = "INACTIVE OUT",
         ),
         createCaseloadItem(
           prisonerNumber = "AB1234G",
           conditionalReleaseDate = tenDaysFromNow,
+          releaseDate = tenDaysFromNow,
           status = "INACTIVE OUT",
         ),
         createCaseloadItem(
           prisonerNumber = "AB1234H",
           conditionalReleaseDate = tenDaysFromNow,
+          releaseDate = tenDaysFromNow,
           topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
         ),
         createCaseloadItem(
           prisonerNumber = "AB1234I",
           conditionalReleaseDate = elevenDaysFromNow,
+          releaseDate = elevenDaysFromNow,
           topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
           licenceExpiryDate = elevenDaysFromNow,
         ),
@@ -378,6 +504,13 @@ class ComCaseloadServiceTest {
           name = Name(forename = "Sherlock", surname = "Holmes"),
           teams = emptyList(),
         ),
+      ),
+    )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "AB1234E" to tenDaysFromNow,
+        "AB1234H" to tenDaysFromNow,
       ),
     )
 
@@ -452,6 +585,13 @@ class ComCaseloadServiceTest {
           conditionalReleaseDate = tenDaysFromNow,
           topupSupervisionExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
         ),
+      ),
+    )
+
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "AB1234E" to tenDaysFromNow,
+        "AB1234F" to tenDaysFromNow,
       ),
     )
 
@@ -530,6 +670,11 @@ class ComCaseloadServiceTest {
     )
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
     whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is breach of top up supervision case"))
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "AB1234E" to tenDaysFromNow,
+      ),
+    )
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 
@@ -1036,6 +1181,9 @@ class ComCaseloadServiceTest {
     prisoner = Prisoner(
       prisonerNumber = prisonerNumber,
       conditionalReleaseDate = conditionalReleaseDate,
+      firstName = "Bob",
+      lastName = "Smith",
+      dateOfBirth = LocalDate.of(1970, 1, 1),
       status = status,
       bookingId = bookingId,
       postRecallReleaseDate = postRecallReleaseDate,
