@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -29,12 +30,15 @@ class UpdateSentenceDateService(
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
   @Transactional
   fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+    val prisonerSearchPrisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licenceEntity.kind)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -42,7 +46,7 @@ class UpdateSentenceDateService(
 
     logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
 
-    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
+    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest, licenceStartDate)
 
     val updatedLicenceEntity = licenceEntity.updateLicenceDates(
       status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
@@ -50,7 +54,7 @@ class UpdateSentenceDateService(
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
       sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
       sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
-      licenceStartDate = sentenceDatesRequest.licenceStartDate,
+      licenceStartDate = licenceStartDate,
       licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,

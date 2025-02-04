@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -51,6 +52,8 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   )
   fun `Update sentence dates`() {
     prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(LocalDate.of(2024, 9, 8))
 
     webTestClient.put()
       .uri("/licence/id/1/sentence-dates")
@@ -85,7 +88,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.actualReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
     assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
     assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
-    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2023-09-11"))
+    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2024-09-08"))
     assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
@@ -97,6 +100,8 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   )
   fun `Update sentence dates for HDC licence`() {
     prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(LocalDate.of(2024, 9, 8))
 
     webTestClient.put()
       .uri("/licence/id/1/sentence-dates")
@@ -133,7 +138,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.actualReleaseDate).isEqualTo(LocalDate.parse("2023-09-11"))
     assertThat(result?.sentenceStartDate).isEqualTo(LocalDate.parse("2021-09-11"))
     assertThat(result?.sentenceEndDate).isEqualTo(LocalDate.parse("2024-09-11"))
-    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2023-09-11"))
+    assertThat(result?.licenceStartDate).isEqualTo(LocalDate.parse("2024-08-01"))
     assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
@@ -147,6 +152,8 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   )
   fun `Update sentence dates should set license status to inactive when the offender has a new future release date`() {
     prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(LocalDate.of(2024, 9, 8))
 
     webTestClient.put()
       .uri("/licence/id/3/sentence-dates")
@@ -156,7 +163,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
           actualReleaseDate = LocalDate.now().plusDays(2),
           sentenceStartDate = LocalDate.parse("2021-09-11"),
           sentenceEndDate = LocalDate.parse("2024-09-11"),
-          licenceStartDate = LocalDate.parse("2023-09-11"),
+          licenceStartDate = LocalDate.parse("2024-09-08"),
           licenceExpiryDate = LocalDate.parse("2024-09-11"),
           topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
           topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
@@ -186,6 +193,8 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   )
   fun `Update sentence dates should set licence status to timed out when the licence is in hard stop period`() {
     prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(LocalDate.now())
 
     webTestClient.put()
       .uri("/licence/id/1/sentence-dates")
@@ -225,6 +234,8 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   )
   fun `Update sentence dates should inactivate licence where licence was in hard stop period but is no longer in hard stop period`() {
     prisonApiMockServer.stubGetHdcLatest()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    mockPrisonerSearchResponse(LocalDate.now())
 
     webTestClient.put()
       .uri("/licence/id/1/sentence-dates")
@@ -299,15 +310,48 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(currentLicence?.statusCode).isEqualTo(LicenceStatus.INACTIVE)
   }
 
+  private fun mockPrisonerSearchResponse(releaseDate: LocalDate?) {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(
+      """[
+            {
+              "prisonerNumber": "A1234AA",
+              "bookingId": "123",
+              "status": "ACTIVE",
+              "mostSeriousOffence": "Robbery",
+              "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+              "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+              "homeDetentionCurfewEligibilityDate": null,
+              "releaseDate": "$releaseDate",
+              "confirmedReleaseDate": "$releaseDate",
+              "conditionalReleaseDate": "$releaseDate",
+              "paroleEligibilityDate": null,
+              "actualParoleDate" : null,
+              "postRecallReleaseDate": null,
+              "homeDetentionCurfewActualDate": "2024-08-01",
+              "legalStatus": "SENTENCED",
+              "indeterminateSentence": false,
+              "recall": false,
+              "prisonId": "ABC",
+              "bookNumber": "12345A",
+              "firstName": "Test1",
+              "lastName": "Person1",
+              "dateOfBirth": "1985-01-01"
+           }]
+      """.trimIndent(),
+    )
+  }
+
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
     val govUkApiMockServer = GovUkMockServer()
+    val prisonerSearchMockServer = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
       govUkApiMockServer.start()
+      prisonerSearchMockServer.start()
     }
 
     @JvmStatic
@@ -315,6 +359,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonApiMockServer.stop()
       govUkApiMockServer.stop()
+      prisonerSearchMockServer.stop()
     }
   }
 }

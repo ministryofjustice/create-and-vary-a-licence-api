@@ -50,7 +50,7 @@ class LicenceFunctionsKtTest {
     val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(licenceExpiryDate = fourDaysAgo)),
+      licence.getSentenceChanges(testSentenceChanges.copy(licenceExpiryDate = fourDaysAgo), newLsd = fiveDaysAgo),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -67,11 +67,32 @@ class LicenceFunctionsKtTest {
   }
 
   @Test
+  fun `Sentence Changes should return for material change for LSD update`() {
+    val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE, licenceStartDate = fiveDaysAgo)
+
+    assertThat(
+      licence.getSentenceChanges(testSentenceChanges, newLsd = fourDaysAgo),
+    ).isEqualTo(
+      SentenceChanges(
+        lsdChanged = true,
+        ledChanged = false,
+        sedChanged = false,
+        tussdChanged = false,
+        tusedChanged = false,
+        prrdChanged = false,
+        hdcadChanged = false,
+        hdcEndDateChanged = false,
+        isMaterial = true,
+      ),
+    )
+  }
+
+  @Test
   fun `Sentence Changes should return for material change for HDCAD update to HDC licence`() {
     val licence = testHdcLicence.copy(homeDetentionCurfewActualDate = fiveDaysAgo)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewActualDate = fourDaysAgo)),
+      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewActualDate = fourDaysAgo), newLsd = fiveDaysAgo),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -92,7 +113,7 @@ class LicenceFunctionsKtTest {
     val licence = testHdcLicence.copy(homeDetentionCurfewEndDate = fiveDaysAgo)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewEndDate = fourDaysAgo)),
+      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewEndDate = fourDaysAgo), newLsd = fiveDaysAgo),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -113,7 +134,7 @@ class LicenceFunctionsKtTest {
     val licence = testCrdLicence.copy(statusCode = LicenceStatus.IN_PROGRESS)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(sentenceEndDate = fourDaysAgo)),
+      licence.getSentenceChanges(testSentenceChanges.copy(sentenceEndDate = fourDaysAgo), newLsd = fiveDaysAgo),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -134,7 +155,7 @@ class LicenceFunctionsKtTest {
     val licence = testCrdLicence.copy(statusCode = LicenceStatus.ACTIVE)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(postRecallReleaseDate = fourDaysAgo)),
+      licence.getSentenceChanges(testSentenceChanges.copy(postRecallReleaseDate = fourDaysAgo), newLsd = fiveDaysAgo),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -157,6 +178,7 @@ class LicenceFunctionsKtTest {
     assertThat(
       licence.getSentenceChanges(
         testSentenceChanges.copy(sentenceEndDate = fourDaysAgo),
+        LocalDate.now().minusDays(5),
       ),
     ).isEqualTo(
       SentenceChanges(
