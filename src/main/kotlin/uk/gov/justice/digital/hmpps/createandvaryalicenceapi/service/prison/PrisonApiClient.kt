@@ -15,6 +15,7 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+    private const val HDC_BATCH_SIZE = 500
   }
 
   fun getHdcStatus(bookingId: Long): Mono<PrisonerHdcStatus> {
@@ -27,16 +28,22 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .onErrorResume { coerce404ResponseToNull(it) }
   }
 
-  fun getHdcStatuses(bookingIds: List<Long>): List<PrisonerHdcStatus> {
+  fun getHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE): List<PrisonerHdcStatus> {
     if (bookingIds.isEmpty()) return emptyList()
-    return prisonerApiWebClient
-      .post()
-      .uri("/offender-sentences/home-detention-curfews/latest")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(bookingIds)
-      .retrieve()
-      .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
-      .block() ?: emptyList()
+
+    val batchedBookingIds = bookingIds.chunked(batchSize)
+    val results = batchedBookingIds.map { batch ->
+      prisonerApiWebClient
+        .post()
+        .uri("/offender-sentences/home-detention-curfews/latest")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(batch)
+        .retrieve()
+        .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
+        .block() ?: emptyList()
+    }
+
+    return results.flatten()
   }
 
   fun getCourtEventOutcomes(bookingIds: List<Long>): List<CourtEventOutcome> {

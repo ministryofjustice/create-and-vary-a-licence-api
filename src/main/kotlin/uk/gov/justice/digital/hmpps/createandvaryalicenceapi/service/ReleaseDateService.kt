@@ -150,8 +150,6 @@ class ReleaseDateService(
 
   private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
 
-  private fun Int.workingDaysAfter(date: LocalDate) = workingDaysService.workingDaysAfter(date).take(this).last()
-
   private fun getEarliestDateBefore(
     days: Int,
     releaseDate: LocalDate,
