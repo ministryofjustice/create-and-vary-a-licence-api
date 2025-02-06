@@ -77,8 +77,10 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
-  fun nextWorkingDate() = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
-    .first()
+  fun nextWorkingDate() = nextWorkingDates().first()
+
+  private fun nextWorkingDates(): Sequence<LocalDate> =
+    generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
 
   fun stubSearchPrisonersByNomisIds(prisonerSearchResponse: String? = null) {
     val json = prisonerSearchResponse ?: """[
@@ -351,7 +353,8 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
     )
   }
 
-  fun stubSearchPrisonersByReleaseDate(page: Int) {
+  fun stubSearchPrisonersByReleaseDate(page: Int, inHardStop: Boolean = true) {
+    val releaseDate = if (inHardStop) LocalDate.now().plusDays(1) else nextWorkingDates().drop(4).first()
     stubFor(
       post(urlEqualTo("/api/prisoner-search/release-date-by-prison?size=2000&page=$page"))
         .willReturn(
@@ -393,7 +396,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "homeDetentionCurfewEligibilityDate": null,
                   "releaseDate": null,
                   "confirmedReleaseDate": null,
-                  "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
+                  "conditionalReleaseDate": "$releaseDate",
                   "paroleEligibilityDate": null,
                   "actualParoleDate" : null,
                   "postRecallReleaseDate": null,
