@@ -11,6 +11,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 
 @Component
 class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val probationSearchApiClient: WebClient) {
+  companion object {
+    private const val BY_NOMS_ID_BATCH_SIZE = 500
+  }
 
   fun searchLicenceCaseloadByTeam(
     query: String,
@@ -55,17 +58,22 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
 
   fun searchForPeopleByNomsNumber(
     nomsIds: List<String>,
+    batchSize: Int = BY_NOMS_ID_BATCH_SIZE,
   ): List<OffenderDetail> {
     if (nomsIds.isEmpty()) return emptyList()
-    val probationOffenderSearchResponse = probationSearchApiClient
-      .post()
-      .uri("/nomsNumbers")
-      .accept(MediaType.APPLICATION_JSON)
-      .bodyValue(nomsIds)
-      .retrieve()
-      .bodyToMono(typeReference<List<OffenderDetail>>())
-      .block()
-    return probationOffenderSearchResponse ?: error("Unexpected null response from API")
+
+    val batchedNomsIds = nomsIds.chunked(batchSize)
+    val results = batchedNomsIds.map { batch ->
+      probationSearchApiClient
+        .post()
+        .uri("/nomsNumbers")
+        .accept(MediaType.APPLICATION_JSON)
+        .bodyValue(batch)
+        .retrieve()
+        .bodyToMono(typeReference<List<OffenderDetail>>())
+        .block() ?: error("Unexpected null response from API")
+    }
+    return results.flatten()
   }
 
   fun getOffendersByCrn(crns: List<String?>): List<OffenderDetail> {

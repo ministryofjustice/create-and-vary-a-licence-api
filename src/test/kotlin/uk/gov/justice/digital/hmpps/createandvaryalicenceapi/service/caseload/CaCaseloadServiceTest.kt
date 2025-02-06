@@ -130,7 +130,12 @@ class CaCaseloadServiceTest {
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(listOf(comUser))
-    whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+    whenever(
+      probationSearchApiClient.searchForPeopleByNomsNumber(
+        any(),
+        anyOrNull(),
+      ),
+    ).thenReturn(listOf(offenderDetail))
   }
 
   @Nested
@@ -276,7 +281,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by probation practitioner`() {
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
           listOf(offenderDetail),
         )
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
@@ -744,7 +749,11 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
+          listOf(
+            offenderDetail,
+          ),
+        )
 
         whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
 
@@ -805,7 +814,11 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
+          listOf(
+            offenderDetail,
+          ),
+        )
 
         whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
 
@@ -866,7 +879,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(emptyList())
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEmpty()
