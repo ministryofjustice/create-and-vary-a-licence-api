@@ -86,6 +86,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(additionalConditions).hasSize(1)
     assertThat(additionalConditions.map { it.conditionType }).allMatch { it == "AP" }
 
+    // Override prisoner search response to trigger LSD change
     mockPrisonerSearchResponse(LocalDate.parse("2023-09-11"))
 
     webTestClient.put().uri("/licence/id/${result.licenceId}/sentence-dates").bodyValue(
