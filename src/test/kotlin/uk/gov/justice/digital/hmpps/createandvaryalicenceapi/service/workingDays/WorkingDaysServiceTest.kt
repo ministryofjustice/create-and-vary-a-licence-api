@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.reset
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
@@ -14,7 +15,7 @@ class WorkingDaysServiceTest {
 
   @BeforeEach
   fun reset() {
-    org.mockito.kotlin.reset(bankHolidayService)
+    reset(bankHolidayService)
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(someBankHolidays)
   }
 

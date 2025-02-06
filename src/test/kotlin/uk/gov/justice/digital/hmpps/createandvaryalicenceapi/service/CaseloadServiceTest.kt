@@ -24,7 +24,6 @@ import java.time.LocalDate
 class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
-
   private val service =
     CaseloadService(prisonerSearchApiClient, releaseDateService)
 
@@ -69,9 +68,9 @@ class CaseloadServiceTest {
           croNumber = null,
           bookingId = "123456",
           bookNumber = "12345A",
-          firstName = "Bob",
+          firstName = "A",
           middleNames = null,
-          lastName = "Mortimar",
+          lastName = "Prisoner",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
           prisonId = "MDI",
@@ -124,9 +123,9 @@ class CaseloadServiceTest {
           croNumber = null,
           bookingId = "123456",
           bookNumber = "12345A",
-          firstName = "Bob",
+          firstName = "A",
           middleNames = null,
-          lastName = "Mortimar",
+          lastName = "Prisoner",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
           prisonId = "MDI",
@@ -163,7 +162,8 @@ class CaseloadServiceTest {
   fun getPrisonerFailsToFind() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(emptyList())
 
-    assertThatThrownBy { service.getPrisoner("A1234AA") }.isInstanceOf(EntityNotFoundException::class.java).hasMessage("A1234AA")
+    assertThatThrownBy { service.getPrisoner("A1234AA") }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessage("A1234AA")
   }
 
   @Test
@@ -186,9 +186,9 @@ class CaseloadServiceTest {
           croNumber = null,
           bookingId = "123456",
           bookNumber = "12345A",
-          firstName = "Bob",
+          firstName = "A",
           middleNames = null,
-          lastName = "Mortimar",
+          lastName = "Prisoner",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
           prisonId = "MDI",
@@ -218,6 +218,10 @@ class CaseloadServiceTest {
         ),
       ),
     )
-    verify(prisonerSearchApiClient).searchPrisonersByReleaseDate(LocalDate.of(2023, 1, 2), LocalDate.of(2023, 1, 4), setOf("MDI"))
+    verify(prisonerSearchApiClient).searchPrisonersByReleaseDate(
+      LocalDate.of(2023, 1, 2),
+      LocalDate.of(2023, 1, 4),
+      setOf("MDI"),
+    )
   }
 }

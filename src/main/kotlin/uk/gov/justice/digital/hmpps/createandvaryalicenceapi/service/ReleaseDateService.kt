@@ -24,7 +24,6 @@ class ReleaseDateService(
     val now = overrideClock ?: clock
     val hardStopDate = getHardStopDate(sentenceDateHolder)
     val today = LocalDate.now(now)
-
     if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
       return false
     }
@@ -149,8 +148,6 @@ class ReleaseDateService(
   }
 
   private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
-
-  private fun Int.workingDaysAfter(date: LocalDate) = workingDaysService.workingDaysAfter(date).take(this).last()
 
   private fun getEarliestDateBefore(
     days: Int,
