@@ -33,10 +33,6 @@ class ComCaseloadService(
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val releaseDateService: ReleaseDateService,
 ) {
-  companion object {
-    private const val PROBATION_SEARCH_BATCH_SIZE = 500
-    private const val PRISONER_SEARCH_BATCH_SIZE = 500
-  }
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
     val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
@@ -84,10 +80,7 @@ class ComCaseloadService(
 
   private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
     val crns = caseload.map { case -> case.crn }
-    val batchedCrns = crns.chunked(PROBATION_SEARCH_BATCH_SIZE)
-    val batchedOffenders = batchedCrns.map { batch -> probationSearchApiClient.getOffendersByCrn(batch) }
-
-    val offenders = batchedOffenders.flatten()
+    val offenders = probationSearchApiClient.getOffendersByCrn(crns)
     return offenders.map { offender ->
       DeliusRecord(offender, caseload.find { case -> case.crn == offender.otherIds.crn }!!)
     }
@@ -96,10 +89,8 @@ class ComCaseloadService(
   private fun pairDeliusRecordsWithNomis(managedOffenders: List<DeliusRecord>): List<ManagedCase> {
     val caseloadNomisIds = managedOffenders.filter { offender -> offender.offenderDetail.otherIds.nomsNumber != null }
       .mapNotNull { offender -> offender.offenderDetail.otherIds.nomsNumber }
-    val batchedNomisIds = caseloadNomisIds.chunked(PRISONER_SEARCH_BATCH_SIZE)
-    val batchedNomisRecords = batchedNomisIds.map { batch -> caseloadService.getPrisonersByNumber(batch) }
+    val nomisRecords = caseloadService.getPrisonersByNumber(caseloadNomisIds)
 
-    val nomisRecords = batchedNomisRecords.flatten()
     val records = managedOffenders.map { offender ->
       val caseLoadItem =
         nomisRecords.find { prisoner -> prisoner.prisoner.prisonerNumber == offender.offenderDetail.otherIds.nomsNumber }
@@ -216,7 +207,8 @@ class ComCaseloadService(
     managedOffenders.filter { offender ->
       offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
     }.filter { offender ->
-      val releaseDate = offender.licences.find { licence -> offender.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.releaseDate
+      val releaseDate =
+        offender.licences.find { licence -> offender.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.releaseDate
       releaseDate?.isAfter(
         LocalDate.now().minusDays(1),
       ) ?: false

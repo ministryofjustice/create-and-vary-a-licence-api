@@ -19,7 +19,6 @@ class NotifyAttentionNeededLicencesService(
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
-    private const val BATCH_SIZE = 500
   }
 
   @Transactional
@@ -30,10 +29,8 @@ class NotifyAttentionNeededLicencesService(
       return
     }
 
-    val batchedNomsIds = attentionNeededLicences.map { it.nomsId!! }.chunked(BATCH_SIZE)
-    val prisoners = batchedNomsIds.map {
-      prisonerSearchApiClient.searchPrisonersByNomisIds(it)
-    }.flatten()
+    val nomisIds = attentionNeededLicences.map { it.nomsId!! }
+    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
 
     val prisonerToLegalStatus = prisoners.associateBy { it.prisonerNumber }
     val notifyLicences = attentionNeededLicences.map {

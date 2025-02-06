@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Service
 class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: WebClient) {
@@ -29,11 +30,8 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
       .onErrorResume { coerce404ResponseToNull(it) }
   }
 
-  fun getHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE): List<PrisonerHdcStatus> {
-    if (bookingIds.isEmpty()) return emptyList()
-
-    val batchedBookingIds = bookingIds.chunked(batchSize)
-    val results = batchedBookingIds.map { batch ->
+  fun getHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) =
+    batchRequests(batchSize, bookingIds) { batch ->
       prisonerApiWebClient
         .post()
         .uri("/offender-sentences/home-detention-curfews/latest")
@@ -41,18 +39,11 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
         .bodyValue(batch)
         .retrieve()
         .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
-        .block() ?: emptyList()
+        .block()
     }
 
-    return results.flatten()
-  }
-
-  fun getCourtEventOutcomes(
-    bookingIds: List<Long>,
-    batchSize: Int = COURT_OUTCOME_BATCH_SIZE,
-  ): List<CourtEventOutcome> {
-    val batchedBookingIds = bookingIds.chunked(batchSize)
-    val results = batchedBookingIds.map { batch ->
+  fun getCourtEventOutcomes(bookingIds: List<Long>, batchSize: Int = COURT_OUTCOME_BATCH_SIZE) =
+    batchRequests(batchSize, bookingIds) { batch ->
       prisonerApiWebClient
         .post()
         .uri("/bookings/court-event-outcomes")
@@ -60,10 +51,8 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
         .accept(MediaType.APPLICATION_JSON)
         .retrieve()
         .bodyToMono(typeReference<List<CourtEventOutcome>>())
-        .block() ?: emptyList()
+        .block()
     }
-    return results.flatten()
-  }
 
   fun getPrisonInformation(prisonId: String): Prison {
     val prisonerApiResponse = prisonerApiWebClient

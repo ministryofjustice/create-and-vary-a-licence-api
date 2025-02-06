@@ -8,11 +8,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.OffenderSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Component
 class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val probationSearchApiClient: WebClient) {
   companion object {
     private const val BY_NOMS_ID_BATCH_SIZE = 500
+    private const val BY_CRN_BATCH_SIZE = 500
   }
 
   fun searchLicenceCaseloadByTeam(
@@ -23,7 +25,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
     if (teamCodes.isEmpty()) return emptyList()
     val sortOptions = sortBy.ifEmpty { listOf(ProbationSearchSortByRequest()) }
 
-    val licenceCaseLoadRequestBody = LicenceCaseloadSearchRequest(
+    val request = LicenceCaseloadSearchRequest(
       teamCodes,
       query,
       sortOptions,
@@ -33,7 +35,7 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
     val probationOffenderSearchResponse = probationSearchApiClient
       .post()
       .uri("/licence-caseload/by-team")
-      .bodyValue(licenceCaseLoadRequestBody)
+      .bodyValue(request)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(CaseloadResponse::class.java)
@@ -59,34 +61,26 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
   fun searchForPeopleByNomsNumber(
     nomsIds: List<String>,
     batchSize: Int = BY_NOMS_ID_BATCH_SIZE,
-  ): List<OffenderDetail> {
-    if (nomsIds.isEmpty()) return emptyList()
-
-    val batchedNomsIds = nomsIds.chunked(batchSize)
-    val results = batchedNomsIds.map { batch ->
-      probationSearchApiClient
-        .post()
-        .uri("/nomsNumbers")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(batch)
-        .retrieve()
-        .bodyToMono(typeReference<List<OffenderDetail>>())
-        .block() ?: error("Unexpected null response from API")
-    }
-    return results.flatten()
-  }
-
-  fun getOffendersByCrn(crns: List<String?>): List<OffenderDetail> {
-    if (crns.isEmpty()) return emptyList()
-    val response = probationSearchApiClient
+  ) = batchRequests(batchSize, nomsIds) { batch ->
+    probationSearchApiClient
       .post()
-      .uri("/crns")
-      .bodyValue(crns)
+      .uri("/nomsNumbers")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(batch)
       .retrieve()
       .bodyToMono(typeReference<List<OffenderDetail>>())
       .block()
-
-    return response ?: error("Unexpected null response from probation search API when getting offenders by crn")
   }
+
+  fun getOffendersByCrn(crns: List<String?>) =
+    batchRequests(BY_CRN_BATCH_SIZE, crns) { batch ->
+      probationSearchApiClient
+        .post()
+        .uri("/crns")
+        .bodyValue(batch)
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .bodyToMono(typeReference<List<OffenderDetail>>())
+        .block()
+    }
 }
