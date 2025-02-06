@@ -68,6 +68,7 @@
     <ID>MagicNumber:ExclusionZoneService.kt$ExclusionZoneService$500</ID>
     <ID>MagicNumber:LicenceActivationService.kt$LicenceActivationService$4</ID>
     <ID>MagicNumber:ProbationSearchApiClient.kt$ProbationSearchApiClient$2000</ID>
+    <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
     <ID>MagicNumber:SubjectAccessRequestController.kt$SubjectAccessRequestController$209</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceFunctions.kt$SentenceChanges</ID>
