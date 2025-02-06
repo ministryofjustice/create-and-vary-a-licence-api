@@ -127,9 +127,9 @@ class ComCaseloadService(
 
   fun mapOffendersToLicences(cases: List<ManagedCase>): List<ManagedCase> {
     val nomisIdList = cases.mapNotNull { offender -> offender.nomisRecord?.prisonerNumber }
-    val existingLicences: List<LicenceSummary> = findExistingLicences(nomisIdList)
+    val existingLicences = findExistingLicences(nomisIdList).groupBy { it.nomisId }
     val casesToLicences = cases.filter { it.nomisRecord != null }.associateWith {
-      existingLicences.filter { licence -> it.nomisRecord!!.prisonerNumber == licence.nomisId }
+      existingLicences[it.nomisRecord!!.prisonerNumber] ?: emptyList()
     }
     val licenceStartDates = getLicenceStartDates(casesToLicences)
 
