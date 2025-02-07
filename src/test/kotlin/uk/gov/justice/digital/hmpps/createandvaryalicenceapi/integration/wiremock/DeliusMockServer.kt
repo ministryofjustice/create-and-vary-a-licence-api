@@ -76,6 +76,19 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
+  fun stubGetOffenderManagers() {
+    stubFor(
+      post(urlEqualTo("/probation-case/responsible-community-manager")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """[{
+            "code": "staff-code-1",
+            "email": "user@email.com"
+          }]""",
+        ).withStatus(200),
+      ),
+    )
+  }
+
   fun stubGetStaffDetailsByUsername() {
     stubFor(
       post(urlEqualTo("/staff"))

@@ -45,16 +45,15 @@ class PrisonerSearchServiceTest {
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service =
-    PrisonerSearchService(
-      licenceRepository,
-      deliusApiClient,
-      probationSearchApiClient,
-      prisonerSearchApiClient,
-      prisonApiClient,
-      eligibilityService,
-      releaseDateService,
-    )
+  private val service = PrisonerSearchService(
+    licenceRepository,
+    deliusApiClient,
+    probationSearchApiClient,
+    prisonerSearchApiClient,
+    prisonApiClient,
+    eligibilityService,
+    releaseDateService,
+  )
 
   @BeforeEach
   fun reset() {
@@ -131,28 +130,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "X12345",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2021-10-22"),
-          1L,
-          LicenceType.AP,
-          LicenceStatus.IN_PROGRESS,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "X12345",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2021-10-22"),
+        1L,
+        LicenceType.AP,
+        LicenceStatus.IN_PROGRESS,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -233,11 +230,9 @@ class PrisonerSearchServiceTest {
     val offender = resultsList.first()
 
     assertThat(resultsList.size).isEqualTo(1)
-    assertThat(offender)
-      .extracting { tuple(it.name, it.comName, it.teamName) }
-      .isEqualTo(
-        tuple("Test Surname", "Staff Surname", "Test Team"),
-      )
+    assertThat(offender).extracting { tuple(it.name, it.comName, it.teamName) }.isEqualTo(
+      tuple("Test Surname", "Staff Surname", "Test Team"),
+    )
   }
 
   @Test
@@ -262,19 +257,18 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        (
-          listOf(
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.ACTIVE,
-            ),
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.APPROVED,
-            ),
-          )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      (
+        listOf(
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.ACTIVE,
           ),
-      )
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.APPROVED,
+          ),
+        )
+        ),
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         aPrisonerSearchResult,
@@ -303,28 +297,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "X12345",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2021-10-22"),
-          1L,
-          LicenceType.AP,
-          LicenceStatus.APPROVED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "X12345",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2021-10-22"),
+        1L,
+        LicenceType.AP,
+        LicenceStatus.APPROVED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -352,19 +344,18 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        (
-          listOf(
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.ACTIVE,
-            ),
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.VARIATION_SUBMITTED,
-            ),
-          )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      (
+        listOf(
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.ACTIVE,
           ),
-      )
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.VARIATION_SUBMITTED,
+          ),
+        )
+        ),
+    )
 
     whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchResult)).thenReturn(
       true,
@@ -393,28 +384,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "X12345",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2021-10-22"),
-          1L,
-          LicenceType.AP,
-          LicenceStatus.VARIATION_SUBMITTED,
-          true,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "X12345",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2021-10-22"),
+        1L,
+        LicenceType.AP,
+        LicenceStatus.VARIATION_SUBMITTED,
+        true,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(0)
     assertThat(onProbationCount).isEqualTo(1)
@@ -442,10 +431,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -491,28 +479,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -540,10 +526,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -599,10 +584,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -647,28 +631,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.PSS,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.PSS,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -696,10 +678,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -747,28 +728,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -796,10 +775,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -848,28 +826,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -897,10 +873,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -949,28 +924,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP_PSS,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP_PSS,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -998,10 +971,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -1072,10 +1044,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -1123,28 +1094,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -1172,10 +1141,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -1243,10 +1211,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -1300,28 +1267,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -1349,10 +1314,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -1366,7 +1330,11 @@ class PrisonerSearchServiceTest {
       true,
     )
 
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
+    whenever(
+      prisonApiClient.getHdcStatuses(
+        listOf(aPrisonerSearchResult.bookingId!!.toLong()),
+      ),
+    ).thenReturn(
       listOf(
         aPrisonerHdcStatus.copy(
           approvalStatus = "APPROVED",
@@ -1396,6 +1364,7 @@ class PrisonerSearchServiceTest {
 
     verify(prisonApiClient).getHdcStatuses(
       any(),
+      anyOrNull(),
     )
 
     val resultsList = result.results
@@ -1430,10 +1399,9 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        emptyList(),
-      )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      emptyList(),
+    )
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(aPrisonerSearchResult.prisonerNumber))).thenReturn(
       listOf(
@@ -1479,28 +1447,26 @@ class PrisonerSearchServiceTest {
     assertThat(resultsList).isNotEmpty
     assertThat(resultsList.size).isEqualTo(1)
 
-    assertThat(offender)
-      .extracting {
-        tuple(
-          it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
-          it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
-        )
-      }
-      .isEqualTo(
-        tuple(
-          "Test Surname",
-          "A123456",
-          "A1234AA",
-          "Staff Surname",
-          "A01B02C",
-          "Test Team",
-          LocalDate.parse("2023-09-14"),
-          null,
-          LicenceType.AP,
-          LicenceStatus.NOT_STARTED,
-          false,
-        ),
+    assertThat(offender).extracting {
+      tuple(
+        it.name, it.crn, it.nomisId, it.comName, it.comStaffCode, it.teamName, it.releaseDate,
+        it.licenceId, it.licenceType, it.licenceStatus, it.isOnProbation,
       )
+    }.isEqualTo(
+      tuple(
+        "Test Surname",
+        "A123456",
+        "A1234AA",
+        "Staff Surname",
+        "A01B02C",
+        "Test Team",
+        LocalDate.parse("2023-09-14"),
+        null,
+        LicenceType.AP,
+        LicenceStatus.NOT_STARTED,
+        false,
+      ),
+    )
 
     assertThat(inPrisonCount).isEqualTo(1)
     assertThat(onProbationCount).isEqualTo(0)
@@ -1578,19 +1544,18 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        (
-          listOf(
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.ACTIVE,
-            ),
-            aLicenceEntity.copy(
-              statusCode = LicenceStatus.APPROVED,
-            ),
-          )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      (
+        listOf(
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.ACTIVE,
           ),
-      )
+          aLicenceEntity.copy(
+            statusCode = LicenceStatus.APPROVED,
+          ),
+        )
+        ),
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
       listOf(
         aPrisonerSearchResult,
@@ -1640,11 +1605,15 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(listOf(createCrdLicence().copy(versionOfId = 2L)))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        createCrdLicence().copy(
+          versionOfId = 2L,
+        ),
+      ),
+    )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
@@ -1677,19 +1646,17 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        listOf(
-          createHardStopLicence().copy(
-            conditionalReleaseDate = LocalDate.of(2024, 4, 29),
-            actualReleaseDate = LocalDate.of(2024, 4, 28),
-            licenceStartDate = LocalDate.of(2024, 4, 27),
-          ),
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        createHardStopLicence().copy(
+          conditionalReleaseDate = LocalDate.of(2024, 4, 29),
+          actualReleaseDate = LocalDate.of(2024, 4, 28),
+          licenceStartDate = LocalDate.of(2024, 4, 27),
         ),
-      )
+      ),
+    )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
@@ -1723,15 +1690,14 @@ class PrisonerSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(
-        listOf(
-          aPrisonerSearchResult.copy(
-            confirmedReleaseDate = LocalDate.of(2023, 9, 14),
-            conditionalReleaseDate = LocalDate.of(2023, 9, 15),
-          ),
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult.copy(
+          confirmedReleaseDate = LocalDate.of(2023, 9, 14),
+          conditionalReleaseDate = LocalDate.of(2023, 9, 15),
         ),
-      )
+      ),
+    )
 
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
@@ -1769,15 +1735,14 @@ class PrisonerSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(
-        listOf(
-          aPrisonerSearchResult.copy(
-            confirmedReleaseDate = null,
-            conditionalReleaseDate = LocalDate.of(2023, 9, 14),
-          ),
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult.copy(
+          confirmedReleaseDate = null,
+          conditionalReleaseDate = LocalDate.of(2023, 9, 14),
         ),
-      )
+      ),
+    )
 
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
@@ -1814,15 +1779,14 @@ class PrisonerSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(
-        listOf(
-          aPrisonerSearchResult.copy(
-            confirmedReleaseDate = LocalDate.of(2023, 9, 14),
-            conditionalReleaseDate = LocalDate.of(2023, 9, 15),
-          ),
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult.copy(
+          confirmedReleaseDate = LocalDate.of(2023, 9, 14),
+          conditionalReleaseDate = LocalDate.of(2023, 9, 15),
         ),
-      )
+      ),
+    )
 
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 14)))
 
@@ -1859,15 +1823,14 @@ class PrisonerSearchServiceTest {
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(
-        listOf(
-          aPrisonerSearchResult.copy(
-            confirmedReleaseDate = LocalDate.of(2023, 9, 14),
-            conditionalReleaseDate = LocalDate.of(2023, 9, 15),
-          ),
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(
+      listOf(
+        aPrisonerSearchResult.copy(
+          confirmedReleaseDate = LocalDate.of(2023, 9, 14),
+          conditionalReleaseDate = LocalDate.of(2023, 9, 15),
         ),
-      )
+      ),
+    )
 
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 9, 16)))
 
@@ -1902,18 +1865,16 @@ class PrisonerSearchServiceTest {
       ),
     )
 
-    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any()))
-      .thenReturn(
-        listOf(
-          createHardStopLicence().copy(
-            statusCode = LicenceStatus.ACTIVE,
-            reviewDate = null,
-          ),
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+      listOf(
+        createHardStopLicence().copy(
+          statusCode = LicenceStatus.ACTIVE,
+          reviewDate = null,
         ),
-      )
+      ),
+    )
 
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any()))
-      .thenReturn(listOf(aPrisonerSearchResult))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
 
     val result = service.searchForOffenderOnStaffCaseload(ProbationUserSearchRequest("Test", 2000))
