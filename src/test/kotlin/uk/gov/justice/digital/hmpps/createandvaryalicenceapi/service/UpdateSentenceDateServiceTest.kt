@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -40,7 +39,6 @@ class UpdateSentenceDateServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceService = mock<LicenceService>()
-  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
   private val service = UpdateSentenceDateService(
     licenceRepository,
@@ -50,7 +48,6 @@ class UpdateSentenceDateServiceTest {
     staffRepository,
     releaseDateService,
     licenceService,
-    prisonerSearchApiClient,
   )
 
   @BeforeEach
@@ -70,14 +67,13 @@ class UpdateSentenceDateServiceTest {
       staffRepository,
       releaseDateService,
       licenceService,
-      prisonerSearchApiClient,
     )
   }
 
   @BeforeEach
   fun beforeEach() {
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2023, 9, 11))
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(TestData.aPrisonApiPrisoner())
   }
 
   @Test

@@ -14,7 +14,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -115,7 +114,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
           licenceExpiryDate = LocalDate.parse("2024-09-11"),
           topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
           topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-          homeDetentionCurfewActualDate = LocalDate.parse("2023-07-10"),
+          homeDetentionCurfewActualDate = LocalDate.parse("2024-08-01"),
           homeDetentionCurfewEndDate = LocalDate.parse("2023-08-10"),
         ),
       )
@@ -142,7 +141,7 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     assertThat(result?.licenceExpiryDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionStartDate).isEqualTo(LocalDate.parse("2024-09-11"))
     assertThat(result?.topupSupervisionExpiryDate).isEqualTo(LocalDate.parse("2025-09-11"))
-    assertThat(result?.homeDetentionCurfewActualDate).isEqualTo(LocalDate.parse("2023-07-10"))
+    assertThat(result?.homeDetentionCurfewActualDate).isEqualTo(LocalDate.parse("2024-08-01"))
     assertThat(result?.homeDetentionCurfewEndDate).isEqualTo(LocalDate.parse("2023-08-10"))
   }
 
@@ -311,47 +310,18 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
   }
 
   private fun mockPrisonerSearchResponse(releaseDate: LocalDate?) {
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(
-      """[
-            {
-              "prisonerNumber": "A1234AA",
-              "bookingId": "123",
-              "status": "ACTIVE",
-              "mostSeriousOffence": "Robbery",
-              "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "homeDetentionCurfewEligibilityDate": null,
-              "releaseDate": "$releaseDate",
-              "confirmedReleaseDate": "$releaseDate",
-              "conditionalReleaseDate": "$releaseDate",
-              "paroleEligibilityDate": null,
-              "actualParoleDate" : null,
-              "postRecallReleaseDate": null,
-              "homeDetentionCurfewActualDate": "2024-08-01",
-              "legalStatus": "SENTENCED",
-              "indeterminateSentence": false,
-              "recall": false,
-              "prisonId": "ABC",
-              "bookNumber": "12345A",
-              "firstName": "Test1",
-              "lastName": "Person1",
-              "dateOfBirth": "1985-01-01"
-           }]
-      """.trimIndent(),
-    )
+    prisonApiMockServer.stubGetPrisonerDetail("A1234AA", releaseDate)
   }
 
   private companion object {
     val prisonApiMockServer = PrisonApiMockServer()
     val govUkApiMockServer = GovUkMockServer()
-    val prisonerSearchMockServer = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       prisonApiMockServer.start()
       govUkApiMockServer.start()
-      prisonerSearchMockServer.start()
     }
 
     @JvmStatic
@@ -359,7 +329,6 @@ class UpdateSentenceDatesIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       prisonApiMockServer.stop()
       govUkApiMockServer.stop()
-      prisonerSearchMockServer.stop()
     }
   }
 }

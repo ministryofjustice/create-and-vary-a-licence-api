@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -784,4 +785,22 @@ fun Prisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
   conditionalReleaseDate = this.conditionalReleaseDate,
   actualParoleDate = this.actualParoleDate,
   releaseOnTemporaryLicenceDate = this.releaseOnTemporaryLicenceDate,
+)
+
+fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
+  prisonerNumber = this.offenderNo,
+  bookingId = this.bookingId.toString(),
+  firstName = this.firstName,
+  middleNames = this.middleName,
+  lastName = this.lastName,
+  dateOfBirth = this.dateOfBirth,
+  legalStatus = this.legalStatus,
+  mostSeriousOffence = this.offenceHistory.find { it.mostSerious }?.offenceDescription,
+  conditionalReleaseDate = this.conditionalReleaseDateOverrideDate ?: this.conditionalReleaseDate,
+  confirmedReleaseDate = this.confirmedReleaseDate,
+  homeDetentionCurfewEligibilityDate = this.homeDetentionCurfewEligibilityDate,
+  homeDetentionCurfewActualDate = this.homeDetentionCurfewActualDate,
+  topupSupervisionStartDate = this.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
+  paroleEligibilityDate = this.paroleEligibilityDate,
 )

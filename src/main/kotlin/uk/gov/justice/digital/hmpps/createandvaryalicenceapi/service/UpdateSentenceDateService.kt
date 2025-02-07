@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -30,14 +29,14 @@ class UpdateSentenceDateService(
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
-  private val prisonerSearchApiClient: PrisonerSearchApiClient,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
   @Transactional
   fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
-    val prisonerSearchPrisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(licenceEntity.nomsId!!)).first()
+    val prisoner = prisonApiClient.getPrisonerDetail(licenceEntity.nomsId!!)
+    val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
     val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licenceEntity.kind)
 
     val username = SecurityContextHolder.getContext().authentication.name
