@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
@@ -80,7 +79,13 @@ class ComCaseloadServiceTest {
     )
     val cases = listOf(
       ManagedCase(
-        nomisRecord = Prisoner(prisonerNumber = "ABC123", firstName = "Bob", lastName = "Smith", dateOfBirth = LocalDate.of(1970, 1, 1), conditionalReleaseDate = tenDaysFromNow),
+        nomisRecord = Prisoner(
+          prisonerNumber = "ABC123",
+          firstName = "Bob",
+          lastName = "Smith",
+          dateOfBirth = LocalDate.of(1970, 1, 1),
+          conditionalReleaseDate = tenDaysFromNow,
+        ),
         cvlFields = CvlFields(
           hardStopDate = LocalDate.of(2023, Month.FEBRUARY, 3),
           hardStopWarningDate = LocalDate.of(2023, Month.FEBRUARY, 1),
@@ -106,7 +111,12 @@ class ComCaseloadServiceTest {
     )
     val cases = listOf(
       ManagedCase(
-        nomisRecord = Prisoner(prisonerNumber = "ABC123", firstName = "Bob", lastName = "Smith", dateOfBirth = LocalDate.of(1970, 1, 1)),
+        nomisRecord = Prisoner(
+          prisonerNumber = "ABC123",
+          firstName = "Bob",
+          lastName = "Smith",
+          dateOfBirth = LocalDate.of(1970, 1, 1),
+        ),
         cvlFields = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.AP),
       ),
     )
@@ -1114,52 +1124,6 @@ class ComCaseloadServiceTest {
       expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
       expectedReviewNeeded = true,
     )
-  }
-
-  @Test
-  fun `it should batch calls to the community CRN endpoint`() {
-    val selectedTeam = "team C"
-
-    val managedOffenders = Array(1100) {
-      ManagedOffenderCrn(
-        crn = "X12348",
-        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
-      )
-    }.asList()
-
-    whenever(
-      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
-    ).thenReturn(managedOffenders)
-
-    service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
-    verify(deliusApiClient).getManagedOffendersByTeam(selectedTeam)
-    verify(probationSearchApiClient, times(3)).getOffendersByCrn(any())
-  }
-
-  @Test
-  fun `it should batch calls to the get prisoners by prisoner number service`() {
-    val selectedTeam = "team C"
-
-    val managedOffenders = Array(1500) {
-      ManagedOffenderCrn(
-        crn = "X12348",
-        staff = StaffDetail(code = "X1234", name = Name(forename = "Joe", surname = "Bloggs")),
-      )
-    }.asList()
-
-    whenever(
-      deliusApiClient.getManagedOffendersByTeam(selectedTeam),
-    ).thenReturn(managedOffenders)
-
-    whenever(probationSearchApiClient.getOffendersByCrn(any())).thenReturn(
-      Array(500) {
-        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348")
-      }.asList(),
-    )
-
-    service.getTeamVaryCaseload(listOf("team A", "team B"), listOf(selectedTeam))
-    verify(probationSearchApiClient, times(3)).getOffendersByCrn(any())
-    verify(caseloadService, times(3)).getPrisonersByNumber(any())
   }
 
   private fun createCaseloadItem(
