@@ -34,10 +34,7 @@ class LicenceActivationService(
     }
     val matchedLicences = prisonerSearchApiClient.searchPrisonersByBookingIds(potentialLicences.keys)
       .map { LicenceWithPrisoner(potentialLicences[it.bookingId?.toLong()]!!, it) }
-    println(matchedLicences)
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(matchedLicences)
-    println("Eligible licences: ${eligibleLicences.size}")
-    println("Ineligible licences: ${ineligibleLicences.size}")
     val (iS91licencesToActivate, standardLicencesToActivate) = determineEligibleLicencesToActivate(eligibleLicences)
 
     licenceService.activateLicences(iS91licencesToActivate, IS91_LICENCE_ACTIVATION)
@@ -47,10 +44,7 @@ class LicenceActivationService(
 
   private fun determineLicenceEligibility(matchedLicences: List<LicenceWithPrisoner>): Pair<List<LicenceWithPrisoner>, List<Licence>> {
     val approvedHdcBookingIds = findBookingsWithHdc(matchedLicences)
-    println("Approved HDC booking IDs: ${approvedHdcBookingIds.size}")
     val (ineligibleLicences, eligibleLicences) = matchedLicences.partition {
-      println(it.licence.kind)
-      println(approvedHdcBookingIds.contains(it.bookingId))
       if (approvedHdcBookingIds.contains(it.bookingId) && it.licence.kind === LicenceKind.HDC) {
         false
       } else {
@@ -65,9 +59,7 @@ class LicenceActivationService(
     val bookingsWithHdc = matchedLicences
       .filter { it.homeDetentionCurfewEligibilityDate != null }
       .map { it.bookingId }
-    println("Bookings with HDC: ${bookingsWithHdc.size}")
     val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
-    println(hdcStatuses.size)
     return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
   }
 
