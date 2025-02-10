@@ -253,26 +253,42 @@ class LicenceActivationServiceTest {
   @Test
   fun `licence activation job calls for activation and deactivation of different licences simultaneously`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate())
-      .thenReturn(listOf(hdcLicence, nonHdcLicence))
+      .thenReturn(listOf(aLicenceEntity, hdcLicence))
 
     whenever(
       prisonerSearchApiClient.searchPrisonersByBookingIds(
         setOf(
+          aLicenceEntity.bookingId!!,
           hdcLicence.bookingId!!,
-          nonHdcLicence.bookingId!!,
         ),
       ),
     )
-      .thenReturn(listOf(hdcPrisoner, nonHdcPrisoner))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner)))
+      .thenReturn(
+        listOf(
+          aPrisonerSearchPrisoner.copy(
+            homeDetentionCurfewEligibilityDate = LocalDate.now(),
+          ),
+          hdcPrisoner,
+        ),
+      )
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(hdcPrisoner)))
       .thenReturn(emptyList())
-    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
+    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!, hdcLicence.bookingId!!))).thenReturn(
+      listOf(
+        anHdcStatus,
+        anHdcStatus.copy(
+          approvalStatus = "APPROVED",
+          bookingId = hdcLicence.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
 
     service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).activateLicences(listOf(hdcLicence, nonHdcLicence), LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+    verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), LICENCE_DEACTIVATION)
   }
 
   @Test
@@ -363,6 +379,7 @@ class LicenceActivationServiceTest {
   )
 
   val hdcLicence = createHdcLicence().copy(
+    bookingId = 12345,
     statusCode = LicenceStatus.APPROVED,
   )
 
