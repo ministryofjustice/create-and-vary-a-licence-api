@@ -26,14 +26,11 @@ class PromptComListBuilder(
     candidates.filter(eligibilityService::isEligibleForCvl)
 
   fun excludePrisonersWithHdc(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
-    val bookingIds = prisoners
-      .filter { it.homeDetentionCurfewEligibilityDate != null }
-      .map { it.bookingId!!.toLong() }
+    val bookingIds =
+      prisoners.filter { it.homeDetentionCurfewEligibilityDate != null }.map { it.bookingId!!.toLong() }
 
-    val approvedForHdc = prisonApiClient.getHdcStatuses(bookingIds)
-      .filter { it.approvalStatus == "APPROVED" }
-      .mapNotNull { it.bookingId?.toString() }
-      .toSet()
+    val approvedForHdc = prisonApiClient.getHdcStatuses(bookingIds).filter { it.approvalStatus == "APPROVED" }
+      .mapNotNull { it.bookingId?.toString() }.toSet()
 
     return prisoners.filter { it.bookingId !in approvedForHdc }
   }
@@ -97,25 +94,25 @@ class PromptComListBuilder(
 
   fun excludeInHardStop(cases: List<CaseWithEmailAndStartDate>) = cases.filter { it.isNotInHardStop() }
 
+  fun excludeOutOfRangeDates(cases: List<CaseWithEmailAndStartDate>, startDate: LocalDate, endDate: LocalDate) =
+    cases.filter { (_, _, releaseDate) -> releaseDate in startDate..endDate }
+
   fun buildEmailsToSend(cases: List<CaseWithEmailAndStartDate>): List<Com> {
-    return cases
-      .groupBy { (case, _, _) -> case.comStaffCode }
-      .values
-      .map { cases ->
-        val (com, email, _) = cases.first()
-        Com(
-          comName = com.comName,
-          email = email,
-          subjects = cases.map { (case, _, startDate) ->
-            Subject(
-              prisonerNumber = case.prisoner.prisonerNumber,
-              crn = case.crn,
-              name = case.prisoner.firstName + " " + case.prisoner.lastName,
-              releaseDate = startDate,
-            )
-          },
-        )
-      }
+    return cases.groupBy { (case, _, _) -> case.comStaffCode }.values.map { cases ->
+      val (com, email, _) = cases.first()
+      Com(
+        comName = com.comName,
+        email = email,
+        subjects = cases.map { (case, _, startDate) ->
+          Subject(
+            prisonerNumber = case.prisoner.prisonerNumber,
+            crn = case.crn,
+            name = case.prisoner.firstName + " " + case.prisoner.lastName,
+            releaseDate = startDate,
+          )
+        },
+      )
+    }
   }
 
   private companion object {
