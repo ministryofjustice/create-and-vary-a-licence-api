@@ -433,6 +433,7 @@ class CaCaseloadService(
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
         ),
+        licenceStartDate = sentenceDateHolder.licenceStartDate,
       ),
     )
   }
