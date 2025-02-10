@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -293,6 +295,33 @@ class PromptComListBuilderTest {
 
       val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@email.com"))
       assertThat(result).isEmpty()
+    }
+  }
+
+  @Nested
+  inner class ExcludeOutOfRangeDates {
+    @ParameterizedTest
+    @CsvSource(
+      value = [
+        "2022-01-08, 2022-01-09, true",
+        "2022-01-09, 2022-01-10, false",
+        "2022-01-10, 2022-01-11, false",
+        "2022-01-11, 2022-01-12, true",
+      ],
+    )
+    fun check(start: String, end: String, excluded: Boolean) {
+      val promptCase = promptCase() to "user@email.com" to LocalDate.of(2022, 1, 10)
+      val result = promptComListBuilder.excludeOutOfRangeDates(
+        listOf(promptCase),
+        LocalDate.parse(start),
+        LocalDate.parse(end),
+      )
+
+      if (excluded) {
+        assertThat(result).isEmpty()
+      } else {
+        assertThat(result).containsExactly(promptCase)
+      }
     }
   }
 
