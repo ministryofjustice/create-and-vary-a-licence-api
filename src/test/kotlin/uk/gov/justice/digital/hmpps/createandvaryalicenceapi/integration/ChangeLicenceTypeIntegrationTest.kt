@@ -50,6 +50,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   fun `Change licence type`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
+    prisonApiMockServer.stubGetPrisonerDetail()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
