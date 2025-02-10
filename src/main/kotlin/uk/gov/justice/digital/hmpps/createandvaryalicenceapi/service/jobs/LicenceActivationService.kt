@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
@@ -44,7 +45,14 @@ class LicenceActivationService(
 
   private fun determineLicenceEligibility(matchedLicences: List<LicenceWithPrisoner>): Pair<List<LicenceWithPrisoner>, List<Licence>> {
     val approvedHdcBookingIds = findBookingsWithHdc(matchedLicences)
-    val (ineligibleLicences, eligibleLicences) = matchedLicences.partition { approvedHdcBookingIds.contains(it.bookingId) }
+    val (ineligibleLicences, eligibleLicences) = matchedLicences.partition {
+      if (approvedHdcBookingIds.contains(it.bookingId) && it.licence.kind === LicenceKind.HDC) {
+        false
+      } else {
+        approvedHdcBookingIds.contains(it.bookingId)
+      }
+    }
+
     return Pair(eligibleLicences, ineligibleLicences.map { it.licence })
   }
 
@@ -88,13 +96,11 @@ class LicenceActivationService(
     return releaseDate <= LocalDate.now()
   }
 
-  private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean {
-    return (
-      licence.licenceStartDate != null &&
-        licence.licenceStartDate!! <= LocalDate.now() &&
-        prisoner.status?.startsWith("INACTIVE") == true
-      )
-  }
+  private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean = (
+    licence.licenceStartDate != null &&
+      licence.licenceStartDate!! <= LocalDate.now() &&
+      prisoner.status?.startsWith("INACTIVE") == true
+    )
 
   companion object {
     const val IS91_LICENCE_ACTIVATION = "IS91 licence automatically activated via repeating job"

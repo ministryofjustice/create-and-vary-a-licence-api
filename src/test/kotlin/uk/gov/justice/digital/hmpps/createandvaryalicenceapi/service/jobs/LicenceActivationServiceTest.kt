@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.IS91_LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
@@ -125,17 +126,23 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for HDC approved licences to be deactivated`() {
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
-      .thenReturn(listOf(hdcPrisoner))
-    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
+  fun `licence activation job calls for HDC approved licences to be deactivated when they are not HDC licences`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+      .thenReturn(
+        listOf(
+          aPrisonerSearchPrisoner.copy(
+            homeDetentionCurfewEligibilityDate = LocalDate.now(),
+          ),
+        ),
+      )
+    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!))).thenReturn(listOf(anHdcStatus))
 
     service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).inactivateLicences(listOf(hdcLicence), LICENCE_DEACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(listOf(aLicenceEntity), LICENCE_DEACTIVATION)
   }
 
   @Test
@@ -153,8 +160,8 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for non-IS91 licences with HDC (not approved) to be activated on their LSD if the offender has been released`() {
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
+  fun `licence activation job calls for non-IS91 non licences with HDC (not approved) to be activated on their LSD if the offender has been released`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
 
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner))
@@ -264,8 +271,8 @@ class LicenceActivationServiceTest {
     service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).activateLicences(listOf(nonHdcLicence), LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).inactivateLicences(listOf(hdcLicence), LICENCE_DEACTIVATION)
+    verify(licenceService, times(1)).activateLicences(listOf(hdcLicence, nonHdcLicence), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
   }
 
   @Test
@@ -288,6 +295,20 @@ class LicenceActivationServiceTest {
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
     verify(licenceService, times(1)).activateLicences(listOf(licenceWithOffender), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
+  fun `licence activation job calls for HDC licences to activate`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
+      .thenReturn(listOf(hdcPrisoner))
+    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
   }
 
@@ -341,7 +362,10 @@ class LicenceActivationServiceTest {
     croNumber = null,
   )
 
-  val hdcLicence = aLicenceEntity
+  val hdcLicence = createHdcLicence().copy(
+    statusCode = LicenceStatus.APPROVED,
+  )
+
   val nonHdcLicence =
     aLicenceEntity.copy(id = 2, bookingId = 54322, nomsId = "A1234AB")
 
