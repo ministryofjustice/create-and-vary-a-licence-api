@@ -160,7 +160,7 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for non-IS91 non licences with HDC (not approved) to be activated on their LSD if the offender has been released`() {
+  fun `licence activation job calls for non-IS91 licences with HDC (not approved) to be activated on their LSD if the offender has been released`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
 
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
