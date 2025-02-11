@@ -45,7 +45,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(7)).publishDomainEvent(capture())
+      verify(eventsPublisher, times(8)).publishDomainEvent(capture())
 
       assertThat(allValues).extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }
         .containsExactly(
@@ -53,6 +53,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           tuple(LICENCE_ACTIVATED.value, "2"),
           tuple(LICENCE_ACTIVATED.value, "3"),
           tuple(LICENCE_ACTIVATED.value, "7"),
+          tuple(LICENCE_ACTIVATED.value, "8"),
           tuple(LICENCE_INACTIVATED.value, "4"),
           tuple(LICENCE_INACTIVATED.value, "5"),
           tuple(LICENCE_INACTIVATED.value, "6"),
@@ -68,7 +69,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(activatedLicences?.size).isEqualTo(4)
+    assertThat(activatedLicences?.size).isEqualTo(5)
     assertThat(activatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -78,6 +79,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(2L, LicenceStatus.ACTIVE),
         tuple(3L, LicenceStatus.ACTIVE),
         tuple(7L, LicenceStatus.ACTIVE),
+        tuple(8L, LicenceStatus.ACTIVE),
       )
 
     val deactivatedLicences = webTestClient.post()
@@ -114,6 +116,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       govUkMockServer.start()
       prisonerSearchMockServer.stubSearchPrisonersByBookingIds()
       prisonApiMockServer.stubGetCourtOutcomes()
+      prisonApiMockServer.getHdcStatuses()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
     }
 
