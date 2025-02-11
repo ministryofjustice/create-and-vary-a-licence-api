@@ -18,14 +18,19 @@ class PromptComService(
     log.info("Running job")
 
     val (earliestReleaseDate, latestReleaseDate) = fromNowToTheNext4Weeks(clock)
+    log.info("Gathering prisoners with release dates between {} and {}", earliestReleaseDate, latestReleaseDate)
 
     val candidates = prisonerSearchApiClient.getAllByReleaseDate(earliestReleaseDate, latestReleaseDate)
 
     log.info("Found {} prisoners with release dates within the next 4 weeks ", candidates.size)
-    return promptComListBuilder.gatherEmails(candidates)
+    return promptComListBuilder.gatherEmails(candidates, earliestReleaseDate, latestReleaseDate)
   }
 
-  private fun PromptComListBuilder.gatherEmails(candidates: List<PrisonerSearchPrisoner>): List<Com> {
+  private fun PromptComListBuilder.gatherEmails(
+    candidates: List<PrisonerSearchPrisoner>,
+    earliestReleaseDate: LocalDate,
+    latestReleaseDate: LocalDate,
+  ): List<Com> {
     val eligible = excludeIneligibleCases(candidates)
     log.info("{}/{} prisoners eligible", eligible.size, candidates.size)
 
@@ -38,17 +43,20 @@ class PromptComService(
     val withDeliusDetails = enrichWithDeliusData(withoutHdc)
     log.info("{}/{} + with delius information", withDeliusDetails.size, withoutHdc.size)
 
-    val casesWithComEmails = enrichWithComEmail(withDeliusDetails)
-    log.info("{}/{} + with com email", casesWithComEmails.size, withDeliusDetails.size)
+    val withComEmails = enrichWithComEmail(withDeliusDetails)
+    log.info("{}/{} + with com email", withComEmails.size, withDeliusDetails.size)
 
-    val casesWithStartDates = enrichWithLicenceStartDates(casesWithComEmails)
-    log.info("{}/{} + with start date", casesWithStartDates.size, casesWithComEmails.size)
+    val withStartDates = enrichWithLicenceStartDates(withComEmails)
+    log.info("{}/{} + with start date", withStartDates.size, withComEmails.size)
 
-    val casesNotInHardStop = excludeInHardStop(casesWithStartDates)
-    log.info("{}/{} + not in hard stop", casesNotInHardStop.size, casesWithComEmails.size)
+    val withDateInRange = excludeOutOfRangeDates(withStartDates, earliestReleaseDate, latestReleaseDate)
+    log.info("{}/{} + start date in range", withDateInRange.size, withStartDates.size)
+
+    val casesNotInHardStop = excludeInHardStop(withDateInRange)
+    log.info("{}/{} + not in hard stop", casesNotInHardStop.size, withDateInRange.size)
 
     val emails = buildEmailsToSend(casesNotInHardStop)
-    log.info("{}/{} = emails", emails.size, casesWithStartDates.size)
+    log.info("{}/{} = emails", emails.size, casesNotInHardStop.size)
 
     return emails
   }

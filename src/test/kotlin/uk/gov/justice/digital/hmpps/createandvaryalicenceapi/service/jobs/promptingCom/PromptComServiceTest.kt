@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
@@ -52,6 +53,10 @@ class PromptComServiceTest {
 
     whenever(promptComListBuilder.enrichWithLicenceStartDates(any())).thenReturn(casesWithEmailsAndLocalDates)
 
+    whenever(promptComListBuilder.excludeOutOfRangeDates(any(), eq(start), eq(end))).thenReturn(
+      casesWithEmailsAndLocalDates,
+    )
+
     whenever(promptComListBuilder.excludeInHardStop(any())).thenReturn(casesWithEmailsAndLocalDates)
 
     whenever(promptComListBuilder.buildEmailsToSend(any())).thenReturn(listOf(com))
@@ -74,6 +79,8 @@ class PromptComServiceTest {
       verify(promptComListBuilder).enrichWithComEmail(casesWithDeliusData)
 
       verify(promptComListBuilder).enrichWithLicenceStartDates(casesWithEmails)
+
+      verify(promptComListBuilder).excludeOutOfRangeDates(casesWithEmailsAndLocalDates, start, end)
 
       verify(promptComListBuilder).excludeInHardStop(casesWithEmailsAndLocalDates)
 
