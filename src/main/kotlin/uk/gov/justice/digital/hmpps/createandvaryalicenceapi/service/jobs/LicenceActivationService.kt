@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
@@ -48,15 +48,12 @@ class LicenceActivationService(
     // Filter out HDC licences that have not been approved for HDC as we don't want to deactivate them for MVP1
     val filteredLicences =
       matchedLicences.filterNot {
-        it.licence.kind === LicenceKind.HDC && !approvedHdcBookingIds.contains(it.bookingId)
+        it.licence.kind == HDC && !approvedHdcBookingIds.contains(it.bookingId)
       }
 
     val (eligibleLicences, ineligibleLicences) = filteredLicences.partition {
-      if (approvedHdcBookingIds.contains(it.bookingId) && it.licence.kind === LicenceKind.HDC) {
-        true
-      } else {
-        !approvedHdcBookingIds.contains(it.bookingId)
-      }
+      val approvedForHdc = approvedHdcBookingIds.contains(it.bookingId)
+      (it.licence.kind == HDC && approvedForHdc) || !approvedForHdc
     }
 
     return Pair(eligibleLicences, ineligibleLicences.map { it.licence })
