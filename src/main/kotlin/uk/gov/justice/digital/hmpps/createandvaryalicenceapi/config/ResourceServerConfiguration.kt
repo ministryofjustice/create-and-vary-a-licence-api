@@ -43,6 +43,7 @@ class ResourceServerConfiguration {
           "/swagger-resources",
           "/swagger-resources/configuration/ui",
           "/swagger-resources/configuration/security",
+          "/jobs/**",
         ).forEach { authorize(it, permitAll) }
         authorize(anyRequest, authenticated)
       }
