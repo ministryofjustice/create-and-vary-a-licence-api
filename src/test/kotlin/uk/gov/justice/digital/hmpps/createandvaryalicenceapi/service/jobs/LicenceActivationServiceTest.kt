@@ -147,15 +147,15 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job call for HDC approved licences to be activated if no HDCED`() {
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
-      .thenReturn(listOf(hdcPrisoner.copy(homeDetentionCurfewEligibilityDate = null)))
-    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+      .thenReturn(listOf(aPrisonerSearchPrisoner.copy(homeDetentionCurfewEligibilityDate = null)))
+    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!))).thenReturn(listOf(anHdcStatus))
 
     service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
-    verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), LICENCE_ACTIVATION)
     verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
   }
 
@@ -316,10 +316,35 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job calls for HDC licences to activate`() {
+    val approvedHdcStatus = anHdcStatus.copy(bookingId = hdcLicence.bookingId!!)
+
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
       .thenReturn(listOf(hdcPrisoner))
-    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(anHdcStatus))
+    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(approvedHdcStatus))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(listOf(hdcLicence), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
+  fun `licence activation job ignores HDC licences not approved for HDC `() {
+    val approvedHdcStatus = anHdcStatus.copy(bookingId = 12345)
+
+    val noLongerApprovedHdcStatus =
+      anHdcStatus.copy(approvalStatus = "INELIGIBLE", bookingId = 22222)
+
+    val anotherHdcLicence = hdcLicence.copy(bookingId = 22222)
+
+    val anotherHdcPrisoner = hdcPrisoner.copy(bookingId = anotherHdcLicence.bookingId.toString())
+
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence, anotherHdcLicence))
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!, anotherHdcLicence.bookingId!!)))
+      .thenReturn(listOf(hdcPrisoner, anotherHdcPrisoner))
+    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!, anotherHdcLicence.bookingId!!))).thenReturn(listOf(approvedHdcStatus, noLongerApprovedHdcStatus))
 
     service.licenceActivation()
 

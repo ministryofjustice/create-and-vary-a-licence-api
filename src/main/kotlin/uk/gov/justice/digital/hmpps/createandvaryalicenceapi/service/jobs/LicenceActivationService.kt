@@ -44,11 +44,18 @@ class LicenceActivationService(
 
   private fun determineLicenceEligibility(matchedLicences: List<LicenceWithPrisoner>): Pair<List<LicenceWithPrisoner>, List<Licence>> {
     val approvedHdcBookingIds = findBookingsWithHdc(matchedLicences)
-    val (ineligibleLicences, eligibleLicences) = matchedLicences.partition {
+
+    // Filter out HDC licences that have not been approved for HDC as we don't want to deactivate them for MVP1
+    val filteredLicences =
+      matchedLicences.filterNot {
+        it.licence.kind === LicenceKind.HDC && !approvedHdcBookingIds.contains(it.bookingId)
+      }
+
+    val (eligibleLicences, ineligibleLicences) = filteredLicences.partition {
       if (approvedHdcBookingIds.contains(it.bookingId) && it.licence.kind === LicenceKind.HDC) {
-        false
+        true
       } else {
-        approvedHdcBookingIds.contains(it.bookingId)
+        !approvedHdcBookingIds.contains(it.bookingId)
       }
     }
 
