@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
@@ -97,15 +98,14 @@ class PromptComListBuilder(
   fun excludeOutOfRangeDates(cases: List<CaseWithEmailAndStartDate>, startDate: LocalDate, endDate: LocalDate) =
     cases.filter { (_, _, releaseDate) -> releaseDate in startDate..endDate }
 
-  fun buildEmailsToSend(cases: List<CaseWithEmailAndStartDate>): List<Com> {
+  fun buildEmailsToSend(cases: List<CaseWithEmailAndStartDate>): List<PromptComNotification> {
     return cases.groupBy { (case, _, _) -> case.comStaffCode }.values.map { cases ->
       val (com, email, _) = cases.first()
-      Com(
+      PromptComNotification(
         comName = com.comName,
         email = email,
-        subjects = cases.map { (case, _, startDate) ->
-          Subject(
-            prisonerNumber = case.prisoner.prisonerNumber,
+        initialPromptCases = cases.map { (case, _, startDate) ->
+          Case(
             crn = case.crn,
             name = case.prisoner.firstName + " " + case.prisoner.lastName,
             releaseDate = startDate,
@@ -131,17 +131,4 @@ data class PromptCase(
   val comStaffCode: String,
   val comName: String,
   val comAllocationDate: LocalDate?,
-)
-
-data class Com(
-  val email: String,
-  val comName: String,
-  val subjects: List<Subject>,
-)
-
-data class Subject(
-  val prisonerNumber: String,
-  val crn: String,
-  val name: String,
-  val releaseDate: LocalDate,
 )

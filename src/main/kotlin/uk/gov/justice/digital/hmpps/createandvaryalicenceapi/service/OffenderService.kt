@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
@@ -48,7 +48,7 @@ OffenderService(
       val releaseDate = offenderLicences[0].licenceStartDate
       if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
         val prisoner = listOf(
-          PrisonerForRelease(
+          Case(
             "${offenderLicences[0].forename} ${offenderLicences[0].surname}",
             offenderLicences[0].crn!!,
             releaseDate!!,
