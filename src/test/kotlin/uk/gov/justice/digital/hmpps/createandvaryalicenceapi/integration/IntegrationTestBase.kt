@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.microsoft.applicationinsights.TelemetryClient
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito.reset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,9 +50,13 @@ import uk.gov.justice.hmpps.sqs.MissingTopicException
 )
 abstract class IntegrationTestBase {
 
+  @MockitoSpyBean
+  lateinit var telemetryClient: TelemetryClient
+
   @BeforeEach
   fun `Clear queues`() {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
+    reset(telemetryClient)
   }
 
   protected val domainEventsTopic by lazy {
