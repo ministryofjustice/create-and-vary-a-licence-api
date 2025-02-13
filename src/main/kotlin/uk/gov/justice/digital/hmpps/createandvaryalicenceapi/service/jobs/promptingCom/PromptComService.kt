@@ -10,8 +10,6 @@ import java.time.Clock
 import java.time.DayOfWeek.MONDAY
 import java.time.LocalDate
 
-private const val EMAILS_TO_SEND_WHILE_TESTING = 10
-
 @Service
 class PromptComService(
   private val promptComListBuilder: PromptComListBuilder,
@@ -24,8 +22,6 @@ class PromptComService(
     log.info("Running job")
 
     val cases = getCases(clock)
-      // for testing we'll just send emails to the first 10 cases
-      .takeLast(EMAILS_TO_SEND_WHILE_TESTING)
 
     notifyService.sendInitialLicenceCreateEmails(cases)
     telemetryClient.trackEvent("PromptComJob", mapOf("cases" to cases.size.toString()), null)
