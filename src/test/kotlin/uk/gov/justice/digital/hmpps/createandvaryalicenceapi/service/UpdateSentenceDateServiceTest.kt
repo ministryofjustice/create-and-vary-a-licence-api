@@ -70,12 +70,6 @@ class UpdateSentenceDateServiceTest {
     )
   }
 
-  @BeforeEach
-  fun beforeEach() {
-    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2023, 9, 11))
-    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(TestData.aPrisonApiPrisoner())
-  }
-
   @Test
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
@@ -850,107 +844,6 @@ class UpdateSentenceDateServiceTest {
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
-  @Test
-  fun `Recalculates Licence Start Date rather than reading from the request`() {
-    whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2024, 1, 1))
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      ),
-    )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
-      ),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(licenceCaptor.value)
-      .extracting(
-        "conditionalReleaseDate",
-        "actualReleaseDate",
-        "sentenceStartDate",
-        "sentenceEndDate",
-        "licenceStartDate",
-        "licenceExpiryDate",
-        "topupSupervisionStartDate",
-        "topupSupervisionExpiryDate",
-        "postRecallReleaseDate",
-        "updatedByUsername",
-        "updatedBy",
-      )
-      .isEqualTo(
-        listOf(
-          LocalDate.parse("2023-09-11"),
-          LocalDate.parse("2023-09-11"),
-          LocalDate.parse("2021-09-11"),
-          LocalDate.parse("2024-09-11"),
-          LocalDate.parse("2024-01-01"),
-          LocalDate.parse("2024-09-11"),
-          LocalDate.parse("2024-09-11"),
-          LocalDate.parse("2025-09-11"),
-          LocalDate.parse("2025-09-11"),
-          aCom.username,
-          aCom,
-        ),
-      )
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
-        listOf(
-          1L,
-          "SYSTEM",
-          "SYSTEM",
-          "Sentence dates updated for ${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
-        ),
-      )
-
-    verify(notifyService, times(1)).sendDatesChangedEmail(
-      "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
-      "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
-      aCrdLicenceEntity.crn,
-      mapOf(
-        "Release date has changed to 01 January 2024" to true,
-        "Licence end date has changed to 11 September 2024" to true,
-        "Sentence end date has changed to 11 September 2024" to true,
-        "Top up supervision start date has changed to 11 September 2024" to true,
-        "Top up supervision end date has changed to 11 September 2025" to true,
-        "Post recall release date has changed to 11 September 2025" to true,
-        "HDC actual date has changed to null" to false,
-        "HDC end date has changed to null" to false,
-      ),
-    )
-
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
-  }
-
   @Nested
   inner class `timing out licences` {
     @Test
@@ -1179,6 +1072,5 @@ class UpdateSentenceDateServiceTest {
       firstName = "Test",
       lastName = "Test",
     )
-    val aPrisonerSearchPrisoner = TestData.prisonerSearchResult()
   }
 }
