@@ -12,6 +12,7 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
@@ -374,30 +375,27 @@ class PromptComListBuilderTest {
 
       assertThat(result).isEqualTo(
         listOf(
-          Com(
+          PromptComNotification(
             email = "user1@email.com",
             comName = "John Doe",
-            subjects = listOf(
-              Subject(
-                prisonerNumber = "A1234AA",
+            initialPromptCases = listOf(
+              Case(
                 crn = "crn-1",
                 name = "A Prisoner",
                 releaseDate = LocalDate.of(2022, 1, 1),
               ),
-              Subject(
-                prisonerNumber = "A1234BB",
+              Case(
                 crn = "crn-2",
                 name = "A Prisoner",
                 releaseDate = LocalDate.of(2022, 1, 2),
               ),
             ),
           ),
-          Com(
+          PromptComNotification(
             email = "user2@email.com",
             comName = "John Doe",
-            subjects = listOf(
-              Subject(
-                prisonerNumber = "A1234CC",
+            initialPromptCases = listOf(
+              Case(
                 crn = "crn-3",
                 name = "A Prisoner",
                 releaseDate = LocalDate.of(2022, 1, 3),

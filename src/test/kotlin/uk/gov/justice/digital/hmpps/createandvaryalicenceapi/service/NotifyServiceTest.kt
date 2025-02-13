@@ -11,10 +11,10 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -48,11 +48,11 @@ class NotifyServiceTest {
   fun `send licence initial licence create email`() {
     whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
-    val comToEmail = PromptLicenceCreationRequest(
+    val comToEmail = PromptComNotification(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
+        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
       ),
     )
     val expectedMap = mapOf(
@@ -70,11 +70,11 @@ class NotifyServiceTest {
   fun `send licence urgent licence create email`() {
     whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
-    val comToEmail = PromptLicenceCreationRequest(
+    val comToEmail = PromptComNotification(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
+        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-20")),
       ),
     )
     val expectedMap = mapOf(
@@ -92,13 +92,13 @@ class NotifyServiceTest {
   fun `send licence initial licence create email with multiple cases among which one prisoner is eligible for early release`() {
     whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
-    val comToEmail = PromptLicenceCreationRequest(
+    val comToEmail = PromptComNotification(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
+        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
+        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
+        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
       ),
     )
     val expectedMap = mapOf(
@@ -118,13 +118,13 @@ class NotifyServiceTest {
 
   @Test
   fun `send licence initial licence create email with multiple cases among which no prisoner is eligible for early release`() {
-    val comToEmail = PromptLicenceCreationRequest(
+    val comToEmail = PromptComNotification(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       initialPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
+        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
+        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
+        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
       ),
     )
     val expectedMap = mapOf(
@@ -146,13 +146,13 @@ class NotifyServiceTest {
   fun `send licence urgent licence create email with multiple cases among which one prisoner is eligible for early release`() {
     whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(true)
 
-    val comToEmail = PromptLicenceCreationRequest(
+    val comToEmail = PromptComNotification(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
+        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
+        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
+        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-11")),
       ),
     )
     val expectedMap = mapOf(
@@ -174,13 +174,13 @@ class NotifyServiceTest {
   fun `send licence urgent licence create email with multiple cases among which none are eligible for early release`() {
     whenever(releaseDateService.isEligibleForEarlyRelease(any<LocalDate>())).thenReturn(false)
 
-    val comToEmail = PromptLicenceCreationRequest(
+    val comToEmail = PromptComNotification(
       email = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
       urgentPromptCases = listOf(
-        PrisonerForRelease(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
-        PrisonerForRelease(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
-        PrisonerForRelease(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
+        Case(name = "John Smith", crn = "X12444", releaseDate = LocalDate.parse("2022-11-09")),
+        Case(name = "Test1", crn = "X12444", releaseDate = LocalDate.parse("2022-11-10")),
+        Case(name = "Test2", crn = "X12444", releaseDate = LocalDate.parse("2022-11-24")),
       ),
     )
     val expectedMap = mapOf(

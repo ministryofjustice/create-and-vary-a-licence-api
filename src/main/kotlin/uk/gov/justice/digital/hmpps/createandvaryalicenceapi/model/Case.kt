@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
 @Schema(description = "Describes a prisoner due for release")
-data class PrisonerForRelease(
+data class Case(
   @Schema(description = "The full name of the prisoner", example = "John Smith")
   @field:NotBlank
   val name: String,

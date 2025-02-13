@@ -69,7 +69,21 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "firstName": "Test4",
                   "lastName": "Person4",
                   "dateOfBirth": "1987-01-01"
-               }
+               },
+               {
+                  "prisonerNumber": "G1234BB",
+                  "bookingId": "123",
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": false,
+                  "prisonId": "GHI",
+                  "bookNumber": "54321D",
+                  "firstName": "Test5",
+                  "lastName": "Person5",
+                  "dateOfBirth": "1988-01-01",
+                  "homeDetentionCurfewEligibilityDate": "${LocalDate.now().plusDays(1)}"
+              }
               ]
             """.trimIndent(),
           ).withStatus(200),
@@ -79,8 +93,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
 
   fun nextWorkingDate() = nextWorkingDates().first()
 
-  private fun nextWorkingDates(): Sequence<LocalDate> =
-    generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
+  private fun nextWorkingDates(): Sequence<LocalDate> = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
 
   fun stubSearchPrisonersByNomisIds(prisonerSearchResponse: String? = null) {
     val json = prisonerSearchResponse ?: """[
