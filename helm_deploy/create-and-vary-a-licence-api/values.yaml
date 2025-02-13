@@ -1,3 +1,9 @@
+jobs:
+  - name: prompt-licence-creation-job
+    enabled: true
+    path: prompt-licence-creation
+    cron: "0 9 * * 1"
+
 generic-service:
   nameOverride: create-and-vary-a-licence-api
   # Used to access resources like SQS queues and SNS topics
@@ -16,6 +22,19 @@ generic-service:
     tlsSecretName: create-and-vary-a-licence-api-cert
     v1_2_enabled: true
     v0_47_enabled: false
+    annotations:
+      # Secure the endpoints related to k8s jobs from outside the Kubernetes ingress
+      nginx.ingress.kubernetes.io/server-snippet: |
+        server_tokens off;
+        location /jobs/** {
+          deny all;
+          return 401;
+        }
+        location /queue-admin/retry-all-dlqs {
+          deny all;
+          return 401;
+        }
+
 
   # Environment variables to load into the deployment
   env:

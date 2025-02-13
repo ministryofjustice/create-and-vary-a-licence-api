@@ -46,7 +46,7 @@
     <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, comName: String, firstName: String, lastName: String, crn: String?, licenceId: String, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, firstName: String, lastName: String, crn: String?, crd: LocalDate?, licenceId: String, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( licenceId: String, emailAddress: String?, comFullName: String, offenderFullName: String, crn: String?, datesChanged: Map&lt;String, Boolean&gt;, )</ID>
-    <ID>LongParameterList:NotifyService.kt$NotifyService$(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String)</ID>
+    <ID>LongParameterList:NotifyService.kt$NotifyService$( notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String, )</ID>
     <ID>LongParameterList:PrisonUser.kt$PrisonUser$( id: Long? = this.id, username: String = this.username, email: String? = this.email, firstName: String? = this.firstName, lastName: String? = this.lastName, lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp, )</ID>
     <ID>LongParameterList:PrisonerSearchService.kt$PrisonerSearchService$( private val licenceRepository: LicenceRepository, private val deliusApiClient: DeliusApiClient, private val probationSearchApiClient: ProbationSearchApiClient, private val prisonerSearchApiClient: PrisonerSearchApiClient, private val prisonApiClient: PrisonApiClient, private val eligibilityService: EligibilityService, private val releaseDateService: ReleaseDateService, )</ID>
     <ID>LongParameterList:Staff.kt$Staff$( @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @NotNull var id: Long? = -1, @NotNull @Enumerated(EnumType.STRING) @Column(name = "kind", insertable = false, updatable = false) var kind: StaffKind, @Column(unique = true) override val username: String, val email: String?, override val firstName: String?, override val lastName: String?, val lastUpdatedTimestamp: LocalDateTime? = null, )</ID>
@@ -76,6 +76,7 @@
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
     <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
+    <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
     <ID>ReturnCount:PrisonApproverService.kt$PrisonApproverService$private fun findOriginalLicenceForVariation(variationLicence: VariationLicence): Licence</ID>
     <ID>ReturnCount:StaffService.kt$StaffService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>

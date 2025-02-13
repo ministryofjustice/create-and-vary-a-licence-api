@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -8,9 +9,13 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import java.time.Clock
@@ -22,7 +27,11 @@ class PromptComServiceTest {
 
   private val promptComListBuilder = mock<PromptComListBuilder>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val promptComService = PromptComService(promptComListBuilder, prisonerSearchApiClient)
+  private val notifyService = mock<NotifyService>()
+  private val telemetryClient = mock<TelemetryClient>()
+
+  private val promptComService =
+    PromptComService(promptComListBuilder, prisonerSearchApiClient, notifyService, telemetryClient)
 
   @BeforeEach
   fun reset() = reset(promptComListBuilder, prisonerSearchApiClient)
@@ -31,7 +40,7 @@ class PromptComServiceTest {
   fun noRecords() {
     whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(emptyList())
 
-    val emails = promptComService.runJob(clock)
+    val emails = promptComService.getCases(clock)
 
     assertThat(emails).isEmpty()
   }
@@ -52,11 +61,15 @@ class PromptComServiceTest {
 
     whenever(promptComListBuilder.enrichWithLicenceStartDates(any())).thenReturn(casesWithEmailsAndLocalDates)
 
+    whenever(promptComListBuilder.excludeOutOfRangeDates(any(), eq(start), eq(end))).thenReturn(
+      casesWithEmailsAndLocalDates,
+    )
+
     whenever(promptComListBuilder.excludeInHardStop(any())).thenReturn(casesWithEmailsAndLocalDates)
 
     whenever(promptComListBuilder.buildEmailsToSend(any())).thenReturn(listOf(com))
 
-    val emails = promptComService.runJob(clock)
+    val emails = promptComService.getCases(clock)
 
     assertThat(emails).containsExactly(com)
 
@@ -75,10 +88,34 @@ class PromptComServiceTest {
 
       verify(promptComListBuilder).enrichWithLicenceStartDates(casesWithEmails)
 
+      verify(promptComListBuilder).excludeOutOfRangeDates(casesWithEmailsAndLocalDates, start, end)
+
       verify(promptComListBuilder).excludeInHardStop(casesWithEmailsAndLocalDates)
 
       verify(promptComListBuilder).buildEmailsToSend(casesWithEmailsAndLocalDates)
     }
+  }
+
+  @Test
+  fun sendNotifications() {
+    whenever(prisonerSearchApiClient.getAllByReleaseDate(start, end)).thenReturn(cases)
+    whenever(promptComListBuilder.excludeIneligibleCases(any())).thenReturn(cases)
+    whenever(promptComListBuilder.excludeInflightLicences(any())).thenReturn(cases)
+    whenever(promptComListBuilder.excludePrisonersWithHdc(any())).thenReturn(cases)
+    whenever(promptComListBuilder.enrichWithDeliusData(any())).thenReturn(casesWithDeliusData)
+    whenever(promptComListBuilder.enrichWithComEmail(any())).thenReturn(casesWithEmails)
+    whenever(promptComListBuilder.enrichWithLicenceStartDates(any())).thenReturn(casesWithEmailsAndLocalDates)
+    whenever(promptComListBuilder.excludeOutOfRangeDates(any(), eq(start), eq(end))).thenReturn(
+      casesWithEmailsAndLocalDates,
+    )
+
+    whenever(promptComListBuilder.excludeInHardStop(any())).thenReturn(casesWithEmailsAndLocalDates)
+    whenever(promptComListBuilder.buildEmailsToSend(any())).thenReturn(listOf(com))
+
+    promptComService.runJob(clock)
+
+    verify(telemetryClient).trackEvent("PromptComJob", mapOf("cases" to "1"), null)
+    verify(notifyService).sendInitialLicenceCreateEmails(listOf(com))
   }
 
   companion object {
@@ -95,12 +132,11 @@ class PromptComServiceTest {
     val casesWithEmails = casesWithDeliusData.map { it to "com@email.com" }
     val casesWithEmailsAndLocalDates = casesWithEmails.map { it to LocalDate.of(2022, 1, 2) }
 
-    val com = Com(
+    val com = PromptComNotification(
       email = "com@email.com",
       comName = "com name",
-      subjects = listOf(
-        Subject(
-          prisonerNumber = "A1234AA",
+      initialPromptCases = listOf(
+        Case(
           crn = "crn",
           name = "name",
           releaseDate = LocalDate.of(2022, 1, 2),
