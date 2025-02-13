@@ -1026,6 +1026,41 @@ class UpdateSentenceDateServiceTest {
     }
   }
 
+  @Test
+  fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createHdcLicence()))
+    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
+      Mono.just(
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "APPROVED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aHdcLicenceEntity.bookingId!!,
+          passed = true,
+        ),
+      ),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+
+    service.updateSentenceDates(
+      1L,
+      UpdateSentenceDatesRequest(
+        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        sentenceStartDate = LocalDate.parse("2021-09-11"),
+        sentenceEndDate = LocalDate.parse("2024-09-11"),
+        licenceStartDate = LocalDate.parse("2023-09-11"),
+        licenceExpiryDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      ),
+    )
+
+    verify(licenceService, times(0)).timeout(any(), any())
+  }
+
   private companion object {
     val aCrdLicenceEntity = TestData.createCrdLicence()
     val aHdcLicenceEntity = TestData.createHdcLicence()
