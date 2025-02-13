@@ -45,6 +45,11 @@ class CaseloadServiceTest {
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "A1234AA" to LocalDate.of(2021, 10, 22),
+      ),
+    )
   }
 
   @Test
@@ -61,6 +66,7 @@ class CaseloadServiceTest {
           isEligibleForEarlyRelease = true,
           isDueForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
+          licenceStartDate = LocalDate.of(2021, 10, 22),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -116,6 +122,7 @@ class CaseloadServiceTest {
           isDueForEarlyRelease = true,
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
+          licenceStartDate = LocalDate.of(2021, 10, 22),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -179,6 +186,7 @@ class CaseloadServiceTest {
           isDueForEarlyRelease = true,
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
+          licenceStartDate = LocalDate.of(2021, 10, 22),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",

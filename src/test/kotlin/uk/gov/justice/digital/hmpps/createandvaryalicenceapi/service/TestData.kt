@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
@@ -375,6 +377,31 @@ object TestData {
     croNumber = null,
   )
 
+  fun aPrisonApiPrisoner() = PrisonApiPrisoner(
+    offenderNo = "A1234AA",
+    firstName = "A",
+    lastName = "Prisoner",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    bookingId = 123456,
+    offenceHistory = listOf(
+      anOffenceHistory(),
+    ),
+    legalStatus = "SENTENCED",
+    confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewEligibilityDate = null,
+    homeDetentionCurfewActualDate = null,
+    topupSupervisionStartDate = null,
+    topupSupervisionExpiryDate = null,
+    paroleEligibilityDate = null,
+  )
+
+  fun anOffenceHistory() = OffenceHistory(
+    offenceDescription = "SOME_OFFENCE",
+    offenceCode = "123",
+    mostSerious = true,
+  )
+
   fun promptCase() = PromptCase(
     prisoner = prisonerSearchResult(),
     crn = "A1234",
@@ -402,6 +429,7 @@ object TestData {
       isDueForEarlyRelease = true,
       isEligibleForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      licenceStartDate = LocalDate.of(2021, 10, 22),
     ),
     prisoner = Prisoner(
       prisonerNumber = "A1234AA",
