@@ -429,6 +429,7 @@ object TestData {
       isDueForEarlyRelease = true,
       isEligibleForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      licenceStartDate = LocalDate.of(2021, 10, 22),
     ),
     prisoner = Prisoner(
       prisonerNumber = "A1234AA",
