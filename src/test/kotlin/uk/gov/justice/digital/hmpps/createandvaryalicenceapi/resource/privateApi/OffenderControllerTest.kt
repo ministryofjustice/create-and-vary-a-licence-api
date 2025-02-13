@@ -147,4 +147,17 @@ class OffenderControllerTest {
 
     assertThat(mapper.readValue(response, Array<String>::class.java)).isEqualTo(arrayOf("A Reason"))
   }
+
+  @Test
+  fun `get is-91 status`() {
+    whenever(prisonerSearchService.getIS91Status("A1234AA")).thenReturn(true)
+
+    val request = get("/offender/nomisid/A1234AA/is-91-status")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+
+    val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
+
+    assertThat(mapper.readValue(response, String::class.java)).isEqualTo("true")
+  }
 }
