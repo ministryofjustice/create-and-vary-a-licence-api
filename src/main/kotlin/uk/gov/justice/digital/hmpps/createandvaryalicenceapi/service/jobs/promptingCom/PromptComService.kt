@@ -25,7 +25,7 @@ class PromptComService(
 
     val cases = getCases(clock)
       // for testing we'll just send emails to the first 10 cases
-      .take(EMAILS_TO_SEND_WHILE_TESTING)
+      .takeLast(EMAILS_TO_SEND_WHILE_TESTING)
 
     notifyService.sendInitialLicenceCreateEmails(cases)
     telemetryClient.trackEvent("PromptComJob", mapOf("cases" to cases.size.toString()), null)
