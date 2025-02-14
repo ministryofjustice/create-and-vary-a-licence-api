@@ -20,8 +20,8 @@ data class SentenceChanges(
   val isMaterial: Boolean,
 )
 
-fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest, newLsd: LocalDate?): SentenceChanges {
-  val lsdChanged = nullableDatesDiffer(newLsd, this.licenceStartDate)
+fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest): SentenceChanges {
+  val lsdChanged = nullableDatesDiffer(newSentence.licenceStartDate, this.licenceStartDate)
   val ledChanged = nullableDatesDiffer(newSentence.licenceExpiryDate, this.licenceExpiryDate)
   val sedChanged = nullableDatesDiffer(newSentence.sentenceEndDate, this.sentenceEndDate)
   val tussdChanged =
