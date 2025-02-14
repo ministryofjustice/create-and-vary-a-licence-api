@@ -54,6 +54,7 @@ class CaseloadService(
         isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
           sentenceDateHolder,
         ),
+        licenceStartDate = sentenceDateHolder.licenceStartDate,
       ),
     )
   }
