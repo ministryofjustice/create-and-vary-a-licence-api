@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
@@ -34,7 +35,7 @@ class DeactivateLicencesService(
   @Transactional
   fun deactivateLicences() {
     log.info("Job deactivateLicencesJob started")
-    val licencesToDeactivate = licenceRepository.getDraftLicencesPassedReleaseDate()
+    val licencesToDeactivate = licenceRepository.getDraftLicencesPassedReleaseDate().filterNot { it.kind == HDC }
     if (licencesToDeactivate.isEmpty()) {
       log.info("Job deactivateLicencesJob has no licences to deactivate")
       return
@@ -48,7 +49,7 @@ class DeactivateLicencesService(
     var userName = "SYSTEM"
     val authentication: Authentication = SecurityContextHolder.getContext().authentication
     if (authentication !is AnonymousAuthenticationToken) {
-      userName = authentication.getName()
+      userName = authentication.name
     }
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(userName)
     val deactivateLicences = licences.map { it.deactivate(staffMember) }
