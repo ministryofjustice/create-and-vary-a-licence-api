@@ -44,6 +44,7 @@ class PrisonerSearchServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val iS91DeterminationService = mock<IS91DeterminationService>()
 
   private val service = PrisonerSearchService(
     licenceRepository,
@@ -53,6 +54,7 @@ class PrisonerSearchServiceTest {
     prisonApiClient,
     eligibilityService,
     releaseDateService,
+    iS91DeterminationService,
   )
 
   @BeforeEach
@@ -65,6 +67,7 @@ class PrisonerSearchServiceTest {
       prisonApiClient,
       eligibilityService,
       releaseDateService,
+      iS91DeterminationService,
     )
   }
 
@@ -1909,6 +1912,39 @@ class PrisonerSearchServiceTest {
 
     val reasons = service.getIneligibilityReasons("A1234AA")
     assertThat(reasons).containsExactly("A reason", "Approved for HDC")
+  }
+
+  @Test
+  fun `get is-91 status for absent offender`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
+
+    val exception = assertThrows<IllegalStateException> {
+      service.getIS91Status("A1234AA")
+    }
+
+    assertThat(exception.message).isEqualTo("Found 0 prisoners for: A1234AA")
+  }
+
+  @Test
+  fun `get is-91 status for present offender returns true for an illegal immigrant offence code`() {
+    val prisoner = aPrisonerSearchResult.copy(mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE")
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
+    whenever(iS91DeterminationService.isIS91Case(prisoner)).thenReturn(true)
+
+    val status = service.getIS91Status("A1234AA")
+    assertThat(status).isTrue()
+  }
+
+  @Test
+  fun `get is-91 status for present offender returns false for any other outcome code`() {
+    val prisoner = aPrisonerSearchResult.copy(mostSeriousOffence = "OFFENCE1")
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
+    whenever(iS91DeterminationService.isIS91Case(prisoner)).thenReturn(false)
+
+    val status = service.getIS91Status("A1234AA")
+    assertThat(status).isFalse()
   }
 
   private companion object {
