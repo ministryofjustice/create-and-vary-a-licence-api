@@ -35,6 +35,9 @@ class UpdateSentenceDateService(
   @Transactional
   fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+    val prisoner = prisonApiClient.getPrisonerDetail(licenceEntity.nomsId!!)
+    val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licenceEntity.kind)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -42,7 +45,7 @@ class UpdateSentenceDateService(
 
     logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
 
-    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest)
+    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest, licenceStartDate)
 
     val updatedLicenceEntity = licenceEntity.updateLicenceDates(
       status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
@@ -50,7 +53,7 @@ class UpdateSentenceDateService(
       actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
       sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
       sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
-      licenceStartDate = sentenceDatesRequest.licenceStartDate,
+      licenceStartDate = licenceStartDate,
       licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
       topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
       topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
