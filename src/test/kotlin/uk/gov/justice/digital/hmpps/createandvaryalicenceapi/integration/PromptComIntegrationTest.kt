@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -74,7 +76,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNoContent
 
-    verify(telemetryClient).trackEvent("PromptComJob", mapOf("cases" to "1"), null)
+    await untilAsserted { verify(telemetryClient).trackEvent("PromptComJob", mapOf("cases" to "1"), null) }
   }
 
   private companion object {
