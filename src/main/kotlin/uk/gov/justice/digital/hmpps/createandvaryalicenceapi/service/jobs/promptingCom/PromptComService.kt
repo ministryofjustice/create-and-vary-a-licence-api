@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promp
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -18,6 +19,7 @@ class PromptComService(
   private val telemetryClient: TelemetryClient,
 ) {
 
+  @Async
   fun runJob(clock: Clock = Clock.systemDefaultZone()) {
     log.info("Running job")
 
