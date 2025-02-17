@@ -100,13 +100,15 @@ class PrisonApiMockServer : WireMockServer(8091) {
                }
             ],
             "legalStatus": "SENTENCED",
-            "confirmedReleaseDate": "$releaseDate",
-            "conditionalReleaseDate": "$releaseDate",
-            "homeDetentionCurfewEligibilityDate": null,
-            "homeDetentionCurfewActualDate": "2024-08-01",
-            "topupSupervisionStartDate": null,
-            "topupSupervisionExpiryDate": null,
-            "paroleEligibilityDate": null
+            "sentenceDetail": {
+              "confirmedReleaseDate": "$releaseDate",
+              "conditionalReleaseDate": "$releaseDate",
+              "homeDetentionCurfewEligibilityDate": null,
+              "homeDetentionCurfewActualDate": "2024-08-01",
+              "topupSupervisionStartDate": null,
+              "topupSupervisionExpiryDate": null,
+              "paroleEligibilityDate": null
+            }
           }
           """.trimMargin(),
         ).withStatus(200),

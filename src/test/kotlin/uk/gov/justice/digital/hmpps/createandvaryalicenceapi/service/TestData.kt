@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Offe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
@@ -387,13 +388,15 @@ object TestData {
       anOffenceHistory(),
     ),
     legalStatus = "SENTENCED",
-    confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    homeDetentionCurfewEligibilityDate = null,
-    homeDetentionCurfewActualDate = null,
-    topupSupervisionStartDate = null,
-    topupSupervisionExpiryDate = null,
-    paroleEligibilityDate = null,
+    sentenceDetail = SentenceDetail(
+      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      homeDetentionCurfewEligibilityDate = null,
+      homeDetentionCurfewActualDate = null,
+      topupSupervisionStartDate = null,
+      topupSupervisionExpiryDate = null,
+      paroleEligibilityDate = null,
+    ),
   )
 
   fun anOffenceHistory() = OffenceHistory(
