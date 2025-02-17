@@ -50,15 +50,16 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   fun `Change licence type`() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+    prisonApiMockServer.stubGetPrisonerDetail()
     probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
-    val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
+    val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "A1234AA"))
       .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk.expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
@@ -85,6 +86,9 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     val additionalConditions = additionalConditionRepository.findAll()
     assertThat(additionalConditions).hasSize(1)
     assertThat(additionalConditions.map { it.conditionType }).allMatch { it == "AP" }
+
+    // Override prisoner search response to trigger LSD change
+    mockPrisonerSearchResponse(LocalDate.parse("2023-09-11"))
 
     webTestClient.put().uri("/licence/id/${result.licenceId}/sentence-dates").bodyValue(
       UpdateSentenceDatesRequest(
@@ -170,6 +174,37 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(result?.userMessage).contains("Access Denied")
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
+  }
+
+  private fun mockPrisonerSearchResponse(releaseDate: LocalDate?) {
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(
+      """[
+            {
+              "prisonerNumber": "A1234AA",
+              "bookingId": "123",
+              "status": "ACTIVE",
+              "mostSeriousOffence": "Robbery",
+              "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+              "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+              "homeDetentionCurfewEligibilityDate": null,
+              "releaseDate": "$releaseDate",
+              "confirmedReleaseDate": "$releaseDate",
+              "conditionalReleaseDate": "$releaseDate",
+              "paroleEligibilityDate": null,
+              "actualParoleDate" : null,
+              "postRecallReleaseDate": null,
+              "homeDetentionCurfewActualDate": "2024-08-01",
+              "legalStatus": "SENTENCED",
+              "indeterminateSentence": false,
+              "recall": false,
+              "prisonId": "ABC",
+              "bookNumber": "12345A",
+              "firstName": "Test1",
+              "lastName": "Person1",
+              "dateOfBirth": "1985-01-01"
+           }]
+      """.trimIndent(),
+    )
   }
 
   private companion object {
