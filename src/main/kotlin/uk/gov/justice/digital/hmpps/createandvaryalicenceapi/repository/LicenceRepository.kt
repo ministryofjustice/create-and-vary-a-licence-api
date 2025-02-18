@@ -14,7 +14,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
 @Repository
-interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExecutor<Licence> {
+interface LicenceRepository :
+  JpaRepository<Licence, Long>,
+  JpaSpecificationExecutor<Licence> {
   fun findAllByNomsId(nomsId: String): List<Licence>
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
@@ -139,7 +141,10 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT l
         FROM Licence l
-        WHERE l.statusCode  IN (
+        WHERE l.kind != (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+        )
+        AND l.statusCode  IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT

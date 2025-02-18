@@ -124,19 +124,8 @@ class DeactivateLicencesServiceTest {
       )
   }
 
-  @Test
-  fun `Deactivation job excludes HDC licences`() {
-    whenever(licenceRepository.getDraftLicencesPassedReleaseDate()).thenReturn(listOf(aHdcLicenceEntity))
-    service.deactivateLicences()
-    verify(licenceRepository, times(1)).getDraftLicencesPassedReleaseDate()
-    verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
-    verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(licenceEventRepository, times(0)).saveAndFlush(any())
-  }
-
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence().copy()
-    val aHdcLicenceEntity = TestData.createHdcLicence().copy()
     val aCom = TestData.com()
   }
 }
