@@ -48,7 +48,7 @@ class DeactivateLicencesService(
     var userName = "SYSTEM"
     val authentication: Authentication = SecurityContextHolder.getContext().authentication
     if (authentication !is AnonymousAuthenticationToken) {
-      userName = authentication.getName()
+      userName = authentication.name
     }
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(userName)
     val deactivateLicences = licences.map { it.deactivate(staffMember) }
