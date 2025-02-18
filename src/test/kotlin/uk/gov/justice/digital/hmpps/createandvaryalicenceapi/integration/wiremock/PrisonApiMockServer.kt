@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import java.time.LocalDate
 
 class PrisonApiMockServer : WireMockServer(8091) {
   fun stubGetHdcLatest(bookingId: Long = 12345, approvalStatus: String = "REJECTED", passed: Boolean = true) {
@@ -68,11 +69,50 @@ class PrisonApiMockServer : WireMockServer(8091) {
                {
                   "bookingId": "789",
                   "passed": true
+               },
+               {
+                  "bookingId": "123",
+                  "approvalStatus": "APPROVED",
+                  "passed": false
                }
               ]
             """.trimIndent(),
           ).withStatus(200),
         ),
+    )
+  }
+
+  fun stubGetPrisonerDetail(nomsId: String = "A1234AA", releaseDate: LocalDate? = LocalDate.of(2021, 10, 22)) {
+    stubFor(
+      get(urlEqualTo("/api/offenders/$nomsId")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """{
+            "offenderNo": "A1234AA",
+            "firstName": "A",
+            "lastName": "Prisoner",
+            "dateOfBirth": "1985-12-28",
+            "bookingId": 123456,
+            "offenceHistory": [
+              {
+                "offenceDescription": "SOME_OFFENCE",
+                "offenceCode": "123",
+                "mostSerious": true
+               }
+            ],
+            "legalStatus": "SENTENCED",
+            "sentenceDetail": {
+              "confirmedReleaseDate": "$releaseDate",
+              "conditionalReleaseDate": "$releaseDate",
+              "homeDetentionCurfewEligibilityDate": null,
+              "homeDetentionCurfewActualDate": "2024-08-01",
+              "topupSupervisionStartDate": null,
+              "topupSupervisionExpiryDate": null,
+              "paroleEligibilityDate": null
+            }
+          }
+          """.trimMargin(),
+        ).withStatus(200),
+      ),
     )
   }
 }

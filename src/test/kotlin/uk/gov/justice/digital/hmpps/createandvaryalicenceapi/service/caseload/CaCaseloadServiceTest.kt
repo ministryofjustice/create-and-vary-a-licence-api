@@ -80,7 +80,7 @@ class CaCaseloadServiceTest {
   private val licenceQueryObject = LicenceQueryObject(
     statusCodes = statuses,
     prisonCodes = listOf("BAI"),
-    sortBy = "conditionalReleaseDate",
+    sortBy = "licenceStartDate",
   )
 
   @BeforeEach
@@ -130,7 +130,12 @@ class CaCaseloadServiceTest {
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(listOf(comUser))
-    whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+    whenever(
+      probationSearchApiClient.searchForPeopleByNomsNumber(
+        any(),
+        anyOrNull(),
+      ),
+    ).thenReturn(listOf(offenderDetail))
   }
 
   @Nested
@@ -276,7 +281,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by probation practitioner`() {
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
           listOf(offenderDetail),
         )
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
@@ -410,6 +415,7 @@ class CaCaseloadServiceTest {
             licenceStatus = LicenceStatus.IN_PROGRESS,
             isInHardStopPeriod = false,
             isDueToBeReleasedInTheNextTwoWorkingDays = true,
+            licenceStartDate = twoDaysFromNow,
             conditionalReleaseDate = twoMonthsFromNow,
             actualReleaseDate = twoDaysFromNow,
             isDueForEarlyRelease = true,
@@ -472,6 +478,7 @@ class CaCaseloadServiceTest {
               staffUsername = null,
             ),
             releaseDate = twoDaysFromNow,
+            releaseDateLabel = "Confirmed release date",
             tabType = CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS,
             nomisLegalStatus = "SENTENCED",
             lastWorkedOnBy = "X Y",
@@ -487,8 +494,9 @@ class CaCaseloadServiceTest {
       whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
-            conditionalReleaseDate = twoDaysFromNow,
-            actualReleaseDate = tenDaysFromNow,
+            conditionalReleaseDate = tenDaysFromNow,
+            actualReleaseDate = twoMonthsFromNow,
+            licenceStartDate = tenDaysFromNow,
           ),
           aLicenceSummary.copy(
             licenceId = 2,
@@ -499,6 +507,7 @@ class CaCaseloadServiceTest {
             comUsername = "Andy",
             conditionalReleaseDate = tenDaysFromNow,
             actualReleaseDate = twoDaysFromNow,
+            licenceStartDate = twoDaysFromNow,
           ),
         ),
       )
@@ -540,6 +549,7 @@ class CaCaseloadServiceTest {
             name = "Smith Cena",
             prisonerNumber = "A1234AB",
             releaseDate = twoDaysFromNow,
+            releaseDateLabel = "Confirmed release date",
             probationPractitioner = ProbationPractitioner(
               staffCode = null,
               name = null,
@@ -551,6 +561,7 @@ class CaCaseloadServiceTest {
           TestData.caCase().copy(
             name = "John Cena",
             releaseDate = tenDaysFromNow,
+            releaseDateLabel = "CRD",
             probationPractitioner = ProbationPractitioner(
               staffCode = "AB00001",
               name = "com user",
@@ -738,7 +749,11 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
+          listOf(
+            offenderDetail,
+          ),
+        )
 
         whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
 
@@ -799,7 +814,11 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(listOf(offenderDetail))
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
+          listOf(
+            offenderDetail,
+          ),
+        )
 
         whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
 
@@ -860,7 +879,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any())).thenReturn(emptyList())
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEmpty()
@@ -977,6 +996,40 @@ class CaCaseloadServiceTest {
         ),
       )
     }
+  }
+
+  @Test
+  fun `should use HDCAD as release label where a HDCAD is set`() {
+    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+      listOf(
+        aLicenceSummary.copy(
+          licenceStartDate = oneDayFromNow,
+          homeDetentionCurfewActualDate = oneDayFromNow,
+        ),
+      ),
+    )
+
+    val probationOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")
+    assertThat(probationOmuCaseload).isEqualTo(
+      listOf(
+        TestData.caCase().copy(
+          licenceId = 1,
+          name = "John Cena",
+          prisonerNumber = "A1234AA",
+          releaseDate = oneDayFromNow,
+          tabType = null,
+          nomisLegalStatus = null,
+          probationPractitioner = ProbationPractitioner(
+            staffCode = "AB00001",
+            name = "com user",
+            staffIdentifier = null,
+            staffUsername = null,
+          ),
+          lastWorkedOnBy = "X Y",
+          releaseDateLabel = "HDCAD",
+        ),
+      ),
+    )
   }
 
   private companion object {

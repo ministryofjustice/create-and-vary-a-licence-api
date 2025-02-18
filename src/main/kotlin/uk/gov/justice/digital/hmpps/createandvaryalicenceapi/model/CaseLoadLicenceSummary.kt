@@ -67,7 +67,7 @@ data class CaseLoadLicenceSummary(
   val licenceStartDate: LocalDate? = null,
 
   @Schema(
-    description = "The offenders release date, this will either be the conditional release if one exists or the actual release date otherwise",
+    description = "The offenders release date, this will be equal to the licence start date",
     example = "12/12/2022",
   )
   @JsonFormat(pattern = "dd/MM/yyyy")

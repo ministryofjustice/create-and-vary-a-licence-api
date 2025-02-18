@@ -14,17 +14,36 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
 @Repository
-interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExecutor<Licence> {
+interface LicenceRepository :
+  JpaRepository<Licence, Long>,
+  JpaSpecificationExecutor<Licence> {
   fun findAllByNomsId(nomsId: String): List<Licence>
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
-  fun findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(bookingId: List<Long>, status: LicenceStatus): List<CrdLicence>
+  fun findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+    bookingId: List<Long>,
+    status: LicenceStatus,
+  ): List<CrdLicence>
+
   fun findAllByBookingIdAndStatusCodeInAndKindIn(
     bookingId: Long,
     status: List<LicenceStatus>,
     kind: List<LicenceKind>,
   ): List<Licence>
+
+  @Query(
+    """
+    SELECT l.bookingId
+        FROM Licence l
+        WHERE l.nomsId IN :nomsIds
+        AND l.statusCode IN :status
+    """,
+  )
+  fun findBookingIdsForLicencesInState(
+    nomsIds: List<String>,
+    status: List<LicenceStatus>,
+  ): Set<Long>
 
   @Query(
     """
@@ -45,7 +64,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence( l.crn, l.forename, l.surname, com.firstName , com.lastName , com.email)
         FROM CrdLicence l 
         JOIN l.submittedBy com
-        WHERE (l.actualReleaseDate = CURRENT_DATE OR l.conditionalReleaseDate = CURRENT_DATE) 
+        WHERE (l.licenceStartDate = CURRENT_DATE) 
         AND l.statusCode = 'SUBMITTED'
         AND (
             (EXISTS (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')) 
@@ -59,7 +78,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT l
         FROM Licence l 
-        WHERE (l.actualReleaseDate <= CURRENT_DATE OR l.conditionalReleaseDate <= CURRENT_DATE) 
+        WHERE l.licenceStartDate <= CURRENT_DATE
         AND l.statusCode = 'APPROVED'
     """,
   )
@@ -74,7 +93,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
         )
-        AND (COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) > :releasedAfterDate)
+        AND l.licenceStartDate > :releasedAfterDate
         ORDER BY l.conditionalReleaseDate ASC
     """,
   )
@@ -122,12 +141,15 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
     """
     SELECT l
         FROM Licence l
-        WHERE l.statusCode  IN (
+        WHERE l.kind != (
+            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+        )
+        AND l.statusCode  IN (
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED,
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
         )
-        AND COALESCE(l.actualReleaseDate, l.conditionalReleaseDate) < CURRENT_DATE
+        AND l.licenceStartDate < CURRENT_DATE
     """,
   )
   fun getDraftLicencesPassedReleaseDate(): List<Licence>
@@ -192,7 +214,7 @@ interface LicenceRepository : JpaRepository<Licence, Long>, JpaSpecificationExec
       SELECT l
         FROM Licence l
         WHERE (l.statusCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS)
-                AND l.conditionalReleaseDate IS NULL AND l.actualReleaseDate IS NULL)
+                AND l.licenceStartDate IS NULL)
         OR (l.statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED AND l.licenceStartDate < CURRENT_DATE)
     """,
   )

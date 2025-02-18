@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.ADDRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.adjustCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.formatAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.formatUsing
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.startsWithVowel
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.adjustCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.formatAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.formatUsing
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.startsWithVowel
 
 object Fields {
   /**

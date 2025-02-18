@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -23,7 +23,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
       .expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
-    Assertions.assertThat(result?.userMessage).contains("Access Denied")
+    assertThat(result?.userMessage).contains("Access Denied")
   }
 
   @Test

@@ -52,7 +52,8 @@ class VariationLicenceTest {
       )
 
     VariationLicence::class.memberProperties.forEach {
-      if (it.get(variationLicence) == null) {
+      // HDCAD will always be null for non-HDC licences
+      if (it.name != "homeDetentionCurfewActualDate" && it.get(variationLicence) == null) {
         fail { "${it.name} does not have a value set - needs to be set to test copy" }
       }
     }

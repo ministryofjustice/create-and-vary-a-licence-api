@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi
 
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
@@ -10,7 +10,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V1_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_0
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
@@ -43,10 +43,10 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(anApStandardCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text)
+        tuple(it.code, it.text)
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "9ce9d594-e346-4785-9642-c87e764bee37",
           "Be of good behaviour and not behave in a way which undermines the purpose of the licence period.",
         ),
@@ -56,10 +56,10 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(anApAdditionalCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
+        tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "5db26ab3-9b6f-4bee-b2aa-53aa3f3be7dd",
           "You must reside overnight within [REGION] probation region while of no fixed abode, unless otherwise approved by your supervising officer.",
           "Residence at a specific place",
@@ -72,10 +72,10 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(aPssStandardCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text)
+        tuple(it.code, it.text)
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "b3cd4a30-11fd-4715-9ebb-ed89f5386e1f",
           "Be of good behaviour and not behave in a way that undermines the rehabilitative purpose of the supervision period.",
         ),
@@ -85,10 +85,10 @@ class PublicLicencePolicyServiceTest {
 
     assertThat(aPssAdditionalCondition)
       .extracting {
-        Tuple.tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
+        tuple(it.code, it.text, it.category, it.categoryShort, it.requiresUserInput)
       }
       .isEqualTo(
-        Tuple.tuple(
+        tuple(
           "62c83b80-2223-4562-a195-0670f4072088",
           "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS], as directed, to address your dependency on, or propensity to misuse, a controlled drug.",
           "Drug appointment",

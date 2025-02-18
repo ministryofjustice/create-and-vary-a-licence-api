@@ -24,7 +24,6 @@ import java.time.LocalDate
 class CaseloadServiceTest {
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
-
   private val service =
     CaseloadService(prisonerSearchApiClient, releaseDateService)
 
@@ -46,6 +45,11 @@ class CaseloadServiceTest {
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+      mapOf(
+        "A1234AA" to LocalDate.of(2021, 10, 22),
+      ),
+    )
   }
 
   @Test
@@ -62,6 +66,7 @@ class CaseloadServiceTest {
           isEligibleForEarlyRelease = true,
           isDueForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
+          licenceStartDate = LocalDate.of(2021, 10, 22),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -69,9 +74,9 @@ class CaseloadServiceTest {
           croNumber = null,
           bookingId = "123456",
           bookNumber = "12345A",
-          firstName = "Bob",
+          firstName = "A",
           middleNames = null,
-          lastName = "Mortimar",
+          lastName = "Prisoner",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
           prisonId = "MDI",
@@ -117,6 +122,7 @@ class CaseloadServiceTest {
           isDueForEarlyRelease = true,
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
+          licenceStartDate = LocalDate.of(2021, 10, 22),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -124,9 +130,9 @@ class CaseloadServiceTest {
           croNumber = null,
           bookingId = "123456",
           bookNumber = "12345A",
-          firstName = "Bob",
+          firstName = "A",
           middleNames = null,
-          lastName = "Mortimar",
+          lastName = "Prisoner",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
           prisonId = "MDI",
@@ -163,7 +169,8 @@ class CaseloadServiceTest {
   fun getPrisonerFailsToFind() {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(emptyList())
 
-    assertThatThrownBy { service.getPrisoner("A1234AA") }.isInstanceOf(EntityNotFoundException::class.java).hasMessage("A1234AA")
+    assertThatThrownBy { service.getPrisoner("A1234AA") }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessage("A1234AA")
   }
 
   @Test
@@ -179,6 +186,7 @@ class CaseloadServiceTest {
           isDueForEarlyRelease = true,
           isEligibleForEarlyRelease = true,
           isDueToBeReleasedInTheNextTwoWorkingDays = true,
+          licenceStartDate = LocalDate.of(2021, 10, 22),
         ),
         prisoner = Prisoner(
           prisonerNumber = "A1234AA",
@@ -186,9 +194,9 @@ class CaseloadServiceTest {
           croNumber = null,
           bookingId = "123456",
           bookNumber = "12345A",
-          firstName = "Bob",
+          firstName = "A",
           middleNames = null,
-          lastName = "Mortimar",
+          lastName = "Prisoner",
           dateOfBirth = LocalDate.of(1985, 12, 28),
           status = "ACTIVE IN",
           prisonId = "MDI",
@@ -218,6 +226,10 @@ class CaseloadServiceTest {
         ),
       ),
     )
-    verify(prisonerSearchApiClient).searchPrisonersByReleaseDate(LocalDate.of(2023, 1, 2), LocalDate.of(2023, 1, 4), setOf("MDI"))
+    verify(prisonerSearchApiClient).searchPrisonersByReleaseDate(
+      LocalDate.of(2023, 1, 2),
+      LocalDate.of(2023, 1, 4),
+      setOf("MDI"),
+    )
   }
 }

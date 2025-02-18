@@ -8,6 +8,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -36,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
+
 /*
 ** Functions which transform JPA entity objects into their API model equivalents.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
@@ -99,6 +102,10 @@ fun transformToLicenceSummary(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   updatedByFullName = licence.getUpdatedByFullName(),
+  homeDetentionCurfewActualDate = when (licence) {
+    is HdcLicence -> licence.homeDetentionCurfewActualDate
+    else -> null
+  },
 )
 
 fun toHardstop(
@@ -446,8 +453,7 @@ fun toHdc(
 )
 
 // Transform a list of entity standard conditions to model standard conditions
-fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map(::transform)
+fun List<EntityStandardCondition>.transformToModelStandard(conditionType: String): List<ModelStandardCondition> = filter { condition -> condition.conditionType == conditionType }.map(::transform)
 
 fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelStandardCondition(
   id = entity.id,
@@ -460,31 +466,28 @@ fun transform(entity: EntityStandardCondition): ModelStandardCondition = ModelSt
 fun List<EntityAdditionalCondition>.transformToModelAdditional(
   conditionType: String,
   conditionSubmissionStatus: Map<String, Boolean>,
-): List<ModelAdditionalCondition> =
-  filter { condition -> condition.conditionType == conditionType }.map {
-    transform(
-      it,
-      conditionSubmissionStatus[it.conditionCode]!!,
-    )
-  }
-
-fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition =
-  ModelAdditionalCondition(
-    id = entity.id,
-    code = entity.conditionCode,
-    version = entity.conditionVersion,
-    category = entity.conditionCategory,
-    sequence = entity.conditionSequence,
-    text = entity.conditionText,
-    expandedText = entity.expandedConditionText,
-    data = entity.additionalConditionData.transformToModelAdditionalData(),
-    uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
-    readyToSubmit = readyToSubmit,
+): List<ModelAdditionalCondition> = filter { condition -> condition.conditionType == conditionType }.map {
+  transform(
+    it,
+    conditionSubmissionStatus[it.conditionCode]!!,
   )
+}
+
+fun transform(entity: EntityAdditionalCondition, readyToSubmit: Boolean): ModelAdditionalCondition = ModelAdditionalCondition(
+  id = entity.id,
+  code = entity.conditionCode,
+  version = entity.conditionVersion,
+  category = entity.conditionCategory,
+  sequence = entity.conditionSequence,
+  text = entity.conditionText,
+  expandedText = entity.expandedConditionText,
+  data = entity.additionalConditionData.transformToModelAdditionalData(),
+  uploadSummary = entity.additionalConditionUploadSummary.transformToModelAdditionalConditionUploadSummary(),
+  readyToSubmit = readyToSubmit,
+)
 
 // Transform a list of entity additional condition data to model additional condition data
-fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> =
-  map(::transform)
+fun List<EntityAdditionalConditionData>.transformToModelAdditionalData(): List<ModelAdditionalConditionData> = map(::transform)
 
 fun transform(entity: EntityAdditionalConditionData): ModelAdditionalConditionData = ModelAdditionalConditionData(
   id = entity.id,
@@ -503,20 +506,18 @@ fun transform(entity: EntityBespokeCondition): ModelBespokeCondition = ModelBesp
 )
 
 // Transform a list of entity additional condition uploads to model additional condition uploads
-fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> =
-  map(::transform)
+fun List<EntityAdditionalConditionUploadSummary>.transformToModelAdditionalConditionUploadSummary(): List<ModelAdditionalConditionUploadSummary> = map(::transform)
 
-fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary =
-  ModelAdditionalConditionUploadSummary(
-    id = entity.id,
-    filename = entity.filename,
-    fileType = entity.fileType,
-    fileSize = entity.fileSize,
-    uploadedTime = entity.uploadedTime,
-    description = entity.description,
-    thumbnailImage = entity.thumbnailImage?.toBase64(),
-    uploadDetailId = entity.uploadDetailId,
-  )
+fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalConditionUploadSummary = ModelAdditionalConditionUploadSummary(
+  id = entity.id,
+  filename = entity.filename,
+  fileType = entity.fileType,
+  fileSize = entity.fileSize,
+  uploadedTime = entity.uploadedTime,
+  description = entity.description,
+  thumbnailImage = entity.thumbnailImage?.toBase64(),
+  uploadDetailId = entity.uploadDetailId,
+)
 
 // Transform a list of entity hdc curfew times to model hdc curfew times
 fun List<EntityHdcCurfewTimes>.transformToModelCurfewTimes(): List<ModelHdcCurfewTimes> = map(::transform)
@@ -565,31 +566,39 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): ModelFoundProbationRecord = ModelFoundProbationRecord(
-  kind = licence?.kind,
-  name = "${name.forename} ${name.surname}".convertToTitleCase(),
-  crn = licence?.crn,
-  nomisId = licence?.nomsId,
-  comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
-  comStaffCode = manager.code,
-  teamName = manager.team.description ?: licence?.probationTeamDescription,
-  releaseDate = licence?.actualReleaseDate ?: licence?.conditionalReleaseDate,
-  licenceId = licence?.id,
-  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
-  licenceType = licence?.typeCode,
-  licenceStatus = licence?.statusCode,
-  isOnProbation = licence?.statusCode?.isOnProbation(),
-  hardStopDate = hardStopDate,
-  hardStopWarningDate = hardStopWarningDate,
-  isInHardStopPeriod = isInHardStopPeriod,
-  isDueForEarlyRelease = isDueForEarlyRelease,
-  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-  releaseDateLabel = if (licence?.actualReleaseDate != null) "Confirmed release date" else "CRD",
-  isReviewNeeded = when (licence) {
-    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-    else -> false
-  },
-)
+): ModelFoundProbationRecord {
+  val hdcad = if (licence is HdcLicence) licence.homeDetentionCurfewActualDate else null
+  return ModelFoundProbationRecord(
+    kind = licence?.kind,
+    name = "${name.forename} ${name.surname}".convertToTitleCase(),
+    crn = licence?.crn,
+    nomisId = licence?.nomsId,
+    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
+    comStaffCode = manager.code,
+    teamName = manager.team.description ?: licence?.probationTeamDescription,
+    releaseDate = licence?.licenceStartDate,
+    licenceId = licence?.id,
+    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    licenceType = licence?.typeCode,
+    licenceStatus = licence?.statusCode,
+    isOnProbation = licence?.statusCode?.isOnProbation(),
+    hardStopDate = hardStopDate,
+    hardStopWarningDate = hardStopWarningDate,
+    isInHardStopPeriod = isInHardStopPeriod,
+    isDueForEarlyRelease = isDueForEarlyRelease,
+    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+    releaseDateLabel = when (licence?.licenceStartDate) {
+      null -> "CRD"
+      licence.actualReleaseDate -> "Confirmed release date"
+      hdcad -> "HDCAD"
+      else -> "CRD"
+    },
+    isReviewNeeded = when (licence) {
+      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+      else -> false
+    },
+  )
+}
 
 fun CaseloadResult.transformToUnstartedRecord(
   releaseDate: LocalDate?,
@@ -776,4 +785,22 @@ fun Prisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
   conditionalReleaseDate = this.conditionalReleaseDate,
   actualParoleDate = this.actualParoleDate,
   releaseOnTemporaryLicenceDate = this.releaseOnTemporaryLicenceDate,
+)
+
+fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
+  prisonerNumber = this.offenderNo,
+  bookingId = this.bookingId.toString(),
+  firstName = this.firstName,
+  middleNames = this.middleName,
+  lastName = this.lastName,
+  dateOfBirth = this.dateOfBirth,
+  legalStatus = this.legalStatus,
+  mostSeriousOffence = this.offenceHistory.find { it.mostSerious }?.offenceDescription,
+  conditionalReleaseDate = this.sentenceDetail.conditionalReleaseOverrideDate ?: this.sentenceDetail.conditionalReleaseDate,
+  confirmedReleaseDate = this.sentenceDetail.confirmedReleaseDate,
+  homeDetentionCurfewEligibilityDate = this.sentenceDetail.homeDetentionCurfewEligibilityDate,
+  homeDetentionCurfewActualDate = this.sentenceDetail.homeDetentionCurfewActualDate,
+  topupSupervisionStartDate = this.sentenceDetail.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = this.sentenceDetail.topupSupervisionExpiryOverrideDate ?: this.sentenceDetail.topupSupervisionExpiryDate,
+  paroleEligibilityDate = this.sentenceDetail.paroleEligibilityOverrideDate ?: this.sentenceDetail.paroleEligibilityDate,
 )

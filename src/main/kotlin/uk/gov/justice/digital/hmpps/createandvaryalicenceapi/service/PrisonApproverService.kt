@@ -28,7 +28,7 @@ class PrisonApproverService(
       return emptyList()
     }
     val licences = licenceRepository.getLicencesReadyForApproval(prisons)
-      .sortedWith(compareBy(nullsLast()) { it.actualReleaseDate ?: it.conditionalReleaseDate })
+      .sortedWith(compareBy(nullsLast()) { it.licenceStartDate })
     return licences.map { it.toApprovalSummaryView() }
   }
 

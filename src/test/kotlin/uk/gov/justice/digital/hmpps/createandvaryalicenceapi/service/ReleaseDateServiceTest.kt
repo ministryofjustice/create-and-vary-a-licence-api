@@ -15,6 +15,8 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.Instant
@@ -39,12 +41,13 @@ class ReleaseDateServiceTest {
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 
-  private fun getEarliestDate(actualReleaseDate: LocalDate): LocalDate? {
+  private fun getEarliestDate(licenceStartDate: LocalDate?, homeDetentionCurfewActualDate: LocalDate? = null): LocalDate? {
     return service.getEarliestReleaseDate(
       object : SentenceDateHolder {
-        override val licenceStartDate: LocalDate? = null
+        override val licenceStartDate: LocalDate? = licenceStartDate
         override val conditionalReleaseDate: LocalDate? = null
-        override val actualReleaseDate: LocalDate? = actualReleaseDate
+        override val actualReleaseDate: LocalDate? = null
+        override val homeDetentionCurfewActualDate: LocalDate? = homeDetentionCurfewActualDate
       },
     )
   }
@@ -57,138 +60,147 @@ class ReleaseDateServiceTest {
   inner class `Earliest release date` {
     @Test
     fun `should return Tuesday(2018-01-02) if ARD or CRD is Friday(2018-01-05) and day they would normally be released is Friday`() {
-      val actualReleaseDate = LocalDate.parse("2018-01-05")
+      val licenceStartDate = LocalDate.parse("2018-01-05")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-01-02"))
     }
 
     @Test
     fun `should return Tuesday(2018-01-02) if ARD or CRD is on Saturday(2018-01-06) and day they would normally be released is Friday`() {
-      val actualReleaseDate = LocalDate.parse("2018-01-06")
+      val licenceStartDate = LocalDate.parse("2018-01-06")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-01-02"))
     }
 
     @Test
     fun `should return Tuesday(2018-01-02) if ARD or CRD is on Sunday(2018-01-07) and day they would normally be released is Friday`() {
-      val actualReleaseDate = LocalDate.parse("2018-01-07")
+      val licenceStartDate = LocalDate.parse("2018-01-07")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-01-02"))
     }
 
     @Test
     fun `should return Tuesday(2018-03-27) if ARD or CRD is on Bank holiday Friday(2018-03-30) and day they would normally be released is Thursday`() {
-      val actualReleaseDate = LocalDate.parse("2018-03-30")
+      val licenceStartDate = LocalDate.parse("2018-03-30")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-03-27"))
     }
 
     @Test
     fun `should return Tuesday(2018-04-27) if ARD or CRD is on Bank holiday Monday(2018-04-02) and day they would normally be released is Friday`() {
-      val actualReleaseDate = LocalDate.parse("2018-04-02")
+      val licenceStartDate = LocalDate.parse("2018-04-02")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-03-27"))
     }
 
     @Test
     fun `should return Tuesday(2018-05-29) if ARD or CRD is on Bank holiday Monday(2018-06-04) Friday(2018-06-01) before also bank holiday and day they would normally be released is Thursday`() {
-      val actualReleaseDate = LocalDate.parse("2018-06-04")
+      val licenceStartDate = LocalDate.parse("2018-06-04")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-05-29"))
     }
 
     @Test
     fun `should return Tuesday(2018-11-27) if ARD or CRD is on Monday(2018-12-03) with Consecutive Bank holiday Monday(2018-12-03) and Tuesday(2018-12-04) before also bank holiday and day they would normally be released is Friday`() {
-      val actualReleaseDate = LocalDate.parse("2018-12-03")
+      val licenceStartDate = LocalDate.parse("2018-12-03")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-11-27"))
     }
 
     @Test
     fun `should return Tuesday(2018-11-27) if ARD or CRD is on Tuesday(2018-12-04) with Consecutive Bank holiday Monday(2018-12-03) and Tuesday(2018-12-04) before also bank holiday and day they would normally be released is Friday`() {
-      val actualReleaseDate = LocalDate.parse("2018-12-04")
+      val licenceStartDate = LocalDate.parse("2018-12-04")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-11-27"))
     }
 
     @Test
     fun `should return Wednesday(2018-08-01) if ARD or CRD is on Bank holiday Tuesday(2018-08-07) and day they would normally be released is Monday`() {
-      val actualReleaseDate = LocalDate.parse("2018-08-07")
+      val licenceStartDate = LocalDate.parse("2018-08-07")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-08-01"))
     }
 
     @Test
     fun `should return Thursday(2018-09-27) if ARD or CRD is on Bank holiday Wednesday(2018-10-03) and day they would normally be released is Tuesday`() {
-      val actualReleaseDate = LocalDate.parse("2018-10-03")
+      val licenceStartDate = LocalDate.parse("2018-10-03")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-09-27"))
     }
 
     @Test
     fun `should return (2018-03-27) if ARD is (2018-03-30) third working day before CRD`() {
-      val actualReleaseDate = LocalDate.parse("2018-03-30")
+      val licenceStartDate = LocalDate.parse("2018-03-30")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-03-27"))
     }
 
     @Test
     fun `should return (2018-03-27) if ARD is (2018-04-02) third working day before CRD`() {
-      val actualReleaseDate = LocalDate.parse("2018-04-02")
+      val licenceStartDate = LocalDate.parse("2018-04-02")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-03-27"))
     }
 
     @Test
     fun `should return (2018-04-30) if ARD is (2018-05-07) and (2018-05-02) is bank holiday`() {
-      val actualReleaseDate = LocalDate.parse("2018-05-07")
+      val licenceStartDate = LocalDate.parse("2018-05-07")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-04-30"))
     }
 
     @Test
     fun `should return (2018-07-03) if ARD is (2018-07-06) third working day before CRD`() {
-      val actualReleaseDate = LocalDate.parse("2018-07-06")
+      val licenceStartDate = LocalDate.parse("2018-07-06")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-03"))
     }
 
     @Test
-    fun `should return (2018-07-03) if ARD is (2018-07-07) as it is not a bank holiday or weekend`() {
-      val actualReleaseDate = LocalDate.parse("2018-07-07")
+    fun `should return (2018-07-03) if LSD is (2018-07-07) as it is not a bank holiday or weekend`() {
+      val licenceStartDate = LocalDate.parse("2018-07-07")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-03"))
     }
 
     @Test
-    fun `should return (2018-07-03) if ARD is (2018-07-08) as it is not a bank holiday or weekend`() {
-      val actualReleaseDate = LocalDate.parse("2018-07-08")
+    fun `should return (2018-07-03) if LSD is (2018-07-08) as it is not a bank holiday or weekend`() {
+      val licenceStartDate = LocalDate.parse("2018-07-08")
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
       assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-03"))
     }
 
     @Test
-    fun `should return (2018-07-03) if CRD is (2018-07-08) as it is not a bank holiday or weekend`() {
-      val actualReleaseDate = LocalDate.parse("2018-07-08")
+    fun `should return null if the LSD is null`() {
+      val licenceStartDate = null
 
-      val earliestPossibleReleaseDate = getEarliestDate(actualReleaseDate)
-      assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-03"))
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate)
+      assertThat(earliestPossibleReleaseDate).isNull()
+    }
+
+    @Test
+    fun `should return (2018-07-08) if LSD and HDCAD are (2018-07-08)`() {
+      val licenceStartDate = LocalDate.parse("2018-07-08")
+      val homeDetentionCurfewActualDate = LocalDate.parse("2018-07-08")
+
+      val earliestPossibleReleaseDate = getEarliestDate(licenceStartDate, homeDetentionCurfewActualDate)
+      assertThat(earliestPossibleReleaseDate).isEqualTo(LocalDate.parse("2018-07-08"))
     }
   }
 
@@ -388,81 +400,55 @@ class ReleaseDateServiceTest {
     @Test
     fun `false if there is no release date`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = null,
+        licenceStartDate = null,
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
     }
 
     @Test
-    fun `false when CRD is yesterday`() {
+    fun `false when LSD is yesterday`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.minusDays(1),
+        licenceStartDate = today.minusDays(1),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
     }
 
     @Test
-    fun `true when CRD is today`() {
+    fun `true when LSD is today`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today,
+        licenceStartDate = today,
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
 
     @Test
-    fun `true when CRD is 1 day in the future`() {
+    fun `true when LSD is 1 day in the future`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.plusDays(1),
+        licenceStartDate = today.plusDays(1),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
 
     @Test
-    fun `true when CRD is 2 working days in the future`() {
+    fun `true when LSD is 2 working days in the future`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.plusDays(2),
+        licenceStartDate = today.plusDays(2),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
 
     @Test
-    fun `false when CRD is more than 2 working days in the future`() {
+    fun `false when LSD is more than 2 working days in the future`() {
       val licence = createCrdLicence().copy(
-        actualReleaseDate = null,
-        conditionalReleaseDate = today.plusDays(3),
+        licenceStartDate = today.plusDays(3),
       )
 
       assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isFalse
-    }
-
-    @Test
-    fun `takes the earliest date when ard is earliest`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = today.plusDays(2),
-        conditionalReleaseDate = today.plusDays(3),
-      )
-
-      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
-    }
-
-    @Test
-    fun `takes the earliest date when crd is earliest`() {
-      val licence = createCrdLicence().copy(
-        actualReleaseDate = today.plusDays(3),
-        conditionalReleaseDate = today.plusDays(2),
-      )
-
-      assertThat(service.isDueToBeReleasedInTheNextTwoWorkingDays(licence)).isTrue
     }
   }
 
@@ -1069,7 +1055,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns last working day before CRD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns last working day before CRD if CRD is a bank holiday or weekend when the legal status is one of note`(legalStatus: String) {
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend when the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2018, 12, 4),
@@ -1104,7 +1092,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns last working day before CRD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when the legal status is one of note`(legalStatus: String) {
+      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2018, 12, 4),
@@ -1139,7 +1129,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns ARD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns ARD when the CRD and ARD are the same non-working day and the legal status is one of note`(legalStatus: String) {
+      fun `returns ARD when the CRD and ARD are the same non-working day and the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2021, 12, 4),
@@ -1174,7 +1166,9 @@ class ReleaseDateServiceTest {
 
       @ParameterizedTest(name = "returns ARD for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
-      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and the legal status is one of note`(legalStatus: String) {
+      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and the legal status is one of note`(
+        legalStatus: String,
+      ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
           conditionalReleaseDate = LocalDate.of(2021, 12, 4),

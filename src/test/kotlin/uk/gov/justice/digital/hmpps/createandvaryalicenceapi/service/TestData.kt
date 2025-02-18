@@ -18,8 +18,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.OffenceHistory
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -360,15 +367,60 @@ object TestData {
     prisonId = "MDI",
     locationDescription = "HMP Moorland",
     bookNumber = "12345A",
-    firstName = "Bob",
+    firstName = "A",
     middleNames = null,
-    lastName = "Mortimar",
+    lastName = "Prisoner",
     dateOfBirth = LocalDate.of(1985, 12, 28),
     conditionalReleaseDateOverrideDate = null,
     sentenceStartDate = LocalDate.of(2018, 10, 22),
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionStartDate = null,
     croNumber = null,
+  )
+
+  fun aPrisonApiPrisoner() = PrisonApiPrisoner(
+    offenderNo = "A1234AA",
+    firstName = "A",
+    lastName = "Prisoner",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    bookingId = 123456,
+    offenceHistory = listOf(
+      anOffenceHistory(),
+    ),
+    legalStatus = "SENTENCED",
+    sentenceDetail = SentenceDetail(
+      confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+      conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+      homeDetentionCurfewEligibilityDate = null,
+      homeDetentionCurfewActualDate = null,
+      topupSupervisionStartDate = null,
+      topupSupervisionExpiryDate = null,
+      paroleEligibilityDate = null,
+    ),
+  )
+
+  fun anOffenceHistory() = OffenceHistory(
+    offenceDescription = "SOME_OFFENCE",
+    offenceCode = "123",
+    mostSerious = true,
+  )
+
+  fun promptCase() = PromptCase(
+    prisoner = prisonerSearchResult(),
+    crn = "A1234",
+    comStaffCode = "B1234",
+    comName = "John Doe",
+    comAllocationDate = LocalDate.parse("2025-01-27"),
+  )
+
+  fun offenderManager() = OffenderManager(
+    active = true,
+    fromDate = LocalDate.of(2022, 1, 2),
+    staffDetail = ProbationSearchStaffDetail(
+      code = "staff-code-1",
+      forenames = "forenames",
+      surname = "surname",
+    ),
   )
 
   fun caseLoadItem() = CaseloadItem(
@@ -380,6 +432,7 @@ object TestData {
       isDueForEarlyRelease = true,
       isEligibleForEarlyRelease = true,
       isDueToBeReleasedInTheNextTwoWorkingDays = true,
+      licenceStartDate = LocalDate.of(2021, 10, 22),
     ),
     prisoner = Prisoner(
       prisonerNumber = "A1234AA",
@@ -422,7 +475,7 @@ object TestData {
   fun caCase() = CaCase(
     licenceId = 1,
     kind = LicenceKind.CRD,
-    name = "Bob Mortimar",
+    name = "A Prisoner",
     prisonerNumber = "A1234AA",
     releaseDate = LocalDate.of(2021, 10, 22),
     releaseDateLabel = "Confirmed release date",
@@ -433,5 +486,14 @@ object TestData {
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
+  )
+
+  fun hdcPrisonerStatus() = PrisonerHdcStatus(
+    approvalStatusDate = null,
+    approvalStatus = "REJECTED",
+    refusedReason = null,
+    checksPassedDate = null,
+    bookingId = 1,
+    passed = true,
   )
 }

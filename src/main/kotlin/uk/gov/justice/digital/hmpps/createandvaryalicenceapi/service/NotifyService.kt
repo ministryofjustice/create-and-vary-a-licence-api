@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerForRelease
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PromptLicenceCreationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
 import java.time.LocalDate
@@ -33,7 +33,14 @@ class NotifyService(
   private val releaseDateService: ReleaseDateService,
 ) {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
-  fun sendVariationForApprovalEmail(notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String) {
+  fun sendVariationForApprovalEmail(
+    notifyRequest: NotifyRequest,
+    licenceId: String,
+    firstName: String,
+    lastName: String,
+    crn: String,
+    comName: String,
+  ) {
     if (notifyRequest.email != null && notifyRequest.name != null) {
       val values: Map<String, String> = mapOf(
         "pduHeadName" to notifyRequest.name,
@@ -43,14 +50,21 @@ class NotifyService(
         "comName" to comName,
         "crn" to crn,
       )
-      sendEmail(variationForApprovalTemplateId, notifyRequest.email, values, null)
-      log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL submitted by $comName for $licenceId $firstName $lastName with crn $crn")
+      if (sendEmail(variationForApprovalTemplateId, notifyRequest.email, values)) {
+        log.info("Notification sent to ${notifyRequest.email} VARIATION FOR APPROVAL submitted by $comName for $licenceId $firstName $lastName with crn $crn")
+      }
     } else {
       log.error("Notification failed (variationSubmitted) - email address not present for the PDU head for licence ID: $licenceId")
     }
   }
 
-  fun sendVariationForReApprovalEmail(emailAddress: String?, firstName: String, lastName: String, prisonerNumber: String?, crd: LocalDate?) {
+  fun sendVariationForReApprovalEmail(
+    emailAddress: String?,
+    firstName: String,
+    lastName: String,
+    prisonerNumber: String?,
+    crd: LocalDate?,
+  ) {
     if (emailAddress != null && crd != null) {
       val values: Map<String, String> = mapOf(
         "prisonerFirstName" to firstName,
@@ -58,8 +72,9 @@ class NotifyService(
         "prisonerNumber" to (prisonerNumber ?: "unknown"),
         "crd" to crd.format(dateFormat),
       )
-      sendEmail(variationForReApprovalTemplateId, emailAddress, values, null)
-      log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
+      if (sendEmail(variationForReApprovalTemplateId, emailAddress, values)) {
+        log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
+      }
     } else {
       log.error("Notification failed (variationReApproval) for PrisonerNumber $prisonerNumber - OMU email and CRD must be present")
     }
@@ -80,8 +95,9 @@ class NotifyService(
         "fullName" to popName,
         "caseListLink" to selfLink.plus("/licence/vary/caseload"),
       )
-      sendEmail(variationApprovedTemplateId, it.email, values, null)
-      log.info("Notification sent to ${it.email} VARIATION APPROVED for $licenceId $popName")
+      if (sendEmail(variationApprovedTemplateId, it.email, values)) {
+        log.info("Notification sent to ${it.email} VARIATION APPROVED for $licenceId $popName")
+      }
     }
     if (contacts.isEmpty()) {
       log.error("Notification failed (variationApproved) - email addresses not present for licence ID: $licenceId")
@@ -100,19 +116,13 @@ class NotifyService(
         "comName" to "${it.comFirstName} ${it.comLastName}",
       )
 
-      sendEmail(
-        unapprovedLicenceByCrdTemplateId,
-        "${it.comEmail}",
-        offenderDetails,
-        null,
-      )
-      log.info("Notification sent to ${it.comEmail} informing edited licence not reapproved by CRD for prisoner ${it.forename} ${it.surname}")
-
+      if (sendEmail(unapprovedLicenceByCrdTemplateId, "${it.comEmail}", offenderDetails)) {
+        log.info("Notification sent to ${it.comEmail} informing edited licence not reapproved by CRD for prisoner ${it.forename} ${it.surname}")
+      }
       sendEmail(
         unapprovedLicenceByCrdTemplateId,
         internalEmailAddress,
         offenderDetails,
-        null,
       )
     }
   }
@@ -132,8 +142,9 @@ class NotifyService(
         "fullName" to popName,
         "caseListLink" to selfLink.plus("/licence/vary/caseload"),
       )
-      sendEmail(variationReferredTemplateId, it.email, values, null)
-      log.info("Notification sent to ${it.email} VARIATION REFERRED for $licenceId $popName")
+      if (sendEmail(variationReferredTemplateId, it.email, values)) {
+        log.info("Notification sent to ${it.email} VARIATION REFERRED for $licenceId $popName")
+      }
     }
     if (contacts.isEmpty()) {
       log.error("Notification failed (variationReferred) - email addresses not present for licence ID: $licenceId")
@@ -161,19 +172,20 @@ class NotifyService(
         "caseloadLink" to selfLink.plus("/licence/create/caseload"),
       )
 
-      sendEmail(datesChangedTemplateId, emailAddress, values, null)
-      log.info("Notification sent to $emailAddress DATES CHANGED for $licenceId $offenderFullName")
+      if (sendEmail(datesChangedTemplateId, emailAddress, values)) {
+        log.info("Notification sent to $emailAddress DATES CHANGED for $licenceId $offenderFullName")
+      }
     } else {
       log.error("Notification failed (datesChangedEmail) - email address not present for licence Id $licenceId")
     }
   }
 
-  fun sendInitialLicenceCreateEmails(comsToEmail: List<PromptLicenceCreationRequest>) {
+  fun sendInitialLicenceCreateEmails(comsToEmail: List<PromptComNotification>) {
     log.info(
       """
       sending initial emails to ${comsToEmail.size} COMS. 
-      * initial emails to send: ${comsToEmail.filter { it.initialPromptCases.isNotEmpty() }}
-      * urgent emails to send: ${comsToEmail.filter { it.urgentPromptCases.isNotEmpty() }}
+      * initial emails to send: ${comsToEmail.filter { it.initialPromptCases.isNotEmpty() }.size}
+      * urgent emails to send: ${comsToEmail.filter { it.urgentPromptCases.isNotEmpty() }.size}
       """.trimIndent(),
     )
     comsToEmail.forEach {
@@ -201,8 +213,9 @@ class NotifyService(
         "crn" to crn!!,
         "releaseDate" to crd.format(dateFormat),
       )
-      sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values, null)
-      log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")
+      if (sendEmail(hardStopLicenceApprovedTemplateId, emailAddress, values)) {
+        log.info("Notification sent to $emailAddress HARD STOP LICENCE APPROVED for $licenceId $firstName $lastName")
+      }
     } else {
       log.error("Notification failed (hardStopLicenceApproved) for licence $licenceId - email and CRD must be present")
     }
@@ -225,8 +238,9 @@ class NotifyService(
         "crn" to crn!!,
         "crd" to crd.format(dateFormat),
       )
-      sendEmail(editedLicenceTimedOutTemplateId, emailAddress, values, null)
-      log.info("Notification sent to $emailAddress EDITED LICENCE TIMED OUT for $licenceId $firstName $lastName")
+      if (sendEmail(editedLicenceTimedOutTemplateId, emailAddress, values)) {
+        log.info("Notification sent to $emailAddress EDITED LICENCE TIMED OUT for $licenceId $firstName $lastName")
+      }
     } else {
       log.error("Notification failed (editedLicenceTimedOut) for licence $licenceId - email and CRD must be present")
     }
@@ -247,8 +261,9 @@ class NotifyService(
         "lastName" to lastName,
         "crn" to crn!!,
       )
-      sendEmail(hardStopLicenceReviewOverdueTemplateId, emailAddress, values, null)
-      log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
+      if (sendEmail(hardStopLicenceReviewOverdueTemplateId, emailAddress, values)) {
+        log.info("Notification sent to $emailAddress HARD STOP LICENCE REVIEW OVERDUE for $licenceId $firstName $lastName")
+      }
     } else {
       log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
     }
@@ -263,8 +278,9 @@ class NotifyService(
       val values = mapOf(
         "linkToDocument" to NotificationClient.prepareUpload(fileContents, fileName),
       )
-      sendEmail(notifyAttentionNeededLicences, emailAddress, values, null)
-      log.info("Notification sent to $emailAddress with list of licences that needed attention")
+      if (sendEmail(notifyAttentionNeededLicences, emailAddress, values)) {
+        log.info("Notification sent to $emailAddress with list of licences that needed attention")
+      }
     } else {
       log.error("Notification failed (notifyAttentionNeededLicences) - email must be present")
     }
@@ -274,7 +290,7 @@ class NotifyService(
     templateId: String,
     emailAddress: String,
     comName: String,
-    cases: List<PrisonerForRelease>,
+    cases: List<Case>,
   ) {
     log.info("Sending licence create email to: $emailAddress for ${cases.size}")
     sendEmail(
@@ -294,7 +310,6 @@ class NotifyService(
         "createLicenceLink" to selfLink.plus("/licence/create/caseload"),
         "isEligibleForEarlyRelease" to if (cases.any { releaseDateService.isEligibleForEarlyRelease(it.releaseDate) }) "yes" else "no",
       ),
-      null,
     )
     cases.map { prisoner ->
       var promptType = "REMINDER"
@@ -311,22 +326,28 @@ class NotifyService(
     }
   }
 
-  private fun sendEmail(templateId: String, emailAddress: String, values: Map<String, Any>, reference: String?) {
+  private fun sendEmail(
+    templateId: String,
+    emailAddress: String,
+    values: Map<String, Any>,
+  ): Boolean {
     if (!enabled) {
-      log.info("Notification disabled: Did not send notification to $emailAddress for $templateId ref $reference")
-      return
+      log.info("Notification disabled: Did not send notification to $emailAddress for $templateId")
+      return false
     }
 
     if (emailAddress.isBlank()) {
-      log.info("Notification - blank email address: Did not send for template ID $templateId ref $reference")
-      return
+      log.info("Notification - blank email address: Did not send for template ID $templateId")
+      return false
     }
 
     try {
-      client.sendEmail(templateId, emailAddress, values, reference)
-      log.info("Notification - sent email for template ID $templateId ref $reference")
+      client.sendEmail(templateId, emailAddress, values, null)
+      log.info("Notification - sent email for template ID $templateId")
+      return true
     } catch (e: NotificationClientException) {
       log.error("Notification failed - templateId $templateId to $emailAddress", e)
+      return false
     }
   }
 

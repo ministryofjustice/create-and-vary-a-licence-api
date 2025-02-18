@@ -13,7 +13,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.gov.GovUkApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.GovUkApiClient
 import java.time.LocalDate
 
 class BankHolidaysIntegrationTest : IntegrationTestBase() {

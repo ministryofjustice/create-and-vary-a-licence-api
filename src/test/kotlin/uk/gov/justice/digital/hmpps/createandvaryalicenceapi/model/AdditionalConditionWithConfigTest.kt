@@ -12,11 +12,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Condit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AdditionalConditionWithConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.isConditionReadyToSubmit
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.isLicenceReadyToSubmit
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapConditionsToConfig
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.AdditionalConditionWithConfig
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isConditionReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.mapConditionsToConfig
 
 class AdditionalConditionWithConfigTest {
 
@@ -68,7 +68,10 @@ class AdditionalConditionWithConfigTest {
     fun `maps conditions with missing inputs to false`() {
       assertThat(
         isLicenceReadyToSubmit(
-          listOf(anAdditionalConditionEntity.copy(additionalConditionData = emptyList()), anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList())),
+          listOf(
+            anAdditionalConditionEntity.copy(additionalConditionData = emptyList()),
+            anAdditionalConditionEntity.copy(conditionCode = "code2", additionalConditionData = emptyList()),
+          ),
           aMappedPolicy,
         ),
       ).isEqualTo(
@@ -125,7 +128,12 @@ class AdditionalConditionWithConfigTest {
     fun `checks submission status based on condition policy version, not licence policy version`() {
       assertThat(
         isLicenceReadyToSubmit(
-          listOf(anAdditionalConditionEntity.copy(conditionVersion = "2.1", licence = aLicenceEntity.copy(version = "2.0"))),
+          listOf(
+            anAdditionalConditionEntity.copy(
+              conditionVersion = "2.1",
+              licence = aLicenceEntity.copy(version = "2.0"),
+            ),
+          ),
           aMappedPolicyWithMultipleVersions,
         ),
       ).isEqualTo(

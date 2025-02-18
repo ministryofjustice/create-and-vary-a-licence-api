@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.Clock
 import java.time.DayOfWeek
@@ -23,7 +24,6 @@ class ReleaseDateService(
     val now = overrideClock ?: clock
     val hardStopDate = getHardStopDate(sentenceDateHolder)
     val today = LocalDate.now(now)
-
     if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
       return false
     }
@@ -42,16 +42,15 @@ class ReleaseDateService(
   }
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
-    val earliestReleaseDate = listOfNotNull(actualReleaseDate, conditionalReleaseDate).minOrNull() ?: return false
-    return LocalDate.now(clock) >= 2.workingDaysBefore(earliestReleaseDate) && LocalDate.now(clock) <= earliestReleaseDate
+    val licenceStartDate = sentenceDateHolder.licenceStartDate ?: return false
+    return LocalDate.now(clock) >= 2.workingDaysBefore(licenceStartDate) && LocalDate.now(clock) <= licenceStartDate
   }
 
   fun getEarliestReleaseDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
-    val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate ?: return null
+    val releaseDate = sentenceDateHolder.licenceStartDate ?: return null
     return when {
-      isEligibleForEarlyRelease(sentenceDateHolder) -> getEarliestDateBefore(
+      releaseDate == sentenceDateHolder.homeDetentionCurfewActualDate -> releaseDate
+      isEligibleForEarlyRelease(releaseDate) -> getEarliestDateBefore(
         maxNumberOfWorkingDaysAllowedForEarlyRelease,
         releaseDate,
       )
@@ -70,7 +69,11 @@ class ReleaseDateService(
   }
 
   fun isEligibleForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
-    val releaseDate = sentenceDateHolder.actualReleaseDate ?: sentenceDateHolder.conditionalReleaseDate
+    val releaseDate = sentenceDateHolder.licenceStartDate
+
+    // Temporary check to prevent HDC licences being marked as early release until we can get kind before creation
+    if (releaseDate == sentenceDateHolder.homeDetentionCurfewActualDate) return false
+
     return releaseDate != null && isEligibleForEarlyRelease(releaseDate)
   }
 
@@ -93,7 +96,10 @@ class ReleaseDateService(
     }
   }
 
-  fun getLicenceStartDate(nomisRecord: PrisonerSearchPrisoner, licenceKind: LicenceKind? = LicenceKind.CRD): LocalDate? {
+  fun getLicenceStartDate(
+    nomisRecord: PrisonerSearchPrisoner,
+    licenceKind: LicenceKind? = LicenceKind.CRD,
+  ): LocalDate? {
     return if (licenceKind == LicenceKind.HDC) {
       nomisRecord.homeDetentionCurfewActualDate
     } else if (
@@ -142,8 +148,6 @@ class ReleaseDateService(
   }
 
   private fun Int.workingDaysBefore(date: LocalDate) = workingDaysService.workingDaysBefore(date).take(this).last()
-
-  private fun Int.workingDaysAfter(date: LocalDate) = workingDaysService.workingDaysAfter(date).take(this).last()
 
   private fun getEarliestDateBefore(
     days: Int,

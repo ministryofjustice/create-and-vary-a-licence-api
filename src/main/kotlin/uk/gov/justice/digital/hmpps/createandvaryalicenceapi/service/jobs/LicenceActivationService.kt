@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import java.time.LocalDate
 
 data class LicenceWithPrisoner(val licence: Licence, val prisoner: PrisonerSearchPrisoner) {
@@ -33,7 +34,6 @@ class LicenceActivationService(
     }
     val matchedLicences = prisonerSearchApiClient.searchPrisonersByBookingIds(potentialLicences.keys)
       .map { LicenceWithPrisoner(potentialLicences[it.bookingId?.toLong()]!!, it) }
-
     val (eligibleLicences, ineligibleLicences) = determineLicenceEligibility(matchedLicences)
     val (iS91licencesToActivate, standardLicencesToActivate) = determineEligibleLicencesToActivate(eligibleLicences)
 
@@ -44,7 +44,18 @@ class LicenceActivationService(
 
   private fun determineLicenceEligibility(matchedLicences: List<LicenceWithPrisoner>): Pair<List<LicenceWithPrisoner>, List<Licence>> {
     val approvedHdcBookingIds = findBookingsWithHdc(matchedLicences)
-    val (ineligibleLicences, eligibleLicences) = matchedLicences.partition { approvedHdcBookingIds.contains(it.bookingId) }
+
+    // Filter out HDC licences that have not been approved for HDC as we don't want to deactivate them for MVP1
+    val filteredLicences =
+      matchedLicences.filterNot {
+        it.licence.kind == HDC && !approvedHdcBookingIds.contains(it.bookingId)
+      }
+
+    val (eligibleLicences, ineligibleLicences) = filteredLicences.partition {
+      val approvedForHdc = approvedHdcBookingIds.contains(it.bookingId)
+      (it.licence.kind == HDC && approvedForHdc) || !approvedForHdc
+    }
+
     return Pair(eligibleLicences, ineligibleLicences.map { it.licence })
   }
 
@@ -52,7 +63,6 @@ class LicenceActivationService(
     val bookingsWithHdc = matchedLicences
       .filter { it.homeDetentionCurfewEligibilityDate != null }
       .map { it.bookingId }
-
     val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
     return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
   }
@@ -88,13 +98,11 @@ class LicenceActivationService(
     return releaseDate <= LocalDate.now()
   }
 
-  private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean {
-    return (
-      licence.actualReleaseDate != null &&
-        licence.actualReleaseDate!! <= LocalDate.now() &&
-        prisoner.status?.startsWith("INACTIVE") == true
-      )
-  }
+  private fun LicenceWithPrisoner.isStandardLicenceForActivation(): Boolean = (
+    licence.licenceStartDate != null &&
+      licence.licenceStartDate!! <= LocalDate.now() &&
+      prisoner.status?.startsWith("INACTIVE") == true
+    )
 
   companion object {
     const val IS91_LICENCE_ACTIVATION = "IS91 licence automatically activated via repeating job"

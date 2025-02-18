@@ -278,22 +278,21 @@ class PrisonApproverServiceTest {
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
           updatedBy = aCom,
-          actualReleaseDate = null,
-          conditionalReleaseDate = null,
+          licenceStartDate = null,
         ),
         aLicenceEntity.copy(
           id = 2L,
           prisonCode = "ABC",
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
-          actualReleaseDate = LocalDate.of(2024, 3, 11),
+          licenceStartDate = LocalDate.of(2024, 3, 11),
         ),
         aLicenceEntity.copy(
           id = 3L,
           prisonCode = "ABC",
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
-          actualReleaseDate = LocalDate.of(2024, 3, 14),
+          licenceStartDate = LocalDate.of(2024, 3, 14),
         ),
         aLicenceEntity.copy(
           id = 4L,
@@ -301,7 +300,7 @@ class PrisonApproverServiceTest {
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
           updatedBy = aPreviousUser,
-          actualReleaseDate = LocalDate.of(2024, 3, 12),
+          licenceStartDate = LocalDate.of(2024, 3, 12),
         ),
         aLicenceEntity.copy(
           id = 5L,
@@ -309,8 +308,7 @@ class PrisonApproverServiceTest {
           statusCode = LicenceStatus.SUBMITTED,
           submittedBy = aCom,
           updatedBy = aPreviousUser,
-          actualReleaseDate = null,
-          conditionalReleaseDate = LocalDate.of(2024, 3, 10),
+          licenceStartDate = LocalDate.of(2024, 3, 10),
         ),
       )
 

@@ -31,6 +31,7 @@ class PrisonerSearchService(
   private val prisonApiClient: PrisonApiClient,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  private val iS91DeterminationService: IS91DeterminationService,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -92,6 +93,14 @@ class PrisonerSearchService(
     val hdcReasonIfPresent =
       if (listOf(prisonerSearchPrisoner).findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
     return reasons + hdcReasonIfPresent
+  }
+
+  fun getIS91Status(prisonNumber: String): Boolean {
+    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber))
+    if (prisoners.size != 1) {
+      error("Found ${prisoners.size} prisoners for: $prisonNumber")
+    }
+    return iS91DeterminationService.isIS91Case(prisoners.first())
   }
 
   private fun getLicence(result: CaseloadResult): Licence? {
@@ -172,7 +181,7 @@ class PrisonerSearchService(
   }
 
   private fun CaseloadResult.toUnstartedRecord(prisonOffender: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): FoundProbationRecord {
-    val sentenceDateHolder = prisonOffender.toSentenceDateHolder()
+    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(
@@ -187,6 +196,7 @@ class PrisonerSearchService(
         sentenceDateHolder,
       ),
       releaseDateLabel = when (licenceStartDate) {
+        prisonOffender.homeDetentionCurfewActualDate -> "HDCAD"
         prisonOffender.confirmedReleaseDate -> "Confirmed release date"
         else -> "CRD"
       },

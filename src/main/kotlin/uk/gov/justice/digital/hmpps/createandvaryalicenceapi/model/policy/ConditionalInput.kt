@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy
 
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Case
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.Case
 
 data class ConditionalInput(
   val type: InputType,
