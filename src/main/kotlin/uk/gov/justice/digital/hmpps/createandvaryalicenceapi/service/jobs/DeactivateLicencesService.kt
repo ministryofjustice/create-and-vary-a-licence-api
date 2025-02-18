@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
@@ -35,7 +34,7 @@ class DeactivateLicencesService(
   @Transactional
   fun deactivateLicences() {
     log.info("Job deactivateLicencesJob started")
-    val licencesToDeactivate = licenceRepository.getDraftLicencesPassedReleaseDate().filterNot { it.kind == HDC }
+    val licencesToDeactivate = licenceRepository.getDraftLicencesPassedReleaseDate()
     if (licencesToDeactivate.isEmpty()) {
       log.info("Job deactivateLicencesJob has no licences to deactivate")
       return
