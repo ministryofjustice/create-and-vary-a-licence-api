@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -153,6 +154,18 @@ interface LicenceRepository :
     """,
   )
   fun getDraftLicencesPassedReleaseDate(): List<Licence>
+
+  @Query(
+    """
+    SELECT *
+        FROM licence
+        WHERE kind = 'HDC'
+        AND status_code IN ('IN_PROGRESS', 'SUBMITTED', 'APPROVED')
+        AND conditional_release_date - (INTERVAL '9' DAY) <= CURRENT_DATE;
+    """,
+    nativeQuery = true,
+  )
+  fun getDraftHdcLicencesPassedReleaseDate(): List<HdcLicence>
 
   @Query(
     """

@@ -1,0 +1,121 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
+
+import com.microsoft.applicationinsights.TelemetryClient
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.isNull
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import java.time.LocalDate
+
+class DeactivateHdcLicencesServiceTest {
+  private val licenceRepository = mock<LicenceRepository>()
+  private val auditEventRepository = mock<AuditEventRepository>()
+  private val licenceEventRepository = mock<LicenceEventRepository>()
+  private val domainEventsService = mock<DomainEventsService>()
+  private val telemetryClient = mock<TelemetryClient>()
+
+  private val service = DeactivateHdcLicencesService(
+    licenceRepository,
+    auditEventRepository,
+    licenceEventRepository,
+    domainEventsService,
+    telemetryClient,
+  )
+
+  @BeforeEach
+  fun reset() {
+    reset(
+      licenceRepository,
+      auditEventRepository,
+      licenceEventRepository,
+    )
+  }
+
+  @Test
+  fun `return if no licences to deactivate`() {
+    whenever(licenceRepository.getDraftHdcLicencesPassedReleaseDate()).thenReturn(emptyList())
+
+    service.runJob()
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(telemetryClient, times(0)).trackEvent(any(), any(), isNull())
+  }
+
+  @Test
+  fun `deactivate HDC licences job runs successfully`() {
+    val licences = listOf(
+      aHdcLicence,
+    )
+    whenever(licenceRepository.getDraftHdcLicencesPassedReleaseDate()).thenReturn(licences)
+
+    service.runJob()
+
+    val licenceCaptor = argumentCaptor<List<Licence>>()
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    verify(licenceRepository, times(1)).getDraftHdcLicencesPassedReleaseDate()
+    verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(domainEventsService, times(1)).recordDomainEvent(aHdcLicence, LicenceStatus.INACTIVE)
+    verify(telemetryClient).trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to "1"), null)
+
+    assertThat(licenceCaptor.firstValue[0])
+      .extracting("statusCode")
+      .isEqualTo(LicenceStatus.INACTIVE)
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
+      .isEqualTo(
+        listOf(
+          1L,
+          "SYSTEM",
+          "SYSTEM",
+          SYSTEM_EVENT,
+          "HDC licence automatically deactivated as it passed release date for ${aHdcLicence.forename} ${aHdcLicence.surname}",
+          "ID ${aHdcLicence.id} type ${aHdcLicence.typeCode} status ${LicenceStatus.INACTIVE} version ${aHdcLicence.version}",
+        ),
+      )
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
+      .isEqualTo(
+        listOf(
+          1L,
+          INACTIVE,
+          "SYSTEM",
+          "SYSTEM",
+          "SYSTEM",
+          "HDC licence automatically deactivated as it passed release date for ${aHdcLicence.forename} ${aHdcLicence.surname}",
+        ),
+      )
+  }
+
+  private companion object {
+    val aHdcLicence = createHdcLicence().copy(
+      conditionalReleaseDate = LocalDate.now().plusDays(9),
+    )
+  }
+}

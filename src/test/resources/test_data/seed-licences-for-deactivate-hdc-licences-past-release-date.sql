@@ -1,0 +1,21 @@
+insert into licence (id,
+                     kind,
+                     version,
+                     responsible_com_id,
+                     created_by_com_id,
+                     type_code,
+                     noms_id,
+                     status_code,
+                     booking_id,
+                     conditional_release_date,
+                     licence_version,
+                     version_of_id)
+values (1, 'HDC', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date + 9, '1.0', null),
+       (2, 'HDC', '1.0', 1, 1, 'AP', 'G5613GT', 'IN_PROGRESS', 789, current_date + 7, '1.0', null),
+       (3, 'HDC', '1.0', 1, 1, 'AP', 'G4169UO', 'ACTIVE', 432, current_date + 9, '1.0', null),
+       (4, 'HDC', '1.0', 1, 1, 'AP', 'G7285UT', 'SUBMITTED', 456, current_date + 9, '1.0', null),
+       (5, 'HDC', '1.0', 1, 1, 'AP', 'G4169UV', 'APPROVED', 432, current_date + 10, '1.0', null),
+       (6, 'CRD', '1.0', 1, 1, 'AP', 'G4169UX', 'IN_PROGRESS', 123, current_date + 9, '1.0', null),
+       (7, 'HARD_STOP', '1.0', 1, 1, 'AP', 'G4169UY', 'SUBMITTED', 987, current_date + 9, '1.0', null),
+       (8, 'VARIATION', '1.0', 1, 1, 'AP', 'G4169UZ', 'IN_PROGRESS', 654, current_date + 9, '1.0', 6);
+
