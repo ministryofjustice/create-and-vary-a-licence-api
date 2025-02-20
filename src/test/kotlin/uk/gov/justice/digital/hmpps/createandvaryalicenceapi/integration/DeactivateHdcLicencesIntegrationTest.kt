@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
 
 class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
@@ -58,7 +58,7 @@ class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
 
     val deactivatedHdcLicences = webTestClient.post()
       .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.INACTIVE)))
+      .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -72,9 +72,9 @@ class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        tuple(1L, LicenceStatus.INACTIVE),
-        tuple(2L, LicenceStatus.INACTIVE),
-        tuple(4L, LicenceStatus.INACTIVE),
+        tuple(1L, INACTIVE),
+        tuple(2L, INACTIVE),
+        tuple(4L, INACTIVE),
       )
 
     argumentCaptor<HMPPSDomainEvent>().apply {

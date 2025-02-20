@@ -11,7 +11,7 @@ insert into licence (id,
                      licence_version,
                      version_of_id)
 values (1, 'HDC', '1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date + 9, '1.0', null),
-       (2, 'HDC', '1.0', 1, 1, 'AP', 'G5613GT', 'IN_PROGRESS', 789, current_date + 7, '1.0', null),
+       (2, 'HDC', '1.0', 1, 1, 'AP', 'G5613GT', 'IN_PROGRESS', 789, current_date, '1.0', null),
        (3, 'HDC', '1.0', 1, 1, 'AP', 'G4169UO', 'ACTIVE', 432, current_date + 9, '1.0', null),
        (4, 'HDC', '1.0', 1, 1, 'AP', 'G7285UT', 'SUBMITTED', 456, current_date + 9, '1.0', null),
        (5, 'HDC', '1.0', 1, 1, 'AP', 'G4169UV', 'APPROVED', 432, current_date + 10, '1.0', null),

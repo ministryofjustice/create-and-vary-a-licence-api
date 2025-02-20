@@ -22,9 +22,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE as LicenceEventTypeInactive
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE as LicenceStatusInactive
 
 class DeactivateHdcLicencesServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -79,12 +79,12 @@ class DeactivateHdcLicencesServiceTest {
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-    verify(domainEventsService, times(1)).recordDomainEvent(aHdcLicence, LicenceStatus.INACTIVE)
+    verify(domainEventsService, times(1)).recordDomainEvent(aHdcLicence, LicenceStatusInactive)
     verify(telemetryClient).trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to "1"), null)
 
     assertThat(licenceCaptor.firstValue[0])
       .extracting("statusCode")
-      .isEqualTo(LicenceStatus.INACTIVE)
+      .isEqualTo(LicenceStatusInactive)
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "eventType", "summary", "detail")
@@ -95,7 +95,7 @@ class DeactivateHdcLicencesServiceTest {
           "SYSTEM",
           SYSTEM_EVENT,
           "HDC licence automatically deactivated as it passed release date for ${aHdcLicence.forename} ${aHdcLicence.surname}",
-          "ID ${aHdcLicence.id} type ${aHdcLicence.typeCode} status ${LicenceStatus.INACTIVE} version ${aHdcLicence.version}",
+          "ID ${aHdcLicence.id} type ${aHdcLicence.typeCode} status $LicenceStatusInactive version ${aHdcLicence.version}",
         ),
       )
 
@@ -104,7 +104,7 @@ class DeactivateHdcLicencesServiceTest {
       .isEqualTo(
         listOf(
           1L,
-          INACTIVE,
+          LicenceEventTypeInactive,
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
