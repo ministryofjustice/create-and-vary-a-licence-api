@@ -44,7 +44,7 @@ enum class LicenceKind(
     { LicenceEventType.HDC_CREATED },
     { LicenceEventType.HDC_VERSION_CREATED },
     { LicenceEventType.HDC_SUBMITTED },
-    { LicenceDomainEventType.LICENCE_ACTIVATED },
-    { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
+    { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
   ),
 }

@@ -56,7 +56,7 @@ class LicenceActivationService(
       (it.licence.kind == HDC && approvedForHdc) || !approvedForHdc
     }
 
-    return Pair(eligibleLicences, ineligibleLicences.map { it.licence })
+    return eligibleLicences to ineligibleLicences.map { it.licence }
   }
 
   private fun findBookingsWithHdc(matchedLicences: List<LicenceWithPrisoner>): List<Long> {
