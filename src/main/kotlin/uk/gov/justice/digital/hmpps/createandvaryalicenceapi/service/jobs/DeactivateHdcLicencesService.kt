@@ -31,12 +31,12 @@ class DeactivateHdcLicencesService(
   @Transactional
   fun runJob() {
     log.info("Running job to deactivate HDC licences")
-    val licencesToDeactivate = licenceRepository.getDraftHdcLicencesPassedReleaseDate()
+    val licencesToDeactivate = licenceRepository.getDraftLicencesIneligibleForHdcRelease()
     if (licencesToDeactivate.isEmpty()) {
       log.info("There are no HDC licences to deactivate")
       return
     }
-    log.info("Found {} prisoners who have draft HDC licences passed their release date", licencesToDeactivate.size)
+    log.info("Found {} prisoners who have draft HDC licences that are now ineligible for HDC release", licencesToDeactivate.size)
     updateLicencesStatus(licencesToDeactivate)
   }
 
@@ -52,7 +52,7 @@ class DeactivateHdcLicencesService(
           username = "SYSTEM",
           fullName = "SYSTEM",
           eventType = SYSTEM_EVENT,
-          summary = "HDC licence automatically deactivated as it passed release date for ${licence.forename} ${licence.surname}",
+          summary = "HDC licence automatically deactivated as now ineligible for HDC release for ${licence.forename} ${licence.surname}",
           detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
         ),
       )
@@ -64,7 +64,7 @@ class DeactivateHdcLicencesService(
           username = "SYSTEM",
           forenames = "SYSTEM",
           surname = "SYSTEM",
-          eventDescription = "HDC licence automatically deactivated as it passed release date for ${licence.forename} ${licence.surname}",
+          eventDescription = "HDC licence automatically deactivated as now ineligible for HDC release for ${licence.forename} ${licence.surname}",
         ),
       )
       domainEventsService.recordDomainEvent(licence, LicenceStatusINACTIVE)

@@ -52,7 +52,7 @@ class DeactivateHdcLicencesServiceTest {
 
   @Test
   fun `return if no licences to deactivate`() {
-    whenever(licenceRepository.getDraftHdcLicencesPassedReleaseDate()).thenReturn(emptyList())
+    whenever(licenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(emptyList())
 
     service.runJob()
 
@@ -67,7 +67,7 @@ class DeactivateHdcLicencesServiceTest {
     val licences = listOf(
       aHdcLicence,
     )
-    whenever(licenceRepository.getDraftHdcLicencesPassedReleaseDate()).thenReturn(licences)
+    whenever(licenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(licences)
 
     service.runJob()
 
@@ -75,7 +75,7 @@ class DeactivateHdcLicencesServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(licenceRepository, times(1)).getDraftHdcLicencesPassedReleaseDate()
+    verify(licenceRepository, times(1)).getDraftLicencesIneligibleForHdcRelease()
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
@@ -94,7 +94,7 @@ class DeactivateHdcLicencesServiceTest {
           "SYSTEM",
           "SYSTEM",
           SYSTEM_EVENT,
-          "HDC licence automatically deactivated as it passed release date for ${aHdcLicence.forename} ${aHdcLicence.surname}",
+          "HDC licence automatically deactivated as now ineligible for HDC release for ${aHdcLicence.forename} ${aHdcLicence.surname}",
           "ID ${aHdcLicence.id} type ${aHdcLicence.typeCode} status $LicenceStatusInactive version ${aHdcLicence.version}",
         ),
       )
@@ -108,7 +108,7 @@ class DeactivateHdcLicencesServiceTest {
           "SYSTEM",
           "SYSTEM",
           "SYSTEM",
-          "HDC licence automatically deactivated as it passed release date for ${aHdcLicence.forename} ${aHdcLicence.surname}",
+          "HDC licence automatically deactivated as now ineligible for HDC release for ${aHdcLicence.forename} ${aHdcLicence.surname}",
         ),
       )
   }

@@ -165,7 +165,7 @@ interface LicenceRepository :
     """,
     nativeQuery = true,
   )
-  fun getDraftHdcLicencesPassedReleaseDate(): List<HdcLicence>
+  fun getDraftLicencesIneligibleForHdcRelease(): List<HdcLicence>
 
   @Query(
     """
