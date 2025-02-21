@@ -62,18 +62,20 @@ interface LicenceRepository :
 
   @Query(
     """
-    SELECT new uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence( l.crn, l.forename, l.surname, com.firstName , com.lastName , com.email)
-        FROM CrdLicence l 
-        JOIN l.submittedBy com
-        WHERE (l.licenceStartDate = CURRENT_DATE) 
-        AND l.statusCode = 'SUBMITTED'
+    SELECT l.crn as crn, l.forename as forename, l.surname as surname, s.first_name as comFirstName, s.last_name as comLastName, s.email as comEmail
+        FROM licence l
+        JOIN staff s ON l.submitted_by_com_id = s.id
+        WHERE l.kind IN ('CRD', 'HDC')
+        AND l.licence_start_date = CURRENT_DATE
+        AND l.status_code = 'SUBMITTED'
         AND (
-            (EXISTS (SELECT 1 FROM AuditEvent ae WHERE l.id = ae.licenceId AND ae.detail LIKE '%APPROVED%')) 
-         OR (l.versionOfId IS NOT NULL) 
+            EXISTS (SELECT 1 FROM audit_event ae WHERE l.id = ae.licence_id AND ae.detail LIKE '%APPROVED%')
+            OR l.version_of_id IS NOT NULL
         )
     """,
+    nativeQuery = true,
   )
-  fun getEditedLicencesNotReApprovedByCrd(): List<UnapprovedLicence>
+  fun getEditedLicencesNotReApprovedByLsd(): List<EditedLicenceNotReApproved>
 
   @Query(
     """
@@ -243,23 +245,6 @@ interface LicenceRepository :
     """,
   )
   fun findLicenceAndVariations(licenceId: Long): List<Licence>
-
-  @Query(
-    """
-    SELECT l.crn as crn, l.forename as forename, l.surname as surname, s.first_name as comFirstName, s.last_name as comLastName, s.email as comEmail
-        FROM licence l
-        JOIN staff s ON l.submitted_by_com_id = s.id
-        WHERE l.kind IN ('CRD', 'HDC')
-        AND l.licence_start_date = CURRENT_DATE
-        AND l.status_code = 'SUBMITTED'
-        AND (
-            EXISTS (SELECT 1 FROM audit_event ae WHERE l.id = ae.licence_id AND ae.detail LIKE '%APPROVED%')
-            OR l.version_of_id IS NOT NULL
-        )
-    """,
-    nativeQuery = true,
-  )
-  fun getEditedLicencesNotReApprovedByLsd(): List<EditedLicenceNotReApproved>
 }
 
 interface EditedLicenceNotReApproved {
