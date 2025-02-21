@@ -4,9 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import java.time.LocalDate
 
 class OffenderServiceTest {
@@ -27,52 +28,30 @@ class OffenderServiceTest {
   private val notifyService = mock<NotifyService>()
   private val releaseDateService = mock<ReleaseDateService>()
 
-  private val service =
-    OffenderService(
-      licenceRepository,
-      auditEventRepository,
-      notifyService,
-      releaseDateService,
-      TEMPLATE_ID,
-    )
+  private val service = OffenderService(
+    licenceRepository,
+    auditEventRepository,
+    notifyService,
+    releaseDateService,
+    TEMPLATE_ID,
+  )
 
   @BeforeEach
-  fun reset() {
-    reset(licenceRepository, auditEventRepository)
-  }
+  fun reset() = reset(licenceRepository, auditEventRepository)
 
   @Test
   fun `updates all in-flight licences associated with an offender with COM details`() {
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(aLicenceEntity))
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
     service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
 
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
+    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
 
-    verify(licenceRepository, times(1))
-      .saveAllAndFlush(expectedUpdatedLicences)
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
+    argumentCaptor<AuditEvent>().apply {
+      verify(auditEventRepository, times(1)).saveAndFlush(capture())
+      assertThat(firstValue).extracting("licenceId", "username", "fullName", "summary").isEqualTo(
         listOf(
           1L,
           "SYSTEM",
@@ -80,6 +59,7 @@ class OffenderServiceTest {
           "COM updated to X Y on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
+    }
   }
 
   @Test
@@ -88,29 +68,12 @@ class OffenderServiceTest {
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(true)
     val expectedUpdatedLicences = listOf(aLicenceEntity.copy(responsibleCom = comDetails))
 
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
     service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
 
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
+    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
 
-    verify(licenceRepository, times(1))
-      .saveAllAndFlush(expectedUpdatedLicences)
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(any())
     verify(notifyService, times(1)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
@@ -127,29 +90,11 @@ class OffenderServiceTest {
     val expectedUpdatedLicences =
       listOf(aLicenceEntity.copy(actualReleaseDate = LocalDate.parse("2023-11-20"), responsibleCom = comDetails))
 
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
     service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
 
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
-
-    verify(licenceRepository, times(1))
-      .saveAllAndFlush(expectedUpdatedLicences)
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
+    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
+    verify(auditEventRepository, times(1)).saveAndFlush(any())
     verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
@@ -164,38 +109,19 @@ class OffenderServiceTest {
       ),
     )
     whenever(releaseDateService.isLateAllocationWarningRequired(any())).thenReturn(false)
-    val expectedUpdatedLicences =
-      listOf(
-        aLicenceEntity.copy(
-          statusCode = LicenceStatus.SUBMITTED,
-          actualReleaseDate = LocalDate.parse("2023-11-14"),
-          responsibleCom = comDetails,
-        ),
-      )
-
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+    val expectedUpdatedLicences = listOf(
+      aLicenceEntity.copy(
+        statusCode = LicenceStatus.SUBMITTED,
+        actualReleaseDate = LocalDate.parse("2023-11-14"),
+        responsibleCom = comDetails,
+      ),
+    )
 
     service.updateOffenderWithResponsibleCom("exampleCrn", comDetails)
 
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
-
-    verify(licenceRepository, times(1))
-      .saveAllAndFlush(expectedUpdatedLicences)
-
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
+    verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
+    verify(auditEventRepository, times(1)).saveAndFlush(any())
     verify(notifyService, times(0)).sendLicenceCreateEmail(any(), any(), any(), any())
   }
 
@@ -215,30 +141,14 @@ class OffenderServiceTest {
       ),
     )
 
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
     service.updateProbationTeam("exampleCrn", newProbationRegionDetails)
 
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
-
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
-    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    assertThat(auditCaptor.value)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
+
+    argumentCaptor<AuditEvent>().apply {
+      verify(auditEventRepository, times(1)).saveAndFlush(capture())
+      assertThat(firstValue).extracting("licenceId", "username", "fullName", "summary").isEqualTo(
         listOf(
           1L,
           "SYSTEM",
@@ -246,6 +156,7 @@ class OffenderServiceTest {
           "Probation team updated to TEAM2 probation team at N02 Region on licence for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
+    }
   }
 
   @Test
@@ -279,21 +190,7 @@ class OffenderServiceTest {
       ),
     )
 
-    verify(licenceRepository, times(1))
-      .findAllByCrnAndStatusCodeIn(
-        "exampleCrn",
-        listOf(
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-          LicenceStatus.ACTIVE,
-        ),
-      )
-
+    verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn("exampleCrn", IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(0)).saveAllAndFlush(anyList())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
   }
@@ -324,29 +221,14 @@ class OffenderServiceTest {
       ),
     )
 
-    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
-
     service.updateOffenderDetails(aLicenceEntity.nomsId!!, newOffenderDetails)
 
-    verify(licenceRepository, times(1)).findAllByNomsIdAndStatusCodeIn(
-      aLicenceEntity.nomsId!!,
-      listOf(
-        LicenceStatus.IN_PROGRESS,
-        LicenceStatus.SUBMITTED,
-        LicenceStatus.APPROVED,
-        LicenceStatus.VARIATION_IN_PROGRESS,
-        LicenceStatus.VARIATION_SUBMITTED,
-        LicenceStatus.VARIATION_APPROVED,
-        LicenceStatus.VARIATION_REJECTED,
-        LicenceStatus.ACTIVE,
-      ),
-    )
-
+    verify(licenceRepository).findAllByNomsIdAndStatusCodeIn(aLicenceEntity.nomsId!!, IN_FLIGHT_LICENCES)
     verify(licenceRepository, times(1)).saveAllAndFlush(expectedUpdatedLicences)
-    verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    assertThat(auditCaptor.allValues)
-      .extracting("licenceId", "username", "fullName", "summary")
-      .isEqualTo(
+
+    argumentCaptor<List<AuditEvent>>().apply {
+      verify(auditEventRepository).saveAllAndFlush(capture())
+      assertThat(firstValue).extracting("licenceId", "username", "fullName", "summary").isEqualTo(
         listOf(
           Tuple(
             1L,
@@ -362,6 +244,7 @@ class OffenderServiceTest {
           ),
         ),
       )
+    }
   }
 
   private companion object {
