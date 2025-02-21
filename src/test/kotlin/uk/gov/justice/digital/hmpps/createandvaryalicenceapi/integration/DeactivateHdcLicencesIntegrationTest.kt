@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.HDC_LICENCE_INACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
@@ -79,7 +79,7 @@ class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
 
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(3)).publishDomainEvent(capture())
-      assertThat(allValues).allMatch { it.eventType == LICENCE_INACTIVATED.value }
+      assertThat(allValues).allMatch { it.eventType == HDC_LICENCE_INACTIVATED.value }
     }
   }
 

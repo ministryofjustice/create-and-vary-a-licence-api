@@ -20,10 +20,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.HDC_LICENCE_ACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 
 class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @MockitoBean
@@ -53,7 +55,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           tuple(LICENCE_ACTIVATED.value, "2"),
           tuple(LICENCE_ACTIVATED.value, "3"),
           tuple(LICENCE_ACTIVATED.value, "7"),
-          tuple(LICENCE_ACTIVATED.value, "8"),
+          tuple(HDC_LICENCE_ACTIVATED.value, "8"),
           tuple(LICENCE_INACTIVATED.value, "4"),
           tuple(LICENCE_INACTIVATED.value, "5"),
           tuple(LICENCE_INACTIVATED.value, "6"),
@@ -62,7 +64,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
 
     val activatedLicences = webTestClient.post()
       .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.ACTIVE)))
+      .bodyValue(MatchLicencesRequest(status = listOf(ACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -75,16 +77,16 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        tuple(1L, LicenceStatus.ACTIVE),
-        tuple(2L, LicenceStatus.ACTIVE),
-        tuple(3L, LicenceStatus.ACTIVE),
-        tuple(7L, LicenceStatus.ACTIVE),
-        tuple(8L, LicenceStatus.ACTIVE),
+        tuple(1L, ACTIVE),
+        tuple(2L, ACTIVE),
+        tuple(3L, ACTIVE),
+        tuple(7L, ACTIVE),
+        tuple(8L, ACTIVE),
       )
 
     val deactivatedLicences = webTestClient.post()
       .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.INACTIVE)))
+      .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -97,9 +99,9 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        tuple(4L, LicenceStatus.INACTIVE),
-        tuple(5L, LicenceStatus.INACTIVE),
-        tuple(6L, LicenceStatus.INACTIVE),
+        tuple(4L, INACTIVE),
+        tuple(5L, INACTIVE),
+        tuple(6L, INACTIVE),
       )
   }
 
