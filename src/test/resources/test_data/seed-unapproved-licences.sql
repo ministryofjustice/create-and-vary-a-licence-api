@@ -18,7 +18,7 @@ values (1, 'CRD', '1.0', 'U328968', 'prisoner', 'one', 1, 1, 1, current_date, 'A
        (4, 'CRD', '1.0', 'W127522', 'prisoner', 'four', 2, 2, 2, current_date, 'AP', 'APPROVED', '1.0', null),
        (5, 'CRD', '1.0', 'I511234', 'prisoner', 'five', 4, 4, 4, current_date, 'AP', 'APPROVED', '1.0', null),
        (6, 'CRD', '1.0', 'Z265290', 'prisoner', 'three', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.1', 3),
-       (7, 'HDC', '1.0', 'A123456', 'prisoner', 'six', 3, 3, 3, current_date, 'AP', 'APPROVED', '1.0', null);
+       (7, 'HDC', '1.0', 'A123456', 'prisoner', 'six', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.0', null);
 
 insert into audit_event(id,
                         licence_id,

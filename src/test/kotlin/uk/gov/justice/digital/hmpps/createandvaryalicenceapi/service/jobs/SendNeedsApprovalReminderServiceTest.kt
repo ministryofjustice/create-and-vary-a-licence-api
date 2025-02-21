@@ -10,6 +10,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.EditedLicenceNotReApproved
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
@@ -38,6 +39,17 @@ class SendNeedsApprovalReminderServiceTest {
 
   @Test
   fun `service sends an email`() {
+    val editedLicencesNotReApprovedByLsd = listOf(
+      object : EditedLicenceNotReApproved {
+        override fun getCrn() = "100A"
+        override fun getForename() = "jim"
+        override fun getSurname() = "smith"
+        override fun getComFirstName() = "ComF"
+        override fun getComLastName() = "ComL"
+        override fun getComEmail() = "com@gmail.com"
+      },
+    )
+
     val anUnapprovedLicence = listOf(
       UnapprovedLicence(
         crn = "100A",
@@ -49,7 +61,7 @@ class SendNeedsApprovalReminderServiceTest {
       ),
     )
 
-    whenever(licenceRepository.getEditedLicencesNotReApprovedByLsd()).thenReturn(anUnapprovedLicence)
+    whenever(licenceRepository.getEditedLicencesNotReApprovedByLsd()).thenReturn(editedLicencesNotReApprovedByLsd)
     service.sendEmailsToProbationPractitioner()
     verify(notifyService, times(1)).sendUnapprovedLicenceEmail(anUnapprovedLicence)
   }

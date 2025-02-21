@@ -259,7 +259,16 @@ interface LicenceRepository :
     """,
     nativeQuery = true,
   )
-  fun getEditedLicencesNotReApprovedByLsd(): List<UnapprovedLicence>
+  fun getEditedLicencesNotReApprovedByLsd(): List<EditedLicenceNotReApproved>
+}
+
+interface EditedLicenceNotReApproved {
+  fun getCrn(): String?
+  fun getForename(): String?
+  fun getSurname(): String?
+  fun getComFirstName(): String?
+  fun getComLastName(): String?
+  fun getComEmail(): String?
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")
