@@ -45,7 +45,7 @@ class DeactivateHdcLicencesService(
 
     licenceRepository.saveAllAndFlush(licencesToDeactivate)
 
-    licencesToDeactivate.map { licence ->
+    licencesToDeactivate.forEach { licence ->
       auditEventRepository.saveAndFlush(
         AuditEvent(
           licenceId = licence.id,
