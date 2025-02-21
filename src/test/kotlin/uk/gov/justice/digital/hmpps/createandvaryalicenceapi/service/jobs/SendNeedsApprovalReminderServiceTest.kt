@@ -14,10 +14,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
-class UnapprovedLicenceServiceTest {
+class SendNeedsApprovalReminderServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val notifyService = mock<NotifyService>()
-  private val service = UnapprovedLicenceService(
+  private val service = SendNeedsApprovalReminderService(
     licenceRepository,
     notifyService,
   )
@@ -49,7 +49,7 @@ class UnapprovedLicenceServiceTest {
       ),
     )
 
-    whenever(licenceRepository.getEditedLicencesNotReApprovedByCrd()).thenReturn(anUnapprovedLicence)
+    whenever(licenceRepository.getEditedLicencesNotReApprovedByLsd()).thenReturn(anUnapprovedLicence)
     service.sendEmailsToProbationPractitioner()
     verify(notifyService, times(1)).sendUnapprovedLicenceEmail(anUnapprovedLicence)
   }

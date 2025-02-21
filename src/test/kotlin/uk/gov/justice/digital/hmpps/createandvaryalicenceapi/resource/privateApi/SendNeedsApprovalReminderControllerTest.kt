@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.jobs.SendNeedsApprovalReminderController
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.UnapprovedLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.SendNeedsApprovalReminderService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -31,17 +31,17 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.Unappr
 @WebAppConfiguration
 class SendNeedsApprovalReminderControllerTest {
   @MockitoBean
-  private lateinit var unapprovedLicenceService: UnapprovedLicenceService
+  private lateinit var sendNeedsApprovalReminderService: SendNeedsApprovalReminderService
 
   @Autowired
   private lateinit var mvc: MockMvc
 
   @BeforeEach
   fun reset() {
-    reset(unapprovedLicenceService)
+    reset(sendNeedsApprovalReminderService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(SendNeedsApprovalReminderController(unapprovedLicenceService))
+      .standaloneSetup(SendNeedsApprovalReminderController(sendNeedsApprovalReminderService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -54,6 +54,6 @@ class SendNeedsApprovalReminderControllerTest {
         .contentType(APPLICATION_JSON),
     )
       .andExpect(status().isOk)
-    verify(unapprovedLicenceService, times(1)).sendEmailsToProbationPractitioner()
+    verify(sendNeedsApprovalReminderService, times(1)).sendEmailsToProbationPractitioner()
   }
 }

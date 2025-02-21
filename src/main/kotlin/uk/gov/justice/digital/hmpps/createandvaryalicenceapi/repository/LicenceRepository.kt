@@ -243,6 +243,23 @@ interface LicenceRepository :
     """,
   )
   fun findLicenceAndVariations(licenceId: Long): List<Licence>
+
+  @Query(
+    """
+    SELECT l.crn as crn, l.forename as forename, l.surname as surname, s.first_name as comFirstName, s.last_name as comLastName, s.email as comEmail
+        FROM licence l
+        JOIN staff s ON l.submitted_by_com_id = s.id
+        WHERE l.kind IN ('CRD', 'HDC')
+        AND l.licence_start_date = CURRENT_DATE
+        AND l.status_code = 'SUBMITTED'
+        AND (
+            EXISTS (SELECT 1 FROM audit_event ae WHERE l.id = ae.licence_id AND ae.detail LIKE '%APPROVED%')
+            OR l.version_of_id IS NOT NULL
+        )
+    """,
+    nativeQuery = true,
+  )
+  fun getEditedLicencesNotReApprovedByLsd(): List<UnapprovedLicence>
 }
 
 @Schema(description = "Describes a prisoner's first and last name, their CRN if present and a COM's contact details for use in an email to COM")

@@ -17,7 +17,8 @@ values (1, 'CRD', '1.0', 'U328968', 'prisoner', 'one', 1, 1, 1, current_date, 'A
        (3, 'CRD', '1.0', 'Z265290', 'prisoner', 'three', 3, 3, 3, current_date, 'AP', 'APPROVED', '1.0', null),
        (4, 'CRD', '1.0', 'W127522', 'prisoner', 'four', 2, 2, 2, current_date, 'AP', 'APPROVED', '1.0', null),
        (5, 'CRD', '1.0', 'I511234', 'prisoner', 'five', 4, 4, 4, current_date, 'AP', 'APPROVED', '1.0', null),
-       (6, 'CRD', '1.0', 'Z265290', 'prisoner', 'three', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.1', 3);
+       (6, 'CRD', '1.0', 'Z265290', 'prisoner', 'three', 3, 3, 3, current_date, 'AP', 'SUBMITTED', '1.1', 3),
+       (7, 'HDC', '1.0', 'A123456', 'prisoner', 'six', 3, 3, 3, current_date, 'AP', 'APPROVED', '1.0', null);
 
 insert into audit_event(id,
                         licence_id,
@@ -31,4 +32,6 @@ insert into audit_event(id,
 values (1, 2, '2022-09-08 10:24:22.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'Licence approved for jim smith',
         'ID 2 type AP status APPROVED version 2.0', null),
        (2, 3, '2023-10-12 08:46:19.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'Licence approved for bob jones',
-        'ID 4 type AP status APPROVED version 2.0', null);
+        'ID 3 type AP status APPROVED version 2.0', null),
+       (3, 7, '2024-11-16 09:49:19.000', 'CVL_OMU', 'Omu User', 'USER_EVENT', 'Licence approved for prisoner six',
+        'ID 7 type AP status APPROVED version 2.0', null);
