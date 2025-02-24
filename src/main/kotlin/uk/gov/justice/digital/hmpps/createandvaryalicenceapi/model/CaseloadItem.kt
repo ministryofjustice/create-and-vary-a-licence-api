@@ -34,6 +34,7 @@ data class CvlFields(
   val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
 
   @Schema(description = "Date that the licence is due to activate", example = "05/05/2023")
+  @JsonFormat(pattern = "dd/MM/yyyy")
   val licenceStartDate: LocalDate? = null,
 )
 
