@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -20,7 +19,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -30,7 +28,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateOffenderDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import java.time.LocalDate
 
@@ -46,9 +43,6 @@ class OffenderControllerTest {
   private lateinit var offenderService: OffenderService
 
   @MockitoBean
-  private lateinit var prisonerSearchService: PrisonerSearchService
-
-  @MockitoBean
   private lateinit var staffService: StaffService
 
   @Autowired
@@ -59,10 +53,10 @@ class OffenderControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(offenderService, prisonerSearchService, staffService)
+    reset(offenderService, staffService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(OffenderController(offenderService, prisonerSearchService, staffService))
+      .standaloneSetup(OffenderController(offenderService, staffService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -133,31 +127,5 @@ class OffenderControllerTest {
     mvc.perform(request).andExpect(status().isOk)
 
     verify(offenderService, times(1)).updateOffenderDetails("exampleNomisId", body)
-  }
-
-  @Test
-  fun `get ineligibility reasons`() {
-    whenever(prisonerSearchService.getIneligibilityReasons("A1234AA")).thenReturn(listOf("A Reason"))
-
-    val request = get("/offender/nomisid/A1234AA/ineligibility-reasons")
-      .accept(MediaType.APPLICATION_JSON)
-      .contentType(MediaType.APPLICATION_JSON)
-
-    val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
-
-    assertThat(mapper.readValue(response, Array<String>::class.java)).isEqualTo(arrayOf("A Reason"))
-  }
-
-  @Test
-  fun `get is-91 status`() {
-    whenever(prisonerSearchService.getIS91Status("A1234AA")).thenReturn(true)
-
-    val request = get("/offender/nomisid/A1234AA/is-91-status")
-      .accept(MediaType.APPLICATION_JSON)
-      .contentType(MediaType.APPLICATION_JSON)
-
-    val response = mvc.perform(request).andExpect(status().isOk).andReturn().response.contentAsString
-
-    assertThat(mapper.readValue(response, String::class.java)).isEqualTo("true")
   }
 }
