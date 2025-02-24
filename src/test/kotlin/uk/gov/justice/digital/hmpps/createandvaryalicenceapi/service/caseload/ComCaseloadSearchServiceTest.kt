@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
@@ -16,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -36,7 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirectio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
 
-class PrisonerSearchServiceTest {
+class ComCaseloadSearchServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
@@ -44,9 +44,8 @@ class PrisonerSearchServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val iS91DeterminationService = mock<IS91DeterminationService>()
 
-  private val service = PrisonerSearchService(
+  private val service = ComCaseloadSearchService(
     licenceRepository,
     deliusApiClient,
     probationSearchApiClient,
@@ -54,7 +53,6 @@ class PrisonerSearchServiceTest {
     prisonApiClient,
     eligibilityService,
     releaseDateService,
-    iS91DeterminationService,
   )
 
   @BeforeEach
@@ -67,7 +65,6 @@ class PrisonerSearchServiceTest {
       prisonApiClient,
       eligibilityService,
       releaseDateService,
-      iS91DeterminationService,
     )
   }
 
@@ -1886,65 +1883,6 @@ class PrisonerSearchServiceTest {
       assertThat(releaseDateLabel).isEqualTo("Confirmed release date")
       assertThat(isReviewNeeded).isTrue()
     }
-  }
-
-  @Test
-  fun `get ineligibility reasons for absent offender`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
-
-    val exception = assertThrows<IllegalStateException> {
-      service.getIneligibilityReasons("A1234AA")
-    }
-
-    assertThat(exception.message).isEqualTo("Found 0 prisoners for: A1234AA")
-  }
-
-  @Test
-  fun `get ineligibility reasons for present offender`() {
-    val hdcPrisoner = aPrisonerSearchResult.copy(homeDetentionCurfewEligibilityDate = LocalDate.now())
-    val approvedHdc = aPrisonerHdcStatus.copy(approvalStatus = "APPROVED")
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
-    whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
-      listOf(approvedHdc),
-    )
-
-    val reasons = service.getIneligibilityReasons("A1234AA")
-    assertThat(reasons).containsExactly("A reason", "Approved for HDC")
-  }
-
-  @Test
-  fun `get is-91 status for absent offender`() {
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(emptyList())
-
-    val exception = assertThrows<IllegalStateException> {
-      service.getIS91Status("A1234AA")
-    }
-
-    assertThat(exception.message).isEqualTo("Found 0 prisoners for: A1234AA")
-  }
-
-  @Test
-  fun `get is-91 status for present offender returns true for an illegal immigrant offence code`() {
-    val prisoner = aPrisonerSearchResult.copy(mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE")
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
-    whenever(iS91DeterminationService.isIS91Case(prisoner)).thenReturn(true)
-
-    val status = service.getIS91Status("A1234AA")
-    assertThat(status).isTrue()
-  }
-
-  @Test
-  fun `get is-91 status for present offender returns false for any other outcome code`() {
-    val prisoner = aPrisonerSearchResult.copy(mostSeriousOffence = "OFFENCE1")
-
-    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(prisoner))
-    whenever(iS91DeterminationService.isIS91Case(prisoner)).thenReturn(false)
-
-    val status = service.getIS91Status("A1234AA")
-    assertThat(status).isFalse()
   }
 
   private companion object {

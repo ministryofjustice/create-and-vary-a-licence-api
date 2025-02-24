@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPrac
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
@@ -40,14 +39,14 @@ class ComCaseloadServiceTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val licenceService = mock<LicenceService>()
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
-  private val prisonerSearchService = mock<PrisonerSearchService>()
+  private val comCaseloadSearchService = mock<ComCaseloadSearchService>()
   private val releaseDateService = mock<ReleaseDateService>()
 
   private val service = ComCaseloadService(
     caseloadService,
     deliusApiClient,
     licenceService,
-    prisonerSearchService,
+    comCaseloadSearchService,
     probationSearchApiClient,
     releaseDateService,
   )
@@ -60,7 +59,7 @@ class ComCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(deliusApiClient, licenceService, prisonerSearchService, probationSearchApiClient)
+    reset(deliusApiClient, licenceService, comCaseloadSearchService, probationSearchApiClient)
   }
 
   @Test
@@ -256,9 +255,9 @@ class ComCaseloadServiceTest {
 
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
 
-    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is eligible for parole"))
-    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[2].prisoner)).thenReturn(listOf("has incorrect legal status"))
-    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[9].prisoner)).thenReturn(listOf("is a recall case"))
+    whenever(comCaseloadSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is eligible for parole"))
+    whenever(comCaseloadSearchService.getIneligibilityReasons(caseloadItems[2].prisoner)).thenReturn(listOf("has incorrect legal status"))
+    whenever(comCaseloadSearchService.getIneligibilityReasons(caseloadItems[9].prisoner)).thenReturn(listOf("is a recall case"))
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -679,7 +678,7 @@ class ComCaseloadServiceTest {
       ),
     )
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
-    whenever(prisonerSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is breach of top up supervision case"))
+    whenever(comCaseloadSearchService.getIneligibilityReasons(caseloadItems[1].prisoner)).thenReturn(listOf("is breach of top up supervision case"))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
       mapOf(
         "AB1234E" to tenDaysFromNow,
