@@ -41,7 +41,7 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(inactiveLicences?.size).isEqualTo(4)
+    assertThat(inactiveLicences?.size).isEqualTo(6)
     assertThat(inactiveLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -51,6 +51,8 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
         tuple(5L, LicenceStatus.INACTIVE),
         tuple(6L, LicenceStatus.INACTIVE),
         tuple(7L, LicenceStatus.INACTIVE),
+        tuple(8L, LicenceStatus.INACTIVE),
+        tuple(9L, LicenceStatus.INACTIVE),
       )
 
     val remainingLicences = webTestClient.post()

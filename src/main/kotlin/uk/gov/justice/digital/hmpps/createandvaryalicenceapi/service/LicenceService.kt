@@ -103,53 +103,52 @@ class LicenceService(
     earliestReleaseDate: LocalDate?,
     isEligibleForEarlyRelease: Boolean,
     conditionSubmissionStatus: Map<String, Boolean>,
-  ): Licence =
-    when (licence) {
-      is CrdLicence -> toCrd(
-        licence = licence,
-        earliestReleaseDate = earliestReleaseDate,
-        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-        hardStopDate = releaseDateService.getHardStopDate(licence),
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
-        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
-        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-        conditionSubmissionStatus = conditionSubmissionStatus,
-      )
+  ): Licence = when (licence) {
+    is CrdLicence -> toCrd(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      hardStopDate = releaseDateService.getHardStopDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      conditionSubmissionStatus = conditionSubmissionStatus,
+    )
 
-      is VariationLicence -> toVariation(
-        licence = licence,
-        earliestReleaseDate = earliestReleaseDate,
-        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-        conditionSubmissionStatus = conditionSubmissionStatus,
-      )
+    is VariationLicence -> toVariation(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      conditionSubmissionStatus = conditionSubmissionStatus,
+    )
 
-      is HardStopLicence -> toHardstop(
-        licence = licence,
-        earliestReleaseDate = earliestReleaseDate,
-        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-        hardStopDate = releaseDateService.getHardStopDate(licence),
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
-        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
-        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-        conditionSubmissionStatus = conditionSubmissionStatus,
-      )
+    is HardStopLicence -> toHardstop(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      hardStopDate = releaseDateService.getHardStopDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      conditionSubmissionStatus = conditionSubmissionStatus,
+    )
 
-      is HdcLicence -> toHdc(
-        licence = licence,
-        earliestReleaseDate = earliestReleaseDate,
-        isEligibleForEarlyRelease = isEligibleForEarlyRelease,
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-        hardStopDate = releaseDateService.getHardStopDate(licence),
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
-        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
-        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-        conditionSubmissionStatus = conditionSubmissionStatus,
-      )
+    is HdcLicence -> toHdc(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      hardStopDate = releaseDateService.getHardStopDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      conditionSubmissionStatus = conditionSubmissionStatus,
+    )
 
-      else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
-    }
+    else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
+  }
 
   @Transactional
   fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest) {
@@ -278,12 +277,10 @@ class LicenceService(
     )
   }
 
-  private fun getAuditEventType(username: String): AuditEventType {
-    return if (username == "SYSTEM_USER") {
-      AuditEventType.SYSTEM_EVENT
-    } else {
-      AuditEventType.USER_EVENT
-    }
+  private fun getAuditEventType(username: String): AuditEventType = if (username == "SYSTEM_USER") {
+    AuditEventType.SYSTEM_EVENT
+  } else {
+    AuditEventType.USER_EVENT
   }
 
   private fun recordLicenceEventForStatus(
@@ -519,7 +516,7 @@ class LicenceService(
             fullName = "SYSTEM",
             eventType = AuditEventType.SYSTEM_EVENT,
             summary = "${reason ?: "Licence automatically inactivated"} for ${licence.forename} ${licence.surname}",
-            detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+            detail = "ID ${licence.id} kind ${licence.kind} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
           ),
         )
 
@@ -1093,15 +1090,14 @@ class LicenceService(
     inactivateLicences(licences, deactivationReason, false)
   }
 
-  private fun EntityLicence.toSummary() =
-    transformToLicenceSummary(
-      this,
-      hardStopDate = releaseDateService.getHardStopDate(this),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
-    )
+  private fun EntityLicence.toSummary() = transformToLicenceSummary(
+    this,
+    hardStopDate = releaseDateService.getHardStopDate(this),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
+    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
+    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
+  )
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

@@ -48,7 +48,5 @@ class ExpireLicencesController(
       ),
     ],
   )
-  fun runLicenceExpiryJob() {
-    return licenceExpiryService.expireLicences()
-  }
+  fun runLicenceExpiryJob() = licenceExpiryService.expireLicences()
 }

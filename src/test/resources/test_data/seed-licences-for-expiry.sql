@@ -20,5 +20,9 @@ values (1,'CRD','1.0', 1, 1, 'AP', 'G7285UT', 'APPROVED', 456, current_date, cur
        (4,'CRD','1.0', 1, 1, 'AP', 'G7285UT', 'IN_PROGRESS', 456, current_date, current_date, DATEADD(day, 10, current_date), null, '1.0', null, null),
        (5,'CRD','1.0', 1, 1, 'AP', 'G5613GT', 'VARIATION_SUBMITTED', 789, DATEADD(day, -30, current_date), DATEADD(day, -31, current_date), DATEADD(day, -1, current_date), null, '2.0', null, 2),
        (6,'CRD','1.0', 1, 1, 'PSS', 'G4169UO', 'ACTIVE', 432, DATEADD(day, -30, current_date), DATEADD(day, -31, current_date), null, DATEADD(day, -10, current_date), '1.0', null, null),
-       (7,'CRD','1.0', 1, 1, 'PSS', 'G4169UO', 'TIMED_OUT', 456, DATEADD(day, -30, current_date), DATEADD(day, -31, current_date), null, DATEADD(day, -10, current_date), '1.0', null, null)
+       (7,'CRD','1.0', 1, 1, 'PSS', 'G4169UO', 'TIMED_OUT', 456, DATEADD(day, -30, current_date), DATEADD(day, -31, current_date), null, DATEADD(day, -10, current_date), '1.0', null, null),
+       (8,'HDC','1.0', 1, 1, 'AP', 'A1234BC', 'SUBMITTED', 123, DATEADD(day, -30, current_date), DATEADD(day, -31, current_date), null, DATEADD(day, -10, current_date), '1.0', null, null),
+       (9,'HDC','1.0', 1, 1, 'AP', 'B1234CD', 'APPROVED', 123, DATEADD(day, -30, current_date), DATEADD(day, -31, current_date), DATEADD(day, -10, current_date), null, '1.0', null, null)
+
+
 ;
