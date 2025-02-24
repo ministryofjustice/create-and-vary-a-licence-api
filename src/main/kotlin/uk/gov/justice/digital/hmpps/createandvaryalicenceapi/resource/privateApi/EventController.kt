@@ -57,9 +57,7 @@ class EventController(private val eventService: EventService) {
     @RequestParam(name = "eventType", required = false) eventType: List<LicenceEventType>?,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
-  ): List<LicenceEvent> {
-    return eventService.findEventsMatchingCriteria(
-      EventQueryObject(licenceId = licenceId, eventTypes = eventType, sortBy = sortBy, sortOrder = sortOrder),
-    )
-  }
+  ): List<LicenceEvent> = eventService.findEventsMatchingCriteria(
+    EventQueryObject(licenceId = licenceId, eventTypes = eventType, sortBy = sortBy, sortOrder = sortOrder),
+  )
 }

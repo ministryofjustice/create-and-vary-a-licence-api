@@ -79,7 +79,6 @@ class PromptComService(
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun fromNowToTheNext4Weeks(clock: Clock) =
-      LocalDate.now(clock).with(MONDAY) to LocalDate.now(clock).plusWeeks(4).with(MONDAY)
+    fun fromNowToTheNext4Weeks(clock: Clock) = LocalDate.now(clock).with(MONDAY) to LocalDate.now(clock).plusWeeks(4).with(MONDAY)
   }
 }

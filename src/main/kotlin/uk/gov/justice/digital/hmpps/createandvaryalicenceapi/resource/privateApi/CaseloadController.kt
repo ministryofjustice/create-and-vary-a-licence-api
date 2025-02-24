@@ -90,8 +90,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun findByNumbers(@Parameter(required = true) @Valid @RequestBody criteria: PrisonerNumbers) =
-    caseloadService.getPrisonersByNumber(criteria.prisonerNumbers)
+  fun findByNumbers(@Parameter(required = true) @Valid @RequestBody criteria: PrisonerNumbers) = caseloadService.getPrisonersByNumber(criteria.prisonerNumbers)
 
   @GetMapping("/prisoner-search/nomisid/{nomsId}")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -292,8 +291,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) =
-    approverCaseloadService.getApprovalNeeded(prisonCodes)
+  fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getApprovalNeeded(prisonCodes)
 
   @PostMapping("/caseload/prison-approver/recently-approved")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -336,8 +334,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) =
-    approverCaseloadService.getRecentlyApproved(prisonCodes)
+  fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getRecentlyApproved(prisonCodes)
 
   @PostMapping("/caseload/case-admin/prison-view")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -382,11 +379,10 @@ class CaseloadController(
   )
   fun getPrisonView(
     @Parameter(required = true) @Valid @RequestBody caCaseloadSearch: CaCaseloadSearch,
-  ) =
-    caCaseloadService.getPrisonOmuCaseload(
-      caCaseloadSearch.prisonCodes,
-      caCaseloadSearch.searchString,
-    )
+  ) = caCaseloadService.getPrisonOmuCaseload(
+    caCaseloadSearch.prisonCodes,
+    caCaseloadSearch.searchString,
+  )
 
   @PostMapping("/caseload/case-admin/probation-view")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -431,8 +427,7 @@ class CaseloadController(
   )
   fun getProbationView(
     @Parameter(required = true) @Valid @RequestBody caCaseloadSearch: CaCaseloadSearch,
-  ) =
-    caCaseloadService.getProbationOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
+  ) = caCaseloadService.getProbationOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -475,8 +470,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) =
-    comCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
+  fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/create-case-load")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -519,8 +513,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> =
-    comCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -563,8 +556,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getStaffVaryCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) =
-    comCaseloadService.getStaffVaryCaseload(deliusStaffIdentifier)
+  fun getStaffVaryCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCaseloadService.getStaffVaryCaseload(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/vary-case-load")
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -607,8 +599,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> =
-    comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())

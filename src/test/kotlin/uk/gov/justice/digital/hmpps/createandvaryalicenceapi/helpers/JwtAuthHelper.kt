@@ -22,19 +22,18 @@ class JwtAuthHelper(private val keyPair: KeyPair) {
     roles: List<String>? = listOf(),
     expiryTime: Duration = Duration.ofHours(1),
     jwtId: String = UUID.randomUUID().toString(),
-  ): String =
-    mutableMapOf<String, Any>()
-      .also { subject?.let { subject -> it["user_name"] = subject } }
-      .also { it["client_id"] = "create-and-vary-a-licence-admin" }
-      .also { roles?.let { roles -> it["authorities"] = roles } }
-      .also { scope?.let { scope -> it["scope"] = scope } }
-      .let {
-        Jwts.builder()
-          .id(jwtId)
-          .subject(subject)
-          .claims(it.toMap())
-          .expiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
-          .signWith(keyPair.private, Jwts.SIG.RS256)
-          .compact()
-      }
+  ): String = mutableMapOf<String, Any>()
+    .also { subject?.let { subject -> it["user_name"] = subject } }
+    .also { it["client_id"] = "create-and-vary-a-licence-admin" }
+    .also { roles?.let { roles -> it["authorities"] = roles } }
+    .also { scope?.let { scope -> it["scope"] = scope } }
+    .let {
+      Jwts.builder()
+        .id(jwtId)
+        .subject(subject)
+        .claims(it.toMap())
+        .expiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
+        .signWith(keyPair.private, Jwts.SIG.RS256)
+        .compact()
+    }
 }

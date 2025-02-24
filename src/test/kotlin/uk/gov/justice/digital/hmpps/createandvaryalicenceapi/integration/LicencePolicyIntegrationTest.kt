@@ -7,8 +7,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 
 class LicencePolicyIntegrationTest : IntegrationTestBase() {
 
-  fun policy(v: String) =
-    this.javaClass.getResourceAsStream("/test_data/policy_conditions/policy$v.json")!!.bufferedReader(UTF_8).readText()
+  fun policy(v: String) = this.javaClass.getResourceAsStream("/test_data/policy_conditions/policy$v.json")!!.bufferedReader(UTF_8).readText()
 
   @Test
   fun policyV1() {

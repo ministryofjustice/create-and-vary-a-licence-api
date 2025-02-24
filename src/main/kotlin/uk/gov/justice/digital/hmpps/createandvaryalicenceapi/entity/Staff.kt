@@ -55,19 +55,15 @@ abstract class Staff(
     return true
   }
 
-  override fun hashCode(): Int {
-    return Objects.hash(id)
-  }
+  override fun hashCode(): Int = Objects.hash(id)
 
-  override fun toString(): String {
-    return "Staff(" +
-      "id=$id, " +
-      "kind=$kind, " +
-      "username='$username', " +
-      "email=$email, " +
-      "firstName=$firstName, " +
-      "lastName=$lastName, " +
-      "lastUpdatedTimestamp=$lastUpdatedTimestamp" +
-      ")"
-  }
+  override fun toString(): String = "Staff(" +
+    "id=$id, " +
+    "kind=$kind, " +
+    "username='$username', " +
+    "email=$email, " +
+    "firstName=$firstName, " +
+    "lastName=$lastName, " +
+    "lastUpdatedTimestamp=$lastUpdatedTimestamp" +
+    ")"
 }

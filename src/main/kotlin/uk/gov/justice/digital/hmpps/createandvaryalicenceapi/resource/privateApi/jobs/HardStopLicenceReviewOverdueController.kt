@@ -47,7 +47,5 @@ class HardStopLicenceReviewOverdueController(
       ),
     ],
   )
-  fun runHardStopLicenceReviewOverdueJob() {
-    return hardStopLicenceReviewOverdueService.sendComReviewEmail()
-  }
+  fun runHardStopLicenceReviewOverdueJob() = hardStopLicenceReviewOverdueService.sendComReviewEmail()
 }

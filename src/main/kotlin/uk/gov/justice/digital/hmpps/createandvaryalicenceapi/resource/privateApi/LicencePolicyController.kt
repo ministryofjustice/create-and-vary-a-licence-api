@@ -58,9 +58,7 @@ class LicencePolicyController(
       ),
     ],
   )
-  fun getCurrentPolicy(): LicencePolicy? {
-    return licencePolicyService.currentPolicy()
-  }
+  fun getCurrentPolicy(): LicencePolicy? = licencePolicyService.currentPolicy()
 
   @GetMapping(value = ["/version/{version}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -95,9 +93,7 @@ class LicencePolicyController(
       ),
     ],
   )
-  fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicy? {
-    return licencePolicyService.policyByVersion(version)
-  }
+  fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicy? = licencePolicyService.policyByVersion(version)
 
   @GetMapping(value = ["/"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
@@ -132,9 +128,7 @@ class LicencePolicyController(
       ),
     ],
   )
-  fun getPolicies(): List<LicencePolicy> {
-    return licencePolicyService.allPolicies()
-  }
+  fun getPolicies(): List<LicencePolicy> = licencePolicyService.allPolicies()
 
   @GetMapping(value = ["/compare/{version}/licence/{licenceId}"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")

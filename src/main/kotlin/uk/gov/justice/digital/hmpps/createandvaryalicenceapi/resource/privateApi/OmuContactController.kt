@@ -106,9 +106,7 @@ class OmuContactController(private val omuService: OmuService) {
     @Valid @RequestBody
     body: UpdateOmuEmailRequest,
     @PathVariable("prisonCode") prisonCode: String,
-  ): OmuContact {
-    return this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
-  }
+  ): OmuContact = this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
 
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @DeleteMapping()

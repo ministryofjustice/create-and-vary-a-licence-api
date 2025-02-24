@@ -203,7 +203,7 @@ class VariationLicence(
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
   ): VariationLicence {
-    return VariationLicence(
+    val variationLicence: VariationLicence = VariationLicence(
       id = id,
       typeCode = typeCode,
       version = version,
@@ -265,6 +265,7 @@ class VariationLicence(
       licenceVersion = licenceVersion,
       updatedBy = updatedBy,
     )
+    return variationLicence
   }
 
   override fun activate(): Licence = copy(
@@ -418,71 +419,69 @@ class VariationLicence(
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
-  override fun toString(): String {
-    return "VariationLicence(" +
-      "id=$id, " +
-      "kind=$kind, " +
-      "typeCode=$typeCode, " +
-      "version=$version, " +
-      "statusCode=$statusCode, " +
-      "nomsId=$nomsId, " +
-      "bookingNo=$bookingNo, " +
-      "bookingId=$bookingId, " +
-      "crn=$crn, " +
-      "pnc=$pnc, " +
-      "cro=$cro, " +
-      "prisonCode=$prisonCode, " +
-      "prisonDescription=$prisonDescription, " +
-      "prisonTelephone=$prisonTelephone, " +
-      "forename=$forename, " +
-      "middleNames=$middleNames, " +
-      "surname=$surname, " +
-      "dateOfBirth=$dateOfBirth, " +
-      "conditionalReleaseDate=$conditionalReleaseDate, " +
-      "actualReleaseDate=$actualReleaseDate, " +
-      "sentenceStartDate=$sentenceStartDate, " +
-      "sentenceEndDate=$sentenceEndDate, " +
-      "licenceStartDate=$licenceStartDate, " +
-      "licenceExpiryDate=$licenceExpiryDate, " +
-      "licenceActivatedDate=$licenceActivatedDate, " +
-      "topupSupervisionStartDate=$topupSupervisionStartDate, " +
-      "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
-      "probationAreaCode=$probationAreaCode, " +
-      "probationAreaDescription=$probationAreaDescription, " +
-      "probationPduCode=$probationPduCode, " +
-      "probationPduDescription=$probationPduDescription, " +
-      "probationLauCode=$probationLauCode, " +
-      "probationLauDescription=$probationLauDescription, " +
-      "probationTeamCode=$probationTeamCode, " +
-      "probationTeamDescription=$probationTeamDescription, " +
-      "appointmentPersonType=$appointmentPersonType, " +
-      "appointmentPerson=$appointmentPerson, " +
-      "appointmentTime=$appointmentTime, " +
-      "appointmentTimeType=$appointmentTimeType, " +
-      "appointmentAddress=$appointmentAddress, " +
-      "appointmentContact=$appointmentContact, " +
-      "spoDiscussion=$spoDiscussion, " +
-      "vloDiscussion=$vloDiscussion, " +
-      "approvedDate=$approvedDate, " +
-      "approvedByUsername=$approvedByUsername, " +
-      "approvedByName=$approvedByName, " +
-      "supersededDate=$supersededDate, " +
-      "submittedDate=$submittedDate, " +
-      "dateCreated=$dateCreated, " +
-      "dateLastUpdated=$dateLastUpdated, " +
-      "updatedByUsername=$updatedByUsername, " +
-      "standardConditions=$standardConditions, " +
-      "additionalConditions=$additionalConditions, " +
-      "bespokeConditions=$bespokeConditions, " +
-      "responsibleCom=$responsibleCom, " +
-      "submittedBy=$submittedBy, " +
-      "createdBy=$createdBy, " +
-      "createdBy=$createdBy, " +
-      "variationOfId=$variationOfId, " +
-      "licenceVersion=$licenceVersion, " +
-      "updatedBy=$updatedBy" +
-      ")"
-  }
+  override fun toString(): String = "VariationLicence(" +
+    "id=$id, " +
+    "kind=$kind, " +
+    "typeCode=$typeCode, " +
+    "version=$version, " +
+    "statusCode=$statusCode, " +
+    "nomsId=$nomsId, " +
+    "bookingNo=$bookingNo, " +
+    "bookingId=$bookingId, " +
+    "crn=$crn, " +
+    "pnc=$pnc, " +
+    "cro=$cro, " +
+    "prisonCode=$prisonCode, " +
+    "prisonDescription=$prisonDescription, " +
+    "prisonTelephone=$prisonTelephone, " +
+    "forename=$forename, " +
+    "middleNames=$middleNames, " +
+    "surname=$surname, " +
+    "dateOfBirth=$dateOfBirth, " +
+    "conditionalReleaseDate=$conditionalReleaseDate, " +
+    "actualReleaseDate=$actualReleaseDate, " +
+    "sentenceStartDate=$sentenceStartDate, " +
+    "sentenceEndDate=$sentenceEndDate, " +
+    "licenceStartDate=$licenceStartDate, " +
+    "licenceExpiryDate=$licenceExpiryDate, " +
+    "licenceActivatedDate=$licenceActivatedDate, " +
+    "topupSupervisionStartDate=$topupSupervisionStartDate, " +
+    "topupSupervisionExpiryDate=$topupSupervisionExpiryDate, " +
+    "probationAreaCode=$probationAreaCode, " +
+    "probationAreaDescription=$probationAreaDescription, " +
+    "probationPduCode=$probationPduCode, " +
+    "probationPduDescription=$probationPduDescription, " +
+    "probationLauCode=$probationLauCode, " +
+    "probationLauDescription=$probationLauDescription, " +
+    "probationTeamCode=$probationTeamCode, " +
+    "probationTeamDescription=$probationTeamDescription, " +
+    "appointmentPersonType=$appointmentPersonType, " +
+    "appointmentPerson=$appointmentPerson, " +
+    "appointmentTime=$appointmentTime, " +
+    "appointmentTimeType=$appointmentTimeType, " +
+    "appointmentAddress=$appointmentAddress, " +
+    "appointmentContact=$appointmentContact, " +
+    "spoDiscussion=$spoDiscussion, " +
+    "vloDiscussion=$vloDiscussion, " +
+    "approvedDate=$approvedDate, " +
+    "approvedByUsername=$approvedByUsername, " +
+    "approvedByName=$approvedByName, " +
+    "supersededDate=$supersededDate, " +
+    "submittedDate=$submittedDate, " +
+    "dateCreated=$dateCreated, " +
+    "dateLastUpdated=$dateLastUpdated, " +
+    "updatedByUsername=$updatedByUsername, " +
+    "standardConditions=$standardConditions, " +
+    "additionalConditions=$additionalConditions, " +
+    "bespokeConditions=$bespokeConditions, " +
+    "responsibleCom=$responsibleCom, " +
+    "submittedBy=$submittedBy, " +
+    "createdBy=$createdBy, " +
+    "createdBy=$createdBy, " +
+    "variationOfId=$variationOfId, " +
+    "licenceVersion=$licenceVersion, " +
+    "updatedBy=$updatedBy" +
+    ")"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
@@ -491,7 +490,5 @@ class VariationLicence(
     return true
   }
 
-  override fun hashCode(): Int {
-    return super.hashCode()
-  }
+  override fun hashCode(): Int = super.hashCode()
 }

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 class InputTest {
 
   @Nested
-  inner class `getAllFieldNames`() {
+  inner class `getAllFieldNames` {
     @Test
     fun `returns a list of input field names`() {
       assertThat(anInput.getAllFieldNames()).isEqualTo(listOf("name"))

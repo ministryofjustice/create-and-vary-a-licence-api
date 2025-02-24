@@ -15,7 +15,7 @@ class CommunityOffenderManager(
   firstName: String?,
   lastName: String?,
   lastUpdatedTimestamp: LocalDateTime? = null,
-) : Creator, Staff(
+) : Staff(
   id = id,
   kind = StaffKind.COMMUNITY_OFFENDER_MANAGER,
   username = username,
@@ -23,7 +23,8 @@ class CommunityOffenderManager(
   firstName = firstName,
   lastName = lastName,
   lastUpdatedTimestamp = lastUpdatedTimestamp,
-) {
+),
+  Creator {
   fun copy(
     id: Long? = this.id,
     staffIdentifier: Long = this.staffIdentifier,
@@ -49,14 +50,10 @@ class CommunityOffenderManager(
     return true
   }
 
-  override fun hashCode(): Int {
-    return super.hashCode()
-  }
+  override fun hashCode(): Int = super.hashCode()
 
-  override fun toString(): String {
-    return "CommunityOffenderManager(" +
-      "staffIdentifier=$staffIdentifier" +
-      ")" +
-      " ${super.toString()}"
-  }
+  override fun toString(): String = "CommunityOffenderManager(" +
+    "staffIdentifier=$staffIdentifier" +
+    ")" +
+    " ${super.toString()}"
 }

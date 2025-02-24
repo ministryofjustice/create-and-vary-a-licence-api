@@ -135,12 +135,10 @@ OffenderService(
     }
   }
 
-  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean {
-    return (
-      this.forename != request.forename ||
-        this.middleNames != request.middleNames ||
-        this.surname != request.surname ||
-        this.dateOfBirth != request.dateOfBirth
-      )
-  }
+  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean = (
+    this.forename != request.forename ||
+      this.middleNames != request.middleNames ||
+      this.surname != request.surname ||
+      this.dateOfBirth != request.dateOfBirth
+    )
 }

@@ -47,7 +47,5 @@ class RemoveExpiredConditionsController(
       ),
     ],
   )
-  fun runRemoveExpiredConditionsJob() {
-    return removeExpiredConditionsService.removeExpiredConditions()
-  }
+  fun runRemoveExpiredConditionsJob() = removeExpiredConditionsService.removeExpiredConditions()
 }

@@ -12,9 +12,8 @@ import java.nio.charset.StandardCharsets
 
 class PublicLicencePolicyServiceIntegrationTest : IntegrationTestBase() {
 
-  fun policy(v: String) =
-    this.javaClass.getResourceAsStream("/test_data/publicApi/licencePolicy/policy$v.json")!!
-      .bufferedReader(StandardCharsets.UTF_8).readText()
+  fun policy(v: String) = this.javaClass.getResourceAsStream("/test_data/publicApi/licencePolicy/policy$v.json")!!
+    .bufferedReader(StandardCharsets.UTF_8).readText()
 
   @Nested
   inner class `Get policy by version number` {

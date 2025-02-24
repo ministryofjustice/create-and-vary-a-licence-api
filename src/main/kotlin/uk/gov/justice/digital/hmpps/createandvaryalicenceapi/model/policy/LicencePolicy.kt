@@ -9,7 +9,9 @@ interface ILicenceCondition {
   val tpl: String?
 }
 
-interface IAdditionalCondition : ILicenceCondition, HasInputs {
+interface IAdditionalCondition :
+  ILicenceCondition,
+  HasInputs {
   val category: String
   val inputs: List<Input>?
   val type: String?
@@ -49,18 +51,14 @@ data class LicencePolicy(
 ) {
 
   @JsonIgnore
-  fun allAdditionalConditions(): Set<IAdditionalCondition> =
-    (this.additionalConditions.pss + this.additionalConditions.ap).toSet()
+  fun allAdditionalConditions(): Set<IAdditionalCondition> = (this.additionalConditions.pss + this.additionalConditions.ap).toSet()
 
   @JsonIgnore
-  fun allStandardConditions(): Set<ILicenceCondition> =
-    (this.standardConditions.standardConditionsPss + this.standardConditions.standardConditionsAp).toSet()
+  fun allStandardConditions(): Set<ILicenceCondition> = (this.standardConditions.standardConditionsPss + this.standardConditions.standardConditionsAp).toSet()
 }
 
 data class AllAdditionalConditions(
   val mappedPolicy: Map<String, Map<String, IAdditionalCondition>>,
 ) {
-  fun getCondition(version: String, code: String): IAdditionalCondition {
-    return mappedPolicy[version]?.get(code) ?: error("Unable to find condition config for $code in policy version $version")
-  }
+  fun getCondition(version: String, code: String): IAdditionalCondition = mappedPolicy[version]?.get(code) ?: error("Unable to find condition config for $code in policy version $version")
 }

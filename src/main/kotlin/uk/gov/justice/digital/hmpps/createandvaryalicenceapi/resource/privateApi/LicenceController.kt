@@ -163,9 +163,7 @@ class LicenceController(
       ),
     ],
   )
-  fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence {
-    return licenceService.getLicenceById(licenceId)
-  }
+  fun getLicenceById(@PathVariable("licenceId") licenceId: Long): Licence = licenceService.getLicenceById(licenceId)
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
   @GetMapping(value = ["/variations/submitted/area/{areaCode}"])
@@ -211,9 +209,7 @@ class LicenceController(
   )
   fun submittedVariations(
     @PathVariable("areaCode") areaCode: String,
-  ): List<LicenceSummary> {
-    return licenceService.findSubmittedVariationsByRegion(probationAreaCode = areaCode)
-  }
+  ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode = areaCode)
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/match"])
@@ -262,19 +258,17 @@ class LicenceController(
     body: MatchLicencesRequest,
     @RequestParam(name = "sortBy", required = false) sortBy: String?,
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
-  ): List<LicenceSummary> {
-    return licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(
-        prisonCodes = body.prison,
-        statusCodes = body.status,
-        staffIds = body.staffId,
-        nomsIds = body.nomsId,
-        pdus = body.pdu,
-        sortBy = sortBy,
-        sortOrder = sortOrder,
-      ),
-    )
-  }
+  ): List<LicenceSummary> = licenceService.findLicencesMatchingCriteria(
+    LicenceQueryObject(
+      prisonCodes = body.prison,
+      statusCodes = body.status,
+      staffIds = body.staffId,
+      nomsIds = body.nomsId,
+      pdus = body.pdu,
+      sortBy = sortBy,
+      sortOrder = sortOrder,
+    ),
+  )
 
   @Tag(name = Tags.LICENCES)
   @PutMapping(value = ["/id/{licenceId}/status"])
@@ -336,9 +330,7 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: StatusUpdateRequest,
-  ) {
-    return licenceService.updateLicenceStatus(licenceId, request)
-  }
+  ) = licenceService.updateLicenceStatus(licenceId, request)
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/submit"])
@@ -400,9 +392,7 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: List<NotifyRequest>?,
-  ) {
-    return licenceService.submitLicence(licenceId, request)
-  }
+  ) = licenceService.submitLicence(licenceId, request)
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
   @PostMapping(value = ["/id/{licenceId}/create-variation"])
@@ -465,9 +455,7 @@ class LicenceController(
   )
   fun createVariation(
     @PathVariable("licenceId") licenceId: Long,
-  ): LicenceSummary {
-    return licenceService.createVariation(licenceId)
-  }
+  ): LicenceSummary = licenceService.createVariation(licenceId)
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/id/{licenceId}/edit"])
@@ -520,9 +508,7 @@ class LicenceController(
   )
   fun editLicence(
     @PathVariable("licenceId") licenceId: Long,
-  ): LicenceSummary {
-    return licenceService.editLicence(licenceId)
-  }
+  ): LicenceSummary = licenceService.editLicence(licenceId)
 
   @Tag(name = Tags.LICENCE_VARIATIONS)
   @PutMapping(value = ["/id/{licenceId}/spo-discussion"])
@@ -1209,7 +1195,5 @@ class LicenceController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     body: DeactivateLicenceAndVariationsRequest,
-  ) {
-    return licenceService.deactivateLicenceAndVariations(licenceId, body)
-  }
+  ) = licenceService.deactivateLicenceAndVariations(licenceId, body)
 }

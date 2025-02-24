@@ -99,18 +99,17 @@ class ReleaseDateService(
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
     licenceKind: LicenceKind? = LicenceKind.CRD,
-  ): LocalDate? {
-    return if (licenceKind == LicenceKind.HDC) {
-      nomisRecord.homeDetentionCurfewActualDate
-    } else if (
-      ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
-      nomisRecord.paroleEligibilityDate != null && nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) ||
-      iS91DeterminationService.isIS91Case(nomisRecord)
-    ) {
-      nomisRecord.determineAltLicenceStartDate()
-    } else {
-      nomisRecord.determineLicenceStartDate()
-    }
+  ): LocalDate? = if (licenceKind == LicenceKind.HDC) {
+    nomisRecord.homeDetentionCurfewActualDate
+  } else if (
+    ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
+    nomisRecord.paroleEligibilityDate != null &&
+    nomisRecord.paroleEligibilityDate.isBefore(LocalDate.now()) ||
+    iS91DeterminationService.isIS91Case(nomisRecord)
+  ) {
+    nomisRecord.determineAltLicenceStartDate()
+  } else {
+    nomisRecord.determineLicenceStartDate()
   }
 
   fun getLicenceStartDates(records: List<PrisonerSearchPrisoner?>): Map<String, LocalDate?> {
@@ -119,7 +118,8 @@ class ReleaseDateService(
     return prisoners.associate {
       it.prisonerNumber to if (
         ALT_OUTCOME_CODES.contains(it.legalStatus) ||
-        it.paroleEligibilityDate != null && it.paroleEligibilityDate.isBefore(LocalDate.now()) ||
+        it.paroleEligibilityDate != null &&
+        it.paroleEligibilityDate.isBefore(LocalDate.now()) ||
         iS91BookingIds.contains(it.bookingId?.toLong())
       ) {
         it.determineAltLicenceStartDate()

@@ -507,56 +507,52 @@ class LicenceTypeOverrideServiceTest {
       )
     }
 
-    private fun standardConditions(licence: CrdLicence): List<StandardCondition> =
-      policyService.currentPolicy().standardConditions.standardConditionsAp
-        .mapIndexed { i: Int, condition: ILicenceCondition ->
-          StandardCondition(
-            licence = licence,
-            conditionType = "AP",
-            conditionSequence = i,
-            conditionCode = condition.code,
-            conditionText = condition.text,
-          )
-        }
-
-    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> =
-      policyService.currentPolicy().standardConditions.standardConditionsPss
-        .mapIndexed { i: Int, condition: ILicenceCondition ->
-          StandardCondition(
-            licence = licence,
-            conditionType = "PSS",
-            conditionSequence = i,
-            conditionCode = condition.code,
-            conditionText = condition.text,
-          )
-        }
-
-    private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> =
-      policyService.currentPolicy().additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
-        AdditionalCondition(
-          licence = licence,
-          conditionType = "PSS",
-          conditionSequence = i,
-          conditionCode = condition.code,
-          conditionText = condition.text,
-          expandedConditionText = condition.text,
-          conditionVersion = licence.version!!,
-          conditionCategory = condition.categoryShort ?: condition.category,
-        )
-      }
-
-    private fun additionalConditions(licence: CrdLicence): List<AdditionalCondition> =
-      policyService.currentPolicy().additionalConditions.ap.mapIndexed { i: Int, condition: AdditionalConditionAp ->
-        AdditionalCondition(
+    private fun standardConditions(licence: CrdLicence): List<StandardCondition> = policyService.currentPolicy().standardConditions.standardConditionsAp
+      .mapIndexed { i: Int, condition: ILicenceCondition ->
+        StandardCondition(
           licence = licence,
           conditionType = "AP",
           conditionSequence = i,
           conditionCode = condition.code,
           conditionText = condition.text,
-          expandedConditionText = condition.text,
-          conditionVersion = licence.version!!,
-          conditionCategory = condition.categoryShort ?: condition.category,
         )
       }
+
+    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> = policyService.currentPolicy().standardConditions.standardConditionsPss
+      .mapIndexed { i: Int, condition: ILicenceCondition ->
+        StandardCondition(
+          licence = licence,
+          conditionType = "PSS",
+          conditionSequence = i,
+          conditionCode = condition.code,
+          conditionText = condition.text,
+        )
+      }
+
+    private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> = policyService.currentPolicy().additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
+      AdditionalCondition(
+        licence = licence,
+        conditionType = "PSS",
+        conditionSequence = i,
+        conditionCode = condition.code,
+        conditionText = condition.text,
+        expandedConditionText = condition.text,
+        conditionVersion = licence.version!!,
+        conditionCategory = condition.categoryShort ?: condition.category,
+      )
+    }
+
+    private fun additionalConditions(licence: CrdLicence): List<AdditionalCondition> = policyService.currentPolicy().additionalConditions.ap.mapIndexed { i: Int, condition: AdditionalConditionAp ->
+      AdditionalCondition(
+        licence = licence,
+        conditionType = "AP",
+        conditionSequence = i,
+        conditionCode = condition.code,
+        conditionText = condition.text,
+        expandedConditionText = condition.text,
+        conditionVersion = licence.version!!,
+        conditionCategory = condition.categoryShort ?: condition.category,
+      )
+    }
   }
 }

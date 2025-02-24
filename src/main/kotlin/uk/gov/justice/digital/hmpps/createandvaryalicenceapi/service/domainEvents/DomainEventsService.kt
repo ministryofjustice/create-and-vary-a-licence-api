@@ -100,6 +100,5 @@ class DomainEventsService(
     LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.variation.inactivated"),
   }
 
-  fun LocalDateTime.toOffsetDateFormat(): String =
-    atZone(ZoneId.of("Europe/London")).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+  fun LocalDateTime.toOffsetDateFormat(): String = atZone(ZoneId.of("Europe/London")).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }

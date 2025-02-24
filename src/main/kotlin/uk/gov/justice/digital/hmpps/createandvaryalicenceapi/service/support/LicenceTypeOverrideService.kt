@@ -88,8 +88,7 @@ class LicenceTypeOverrideService(
     )
   }
 
-  private fun Licence.getAdditionalConditionsByRelevancy() =
-    this.additionalConditions.partition { this.typeCode.conditionTypes().contains(it.conditionType) }
+  private fun Licence.getAdditionalConditionsByRelevancy() = this.additionalConditions.partition { this.typeCode.conditionTypes().contains(it.conditionType) }
 
   private fun getIncorrectDates(licenceType: LicenceType, licence: Licence): Set<IncorrectDate> {
     val led = licence.licenceExpiryDate
