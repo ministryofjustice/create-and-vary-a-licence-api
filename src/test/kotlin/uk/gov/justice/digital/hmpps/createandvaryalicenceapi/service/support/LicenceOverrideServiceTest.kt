@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
@@ -26,6 +26,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
@@ -49,7 +51,14 @@ class LicenceOverrideServiceTest {
   private val staffRepository = mock<StaffRepository>()
   private val licenceService = mock<LicenceService>()
   private val licenceOverrideService =
-    LicenceOverrideService(licenceRepository, auditEventRepository, licenceEventRepository, domainEventsService, staffRepository, licenceService)
+    LicenceOverrideService(
+      licenceRepository,
+      auditEventRepository,
+      licenceEventRepository,
+      domainEventsService,
+      staffRepository,
+      licenceService,
+    )
 
   @BeforeEach
   fun reset() {
@@ -244,7 +253,10 @@ class LicenceOverrideServiceTest {
       reasonForChange,
     )
 
-    verify(licenceService).inactivateTimedOutLicenceVersions(listOf(approvedLicenceA), "Deactivating timed out licence as the licence status was overridden to active")
+    verify(licenceService).inactivateTimedOutLicenceVersions(
+      listOf(approvedLicenceA),
+      "Deactivating timed out licence as the licence status was overridden to active",
+    )
   }
 
   @Test

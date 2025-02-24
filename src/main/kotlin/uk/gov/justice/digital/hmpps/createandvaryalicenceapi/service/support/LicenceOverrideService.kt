@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
@@ -8,13 +8,14 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -36,7 +37,7 @@ class LicenceOverrideService(
 
   /**
    * Override licence status
-   * @throws ValidationException if new status is already in use by another licence
+   * @throws jakarta.validation.ValidationException if new status is already in use by another licence
    */
   @Transactional
   fun changeStatus(licenceId: Long, newStatus: LicenceStatus, reason: String) {
@@ -76,8 +77,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: SYSTEM_USER,
-        fullName = staffMember?.fullName ?: SYSTEM_USER,
+        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
         summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason",
       ),
     )
@@ -86,7 +87,7 @@ class LicenceOverrideService(
       LicenceEvent(
         licenceId = licence.id,
         username = username,
-        eventType = LicenceStatus.lookupLicenceEventByStatus(newStatus),
+        eventType = LicenceStatus.Companion.lookupLicenceEventByStatus(newStatus),
         eventDescription = reason,
       ),
     )
@@ -165,8 +166,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: SYSTEM_USER,
-        fullName = staffMember?.fullName ?: SYSTEM_USER,
+        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
         summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
       ),
     )

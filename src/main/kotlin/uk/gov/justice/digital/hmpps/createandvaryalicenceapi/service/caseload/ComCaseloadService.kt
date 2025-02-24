@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -29,7 +28,7 @@ class ComCaseloadService(
   private val caseloadService: CaseloadService,
   private val deliusApiClient: DeliusApiClient,
   private val licenceService: LicenceService,
-  private val prisonerSearchService: PrisonerSearchService,
+  private val comCaseloadSearchService: ComCaseloadSearchService,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val releaseDateService: ReleaseDateService,
 ) {
@@ -110,7 +109,7 @@ class ComCaseloadService(
   private fun filterOffendersEligibleForLicence(cases: List<ManagedCase>): List<ManagedCase> {
     val eligibleOffenders = cases.filter { case ->
       case.nomisRecord?.prisonerNumber != null &&
-        prisonerSearchService.getIneligibilityReasons(case.nomisRecord)
+        comCaseloadSearchService.getIneligibilityReasons(case.nomisRecord)
           .isEmpty()
     }
     return eligibleOffenders
