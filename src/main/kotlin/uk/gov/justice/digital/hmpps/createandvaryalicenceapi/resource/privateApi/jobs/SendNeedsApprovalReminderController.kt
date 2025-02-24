@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.UnapprovedLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.SendNeedsApprovalReminderService
 
 @Tag(name = Tags.JOBS)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
-class SendNeedsApprovalReminderController(private val unapprovedLicenceService: UnapprovedLicenceService) {
+class SendNeedsApprovalReminderController(private val sendNeedsApprovalReminderService: SendNeedsApprovalReminderService) {
   @PostMapping(value = ["/notify-probation-of-unapproved-licences"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
@@ -49,7 +49,5 @@ class SendNeedsApprovalReminderController(private val unapprovedLicenceService: 
       ),
     ],
   )
-  fun notifyProbationOfUnapprovedLicences() {
-    return unapprovedLicenceService.sendEmailsToProbationPractitioner()
-  }
+  fun notifyProbationOfUnapprovedLicences() = sendNeedsApprovalReminderService.sendEmailsToProbationPractitioner()
 }
