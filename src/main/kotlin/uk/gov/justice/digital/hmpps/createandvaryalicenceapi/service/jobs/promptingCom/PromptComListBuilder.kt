@@ -23,8 +23,7 @@ class PromptComListBuilder(
   private val deliusApiClient: DeliusApiClient,
 ) {
 
-  fun excludeIneligibleCases(candidates: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> =
-    candidates.filter(eligibilityService::isEligibleForCvl)
+  fun excludeIneligibleCases(candidates: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> = candidates.filter(eligibilityService::isEligibleForCvl)
 
   fun excludePrisonersWithHdc(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
     val bookingIds =
@@ -90,29 +89,25 @@ class PromptComListBuilder(
     }
   }
 
-  fun CaseWithEmailAndStartDate.isNotInHardStop(): Boolean =
-    !releaseDateService.isInHardStopPeriod(this.first.prisoner.toSentenceDateHolder(this.third))
+  fun CaseWithEmailAndStartDate.isNotInHardStop(): Boolean = !releaseDateService.isInHardStopPeriod(this.first.prisoner.toSentenceDateHolder(this.third))
 
   fun excludeInHardStop(cases: List<CaseWithEmailAndStartDate>) = cases.filter { it.isNotInHardStop() }
 
-  fun excludeOutOfRangeDates(cases: List<CaseWithEmailAndStartDate>, startDate: LocalDate, endDate: LocalDate) =
-    cases.filter { (_, _, releaseDate) -> releaseDate in startDate..endDate }
+  fun excludeOutOfRangeDates(cases: List<CaseWithEmailAndStartDate>, startDate: LocalDate, endDate: LocalDate) = cases.filter { (_, _, releaseDate) -> releaseDate in startDate..endDate }
 
-  fun buildEmailsToSend(cases: List<CaseWithEmailAndStartDate>): List<PromptComNotification> {
-    return cases.groupBy { (case, _, _) -> case.comStaffCode }.values.map { cases ->
-      val (com, email, _) = cases.first()
-      PromptComNotification(
-        comName = com.comName,
-        email = email,
-        initialPromptCases = cases.map { (case, _, startDate) ->
-          Case(
-            crn = case.crn,
-            name = case.prisoner.firstName + " " + case.prisoner.lastName,
-            releaseDate = startDate,
-          )
-        },
-      )
-    }
+  fun buildEmailsToSend(cases: List<CaseWithEmailAndStartDate>): List<PromptComNotification> = cases.groupBy { (case, _, _) -> case.comStaffCode }.values.map { cases ->
+    val (com, email, _) = cases.first()
+    PromptComNotification(
+      comName = com.comName,
+      email = email,
+      initialPromptCases = cases.map { (case, _, startDate) ->
+        Case(
+          crn = case.crn,
+          name = case.prisoner.firstName + " " + case.prisoner.lastName,
+          releaseDate = startDate,
+        )
+      },
+    )
   }
 
   private companion object {

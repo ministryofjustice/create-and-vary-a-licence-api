@@ -5,7 +5,5 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 
 data class PageResponse<T>(val content: List<T>, val number: Int, val size: Int, val totalElements: Long) {
-  fun toPage(): Page<T> {
-    return PageImpl(content, PageRequest.of(number, size), totalElements)
-  }
+  fun toPage(): Page<T> = PageImpl(content, PageRequest.of(number, size), totalElements)
 }

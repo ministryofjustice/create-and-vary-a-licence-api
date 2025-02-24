@@ -17,25 +17,22 @@ class HdcApiClient(@Qualifier("oauthHdcApiClient") val hdcApiWebClient: WebClien
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun getByBookingId(bookingId: Long): HdcLicenceData {
-    return hdcApiWebClient
-      .get()
-      .uri("/licence/hdc/$bookingId")
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono(HdcLicenceData::class.java)
-      .onErrorResume { propagate404Response(it, bookingId) }
-      .block()!!
-  }
+  fun getByBookingId(bookingId: Long): HdcLicenceData = hdcApiWebClient
+    .get()
+    .uri("/licence/hdc/$bookingId")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono(HdcLicenceData::class.java)
+    .onErrorResume { propagate404Response(it, bookingId) }
+    .block()!!
 
-  private fun <API_RESPONSE_BODY_TYPE> propagate404Response(exception: Throwable, licenceId: Long): Mono<API_RESPONSE_BODY_TYPE> =
-    with(exception) {
-      when {
-        this is WebClientResponseException && statusCode == NOT_FOUND -> {
-          log.info("No resource found when calling hdc-api ${request?.uri?.path}")
-          Mono.error(EntityNotFoundException("No licence data found for $licenceId"))
-        }
-        else -> Mono.error(exception)
+  private fun <API_RESPONSE_BODY_TYPE> propagate404Response(exception: Throwable, licenceId: Long): Mono<API_RESPONSE_BODY_TYPE> = with(exception) {
+    when {
+      this is WebClientResponseException && statusCode == NOT_FOUND -> {
+        log.info("No resource found when calling hdc-api ${request?.uri?.path}")
+        Mono.error(EntityNotFoundException("No licence data found for $licenceId"))
       }
+      else -> Mono.error(exception)
     }
+  }
 }

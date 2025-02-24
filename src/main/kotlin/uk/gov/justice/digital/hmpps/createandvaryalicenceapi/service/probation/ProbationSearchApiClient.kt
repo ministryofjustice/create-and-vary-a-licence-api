@@ -72,15 +72,14 @@ class ProbationSearchApiClient(@Qualifier("oauthProbationSearchApiClient") val p
       .block()
   }
 
-  fun getOffendersByCrn(crns: List<String?>) =
-    batchRequests(BY_CRN_BATCH_SIZE, crns) { batch ->
-      probationSearchApiClient
-        .post()
-        .uri("/crns")
-        .bodyValue(batch)
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToMono(typeReference<List<OffenderDetail>>())
-        .block()
-    }
+  fun getOffendersByCrn(crns: List<String?>) = batchRequests(BY_CRN_BATCH_SIZE, crns) { batch ->
+    probationSearchApiClient
+      .post()
+      .uri("/crns")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<OffenderDetail>>())
+      .block()
+  }
 }

@@ -41,9 +41,7 @@ data class AdditionalConditionUploadSummary(
   val uploadDetailId: Long,
 ) {
 
-  override fun toString(): String {
-    return "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
-  }
+  override fun toString(): String = "AdditionalConditionUploadSummary(id=$id, fileName=$filename, fileType=$fileType, fileSize=$fileSize, uploadedTime=$uploadedTime, description=$description)"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

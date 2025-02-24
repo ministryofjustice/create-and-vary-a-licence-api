@@ -12,26 +12,22 @@ class OmuService(private val omuRepository: OmuContactRepository) {
   /**
    * Get OMU email address belonging to the prison code
    */
-  fun getOmuContactEmail(prisonCode: String): OmuContact? {
-    return omuRepository.findByPrisonCode(prisonCode)
-  }
+  fun getOmuContactEmail(prisonCode: String): OmuContact? = omuRepository.findByPrisonCode(prisonCode)
 
   /**
    * Create or update OMU contact email address belonging to the prison code
    */
-  fun updateOmuEmail(prisonCode: String, contactRequest: UpdateOmuEmailRequest): OmuContact {
-    return this.omuRepository.saveAndFlush(
-      this.omuRepository.findByPrisonCode(prisonCode)?.copy(
-        email = contactRequest.email,
-        dateLastUpdated = LocalDateTime.now(),
-      )
-        ?: OmuContact(
-          prisonCode = prisonCode,
-          email = contactRequest.email,
-          dateCreated = LocalDateTime.now(),
-        ),
+  fun updateOmuEmail(prisonCode: String, contactRequest: UpdateOmuEmailRequest): OmuContact = this.omuRepository.saveAndFlush(
+    this.omuRepository.findByPrisonCode(prisonCode)?.copy(
+      email = contactRequest.email,
+      dateLastUpdated = LocalDateTime.now(),
     )
-  }
+      ?: OmuContact(
+        prisonCode = prisonCode,
+        email = contactRequest.email,
+        dateCreated = LocalDateTime.now(),
+      ),
+  )
 
   /**
    * delete an OMU contact email address if no longer valid

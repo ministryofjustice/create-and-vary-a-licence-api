@@ -12,11 +12,9 @@ data class AdditionalConditionWithConfig(
 fun mapConditionsToConfig(
   licenceConditions: List<AdditionalCondition>,
   policyConditions: AllAdditionalConditions,
-): List<AdditionalConditionWithConfig> {
-  return licenceConditions.map {
-    val policyCondition = policyConditions.getCondition(it.conditionVersion, it.conditionCode!!)
-    AdditionalConditionWithConfig(it, policyCondition)
-  }
+): List<AdditionalConditionWithConfig> = licenceConditions.map {
+  val policyCondition = policyConditions.getCondition(it.conditionVersion, it.conditionCode!!)
+  AdditionalConditionWithConfig(it, policyCondition)
 }
 
 /*
@@ -45,6 +43,4 @@ fun isLicenceReadyToSubmit(
 fun isConditionReadyToSubmit(
   licenceCondition: AdditionalCondition,
   policyConditions: AllAdditionalConditions,
-): Boolean {
-  return isLicenceReadyToSubmit(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!
-}
+): Boolean = isLicenceReadyToSubmit(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!

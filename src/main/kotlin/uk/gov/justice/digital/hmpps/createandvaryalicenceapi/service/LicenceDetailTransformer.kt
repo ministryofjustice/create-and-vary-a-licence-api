@@ -41,7 +41,8 @@ fun ModelLicence.transformToPublicLicence(): Licence {
   return Licence(
     id = this.id,
     licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy version not found for licence id:" + this.id),
+    policyVersion = PolicyVersion.entries.find { it.version == this.version }
+      ?: error("Policy version not found for licence id:" + this.id),
     version = this.licenceVersion.orEmpty(),
     statusCode = this.statusCode!!,
     prisonNumber = this.nomsId.orEmpty(),
@@ -68,15 +69,12 @@ fun uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.mapTo
 }
 
 // Transform a list of model standard conditions to resource standard conditions
-fun List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition>.transformToResourceStandard(): List<StandardCondition> =
-  map(::transform)
+fun List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition>.transformToResourceStandard(): List<StandardCondition> = map(::transform)
 
-fun transform(condition: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition): StandardCondition {
-  return StandardCondition(
-    code = condition.code.orEmpty(),
-    text = condition.text.orEmpty(),
-  )
-}
+fun transform(condition: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition): StandardCondition = StandardCondition(
+  code = condition.code.orEmpty(),
+  text = condition.text.orEmpty(),
+)
 
 // Transform a list of model additional conditions to resource additional conditions
 fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditionalCondition> = map {
@@ -87,50 +85,40 @@ fun List<AdditionalCondition>.transformToResourceAdditional(): List<ModelAdditio
   }
 }
 
-fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalConditionWithRestriction {
-  return ElectronicMonitoringAdditionalConditionWithRestriction(
-    category = model.category.orEmpty(),
-    type = ConditionTypes.ELECTRONIC_MONITORING,
-    id = model.id ?: 0,
-    code = model.code.orEmpty(),
-    text = model.expandedText.orEmpty(),
-    restrictions = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }.map { data ->
-      ElectronicMonitoringType.find(data.value.orEmpty())
-        ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
-    },
-  )
-}
+fun transformElectronicMonitoring(model: AdditionalCondition): ElectronicMonitoringAdditionalConditionWithRestriction = ElectronicMonitoringAdditionalConditionWithRestriction(
+  category = model.category.orEmpty(),
+  type = ConditionTypes.ELECTRONIC_MONITORING,
+  id = model.id ?: 0,
+  code = model.code.orEmpty(),
+  text = model.expandedText.orEmpty(),
+  restrictions = model.data.filter { data -> data.field == ELECTRONIC_MONITORING_TYPES }.map { data ->
+    ElectronicMonitoringType.find(data.value.orEmpty())
+      ?: error("ElectronicMonitoringType '" + data.value + "' isn't supported.")
+  },
+)
 
-fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): ExclusionZoneAdditionalCondition {
-  return ExclusionZoneAdditionalCondition(
-    category = model.category.orEmpty(),
-    type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
-    id = model.id ?: 0,
-    code = model.code.orEmpty(),
-    text = model.expandedText.orEmpty(),
-    hasImageUpload = model.uploadSummary.isNotEmpty(),
-  )
-}
+fun transformMultipleExclusionZonesCondition(model: AdditionalCondition): ExclusionZoneAdditionalCondition = ExclusionZoneAdditionalCondition(
+  category = model.category.orEmpty(),
+  type = ConditionTypes.MULTIPLE_EXCLUSION_ZONE,
+  id = model.id ?: 0,
+  code = model.code.orEmpty(),
+  text = model.expandedText.orEmpty(),
+  hasImageUpload = model.uploadSummary.isNotEmpty(),
+)
 
 typealias PublicStandardAdditionalCondition = ModelStandardAdditionalCondition
 
-fun standardAdditionalCondition(model: AdditionalCondition): PublicStandardAdditionalCondition {
-  return PublicStandardAdditionalCondition(
-    category = model.category.orEmpty(),
-    type = ConditionTypes.STANDARD,
-    id = model.id ?: 0,
-    code = model.code.orEmpty(),
-    text = model.expandedText.orEmpty(),
-  )
-}
+fun standardAdditionalCondition(model: AdditionalCondition): PublicStandardAdditionalCondition = PublicStandardAdditionalCondition(
+  category = model.category.orEmpty(),
+  type = ConditionTypes.STANDARD,
+  id = model.id ?: 0,
+  code = model.code.orEmpty(),
+  text = model.expandedText.orEmpty(),
+)
 
 // Transform a list of model bespoke conditions to resource bespoke conditions
-fun List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition>.transformToResourceBespoke(): List<BespokeCondition> =
-  map(::transform)
+fun List<uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition>.transformToResourceBespoke(): List<BespokeCondition> = map(::transform)
 
-fun transform(model: ModelBespokeCondition): BespokeCondition {
-  return BespokeCondition(
-
-    text = model.text.orEmpty(),
-  )
-}
+fun transform(model: ModelBespokeCondition): BespokeCondition = BespokeCondition(
+  text = model.text.orEmpty(),
+)

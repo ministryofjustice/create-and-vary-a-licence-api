@@ -47,7 +47,5 @@ class NotifyAttentionNeededLicencesController(
       ),
     ],
   )
-  fun runNotifyAttentionNeededLicencesJob() {
-    return notifyAttentionNeededLicencesService.notifyAttentionNeededLicences()
-  }
+  fun runNotifyAttentionNeededLicencesJob() = notifyAttentionNeededLicencesService.notifyAttentionNeededLicences()
 }

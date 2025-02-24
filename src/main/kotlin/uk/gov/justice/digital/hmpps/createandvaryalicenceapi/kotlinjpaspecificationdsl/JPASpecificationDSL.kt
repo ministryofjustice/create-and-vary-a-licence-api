@@ -16,18 +16,16 @@ import org.springframework.data.jpa.domain.Specification
 import kotlin.reflect.KProperty1
 
 // Helper to allow joining to Properties
-fun <Z, T, R> From<Z, T>.join(prop: KProperty1<T, R?>): Join<T, R> = this.join<T, R>(prop.name)
+fun <Z, T, R> From<Z, T>.join(prop: KProperty1<T, R?>): Join<T, R> = this.join(prop.name)
 
 // Helper to enable get by Property
-fun <R> Path<*>.get(prop: KProperty1<*, R?>): Path<R> = this.get<R>(prop.name)
+fun <R> Path<*>.get(prop: KProperty1<*, R?>): Path<R> = this.get(prop.name)
 
 // Version of Specification.where that makes the CriteriaBuilder implicit
-fun <T> where(makePredicate: CriteriaBuilder.(Root<T>) -> Predicate): Specification<T> =
-  Specification { root, _, criteriaBuilder -> criteriaBuilder.makePredicate(root) }
+fun <T> where(makePredicate: CriteriaBuilder.(Root<T>) -> Predicate): Specification<T> = Specification { root, _, criteriaBuilder -> criteriaBuilder.makePredicate(root) }
 
 // helper function for defining Specification that take a Path to a property and send it to a CriteriaBuilder
-private fun <T, R> KProperty1<T, R?>.spec(makePredicate: CriteriaBuilder.(path: Path<R>) -> Predicate): Specification<T> =
-  let { property -> where { root -> makePredicate(root.get(property)) } }
+private fun <T, R> KProperty1<T, R?>.spec(makePredicate: CriteriaBuilder.(path: Path<R>) -> Predicate): Specification<T> = let { property -> where { root -> makePredicate(root.get(property)) } }
 
 // Equality
 fun <T, R> KProperty1<T, R?>.equal(x: R): Specification<T> = spec { equal(it, x) }
@@ -77,32 +75,22 @@ fun <T> KProperty1<T, String?>.notLike(x: String, escapeChar: Char): Specificati
 // And
 infix fun <T> Specification<T>.and(other: Specification<T>): Specification<T> = this.and(other)
 
-inline fun <reified T> and(vararg specs: Specification<T>?): Specification<T> {
-  return and(specs.toList())
-}
+inline fun <reified T> and(vararg specs: Specification<T>?): Specification<T> = and(specs.toList())
 
-inline fun <reified T> and(specs: Iterable<Specification<T>?>): Specification<T> {
-  return combineSpecification(specs, Specification<T>::and)
-}
+inline fun <reified T> and(specs: Iterable<Specification<T>?>): Specification<T> = combineSpecification(specs, Specification<T>::and)
 
 // Or
 infix fun <T> Specification<T>.or(other: Specification<T>): Specification<T> = this.or(other)
 
-inline fun <reified T> or(vararg specs: Specification<T>?): Specification<T> {
-  return or(specs.toList())
-}
+inline fun <reified T> or(vararg specs: Specification<T>?): Specification<T> = or(specs.toList())
 
-inline fun <reified T> or(specs: Iterable<Specification<T>?>): Specification<T> {
-  return combineSpecification(specs, Specification<T>::or)
-}
+inline fun <reified T> or(specs: Iterable<Specification<T>?>): Specification<T> = combineSpecification(specs, Specification<T>::or)
 
 // Not
 operator fun <T> Specification<T>.not(): Specification<T> = Specification.not(this)
 
 // Combines Specification with an operation
-inline fun <reified T> combineSpecification(specs: Iterable<Specification<T>?>, operation: Specification<T>.(Specification<T>) -> Specification<T>): Specification<T> {
-  return specs.filterNotNull().fold(emptySpecification()) { existing, new -> existing.operation(new) }
-}
+inline fun <reified T> combineSpecification(specs: Iterable<Specification<T>?>, operation: Specification<T>.(Specification<T>) -> Specification<T>): Specification<T> = specs.filterNotNull().fold(emptySpecification()) { existing, new -> existing.operation(new) }
 
 // Empty Specification
 inline fun <reified T> emptySpecification(): Specification<T> = Specification.where(null)

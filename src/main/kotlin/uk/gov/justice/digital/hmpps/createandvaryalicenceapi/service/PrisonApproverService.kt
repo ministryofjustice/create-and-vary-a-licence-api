@@ -73,14 +73,12 @@ class PrisonApproverService(
     error("original licence not found for licence: ${variationLicence.id}")
   }
 
-  private fun Licence.toApprovalSummaryView(): LicenceSummaryApproverView {
-    return transformToApprovalLicenceSummary(
-      licence = this,
-      hardStopDate = releaseDateService.getHardStopDate(this),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
-    )
-  }
+  private fun Licence.toApprovalSummaryView(): LicenceSummaryApproverView = transformToApprovalLicenceSummary(
+    licence = this,
+    hardStopDate = releaseDateService.getHardStopDate(this),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(this),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(this),
+    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
+    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
+  )
 }

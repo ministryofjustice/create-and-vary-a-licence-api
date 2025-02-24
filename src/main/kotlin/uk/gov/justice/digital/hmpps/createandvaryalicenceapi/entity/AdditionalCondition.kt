@@ -46,19 +46,17 @@ data class AdditionalCondition(
   val additionalConditionUploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),
 ) {
 
-  override fun toString(): String {
-    return "AdditionalCondition(" +
-      "id=$id, " +
-      "licence=${licence.id}, " +
-      "conditionVersion='$conditionVersion', " +
-      "conditionCode=$conditionCode, " +
-      "conditionCategory=$conditionCategory, " +
-      "conditionSequence=$conditionSequence, " +
-      "conditionText=$conditionText, " +
-      "expandedConditionText=$expandedConditionText, " +
-      "conditionType=$conditionType, " +
-      "additionalConditionData=$additionalConditionData, " +
-      "additionalConditionUploadSummary=$additionalConditionUploadSummary" +
-      ")"
-  }
+  override fun toString(): String = "AdditionalCondition(" +
+    "id=$id, " +
+    "licence=${licence.id}, " +
+    "conditionVersion='$conditionVersion', " +
+    "conditionCode=$conditionCode, " +
+    "conditionCategory=$conditionCategory, " +
+    "conditionSequence=$conditionSequence, " +
+    "conditionText=$conditionText, " +
+    "expandedConditionText=$expandedConditionText, " +
+    "conditionType=$conditionType, " +
+    "additionalConditionData=$additionalConditionData, " +
+    "additionalConditionUploadSummary=$additionalConditionUploadSummary" +
+    ")"
 }

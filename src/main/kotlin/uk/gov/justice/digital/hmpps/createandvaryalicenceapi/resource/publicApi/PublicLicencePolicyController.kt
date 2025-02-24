@@ -65,8 +65,7 @@ class PublicLicencePolicyController(private val publicLicencePolicyService: Publ
       example = "2.1",
     )
     versionNumber: String,
-  ) =
-    publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
+  ) = publicLicencePolicyService.getLicencePolicyByVersionNumber(versionNumber)
 
   @GetMapping(value = ["/latest"])
   @ResponseBody

@@ -130,23 +130,21 @@ class ComCaseloadSearchService(
     deliusOffender: CaseloadResult,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
-  ): FoundProbationRecord? =
-    when {
-      licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
-      prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(
-        licence,
-      )
+  ): FoundProbationRecord? = when {
+    licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
+    prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(
+      licence,
+    )
 
-      else -> null
-    }
+    else -> null
+  }
 
-  private fun ProbationUserSearchRequest.getSortBy() =
-    this.sortBy.map {
-      ProbationSearchSortByRequest(
-        it.field.probationSearchApiSortType,
-        if (it.direction == SearchDirection.ASC) "asc" else "desc",
-      )
-    }
+  private fun ProbationUserSearchRequest.getSortBy() = this.sortBy.map {
+    ProbationSearchSortByRequest(
+      it.field.probationSearchApiSortType,
+      if (it.direction == SearchDirection.ASC) "asc" else "desc",
+    )
+  }
 
   private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
     val bookingsWithHdc = this
@@ -194,15 +192,14 @@ class ComCaseloadSearchService(
     )
   }
 
-  private fun CaseloadResult.toStartedRecord(licence: Licence) =
-    this.transformToModelFoundProbationRecord(
-      licence = licence,
-      hardStopDate = releaseDateService.getHardStopDate(licence),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-    )
+  private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
+    licence = licence,
+    hardStopDate = releaseDateService.getHardStopDate(licence),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+  )
 
   private data class CvlProbationSearchRecord(
     val caseloadResult: CaseloadResult,

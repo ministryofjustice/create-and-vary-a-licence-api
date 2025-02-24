@@ -29,10 +29,11 @@ fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest, newLsd: 
   val tusedChanged =
     nullableDatesDiffer(newSentence.topupSupervisionExpiryDate, this.topupSupervisionExpiryDate)
   val prrdChanged = nullableDatesDiffer(newSentence.postRecallReleaseDate, this.postRecallReleaseDate)
-  val hdcadChanged = this is HdcLicence && nullableDatesDiffer(
-    newSentence.homeDetentionCurfewActualDate,
-    this.homeDetentionCurfewActualDate,
-  )
+  val hdcadChanged = this is HdcLicence &&
+    nullableDatesDiffer(
+      newSentence.homeDetentionCurfewActualDate,
+      this.homeDetentionCurfewActualDate,
+    )
   val hdcEndDateChanged =
     this is HdcLicence && nullableDatesDiffer(newSentence.homeDetentionCurfewEndDate, this.homeDetentionCurfewEndDate)
 
@@ -59,12 +60,14 @@ fun Licence.getSentenceChanges(newSentence: UpdateSentenceDatesRequest, newLsd: 
 fun Licence.calculateStatusCode(newSentence: UpdateSentenceDatesRequest): LicenceStatus {
   val now = LocalDate.now()
   return when {
-    this.statusCode == LicenceStatus.ACTIVE && (
-      newSentence.actualReleaseDate?.isAfter(now) == true ||
-        newSentence.conditionalReleaseDate?.isAfter(now) == true
-      ) -> LicenceStatus.INACTIVE
+    this.statusCode == LicenceStatus.ACTIVE &&
+      (
+        newSentence.actualReleaseDate?.isAfter(now) == true ||
+          newSentence.conditionalReleaseDate?.isAfter(now) == true
+        ) -> LicenceStatus.INACTIVE
 
-    this.statusCode == LicenceStatus.ACTIVE && this.typeCode != LicenceType.PSS &&
+    this.statusCode == LicenceStatus.ACTIVE &&
+      this.typeCode != LicenceType.PSS &&
       newSentence.postRecallReleaseDate?.isAfter(now) == true -> LicenceStatus.INACTIVE
 
     else -> this.statusCode

@@ -29,11 +29,10 @@ class ConditionFormatter {
  * Double pipe notation in a placeholder is used to indicate that either value can be used.
  * The field names are in priority order (i.e. the second field name will be used only if the first field has no data)
  */
-private fun List<AdditionalConditionData>.findFieldNameToUse(placeholder: String) =
-  placeholder
-    .splitToSequence("||")
-    .map { it.trim() }
-    .find { this.getProvidedDataFor(it).isNotEmpty() }
-    ?: placeholder
+private fun List<AdditionalConditionData>.findFieldNameToUse(placeholder: String) = placeholder
+  .splitToSequence("||")
+  .map { it.trim() }
+  .find { this.getProvidedDataFor(it).isNotEmpty() }
+  ?: placeholder
 
 fun List<AdditionalConditionData>.getProvidedDataFor(name: String) = this.filter { it.dataField == name }

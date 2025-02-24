@@ -93,11 +93,10 @@ class LicencePolicyService(
     )
   }
 
-  fun getConfigForCondition(version: String, conditionCode: String): IAdditionalCondition =
-    policyByVersion(version)
-      .allAdditionalConditions()
-      .find { it.code == conditionCode }
-      ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
+  fun getConfigForCondition(version: String, conditionCode: String): IAdditionalCondition = policyByVersion(version)
+    .allAdditionalConditions()
+    .find { it.code == conditionCode }
+    ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
 
   fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == PSS) {
     emptyList()
@@ -143,23 +142,20 @@ class LicencePolicyService(
     return standardConditions + pssRequirements
   }
 
-  fun getAllAdditionalConditions(): AllAdditionalConditions {
-    return AllAdditionalConditions(
-      policies.associate {
-        it.version to it.allAdditionalConditions().associateBy { condition -> condition.code }
-      },
+  fun getAllAdditionalConditions(): AllAdditionalConditions = AllAdditionalConditions(
+    policies.associate {
+      it.version to it.allAdditionalConditions().associateBy { condition -> condition.code }
+    },
+  )
+
+  fun getHardStopAdditionalConditions(licence: Licence): List<AdditionalCondition> = when {
+    licence.typeCode == AP || licence.typeCode == AP_PSS -> listOf(HARD_STOP_CONDITION).mapIndexed(
+      toEntityAdditionalCondition(
+        licence,
+        "AP",
+      ),
     )
+
+    else -> emptyList()
   }
-
-  fun getHardStopAdditionalConditions(licence: Licence): List<AdditionalCondition> =
-    when {
-      licence.typeCode == AP || licence.typeCode == AP_PSS -> listOf(HARD_STOP_CONDITION).mapIndexed(
-        toEntityAdditionalCondition(
-          licence,
-          "AP",
-        ),
-      )
-
-      else -> emptyList()
-    }
 }

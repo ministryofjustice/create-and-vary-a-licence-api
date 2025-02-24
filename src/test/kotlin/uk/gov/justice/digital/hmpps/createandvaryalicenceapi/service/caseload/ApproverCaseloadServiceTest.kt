@@ -38,15 +38,19 @@ class ApproverCaseloadServiceTest {
   }
 
   @Nested
-  inner class `Build getApprovalNeeded caseload`() {
+  inner class `Build getApprovalNeeded caseload` {
     @Nested
-    inner class `Build approval caseload`() {
+    inner class `Build approval caseload` {
       @Test
       fun `It builds the approval needed caseload successfully`() {
         val nomisId = "A1234AA"
         val comUsernames = listOf("smills")
 
-        whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
+        whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
+          listOf(
+            aLicenceSummaryApproverView,
+          ),
+        )
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
           listOf(anOffenderDetailResult),
         )
@@ -446,10 +450,10 @@ class ApproverCaseloadServiceTest {
   }
 
   @Nested
-  inner class `Build getRecentlyApproved caseload`() {
+  inner class `Build getRecentlyApproved caseload` {
 
     @Nested
-    inner class `Build recently approved caseload`() {
+    inner class `Build recently approved caseload` {
       @Test
       fun `It builds the recently approved caseload successfully`() {
         val nomisId = "A1234AA"
@@ -460,7 +464,11 @@ class ApproverCaseloadServiceTest {
           licenceStartDate = LocalDate.now().minusDays(14),
         )
 
-        whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(listOf(aLicenceSummaryApproverView))
+        whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
+          listOf(
+            aLicenceSummaryApproverView,
+          ),
+        )
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(listOf(nomisId))).thenReturn(
           listOf(anOffenderDetailResult),
         )
@@ -910,7 +918,7 @@ class ApproverCaseloadServiceTest {
   }
 
   @Nested
-  inner class `Retrieve the correct probation practitioner`() {
+  inner class `Retrieve the correct probation practitioner` {
     @Test
     fun `The correct com is retrieved`() {
       val coms = listOf(

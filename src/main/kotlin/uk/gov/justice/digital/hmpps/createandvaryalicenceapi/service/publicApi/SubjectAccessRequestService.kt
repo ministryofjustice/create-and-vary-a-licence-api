@@ -36,8 +36,6 @@ class SubjectAccessRequestService(
     )
   }
 
-  private fun getAuditEvents(licenceIds: List<Long>): List<SarAuditEvent> {
-    return auditEventRepository.findAllByLicenceIdIn(licenceIds)
-      .transformToSarAuditEvents()
-  }
+  private fun getAuditEvents(licenceIds: List<Long>): List<SarAuditEvent> = auditEventRepository.findAllByLicenceIdIn(licenceIds)
+    .transformToSarAuditEvents()
 }

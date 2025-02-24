@@ -27,9 +27,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
 ) {
   @Bean
-  fun oauthApiHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(oauthApiUrl).build()
-  }
+  fun oauthApiHealthWebClient(): WebClient = WebClient.builder().baseUrl(oauthApiUrl).build()
 
   @Bean
   fun authorizedClientManager(
@@ -98,19 +96,17 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun prisonRegisterApiWebClient(): WebClient {
-    return WebClient.builder()
-      .baseUrl(prisonRegisterApiUrl)
-      .exchangeStrategies(
-        ExchangeStrategies.builder()
-          .codecs { configurer ->
-            configurer.defaultCodecs()
-              .maxInMemorySize(-1)
-          }
-          .build(),
-      )
-      .build()
-  }
+  fun prisonRegisterApiWebClient(): WebClient = WebClient.builder()
+    .baseUrl(prisonRegisterApiUrl)
+    .exchangeStrategies(
+      ExchangeStrategies.builder()
+        .codecs { configurer ->
+          configurer.defaultCodecs()
+            .maxInMemorySize(-1)
+        }
+        .build(),
+    )
+    .build()
 
   @Bean
   fun oauthDeliusApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
@@ -149,9 +145,7 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun govUkWebClient(): WebClient {
-    return WebClient.builder().baseUrl(govUkApiUrl).build()
-  }
+  fun govUkWebClient(): WebClient = WebClient.builder().baseUrl(govUkApiUrl).build()
 
   @Bean
   fun oauthHdcApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {

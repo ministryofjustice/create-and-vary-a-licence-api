@@ -37,8 +37,7 @@ class CaseloadService(
     }
   }
 
-  fun getPrisoner(nomisId: String) =
-    getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
+  fun getPrisoner(nomisId: String) = getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
 
   private fun PrisonerSearchPrisoner.toCaseloadItem(licenceStartDate: LocalDate?): CaseloadItem {
     val sentenceDateHolder = this.toSentenceDateHolder(licenceStartDate)

@@ -47,7 +47,5 @@ class TimeOutLicencesController(
       ),
     ],
   )
-  fun runTimeOutLicencesServiceJob() {
-    return timeOutLicencesService.timeOutLicences()
-  }
+  fun runTimeOutLicencesServiceJob() = timeOutLicencesService.timeOutLicences()
 }

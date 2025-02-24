@@ -41,20 +41,16 @@ class ReleaseDateServiceTest {
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 
-  private fun getEarliestDate(licenceStartDate: LocalDate?, homeDetentionCurfewActualDate: LocalDate? = null): LocalDate? {
-    return service.getEarliestReleaseDate(
-      object : SentenceDateHolder {
-        override val licenceStartDate: LocalDate? = licenceStartDate
-        override val conditionalReleaseDate: LocalDate? = null
-        override val actualReleaseDate: LocalDate? = null
-        override val homeDetentionCurfewActualDate: LocalDate? = homeDetentionCurfewActualDate
-      },
-    )
-  }
+  private fun getEarliestDate(licenceStartDate: LocalDate?, homeDetentionCurfewActualDate: LocalDate? = null): LocalDate? = service.getEarliestReleaseDate(
+    object : SentenceDateHolder {
+      override val licenceStartDate: LocalDate? = licenceStartDate
+      override val conditionalReleaseDate: LocalDate? = null
+      override val actualReleaseDate: LocalDate? = null
+      override val homeDetentionCurfewActualDate: LocalDate? = homeDetentionCurfewActualDate
+    },
+  )
 
-  fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate {
-    return workingDaysService.workingDaysAfter(LocalDate.now(now)).take(2).last()
-  }
+  fun getCutOffDateForLicenceTimeOut(now: Clock? = null): LocalDate = workingDaysService.workingDaysAfter(LocalDate.now(now)).take(2).last()
 
   @Nested
   inner class `Earliest release date` {
@@ -825,7 +821,7 @@ class ReleaseDateServiceTest {
   }
 
   @Nested
-  inner class `Licence start date`() {
+  inner class `Licence start date` {
     @Test
     fun `returns HDCAD for HDC licences`() {
       val nomisRecord = prisonerSearchResult().copy(
@@ -838,7 +834,7 @@ class ReleaseDateServiceTest {
     }
 
     @Nested
-    inner class `Determine licence start date`() {
+    inner class `Determine licence start date` {
       @Test
       fun `returns null if CRD is null`() {
         val nomisRecord = prisonerSearchResult().copy(
@@ -912,7 +908,7 @@ class ReleaseDateServiceTest {
     }
 
     @Nested
-    inner class `Determine alternative licence start date`() {
+    inner class `Determine alternative licence start date` {
       @ParameterizedTest(name = "returns null for {0}")
       @ValueSource(strings = ["IMMIGRATION_DETAINEE", "REMAND", "CONVICTED_UNSENTENCED"])
       fun `returns null if there is no CRD when the legal status is one of note`(legalStatus: String) {
@@ -1203,7 +1199,7 @@ class ReleaseDateServiceTest {
     }
 
     @Nested
-    inner class `getLicenceStartDates - bulk calculations`() {
+    inner class `getLicenceStartDates - bulk calculations` {
       private val cases = listOf(
         // IS91 Legal status
         prisonerSearchResult().copy(

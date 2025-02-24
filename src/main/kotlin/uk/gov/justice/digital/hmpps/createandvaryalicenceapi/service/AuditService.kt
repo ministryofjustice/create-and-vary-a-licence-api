@@ -24,16 +24,14 @@ class AuditService(
     auditEventRepository.save(transform(auditEvent))
   }
 
-  fun getAuditEvents(auditRequest: AuditRequest): List<ModelAuditEvent> {
-    return if (auditRequest.licenceId != null && auditRequest.username != null) {
-      getAuditEventsForLicenceAndUser(auditRequest)
-    } else if (auditRequest.licenceId != null) {
-      getAuditEventsForLicence(auditRequest)
-    } else if (auditRequest.username != null) {
-      getAuditEventsForUser(auditRequest)
-    } else {
-      getAllEvents(auditRequest)
-    }
+  fun getAuditEvents(auditRequest: AuditRequest): List<ModelAuditEvent> = if (auditRequest.licenceId != null && auditRequest.username != null) {
+    getAuditEventsForLicenceAndUser(auditRequest)
+  } else if (auditRequest.licenceId != null) {
+    getAuditEventsForLicence(auditRequest)
+  } else if (auditRequest.username != null) {
+    getAuditEventsForUser(auditRequest)
+  } else {
+    getAllEvents(auditRequest)
   }
 
   fun recordAuditEventUpdateStandardCondition(
@@ -252,15 +250,13 @@ class AuditService(
       .transformToModelAuditEvents()
   }
 
-  private fun getAuditEventsForUser(auditRequest: AuditRequest): List<ModelAuditEvent> {
-    return auditEventRepository
-      .findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
-        auditRequest.username!!,
-        auditRequest.startTime,
-        auditRequest.endTime,
-      )
-      .transformToModelAuditEvents()
-  }
+  private fun getAuditEventsForUser(auditRequest: AuditRequest): List<ModelAuditEvent> = auditEventRepository
+    .findAllByUsernameAndEventTimeBetweenOrderByEventTimeDesc(
+      auditRequest.username!!,
+      auditRequest.startTime,
+      auditRequest.endTime,
+    )
+    .transformToModelAuditEvents()
 
   private fun getAuditEventsForLicenceAndUser(auditRequest: AuditRequest): List<ModelAuditEvent> {
     licenceRepository
@@ -277,26 +273,22 @@ class AuditService(
       .transformToModelAuditEvents()
   }
 
-  private fun getAllEvents(auditRequest: AuditRequest): List<ModelAuditEvent> {
-    return auditEventRepository
-      .findAllByEventTimeBetweenOrderByEventTimeDesc(auditRequest.startTime, auditRequest.endTime)
-      .transformToModelAuditEvents()
-  }
+  private fun getAllEvents(auditRequest: AuditRequest): List<ModelAuditEvent> = auditEventRepository
+    .findAllByEventTimeBetweenOrderByEventTimeDesc(auditRequest.startTime, auditRequest.endTime)
+    .transformToModelAuditEvents()
 
   private fun createAuditEvent(
     licence: Licence,
     summary: String,
     changes: Map<String, Any>,
     staffMember: Staff?,
-  ): AuditEvent {
-    return AuditEvent(
-      licenceId = licence.id,
-      username = staffMember?.username ?: "SYSTEM",
-      fullName = if (staffMember != null) "${staffMember.firstName} ${staffMember.lastName}" else "SYSTEM",
-      eventType = if (staffMember == null) AuditEventType.SYSTEM_EVENT else AuditEventType.USER_EVENT,
-      summary = "$summary for ${licence.forename} ${licence.surname}",
-      detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
-      changes = changes,
-    )
-  }
+  ): AuditEvent = AuditEvent(
+    licenceId = licence.id,
+    username = staffMember?.username ?: "SYSTEM",
+    fullName = if (staffMember != null) "${staffMember.firstName} ${staffMember.lastName}" else "SYSTEM",
+    eventType = if (staffMember == null) AuditEventType.SYSTEM_EVENT else AuditEventType.USER_EVENT,
+    summary = "$summary for ${licence.forename} ${licence.surname}",
+    detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
+    changes = changes,
+  )
 }

@@ -164,9 +164,7 @@ class ConditionController(
     @PathVariable conditionType: String,
     @Valid @RequestBody
     request: AddAdditionalConditionRequest,
-  ): AdditionalCondition {
-    return this.licenceConditionService.addAdditionalCondition(licenceId, request)
-  }
+  ): AdditionalCondition = this.licenceConditionService.addAdditionalCondition(licenceId, request)
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @DeleteMapping(value = ["/id/{licenceId}/additional-condition/id/{conditionId}"])
@@ -219,9 +217,7 @@ class ConditionController(
   fun deleteAdditionalCondition(
     @PathVariable("licenceId") licenceId: Long,
     @PathVariable("conditionId") conditionId: Long,
-  ) {
-    return this.licenceConditionService.deleteAdditionalCondition(licenceId, conditionId)
-  }
+  ) = this.licenceConditionService.deleteAdditionalCondition(licenceId, conditionId)
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PostMapping(value = ["/id/{licenceId}/delete-additional-conditions-by-code"])
@@ -285,9 +281,7 @@ class ConditionController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: DeleteAdditionalConditionsByCodeRequest,
-  ) {
-    return this.licenceConditionService.deleteAdditionalConditionsByCode(licenceId, request)
-  }
+  ) = this.licenceConditionService.deleteAdditionalConditionsByCode(licenceId, request)
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions"])
@@ -352,9 +346,7 @@ class ConditionController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: AdditionalConditionsRequest,
-  ) {
-    return licenceConditionService.updateAdditionalConditions(licenceId, request)
-  }
+  ) = licenceConditionService.updateAdditionalConditions(licenceId, request)
 
   /**
    * This functionality to set standard conditions from the frontend could be removed - we should be able to set/refresh standard conditions at various points in the licence lifecycle.
@@ -421,9 +413,7 @@ class ConditionController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: UpdateStandardConditionDataRequest,
-  ) {
-    return licenceConditionService.updateStandardConditions(licenceId, request)
-  }
+  ) = licenceConditionService.updateStandardConditions(licenceId, request)
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions/condition/{additionalConditionId}"])
@@ -488,7 +478,5 @@ class ConditionController(
     @PathVariable("additionalConditionId") conditionId: Long,
     @Valid @RequestBody
     request: UpdateAdditionalConditionDataRequest,
-  ) {
-    return licenceConditionService.updateAdditionalConditionData(licenceId, conditionId, request)
-  }
+  ) = licenceConditionService.updateAdditionalConditionData(licenceId, conditionId, request)
 }

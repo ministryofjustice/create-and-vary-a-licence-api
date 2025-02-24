@@ -66,33 +66,32 @@ object TestData {
     conditionCategory = HARD_STOP_CONDITION.categoryShort,
   )
 
-  fun someEntityStandardConditions(licence: Licence) =
-    listOf(
-      StandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        conditionType = "AP",
-        licence = licence,
-      ),
-      StandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        conditionType = "AP",
-        licence = licence,
-      ),
-      StandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        conditionType = "AP",
-        licence = licence,
-      ),
-    )
+  fun someEntityStandardConditions(licence: Licence) = listOf(
+    StandardCondition(
+      id = 1,
+      conditionCode = "goodBehaviour",
+      conditionSequence = 1,
+      conditionText = "Be of good behaviour",
+      conditionType = "AP",
+      licence = licence,
+    ),
+    StandardCondition(
+      id = 2,
+      conditionCode = "notBreakLaw",
+      conditionSequence = 2,
+      conditionText = "Do not break any law",
+      conditionType = "AP",
+      licence = licence,
+    ),
+    StandardCondition(
+      id = 3,
+      conditionCode = "attendMeetings",
+      conditionSequence = 3,
+      conditionText = "Attend meetings",
+      conditionType = "AP",
+      licence = licence,
+    ),
+  )
 
   fun createCrdLicence() = CrdLicence(
     id = 1,

@@ -24,12 +24,10 @@ data class BespokeCondition(
   val conditionSequence: Int? = null,
   val conditionText: String? = null,
 ) {
-  override fun toString(): String {
-    return "BespokeCondition(" +
-      "id=$id, " +
-      "licence=${licence.id}, " +
-      "conditionSequence=$conditionSequence, " +
-      "conditionText=$conditionText" +
-      ")"
-  }
+  override fun toString(): String = "BespokeCondition(" +
+    "id=$id, " +
+    "licence=${licence.id}, " +
+    "conditionSequence=$conditionSequence, " +
+    "conditionText=$conditionText" +
+    ")"
 }

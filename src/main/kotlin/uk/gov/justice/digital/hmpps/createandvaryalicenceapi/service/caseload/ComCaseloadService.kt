@@ -179,49 +179,47 @@ class ComCaseloadService(
     }
   }
 
-  private fun transformLicenceSummaryToCaseLoadSummary(licenceSummary: LicenceSummary): CaseLoadLicenceSummary =
-    CaseLoadLicenceSummary(
-      licenceId = licenceSummary.licenceId,
-      licenceStatus = licenceSummary.licenceStatus,
-      kind = licenceSummary.kind,
-      crn = licenceSummary.crn,
-      nomisId = licenceSummary.nomisId,
-      name = "${licenceSummary.forename} ${licenceSummary.surname}".convertToTitleCase().trim(),
-      licenceType = licenceSummary.licenceType,
-      comUsername = licenceSummary.comUsername,
-      dateCreated = licenceSummary.dateCreated,
-      approvedBy = licenceSummary.approvedByName,
-      approvedDate = licenceSummary.approvedDate,
-      versionOf = licenceSummary.versionOf,
-      updatedByFullName = licenceSummary.updatedByFullName,
-      hardStopWarningDate = licenceSummary.hardStopWarningDate,
-      hardStopDate = licenceSummary.hardStopDate,
-      licenceStartDate = licenceSummary.licenceStartDate,
-      releaseDate = licenceSummary.licenceStartDate,
-      isDueToBeReleasedInTheNextTwoWorkingDays = licenceSummary.isDueToBeReleasedInTheNextTwoWorkingDays,
-      isReviewNeeded = licenceSummary.isReviewNeeded,
-    )
+  private fun transformLicenceSummaryToCaseLoadSummary(licenceSummary: LicenceSummary): CaseLoadLicenceSummary = CaseLoadLicenceSummary(
+    licenceId = licenceSummary.licenceId,
+    licenceStatus = licenceSummary.licenceStatus,
+    kind = licenceSummary.kind,
+    crn = licenceSummary.crn,
+    nomisId = licenceSummary.nomisId,
+    name = "${licenceSummary.forename} ${licenceSummary.surname}".convertToTitleCase().trim(),
+    licenceType = licenceSummary.licenceType,
+    comUsername = licenceSummary.comUsername,
+    dateCreated = licenceSummary.dateCreated,
+    approvedBy = licenceSummary.approvedByName,
+    approvedDate = licenceSummary.approvedDate,
+    versionOf = licenceSummary.versionOf,
+    updatedByFullName = licenceSummary.updatedByFullName,
+    hardStopWarningDate = licenceSummary.hardStopWarningDate,
+    hardStopDate = licenceSummary.hardStopDate,
+    licenceStartDate = licenceSummary.licenceStartDate,
+    releaseDate = licenceSummary.licenceStartDate,
+    isDueToBeReleasedInTheNextTwoWorkingDays = licenceSummary.isDueToBeReleasedInTheNextTwoWorkingDays,
+    isReviewNeeded = licenceSummary.isReviewNeeded,
+  )
 
-  private fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
-    managedOffenders.filter { offender ->
-      offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
-    }.filter { offender ->
-      val releaseDate =
-        offender.licences.find { licence -> offender.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.releaseDate
-      releaseDate?.isAfter(
-        LocalDate.now().minusDays(1),
-      ) ?: false
-    }.filter { offender ->
-      offender.licences.any { licence ->
-        licence.licenceStatus in listOf(
-          LicenceStatus.NOT_STARTED,
-          LicenceStatus.IN_PROGRESS,
-          LicenceStatus.SUBMITTED,
-          LicenceStatus.APPROVED,
-          LicenceStatus.TIMED_OUT,
-        )
-      }
+  private fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> = managedOffenders.filter { offender ->
+    offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
+  }.filter { offender ->
+    val releaseDate =
+      offender.licences.find { licence -> offender.licences.size == 1 || licence.licenceStatus != LicenceStatus.ACTIVE }?.releaseDate
+    releaseDate?.isAfter(
+      LocalDate.now().minusDays(1),
+    ) ?: false
+  }.filter { offender ->
+    offender.licences.any { licence ->
+      licence.licenceStatus in listOf(
+        LicenceStatus.NOT_STARTED,
+        LicenceStatus.IN_PROGRESS,
+        LicenceStatus.SUBMITTED,
+        LicenceStatus.APPROVED,
+        LicenceStatus.TIMED_OUT,
+      )
     }
+  }
 
   private fun mapResponsibleComsToCases(caseload: List<ManagedCase>): List<ManagedCase> {
     val comUsernames = caseload.mapNotNull { case ->
@@ -256,19 +254,18 @@ class ComCaseloadService(
     }
   }
 
-  private fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> =
-    managedOffenders.filter { offender ->
-      offender.licences.any { licence ->
-        licence.licenceStatus in listOf(
-          LicenceStatus.ACTIVE,
-          LicenceStatus.VARIATION_IN_PROGRESS,
-          LicenceStatus.VARIATION_SUBMITTED,
-          LicenceStatus.VARIATION_APPROVED,
-          LicenceStatus.VARIATION_REJECTED,
-        ) ||
-          licence.isReviewNeeded
-      }
+  private fun buildVaryCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> = managedOffenders.filter { offender ->
+    offender.licences.any { licence ->
+      licence.licenceStatus in listOf(
+        LicenceStatus.ACTIVE,
+        LicenceStatus.VARIATION_IN_PROGRESS,
+        LicenceStatus.VARIATION_SUBMITTED,
+        LicenceStatus.VARIATION_APPROVED,
+        LicenceStatus.VARIATION_REJECTED,
+      ) ||
+        licence.isReviewNeeded
     }
+  }
 
   private fun findExistingLicences(nomisIdList: List<String>): List<LicenceSummary> = if (nomisIdList.isEmpty()) {
     emptyList()
@@ -291,12 +288,11 @@ class ComCaseloadService(
     )
   }
 
-  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>): String =
-    if (teamSelected.isNotEmpty()) {
-      teamSelected.first()
-    } else {
-      probationTeamCodes.first()
-    }
+  private fun getTeamCode(probationTeamCodes: List<String>, teamSelected: List<String>): String = if (teamSelected.isNotEmpty()) {
+    teamSelected.first()
+  } else {
+    probationTeamCodes.first()
+  }
 
   private fun transformToCreateCaseload(caseload: List<ManagedCase>): List<ComCase> = caseload.map { managedCase ->
     val licence = this.findLicenceToDisplay(managedCase)

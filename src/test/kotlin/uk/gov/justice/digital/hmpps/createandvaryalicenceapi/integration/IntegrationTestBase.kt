@@ -90,9 +90,8 @@ abstract class IntegrationTestBase {
   @MockitoSpyBean
   protected lateinit var hmppsSqsPropertiesSpy: HmppsSqsProperties
 
-  fun HmppsSqsProperties.domaineventsTopicConfig() =
-    topics["domainevents"]
-      ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
+  fun HmppsSqsProperties.domaineventsTopicConfig() = topics["domainevents"]
+    ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
 
   internal fun setAuthorisation(
     user: String = "test-client",
