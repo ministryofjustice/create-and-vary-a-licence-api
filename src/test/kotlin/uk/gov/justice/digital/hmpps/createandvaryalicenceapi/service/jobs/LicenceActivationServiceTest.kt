@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -70,7 +69,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(0)).activateLicences(emptyList(), "")
     verify(licenceService, times(0)).activateLicences(emptyList(), "")
     verify(licenceService, times(0)).inactivateLicences(emptyList(), "")
-    verify(hdcService, times(0)).getHdcStatus<PrisonerSearchPrisoner>(eq(emptyList()), any(), any())
+    verify(hdcService, times(0)).getHdcStatus<LicenceWithPrisoner>(eq(emptyList()), any(), any())
     verify(prisonerSearchApiClient, times(0)).searchPrisonersByBookingIds(emptyList())
   }
 
@@ -128,7 +127,7 @@ class LicenceActivationServiceTest {
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners))
       .thenReturn(listOf(aLicenceEntity.bookingId!!))
     whenever(
-      hdcService.getHdcStatus<LicenceWithPrisoner>(anyOrNull(), anyOrNull(), anyOrNull()),
+      hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
     ).thenReturn(HdcStatuses(emptySet()))
 
     service.licenceActivation()

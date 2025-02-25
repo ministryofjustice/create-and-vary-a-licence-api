@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
@@ -123,9 +122,7 @@ class PromptComListBuilderTest {
     fun eligibleCase() {
       val prisoner = prisonerSearchResult()
 
-      whenever(hdcService.getHdcStatus<PrisonerSearchPrisoner>(any(), any(), any())).thenReturn(
-        HdcStatuses(emptySet()),
-      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
       val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
 
@@ -136,9 +133,7 @@ class PromptComListBuilderTest {
     fun ineligibleCase() {
       val prisoner = prisonerSearchResult().copy(homeDetentionCurfewEligibilityDate = LocalDate.of(2022, 1, 2))
 
-      whenever(hdcService.getHdcStatus<PrisonerSearchPrisoner>(any(), any(), any())).thenReturn(
-        HdcStatuses(setOf(prisoner.bookingId?.toLong()!!)),
-      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId?.toLong()!!)))
 
       val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
 

@@ -21,8 +21,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -35,6 +36,7 @@ class UpdateSentenceDateServiceTest {
   private val auditEventRepository = mock<AuditEventRepository>()
   private val notifyService = mock<NotifyService>()
   private val prisonApiClient = mock<PrisonApiClient>()
+  private val hdcService = mock<HdcService>()
   private val staffRepository = mock<StaffRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceService = mock<LicenceService>()
@@ -44,6 +46,7 @@ class UpdateSentenceDateServiceTest {
     auditEventRepository,
     notifyService,
     prisonApiClient,
+    hdcService,
     staffRepository,
     releaseDateService,
     licenceService,
@@ -63,6 +66,7 @@ class UpdateSentenceDateServiceTest {
       auditEventRepository,
       notifyService,
       prisonApiClient,
+      hdcService,
       staffRepository,
       releaseDateService,
       licenceService,
@@ -78,16 +82,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -176,16 +171,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates persists the updated HDCAD if HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "APPROVED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aHdcLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -259,16 +245,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `update sentence dates does not email if HDC licence is Approved`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "APPROVED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aHdcLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
 
     service.updateSentenceDates(
       1L,
@@ -312,16 +289,7 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates persists the updated entity with null dates`() {
     val licence = aCrdLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = false,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -403,16 +371,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -470,16 +429,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -537,16 +487,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should not set the license status to inactive if existing license is not active`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -604,16 +545,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -672,16 +604,7 @@ class UpdateSentenceDateServiceTest {
   @Test
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -746,16 +669,7 @@ class UpdateSentenceDateServiceTest {
         ),
       ),
     )
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
 
     service.updateSentenceDates(
@@ -811,16 +725,7 @@ class UpdateSentenceDateServiceTest {
   fun `Recalculates Licence Start Date rather than reading from the request`() {
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2024, 1, 1))
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "REJECTED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aCrdLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
 
     service.updateSentenceDates(
@@ -911,16 +816,7 @@ class UpdateSentenceDateServiceTest {
     @Test
     fun `should time out if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      )
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
@@ -953,16 +849,7 @@ class UpdateSentenceDateServiceTest {
           ),
         ),
       )
-      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      )
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
@@ -985,17 +872,8 @@ class UpdateSentenceDateServiceTest {
 
     @Test
     fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
-      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createVariationLicence()))
-      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      )
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createVariationLicence()))
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
@@ -1037,16 +915,7 @@ class UpdateSentenceDateServiceTest {
       )
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
-      whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
-      )
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true, false)
       whenever(
@@ -1082,17 +951,8 @@ class UpdateSentenceDateServiceTest {
 
   @Test
   fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createHdcLicence()))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      PrisonerHdcStatus(
-        approvalStatusDate = null,
-        approvalStatus = "APPROVED",
-        refusedReason = null,
-        checksPassedDate = null,
-        bookingId = aHdcLicenceEntity.bookingId!!,
-        passed = true,
-      ),
-    )
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
+    whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
@@ -1115,7 +975,7 @@ class UpdateSentenceDateServiceTest {
 
   private companion object {
     val aCrdLicenceEntity = TestData.createCrdLicence()
-    val aHdcLicenceEntity = TestData.createHdcLicence()
+    val aHdcLicenceEntity = createHdcLicence()
     val aCom = TestData.com()
     val aPreviousUser = CommunityOffenderManager(
       staffIdentifier = 4000,
@@ -1124,6 +984,5 @@ class UpdateSentenceDateServiceTest {
       firstName = "Test",
       lastName = "Test",
     )
-    val aPrisonerSearchPrisoner = TestData.prisonerSearchResult()
   }
 }
