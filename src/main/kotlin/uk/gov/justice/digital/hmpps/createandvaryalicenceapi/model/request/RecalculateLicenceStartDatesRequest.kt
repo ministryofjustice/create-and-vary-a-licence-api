@@ -1,3 +1,5 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
+
 import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Request object for updating licence start dates for a batch of licences.")
 data class RecalculateLicenceStartDatesRequest(

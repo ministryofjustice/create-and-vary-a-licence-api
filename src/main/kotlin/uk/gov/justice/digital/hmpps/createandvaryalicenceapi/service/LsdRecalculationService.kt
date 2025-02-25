@@ -1,3 +1,5 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
@@ -5,7 +7,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.LocalDateTime
@@ -37,6 +38,8 @@ class LsdRecalculationService(
       val licenceStartDate = prisonersToLSDs[it.nomsId]
 
       if (it.licenceStartDate != licenceStartDate) {
+        val oldLsd = it.licenceStartDate
+        
         val updatedLicence = it.updateLicenceDates(
           status = it.statusCode,
           conditionalReleaseDate = it.conditionalReleaseDate,
@@ -63,7 +66,7 @@ class LsdRecalculationService(
             eventType = AuditEventType.SYSTEM_EVENT,
             username = SYSTEM_USER,
             fullName = SYSTEM_USER,
-            summary = "Licence Start Date recalculated from ${it.licenceStartDate} to $licenceStartDate for ${it.forename} ${it.surname}",
+            summary = "Licence Start Date recalculated from $oldLsd to $licenceStartDate for ${it.forename} ${it.surname}",
           ),
         )
       }
