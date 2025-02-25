@@ -29,6 +29,11 @@ class HdcService(
     return HdcStatuses(hdcStatuses.filter { it.isApproved() }.mapNotNull { it.bookingId }.toSet())
   }
 
+  fun isApprovedForHdc(
+    bookingId: Long,
+    hdced: LocalDate?,
+  ) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
+
   @Transactional
   fun getHdcLicenceData(licenceId: Long): HdcLicenceData? {
     val licence = licenceRepository
