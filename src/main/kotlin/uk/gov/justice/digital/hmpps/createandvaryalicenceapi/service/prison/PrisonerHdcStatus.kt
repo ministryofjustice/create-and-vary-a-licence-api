@@ -7,4 +7,7 @@ data class PrisonerHdcStatus(
   val checksPassedDate: String? = null,
   val passed: Boolean,
   val refusedReason: String? = null,
-)
+) {
+  fun isApproved() = approvalStatus == "APPROVED"
+  fun isNotApproved() = !isApproved()
+}

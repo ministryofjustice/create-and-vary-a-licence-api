@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -166,12 +165,7 @@ class UpdateSentenceDateService(
     )
   }
 
-  private fun isNotApprovedForHdc(updatedLicenceEntity: Licence): Boolean {
-    val hdcStatus = prisonApiClient.getHdcStatus(updatedLicenceEntity.bookingId!!)
-      .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
-      .block()!!
-    return hdcStatus.approvalStatus != "APPROVED"
-  }
+  private fun isNotApprovedForHdc(updatedLicenceEntity: Licence) = prisonApiClient.getHdcStatus(updatedLicenceEntity.bookingId!!).isNotApproved()
 
   private fun logUpdate(
     licenceId: Long,

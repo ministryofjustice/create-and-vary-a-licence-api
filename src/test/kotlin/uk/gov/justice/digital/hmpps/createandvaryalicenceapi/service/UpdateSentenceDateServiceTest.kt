@@ -15,7 +15,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
@@ -80,15 +79,13 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -180,15 +177,13 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates persists the updated HDCAD if HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "APPROVED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aHdcLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "APPROVED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aHdcLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -262,40 +257,16 @@ class UpdateSentenceDateServiceTest {
   }
 
   @Test
-  fun `update sentence dates still sends email if HDC licence is not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
-    whenever(prisonApiClient.getHdcStatus(any())).thenReturn(Mono.empty())
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      ),
-    )
-
-    verify(notifyService, times(1)).sendDatesChangedEmail(any(), any(), any(), any(), any(), any())
-  }
-
-  @Test
   fun `update sentence dates does not email if HDC licence is Approved`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "APPROVED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aHdcLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "APPROVED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aHdcLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
 
@@ -342,15 +313,13 @@ class UpdateSentenceDateServiceTest {
     val licence = aCrdLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = false,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = false,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -435,15 +404,13 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -504,15 +471,13 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -573,15 +538,13 @@ class UpdateSentenceDateServiceTest {
   fun `should not set the license status to inactive if existing license is not active`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -642,15 +605,13 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -712,15 +673,13 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -788,15 +747,13 @@ class UpdateSentenceDateServiceTest {
       ),
     )
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
@@ -855,15 +812,13 @@ class UpdateSentenceDateServiceTest {
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2024, 1, 1))
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "REJECTED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aCrdLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "REJECTED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aCrdLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -957,15 +912,13 @@ class UpdateSentenceDateServiceTest {
     fun `should time out if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
       whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        Mono.just(
-          PrisonerHdcStatus(
-            approvalStatusDate = null,
-            approvalStatus = "REJECTED",
-            refusedReason = null,
-            checksPassedDate = null,
-            bookingId = aCrdLicenceEntity.bookingId!!,
-            passed = true,
-          ),
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aCrdLicenceEntity.bookingId!!,
+          passed = true,
         ),
       )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -1001,15 +954,13 @@ class UpdateSentenceDateServiceTest {
         ),
       )
       whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        Mono.just(
-          PrisonerHdcStatus(
-            approvalStatusDate = null,
-            approvalStatus = "REJECTED",
-            refusedReason = null,
-            checksPassedDate = null,
-            bookingId = aCrdLicenceEntity.bookingId!!,
-            passed = true,
-          ),
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aCrdLicenceEntity.bookingId!!,
+          passed = true,
         ),
       )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -1036,15 +987,13 @@ class UpdateSentenceDateServiceTest {
     fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createVariationLicence()))
       whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        Mono.just(
-          PrisonerHdcStatus(
-            approvalStatusDate = null,
-            approvalStatus = "REJECTED",
-            refusedReason = null,
-            checksPassedDate = null,
-            bookingId = aCrdLicenceEntity.bookingId!!,
-            passed = true,
-          ),
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aCrdLicenceEntity.bookingId!!,
+          passed = true,
         ),
       )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -1089,15 +1038,13 @@ class UpdateSentenceDateServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
       whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-        Mono.just(
-          PrisonerHdcStatus(
-            approvalStatusDate = null,
-            approvalStatus = "REJECTED",
-            refusedReason = null,
-            checksPassedDate = null,
-            bookingId = aCrdLicenceEntity.bookingId!!,
-            passed = true,
-          ),
+        PrisonerHdcStatus(
+          approvalStatusDate = null,
+          approvalStatus = "REJECTED",
+          refusedReason = null,
+          checksPassedDate = null,
+          bookingId = aCrdLicenceEntity.bookingId!!,
+          passed = true,
         ),
       )
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
@@ -1137,15 +1084,13 @@ class UpdateSentenceDateServiceTest {
   fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(TestData.createHdcLicence()))
     whenever(prisonApiClient.getHdcStatus(any())).thenReturn(
-      Mono.just(
-        PrisonerHdcStatus(
-          approvalStatusDate = null,
-          approvalStatus = "APPROVED",
-          refusedReason = null,
-          checksPassedDate = null,
-          bookingId = aHdcLicenceEntity.bookingId!!,
-          passed = true,
-        ),
+      PrisonerHdcStatus(
+        approvalStatusDate = null,
+        approvalStatus = "APPROVED",
+        refusedReason = null,
+        checksPassedDate = null,
+        bookingId = aHdcLicenceEntity.bookingId!!,
+        passed = true,
       ),
     )
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
