@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 
 fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary = ModelPublicLicenceSummary(
   id = this.id,
+  kind = this.kind,
   licenceType = this.typeCode.mapToPublicLicenceType(),
   policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: this.valueNotPresent("policyVersion"),
   version = this.licenceVersion ?: this.valueNotPresent("version"),

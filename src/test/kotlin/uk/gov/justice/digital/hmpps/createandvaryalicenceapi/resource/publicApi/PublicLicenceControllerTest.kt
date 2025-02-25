@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.ApConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
@@ -39,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -239,6 +241,7 @@ class PublicLicenceControllerTest {
 
     val aLicenceSummary = LicenceSummary(
       id = 1,
+      kind = LicenceKind.CRD,
       licenceType = LicenceType.AP,
       policyVersion = PolicyVersion.V2_0,
       version = "1.4",
@@ -258,6 +261,7 @@ class PublicLicenceControllerTest {
     val aFullSizeMapImage = ClassPathResource("test_map.jpg").inputStream.readAllBytes()
     val licence = Licence(
       id = 1,
+      kind = LicenceKinds.CRD,
       licenceType = LicenceType.AP,
       policyVersion = PolicyVersion.V1_0,
       version = "1.4",

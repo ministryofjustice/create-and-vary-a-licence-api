@@ -163,6 +163,7 @@ class LicenceDetailTransformerKtTest {
     )
     val publicLicence = PublicLicence(
       id = modelLicence.id,
+      kind = modelLicence.kind,
       licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
       policyVersion = PolicyVersion.entries.find { it.version == modelLicence.version }!!,
       version = modelLicence.licenceVersion.orEmpty(),
