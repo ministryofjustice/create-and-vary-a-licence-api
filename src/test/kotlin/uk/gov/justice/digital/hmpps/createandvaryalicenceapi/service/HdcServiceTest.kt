@@ -162,6 +162,26 @@ class HdcServiceTest {
     assertThat(result.approvedIds).containsExactly(1L)
   }
 
+  @Test
+  fun `isApprovedForHdc when approved`() {
+    whenever(prisonApiClient.getHdcStatus(1L)).thenReturn(
+      hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
+    )
+
+    assertThat(service.isApprovedForHdc(1L, LocalDate.now())).isTrue
+    assertThat(service.isApprovedForHdc(1L, null)).isFalse
+  }
+
+  @Test
+  fun `isApprovedForHdc when not approved`() {
+    whenever(prisonApiClient.getHdcStatus(2L)).thenReturn(
+      hdcPrisonerStatus().copy(bookingId = 2L, approvalStatus = "NOT_APPROVED"),
+    )
+
+    assertThat(service.isApprovedForHdc(2L, LocalDate.now())).isFalse
+    assertThat(service.isApprovedForHdc(2L, null)).isFalse
+  }
+
   @Nested
   inner class HdcStatusesTest {
     val statuses = HdcStatuses(setOf(1L))
@@ -182,6 +202,12 @@ class HdcServiceTest {
 
       assertThat(statuses.canBeActivated(CRD, 1L)).isFalse
       assertThat(statuses.canBeActivated(CRD, 2L)).isTrue
+    }
+
+    @Test
+    fun isApproved() {
+      assertThat(statuses.isApprovedForHdc(1L)).isTrue
+      assertThat(statuses.isApprovedForHdc(2L)).isFalse
     }
   }
 

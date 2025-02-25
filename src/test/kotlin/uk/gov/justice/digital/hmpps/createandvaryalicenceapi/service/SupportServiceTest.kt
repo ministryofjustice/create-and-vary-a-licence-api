@@ -7,29 +7,21 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.SupportService
 import java.time.LocalDate
 
 class SupportServiceTest {
-  private val licenceRepository = mock<LicenceRepository>()
-  private val deliusApiClient = mock<DeliusApiClient>()
-  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
-  private val prisonApiClient = mock<PrisonApiClient>()
+  private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
-  private val releaseDateService = mock<ReleaseDateService>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
 
   private val service = SupportService(
     prisonerSearchApiClient,
-    prisonApiClient,
+    hdcService,
     eligibilityService,
     iS91DeterminationService,
   )
@@ -37,13 +29,9 @@ class SupportServiceTest {
   @BeforeEach
   fun reset() {
     reset(
-      licenceRepository,
-      deliusApiClient,
-      probationSearchApiClient,
       prisonerSearchApiClient,
-      prisonApiClient,
+      hdcService,
       eligibilityService,
-      releaseDateService,
       iS91DeterminationService,
     )
   }
@@ -62,13 +50,15 @@ class SupportServiceTest {
   @Test
   fun `get ineligibility reasons for present offender`() {
     val hdcPrisoner = aPrisonerSearchResult.copy(homeDetentionCurfewEligibilityDate = LocalDate.now())
-    val approvedHdc = aPrisonerHdcStatus.copy(approvalStatus = "APPROVED")
 
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(listOf("A1234AA"))).thenReturn(listOf(hdcPrisoner))
     whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
-    whenever(prisonApiClient.getHdcStatuses(listOf(aPrisonerSearchResult.bookingId!!.toLong()))).thenReturn(
-      listOf(approvedHdc),
-    )
+    whenever(
+      hdcService.isApprovedForHdc(
+        hdcPrisoner.bookingId!!.toLong(),
+        hdcPrisoner.homeDetentionCurfewEligibilityDate,
+      ),
+    ).thenReturn(true)
 
     val reasons = service.getIneligibilityReasons("A1234AA")
     assertThat(reasons).containsExactly("A reason", "Approved for HDC")

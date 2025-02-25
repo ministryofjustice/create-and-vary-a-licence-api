@@ -2,15 +2,15 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 
 @Service
 class SupportService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val prisonApiClient: PrisonApiClient,
+  private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val iS91DeterminationService: IS91DeterminationService,
 ) {
@@ -19,8 +19,9 @@ class SupportService(
     if (prisoners.size != 1) {
       error("Found ${prisoners.size} prisoners for: $prisonNumber")
     }
-    val reasons = eligibilityService.getIneligibilityReasons(prisoners.first())
-    val hdcReasonIfPresent = if (prisoners.findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
+    val prisoner = prisoners.first()
+    val reasons = eligibilityService.getIneligibilityReasons(prisoner)
+    val hdcReasonIfPresent = if (prisoner.isApprovedForHdc()) listOf("Approved for HDC") else emptyList()
     return reasons + hdcReasonIfPresent
   }
 
@@ -32,11 +33,5 @@ class SupportService(
     return iS91DeterminationService.isIS91Case(prisoners.first())
   }
 
-  private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
-    val bookingsWithHdc = this
-      .filter { it.homeDetentionCurfewEligibilityDate != null }
-      .mapNotNull { it.bookingId?.toLong() }
-    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
-    return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
-  }
+  private fun PrisonerSearchPrisoner.isApprovedForHdc() = hdcService.isApprovedForHdc(this.bookingId?.toLong()!!, this.homeDetentionCurfewEligibilityDate)
 }
