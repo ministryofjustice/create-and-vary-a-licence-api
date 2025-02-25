@@ -203,6 +203,12 @@ class HdcServiceTest {
       assertThat(statuses.canBeActivated(CRD, 1L)).isFalse
       assertThat(statuses.canBeActivated(CRD, 2L)).isTrue
     }
+
+    @Test
+    fun isApproved() {
+      assertThat(statuses.isApprovedForHdc(1L)).isTrue
+      assertThat(statuses.isApprovedForHdc(2L)).isFalse
+    }
   }
 
   private companion object {

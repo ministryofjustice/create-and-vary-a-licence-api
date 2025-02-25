@@ -66,5 +66,7 @@ class HdcService(
       val approvedForHdc = approvedIds.contains(bookingId)
       return (kind == HDC && approvedForHdc) || (kind != HDC && !approvedForHdc)
     }
+
+    fun isApprovedForHdc(bookingId: Long) = approvedIds.contains(bookingId)
   }
 }

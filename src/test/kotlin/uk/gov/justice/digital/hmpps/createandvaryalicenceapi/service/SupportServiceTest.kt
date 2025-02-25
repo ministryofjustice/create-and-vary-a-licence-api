@@ -55,8 +55,8 @@ class SupportServiceTest {
     whenever(eligibilityService.getIneligibilityReasons(hdcPrisoner)).thenReturn(listOf("A reason"))
     whenever(
       hdcService.isApprovedForHdc(
-        aPrisonerSearchResult.bookingId!!.toLong(),
-        aPrisonerSearchResult.homeDetentionCurfewEligibilityDate,
+        hdcPrisoner.bookingId!!.toLong(),
+        hdcPrisoner.homeDetentionCurfewEligibilityDate,
       ),
     ).thenReturn(true)
 

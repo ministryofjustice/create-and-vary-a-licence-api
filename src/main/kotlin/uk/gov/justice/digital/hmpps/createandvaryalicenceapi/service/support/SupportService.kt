@@ -21,7 +21,7 @@ class SupportService(
     }
     val prisoner = prisoners.first()
     val reasons = eligibilityService.getIneligibilityReasons(prisoner)
-    val hdcReasonIfPresent = if (prisoner.isApprovedForHdc()) emptyList() else listOf("Approved for HDC")
+    val hdcReasonIfPresent = if (prisoner.isApprovedForHdc()) listOf("Approved for HDC") else emptyList()
     return reasons + hdcReasonIfPresent
   }
 

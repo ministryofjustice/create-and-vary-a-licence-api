@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
@@ -19,20 +19,16 @@ class PromptComListBuilder(
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
-  private val prisonApiClient: PrisonApiClient,
+  private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
 ) {
 
   fun excludeIneligibleCases(candidates: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> = candidates.filter(eligibilityService::isEligibleForCvl)
 
   fun excludePrisonersWithHdc(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
-    val bookingIds =
-      prisoners.filter { it.homeDetentionCurfewEligibilityDate != null }.map { it.bookingId!!.toLong() }
-
-    val approvedForHdc = prisonApiClient.getHdcStatuses(bookingIds).filter { it.approvalStatus == "APPROVED" }
-      .mapNotNull { it.bookingId?.toString() }.toSet()
-
-    return prisoners.filter { it.bookingId !in approvedForHdc }
+    val hdcStatuses =
+      hdcService.getHdcStatus(prisoners, { it.bookNumber?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
+    return prisoners.filterNot { hdcStatuses.isApprovedForHdc(it.bookingId?.toLong()!!) }
   }
 
   fun excludeInflightLicences(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
