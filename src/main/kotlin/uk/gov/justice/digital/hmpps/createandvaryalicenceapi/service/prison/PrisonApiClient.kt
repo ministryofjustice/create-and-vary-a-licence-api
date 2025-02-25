@@ -20,13 +20,15 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
     private const val COURT_OUTCOME_BATCH_SIZE = 500
   }
 
-  fun getHdcStatus(bookingId: Long): Mono<PrisonerHdcStatus> = prisonerApiWebClient
+  fun getHdcStatus(bookingId: Long): PrisonerHdcStatus = prisonerApiWebClient
     .get()
     .uri("/offender-sentences/booking/{bookingId}/home-detention-curfews/latest", bookingId)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(PrisonerHdcStatus::class.java)
     .onErrorResume { coerce404ResponseToNull(it) }
+    .block()
+    ?: PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN")
 
   fun getHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
     prisonerApiWebClient
