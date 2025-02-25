@@ -10,6 +10,9 @@ data class SarLicence(
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
 
+  @Schema(description = "Kind of licence", example = "CRD")
+  val kind: String,
+
   @Schema(description = "The licence type code", example = "All purpose")
   val typeCode: SarLicenceType = SarLicenceType.AP,
 
