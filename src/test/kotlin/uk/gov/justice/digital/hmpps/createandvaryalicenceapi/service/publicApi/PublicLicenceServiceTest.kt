@@ -463,7 +463,125 @@ class PublicLicenceServiceTest {
     }
   }
 
-  /****************/
+  @Nested
+  inner class `Get licence by id` {
+    @Test
+    fun `service returns a licence by id`() {
+      val licenceId: Long
+      licenceId = 12345
+      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
+      val actualLicence = service.getLicenceById(licenceId)
+
+      assertThat(actualLicence).isEqualTo(publicLicence)
+    }
+
+    @Test
+    fun `service returns a list of licence summaries by crn where approved username and approved date are not present`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+        listOf(
+          aLicenceEntity.copy(approvedByUsername = null, approvedDate = null),
+        ),
+      )
+
+      val licenceSummaries = service.getAllLicencesByCrn("A12345")
+      val licenceSummary = licenceSummaries.first()
+
+      assertThat(licenceSummaries.size).isEqualTo(1)
+
+      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+
+      assertThat(licenceSummary).extracting {
+        tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
+        )
+      }.isEqualTo(
+        tuple(
+          1L,
+          PublicLicenceType.AP,
+          PolicyVersion.V1_0,
+          "1.4",
+          LicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          null,
+          null,
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          "testupdater",
+          LocalDateTime.parse("2023-10-11T12:00"),
+          false,
+        ),
+      )
+
+      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
+    }
+
+    @Test
+    fun `service returns a list of licence summaries by crn where updated username and updated date are not present`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+        listOf(
+          aLicenceEntity.copy(updatedByUsername = null, dateLastUpdated = null),
+        ),
+      )
+
+      val licenceSummaries = service.getAllLicencesByCrn("A12345")
+      val licenceSummary = licenceSummaries.first()
+
+      assertThat(licenceSummaries.size).isEqualTo(1)
+
+      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
+
+      assertThat(licenceSummary).extracting {
+        tuple(
+          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
+          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
+          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
+        )
+      }.isEqualTo(
+        tuple(
+          1L,
+          PublicLicenceType.AP,
+          PolicyVersion.V1_0,
+          "1.4",
+          LicenceStatus.IN_PROGRESS,
+          "A1234BC",
+          987654L,
+          "A12345",
+          "testapprover",
+          LocalDateTime.parse("2023-10-11T13:00"),
+          "testcom",
+          LocalDateTime.parse("2023-10-11T11:00"),
+          null,
+          null,
+          false,
+        ),
+      )
+
+      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
+    }
+
+    @Test
+    fun `service throws an error for null fields when querying for a list of licence summaries by crn`() {
+      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
+        listOf(
+          aLicenceEntity.copy(createdBy = null),
+        ),
+      )
+
+      val exception = assertThrows<IllegalStateException> {
+        service.getAllLicencesByCrn("A12345")
+      }
+
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("licence: 1 has no COM/creator")
+
+      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
+    }
+  }
+
   private companion object {
 
     val someStandardConditions = listOf(
@@ -676,6 +794,7 @@ class PublicLicenceServiceTest {
     )
     val publicLicence = PublicLicence(
       id = modelLicence.id,
+      kind = modelLicence.kind,
       licenceType = modelLicence.typeCode.mapToPublicLicenceType(),
       policyVersion = PolicyVersion.entries.find { it.version == modelLicence.version }!!,
       version = modelLicence.licenceVersion.orEmpty(),
@@ -694,124 +813,5 @@ class PublicLicenceServiceTest {
       conditions = publicLicenseConditions,
       licenceStartDate = modelLicence.licenceStartDate,
     )
-  }
-
-  @Nested
-  inner class `Get licence by id` {
-    @Test
-    fun `service returns a licence by id`() {
-      val licenceId: Long
-      licenceId = 12345
-      whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
-      val actualLicence = service.getLicenceById(licenceId)
-
-      assertThat(actualLicence).isEqualTo(publicLicence)
-    }
-
-    @Test
-    fun `service returns a list of licence summaries by crn where approved username and approved date are not present`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(approvedByUsername = null, approvedDate = null),
-        ),
-      )
-
-      val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
-
-      assertThat(licenceSummaries.size).isEqualTo(1)
-
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          null,
-          null,
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          "testupdater",
-          LocalDateTime.parse("2023-10-11T12:00"),
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service returns a list of licence summaries by crn where updated username and updated date are not present`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(updatedByUsername = null, dateLastUpdated = null),
-        ),
-      )
-
-      val licenceSummaries = service.getAllLicencesByCrn("A12345")
-      val licenceSummary = licenceSummaries.first()
-
-      assertThat(licenceSummaries.size).isEqualTo(1)
-
-      assertThat(licenceSummary).isExactlyInstanceOf(ModelPublicLicenceSummary::class.java)
-
-      assertThat(licenceSummary).extracting {
-        tuple(
-          it.id, it.licenceType, it.policyVersion, it.version, it.statusCode, it.prisonNumber, it.bookingId,
-          it.crn, it.approvedByUsername, it.approvedDateTime, it.createdByUsername, it.createdDateTime,
-          it.updatedByUsername, it.updatedDateTime, it.isInPssPeriod,
-        )
-      }.isEqualTo(
-        tuple(
-          1L,
-          PublicLicenceType.AP,
-          PolicyVersion.V1_0,
-          "1.4",
-          LicenceStatus.IN_PROGRESS,
-          "A1234BC",
-          987654L,
-          "A12345",
-          "testapprover",
-          LocalDateTime.parse("2023-10-11T13:00"),
-          "testcom",
-          LocalDateTime.parse("2023-10-11T11:00"),
-          null,
-          null,
-          false,
-        ),
-      )
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
-
-    @Test
-    fun `service throws an error for null fields when querying for a list of licence summaries by crn`() {
-      whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(
-        listOf(
-          aLicenceEntity.copy(createdBy = null),
-        ),
-      )
-
-      val exception = assertThrows<IllegalStateException> {
-        service.getAllLicencesByCrn("A12345")
-      }
-
-      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("licence: 1 has no COM/creator")
-
-      verify(licenceRepository, times(1)).findAllByCrnAndStatusCodeIn(any(), any())
-    }
   }
 }

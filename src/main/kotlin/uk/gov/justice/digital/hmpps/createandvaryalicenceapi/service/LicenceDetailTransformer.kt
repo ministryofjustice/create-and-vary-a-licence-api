@@ -40,6 +40,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
   )
   return Licence(
     id = this.id,
+    kind = this.kind,
     licenceType = this.typeCode.mapToPublicLicenceType(),
     policyVersion = PolicyVersion.entries.find { it.version == this.version }
       ?: error("Policy version not found for licence id:" + this.id),
