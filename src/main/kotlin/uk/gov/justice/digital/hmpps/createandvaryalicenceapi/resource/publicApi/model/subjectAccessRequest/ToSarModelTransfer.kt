@@ -16,6 +16,7 @@ fun List<Licence>.transformToSarLicence(): List<SarLicence> = map(::transformToS
 
 fun transformToSarLicence(licence: Licence) = SarLicence(
   id = licence.id,
+  kind = licence.kind,
   typeCode = licence.typeCode.toSarLicenceType(),
   statusCode = licence.statusCode?.toSarLicenceStatus(),
   nomsId = licence.nomsId,
