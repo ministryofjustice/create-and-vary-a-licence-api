@@ -39,7 +39,7 @@ class LsdRecalculationService(
 
       if (it.licenceStartDate != licenceStartDate) {
         val oldLsd = it.licenceStartDate
-        
+
         val updatedLicence = it.updateLicenceDates(
           status = it.statusCode,
           conditionalReleaseDate = it.conditionalReleaseDate,
