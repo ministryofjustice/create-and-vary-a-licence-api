@@ -19,7 +19,7 @@ class LsdRecalculationService(
   private val auditEventRepository: AuditEventRepository,
 ) {
   @Transactional
-  fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long? = 0): Long {
+  fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long {
     val licences = licenceRepository.findLicencesToBatchUpdateLsd(numberOfLicences, lastUpdatedLicenceId)
     if (licences.isEmpty()) {
       return -1

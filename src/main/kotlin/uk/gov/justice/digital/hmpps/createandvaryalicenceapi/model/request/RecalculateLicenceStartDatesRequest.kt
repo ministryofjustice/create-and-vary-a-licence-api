@@ -7,5 +7,5 @@ data class RecalculateLicenceStartDatesRequest(
   val batchSize: Long,
 
   @Schema(description = "The ID of the last updated licence.")
-  val id: Long?,
+  val id: Long = 0,
 )
