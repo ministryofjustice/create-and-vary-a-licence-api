@@ -211,14 +211,13 @@ class LicenceConditionService(
 
   private fun List<EntityAdditionalCondition>.getAddedConditions(
     submittedConditions: List<EntityAdditionalCondition>,
-  ) =
-    submittedConditions
-      .filter { this.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
-      .map { newAdditionalCondition ->
-        newAdditionalCondition.copy(
-          expandedConditionText = newAdditionalCondition.conditionText,
-        )
-      }
+  ) = submittedConditions
+    .filter { this.none { submittedCondition -> submittedCondition.conditionCode == it.conditionCode } }
+    .map { newAdditionalCondition ->
+      newAdditionalCondition.copy(
+        expandedConditionText = newAdditionalCondition.conditionText,
+      )
+    }
 
   @Transactional
   fun updateBespokeConditions(licenceId: Long, request: BespokeConditionRequest) {
@@ -261,9 +260,8 @@ class LicenceConditionService(
 
   private fun List<BespokeCondition>.getAddedBespokeConditions(
     submittedConditions: List<String>,
-  ) =
-    submittedConditions
-      .filter { this.none { existingCondition -> existingCondition.conditionText == it } }
+  ) = submittedConditions
+    .filter { this.none { existingCondition -> existingCondition.conditionText == it } }
 
   private fun List<BespokeCondition>.getRemovedBespokeConditions(
     submittedConditions: List<String>,
@@ -308,8 +306,7 @@ class LicenceConditionService(
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
 
-  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
-    conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
+  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
   fun deleteConditions(

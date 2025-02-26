@@ -32,9 +32,8 @@ private const val GET_TEAM_VARY_CASELOAD = "/caseload/com/team/vary-case-load"
 
 class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
-  fun readFile(filename: String): String =
-    this.javaClass.getResourceAsStream("/test_data/integration/caseload/$filename.json")!!.bufferedReader(UTF_8)
-      .readText()
+  fun readFile(filename: String): String = this.javaClass.getResourceAsStream("/test_data/integration/caseload/$filename.json")!!.bufferedReader(UTF_8)
+    .readText()
 
   @Nested
   inner class GetStaffCreateCaseload {

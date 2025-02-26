@@ -3,6 +3,10 @@ jobs:
     enabled: true
     path: prompt-licence-creation
     cron: "0 9 * * 1"
+  - name: deactivate-hdc-licences-job
+    enabled: true
+    path: deactivate-hdc-licences
+    cron: "0 3 * * *"
 
 generic-service:
   nameOverride: create-and-vary-a-licence-api

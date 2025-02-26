@@ -56,7 +56,5 @@ class PublicLicenceService(
     return upload.fullSizeImage
   }
 
-  fun getLicenceById(id: Long): Licence {
-    return licenceService.getLicenceById(id).transformToPublicLicence()
-  }
+  fun getLicenceById(id: Long): Licence = licenceService.getLicenceById(id).transformToPublicLicence()
 }

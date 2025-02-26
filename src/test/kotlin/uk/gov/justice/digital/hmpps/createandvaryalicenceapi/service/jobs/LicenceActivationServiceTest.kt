@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
@@ -11,6 +13,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder.setContext
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -18,8 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.IS91_LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_ACTIVATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceActivationService.Companion.LICENCE_DEACTIVATION
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -28,14 +30,14 @@ import java.time.LocalDate
 class LicenceActivationServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val licenceService = mock<LicenceService>()
-  private val prisonApiClient = mock<PrisonApiClient>()
+  private val hdcService = mock<HdcService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val iS91DeterminationService = mock<IS91DeterminationService>()
 
   private val service = LicenceActivationService(
     licenceRepository,
     licenceService,
-    prisonApiClient,
+    hdcService,
     prisonerSearchApiClient,
     iS91DeterminationService,
   )
@@ -52,7 +54,7 @@ class LicenceActivationServiceTest {
     reset(
       licenceRepository,
       licenceService,
-      prisonApiClient,
+      hdcService,
       prisonerSearchApiClient,
       iS91DeterminationService,
     )
@@ -67,7 +69,7 @@ class LicenceActivationServiceTest {
     verify(licenceService, times(0)).activateLicences(emptyList(), "")
     verify(licenceService, times(0)).activateLicences(emptyList(), "")
     verify(licenceService, times(0)).inactivateLicences(emptyList(), "")
-    verify(prisonApiClient, times(0)).getHdcStatuses(emptyList())
+    verify(hdcService, times(0)).getHdcStatus<LicenceWithPrisoner>(eq(emptyList()), any(), any())
     verify(prisonerSearchApiClient, times(0)).searchPrisonersByBookingIds(emptyList())
   }
 
@@ -78,6 +80,9 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(emptyList())
+    whenever(
+      hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
+    ).thenReturn(HdcStatuses(emptySet()))
 
     service.licenceActivation()
 
@@ -87,7 +92,7 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for non-HDC, non-IS91 licences to be activated if their LSD is in the past and they have been released`() {
+  fun `licence activation job calls for non-HDC, non-IS91 cases to be activated if their LSD is in the past and they have been released`() {
     val licence = aLicenceEntity.copy(licenceStartDate = LocalDate.now().minusDays(10))
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(licence))
@@ -95,6 +100,9 @@ class LicenceActivationServiceTest {
       .thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
       .thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
 
     service.licenceActivation()
 
@@ -113,10 +121,14 @@ class LicenceActivationServiceTest {
         ),
       ),
     )
+    val prisoners = listOf(aPrisonerSearchPrisoner)
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
-      .thenReturn(listOf(aPrisonerSearchPrisoner))
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner)))
+      .thenReturn(prisoners)
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners))
       .thenReturn(listOf(aLicenceEntity.bookingId!!))
+    whenever(
+      hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
+    ).thenReturn(HdcStatuses(emptySet()))
 
     service.licenceActivation()
 
@@ -126,17 +138,16 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for HDC approved licences to be deactivated when they are not HDC licences`() {
+  fun `licence activation job calls for HDC approved case to be deactivated when they are not HDC licences`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
+    val prisoners = listOf(
+      aPrisonerSearchPrisoner.copy(homeDetentionCurfewEligibilityDate = LocalDate.now()),
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
-      .thenReturn(
-        listOf(
-          aPrisonerSearchPrisoner.copy(
-            homeDetentionCurfewEligibilityDate = LocalDate.now(),
-          ),
-        ),
-      )
-    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!))).thenReturn(listOf(anHdcStatus))
+      .thenReturn(prisoners)
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(setOf(aLicenceEntity.bookingId!!)),
+    )
 
     service.licenceActivation()
 
@@ -146,11 +157,14 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job call for HDC approved licences to be activated if no HDCED`() {
+  fun `licence activation job call for HDC approved CRD licence to be activated if no HDCED`() {
+    val prisoners = listOf(aPrisonerSearchPrisoner.copy(homeDetentionCurfewEligibilityDate = null))
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
-      .thenReturn(listOf(aPrisonerSearchPrisoner.copy(homeDetentionCurfewEligibilityDate = null)))
-    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!))).thenReturn(listOf(anHdcStatus))
+      .thenReturn(prisoners)
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
 
     service.licenceActivation()
 
@@ -160,21 +174,17 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for non-IS91 licences with HDC (not approved) to be activated on their LSD if the offender has been released`() {
+  fun `licence activation job calls for non-IS91 cases with HDC (not approved) to be activated on their LSD if the offender has been released`() {
+    val prisoners = listOf(aPrisonerSearchPrisoner)
+
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(aLicenceEntity))
-
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
-      .thenReturn(listOf(aPrisonerSearchPrisoner))
-
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(aPrisonerSearchPrisoner))).thenReturn(
+      .thenReturn(prisoners)
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(
       emptyList(),
     )
-    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!))).thenReturn(
-      listOf(
-        anHdcStatus.copy(
-          approvalStatus = "INACTIVE",
-        ),
-      ),
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
     )
 
     service.licenceActivation()
@@ -192,6 +202,9 @@ class LicenceActivationServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
       .thenReturn(listOf(aPrisonerSearchPrisoner.copy(status = "ACTIVE IN")))
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(unreleasedPrisoner))).thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
 
     service.licenceActivation()
 
@@ -202,10 +215,9 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job does not call for non-IS91 licences to be activated if the licence has no LSD`() {
+    val prisoners = listOf(nonHdcPrisoner)
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(nonHdcLicence.bookingId!!))).thenReturn(
-      listOf(
-        nonHdcPrisoner,
-      ),
+      prisoners,
     )
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
       listOf(
@@ -215,8 +227,10 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner))).thenReturn(emptyList())
-    whenever(prisonApiClient.getHdcStatuses(listOf(nonHdcLicence.bookingId!!))).thenReturn(emptyList())
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(emptyList())
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
 
     service.licenceActivation()
 
@@ -227,10 +241,11 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job does not call for IS91 licences to be activated if the licence has no LSD`() {
+    val prisoners = listOf(
+      nonHdcPrisoner,
+    )
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(nonHdcLicence.bookingId!!))).thenReturn(
-      listOf(
-        nonHdcPrisoner,
-      ),
+      prisoners,
     )
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
       listOf(
@@ -240,8 +255,10 @@ class LicenceActivationServiceTest {
       ),
     )
 
-    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(nonHdcPrisoner))).thenReturn(listOf(54321))
-    whenever(prisonApiClient.getHdcStatuses(listOf(nonHdcLicence.bookingId!!))).thenReturn(emptyList())
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(listOf(54321))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
 
     service.licenceActivation()
 
@@ -255,33 +272,22 @@ class LicenceActivationServiceTest {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate())
       .thenReturn(listOf(aLicenceEntity, hdcLicence))
 
+    val prisoners = listOf(
+      aPrisonerSearchPrisoner.copy(
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+      ),
+      hdcPrisoner,
+    )
+
     whenever(
       prisonerSearchApiClient.searchPrisonersByBookingIds(
-        setOf(
-          aLicenceEntity.bookingId!!,
-          hdcLicence.bookingId!!,
-        ),
+        setOf(aLicenceEntity.bookingId!!, hdcLicence.bookingId!!),
       ),
-    )
-      .thenReturn(
-        listOf(
-          aPrisonerSearchPrisoner.copy(
-            homeDetentionCurfewEligibilityDate = LocalDate.now(),
-          ),
-          hdcPrisoner,
-        ),
-      )
+    ).thenReturn(prisoners)
     whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(listOf(hdcPrisoner)))
       .thenReturn(emptyList())
-    whenever(prisonApiClient.getHdcStatuses(listOf(aLicenceEntity.bookingId!!, hdcLicence.bookingId!!))).thenReturn(
-      listOf(
-        anHdcStatus,
-        anHdcStatus.copy(
-          approvalStatus = "APPROVED",
-          bookingId = hdcLicence.bookingId!!,
-          passed = true,
-        ),
-      ),
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(setOf(hdcLicence.bookingId!!, aLicenceEntity.bookingId!!)),
     )
 
     service.licenceActivation()
@@ -307,6 +313,10 @@ class LicenceActivationServiceTest {
       ),
     )
 
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
+
     service.licenceActivation()
 
     verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
@@ -316,12 +326,14 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job calls for HDC licences to activate`() {
-    val approvedHdcStatus = anHdcStatus.copy(bookingId = hdcLicence.bookingId!!)
+    val prisoners = listOf(hdcPrisoner)
 
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence))
     whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!)))
-      .thenReturn(listOf(hdcPrisoner))
-    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!))).thenReturn(listOf(approvedHdcStatus))
+      .thenReturn(prisoners)
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(setOf(hdcLicence.bookingId!!)),
+    )
 
     service.licenceActivation()
 
@@ -332,19 +344,30 @@ class LicenceActivationServiceTest {
 
   @Test
   fun `licence activation job ignores HDC licences not approved for HDC `() {
-    val approvedHdcStatus = anHdcStatus.copy(bookingId = 12345)
-
-    val noLongerApprovedHdcStatus =
-      anHdcStatus.copy(approvalStatus = "INELIGIBLE", bookingId = 22222)
-
     val anotherHdcLicence = hdcLicence.copy(bookingId = 22222)
 
     val anotherHdcPrisoner = hdcPrisoner.copy(bookingId = anotherHdcLicence.bookingId.toString())
 
-    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(listOf(hdcLicence, anotherHdcLicence))
-    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(hdcLicence.bookingId!!, anotherHdcLicence.bookingId!!)))
-      .thenReturn(listOf(hdcPrisoner, anotherHdcPrisoner))
-    whenever(prisonApiClient.getHdcStatuses(listOf(hdcLicence.bookingId!!, anotherHdcLicence.bookingId!!))).thenReturn(listOf(approvedHdcStatus, noLongerApprovedHdcStatus))
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
+      listOf(
+        hdcLicence,
+        anotherHdcLicence,
+      ),
+    )
+    val prisoners = listOf(hdcPrisoner, anotherHdcPrisoner)
+    whenever(
+      prisonerSearchApiClient.searchPrisonersByBookingIds(
+        setOf(
+          hdcLicence.bookingId!!,
+          anotherHdcLicence.bookingId!!,
+        ),
+      ),
+    )
+      .thenReturn(prisoners)
+
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(setOf(hdcLicence.bookingId!!)),
+    )
 
     service.licenceActivation()
 
@@ -364,12 +387,6 @@ class LicenceActivationServiceTest {
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-  )
-
-  private val anHdcStatus = PrisonerHdcStatus(
-    approvalStatus = "APPROVED",
-    bookingId = 54321,
-    passed = true,
   )
 
   private val aPrisonerSearchPrisoner = PrisonerSearchPrisoner(

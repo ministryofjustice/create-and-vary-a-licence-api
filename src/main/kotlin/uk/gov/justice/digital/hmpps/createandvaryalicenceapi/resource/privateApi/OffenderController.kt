@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -22,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 
 @RestController
@@ -30,7 +28,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffServic
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenderController(
   private val offenderService: OffenderService,
-  private val prisonerSearchService: PrisonerSearchService,
   private val staffService: StaffService,
 ) {
   @PutMapping(
@@ -153,102 +150,4 @@ class OffenderController(
   ) {
     this.offenderService.updateOffenderDetails(nomsId, body)
   }
-
-  @Tag(name = Tags.OFFENDER)
-  @GetMapping(
-    value = ["/nomisid/{nomsId}/ineligibility-reasons"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Retrieve ineligibility reasons for offender",
-    description = "Returns ineligibility reasons for creating a licence for a specific prisoner. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "a list of ineligibility reasons",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = String::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Could not find prisoner",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getIneligibilityReasons(
-    @PathVariable nomsId: String,
-  ) = prisonerSearchService.getIneligibilityReasons(nomsId)
-
-  @Tag(name = Tags.OFFENDER)
-  @GetMapping(
-    value = ["/nomisid/{nomsId}/is-91-status"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
-  @Operation(
-    summary = "Retrieve IS-91 status for offender",
-    description = "Returns IS-91 status for creating a licence for a specific prisoner. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "a boolean for IS-91 status",
-        content = [
-          Content(
-            mediaType = "application/json",
-            schema = Schema(implementation = Boolean::class),
-          ),
-        ],
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "404",
-        description = "Could not find prisoner",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun getIS91Status(
-    @PathVariable nomsId: String,
-  ) = prisonerSearchService.getIS91Status(nomsId)
 }

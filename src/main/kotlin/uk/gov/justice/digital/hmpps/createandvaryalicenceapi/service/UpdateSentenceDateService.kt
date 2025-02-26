@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -26,6 +25,7 @@ class UpdateSentenceDateService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val prisonApiClient: PrisonApiClient,
+  private val hdcService: HdcService,
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
@@ -103,7 +103,12 @@ class UpdateSentenceDateService(
     )
 
     if (sentenceChanges.isMaterial) {
-      notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges)
+      val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
+        updatedLicenceEntity.bookingId!!,
+        prisoner.sentenceDetail.homeDetentionCurfewEligibilityDate,
+      )
+
+      notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges, isNotApprovedForHdc)
     }
   }
 
@@ -112,8 +117,9 @@ class UpdateSentenceDateService(
     licenceEntity: Licence,
     licenceId: Long,
     sentenceChanges: SentenceChanges,
+    isNotApprovedForHdc: Boolean,
   ) {
-    val notifyCom = updatedLicenceEntity is HdcLicence || isNotApprovedForHdc(updatedLicenceEntity)
+    val notifyCom = updatedLicenceEntity is HdcLicence || isNotApprovedForHdc
     if (!notifyCom) {
       log.info("Not notifying COM as now approved for HDC for $licenceId")
       return
@@ -164,13 +170,6 @@ class UpdateSentenceDateService(
         }" to sentenceChanges.hdcEndDateChanged,
       ),
     )
-  }
-
-  private fun isNotApprovedForHdc(updatedLicenceEntity: Licence): Boolean {
-    val hdcStatus = prisonApiClient.getHdcStatus(updatedLicenceEntity.bookingId!!)
-      .defaultIfEmpty(PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN"))
-      .block()!!
-    return hdcStatus.approvalStatus != "APPROVED"
   }
 
   private fun logUpdate(

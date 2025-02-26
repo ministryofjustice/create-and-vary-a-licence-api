@@ -65,6 +65,5 @@ class HdcController(private val hdcService: HdcService) {
   )
   fun getHdcLicenceData(
     @Parameter(required = true) @PathVariable("licenceId") licenceId: Long,
-  ) =
-    this.hdcService.getHdcLicenceData(licenceId)
+  ) = this.hdcService.getHdcLicenceData(licenceId)
 }

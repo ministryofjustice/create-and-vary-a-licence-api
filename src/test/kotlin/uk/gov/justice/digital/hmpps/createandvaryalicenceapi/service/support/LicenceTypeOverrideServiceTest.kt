@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -28,11 +28,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.ILicen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_IN_PAST
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_MISSING
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_PRESENT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.LicenceTypeOverrideService.ErrorType.IS_IN_PAST
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.LicenceTypeOverrideService.ErrorType.IS_MISSING
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.LicenceTypeOverrideService.ErrorType.IS_PRESENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
@@ -506,56 +507,52 @@ class LicenceTypeOverrideServiceTest {
       )
     }
 
-    private fun standardConditions(licence: CrdLicence): List<StandardCondition> =
-      policyService.currentPolicy().standardConditions.standardConditionsAp
-        .mapIndexed { i: Int, condition: ILicenceCondition ->
-          StandardCondition(
-            licence = licence,
-            conditionType = "AP",
-            conditionSequence = i,
-            conditionCode = condition.code,
-            conditionText = condition.text,
-          )
-        }
-
-    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> =
-      policyService.currentPolicy().standardConditions.standardConditionsPss
-        .mapIndexed { i: Int, condition: ILicenceCondition ->
-          StandardCondition(
-            licence = licence,
-            conditionType = "PSS",
-            conditionSequence = i,
-            conditionCode = condition.code,
-            conditionText = condition.text,
-          )
-        }
-
-    private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> =
-      policyService.currentPolicy().additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
-        AdditionalCondition(
-          licence = licence,
-          conditionType = "PSS",
-          conditionSequence = i,
-          conditionCode = condition.code,
-          conditionText = condition.text,
-          expandedConditionText = condition.text,
-          conditionVersion = licence.version!!,
-          conditionCategory = condition.categoryShort ?: condition.category,
-        )
-      }
-
-    private fun additionalConditions(licence: CrdLicence): List<AdditionalCondition> =
-      policyService.currentPolicy().additionalConditions.ap.mapIndexed { i: Int, condition: AdditionalConditionAp ->
-        AdditionalCondition(
+    private fun standardConditions(licence: CrdLicence): List<StandardCondition> = policyService.currentPolicy().standardConditions.standardConditionsAp
+      .mapIndexed { i: Int, condition: ILicenceCondition ->
+        StandardCondition(
           licence = licence,
           conditionType = "AP",
           conditionSequence = i,
           conditionCode = condition.code,
           conditionText = condition.text,
-          expandedConditionText = condition.text,
-          conditionVersion = licence.version!!,
-          conditionCategory = condition.categoryShort ?: condition.category,
         )
       }
+
+    private fun pssRequirement(licence: CrdLicence): List<StandardCondition> = policyService.currentPolicy().standardConditions.standardConditionsPss
+      .mapIndexed { i: Int, condition: ILicenceCondition ->
+        StandardCondition(
+          licence = licence,
+          conditionType = "PSS",
+          conditionSequence = i,
+          conditionCode = condition.code,
+          conditionText = condition.text,
+        )
+      }
+
+    private fun pssAdditionalConditions(licence: CrdLicence): List<AdditionalCondition> = policyService.currentPolicy().additionalConditions.pss.mapIndexed { i: Int, condition: AdditionalConditionPss ->
+      AdditionalCondition(
+        licence = licence,
+        conditionType = "PSS",
+        conditionSequence = i,
+        conditionCode = condition.code,
+        conditionText = condition.text,
+        expandedConditionText = condition.text,
+        conditionVersion = licence.version!!,
+        conditionCategory = condition.categoryShort ?: condition.category,
+      )
+    }
+
+    private fun additionalConditions(licence: CrdLicence): List<AdditionalCondition> = policyService.currentPolicy().additionalConditions.ap.mapIndexed { i: Int, condition: AdditionalConditionAp ->
+      AdditionalCondition(
+        licence = licence,
+        conditionType = "AP",
+        conditionSequence = i,
+        conditionCode = condition.code,
+        conditionText = condition.text,
+        expandedConditionText = condition.text,
+        conditionVersion = licence.version!!,
+        conditionCategory = condition.categoryShort ?: condition.category,
+      )
+    }
   }
 }

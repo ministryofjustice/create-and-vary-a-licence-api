@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -25,6 +26,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
@@ -66,33 +72,32 @@ object TestData {
     conditionCategory = HARD_STOP_CONDITION.categoryShort,
   )
 
-  fun someEntityStandardConditions(licence: Licence) =
-    listOf(
-      StandardCondition(
-        id = 1,
-        conditionCode = "goodBehaviour",
-        conditionSequence = 1,
-        conditionText = "Be of good behaviour",
-        conditionType = "AP",
-        licence = licence,
-      ),
-      StandardCondition(
-        id = 2,
-        conditionCode = "notBreakLaw",
-        conditionSequence = 2,
-        conditionText = "Do not break any law",
-        conditionType = "AP",
-        licence = licence,
-      ),
-      StandardCondition(
-        id = 3,
-        conditionCode = "attendMeetings",
-        conditionSequence = 3,
-        conditionText = "Attend meetings",
-        conditionType = "AP",
-        licence = licence,
-      ),
-    )
+  fun someEntityStandardConditions(licence: Licence) = listOf(
+    StandardCondition(
+      id = 1,
+      conditionCode = "goodBehaviour",
+      conditionSequence = 1,
+      conditionText = "Be of good behaviour",
+      conditionType = "AP",
+      licence = licence,
+    ),
+    StandardCondition(
+      id = 2,
+      conditionCode = "notBreakLaw",
+      conditionSequence = 2,
+      conditionText = "Do not break any law",
+      conditionType = "AP",
+      licence = licence,
+    ),
+    StandardCondition(
+      id = 3,
+      conditionCode = "attendMeetings",
+      conditionSequence = 3,
+      conditionText = "Attend meetings",
+      conditionType = "AP",
+      licence = licence,
+    ),
+  )
 
   fun createCrdLicence() = CrdLicence(
     id = 1,
@@ -305,6 +310,7 @@ object TestData {
 
   fun createSarLicence() = SarLicence(
     id = 1,
+    kind = LicenceKinds.CRD,
     typeCode = SarLicenceType.AP,
     statusCode = SarLicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",
@@ -470,6 +476,17 @@ object TestData {
       actualParoleDate = null,
       releaseOnTemporaryLicenceDate = null,
     ),
+  )
+
+  fun caseloadResult() = CaseloadResult(
+    Name("Test", surname = "Surname"),
+    Identifiers("A123456", "A1234AA"),
+    Manager(
+      "A01B02C",
+      Name("Staff", surname = "Surname"),
+      Detail("A01B02", "Test Team"),
+    ),
+    "2023/05/24",
   )
 
   fun caCase() = CaCase(

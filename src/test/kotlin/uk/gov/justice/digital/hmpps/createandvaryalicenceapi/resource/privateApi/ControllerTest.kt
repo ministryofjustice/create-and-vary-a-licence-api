@@ -29,9 +29,10 @@ class ControllerTest {
 
   private fun Class<*>.getInvalidEndpoints(): List<Method> = this.methods.filter {
     it.parameters.any { param ->
-      param.isAnnotationPresent(RequestBody::class.java) && !param.isAnnotationPresent(
-        Valid::class.java,
-      )
+      param.isAnnotationPresent(RequestBody::class.java) &&
+        !param.isAnnotationPresent(
+          Valid::class.java,
+        )
     }
   }
 }

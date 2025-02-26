@@ -114,16 +114,14 @@ class StaffService(
     lastUpdatedTimestamp = LocalDateTime.now(),
   )
 
-  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) =
-    (comDetails.firstName != this.firstName) ||
-      (comDetails.lastName != this.lastName) ||
-      (comDetails.staffEmail != this.email) ||
-      (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
-      (comDetails.staffIdentifier != this.staffIdentifier)
+  private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) = (comDetails.firstName != this.firstName) ||
+    (comDetails.lastName != this.lastName) ||
+    (comDetails.staffEmail != this.email) ||
+    (!comDetails.staffUsername.equals(this.username, ignoreCase = true)) ||
+    (comDetails.staffIdentifier != this.staffIdentifier)
 
-  private fun PrisonUser.isUpdate(caDetails: UpdatePrisonUserRequest) =
-    (caDetails.firstName != this.firstName) ||
-      (caDetails.lastName != this.lastName) ||
-      (caDetails.staffEmail != this.email) ||
-      (!caDetails.staffUsername.equals(this.username, ignoreCase = true))
+  private fun PrisonUser.isUpdate(caDetails: UpdatePrisonUserRequest) = (caDetails.firstName != this.firstName) ||
+    (caDetails.lastName != this.lastName) ||
+    (caDetails.staffEmail != this.email) ||
+    (!caDetails.staffUsername.equals(this.username, ignoreCase = true))
 }

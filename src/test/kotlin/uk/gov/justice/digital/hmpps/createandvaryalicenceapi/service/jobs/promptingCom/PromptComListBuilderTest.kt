@@ -10,17 +10,16 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.reset
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
@@ -35,7 +34,7 @@ class PromptComListBuilderTest {
   private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val prisonApiClient = mock<PrisonApiClient>()
+  private val hdcService = mock<HdcService>()
   private val deliusApiClient = mock<DeliusApiClient>()
 
   private val promptComListBuilder = PromptComListBuilder(
@@ -43,7 +42,7 @@ class PromptComListBuilderTest {
     probationSearchApiClient,
     eligibilityService,
     releaseDateService,
-    prisonApiClient,
+    hdcService,
     deliusApiClient,
   )
 
@@ -53,7 +52,7 @@ class PromptComListBuilderTest {
     probationSearchApiClient,
     eligibilityService,
     releaseDateService,
-    prisonApiClient,
+    hdcService,
     deliusApiClient,
   )
 
@@ -123,7 +122,7 @@ class PromptComListBuilderTest {
     fun eligibleCase() {
       val prisoner = prisonerSearchResult()
 
-      whenever(prisonApiClient.getHdcStatuses(listOf(prisoner.bookingId!!.toLong()))).thenReturn(emptyList())
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
       val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
 
@@ -134,43 +133,11 @@ class PromptComListBuilderTest {
     fun ineligibleCase() {
       val prisoner = prisonerSearchResult().copy(homeDetentionCurfewEligibilityDate = LocalDate.of(2022, 1, 2))
 
-      whenever(prisonApiClient.getHdcStatuses(listOf(prisoner.bookingId!!.toLong()))).thenReturn(
-        listOf(
-          hdcPrisonerStatus().copy(bookingId = prisoner.bookingId.toLong(), approvalStatus = "APPROVED"),
-        ),
-      )
+      whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId?.toLong()!!)))
 
       val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
 
       assertThat(result).isEmpty()
-    }
-
-    @Test
-    fun eligibleDueToNotBeingApproved() {
-      val prisoner = prisonerSearchResult().copy(homeDetentionCurfewEligibilityDate = LocalDate.of(2022, 1, 2))
-
-      whenever(prisonApiClient.getHdcStatuses(listOf(prisoner.bookingId!!.toLong()))).thenReturn(
-        listOf(
-          hdcPrisonerStatus().copy(bookingId = prisoner.bookingId.toLong(), approvalStatus = ""),
-        ),
-      )
-
-      val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
-
-      assertThat(result).containsExactly(prisoner)
-
-      verify(prisonApiClient).getHdcStatuses(listOf(prisoner.bookingId.toLong()))
-    }
-
-    @Test
-    fun eligibleDueToNoHDCED() {
-      val prisoner = prisonerSearchResult().copy(homeDetentionCurfewEligibilityDate = null)
-
-      val result = promptComListBuilder.excludePrisonersWithHdc(listOf(prisoner))
-
-      assertThat(result).containsExactly(prisoner)
-
-      verify(prisonApiClient).getHdcStatuses(emptyList())
     }
   }
 

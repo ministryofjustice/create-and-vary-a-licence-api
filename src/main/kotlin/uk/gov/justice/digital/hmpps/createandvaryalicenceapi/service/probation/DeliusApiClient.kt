@@ -23,14 +23,13 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val communityApiClient:
       ?: error("Unexpected null response from API")
   }
 
-  fun getStaffByIdentifier(staffIdentifier: Long): User? =
-    communityApiClient
-      .get()
-      .uri("/staff/byid/$staffIdentifier", staffIdentifier)
-      .accept(MediaType.APPLICATION_JSON)
-      .retrieve()
-      .bodyToMono(User::class.java)
-      .block()
+  fun getStaffByIdentifier(staffIdentifier: Long): User? = communityApiClient
+    .get()
+    .uri("/staff/byid/$staffIdentifier", staffIdentifier)
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono(User::class.java)
+    .block()
 
   fun getOffenderManager(crn: String): CommunityOrPrisonOffenderManager? {
     val communityApiResponse = communityApiClient
@@ -53,29 +52,27 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val communityApiClient:
       ?: error("Unexpected null response from API")
   }
 
-  fun getStaffEmails(crns: List<String>) =
-    batchRequests(STAFF_EMAIL_BATCH, crns) { batch ->
-      communityApiClient
-        .post()
-        .uri("/probation-case/responsible-community-manager")
-        .bodyValue(batch)
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToMono(typeReference<List<StaffEmail>>())
-        .block()
-    }
+  fun getStaffEmails(crns: List<String>) = batchRequests(STAFF_EMAIL_BATCH, crns) { batch ->
+    communityApiClient
+      .post()
+      .uri("/probation-case/responsible-community-manager")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<StaffEmail>>())
+      .block()
+  }
 
-  fun getStaffDetailsByUsername(usernames: List<String>) =
-    batchRequests(STAFF_USERNAME_BATCH, usernames) { batch ->
-      communityApiClient
-        .post()
-        .uri("/staff")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(batch)
-        .retrieve()
-        .bodyToMono(typeReference<List<User>>())
-        .block()
-    }
+  fun getStaffDetailsByUsername(usernames: List<String>) = batchRequests(STAFF_USERNAME_BATCH, usernames) { batch ->
+    communityApiClient
+      .post()
+      .uri("/staff")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(batch)
+      .retrieve()
+      .bodyToMono(typeReference<List<User>>())
+      .block()
+  }
 
   fun getManagedOffenders(staffIdentifier: Long): List<ManagedOffenderCrn> {
     val communityApiResponse = communityApiClient

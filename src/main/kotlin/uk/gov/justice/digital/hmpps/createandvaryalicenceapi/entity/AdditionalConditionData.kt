@@ -27,13 +27,11 @@ data class AdditionalConditionData(
   val dataField: String? = null,
   val dataValue: String? = null,
 ) {
-  override fun toString(): String {
-    return "AdditionalConditionData(" +
-      "id=$id, " +
-      "additionalCondition=${additionalCondition.id}, " +
-      "dataSequence=$dataSequence, " +
-      "dataField=$dataField, " +
-      "dataValue=$dataValue" +
-      ")"
-  }
+  override fun toString(): String = "AdditionalConditionData(" +
+    "id=$id, " +
+    "additionalCondition=${additionalCondition.id}, " +
+    "dataSequence=$dataSequence, " +
+    "dataField=$dataField, " +
+    "dataValue=$dataValue" +
+    ")"
 }

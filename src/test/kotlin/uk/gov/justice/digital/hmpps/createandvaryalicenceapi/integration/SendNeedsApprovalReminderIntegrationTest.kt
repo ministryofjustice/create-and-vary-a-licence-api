@@ -8,7 +8,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
-class UnapprovedLicenceIntegrationTest : IntegrationTestBase() {
+class SendNeedsApprovalReminderIntegrationTest : IntegrationTestBase() {
 
   @MockitoBean
   lateinit var notifyService: NotifyService
@@ -28,6 +28,7 @@ class UnapprovedLicenceIntegrationTest : IntegrationTestBase() {
     val expectedUnapprovedLicences = listOf(
       UnapprovedLicence("H598679", "prisoner", "two", "Brian", "DDD", "testDDD@probation.gov.uk"),
       UnapprovedLicence("Z265290", "prisoner", "three", "Brian", "BBB", "testBBB@probation.gov.uk"),
+      UnapprovedLicence("A123456", "prisoner", "six", "Brian", "BBB", "testBBB@probation.gov.uk"),
     )
     verify(notifyService).sendUnapprovedLicenceEmail(expectedUnapprovedLicences)
   }

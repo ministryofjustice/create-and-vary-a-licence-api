@@ -16,6 +16,7 @@ fun List<Licence>.transformToSarLicence(): List<SarLicence> = map(::transformToS
 
 fun transformToSarLicence(licence: Licence) = SarLicence(
   id = licence.id,
+  kind = licence.kind,
   typeCode = licence.typeCode.toSarLicenceType(),
   statusCode = licence.statusCode?.toSarLicenceStatus(),
   nomsId = licence.nomsId,
@@ -71,8 +72,7 @@ fun AppointmentTimeType.toSarAppointmentTimeType(): SarAppointmentTimeType = whe
   AppointmentTimeType.SPECIFIC_DATE_TIME -> SarAppointmentTimeType.SPECIFIC_DATE_TIME
 }
 
-fun List<AdditionalCondition>.transformToSarAdditionalConditions(): List<SarAdditionalCondition> =
-  map(::transformToSarAdditionalConditions)
+fun List<AdditionalCondition>.transformToSarAdditionalConditions(): List<SarAdditionalCondition> = map(::transformToSarAdditionalConditions)
 
 fun transformToSarAdditionalConditions(entity: AdditionalCondition): SarAdditionalCondition = SarAdditionalCondition(
   code = entity.code,
@@ -82,8 +82,7 @@ fun transformToSarAdditionalConditions(entity: AdditionalCondition): SarAddition
   uploadSummary = entity.uploadSummary.transformToSarAdditionalConditionUploadSummary(),
 )
 
-fun List<AdditionalConditionUploadSummary>.transformToSarAdditionalConditionUploadSummary(): List<SarAdditionalConditionUploadSummary> =
-  map(::transformToSarAdditionalConditionUploadSummary)
+fun List<AdditionalConditionUploadSummary>.transformToSarAdditionalConditionUploadSummary(): List<SarAdditionalConditionUploadSummary> = map(::transformToSarAdditionalConditionUploadSummary)
 
 fun transformToSarAdditionalConditionUploadSummary(entity: AdditionalConditionUploadSummary): SarAdditionalConditionUploadSummary = SarAdditionalConditionUploadSummary(
   filename = entity.filename,
@@ -93,8 +92,7 @@ fun transformToSarAdditionalConditionUploadSummary(entity: AdditionalConditionUp
   description = entity.description,
 )
 
-fun List<StandardCondition>.transformToSarStandardConditions(): List<SarStandardCondition> =
-  map(::transformToSarStandardConditions)
+fun List<StandardCondition>.transformToSarStandardConditions(): List<SarStandardCondition> = map(::transformToSarStandardConditions)
 
 fun transformToSarStandardConditions(entity: StandardCondition): SarStandardCondition = SarStandardCondition(
   code = entity.code,

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -9,11 +10,17 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
@@ -22,11 +29,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTime
 
 class HdcServiceTest {
   private val hdcApiClient = mock<HdcApiClient>()
+  private val prisonApiClient = mock<PrisonApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
 
   private val service =
     HdcService(
       hdcApiClient,
+      prisonApiClient,
       licenceRepository,
     )
 
@@ -127,6 +136,91 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(anAddress)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
+  }
+
+  @Test
+  fun getHdcStatuses() {
+    whenever(prisonApiClient.getHdcStatuses(listOf(1L, 3L, 4L))).thenReturn(
+      listOf(
+        hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
+        // Didn't request 2L as missing HDCED
+        // Missing data for 3L
+        hdcPrisonerStatus().copy(bookingId = 4L, approvalStatus = "REJECTED"),
+      ),
+    )
+
+    val details = listOf(
+      mapOf("bookingId" to 1L, "hdced" to LocalDate.now()),
+      mapOf("bookingId" to 2L, "hdced" to null),
+      mapOf("bookingId" to 3L, "hdced" to LocalDate.now()),
+      mapOf("bookingId" to 4L, "hdced" to LocalDate.now()),
+    )
+
+    val result = service.getHdcStatus(details, { it["bookingId"] as Long }, { it["hdced"] as LocalDate? })
+
+    assertThat(result).isNotNull
+    assertThat(result.approvedIds).containsExactly(1L)
+  }
+
+  @Test
+  fun `isApprovedForHdc when approved`() {
+    whenever(prisonApiClient.getHdcStatus(1L)).thenReturn(
+      hdcPrisonerStatus().copy(bookingId = 1L, approvalStatus = "APPROVED"),
+    )
+
+    assertThat(service.isApprovedForHdc(1L, LocalDate.now())).isTrue
+    assertThat(service.isApprovedForHdc(1L, null)).isFalse
+  }
+
+  @Test
+  fun `isApprovedForHdc when not approved`() {
+    whenever(prisonApiClient.getHdcStatus(2L)).thenReturn(
+      hdcPrisonerStatus().copy(bookingId = 2L, approvalStatus = "NOT_APPROVED"),
+    )
+
+    assertThat(service.isApprovedForHdc(2L, LocalDate.now())).isFalse
+    assertThat(service.isApprovedForHdc(2L, null)).isFalse
+  }
+
+  @Nested
+  inner class HdcStatusesTest {
+    val statuses = HdcStatuses(setOf(1L))
+
+    @Test
+    fun isWaitingForActivation() {
+      assertThat(statuses.isWaitingForActivation(HDC, 1L)).isFalse
+      assertThat(statuses.isWaitingForActivation(HDC, 2L)).isTrue
+
+      assertThat(statuses.isWaitingForActivation(CRD, 1L)).isFalse
+      assertThat(statuses.isWaitingForActivation(CRD, 2L)).isFalse
+    }
+
+    @Test
+    fun canBeActivated() {
+      assertThat(statuses.canBeActivated(HDC, 1L)).isTrue
+      assertThat(statuses.canBeActivated(HDC, 2L)).isFalse
+
+      assertThat(statuses.canBeActivated(CRD, 1L)).isFalse
+      assertThat(statuses.canBeActivated(CRD, 2L)).isTrue
+    }
+
+    @Test
+    fun isApproved() {
+      assertThat(statuses.isApprovedForHdc(1L)).isTrue
+      assertThat(statuses.isApprovedForHdc(2L)).isFalse
+    }
+
+    @Test
+    fun canBeSeenByCom() {
+      assertThat(statuses.canBeSeenByCom(HDC, 1L)).isTrue
+      assertThat(statuses.canBeSeenByCom(HDC, 2L)).isFalse
+
+      assertThat(statuses.canBeSeenByCom(CRD, 1L)).isFalse
+      assertThat(statuses.canBeSeenByCom(CRD, 2L)).isTrue
+
+      assertThat(statuses.canBeSeenByCom(null, 1L)).isFalse
+      assertThat(statuses.canBeSeenByCom(null, 2L)).isTrue
+    }
   }
 
   private companion object {

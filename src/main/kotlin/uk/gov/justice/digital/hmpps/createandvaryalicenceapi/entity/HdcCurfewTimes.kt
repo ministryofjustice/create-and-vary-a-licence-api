@@ -35,16 +35,14 @@ data class HdcCurfewTimes(
   val untilTime: LocalTime? = null,
   val createdTimestamp: LocalDateTime? = null,
 ) {
-  override fun toString(): String {
-    return "HdcCurfewTimes(" +
-      "id=$id, " +
-      "licence=${licence.id}, " +
-      "curfewTimesSequence=$curfewTimesSequence, " +
-      "fromDay=$fromDay, " +
-      "fromTime=$fromTime, " +
-      "untilDay=$untilDay, " +
-      "untilTime=$untilTime" +
-      "created_timestamp=$createdTimestamp" +
-      ")"
-  }
+  override fun toString(): String = "HdcCurfewTimes(" +
+    "id=$id, " +
+    "licence=${licence.id}, " +
+    "curfewTimesSequence=$curfewTimesSequence, " +
+    "fromDay=$fromDay, " +
+    "fromTime=$fromTime, " +
+    "untilDay=$untilDay, " +
+    "untilTime=$untilTime" +
+    "created_timestamp=$createdTimestamp" +
+    ")"
 }

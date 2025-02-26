@@ -32,8 +32,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSear
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonerSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadSearchService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -50,7 +50,7 @@ class StaffControllerTest {
   private lateinit var notifyService: NotifyService
 
   @MockitoBean
-  private lateinit var prisonerSearchService: PrisonerSearchService
+  private lateinit var comCaseloadSearchService: ComCaseloadSearchService
 
   @MockitoBean
   private lateinit var staffService: StaffService
@@ -63,10 +63,10 @@ class StaffControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(prisonerSearchService, notifyService)
+    reset(comCaseloadSearchService, notifyService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(StaffController(prisonerSearchService, staffService))
+      .standaloneSetup(StaffController(comCaseloadSearchService, staffService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -104,7 +104,7 @@ class StaffControllerTest {
   fun `search for offenders on a given staff member's caseload`() {
     val body = ProbationUserSearchRequest(query = "Test", staffIdentifier = 2000)
 
-    whenever(prisonerSearchService.searchForOffenderOnStaffCaseload(any())).thenReturn(aFoundProbationRecord)
+    whenever(comCaseloadSearchService.searchForOffenderOnStaffCaseload(any())).thenReturn(aFoundProbationRecord)
 
     val request = post("/com/case-search")
       .accept(MediaType.APPLICATION_JSON)
@@ -119,7 +119,7 @@ class StaffControllerTest {
     assertThat(result.response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(aFoundProbationRecord))
 
-    verify(prisonerSearchService, times(1)).searchForOffenderOnStaffCaseload(body)
+    verify(comCaseloadSearchService, times(1)).searchForOffenderOnStaffCaseload(body)
   }
 
   private companion object {

@@ -26,7 +26,7 @@ class IS91DeterminationServiceTest {
   }
 
   @Nested
-  inner class GetIS91AndExtraditionBookingIds() {
+  inner class GetIS91AndExtraditionBookingIds {
     @Test
     fun `Returns the booking IDs of licences with an illegal immigrant offence code`() {
       val expectedIS91s = listOf(54321L, 54322L)
@@ -73,7 +73,7 @@ class IS91DeterminationServiceTest {
   }
 
   @Nested
-  inner class IsIS91Case() {
+  inner class IsIS91Case {
     @Test
     fun `Returns true for a case with an illegal immigrant offence code`() {
       val prisoner = aPrisonerSearchResult.copy(bookingId = "54322", mostSeriousOffence = "ILLEGAL IMMIGRANT/DETAINEE")

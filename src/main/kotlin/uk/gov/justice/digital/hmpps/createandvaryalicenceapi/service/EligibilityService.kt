@@ -28,13 +28,9 @@ class EligibilityService(
     !isBreachOfTopUpSupervision() describedAs "is breach of top up supervision case",
   )
 
-  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean {
-    return getIneligibilityReasons(prisoner).isEmpty()
-  }
+  fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean = getIneligibilityReasons(prisoner).isEmpty()
 
-  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
-    return checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
-  }
+  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> = checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
 
   private fun isPersonParoleEligible(): EligibilityCheck = early@{
     if (it.paroleEligibilityDate != null) {

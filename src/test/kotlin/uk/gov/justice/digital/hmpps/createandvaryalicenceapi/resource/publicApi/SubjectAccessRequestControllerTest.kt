@@ -58,10 +58,9 @@ class SubjectAccessRequestControllerTest {
       .build()
   }
 
-  private fun serializedSarContent(licence: String) =
-    this.javaClass.getResourceAsStream("/test_data/sar_content/$licence.json")!!.bufferedReader(
-      StandardCharsets.UTF_8,
-    ).readText()
+  private fun serializedSarContent(licence: String) = this.javaClass.getResourceAsStream("/test_data/sar_content/$licence.json")!!.bufferedReader(
+    StandardCharsets.UTF_8,
+  ).readText()
 
   @Test
   fun `get a Subject Access Request Content for CRD Licence`() {

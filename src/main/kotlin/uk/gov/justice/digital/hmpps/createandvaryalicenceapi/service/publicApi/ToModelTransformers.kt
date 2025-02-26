@@ -20,49 +20,43 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 ** Mostly pass-thru but some translations, so useful to keep the database objects separate from API objects.
 */
 
-fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary {
-  return ModelPublicLicenceSummary(
-    id = this.id,
-    licenceType = this.typeCode.mapToPublicLicenceType(),
-    policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: this.valueNotPresent("policyVersion"),
-    version = this.licenceVersion ?: this.valueNotPresent("version"),
-    statusCode = this.statusCode,
-    prisonNumber = this.nomsId ?: this.valueNotPresent("prisonNumber"),
-    bookingId = this.bookingId ?: this.valueNotPresent("bookingId"),
-    crn = this.crn ?: this.valueNotPresent("crn"),
-    approvedByUsername = this.approvedByUsername,
-    approvedDateTime = this.approvedDate,
-    createdByUsername = this.getCreator().username,
-    createdDateTime = this.dateCreated ?: this.valueNotPresent("createdDateTime"),
-    updatedByUsername = this.updatedByUsername,
-    updatedDateTime = this.dateLastUpdated,
-    isInPssPeriod = this.isInPssPeriod(),
-  )
-}
+fun Licence.transformToPublicLicenceSummary(): ModelPublicLicenceSummary = ModelPublicLicenceSummary(
+  id = this.id,
+  kind = this.kind,
+  licenceType = this.typeCode.mapToPublicLicenceType(),
+  policyVersion = PolicyVersion.entries.find { it.version == this.version } ?: this.valueNotPresent("policyVersion"),
+  version = this.licenceVersion ?: this.valueNotPresent("version"),
+  statusCode = this.statusCode,
+  prisonNumber = this.nomsId ?: this.valueNotPresent("prisonNumber"),
+  bookingId = this.bookingId ?: this.valueNotPresent("bookingId"),
+  crn = this.crn ?: this.valueNotPresent("crn"),
+  approvedByUsername = this.approvedByUsername,
+  approvedDateTime = this.approvedDate,
+  createdByUsername = this.getCreator().username,
+  createdDateTime = this.dateCreated ?: this.valueNotPresent("createdDateTime"),
+  updatedByUsername = this.updatedByUsername,
+  updatedDateTime = this.dateLastUpdated,
+  isInPssPeriod = this.isInPssPeriod(),
+)
 
 private fun Licence.valueNotPresent(fieldName: String): Nothing = error("Null field retrieved: $fieldName for licence ${this.id}")
 
-private fun LicenceType.mapToPublicLicenceType() =
-  when {
-    this == LicenceType.AP -> PublicLicenceType.AP
-    this == LicenceType.PSS -> PublicLicenceType.PSS
-    this == LicenceType.AP_PSS -> PublicLicenceType.AP_PSS
-    else -> error("No matching licence type found")
-  }
-
-fun LicencePolicy.transformToPublicLicencePolicy(): ModelPublicLicencePolicy {
-  return ModelPublicLicencePolicy(
-    version = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy ${this.version} not found"),
-    conditions = this.getAllConditions(),
-  )
+private fun LicenceType.mapToPublicLicenceType() = when {
+  this == LicenceType.AP -> PublicLicenceType.AP
+  this == LicenceType.PSS -> PublicLicenceType.PSS
+  this == LicenceType.AP_PSS -> PublicLicenceType.AP_PSS
+  else -> error("No matching licence type found")
 }
 
-private fun LicencePolicy.getAllConditions(): ConditionTypes {
-  return ConditionTypes(
-    this.getAllApConditions(),
-    this.getAllPssConditions(),
-  )
-}
+fun LicencePolicy.transformToPublicLicencePolicy(): ModelPublicLicencePolicy = ModelPublicLicencePolicy(
+  version = PolicyVersion.entries.find { it.version == this.version } ?: error("Policy ${this.version} not found"),
+  conditions = this.getAllConditions(),
+)
+
+private fun LicencePolicy.getAllConditions(): ConditionTypes = ConditionTypes(
+  this.getAllApConditions(),
+  this.getAllPssConditions(),
+)
 
 private fun LicencePolicy.getAllApConditions(): LicencePolicyConditions {
   val standardConditionsAp = this.standardConditions.standardConditionsAp
@@ -92,42 +86,34 @@ private fun LicencePolicy.getAllPssConditions(): LicencePolicyConditions {
 
 private fun List<StandardConditionAp>.transformToModelPublicApStandardCondition(): List<ModelPublicStandardCondition> = map(::transform)
 
-private fun transform(entity: StandardConditionAp): ModelPublicStandardCondition {
-  return ModelPublicStandardCondition(
-    code = entity.code,
-    text = entity.text,
-  )
-}
+private fun transform(entity: StandardConditionAp): ModelPublicStandardCondition = ModelPublicStandardCondition(
+  code = entity.code,
+  text = entity.text,
+)
 
 private fun List<AdditionalConditionAp>.transformToModelPublicApAdditionalCondition(): List<ModelPublicAdditionalCondition> = map(::transform)
 
-private fun transform(entity: AdditionalConditionAp): ModelPublicAdditionalCondition {
-  return ModelPublicAdditionalCondition(
-    code = entity.code,
-    text = entity.text,
-    category = entity.category,
-    categoryShort = entity.categoryShort,
-    requiresUserInput = entity.requiresInput,
-  )
-}
+private fun transform(entity: AdditionalConditionAp): ModelPublicAdditionalCondition = ModelPublicAdditionalCondition(
+  code = entity.code,
+  text = entity.text,
+  category = entity.category,
+  categoryShort = entity.categoryShort,
+  requiresUserInput = entity.requiresInput,
+)
 
 private fun List<StandardConditionPss>.transformToModelPublicPssStandardCondition(): List<ModelPublicStandardCondition> = map(::transform)
 
-private fun transform(entity: StandardConditionPss): ModelPublicStandardCondition {
-  return ModelPublicStandardCondition(
-    code = entity.code,
-    text = entity.text,
-  )
-}
+private fun transform(entity: StandardConditionPss): ModelPublicStandardCondition = ModelPublicStandardCondition(
+  code = entity.code,
+  text = entity.text,
+)
 
 private fun List<AdditionalConditionPss>.transformToModelPublicPssAdditionalCondition(): List<ModelPublicAdditionalCondition> = map(::transform)
 
-private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCondition {
-  return ModelPublicAdditionalCondition(
-    code = entity.code,
-    text = entity.text,
-    category = entity.category,
-    categoryShort = entity.categoryShort,
-    requiresUserInput = entity.requiresInput,
-  )
-}
+private fun transform(entity: AdditionalConditionPss): ModelPublicAdditionalCondition = ModelPublicAdditionalCondition(
+  code = entity.code,
+  text = entity.text,
+  category = entity.category,
+  categoryShort = entity.categoryShort,
+  requiresUserInput = entity.requiresInput,
+)

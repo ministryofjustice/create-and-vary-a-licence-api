@@ -26,14 +26,12 @@ data class StandardCondition(
   val conditionText: String? = null,
   val conditionType: String? = null,
 ) {
-  override fun toString(): String {
-    return "StandardCondition(" +
-      "id=$id, " +
-      "licence=${licence.id}, " +
-      "conditionCode=$conditionCode, " +
-      "conditionSequence=$conditionSequence, " +
-      "conditionText=$conditionText, " +
-      "conditionType=$conditionType" +
-      ")"
-  }
+  override fun toString(): String = "StandardCondition(" +
+    "id=$id, " +
+    "licence=${licence.id}, " +
+    "conditionCode=$conditionCode, " +
+    "conditionSequence=$conditionSequence, " +
+    "conditionText=$conditionText, " +
+    "conditionType=$conditionType" +
+    ")"
 }

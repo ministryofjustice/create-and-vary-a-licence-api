@@ -21,29 +21,27 @@ class PrisonerSearchApiClient(@Qualifier("oauthPrisonerSearchClient") val prison
     private const val BY_BOOKING_ID_BATCH_SIZE = 1000
   }
 
-  fun searchPrisonersByBookingIds(bookingIds: Collection<Long>) =
-    batchRequests(BY_BOOKING_ID_BATCH_SIZE, bookingIds) { batch ->
-      prisonerSearchApiWebClient
-        .post()
-        .uri("/prisoner-search/booking-ids")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(PrisonerSearchByBookingIdsRequest(batch.toList()))
-        .retrieve()
-        .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
-        .block()
-    }
+  fun searchPrisonersByBookingIds(bookingIds: Collection<Long>) = batchRequests(BY_BOOKING_ID_BATCH_SIZE, bookingIds) { batch ->
+    prisonerSearchApiWebClient
+      .post()
+      .uri("/prisoner-search/booking-ids")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(PrisonerSearchByBookingIdsRequest(batch.toList()))
+      .retrieve()
+      .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
+      .block()
+  }
 
-  fun searchPrisonersByNomisIds(nomisIds: List<String>) =
-    batchRequests(BY_PRISON_NUMBER_BATCH_SIZE, nomisIds) { batch ->
-      prisonerSearchApiWebClient
-        .post()
-        .uri("/prisoner-search/prisoner-numbers")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(PrisonerSearchByPrisonerNumbersRequest(batch))
-        .retrieve()
-        .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
-        .block()
-    }
+  fun searchPrisonersByNomisIds(nomisIds: List<String>) = batchRequests(BY_PRISON_NUMBER_BATCH_SIZE, nomisIds) { batch ->
+    prisonerSearchApiWebClient
+      .post()
+      .uri("/prisoner-search/prisoner-numbers")
+      .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(PrisonerSearchByPrisonerNumbersRequest(batch))
+      .retrieve()
+      .bodyToMono(typeReference<List<PrisonerSearchPrisoner>>())
+      .block()
+  }
 
   fun searchPrisonersByReleaseDate(
     earliestReleaseDate: LocalDate,

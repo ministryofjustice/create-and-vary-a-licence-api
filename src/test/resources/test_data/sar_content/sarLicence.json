@@ -3,6 +3,7 @@
     "licences": [
       {
         "id": 1,
+        "kind": "CRD",
         "typeCode": "All purpose",
         "statusCode": "In progress",
         "nomsId": "A1234AA",

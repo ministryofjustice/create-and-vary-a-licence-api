@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support
 
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
@@ -7,20 +7,13 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_IN_PAST
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_MISSING
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService.ErrorType.IS_PRESENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -76,8 +69,8 @@ class LicenceTypeOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: SYSTEM_USER,
-        fullName = staffMember?.fullName ?: SYSTEM_USER,
+        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
         summary = "Licence type overridden for ${licence.forename} ${licence.surname}: from $previousType to $newType: $reason",
         changes = mutableMapOf(
           "oldType" to previousType.name,
@@ -95,8 +88,7 @@ class LicenceTypeOverrideService(
     )
   }
 
-  private fun Licence.getAdditionalConditionsByRelevancy() =
-    this.additionalConditions.partition { this.typeCode.conditionTypes().contains(it.conditionType) }
+  private fun Licence.getAdditionalConditionsByRelevancy() = this.additionalConditions.partition { this.typeCode.conditionTypes().contains(it.conditionType) }
 
   private fun getIncorrectDates(licenceType: LicenceType, licence: Licence): Set<IncorrectDate> {
     val led = licence.licenceExpiryDate
@@ -104,21 +96,21 @@ class LicenceTypeOverrideService(
 
     val errors = mutableSetOf<IncorrectDate>()
     when (licenceType) {
-      AP -> {
-        if (led == null) errors.add(IncorrectDate("LED", IS_MISSING))
-        if (tused != null) errors.add(IncorrectDate("TUSED", IS_PRESENT))
+      LicenceType.AP -> {
+        if (led == null) errors.add(IncorrectDate("LED", ErrorType.IS_MISSING))
+        if (tused != null) errors.add(IncorrectDate("TUSED", ErrorType.IS_PRESENT))
       }
 
-      PSS -> {
-        if (led != null) errors.add(IncorrectDate("LED", IS_PRESENT))
-        if (tused == null) errors.add(IncorrectDate("TUSED", IS_MISSING))
-        if (tused != null && tused < LocalDate.now()) errors.add(IncorrectDate("TUSED", IS_IN_PAST))
+      LicenceType.PSS -> {
+        if (led != null) errors.add(IncorrectDate("LED", ErrorType.IS_PRESENT))
+        if (tused == null) errors.add(IncorrectDate("TUSED", ErrorType.IS_MISSING))
+        if (tused != null && tused < LocalDate.now()) errors.add(IncorrectDate("TUSED", ErrorType.IS_IN_PAST))
       }
 
-      AP_PSS -> {
-        if (led == null) errors.add(IncorrectDate("LED", IS_MISSING))
-        if (tused == null) errors.add(IncorrectDate("TUSED", IS_MISSING))
-        if (tused != null && tused < LocalDate.now()) errors.add(IncorrectDate("TUSED", IS_IN_PAST))
+      LicenceType.AP_PSS -> {
+        if (led == null) errors.add(IncorrectDate("LED", ErrorType.IS_MISSING))
+        if (tused == null) errors.add(IncorrectDate("TUSED", ErrorType.IS_MISSING))
+        if (tused != null && tused < LocalDate.now()) errors.add(IncorrectDate("TUSED", ErrorType.IS_IN_PAST))
       }
     }
     return errors

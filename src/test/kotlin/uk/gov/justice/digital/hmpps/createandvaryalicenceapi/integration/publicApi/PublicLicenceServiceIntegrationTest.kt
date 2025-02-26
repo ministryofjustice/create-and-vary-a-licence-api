@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
@@ -42,6 +43,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       val result = resultList?.first()
 
       assertThat(result?.id).isEqualTo(1L)
+      assertThat(result?.kind).isEqualTo(LicenceKind.CRD)
       assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
       assertThat(result?.policyVersion).isEqualTo(PolicyVersion.V1_0)
       assertThat(result?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -91,6 +93,7 @@ class PublicLicenceServiceIntegrationTest : IntegrationTestBase() {
       val result = resultList?.first()
 
       assertThat(result?.id).isEqualTo(1L)
+      assertThat(result?.kind).isEqualTo(LicenceKind.CRD)
       assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
       assertThat(result?.policyVersion).isEqualTo(PolicyVersion.V1_0)
       assertThat(result?.version).isEqualTo("1.0")

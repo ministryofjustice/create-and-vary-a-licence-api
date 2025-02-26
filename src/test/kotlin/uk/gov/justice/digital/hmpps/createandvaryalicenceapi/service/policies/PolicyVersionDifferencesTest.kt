@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.Co
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.ConditionChangeType.TEXT_CHANGE
 
 // This doesn't actually assert anything but dumps the differences between different versions of the policy
-class PolicyVersionDifferencesTest() {
+class PolicyVersionDifferencesTest {
 
   private val licencePolicyService = LicencePolicyService()
 

@@ -98,7 +98,5 @@ class AuditController(private val auditService: AuditService) {
   fun requestAuditEvents(
     @Valid @RequestBody
     body: AuditRequest,
-  ): List<AuditEvent> {
-    return this.auditService.getAuditEvents(body)
-  }
+  ): List<AuditEvent> = this.auditService.getAuditEvents(body)
 }

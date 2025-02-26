@@ -81,8 +81,7 @@ fun ConditionChangeType.update(
   current: ILicenceCondition,
   removed: List<Any> = emptyList(),
   added: List<Any> = emptyList(),
-): LicenceConditionChanges =
-  LicenceConditionChanges(this, current.code, null, previous.text, current.text, added, removed)
+): LicenceConditionChanges = LicenceConditionChanges(this, current.code, null, previous.text, current.text, added, removed)
 
 fun ConditionChangeType.removal(
   condition: ILicenceCondition,

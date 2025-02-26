@@ -25,8 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Overr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceTypeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceOverrideService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceTypeOverrideService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.LicenceOverrideService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.support.LicenceTypeOverrideService
 
 @Tag(name = Tags.ADMIN)
 @RestController

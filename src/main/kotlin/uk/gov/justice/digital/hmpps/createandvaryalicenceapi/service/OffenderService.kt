@@ -11,7 +11,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 
 @Service
 class
@@ -25,32 +27,21 @@ OffenderService(
 
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
-    val inFlightLicenceStatuses = listOf(
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.SUBMITTED,
-      LicenceStatus.APPROVED,
-      LicenceStatus.VARIATION_IN_PROGRESS,
-      LicenceStatus.VARIATION_SUBMITTED,
-      LicenceStatus.VARIATION_APPROVED,
-      LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE,
-    )
-    var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
+    var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
     // Update the in-flight licences for this person on probation
     offenderLicences = offenderLicences.map { it.updateResponsibleCom(responsibleCom = newCom) }
     this.licenceRepository.saveAllAndFlush(offenderLicences)
 
-    if (offenderLicences.any {
-        it.statusCode === LicenceStatus.NOT_STARTED || it.statusCode === LicenceStatus.IN_PROGRESS
-      }
-    ) {
-      val releaseDate = offenderLicences[0].licenceStartDate
+    val inprogressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }
+
+    if (inprogressLicence != null) {
+      val releaseDate = inprogressLicence.licenceStartDate
       if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
         val prisoner = listOf(
           Case(
-            "${offenderLicences[0].forename} ${offenderLicences[0].surname}",
-            offenderLicences[0].crn!!,
+            "${inprogressLicence.forename} ${inprogressLicence.surname}",
+            inprogressLicence.crn!!,
             releaseDate!!,
           ),
         )
@@ -79,24 +70,14 @@ OffenderService(
 
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
-    val inFlightLicenceStatuses = listOf(
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.SUBMITTED,
-      LicenceStatus.APPROVED,
-      LicenceStatus.VARIATION_IN_PROGRESS,
-      LicenceStatus.VARIATION_SUBMITTED,
-      LicenceStatus.VARIATION_APPROVED,
-      LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE,
-    )
-    var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, inFlightLicenceStatuses)
+    var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
-    var probationRegionChanged = false
+    var probationTeamChanged = false
 
     // Update the in-flight licences for this person on probation
     offenderLicences = offenderLicences.map {
-      if (it.probationTeamCode !== request.probationTeamCode) {
-        probationRegionChanged = true
+      if (it.probationTeamCode != request.probationTeamCode) {
+        probationTeamChanged = true
       }
       it.updateProbationTeam(
         probationAreaCode = request.probationAreaCode,
@@ -110,7 +91,7 @@ OffenderService(
       )
     }
 
-    if (probationRegionChanged) {
+    if (probationTeamChanged) {
       this.licenceRepository.saveAllAndFlush(offenderLicences)
       // Create an audit event for each of the licences updated
       offenderLicences.map {
@@ -129,20 +110,8 @@ OffenderService(
 
   @Transactional
   fun updateOffenderDetails(nomsId: String, request: UpdateOffenderDetailsRequest) {
-    val inFlightLicenceStatuses = listOf(
-      LicenceStatus.IN_PROGRESS,
-      LicenceStatus.SUBMITTED,
-      LicenceStatus.APPROVED,
-      LicenceStatus.VARIATION_IN_PROGRESS,
-      LicenceStatus.VARIATION_SUBMITTED,
-      LicenceStatus.VARIATION_APPROVED,
-      LicenceStatus.VARIATION_REJECTED,
-      LicenceStatus.ACTIVE,
-    )
-    val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, inFlightLicenceStatuses)
-    val licencesToChange = existingLicences.filter {
-      it.isOffenderDetailUpdated(request)
-    }
+    val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, IN_FLIGHT_LICENCES)
+    val licencesToChange = existingLicences.filter { it.isOffenderDetailUpdated(request) }
     if (licencesToChange.isNotEmpty()) {
       val updatedLicences = licencesToChange.map {
         it.updateOffenderDetails(
@@ -153,26 +122,23 @@ OffenderService(
         )
       }
       this.licenceRepository.saveAllAndFlush(updatedLicences)
-      updatedLicences.map {
-        auditEventRepository.saveAndFlush(
-          AuditEvent(
-            licenceId = it.id,
-            username = "SYSTEM",
-            fullName = "SYSTEM",
-            summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
-            detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
-          ),
+      val events = updatedLicences.map {
+        AuditEvent(
+          licenceId = it.id,
+          username = "SYSTEM",
+          fullName = "SYSTEM",
+          summary = "Offender details updated to forename: ${request.forename}, middleNames: ${request.middleNames}, surname: ${request.surname}, date of birth: ${request.dateOfBirth}",
+          detail = "ID ${it.id} type ${it.typeCode} status ${it.statusCode.name} version ${it.version}",
         )
       }
+      auditEventRepository.saveAllAndFlush(events)
     }
   }
 
-  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean {
-    return (
-      this.forename !== request.forename ||
-        this.middleNames !== request.middleNames ||
-        this.surname !== request.surname ||
-        this.dateOfBirth !== request.dateOfBirth
-      )
-  }
+  private fun Licence.isOffenderDetailUpdated(request: UpdateOffenderDetailsRequest): Boolean = (
+    this.forename != request.forename ||
+      this.middleNames != request.middleNames ||
+      this.surname != request.surname ||
+      this.dateOfBirth != request.dateOfBirth
+    )
 }

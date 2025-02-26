@@ -23,31 +23,27 @@ fun List<ModelStandardCondition>.transformToEntityStandard(
   conditionType: String,
 ): List<EntityStandardCondition> = map { term -> transform(term, licence, conditionType) }
 
-fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionType: String): EntityStandardCondition {
-  return EntityStandardCondition(
-    licence = licence,
-    conditionCode = model.code,
-    conditionSequence = model.sequence,
-    conditionText = model.text,
-    conditionType = conditionType,
-  )
-}
+fun transform(model: ModelStandardCondition, licence: EntityLicence, conditionType: String): EntityStandardCondition = EntityStandardCondition(
+  licence = licence,
+  conditionCode = model.code,
+  conditionSequence = model.sequence,
+  conditionText = model.text,
+  conditionType = conditionType,
+)
 
 fun transform(
   model: AdditionalConditionRequest,
   licence: EntityLicence,
   conditionType: String,
-): EntityAdditionalCondition {
-  return EntityAdditionalCondition(
-    conditionVersion = licence.version!!,
-    conditionCode = model.code,
-    conditionCategory = model.category,
-    conditionSequence = model.sequence,
-    conditionText = model.text,
-    conditionType = conditionType,
-    licence = licence,
-  )
-}
+): EntityAdditionalCondition = EntityAdditionalCondition(
+  conditionVersion = licence.version!!,
+  conditionCode = model.code,
+  conditionCategory = model.category,
+  conditionSequence = model.sequence,
+  conditionText = model.text,
+  conditionType = conditionType,
+  licence = licence,
+)
 
 // Transform a list of model additional conditions to entity additional conditions
 fun List<AdditionalConditionRequest>.transformToEntityAdditional(
@@ -56,37 +52,31 @@ fun List<AdditionalConditionRequest>.transformToEntityAdditional(
 ): List<EntityAdditionalCondition> = map { transform(it, licence, conditionType) }
 
 // Transform a list of model additional condition data to entity additional condition data
-fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> =
-  map { transform(it, additionalCondition) }
+fun List<ModelAdditionalConditionData>.transformToEntityAdditionalData(additionalCondition: EntityAdditionalCondition): List<EntityAdditionalConditionData> = map { transform(it, additionalCondition) }
 
 fun transform(
   model: ModelAdditionalConditionData,
   additionalCondition: EntityAdditionalCondition,
-): EntityAdditionalConditionData {
-  return EntityAdditionalConditionData(
-    dataSequence = model.sequence,
-    dataField = model.field,
-    dataValue = model.value,
-    additionalCondition = additionalCondition,
-  )
-}
+): EntityAdditionalConditionData = EntityAdditionalConditionData(
+  dataSequence = model.sequence,
+  dataField = model.field,
+  dataValue = model.value,
+  additionalCondition = additionalCondition,
+)
 
-fun transform(model: ModelAuditEvent): EntityAuditEvent {
-  return EntityAuditEvent(
-    licenceId = model.licenceId,
-    eventTime = model.eventTime,
-    username = model.username,
-    fullName = model.fullName,
-    eventType = model.eventType,
-    summary = model.summary,
-    detail = model.detail,
-  )
-}
+fun transform(model: ModelAuditEvent): EntityAuditEvent = EntityAuditEvent(
+  licenceId = model.licenceId,
+  eventTime = model.eventTime,
+  username = model.username,
+  fullName = model.fullName,
+  eventType = model.eventType,
+  summary = model.summary,
+  detail = model.detail,
+)
 
-fun UpdatePrisonUserRequest.toEntity() =
-  PrisonUser(
-    username = staffUsername.uppercase(),
-    email = staffEmail,
-    firstName = firstName,
-    lastName = lastName,
-  )
+fun UpdatePrisonUserRequest.toEntity() = PrisonUser(
+  username = staffUsername.uppercase(),
+  email = staffEmail,
+  firstName = firstName,
+  lastName = lastName,
+)

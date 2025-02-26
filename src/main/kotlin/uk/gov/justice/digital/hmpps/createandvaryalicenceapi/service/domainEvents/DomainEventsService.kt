@@ -39,6 +39,7 @@ class DomainEventsService(
         )
         applicationEventPublisher.publishEvent(domainEvent)
       }
+
       else -> return
     }
   }
@@ -92,11 +93,12 @@ class DomainEventsService(
 
   enum class LicenceDomainEventType(val value: String) {
     LICENCE_ACTIVATED("create-and-vary-a-licence.licence.activated"),
+    HDC_LICENCE_ACTIVATED("create-and-vary-a-licence.hdc-licence.activated"),
     LICENCE_VARIATION_ACTIVATED("create-and-vary-a-licence.variation.activated"),
     LICENCE_INACTIVATED("create-and-vary-a-licence.licence.inactivated"),
+    HDC_LICENCE_INACTIVATED("create-and-vary-a-licence.hdc-licence.inactivated"),
     LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.variation.inactivated"),
   }
 
-  fun LocalDateTime.toOffsetDateFormat(): String =
-    atZone(ZoneId.of("Europe/London")).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+  fun LocalDateTime.toOffsetDateFormat(): String = atZone(ZoneId.of("Europe/London")).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }

@@ -20,39 +20,37 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
     private const val COURT_OUTCOME_BATCH_SIZE = 500
   }
 
-  fun getHdcStatus(bookingId: Long): Mono<PrisonerHdcStatus> {
-    return prisonerApiWebClient
-      .get()
-      .uri("/offender-sentences/booking/{bookingId}/home-detention-curfews/latest", bookingId)
+  fun getHdcStatus(bookingId: Long): PrisonerHdcStatus = prisonerApiWebClient
+    .get()
+    .uri("/offender-sentences/booking/{bookingId}/home-detention-curfews/latest", bookingId)
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono(PrisonerHdcStatus::class.java)
+    .onErrorResume { coerce404ResponseToNull(it) }
+    .block()
+    ?: PrisonerHdcStatus(passed = false, approvalStatus = "UNKNOWN")
+
+  fun getHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
+    prisonerApiWebClient
+      .post()
+      .uri("/offender-sentences/home-detention-curfews/latest")
       .accept(MediaType.APPLICATION_JSON)
+      .bodyValue(batch)
       .retrieve()
-      .bodyToMono(PrisonerHdcStatus::class.java)
-      .onErrorResume { coerce404ResponseToNull(it) }
+      .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
+      .block()
   }
 
-  fun getHdcStatuses(bookingIds: List<Long>, batchSize: Int = HDC_BATCH_SIZE) =
-    batchRequests(batchSize, bookingIds) { batch ->
-      prisonerApiWebClient
-        .post()
-        .uri("/offender-sentences/home-detention-curfews/latest")
-        .accept(MediaType.APPLICATION_JSON)
-        .bodyValue(batch)
-        .retrieve()
-        .bodyToMono(typeReference<List<PrisonerHdcStatus>>())
-        .block()
-    }
-
-  fun getCourtEventOutcomes(bookingIds: List<Long>, batchSize: Int = COURT_OUTCOME_BATCH_SIZE) =
-    batchRequests(batchSize, bookingIds) { batch ->
-      prisonerApiWebClient
-        .post()
-        .uri("/bookings/court-event-outcomes")
-        .bodyValue(batch)
-        .accept(MediaType.APPLICATION_JSON)
-        .retrieve()
-        .bodyToMono(typeReference<List<CourtEventOutcome>>())
-        .block()
-    }
+  fun getCourtEventOutcomes(bookingIds: List<Long>, batchSize: Int = COURT_OUTCOME_BATCH_SIZE) = batchRequests(batchSize, bookingIds) { batch ->
+    prisonerApiWebClient
+      .post()
+      .uri("/bookings/court-event-outcomes")
+      .bodyValue(batch)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(typeReference<List<CourtEventOutcome>>())
+      .block()
+  }
 
   fun getPrisonInformation(prisonId: String): Prison {
     val prisonerApiResponse = prisonerApiWebClient
@@ -79,15 +77,14 @@ class PrisonApiClient(@Qualifier("oauthPrisonClient") val prisonerApiWebClient: 
     return prisonApiResponse ?: error("Unexpected null response from Prison API for nomsId $nomsId")
   }
 
-  private fun <API_RESPONSE_BODY_TYPE> coerce404ResponseToNull(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> =
-    with(exception) {
-      when {
-        this is WebClientResponseException && statusCode == NOT_FOUND -> {
-          log.info("No resource found when calling prisoner-api ${request?.uri?.path}")
-          Mono.empty()
-        }
-
-        else -> Mono.error(exception)
+  private fun <API_RESPONSE_BODY_TYPE> coerce404ResponseToNull(exception: Throwable): Mono<API_RESPONSE_BODY_TYPE> = with(exception) {
+    when {
+      this is WebClientResponseException && statusCode == NOT_FOUND -> {
+        log.info("No resource found when calling prisoner-api ${request?.uri?.path}")
+        Mono.empty()
       }
+
+      else -> Mono.error(exception)
     }
+  }
 }

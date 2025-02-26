@@ -65,9 +65,7 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
     @PathVariable(value = "licenceId") licenceId: Long,
     @PathVariable(value = "conditionId") conditionId: Long,
     @RequestPart("file") file: MultipartFile,
-  ) {
-    return exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
-  }
+  ) = exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
 
   @PutMapping(
     value = ["/id/{licenceId}/condition/id/{conditionId}/remove-upload"],
@@ -105,9 +103,7 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
   fun removeExclusionZoneFile(
     @PathVariable(value = "licenceId") licenceId: Long,
     @PathVariable(value = "conditionId") conditionId: Long,
-  ) {
-    return exclusionZoneService.removeExclusionZoneFile(licenceId, conditionId)
-  }
+  ) = exclusionZoneService.removeExclusionZoneFile(licenceId, conditionId)
 
   @GetMapping(
     value = ["/id/{licenceId}/condition/id/{conditionId}/full-size-image"],
@@ -147,7 +143,5 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
   fun getExclusionZoneImage(
     @PathVariable(name = "licenceId") licenceId: Long,
     @PathVariable(name = "conditionId") conditionId: Long,
-  ): ByteArray? {
-    return exclusionZoneService.getExclusionZoneImage(licenceId, conditionId)
-  }
+  ): ByteArray? = exclusionZoneService.getExclusionZoneImage(licenceId, conditionId)
 }

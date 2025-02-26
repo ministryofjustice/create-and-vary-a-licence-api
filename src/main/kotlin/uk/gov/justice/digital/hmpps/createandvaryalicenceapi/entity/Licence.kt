@@ -279,7 +279,5 @@ abstract class Licence(
     return true
   }
 
-  override fun hashCode(): Int {
-    return Objects.hash(id)
-  }
+  override fun hashCode(): Int = Objects.hash(id)
 }

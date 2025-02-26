@@ -59,9 +59,7 @@ class PromptLicenceCreationController(
       ),
     ],
   )
-  fun run(): List<PromptComNotification> {
-    return promptComService.getCases()
-  }
+  fun run(): List<PromptComNotification> = promptComService.getCases()
 
   @ProtectedByIngress
   @PostMapping(

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import com.fasterxml.jackson.annotation.JsonFormat
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
@@ -11,6 +12,9 @@ data class LicenceSummary(
 
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val id: Long = -1,
+
+  @Schema(description = "Kind of licence", example = "CRD")
+  val kind: LicenceKind,
 
   @Schema(
     description = "The type of conditions on a licence policy which can be AP (All Purpose) and/or PSS " +

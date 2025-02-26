@@ -1,6 +1,7 @@
 [
   {
     "prisonerNumber": "AB1234E",
+    "bookingId": "1",
     "firstName": "Test1",
     "lastName": "Person1",
     "dateOfBirth": "1985-01-01",
@@ -17,6 +18,7 @@
   },
   {
     "prisonerNumber": "AB1234F",
+    "bookingId": "2",
     "firstName": "Test2",
     "lastName": "Person2",
     "dateOfBirth": "1985-01-01",

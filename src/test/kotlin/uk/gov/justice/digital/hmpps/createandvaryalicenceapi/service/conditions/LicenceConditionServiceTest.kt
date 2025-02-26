@@ -837,13 +837,12 @@ class LicenceConditionServiceTest {
     )
   }
 
-  private fun standardCondition(id: Long) =
-    uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
-      id = id,
-      conditionCode = "goodBehaviour",
-      conditionSequence = id.toInt(),
-      conditionText = "Be of good behaviour",
-      conditionType = "AP",
-      licence = aLicenceEntity,
-    )
+  private fun standardCondition(id: Long) = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition(
+    id = id,
+    conditionCode = "goodBehaviour",
+    conditionSequence = id.toInt(),
+    conditionText = "Be of good behaviour",
+    conditionType = "AP",
+    licence = aLicenceEntity,
+  )
 }

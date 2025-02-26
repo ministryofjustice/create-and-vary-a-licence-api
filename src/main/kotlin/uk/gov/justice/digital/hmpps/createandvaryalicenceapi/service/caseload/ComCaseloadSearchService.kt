@@ -1,13 +1,14 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -15,7 +16,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.C
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToModelFoundProbationRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -23,15 +27,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirectio
 import java.time.LocalDate
 
 @Service
-class PrisonerSearchService(
+class ComCaseloadSearchService(
   private val licenceRepository: LicenceRepository,
   private val deliusApiClient: DeliusApiClient,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
-  private val prisonApiClient: PrisonApiClient,
+  private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
-  private val iS91DeterminationService: IS91DeterminationService,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -70,46 +73,16 @@ class PrisonerSearchService(
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
 
-    return ProbationSearchResult(
-      searchResults,
-      inPrisonCount,
-      onProbationCount,
-    )
-  }
-
-  fun getIneligibilityReasons(prisonNumber: String): List<String> {
-    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber))
-    if (prisoners.size != 1) {
-      error("Found ${prisoners.size} prisoners for: $prisonNumber")
-    }
-    val reasons = eligibilityService.getIneligibilityReasons(prisoners.first())
-    val hdcReasonIfPresent = if (prisoners.findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
-    return reasons + hdcReasonIfPresent
-  }
-
-  fun getIneligibilityReasons(prisoner: Prisoner): List<String> {
-    val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val reasons = eligibilityService.getIneligibilityReasons(prisonerSearchPrisoner)
-    val hdcReasonIfPresent =
-      if (listOf(prisonerSearchPrisoner).findBookingsWithHdc().isEmpty()) emptyList() else listOf("Approved for HDC")
-    return reasons + hdcReasonIfPresent
-  }
-
-  fun getIS91Status(prisonNumber: String): Boolean {
-    val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber))
-    if (prisoners.size != 1) {
-      error("Found ${prisoners.size} prisoners for: $prisonNumber")
-    }
-    return iS91DeterminationService.isIS91Case(prisoners.first())
+    return ProbationSearchResult(searchResults, inPrisonCount, onProbationCount)
   }
 
   private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
-      licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, LicenceStatus.IN_FLIGHT_LICENCES)
+      licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, Companion.IN_FLIGHT_LICENCES)
     return if (licences.isEmpty()) {
       null
     } else {
-      val nonActiveLicenceStatuses = LicenceStatus.IN_FLIGHT_LICENCES - LicenceStatus.ACTIVE
+      val nonActiveLicenceStatuses = Companion.IN_FLIGHT_LICENCES - ACTIVE
       if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
     }
   }
@@ -129,7 +102,11 @@ class PrisonerSearchService(
     return prisoners.associateBy { it.prisonerNumber }
   }
 
-  private fun createNotStartedRecord(deliusOffender: CaseloadResult, prisonOffender: PrisonerSearchPrisoner?, licenceStartDate: LocalDate?) = when {
+  private fun createNotStartedRecord(
+    deliusOffender: CaseloadResult,
+    prisonOffender: PrisonerSearchPrisoner?,
+    licenceStartDate: LocalDate?,
+  ) = when {
     // no match for prisoner in Delius
     prisonOffender == null -> null
 
@@ -142,51 +119,43 @@ class PrisonerSearchService(
     deliusOffender: CaseloadResult,
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
-  ): FoundProbationRecord? =
-    when {
-      licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
-      prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(
-        licence,
-      )
+  ): FoundProbationRecord? = when {
+    licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
+    prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(
+      licence,
+    )
 
-      else -> null
-    }
-
-  private fun ProbationUserSearchRequest.getSortBy() =
-    this.sortBy.map {
-      ProbationSearchSortByRequest(
-        it.field.probationSearchApiSortType,
-        if (it.direction == SearchDirection.ASC) "asc" else "desc",
-      )
-    }
-
-  private fun List<PrisonerSearchPrisoner>.findBookingsWithHdc(): List<Long> {
-    val bookingsWithHdc = this
-      .filter { it.homeDetentionCurfewEligibilityDate != null }
-      .mapNotNull { it.bookingId?.toLong() }
-    val hdcStatuses = prisonApiClient.getHdcStatuses(bookingsWithHdc)
-    return hdcStatuses.filter { it.approvalStatus == "APPROVED" }.mapNotNull { it.bookingId }
+    else -> null
   }
 
-  private fun List<FoundProbationRecord>.filterOutHdc(prisonerRecords: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {
-    if (prisonerRecords.isEmpty()) {
+  private fun ProbationUserSearchRequest.getSortBy() = this.sortBy.map {
+    ProbationSearchSortByRequest(
+      it.field.probationSearchApiSortType,
+      if (it.direction == SearchDirection.ASC) "asc" else "desc",
+    )
+  }
+
+  private fun List<FoundProbationRecord>.filterOutHdc(prisoners: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {
+    if (prisoners.isEmpty()) {
       return this
     }
-    val prisonersForHdcCheck =
-      this.filter { it.licenceStatus == NOT_STARTED }.mapNotNull { prisonerRecords[it.nomisId] }
-    val bookingIdsWithHdc = prisonersForHdcCheck.findBookingsWithHdc()
+    val prisonersForHdcCheck = this.filter { it.licenceStatus == NOT_STARTED }.mapNotNull { prisoners[it.nomisId] }
 
-    val prisonersWithoutHdc = prisonerRecords.values.filterNot { bookingIdsWithHdc.contains(it.bookingId?.toLong()) }
-    return this.filter { it.isOnProbation == true || prisonersWithoutHdc.any { prisoner -> prisoner.prisonerNumber == it.nomisId } }
+    val hdcStatuses = hdcService.getHdcStatus(prisonersForHdcCheck)
+    return this.filter { it.isOnProbation == true || hdcStatuses.canBeSeenByCom(it.kind, it.bookingId!!) }
   }
 
-  private fun CaseloadResult.toUnstartedRecord(prisonOffender: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): FoundProbationRecord {
+  private fun CaseloadResult.toUnstartedRecord(
+    prisonOffender: PrisonerSearchPrisoner,
+    licenceStartDate: LocalDate?,
+  ): FoundProbationRecord {
     val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(
       releaseDate = licenceStartDate,
-      licenceType = LicenceType.getLicenceType(prisonOffender),
+      bookingId = prisonOffender.bookingId?.toLong(),
+      licenceType = LicenceType.Companion.getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
@@ -203,19 +172,18 @@ class PrisonerSearchService(
     )
   }
 
-  private fun CaseloadResult.toStartedRecord(licence: Licence) =
-    this.transformToModelFoundProbationRecord(
-      licence = licence,
-      hardStopDate = releaseDateService.getHardStopDate(licence),
-      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
-      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
-      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
-      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
-    )
-}
+  private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
+    licence = licence,
+    hardStopDate = releaseDateService.getHardStopDate(licence),
+    hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+    isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+    isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+    isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+  )
 
-private data class CvlProbationSearchRecord(
-  val caseloadResult: CaseloadResult,
-  val prisonerSearchPrisoner: PrisonerSearchPrisoner?,
-  val licence: Licence? = null,
-)
+  private data class CvlProbationSearchRecord(
+    val caseloadResult: CaseloadResult,
+    val prisonerSearchPrisoner: PrisonerSearchPrisoner?,
+    val licence: Licence? = null,
+  )
+}
