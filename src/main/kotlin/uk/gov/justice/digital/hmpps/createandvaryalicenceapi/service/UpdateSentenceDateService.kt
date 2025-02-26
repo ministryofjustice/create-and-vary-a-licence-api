@@ -25,6 +25,7 @@ class UpdateSentenceDateService(
   private val auditEventRepository: AuditEventRepository,
   private val notifyService: NotifyService,
   private val prisonApiClient: PrisonApiClient,
+  private val hdcService: HdcService,
   private val staffRepository: StaffRepository,
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
@@ -102,7 +103,12 @@ class UpdateSentenceDateService(
     )
 
     if (sentenceChanges.isMaterial) {
-      notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges)
+      val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
+        updatedLicenceEntity.bookingId!!,
+        prisoner.sentenceDetail.homeDetentionCurfewEligibilityDate,
+      )
+
+      notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges, isNotApprovedForHdc)
     }
   }
 
@@ -111,8 +117,9 @@ class UpdateSentenceDateService(
     licenceEntity: Licence,
     licenceId: Long,
     sentenceChanges: SentenceChanges,
+    isNotApprovedForHdc: Boolean,
   ) {
-    val notifyCom = updatedLicenceEntity is HdcLicence || isNotApprovedForHdc(updatedLicenceEntity)
+    val notifyCom = updatedLicenceEntity is HdcLicence || isNotApprovedForHdc
     if (!notifyCom) {
       log.info("Not notifying COM as now approved for HDC for $licenceId")
       return
@@ -164,8 +171,6 @@ class UpdateSentenceDateService(
       ),
     )
   }
-
-  private fun isNotApprovedForHdc(updatedLicenceEntity: Licence) = prisonApiClient.getHdcStatus(updatedLicenceEntity.bookingId!!).isNotApproved()
 
   private fun logUpdate(
     licenceId: Long,

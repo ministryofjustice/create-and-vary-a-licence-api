@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import java.time.LocalDate
@@ -18,6 +19,8 @@ class HdcService(
   private val prisonApiClient: PrisonApiClient,
   private val licenceRepository: LicenceRepository,
 ) {
+
+  fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
 
   fun <T> getHdcStatus(
     records: Collection<T>,
@@ -62,11 +65,15 @@ class HdcService(
   data class HdcStatuses(val approvedIds: Set<Long>) {
     fun isWaitingForActivation(kind: LicenceKind, bookingId: Long) = kind == HDC && !approvedIds.contains(bookingId)
 
-    fun canBeActivated(kind: LicenceKind, bookingId: Long): Boolean {
+    fun canBeActivated(kind: LicenceKind, bookingId: Long) = isValidByKind(kind, bookingId)
+
+    fun canBeSeenByCom(kind: LicenceKind?, bookingId: Long) = isValidByKind(kind, bookingId)
+
+    fun isApprovedForHdc(bookingId: Long) = approvedIds.contains(bookingId)
+
+    private fun isValidByKind(kind: LicenceKind?, bookingId: Long): Boolean {
       val approvedForHdc = approvedIds.contains(bookingId)
       return (kind == HDC && approvedForHdc) || (kind != HDC && !approvedForHdc)
     }
-
-    fun isApprovedForHdc(bookingId: Long) = approvedIds.contains(bookingId)
   }
 }

@@ -26,8 +26,7 @@ class PromptComListBuilder(
   fun excludeIneligibleCases(candidates: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> = candidates.filter(eligibilityService::isEligibleForCvl)
 
   fun excludePrisonersWithHdc(prisoners: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> {
-    val hdcStatuses =
-      hdcService.getHdcStatus(prisoners, { it.bookNumber?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
+    val hdcStatuses = hdcService.getHdcStatus(prisoners)
     return prisoners.filterNot { hdcStatuses.isApprovedForHdc(it.bookingId?.toLong()!!) }
   }
 

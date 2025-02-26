@@ -560,7 +560,7 @@ fun transform(entity: EntityLicenceEvent): ModelLicenceEvent = ModelLicenceEvent
 )
 
 fun CaseloadResult.transformToModelFoundProbationRecord(
-  licence: Licence?,
+  licence: Licence,
   hardStopDate: LocalDate?,
   hardStopWarningDate: LocalDate?,
   isInHardStopPeriod: Boolean,
@@ -569,25 +569,26 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
 ): ModelFoundProbationRecord {
   val hdcad = if (licence is HdcLicence) licence.homeDetentionCurfewActualDate else null
   return ModelFoundProbationRecord(
-    kind = licence?.kind,
+    kind = licence.kind,
+    bookingId = licence.bookingId,
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
-    crn = licence?.crn,
-    nomisId = licence?.nomsId,
+    crn = licence.crn,
+    nomisId = licence.nomsId,
     comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
     comStaffCode = manager.code,
-    teamName = manager.team.description ?: licence?.probationTeamDescription,
-    releaseDate = licence?.licenceStartDate,
-    licenceId = licence?.id,
+    teamName = manager.team.description ?: licence.probationTeamDescription,
+    releaseDate = licence.licenceStartDate,
+    licenceId = licence.id,
     versionOf = if (licence is CrdLicence) licence.versionOfId else null,
-    licenceType = licence?.typeCode,
-    licenceStatus = licence?.statusCode,
-    isOnProbation = licence?.statusCode?.isOnProbation(),
+    licenceType = licence.typeCode,
+    licenceStatus = licence.statusCode,
+    isOnProbation = licence.statusCode.isOnProbation(),
     hardStopDate = hardStopDate,
     hardStopWarningDate = hardStopWarningDate,
     isInHardStopPeriod = isInHardStopPeriod,
     isDueForEarlyRelease = isDueForEarlyRelease,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-    releaseDateLabel = when (licence?.licenceStartDate) {
+    releaseDateLabel = when (licence.licenceStartDate) {
       null -> "CRD"
       licence.actualReleaseDate -> "Confirmed release date"
       hdcad -> "HDCAD"
@@ -601,6 +602,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
 }
 
 fun CaseloadResult.transformToUnstartedRecord(
+  bookingId: Long?,
   releaseDate: LocalDate?,
   licenceType: LicenceType?,
   licenceStatus: LicenceStatus?,
@@ -612,6 +614,7 @@ fun CaseloadResult.transformToUnstartedRecord(
   releaseDateLabel: String,
 ): ModelFoundProbationRecord = ModelFoundProbationRecord(
   kind = null,
+  bookingId = bookingId,
   name = "${name.forename} ${name.surname}".convertToTitleCase(),
   crn = identifiers.crn,
   nomisId = identifiers.noms,
@@ -796,11 +799,14 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
   dateOfBirth = this.dateOfBirth,
   legalStatus = this.legalStatus,
   mostSeriousOffence = this.offenceHistory.find { it.mostSerious }?.offenceDescription,
-  conditionalReleaseDate = this.sentenceDetail.conditionalReleaseOverrideDate ?: this.sentenceDetail.conditionalReleaseDate,
+  conditionalReleaseDate = this.sentenceDetail.conditionalReleaseOverrideDate
+    ?: this.sentenceDetail.conditionalReleaseDate,
   confirmedReleaseDate = this.sentenceDetail.confirmedReleaseDate,
   homeDetentionCurfewEligibilityDate = this.sentenceDetail.homeDetentionCurfewEligibilityDate,
   homeDetentionCurfewActualDate = this.sentenceDetail.homeDetentionCurfewActualDate,
   topupSupervisionStartDate = this.sentenceDetail.topupSupervisionStartDate,
-  topupSupervisionExpiryDate = this.sentenceDetail.topupSupervisionExpiryOverrideDate ?: this.sentenceDetail.topupSupervisionExpiryDate,
-  paroleEligibilityDate = this.sentenceDetail.paroleEligibilityOverrideDate ?: this.sentenceDetail.paroleEligibilityDate,
+  topupSupervisionExpiryDate = this.sentenceDetail.topupSupervisionExpiryOverrideDate
+    ?: this.sentenceDetail.topupSupervisionExpiryDate,
+  paroleEligibilityDate = this.sentenceDetail.paroleEligibilityOverrideDate
+    ?: this.sentenceDetail.paroleEligibilityDate,
 )

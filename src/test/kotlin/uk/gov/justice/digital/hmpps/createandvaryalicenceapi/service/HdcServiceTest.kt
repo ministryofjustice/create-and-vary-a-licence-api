@@ -209,6 +209,18 @@ class HdcServiceTest {
       assertThat(statuses.isApprovedForHdc(1L)).isTrue
       assertThat(statuses.isApprovedForHdc(2L)).isFalse
     }
+
+    @Test
+    fun canBeSeenByCom() {
+      assertThat(statuses.canBeSeenByCom(HDC, 1L)).isTrue
+      assertThat(statuses.canBeSeenByCom(HDC, 2L)).isFalse
+
+      assertThat(statuses.canBeSeenByCom(CRD, 1L)).isFalse
+      assertThat(statuses.canBeSeenByCom(CRD, 2L)).isTrue
+
+      assertThat(statuses.canBeSeenByCom(null, 1L)).isFalse
+      assertThat(statuses.canBeSeenByCom(null, 2L)).isTrue
+    }
   }
 
   private companion object {

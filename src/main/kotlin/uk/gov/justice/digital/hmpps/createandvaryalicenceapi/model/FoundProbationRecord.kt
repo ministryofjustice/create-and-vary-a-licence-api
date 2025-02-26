@@ -12,6 +12,9 @@ data class FoundProbationRecord(
   @Schema(description = "kind of licence, null if no licence exists", example = "CRD")
   val kind: LicenceKind? = null,
 
+  @Schema(description = "the prison booking id", example = "123")
+  val bookingId: Long? = null,
+
   @Schema(description = "The forename and surname of the offender")
   val name: String = "",
 

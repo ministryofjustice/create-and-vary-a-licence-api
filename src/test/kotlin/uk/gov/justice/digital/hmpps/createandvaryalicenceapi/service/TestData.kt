@@ -26,6 +26,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
@@ -471,6 +476,17 @@ object TestData {
       actualParoleDate = null,
       releaseOnTemporaryLicenceDate = null,
     ),
+  )
+
+  fun caseloadResult() = CaseloadResult(
+    Name("Test", surname = "Surname"),
+    Identifiers("A123456", "A1234AA"),
+    Manager(
+      "A01B02C",
+      Name("Staff", surname = "Surname"),
+      Detail("A01B02", "Test Team"),
+    ),
+    "2023/05/24",
   )
 
   fun caCase() = CaCase(
