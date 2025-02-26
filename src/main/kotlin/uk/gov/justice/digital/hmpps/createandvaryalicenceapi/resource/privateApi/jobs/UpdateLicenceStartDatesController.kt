@@ -80,7 +80,5 @@ class UpdateLicenceStartDatesController(
   fun recalculateLicenceStartDates(
     @Valid @RequestBody
     body: RecalculateLicenceStartDatesRequest,
-  ): Long {
-    return lsdRecalculationService.batchUpdateLicenceStartDate(body.batchSize, body.id)
-  }
+  ): Long = lsdRecalculationService.batchUpdateLicenceStartDate(body.batchSize, body.id)
 }
