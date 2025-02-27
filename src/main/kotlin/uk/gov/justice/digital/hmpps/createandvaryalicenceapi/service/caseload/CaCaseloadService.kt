@@ -11,11 +11,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -43,7 +43,7 @@ class CaCaseloadService(
   private val caseloadService: CaseloadService,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val licenceService: LicenceService,
-  private val prisonApiClient: PrisonApiClient,
+  private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val clock: Clock,
   private val deliusApiClient: DeliusApiClient,
@@ -311,16 +311,9 @@ class CaCaseloadService(
 
     if (eligibleOffenders.isEmpty()) return eligibleOffenders
 
-    val hdcStatuses = prisonApiClient.getHdcStatuses(
-      eligibleOffenders.mapNotNull { c -> c.bookingId?.toLong() },
-    )
+    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders)
 
-    return eligibleOffenders.filter {
-      val hdcRecord = hdcStatuses.find { hdc -> hdc.bookingId == it.bookingId?.toLong() }
-      hdcRecord == null ||
-        hdcRecord.approvalStatus != "APPROVED" ||
-        it.homeDetentionCurfewEligibilityDate == null
-    }
+    return eligibleOffenders.filter { hdcStatuses.canUnstartedCaseBeSeenByCa(it.bookingId?.toLong()!!) }
   }
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
