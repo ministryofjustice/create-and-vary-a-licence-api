@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -21,8 +22,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.HDC_LICENCE_INACTIVATED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
 
 class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
@@ -56,29 +58,29 @@ class DeactivateHdcLicencesIntegrationTest : IntegrationTestBase() {
 
     val deactivatedHdcLicences = webTestClient.post()
       .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.INACTIVE)))
+      .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    Assertions.assertThat(deactivatedHdcLicences?.size).isEqualTo(3)
+    assertThat(deactivatedHdcLicences?.size).isEqualTo(3)
     verify(telemetryClient).trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to "3"), null)
-    Assertions.assertThat(deactivatedHdcLicences)
+    assertThat(deactivatedHdcLicences)
       .extracting<Tuple> {
-        Tuple.tuple(it.licenceId, it.licenceStatus)
+        tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        Tuple.tuple(1L, LicenceStatus.INACTIVE),
-        Tuple.tuple(2L, LicenceStatus.INACTIVE),
-        Tuple.tuple(4L, LicenceStatus.INACTIVE),
+        tuple(1L, INACTIVE),
+        tuple(2L, INACTIVE),
+        tuple(4L, INACTIVE),
       )
 
     argumentCaptor<DomainEventsService.HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(3)).publishDomainEvent(capture())
-      Assertions.assertThat(allValues)
-        .allMatch { it.eventType == DomainEventsService.LicenceDomainEventType.HDC_LICENCE_INACTIVATED.value }
+      assertThat(allValues)
+        .allMatch { it.eventType == HDC_LICENCE_INACTIVATED.value }
     }
   }
 

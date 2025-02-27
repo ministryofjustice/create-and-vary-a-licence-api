@@ -5,7 +5,6 @@ import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
@@ -21,16 +20,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
-import java.time.Duration
 
 class LicenceActivationIntegrationTest : IntegrationTestBase() {
   @MockitoBean
@@ -133,136 +127,6 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stop()
       prisonerSearchMockServer.stop()
       govUkMockServer.stop()
-    }
-  }
-}
-
-class HardStopLicenceReviewOverdueIntegrationTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
-
-  @MockitoBean
-  lateinit var notifyService: NotifyService
-
-  @BeforeEach
-  fun setupClient() {
-    webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
-    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licences-for-hard-stop-review.sql",
-  )
-  fun `Run hard stop licence review overdue job`() {
-    webTestClient.post()
-      .uri("/jobs/warn-hard-stop-review-overdue")
-      .accept(MediaType.APPLICATION_JSON)
-      .exchange()
-      .expectStatus().isOk
-
-    verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
-      emailAddress = "testClient@probation.gov.uk",
-      comName = "Test Client",
-      firstName = "Test Forename 1",
-      lastName = "Test Surname 1",
-      crn = "A123456",
-      licenceId = "1",
-    )
-  }
-
-  private companion object {
-    val govUkApiMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
-    }
-  }
-}
-
-class LicenceExpiryIntegrationTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var licenceRepository: LicenceRepository
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licences-for-expiry.sql",
-  )
-  fun `Run licence expiry job`() {
-    webTestClient.post()
-      .uri("/jobs/expire-licences")
-      .accept(MediaType.APPLICATION_JSON)
-      .exchange()
-      .expectStatus().isOk
-
-    val inactiveLicences = webTestClient.post()
-      .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(inactiveLicences?.size).isEqualTo(6)
-    assertThat(inactiveLicences)
-      .extracting<Tuple> {
-        tuple(it.licenceId, it.licenceStatus)
-      }
-      .contains(
-        tuple(2L, INACTIVE),
-        tuple(5L, INACTIVE),
-        tuple(6L, INACTIVE),
-        tuple(7L, INACTIVE),
-        tuple(8L, INACTIVE),
-        tuple(9L, INACTIVE),
-      )
-
-    val remainingLicences = webTestClient.post()
-      .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = LicenceStatus.Companion.IN_FLIGHT_LICENCES))
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectBodyList(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(remainingLicences?.size).isEqualTo(3)
-    assertThat(remainingLicences)
-      .extracting<Tuple> {
-        tuple(it.licenceId, it.licenceStatus)
-      }
-      .contains(
-        tuple(1L, APPROVED),
-        tuple(3L, ACTIVE),
-        tuple(4L, IN_PROGRESS),
-      )
-  }
-
-  private companion object {
-    val govUkApiMockServer = GovUkMockServer()
-
-    @JvmStatic
-    @BeforeAll
-    fun startMocks() {
-      govUkApiMockServer.start()
-      govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
-    }
-
-    @JvmStatic
-    @AfterAll
-    fun stopMocks() {
-      govUkApiMockServer.stop()
     }
   }
 }

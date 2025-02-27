@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateAp
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.SendNeedsApprovalReminderService
@@ -36,7 +37,7 @@ class SendNeedsApprovalReminderControllerTest {
 
   @BeforeEach
   fun reset() {
-    org.mockito.kotlin.reset(sendNeedsApprovalReminderService)
+    reset(sendNeedsApprovalReminderService)
 
     mvc = MockMvcBuilders
       .standaloneSetup(SendNeedsApprovalReminderController(sendNeedsApprovalReminderService))
@@ -51,7 +52,7 @@ class SendNeedsApprovalReminderControllerTest {
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON),
     )
-      .andExpect(MockMvcResultMatchers.status().isOk)
+      .andExpect(status().isOk)
     verify(sendNeedsApprovalReminderService, times(1)).sendEmailsToProbationPractitioner()
   }
 }

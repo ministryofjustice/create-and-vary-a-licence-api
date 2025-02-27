@@ -1,10 +1,11 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
