@@ -139,7 +139,7 @@ class ComCaseloadSearchService(
     if (prisoners.isEmpty()) {
       return this
     }
-    val prisonersForHdcCheck = this.filter { it.licenceStatus == NOT_STARTED }.mapNotNull { prisoners[it.nomisId] }
+    val prisonersForHdcCheck = this.filter { Companion.PRE_RELEASE_STATUSES.contains(it.licenceStatus) }.mapNotNull { prisoners[it.nomisId] }
 
     val hdcStatuses = hdcService.getHdcStatus(prisonersForHdcCheck)
     return this.filter { it.isOnProbation == true || hdcStatuses.canBeSeenByCom(it.kind, it.bookingId!!) }

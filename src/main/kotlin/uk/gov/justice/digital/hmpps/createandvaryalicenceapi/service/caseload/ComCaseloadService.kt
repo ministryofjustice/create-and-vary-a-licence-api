@@ -127,12 +127,7 @@ class ComCaseloadService(
         else -> true
       }
     }
-    val hdcStatuses = hdcService.getHdcStatus(eligibleOffenders.map { it.nomisRecord!!.toPrisonerSearchPrisoner() })
-    return eligibleOffenders.filter {
-      val kind = it.findRelevantLicence()?.kind
-      val bookingId = it.nomisRecord?.bookingId?.toLong()!!
-      hdcStatuses.canBeSeenByCom(kind, bookingId)
-    }
+    return eligibleOffenders
   }
 
   fun mapOffendersToLicences(cases: List<ManagedCase>): List<ManagedCase> {
@@ -221,20 +216,28 @@ class ComCaseloadService(
     isReviewNeeded = licenceSummary.isReviewNeeded,
   )
 
-  private fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> = managedOffenders.filter { offender ->
-    offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
-  }.filter { offender ->
-    val releaseDate = offender.findRelevantLicence()?.releaseDate
-    releaseDate?.isAfter(LocalDate.now().minusDays(1)) == true
-  }.filter { offender ->
-    offender.licences.any { licence ->
-      licence.licenceStatus in listOf(
-        NOT_STARTED,
-        IN_PROGRESS,
-        SUBMITTED,
-        APPROVED,
-        TIMED_OUT,
-      )
+  private fun buildCreateCaseload(managedOffenders: List<ManagedCase>): List<ManagedCase> {
+    val hdcStatuses = hdcService.getHdcStatus(managedOffenders.map { it.nomisRecord!!.toPrisonerSearchPrisoner() })
+
+    return managedOffenders.filter {
+      val kind = it.findRelevantLicence()?.kind
+      val bookingId = it.nomisRecord?.bookingId?.toLong()!!
+      hdcStatuses.canBeSeenByCom(kind, bookingId)
+    }.filter { offender ->
+      offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
+    }.filter { offender ->
+      val releaseDate = offender.findRelevantLicence()?.releaseDate
+      releaseDate?.isAfter(LocalDate.now().minusDays(1)) == true
+    }.filter { offender ->
+      offender.licences.any { licence ->
+        licence.licenceStatus in listOf(
+          NOT_STARTED,
+          IN_PROGRESS,
+          SUBMITTED,
+          APPROVED,
+          TIMED_OUT,
+        )
+      }
     }
   }
 

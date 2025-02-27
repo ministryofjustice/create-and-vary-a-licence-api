@@ -96,7 +96,7 @@ class ComCaseloadSearchServiceTest {
     )
 
     verify(eligibilityService).isEligibleForCvl(aPrisonerSearchResult)
-    verify(hdcService).getHdcStatus(emptyList())
+    verify(hdcService).getHdcStatus(listOf(aPrisonerSearchResult))
 
     val resultsList = result.results
     val offender = resultsList.first()
@@ -176,7 +176,7 @@ class ComCaseloadSearchServiceTest {
     )
 
     verify(eligibilityService).isEligibleForCvl(aPrisonerSearchResult)
-    verify(hdcService).getHdcStatus(emptyList())
+    verify(hdcService).getHdcStatus(listOf(aPrisonerSearchResult))
 
     val resultsList = result.results
     val offender = resultsList.first()
