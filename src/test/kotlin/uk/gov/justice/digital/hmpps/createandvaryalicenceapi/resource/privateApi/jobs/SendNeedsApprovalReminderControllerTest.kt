@@ -1,26 +1,24 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.jobs
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.jobs.SendNeedsApprovalReminderController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.SendNeedsApprovalReminderService
 
 @ExtendWith(SpringExtension::class)
@@ -38,7 +36,7 @@ class SendNeedsApprovalReminderControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(sendNeedsApprovalReminderService)
+    org.mockito.kotlin.reset(sendNeedsApprovalReminderService)
 
     mvc = MockMvcBuilders
       .standaloneSetup(SendNeedsApprovalReminderController(sendNeedsApprovalReminderService))
@@ -49,11 +47,11 @@ class SendNeedsApprovalReminderControllerTest {
   @Test
   fun `send email to probation practitioner`() {
     mvc.perform(
-      MockMvcRequestBuilders.post("/notify-probation-of-unapproved-licences")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON),
+      post("/jobs/notify-probation-of-unapproved-licences")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON),
     )
-      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.status().isOk)
     verify(sendNeedsApprovalReminderService, times(1)).sendEmailsToProbationPractitioner()
   }
 }

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -14,15 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
 import java.time.Duration
 
 class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
@@ -46,15 +46,14 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
   )
   fun `Given an in progress Licence past release date when POST run-deactivate-licences-past-release-date then licence should inactivated`() {
     webTestClient.post()
-      .uri("/run-deactivate-licences-past-release-date")
+      .uri("/jobs/deactivate-licences-past-release-date")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
     val deactivatedLicences = webTestClient.post()
       .uri("/licence/match")
-      .bodyValue(MatchLicencesRequest(status = listOf(LicenceStatus.INACTIVE)))
+      .bodyValue(MatchLicencesRequest(status = listOf(INACTIVE)))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -67,15 +66,16 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(
-        tuple(1L, LicenceStatus.INACTIVE),
-        tuple(6L, LicenceStatus.INACTIVE),
-        tuple(7L, LicenceStatus.INACTIVE),
-        tuple(8L, LicenceStatus.INACTIVE),
+        tuple(1L, INACTIVE),
+        tuple(6L, INACTIVE),
+        tuple(7L, INACTIVE),
+        tuple(8L, INACTIVE),
       )
 
-    argumentCaptor<HMPPSDomainEvent>().apply {
+    argumentCaptor<DomainEventsService.HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(4)).publishDomainEvent(capture())
-      assertThat(allValues).allMatch { it.eventType == LicenceDomainEventType.LICENCE_INACTIVATED.value }
+      assertThat(allValues)
+        .allMatch { it.eventType == DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value }
     }
   }
 

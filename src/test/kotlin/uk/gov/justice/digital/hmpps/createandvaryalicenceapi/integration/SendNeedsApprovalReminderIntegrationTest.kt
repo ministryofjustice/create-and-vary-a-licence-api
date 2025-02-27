@@ -19,9 +19,8 @@ class SendNeedsApprovalReminderIntegrationTest : IntegrationTestBase() {
   )
   fun `notifies probation of unapproved licences`() {
     webTestClient.post()
-      .uri("/notify-probation-of-unapproved-licences")
+      .uri("/jobs/notify-probation-of-unapproved-licences")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 

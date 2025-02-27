@@ -48,7 +48,7 @@ class ExpireLicencesControllerTest {
   @Test
   fun `Run job to expire licences`() {
     mvc.perform(
-      MockMvcRequestBuilders.post("/run-expire-licences-job")
+      MockMvcRequestBuilders.post("/jobs/expire-licences")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON),
     )

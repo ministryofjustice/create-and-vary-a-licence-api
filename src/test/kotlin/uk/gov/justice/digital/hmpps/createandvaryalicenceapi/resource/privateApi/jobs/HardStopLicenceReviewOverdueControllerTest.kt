@@ -24,9 +24,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.HardSt
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
-@WebMvcTest(controllers = [HardStopLicenceReviewOverdueController::class])
+@WebMvcTest(controllers = [WarnHardStopReviewOverdueController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = [HardStopLicenceReviewOverdueController::class])
+@ContextConfiguration(classes = [WarnHardStopReviewOverdueController::class])
 @WebAppConfiguration
 class HardStopLicenceReviewOverdueControllerTest {
   @MockitoBean
@@ -40,7 +40,7 @@ class HardStopLicenceReviewOverdueControllerTest {
     reset(hardStopLicenceReviewOverdueService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(HardStopLicenceReviewOverdueController(hardStopLicenceReviewOverdueService))
+      .standaloneSetup(WarnHardStopReviewOverdueController(hardStopLicenceReviewOverdueService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -48,7 +48,7 @@ class HardStopLicenceReviewOverdueControllerTest {
   @Test
   fun `send email to COM`() {
     mvc.perform(
-      MockMvcRequestBuilders.post("/run-hard-stop-licence-review-overdue-job")
+      MockMvcRequestBuilders.post("/jobs/warn-hard-stop-review-overdue")
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON),
     )
