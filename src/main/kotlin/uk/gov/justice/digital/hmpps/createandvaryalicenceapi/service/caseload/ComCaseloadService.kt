@@ -226,8 +226,7 @@ class ComCaseloadService(
     }.filter { offender ->
       offender.nomisRecord?.status?.startsWith("ACTIVE") == true || offender.nomisRecord?.status == "INACTIVE TRN"
     }.filter { offender ->
-      val releaseDate = offender.findRelevantLicence()?.releaseDate
-      releaseDate?.isAfter(LocalDate.now().minusDays(1)) == true
+      offender.findRelevantLicence()?.releaseDate?.isAfter(LocalDate.now().minusDays(1)) == true
     }.filter { offender ->
       offender.licences.any { licence ->
         licence.licenceStatus in listOf(

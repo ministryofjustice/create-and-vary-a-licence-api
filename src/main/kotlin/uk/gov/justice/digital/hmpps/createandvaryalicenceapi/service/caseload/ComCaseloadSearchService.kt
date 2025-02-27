@@ -19,10 +19,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.m
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import java.time.LocalDate
 
@@ -78,11 +79,11 @@ class ComCaseloadSearchService(
 
   private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
-      licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, Companion.IN_FLIGHT_LICENCES)
+      licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, IN_FLIGHT_LICENCES)
     return if (licences.isEmpty()) {
       null
     } else {
-      val nonActiveLicenceStatuses = Companion.IN_FLIGHT_LICENCES - ACTIVE
+      val nonActiveLicenceStatuses = IN_FLIGHT_LICENCES - ACTIVE
       if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
     }
   }
@@ -120,10 +121,11 @@ class ComCaseloadSearchService(
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
   ): FoundProbationRecord? = when {
-    licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
-    prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) -> deliusOffender.toStartedRecord(
-      licence,
-    )
+    licence.statusCode.isOnProbation() ->
+      deliusOffender.toStartedRecord(licence)
+
+    prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) ->
+      deliusOffender.toStartedRecord(licence)
 
     else -> null
   }
@@ -139,7 +141,8 @@ class ComCaseloadSearchService(
     if (prisoners.isEmpty()) {
       return this
     }
-    val prisonersForHdcCheck = this.filter { Companion.PRE_RELEASE_STATUSES.contains(it.licenceStatus) }.mapNotNull { prisoners[it.nomisId] }
+    val prisonersForHdcCheck =
+      this.filter { PRE_RELEASE_STATUSES.contains(it.licenceStatus) }.mapNotNull { prisoners[it.nomisId] }
 
     val hdcStatuses = hdcService.getHdcStatus(prisonersForHdcCheck)
     return this.filter { it.isOnProbation == true || hdcStatuses.canBeSeenByCom(it.kind, it.bookingId!!) }
@@ -155,7 +158,7 @@ class ComCaseloadSearchService(
     return this.transformToUnstartedRecord(
       releaseDate = licenceStartDate,
       bookingId = prisonOffender.bookingId?.toLong(),
-      licenceType = LicenceType.Companion.getLicenceType(prisonOffender),
+      licenceType = getLicenceType(prisonOffender),
       licenceStatus = if (inHardStopPeriod) TIMED_OUT else NOT_STARTED,
       hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
       hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),

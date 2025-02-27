@@ -57,8 +57,8 @@ enum class LicenceStatus {
       ACTIVE,
       VARIATION_IN_PROGRESS,
       VARIATION_SUBMITTED,
-      VARIATION_REJECTED,
       VARIATION_APPROVED,
+      VARIATION_REJECTED,
     )
   }
 }
