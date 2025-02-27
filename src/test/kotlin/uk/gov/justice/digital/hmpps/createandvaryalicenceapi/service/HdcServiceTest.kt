@@ -221,6 +221,12 @@ class HdcServiceTest {
       assertThat(statuses.canBeSeenByCom(null, 1L)).isFalse
       assertThat(statuses.canBeSeenByCom(null, 2L)).isTrue
     }
+
+    @Test
+    fun canUnstartedCaseBeSeenByCa() {
+      assertThat(statuses.canUnstartedCaseBeSeenByCa(1L)).isFalse
+      assertThat(statuses.canUnstartedCaseBeSeenByCa(2L)).isTrue
+    }
   }
 
   private companion object {
