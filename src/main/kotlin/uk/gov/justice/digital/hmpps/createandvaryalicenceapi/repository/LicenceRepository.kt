@@ -245,6 +245,18 @@ interface LicenceRepository :
     """,
   )
   fun findLicenceAndVariations(licenceId: Long): List<Licence>
+
+  @Query(
+    """
+      SELECT l
+      FROM Licence l
+      WHERE l.statusCode in (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED)
+      AND l.id > :lastUpdatedLicenceId
+      ORDER BY l.id ASC
+      LIMIT :numberOfLicences
+    """,
+  )
+  fun findLicencesToBatchUpdateLsd(numberOfLicences: Long, lastUpdatedLicenceId: Long?): List<Licence>
 }
 
 interface EditedLicenceNotReApproved {
