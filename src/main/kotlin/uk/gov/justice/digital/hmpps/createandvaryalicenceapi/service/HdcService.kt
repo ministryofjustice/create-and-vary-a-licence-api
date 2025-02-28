@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import java.time.LocalDate
+import java.time.LocalTime
 
 @Service
 class HdcService(
@@ -42,21 +44,20 @@ class HdcService(
 
     val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
 
-    return if (licence.curfewTimes.isNotEmpty()) {
-      HdcLicenceData(
-        licenceId = licenceData.licenceId,
-        curfewAddress = licenceData.curfewAddress,
-        firstNightCurfewHours = licenceData.firstNightCurfewHours,
-        curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
-      )
+    val curfewTimes = if (licence.curfewTimes.isNotEmpty()) {
+      licence.curfewTimes.transformToModelCurfewTimes()
     } else {
-      HdcLicenceData(
-        licenceId = licenceData.licenceId,
-        curfewAddress = licenceData.curfewAddress,
-        firstNightCurfewHours = licenceData.firstNightCurfewHours,
-        curfewTimes = licenceData.curfewTimes,
-      )
+      licenceData.curfewTimes
     }
+
+    val firstNightCurfewHours = licenceData.firstNightCurfewHours ?: DEFAULT_FIRST_NIGHT_HOURS
+
+    return HdcLicenceData(
+      licenceId = licenceData.licenceId,
+      curfewAddress = licenceData.curfewAddress,
+      firstNightCurfewHours = firstNightCurfewHours,
+      curfewTimes = curfewTimes,
+    )
   }
 
   data class HdcStatuses(val approvedIds: Set<Long>) {
@@ -86,5 +87,12 @@ class HdcService(
       val approvedForHdc = approvedIds.contains(bookingId)
       return (kind == HDC && approvedForHdc) || (kind != HDC && !approvedForHdc)
     }
+  }
+
+  companion object {
+    val DEFAULT_FIRST_NIGHT_HOURS = FirstNight(
+      firstNightFrom = LocalTime.of(15, 0),
+      firstNightUntil = LocalTime.of(7, 0),
+    )
   }
 }

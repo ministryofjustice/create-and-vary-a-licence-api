@@ -11,6 +11,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.CurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
@@ -90,22 +91,6 @@ class HdcServiceTest {
   }
 
   @Test
-  fun `getHdcLicenceData returns HDC licence data successfully when there are no first night curfew hours`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
-      someHdcLicenceData.copy(
-        firstNightCurfewHours = null,
-      ),
-    )
-    val result = service.getHdcLicenceData(1)
-    assertThat(result).isNotNull
-    assertThat(result?.curfewAddress).isEqualTo(aCurfewAddress)
-    assertThat(result?.firstNightCurfewHours).isNull()
-    assertThat(result?.curfewTimes).isEqualTo(aModelSetOfCurfewTimes)
-    verify(hdcApiClient, times(1)).getByBookingId(54321L)
-  }
-
-  @Test
   fun `getHdcLicenceData returns HDC licence data successfully when no recorded curfew times`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
@@ -136,6 +121,18 @@ class HdcServiceTest {
     assertThat(result).isNotNull
     assertThat(result?.curfewAddress).isEqualTo(anAddress)
     verify(hdcApiClient, times(1)).getByBookingId(54321L)
+  }
+
+  @Test
+  fun `getHdcLicenceData returns default first night hours if not provided from HDC`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
+      someHdcLicenceData.copy(
+        firstNightCurfewHours = null,
+      ),
+    )
+    val result = service.getHdcLicenceData(1)
+    assertThat(result?.firstNightCurfewHours).isEqualTo(HdcService.DEFAULT_FIRST_NIGHT_HOURS)
   }
 
   @Test
@@ -230,7 +227,7 @@ class HdcServiceTest {
   }
 
   private companion object {
-    val aLicenceEntity = TestData.createHdcLicence()
+    val aLicenceEntity = createHdcLicence()
 
     val aCurfewAddress = CurfewAddress(
       "1 Test Street",
@@ -248,7 +245,7 @@ class HdcServiceTest {
       listOf(
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           1,
           DayOfWeek.MONDAY,
           LocalTime.of(20, 0),
@@ -258,7 +255,7 @@ class HdcServiceTest {
         ),
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           2,
           DayOfWeek.TUESDAY,
           LocalTime.of(20, 0),
@@ -268,7 +265,7 @@ class HdcServiceTest {
         ),
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           3,
           DayOfWeek.WEDNESDAY,
           LocalTime.of(20, 0),
@@ -278,7 +275,7 @@ class HdcServiceTest {
         ),
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           4,
           DayOfWeek.THURSDAY,
           LocalTime.of(20, 0),
@@ -288,7 +285,7 @@ class HdcServiceTest {
         ),
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           5,
           DayOfWeek.FRIDAY,
           LocalTime.of(20, 0),
@@ -298,7 +295,7 @@ class HdcServiceTest {
         ),
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           6,
           DayOfWeek.SATURDAY,
           LocalTime.of(20, 0),
@@ -308,7 +305,7 @@ class HdcServiceTest {
         ),
         EntityHdcCurfewTimes(
           1L,
-          TestData.createHdcLicence(),
+          createHdcLicence(),
           7,
           DayOfWeek.SUNDAY,
           LocalTime.of(20, 0),
@@ -378,11 +375,8 @@ class HdcServiceTest {
         ),
       )
 
-    val aLicenceEntityWithCurfewTimes = TestData.createHdcLicence().copy().let {
-      it.copy(
-        curfewTimes = anEntitySetOfCurfewTimes,
-      )
-    }
+    val aLicenceEntityWithCurfewTimes = createHdcLicence()
+      .copy(curfewTimes = anEntitySetOfCurfewTimes)
 
     val someHdcLicenceData = HdcLicenceData(
       licenceId = 1L,

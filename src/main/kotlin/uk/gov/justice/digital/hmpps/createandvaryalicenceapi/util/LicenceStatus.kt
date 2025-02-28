@@ -46,12 +46,19 @@ enum class LicenceStatus {
       VARIATION_REJECTED,
     )
 
+    val PRE_RELEASE_STATUSES = setOf(
+      NOT_STARTED,
+      IN_PROGRESS,
+      SUBMITTED,
+      APPROVED,
+    )
+
     val ON_PROBATION_STATUSES = setOf(
       ACTIVE,
       VARIATION_IN_PROGRESS,
       VARIATION_SUBMITTED,
-      VARIATION_REJECTED,
       VARIATION_APPROVED,
+      VARIATION_REJECTED,
     )
   }
 }
