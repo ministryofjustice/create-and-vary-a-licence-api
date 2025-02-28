@@ -3,29 +3,32 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import java.time.LocalDate
 
 class LicenceTypeTest {
-  val companion = LicenceType.Companion
 
   @Nested
   inner class PrisonerSearchPrisonerParam {
     @Test
     fun `should default to AP`() {
-      val nomisRecord = TestData.prisonerSearchResult().copy(licenceExpiryDate = null, topupSupervisionExpiryDate = null)
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      val nomisRecord =
+        TestData.prisonerSearchResult().copy(licenceExpiryDate = null, topupSupervisionExpiryDate = null)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
     fun `should be PSS when TUSED is defined and LED is undefined`() {
-      val nomisRecord = TestData.prisonerSearchResult().copy(licenceExpiryDate = null, topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22))
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.PSS)
+      val nomisRecord = TestData.prisonerSearchResult()
+        .copy(licenceExpiryDate = null, topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22))
+      assert(getLicenceType(nomisRecord) == LicenceType.PSS)
     }
 
     @Test
     fun `should be AP when LED is defined and TUSED is undefined`() {
-      val nomisRecord = TestData.prisonerSearchResult().copy(licenceExpiryDate = LocalDate.of(2021, 10, 22), topupSupervisionExpiryDate = null)
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      val nomisRecord = TestData.prisonerSearchResult()
+        .copy(licenceExpiryDate = LocalDate.of(2021, 10, 22), topupSupervisionExpiryDate = null)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
@@ -34,7 +37,7 @@ class LicenceTypeTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 21),
       )
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
@@ -43,7 +46,7 @@ class LicenceTypeTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       )
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
@@ -52,7 +55,7 @@ class LicenceTypeTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
       )
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP_PSS)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP_PSS)
     }
   }
 
@@ -63,19 +66,19 @@ class LicenceTypeTest {
     @Test
     fun `should default to AP`() {
       val nomisRecord = prisoner.copy(licenceExpiryDate = null, topupSupervisionExpiryDate = null)
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
     fun `should be PSS when TUSED is defined and LED is undefined`() {
       val nomisRecord = prisoner.copy(licenceExpiryDate = null, topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22))
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.PSS)
+      assert(getLicenceType(nomisRecord) == LicenceType.PSS)
     }
 
     @Test
     fun `should be AP when LED is defined and TUSED is undefined`() {
       val nomisRecord = prisoner.copy(licenceExpiryDate = LocalDate.of(2021, 10, 22), topupSupervisionExpiryDate = null)
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
@@ -84,7 +87,7 @@ class LicenceTypeTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 21),
       )
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
@@ -93,7 +96,7 @@ class LicenceTypeTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       )
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP)
     }
 
     @Test
@@ -102,7 +105,7 @@ class LicenceTypeTest {
         licenceExpiryDate = LocalDate.of(2021, 10, 22),
         topupSupervisionExpiryDate = LocalDate.of(2021, 10, 23),
       )
-      assert(companion.getLicenceType(nomisRecord) == LicenceType.AP_PSS)
+      assert(getLicenceType(nomisRecord) == LicenceType.AP_PSS)
     }
   }
 }

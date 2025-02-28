@@ -712,7 +712,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
+        whenever(hdcService.getHdcStatus(listOf(prisoner))).thenReturn(HdcStatuses(setOf(prisoner.bookingId!!.toLong())))
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -726,23 +726,20 @@ class CaCaseloadServiceTest {
         whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
           true,
         )
+        val prisoner = aPrisonerSearchPrisoner.copy(
+          prisonerNumber = "A1234AA",
+          conditionalReleaseDate = fiveDaysFromNow,
+          confirmedReleaseDate = twoDaysFromNow,
+          status = "ACTIVE IN",
+          legalStatus = "SENTENCED",
+          homeDetentionCurfewEligibilityDate = twoDaysFromNow,
+          bookingId = "1234",
+        )
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
-          PageImpl(
-            listOf(
-              aPrisonerSearchPrisoner.copy(
-                prisonerNumber = "A1234AA",
-                conditionalReleaseDate = fiveDaysFromNow,
-                confirmedReleaseDate = twoDaysFromNow,
-                status = "ACTIVE IN",
-                legalStatus = "SENTENCED",
-                homeDetentionCurfewEligibilityDate = twoDaysFromNow,
-                bookingId = "1234",
-              ),
-            ),
-          ),
+          PageImpl(listOf(prisoner)),
         )
 
-        whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+        whenever(hdcService.getHdcStatus(listOf(prisoner))).thenReturn(HdcStatuses(emptySet()))
 
         whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
           listOf(
