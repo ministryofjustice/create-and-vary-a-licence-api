@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi.jobs
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateApi
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags.Companion.LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 
+@Tag(name = LICENCES)
 @RestController
 @RequestMapping("", produces = [MediaType.APPLICATION_JSON_VALUE])
 class BulkDeactivateLicencesController(
   private val licenceService: LicenceService,
 ) {
 
-  @Tag(name = Tags.JOBS)
   @PostMapping(value = ["/licence/inactivate-licences"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @Operation(

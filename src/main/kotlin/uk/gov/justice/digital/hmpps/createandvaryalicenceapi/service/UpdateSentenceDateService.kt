@@ -96,7 +96,7 @@ class UpdateSentenceDateService(
         append("PRRD ${sentenceChanges.prrdChanged} ")
         if (licenceEntity is HdcLicence) {
           append("HDCAD ${sentenceChanges.hdcadChanged} ")
-          append("HDCAD ${sentenceChanges.hdcEndDateChanged} ")
+          append("HDCENDDATE ${sentenceChanges.hdcEndDateChanged} ")
         }
         append("isMaterial ${sentenceChanges.isMaterial}")
       },
@@ -107,7 +107,6 @@ class UpdateSentenceDateService(
         updatedLicenceEntity.bookingId!!,
         prisoner.sentenceDetail.homeDetentionCurfewEligibilityDate,
       )
-
       notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges, isNotApprovedForHdc)
     }
   }

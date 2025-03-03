@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -20,9 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.HDC_LICENCE_ACTIVATED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -40,25 +39,25 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
   )
   fun `Run licence activation job`() {
     webTestClient.post()
-      .uri("/run-activation-job")
+      .uri("/jobs/activate-licences")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 
     argumentCaptor<HMPPSDomainEvent>().apply {
       verify(eventsPublisher, times(8)).publishDomainEvent(capture())
 
-      assertThat(allValues).extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }
+      assertThat(allValues)
+        .extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }
         .containsExactly(
-          tuple(LICENCE_ACTIVATED.value, "1"),
-          tuple(LICENCE_ACTIVATED.value, "2"),
-          tuple(LICENCE_ACTIVATED.value, "3"),
-          tuple(LICENCE_ACTIVATED.value, "7"),
-          tuple(HDC_LICENCE_ACTIVATED.value, "8"),
-          tuple(LICENCE_INACTIVATED.value, "4"),
-          tuple(LICENCE_INACTIVATED.value, "5"),
-          tuple(LICENCE_INACTIVATED.value, "6"),
+          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "1"),
+          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "2"),
+          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "3"),
+          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "7"),
+          tuple(LicenceDomainEventType.HDC_LICENCE_ACTIVATED.value, "8"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "4"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "5"),
+          tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "6"),
         )
     }
 

@@ -46,13 +46,8 @@ class DeactivateHdcLicencesController(
       ),
       ApiResponse(
         responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+        description = "Unauthorised",
+        content = [Content(mediaType = "text/html")],
       ),
     ],
   )

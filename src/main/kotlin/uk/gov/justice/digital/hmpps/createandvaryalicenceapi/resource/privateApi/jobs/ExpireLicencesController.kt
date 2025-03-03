@@ -2,17 +2,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateAp
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.LicenceExpiryService
 
@@ -23,12 +20,11 @@ class ExpireLicencesController(
   private val licenceExpiryService: LicenceExpiryService,
 ) {
 
-  @PostMapping(value = ["/run-expire-licences-job"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+  @ProtectedByIngress
+  @PostMapping(value = ["/jobs/expire-licences"])
   @Operation(
-    summary = "Triggers the licence expiry job.",
-    description = "Triggers a job that causes licences with an ACTIVE status to be deactivated if they are passed their TUSED (if present) or LED (if TUSED is null). Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    summary = "Expires licences that have ended.",
+    description = "Triggers a job that causes licences with an ACTIVE status to be deactivated if they are passed their TUSED (if present) or LED (if TUSED is null).",
   )
   @ApiResponses(
     value = [
@@ -39,12 +35,7 @@ class ExpireLicencesController(
       ApiResponse(
         responseCode = "401",
         description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+        content = [Content(mediaType = "text/html")],
       ),
     ],
   )

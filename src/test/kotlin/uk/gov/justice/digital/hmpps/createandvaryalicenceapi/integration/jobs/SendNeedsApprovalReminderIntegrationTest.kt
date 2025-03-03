@@ -1,10 +1,11 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.jobs
 
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
@@ -19,9 +20,8 @@ class SendNeedsApprovalReminderIntegrationTest : IntegrationTestBase() {
   )
   fun `notifies probation of unapproved licences`() {
     webTestClient.post()
-      .uri("/notify-probation-of-unapproved-licences")
+      .uri("/jobs/notify-probation-of-unapproved-licences")
       .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
 

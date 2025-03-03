@@ -2,17 +2,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.privateAp
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ProtectedByIngress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.TimeOutLicencesService
 
@@ -22,12 +19,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.TimeOu
 class TimeOutLicencesController(
   private val timeOutLicencesService: TimeOutLicencesService,
 ) {
-  @PostMapping(value = ["/run-time-out-job"])
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
+
+  @ProtectedByIngress
+  @PostMapping(value = ["/jobs/time-out-licences"])
   @Operation(
-    summary = "Triggers the time out licence job.",
-    description = "Triggers a job that causes licences with a status of IN_PROGRESS and a CRD or ARD less than two working days to be updated to TIMED_OUT. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    summary = "Times out licences that have hit hard stop.",
+    description = "Triggers a job that causes licences with a status of IN_PROGRESS and a CRD or ARD less than two working days to be updated to TIMED_OUT.",
   )
   @ApiResponses(
     value = [
@@ -37,13 +34,8 @@ class TimeOutLicencesController(
       ),
       ApiResponse(
         responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+        description = "Unauthorised",
+        content = [Content(mediaType = "text/html")],
       ),
     ],
   )
