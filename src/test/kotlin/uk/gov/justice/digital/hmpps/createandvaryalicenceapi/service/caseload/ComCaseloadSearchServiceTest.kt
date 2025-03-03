@@ -162,10 +162,16 @@ class ComCaseloadSearchServiceTest {
   fun `search for offenders in prison with latest licence selected`() {
     val licences = listOf(
       aLicenceEntity.copy(
-        statusCode = LicenceStatus.ACTIVE,
+        id = 1,
+        statusCode = LicenceStatus.APPROVED,
+        versionOfId = null,
+        licenceVersion = "1.0",
       ),
       aLicenceEntity.copy(
-        statusCode = LicenceStatus.APPROVED,
+        id = 2,
+        statusCode = LicenceStatus.IN_PROGRESS,
+        versionOfId = 1,
+        licenceVersion = "1.1",
       ),
     )
 
@@ -194,9 +200,9 @@ class ComCaseloadSearchServiceTest {
         "A01B02C",
         "Test Team",
         LocalDate.parse("2021-10-22"),
-        1L,
+        2L,
         LicenceType.AP,
-        LicenceStatus.APPROVED,
+        LicenceStatus.IN_PROGRESS,
         false,
       ),
     )
@@ -206,10 +212,14 @@ class ComCaseloadSearchServiceTest {
   fun `search for offenders on probation with latest licence selected`() {
     val licences = listOf(
       aLicenceEntity.copy(
+        id = 1,
         statusCode = LicenceStatus.ACTIVE,
+        licenceVersion = "1.0",
       ),
       aLicenceEntity.copy(
+        id = 2,
         statusCode = LicenceStatus.VARIATION_SUBMITTED,
+        licenceVersion = "2.0",
       ),
     )
 
@@ -239,7 +249,7 @@ class ComCaseloadSearchServiceTest {
         "A01B02C",
         "Test Team",
         LocalDate.parse("2021-10-22"),
-        1L,
+        2L,
         LicenceType.AP,
         LicenceStatus.VARIATION_SUBMITTED,
         true,
@@ -648,10 +658,14 @@ class ComCaseloadSearchServiceTest {
   fun `hard stop dates are populated for started licences`() {
     val licences = listOf(
       aLicenceEntity.copy(
+        id = 1,
         statusCode = LicenceStatus.ACTIVE,
+        licenceVersion = "1.0",
       ),
       aLicenceEntity.copy(
+        id = 2,
         statusCode = LicenceStatus.APPROVED,
+        licenceVersion = "2.0",
       ),
     )
 
