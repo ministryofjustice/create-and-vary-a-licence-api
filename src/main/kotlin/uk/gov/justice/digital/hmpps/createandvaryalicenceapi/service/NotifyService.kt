@@ -27,7 +27,6 @@ class NotifyService(
   @Value("\${notify.templates.hardStopLicenceApproved}") private val hardStopLicenceApprovedTemplateId: String,
   @Value("\${notify.templates.editedLicenceTimedOut}") private val editedLicenceTimedOutTemplateId: String,
   @Value("\${notify.templates.hardStopLicenceReviewOverdue}") private val hardStopLicenceReviewOverdueTemplateId: String,
-  @Value("\${notify.templates.notifyAttentionNeededLicences}") private val notifyAttentionNeededLicences: String,
   @Value("\${internalEmailAddress}") private val internalEmailAddress: String,
   private val client: NotificationClient,
   private val releaseDateService: ReleaseDateService,
@@ -266,23 +265,6 @@ class NotifyService(
       }
     } else {
       log.error("Notification failed (hardStopLicenceReviewOverdue) for licence $licenceId - email and CRD must be present")
-    }
-  }
-
-  fun sendAttentionNeededLicencesEmail(
-    emailAddress: String?,
-    fileContents: ByteArray,
-    fileName: String,
-  ) {
-    if (emailAddress != null) {
-      val values = mapOf(
-        "linkToDocument" to NotificationClient.prepareUpload(fileContents, fileName),
-      )
-      if (sendEmail(notifyAttentionNeededLicences, emailAddress, values)) {
-        log.info("Notification sent to $emailAddress with list of licences that needed attention")
-      }
-    } else {
-      log.error("Notification failed (notifyAttentionNeededLicences) - email must be present")
     }
   }
 

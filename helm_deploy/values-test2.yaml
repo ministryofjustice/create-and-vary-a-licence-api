@@ -39,60 +39,54 @@ dataExtractorEnabled: false
 jobs:
   - name: prompt-licence-creation-job
     enabled: true
-    path: /jobs/prompt-licence-creation
+    path: /prompt-licence-creation
     cron: "0 9 * * 1" # 9am UTC, Monday
     allowRetry: false
 
   - name: deactivate-hdc-licences-job
     enabled: true
-    path: /jobs/deactivate-hdc-licences
+    path: /deactivate-hdc-licences
     cron: "0 3 * * *" # 3am UTC every day
     allowRetry: true
 
   - name: activate-licences-job
     enabled: true
-    path: /jobs/activate-licences
+    path: /activate-licences
     cron: "0 9,12,15,18 * * *"  # 9am, 12pm, 3pm, and 6pm UTC every day
     allowRetry: true
 
   - name: deactivate-licences-past-release-date-job
     enabled: true
-    path: /jobs/deactivate-licences-past-release-date
+    path: /deactivate-licences-past-release-date
     cron: "0 7 * * 1-5" # 7am UTC Monday - Friday
     allowRetry: true
 
   - name: expire-licences-job
     enabled: true
-    path: /jobs/expire-licences
+    path: /expire-licences
     cron: "0 10 * * 1-5" # 10am UTC, Monday - Friday
     allowRetry: true
 
   - name: warn-hard-stop-review-overdue-job
     enabled: true
-    path: /jobs/warn-hard-stop-review-overdue
+    path: /warn-hard-stop-review-overdue
     cron: "0 8 * * 1-5" # 8am UTC Monday - Friday
     allowRetry: true
 
   - name: time-out-licences-job
     enabled: true
-    path: /jobs/time-out-licences
+    path: /time-out-licences
     cron: "30 7 * * 1-5" # 7:30am UTC Monday - Friday
     allowRetry: true
 
   - name: remove-expired-conditions-job
     enabled: true
-    path: /jobs/remove-expired-conditions
+    path: /remove-expired-conditions
     cron: "0 7 * * 1-5" # 7am UTC, Monday - Friday
-    allowRetry: true
-
-  - name: send-attention-needed-licences-email-job
-    enabled: true
-    path: /jobs/send-attention-needed-licences-email
-    cron: "0 9 * * 1" # 9am UTC, every monday
     allowRetry: true
 
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
-    path: /jobs/notify-probation-of-unapproved-licences
+    path: /notify-probation-of-unapproved-licences
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
     allowRetry: true

@@ -228,17 +228,6 @@ interface LicenceRepository :
     """
       SELECT l
         FROM Licence l
-        WHERE (l.statusCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED, uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS)
-                AND l.licenceStartDate IS NULL)
-        OR (l.statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED AND l.licenceStartDate < CURRENT_DATE)
-    """,
-  )
-  fun getAttentionNeededLicences(): List<Licence>
-
-  @Query(
-    """
-      SELECT l
-        FROM Licence l
         WHERE (l.id = :licenceId AND l.statusCode = uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE)
         OR l.variationOfId = :licenceId
         AND l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
