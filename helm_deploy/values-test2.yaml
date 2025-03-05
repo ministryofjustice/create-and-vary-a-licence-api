@@ -85,12 +85,6 @@ jobs:
     cron: "0 7 * * 1-5" # 7am UTC, Monday - Friday
     allowRetry: true
 
-  - name: send-attention-needed-licences-email-job
-    enabled: true
-    path: /jobs/send-attention-needed-licences-email
-    cron: "0 9 * * 1" # 9am UTC, every monday
-    allowRetry: true
-
   - name: notify-probation-of-unapproved-licences-job
     enabled: true
     path: /jobs/notify-probation-of-unapproved-licences
