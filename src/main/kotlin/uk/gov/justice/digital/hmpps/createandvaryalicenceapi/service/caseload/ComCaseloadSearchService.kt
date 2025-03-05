@@ -79,7 +79,7 @@ class ComCaseloadSearchService(
   private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
       licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, IN_FLIGHT_LICENCES)
-    return getLatestLicence(licences)
+    return licences.maxWithOrNull(versionComparator)
   }
 
   private fun findPrisonersForRelevantRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
@@ -178,23 +178,14 @@ class ComCaseloadSearchService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
   )
 
-  private fun getLatestLicence(licences: List<Licence>): Licence? {
-    if (licences.isEmpty()) return null
-
-    return licences.reduce { acc: Licence, licence ->
-      if (acc.licenceVersion == null) return licence
-
-      val (accMajorV, accMinorV) = acc.licenceVersion!!.split('.')
-      val (licenceMajorV, licenceMinorV) = licence.licenceVersion!!.split('.')
-
-      if (
-        licenceMajorV > accMajorV ||
-        (licenceMajorV == accMajorV && licenceMinorV > accMinorV)
-      ) {
-        licence
-      } else {
-        acc
-      }
+  private val versionComparator = Comparator<Licence> { l1, l2 ->
+    val (major1, minor1) = l1.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)
+    val (major2, minor2) = l2.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)
+    val majorComparison = major1.compareTo(major2)
+    if (majorComparison != 0) {
+      majorComparison
+    } else {
+      minor1.compareTo(minor2)
     }
   }
 
