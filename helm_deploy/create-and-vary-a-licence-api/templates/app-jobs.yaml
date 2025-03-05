@@ -14,9 +14,11 @@ spec:
   jobTemplate:
     spec:
       ttlSecondsAfterFinished: 345600 # 4 days
+      {{- if not .allowRetry }}
       backoffLimit: 0
       parallelism: 1
       completions: 1
+      {{- end}}
       template:
         spec:
           restartPolicy: Never
@@ -27,7 +29,7 @@ spec:
               args:
                 - /bin/sh
                 - -c
-                - curl --fail -X POST "https://$BASE_URL/jobs/{{ .path }}"
+                - curl --fail {{- if .allowRetry }} --retry 5 {{ end }} -X POST "https://$BASE_URL/jobs{{ .path }}"
               env:
                 - name: BASE_URL
                   value: {{  index $ "Values" "generic-service" "ingress" "hosts" 0 }}
