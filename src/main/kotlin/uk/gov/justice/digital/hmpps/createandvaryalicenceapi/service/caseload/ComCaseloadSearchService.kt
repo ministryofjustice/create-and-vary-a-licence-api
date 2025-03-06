@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.P
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -80,12 +79,7 @@ class ComCaseloadSearchService(
   private fun getLicence(result: CaseloadResult): Licence? {
     val licences =
       licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, IN_FLIGHT_LICENCES)
-    return if (licences.isEmpty()) {
-      null
-    } else {
-      val nonActiveLicenceStatuses = IN_FLIGHT_LICENCES - ACTIVE
-      if (licences.size > 1) licences.find { licence -> licence.statusCode in nonActiveLicenceStatuses } else licences.first()
-    }
+    return licences.maxWithOrNull(versionComparator)
   }
 
   private fun findPrisonersForRelevantRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
@@ -183,6 +177,17 @@ class ComCaseloadSearchService(
     isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
   )
+
+  private val versionComparator = Comparator<Licence> { l1, l2 ->
+    val (major1, minor1) = l1.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)
+    val (major2, minor2) = l2.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)
+    val majorComparison = major1.compareTo(major2)
+    if (majorComparison != 0) {
+      majorComparison
+    } else {
+      minor1.compareTo(minor2)
+    }
+  }
 
   private data class CvlProbationSearchRecord(
     val caseloadResult: CaseloadResult,
