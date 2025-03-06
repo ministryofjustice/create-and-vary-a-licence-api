@@ -42,13 +42,13 @@ jobs:
   - name: deactivate-hdc-licences-job
     enabled: true
     path: /deactivate-hdc-licences
-    cron: "0 3 * * *" # 3am UTC every day
+    cron: "30 9 * * 1-5" # 9:30am UTC Monday - Friday
     allowRetry: true
 
   - name: activate-licences-job
     enabled: true
     path: /activate-licences
-    cron: "0 9,12,15,18 * * *"  # 9am, 12pm, 3pm, and 6pm UTC every day
+    cron: "0 9,12,15,18 * * 1-5"  # 9am, 12pm, 3pm, and 6pm UTC Monday - Friday
     allowRetry: true
 
   - name: deactivate-licences-past-release-date-job
@@ -67,7 +67,7 @@ jobs:
     enabled: true
     path: /warn-hard-stop-review-overdue
     cron: "0 8 * * 1-5" # 8am UTC Monday - Friday
-    allowRetry: true
+    allowRetry: false
 
   - name: time-out-licences-job
     enabled: true
@@ -85,4 +85,4 @@ jobs:
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "0 11 * * 1-5" # 11am UTC, Monday - Friday
-    allowRetry: true
+    allowRetry: false
