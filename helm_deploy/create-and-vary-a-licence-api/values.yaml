@@ -109,7 +109,7 @@ jobs:
     enabled: true
     path: /warn-hard-stop-review-overdue
     cron: "0 8 * * 1-5" # 8am UTC Monday - Friday
-    allowRetry: true
+    allowRetry: false
 
   - name: time-out-licences-job
     enabled: true
@@ -127,4 +127,4 @@ jobs:
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "0 2 * * *" # 2am every day
-    allowRetry: true
+    allowRetry: false
