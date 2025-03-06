@@ -282,6 +282,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @Test
     fun `Create a AP HDC licence`() {
       prisonApiMockServer.stubGetPrison()
+      prisonApiMockServer.stubGetHdcLatest(123, "APPROVED")
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
@@ -319,6 +320,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @Test
     fun `Create a AP_PSS HDC licence`() {
       prisonApiMockServer.stubGetPrison()
+      prisonApiMockServer.stubGetHdcLatest(123, "APPROVED")
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPPSSResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()

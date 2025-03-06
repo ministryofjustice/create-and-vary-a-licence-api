@@ -13,11 +13,9 @@ class PrisonApiMockServer : WireMockServer(8091) {
       get(urlEqualTo("/api/offender-sentences/booking/$bookingId/home-detention-curfews/latest")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
-                  "content": {
-                      "approvalStatus": "$approvalStatus",
-                      "passed": $passed,
-                      "bookingId": $bookingId
-                   }
+                "approvalStatus": "$approvalStatus",
+                "passed": $passed,
+                "bookingId": $bookingId
                }""",
         ).withStatus(200),
       ),
