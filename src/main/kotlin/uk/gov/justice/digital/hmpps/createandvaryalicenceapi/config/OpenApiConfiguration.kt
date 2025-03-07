@@ -55,7 +55,10 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
           ),
       )
     }
-    .packagesToScan("uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi")
+    .packagesToScan(
+      "uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi",
+      "uk.gov.justice.digital.hmpps.digitalprisonreportinglib",
+    )
     .build()
 
   @Bean

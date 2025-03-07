@@ -17,6 +17,9 @@ class EndpointSecurityTest {
     // These only gets wired up in tests
     "uk.gov.justice.hmpps.sqs.HmppsQueueResource",
     "uk.gov.justice.hmpps.sqs.HmppsReactiveQueueResource",
+    "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.DashboardDefinitionController",
+    "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.DataApiSyncController",
+    "uk.gov.justice.digital.hmpps.digitalprisonreportinglib.controller.ReportDefinitionController",
   )
 
   private data class EndpointInfo(
