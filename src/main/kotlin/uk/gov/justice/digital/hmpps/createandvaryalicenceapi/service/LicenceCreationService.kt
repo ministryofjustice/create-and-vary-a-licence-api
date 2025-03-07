@@ -154,17 +154,7 @@ class LicenceCreationService(
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
 
-    if (nomisRecord.homeDetentionCurfewActualDate == null) {
-      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
-    }
-
-    if (nomisRecord.homeDetentionCurfewEligibilityDate == null) {
-      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCED")
-    }
-
-    if (!hdcService.isApprovedForHdc(nomisRecord.bookingId!!.toLong(), nomisRecord.homeDetentionCurfewEligibilityDate)) {
-      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as they are not approved for HDC")
-    }
+    hdcService.isEligibleForHdcLicence(nomisRecord)
 
     if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 

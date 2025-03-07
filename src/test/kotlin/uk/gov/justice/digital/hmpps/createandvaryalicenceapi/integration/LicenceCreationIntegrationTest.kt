@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
@@ -286,6 +287,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
+      hdcApiMockServer.stubGetHdcLicenceData(123)
 
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -324,6 +326,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPPSSResult()
       probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
+      hdcApiMockServer.stubGetHdcLicenceData(123)
 
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -358,6 +361,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     @Test
     fun `Service throws error when PSS HDC licence`() {
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCPSSResult()
+      hdcApiMockServer.stubGetHdcLicenceData(123)
 
       val exception = webTestClient.post()
         .uri("/licence/create")
@@ -411,6 +415,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val prisonerSearchMockServer = PrisonerSearchMockServer()
     val probationSearchMockServer = ProbationSearchMockServer()
     val deliusMockServer = DeliusMockServer()
+    val hdcApiMockServer = HdcApiMockServer()
 
     @JvmStatic
     @BeforeAll
@@ -420,6 +425,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.start()
       probationSearchMockServer.start()
       deliusMockServer.start()
+      hdcApiMockServer.start()
     }
 
     @JvmStatic
@@ -430,6 +436,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonerSearchMockServer.stop()
       probationSearchMockServer.stop()
       deliusMockServer.stop()
+      hdcApiMockServer.stop()
     }
   }
 }
