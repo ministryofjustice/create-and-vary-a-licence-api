@@ -25,7 +25,10 @@ hmpps:
       url: "https://prison-register-dev.hmpps.service.justice.gov.uk"
   delius:
     api:
-       url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
+      url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
+  manageusers:
+    api:
+      url: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
   probationsearch:
     api:
       url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"

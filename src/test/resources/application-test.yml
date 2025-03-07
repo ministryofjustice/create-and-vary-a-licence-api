@@ -52,6 +52,9 @@ hmpps:
   delius:
     api:
       url: http://localhost:8093
+  manageusers:
+    api:
+      url: http://localhost:8096
   probationsearch:
     api:
       url: http://localhost:8094

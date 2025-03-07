@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "7.1.2"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "7.1.3"
   kotlin("plugin.spring") version "2.1.10"
   kotlin("plugin.jpa") version "2.1.10"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
@@ -19,15 +19,14 @@ ext["logback.version"] = "1.5.14"
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+  // hmpps-kotlin-lib
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.0")
+
   // Spring boot dependencies
-  implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
-  implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-  implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-cache")
-  implementation("org.springframework.security:spring-security-config:6.4.3")
 
   // GOVUK Notify:
   implementation("uk.gov.service.notify:notifications-java-client:5.2.1-RELEASE")
@@ -45,10 +44,13 @@ dependencies {
   implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.2")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.3.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.3.2")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
+
+  // Digital prison reporting
+  implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:7.10.5")
 
   // Test dependencies
   testImplementation("org.wiremock:wiremock-standalone:3.12.0")
