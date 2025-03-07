@@ -78,6 +78,7 @@ class LicenceCreationServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val deliusApiClient = mock<DeliusApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val hdcService = mock<HdcService>()
 
   private val service = LicenceCreationService(
     licenceRepository,
@@ -92,6 +93,7 @@ class LicenceCreationServiceTest {
     prisonApiClient,
     deliusApiClient,
     releaseDateService,
+    hdcService,
   )
 
   @Nested
@@ -1163,15 +1165,20 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult().copy(
         homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
         homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
+        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
 
       service.createHdcLicence(prisonNumber)
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(1)).saveAndFlush(any())
+      verify(licenceEventRepository, times(1)).saveAndFlush(any())
 
       with(licenceCaptor.value as HdcLicence) {
         assertThat(kind).isEqualTo(LicenceKind.HDC)
@@ -1218,10 +1225,12 @@ class LicenceCreationServiceTest {
       val aPrisonerSearchResult = prisonerSearchResult().copy(
         homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
         licenceExpiryDate = null,
+        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
       )
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)
@@ -1229,6 +1238,81 @@ class LicenceCreationServiceTest {
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
         .hasMessage("HDC Licence for A1234AA can not be of type PSS")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if person is not approved for HDC`() {
+      val aPrisonerSearchResult = prisonerSearchResult().copy(
+        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
+        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
+        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHdcLicence(prisonNumber)
+      }
+
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("HDC licence for A1234AA could not be created as they are not approved for HDC")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if person does not a HDCAD`() {
+      val aPrisonerSearchResult = prisonerSearchResult().copy(
+        homeDetentionCurfewActualDate = null,
+        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
+        homeDetentionCurfewEligibilityDate = LocalDate.of(2020, 10, 22),
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHdcLicence(prisonNumber)
+      }
+
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("HDC licence for A1234AA could not be created as it is missing a HDCAD")
+
+      verify(licenceRepository, times(0)).saveAndFlush(any())
+      verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
+      verify(auditEventRepository, times(0)).saveAndFlush(any())
+      verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `service throws an error if person does not a HDCED`() {
+      val aPrisonerSearchResult = prisonerSearchResult().copy(
+        homeDetentionCurfewActualDate = LocalDate.of(2020, 10, 22),
+        homeDetentionCurfewEndDate = LocalDate.of(2020, 10, 23),
+        homeDetentionCurfewEligibilityDate = null,
+      )
+
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
+      whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
+
+      val exception = assertThrows<IllegalStateException> {
+        service.createHdcLicence(prisonNumber)
+      }
+
+      assertThat(exception).isInstanceOf(IllegalStateException::class.java)
+        .hasMessage("HDC licence for A1234AA could not be created as it is missing a HDCED")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())

@@ -49,6 +49,7 @@ class LicenceCreationService(
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
   private val releaseDateService: ReleaseDateService,
+  private val hdcService: HdcService,
 ) {
   companion object {
     private val log = LoggerFactory.getLogger(LicenceCreationService::class.java)
@@ -152,6 +153,18 @@ class LicenceCreationService(
     val username = SecurityContextHolder.getContext().authentication.name
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
+
+    if (nomisRecord.homeDetentionCurfewActualDate == null) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
+    }
+
+    if (nomisRecord.homeDetentionCurfewEligibilityDate == null) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCED")
+    }
+
+    if (!hdcService.isApprovedForHdc(nomisRecord.bookingId!!.toLong(), nomisRecord.homeDetentionCurfewEligibilityDate)) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as they are not approved for HDC")
+    }
 
     if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 
