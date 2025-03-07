@@ -60,6 +60,25 @@ class HdcService(
     )
   }
 
+  fun isEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner): Boolean {
+    if (nomisRecord.homeDetentionCurfewActualDate == null) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
+    }
+
+    if (nomisRecord.homeDetentionCurfewEligibilityDate == null) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCED")
+    }
+
+    if (!isApprovedForHdc(nomisRecord.bookingId!!.toLong(), nomisRecord.homeDetentionCurfewEligibilityDate)) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as they are not approved for HDC")
+    }
+
+    hdcApiClient.getByBookingId(nomisRecord.bookingId!!.toLong()).curfewAddress
+      ?: error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
+
+    return true
+  }
+
   data class HdcStatuses(val approvedIds: Set<Long>) {
     fun isWaitingForActivation(kind: LicenceKind, bookingId: Long) = kind == HDC && !approvedIds.contains(bookingId)
 
