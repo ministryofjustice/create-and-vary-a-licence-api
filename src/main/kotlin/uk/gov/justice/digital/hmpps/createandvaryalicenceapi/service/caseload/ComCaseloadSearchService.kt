@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
+import java.time.Clock
 import java.time.LocalDate
 
 @Service
@@ -35,6 +36,7 @@ class ComCaseloadSearchService(
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  private val clock: Clock,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
     val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
@@ -68,7 +70,7 @@ class ComCaseloadSearchService(
         null -> createNotStartedRecord(it.caseloadResult, it.prisonerSearchPrisoner, licenceStartDate)
         else -> createRecord(it.caseloadResult, it.licence, it.prisonerSearchPrisoner)
       }
-    }.filterOutHdc(prisonerRecords)
+    }.filterOutPastReleaseDate().filterOutHdc(prisonerRecords)
 
     val onProbationCount = searchResults.count { it.isOnProbation == true }
     val inPrisonCount = searchResults.count { it.isOnProbation == false }
@@ -177,6 +179,14 @@ class ComCaseloadSearchService(
     isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
   )
+
+  private fun List<FoundProbationRecord>.filterOutPastReleaseDate(): List<FoundProbationRecord> = this.filter {
+    if (it.isOnProbation == true) {
+      true
+    } else {
+      it.releaseDate?.isAfter(LocalDate.now(clock).minusDays(1)) == true
+    }
+  }
 
   private val versionComparator = Comparator<Licence> { l1, l2 ->
     val (major1, minor1) = l1.licenceVersion?.split('.')?.mapNotNull { it.toIntOrNull() } ?: listOf(0, 0)

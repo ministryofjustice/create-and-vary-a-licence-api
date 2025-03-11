@@ -36,7 +36,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 class ComCaseloadSearchServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
@@ -55,6 +58,7 @@ class ComCaseloadSearchServiceTest {
     hdcService,
     eligibilityService,
     releaseDateService,
+    clock,
   )
 
   @BeforeEach
@@ -635,6 +639,7 @@ class ComCaseloadSearchServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 2, 14)))
 
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
@@ -824,9 +829,62 @@ class ComCaseloadSearchServiceTest {
     }
   }
 
+  @Test
+  fun `Licences with a null licence start date are filtered out`() {
+    val licence = aLicenceEntity.copy(
+      licenceStartDate = null,
+    )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    assertThat(result.results.size).isEqualTo(0)
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `Licences with a past licence start date are filtered out`() {
+    val licence = aLicenceEntity.copy(
+      licenceStartDate = LocalDate.now(clock).minusDays(1),
+    )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    assertThat(result.results.size).isEqualTo(0)
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `Active licences with a past licence start date are not filtered out`() {
+    val licence = aLicenceEntity.copy(
+      licenceStartDate = LocalDate.now(clock).minusDays(1),
+      statusCode = LicenceStatus.ACTIVE,
+    )
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(licence))
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    assertThat(result.results.size).isEqualTo(1)
+    assertThat(result.inPrisonCount).isEqualTo(0)
+    assertThat(result.onProbationCount).isEqualTo(1)
+  }
+
   private companion object {
     val aLicenceEntity = createCrdLicence()
     val aPrisonerSearchResult = TestData.prisonerSearchResult()
     val request = ProbationUserSearchRequest("Test", 2000)
+    val clock: Clock = Clock.fixed(Instant.parse("2021-01-01T00:00:00Z"), ZoneId.systemDefault())
   }
 }
