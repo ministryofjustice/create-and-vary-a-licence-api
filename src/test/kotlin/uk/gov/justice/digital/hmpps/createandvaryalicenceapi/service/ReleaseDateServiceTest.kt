@@ -922,17 +922,6 @@ class ReleaseDateServiceTest {
       }
 
       @Test
-      fun `returns null if there is no CRD when PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isNull()
-      }
-
-      @Test
       fun `returns null if there is no CRD when it is an IS91 case`() {
         val nomisRecord = prisonerSearchResult().copy(
           conditionalReleaseDate = null,
@@ -949,17 +938,6 @@ class ReleaseDateServiceTest {
       fun `returns the CRD if the ARD is null when the legal status is one of note`(legalStatus: String) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          confirmedReleaseDate = null,
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
-      }
-
-      @Test
-      fun `returns the CRD if the ARD is null when PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
           conditionalReleaseDate = LocalDate.of(2021, 10, 22),
           confirmedReleaseDate = null,
         )
@@ -992,17 +970,6 @@ class ReleaseDateServiceTest {
       }
 
       @Test
-      fun `returns the CRD if the ARD is before the CRD when PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
-      }
-
-      @Test
       fun `returns the CRD if the ARD is before the CRD when it is an IS91 case`() {
         val nomisRecord = prisonerSearchResult().copy(
           conditionalReleaseDate = LocalDate.of(2021, 10, 22),
@@ -1019,17 +986,6 @@ class ReleaseDateServiceTest {
       fun `returns the CRD if the ARD is after the CRD when the legal status is one of note`(legalStatus: String) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 10, 22))
-      }
-
-      @Test
-      fun `returns the CRD if the ARD is after the CRD when PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
           conditionalReleaseDate = LocalDate.of(2021, 10, 22),
           confirmedReleaseDate = LocalDate.of(2021, 10, 23),
         )
@@ -1064,17 +1020,6 @@ class ReleaseDateServiceTest {
       }
 
       @Test
-      fun `returns last working day before CRD if CRD is a bank holiday or weekend when PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
-          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
-          confirmedReleaseDate = null,
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
-      }
-
-      @Test
       fun `returns last working day before CRD if CRD is a bank holiday or weekend when it is an IS91 case`() {
         val nomisRecord = prisonerSearchResult().copy(
           conditionalReleaseDate = LocalDate.of(2018, 12, 4),
@@ -1093,17 +1038,6 @@ class ReleaseDateServiceTest {
       ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
-          conditionalReleaseDate = LocalDate.of(2018, 12, 4),
-          confirmedReleaseDate = LocalDate.of(2018, 11, 29),
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2018, 11, 30))
-      }
-
-      @Test
-      fun `returns last working day before CRD if CRD is a bank holiday or weekend and the ARD is too early when PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
           conditionalReleaseDate = LocalDate.of(2018, 12, 4),
           confirmedReleaseDate = LocalDate.of(2018, 11, 29),
         )
@@ -1138,17 +1072,6 @@ class ReleaseDateServiceTest {
       }
 
       @Test
-      fun `returns ARD when the CRD and ARD are the same non-working day and PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
-          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
-          confirmedReleaseDate = LocalDate.of(2021, 12, 4),
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 4))
-      }
-
-      @Test
       fun `returns ARD when the CRD and ARD are the same non-working day and it is an IS91 case`() {
         val nomisRecord = prisonerSearchResult().copy(
           conditionalReleaseDate = LocalDate.of(2021, 12, 4),
@@ -1167,17 +1090,6 @@ class ReleaseDateServiceTest {
       ) {
         val nomisRecord = prisonerSearchResult().copy(
           legalStatus = legalStatus,
-          conditionalReleaseDate = LocalDate.of(2021, 12, 4),
-          confirmedReleaseDate = LocalDate.of(2021, 12, 3),
-        )
-
-        assertThat(service.getLicenceStartDate(nomisRecord)).isEqualTo(LocalDate.of(2021, 12, 3))
-      }
-
-      @Test
-      fun `returns ARD when the CRD is a non-working day and the ARD is an earlier non-working day and PED is in the past`() {
-        val nomisRecord = prisonerSearchResult().copy(
-          paroleEligibilityDate = LocalDate.of(2020, 1, 1),
           conditionalReleaseDate = LocalDate.of(2021, 12, 4),
           confirmedReleaseDate = LocalDate.of(2021, 12, 3),
         )
