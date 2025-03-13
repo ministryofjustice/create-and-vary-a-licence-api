@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorRespons
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -179,6 +180,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Submit licence`() {
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
     webTestClient.put()
       .uri("/licence/id/1/submit")
       .accept(MediaType.APPLICATION_JSON)
@@ -243,6 +246,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-approved-licence-1.sql",
   )
   fun `Edit an approved licence`() {
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
     val result = webTestClient.post()
       .uri("/licence/id/1/edit")
       .accept(MediaType.APPLICATION_JSON)
@@ -668,17 +673,20 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "AAA", fullName = "Y")
 
     val govUkApiMockServer = GovUkMockServer()
+    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      prisonerSearchApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       govUkApiMockServer.stop()
+      prisonerSearchApiMockServer.stop()
     }
   }
 }
