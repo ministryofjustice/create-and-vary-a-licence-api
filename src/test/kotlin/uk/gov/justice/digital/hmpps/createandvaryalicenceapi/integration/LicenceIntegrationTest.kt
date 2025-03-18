@@ -664,6 +664,69 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  @Nested
+  inner class ThrowErrorIfIneligible {
+    @Test
+    @Sql(
+      "classpath:test_data/seed-licence-id-1.sql",
+    )
+    fun `licence submission should be prevented`() {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+
+      webTestClient.put()
+        .uri("/licence/id/1/submit")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().is4xxClientError
+
+      val result = webTestClient.get()
+        .uri("/licence/id/1")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(result?.comUsername).isEqualTo("test-client")
+      assertThat(result?.comEmail).isEqualTo("testClient@probation.gov.uk")
+      assertThat(result?.comStaffId).isEqualTo(2000)
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-approved-licence-1.sql",
+    )
+    fun `Editing an approved licence should be prevented`() {
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(aPrisonerMissingReleaseDate)
+
+      webTestClient.post()
+        .uri("/licence/id/1/edit")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().is4xxClientError
+
+      assertThat(licenceRepository.count()).isEqualTo(1)
+
+      val licence = webTestClient.get()
+        .uri("/licence/id/1")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(Licence::class.java)
+        .returnResult().responseBody
+
+      assertThat(licence?.statusCode).isEqualTo(LicenceStatus.APPROVED)
+      assertThat(licence?.licenceVersion).isEqualTo("1.0")
+    }
+  }
+
   private companion object {
     val aStatusToApprovedUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "AAA", fullName = "Y")
@@ -671,6 +734,30 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       StatusUpdateRequest(status = LicenceStatus.ACTIVE, username = "AAA", fullName = "Y")
     val aStatusToInactiveUpdateRequest =
       StatusUpdateRequest(status = LicenceStatus.INACTIVE, username = "AAA", fullName = "Y")
+
+    val aPrisonerMissingReleaseDate = """[{
+      "prisonerNumber": "A1234AA",
+      "bookingId": "123",
+      "status": "ACTIVE",
+      "mostSeriousOffence": "Robbery",
+      "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
+      "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
+      "homeDetentionCurfewEligibilityDate": null,
+      "releaseDate": null,
+      "confirmedReleaseDate": null,
+      "conditionalReleaseDate": null,
+      "paroleEligibilityDate": null,
+      "actualParoleDate" : null,
+      "postRecallReleaseDate": null,
+      "legalStatus": "SENTENCED",
+      "indeterminateSentence": false,
+      "recall": false,
+      "prisonId": "ABC",
+      "bookNumber": "12345A",
+      "firstName": "Test1",
+      "lastName": "Person1",
+      "dateOfBirth": "1985-01-01"
+    }]"""
 
     val govUkApiMockServer = GovUkMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
