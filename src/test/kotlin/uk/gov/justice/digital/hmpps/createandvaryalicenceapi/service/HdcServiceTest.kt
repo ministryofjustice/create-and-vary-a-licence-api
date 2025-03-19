@@ -302,6 +302,7 @@ class HdcServiceTest {
       "1 Test Street",
       "Test Area",
       "Test Town",
+      null,
       "AB1 2CD",
     )
 
