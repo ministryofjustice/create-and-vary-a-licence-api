@@ -45,7 +45,7 @@ class DomainEventsService(
   }
 
   private fun createDomainEvent(
-    event: LicenceDomainEventType,
+    event: LicenceDomainEventType?,
     licenceId: String,
     crn: String?,
     nomsNumber: String?,
@@ -55,7 +55,7 @@ class DomainEventsService(
     val personReferenceIdentifiers = PersonReference(
       listOf(Identifiers("CRN", crn), Identifiers("NOMS", nomsNumber)),
     )
-    val eventType = event.value
+    val eventType = event?.value
     val occurredAt = LocalDateTime.now(clock)
     return HMPPSDomainEvent(
       eventType,
