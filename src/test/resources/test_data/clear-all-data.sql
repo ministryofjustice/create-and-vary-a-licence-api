@@ -4,6 +4,8 @@ DELETE from additional_condition_upload_detail;
 DELETE from additional_condition_upload_summary;
 DELETE from additional_condition;
 DELETE from bespoke_condition;
+DELETE from hdc_curfew_address;
+DELETE from hdc_curfew_times;
 DELETE from licence;
 DELETE from staff;
 DELETE from audit_event;

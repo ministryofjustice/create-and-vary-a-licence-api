@@ -123,6 +123,104 @@ class HdcIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
+    @Sql(
+      "classpath:test_data/seed-hdc-licence-id-1.sql",
+      "classpath:test_data/seed-hdc-curfew-address.sql",
+      "classpath:test_data/seed-hdc-curfew-hours.sql",
+    )
+    fun `Get curfew data from DB when it exists by licence ID`() {
+      hdcApiMockServer.stubGetHdcLicenceData(54321L)
+
+      val result = webTestClient.get()
+        .uri("/hdc/curfew/licenceId/1")
+        .accept(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isOk
+        .expectHeader().contentType(MediaType.APPLICATION_JSON)
+        .expectBody(HdcLicenceData::class.java)
+        .returnResult().responseBody
+
+      assertThat(result!!.curfewAddress).isEqualTo(
+        HdcCurfewAddress(
+          1,
+          "1 Some Address",
+          "Off Some Road",
+          "Some Town",
+          "Some County",
+          "AB1 2CD",
+        ),
+      )
+      assertThat(result.firstNightCurfewHours).isEqualTo(
+        FirstNight(
+          LocalTime.of(15, 0),
+          LocalTime.of(7, 0),
+        ),
+      )
+
+      assertThat(result.curfewTimes).isEqualTo(
+        listOf(
+          HdcCurfewTimes(
+            1L,
+            1,
+            DayOfWeek.MONDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.TUESDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            2L,
+            2,
+            DayOfWeek.TUESDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.WEDNESDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            3L,
+            3,
+            DayOfWeek.WEDNESDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.THURSDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            4L,
+            4,
+            DayOfWeek.THURSDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.FRIDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            5L,
+            5,
+            DayOfWeek.FRIDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.SATURDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            6L,
+            6,
+            DayOfWeek.SATURDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.SUNDAY,
+            LocalTime.of(7, 0),
+          ),
+          HdcCurfewTimes(
+            7L,
+            7,
+            DayOfWeek.SUNDAY,
+            LocalTime.of(19, 0),
+            DayOfWeek.MONDAY,
+            LocalTime.of(7, 0),
+          ),
+        ),
+      )
+    }
+
+    @Test
     fun `Get forbidden (403) when incorrect roles are supplied`() {
       val result = webTestClient.get()
         .uri("/hdc/curfew/licenceId/1")
@@ -161,104 +259,6 @@ class HdcIntegrationTest : IntegrationTestBase() {
       assertThat(exception.userMessage).isEqualTo("Not found: No licence data found for 2")
       assertThat(exception.developerMessage).isEqualTo("No licence data found for 2")
     }
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-hdc-licence-id-1.sql",
-    "classpath:test_data/seed-hdc-curfew-address.sql",
-    "classpath:test_data/seed-hdc-curfew-hours.sql",
-  )
-  fun `Get curfew data from DB when it exists by licence ID`() {
-    hdcApiMockServer.stubGetHdcLicenceData(54321L)
-
-    val result = webTestClient.get()
-      .uri("/hdc/curfew/licenceId/1")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(HdcLicenceData::class.java)
-      .returnResult().responseBody
-
-    assertThat(result!!.curfewAddress).isEqualTo(
-      HdcCurfewAddress(
-        1,
-        "1 Some Address",
-        "Off Some Road",
-        "Some Town",
-        "Some County",
-        "AB1 2CD",
-      ),
-    )
-    assertThat(result.firstNightCurfewHours).isEqualTo(
-      FirstNight(
-        LocalTime.of(15, 0),
-        LocalTime.of(7, 0),
-      ),
-    )
-
-    assertThat(result.curfewTimes).isEqualTo(
-      listOf(
-        HdcCurfewTimes(
-          1L,
-          1,
-          DayOfWeek.MONDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.TUESDAY,
-          LocalTime.of(7, 0),
-        ),
-        HdcCurfewTimes(
-          2L,
-          2,
-          DayOfWeek.TUESDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.WEDNESDAY,
-          LocalTime.of(7, 0),
-        ),
-        HdcCurfewTimes(
-          3L,
-          3,
-          DayOfWeek.WEDNESDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.THURSDAY,
-          LocalTime.of(7, 0),
-        ),
-        HdcCurfewTimes(
-          4L,
-          4,
-          DayOfWeek.THURSDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.FRIDAY,
-          LocalTime.of(7, 0),
-        ),
-        HdcCurfewTimes(
-          5L,
-          5,
-          DayOfWeek.FRIDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.SATURDAY,
-          LocalTime.of(7, 0),
-        ),
-        HdcCurfewTimes(
-          6L,
-          6,
-          DayOfWeek.SATURDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.SUNDAY,
-          LocalTime.of(7, 0),
-        ),
-        HdcCurfewTimes(
-          7L,
-          7,
-          DayOfWeek.SUNDAY,
-          LocalTime.of(19, 0),
-          DayOfWeek.MONDAY,
-          LocalTime.of(7, 0),
-        ),
-      ),
-    )
   }
 
   private companion object {
