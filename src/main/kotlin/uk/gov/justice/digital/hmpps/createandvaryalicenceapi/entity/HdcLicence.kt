@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -81,6 +82,9 @@ class HdcLicence(
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @OrderBy("curfewTimesSequence")
   val curfewTimes: List<HdcCurfewTimes> = emptyList(),
+
+  @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  val curfewAddress: HdcCurfewAddress? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
@@ -210,6 +214,7 @@ class HdcLicence(
     versionOfId: Long? = this.versionOfId,
     licenceVersion: String? = this.licenceVersion,
     updatedBy: Staff? = this.updatedBy,
+    curfewAddress: HdcCurfewAddress? = this.curfewAddress,
   ): HdcLicence = HdcLicence(
     id = id,
     typeCode = typeCode,
@@ -272,6 +277,7 @@ class HdcLicence(
     versionOfId = versionOfId,
     licenceVersion = licenceVersion,
     updatedBy = updatedBy,
+    curfewAddress = curfewAddress,
   )
 
   override fun activate() = copy(
@@ -495,7 +501,8 @@ class HdcLicence(
     "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
-    "updatedBy=$updatedBy" +
+    "updatedBy=$updatedBy," +
+    "curfewAddress=$curfewAddress" +
     ")"
 
   override fun equals(other: Any?): Boolean {
