@@ -9,8 +9,8 @@ enum class LicenceKind(
   val creationEventType: () -> LicenceEventType,
   val copyEventType: () -> LicenceEventType,
   val submittedEventType: () -> LicenceEventType,
-  val activatedDomainEventType: () -> LicenceDomainEventType,
-  val inactivatedDomainEventType: () -> LicenceDomainEventType,
+  val activatedDomainEventType: () -> LicenceDomainEventType? = { null },
+  val inactivatedDomainEventType: () -> LicenceDomainEventType? = { null },
 ) {
   CRD(
     { IN_PROGRESS },
@@ -46,5 +46,12 @@ enum class LicenceKind(
     { LicenceEventType.HDC_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
+  ),
+
+  HDC_VARIATION(
+    { VARIATION_IN_PROGRESS },
+    { error("HDC variation licences are only copied from existing licences") },
+    { LicenceEventType.HDC_VARIATION_CREATED },
+    { LicenceEventType.HDC_VARIATION_SUBMITTED },
   ),
 }
