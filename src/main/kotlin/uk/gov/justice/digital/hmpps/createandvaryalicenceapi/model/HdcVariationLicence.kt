@@ -294,4 +294,7 @@ data class HdcVariationLicence(
 
   @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
+
+  @Schema(description = "The curfew address for this licence")
+  val curfewAddress: HdcCurfewAddress? = null,
 ) : Licence

@@ -1,13 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
-import jakarta.persistence.CascadeType
-import jakarta.persistence.DiscriminatorValue
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.OrderBy
+import jakarta.persistence.*
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -83,6 +76,9 @@ class HdcVariationLicence(
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @OrderBy("curfewTimesSequence")
   val curfewTimes: List<HdcCurfewTimes> = emptyList(),
+
+  @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  val curfewAddress: HdcCurfewAddress? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
@@ -214,6 +210,7 @@ class HdcVariationLicence(
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
+    curfewAddress: HdcCurfewAddress? = this.curfewAddress,
   ): HdcVariationLicence {
     val hdcVariationLicence: HdcVariationLicence = HdcVariationLicence(
       id = id,
@@ -279,6 +276,7 @@ class HdcVariationLicence(
       variationOfId = variationOfId,
       licenceVersion = licenceVersion,
       updatedBy = updatedBy,
+      curfewAddress = curfewAddress,
     )
     return hdcVariationLicence
   }
@@ -499,6 +497,7 @@ class HdcVariationLicence(
     "variationOfId=$variationOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy" +
+    "curfewAddress=$curfewAddress" +
     ")"
 
   override fun equals(other: Any?): Boolean {
