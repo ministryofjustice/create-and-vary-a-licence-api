@@ -1254,6 +1254,45 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `attempting to submit a licence without a NOMIS ID results in validation exception `() {
+    val caseAdmin = PrisonUser(
+      username = "smills",
+      email = "testemail@prison.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, nomsId = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(caseAdmin)
+
+    val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence is missing NOMS ID")
+  }
+
+  @Test
+  fun `attempting to submit a licence for an ineligible case results in validation exception `() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+
+    val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, case is ineligible for CVL")
+  }
+
+  @Test
   fun `submitting a licence variation`() {
     val variation = createVariationLicence().copy(
       variationOfId = 1,
@@ -1977,6 +2016,42 @@ class LicenceServiceTest {
     val exception = assertThrows<ValidationException> { service.editLicence(1L) }
     assertThat(exception).isInstanceOf(ValidationException::class.java)
     assertThat(exception).message().isEqualTo("Can only edit APPROVED licences")
+  }
+
+  @Test
+  fun `attempting to edit a licence without a NOMIS ID results in validation exception `() {
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, nomsId = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+
+    val exception = assertThrows<ValidationException> { service.editLicence(1L) }
+
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence is missing NOMS ID")
+  }
+
+  @Test
+  fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+
+    val approvedLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      additionalConditions = additionalConditions,
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+
+    val exception = assertThrows<ValidationException> { service.editLicence(1L) }
+
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, case is ineligible for CVL")
   }
 
   @Test

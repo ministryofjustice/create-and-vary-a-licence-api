@@ -399,22 +399,16 @@ class LicenceService(
 
     val updatedLicence = when (licenceEntity) {
       is CrdLicence -> {
-        if (!licenceHolderIsEligible(licenceEntity.nomsId)) {
-          throw ValidationException("Can only submit cases eligible for CVL")
-        }
+        assertCaseIsEligible(licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        if (!licenceHolderIsEligible(licenceEntity.nomsId)) {
-          throw ValidationException("Can only submit cases eligible for CVL")
-        }
+        assertCaseIsEligible(licenceEntity.nomsId)
         licenceEntity.submit(submitter as PrisonUser)
       }
       is HdcLicence -> {
-        if (!licenceHolderIsEligible(licenceEntity.nomsId)) {
-          throw ValidationException("Can only submit cases eligible for CVL")
-        }
+        assertCaseIsEligible(licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
       else -> error("Unexpected licence type: $licenceEntity")
@@ -594,9 +588,7 @@ class LicenceService(
       return inProgressVersions[0].toSummary()
     }
 
-    if (!licenceHolderIsEligible(licence.nomsId)) {
-      throw ValidationException("Can only edit cases eligible for CVL")
-    }
+    assertCaseIsEligible(licence.nomsId)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1121,13 +1113,15 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun licenceHolderIsEligible(nomisId: String?): Boolean {
+  private fun assertCaseIsEligible(nomisId: String?) {
     if (nomisId == null) {
-      return false
+      throw ValidationException("Unable to perform action, licence is missing NOMS ID")
     }
 
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
-    return eligibilityService.isEligibleForCvl(prisoner)
+    if (!eligibilityService.isEligibleForCvl(prisoner)) {
+      throw ValidationException("Unable to perform action, case is ineligible for CVL")
+    }
   }
 
   companion object {
