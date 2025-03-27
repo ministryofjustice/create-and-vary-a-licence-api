@@ -48,6 +48,7 @@ class HdcIntegrationTest : IntegrationTestBase() {
           "123 Test Street",
           null,
           "Test Area",
+          null,
           "AB1 2CD",
         ),
       )
