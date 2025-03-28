@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -78,6 +79,8 @@ class LicenceService(
   private val omuService: OmuService,
   private val releaseDateService: ReleaseDateService,
   private val domainEventsService: DomainEventsService,
+  private val prisonerSearchApiClient: PrisonerSearchApiClient,
+  private val eligibilityService: EligibilityService,
 ) {
 
   @Transactional
@@ -395,10 +398,19 @@ class LicenceService(
       ?: throw ValidationException("Staff with username $username not found")
 
     val updatedLicence = when (licenceEntity) {
-      is CrdLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is CrdLicence -> {
+        assertCaseIsEligible(licenceEntity.nomsId)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
+      }
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-      is HardStopLicence -> licenceEntity.submit(submitter as PrisonUser)
-      is HdcLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is HardStopLicence -> {
+        assertCaseIsEligible(licenceEntity.nomsId)
+        licenceEntity.submit(submitter as PrisonUser)
+      }
+      is HdcLicence -> {
+        assertCaseIsEligible(licenceEntity.nomsId)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
+      }
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
@@ -575,6 +587,8 @@ class LicenceService(
     if (inProgressVersions.isNotEmpty()) {
       return inProgressVersions[0].toSummary()
     }
+
+    assertCaseIsEligible(licence.nomsId)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1098,6 +1112,17 @@ class LicenceService(
     isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(this),
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
+
+  private fun assertCaseIsEligible(nomisId: String?) {
+    if (nomisId == null) {
+      throw ValidationException("Unable to perform action, licence is missing NOMS ID")
+    }
+
+    val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
+    if (!eligibilityService.isEligibleForCvl(prisoner)) {
+      throw ValidationException("Unable to perform action, case is ineligible for CVL")
+    }
+  }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)

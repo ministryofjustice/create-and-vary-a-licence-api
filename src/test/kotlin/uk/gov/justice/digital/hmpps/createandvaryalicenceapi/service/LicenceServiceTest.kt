@@ -70,6 +70,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.USER_EVENT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
@@ -101,6 +102,8 @@ class LicenceServiceTest {
   private val omuService = mock<OmuService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val domainEventsService = mock<DomainEventsService>()
+  private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
+  private val eligibilityService = mock<EligibilityService>()
 
   private val service =
     LicenceService(
@@ -117,6 +120,8 @@ class LicenceServiceTest {
       omuService,
       releaseDateService,
       domainEventsService,
+      prisonerSearchApiClient,
+      eligibilityService,
     )
 
   @BeforeEach
@@ -140,6 +145,8 @@ class LicenceServiceTest {
       omuService,
       releaseDateService,
       domainEventsService,
+      prisonerSearchApiClient,
+      eligibilityService,
     )
   }
 
@@ -1153,6 +1160,8 @@ class LicenceServiceTest {
   fun `submit a CRD licence saves new fields to the licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
     service.submitLicence(1L, emptyList())
 
@@ -1204,6 +1213,8 @@ class LicenceServiceTest {
     val hardStopLicence = createHardStopLicence()
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hardStopLicence))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(caseAdmin)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
     service.submitLicence(1L, emptyList())
 
@@ -1243,6 +1254,45 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `attempting to submit a licence without a NOMIS ID results in validation exception `() {
+    val caseAdmin = PrisonUser(
+      username = "smills",
+      email = "testemail@prison.gov.uk",
+      firstName = "X",
+      lastName = "Y",
+    )
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, nomsId = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(caseAdmin)
+
+    val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence is missing NOMS ID")
+  }
+
+  @Test
+  fun `attempting to submit a licence for an ineligible case results in validation exception `() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+
+    val exception = assertThrows<ValidationException> { service.submitLicence(1L, emptyList()) }
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, case is ineligible for CVL")
+  }
+
+  @Test
   fun `submitting a licence variation`() {
     val variation = createVariationLicence().copy(
       variationOfId = 1,
@@ -1251,6 +1301,8 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
     service.submitLicence(1L, listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")))
 
@@ -1833,6 +1885,10 @@ class LicenceServiceTest {
         changeHints = emptyList(),
       ),
     )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
     val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED)
     whenever(licenceRepository.findById(1L)).thenReturn(
       Optional.of(approvedLicence),
@@ -1879,6 +1935,9 @@ class LicenceServiceTest {
       ),
     )
 
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
       additionalConditions = additionalConditions,
@@ -1918,6 +1977,9 @@ class LicenceServiceTest {
       ),
     )
 
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
     val approvedLicence = aLicenceEntity.copy(
       statusCode = LicenceStatus.APPROVED,
       additionalConditions = additionalConditions,
@@ -1954,6 +2016,42 @@ class LicenceServiceTest {
     val exception = assertThrows<ValidationException> { service.editLicence(1L) }
     assertThat(exception).isInstanceOf(ValidationException::class.java)
     assertThat(exception).message().isEqualTo("Can only edit APPROVED licences")
+  }
+
+  @Test
+  fun `attempting to edit a licence without a NOMIS ID results in validation exception `() {
+    val approvedLicence = aLicenceEntity.copy(statusCode = LicenceStatus.APPROVED, nomsId = null)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+
+    val exception = assertThrows<ValidationException> { service.editLicence(1L) }
+
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence is missing NOMS ID")
+  }
+
+  @Test
+  fun `attempting to edit a licence that is ineligible for CVL results in validation exception`() {
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(false)
+
+    val approvedLicence = aLicenceEntity.copy(
+      statusCode = LicenceStatus.APPROVED,
+      additionalConditions = additionalConditions,
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+
+    val exception = assertThrows<ValidationException> { service.editLicence(1L) }
+
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    assertThat(exception).isInstanceOf(ValidationException::class.java)
+    assertThat(exception).message().isEqualTo("Unable to perform action, case is ineligible for CVL")
   }
 
   @Test
@@ -3082,6 +3180,8 @@ class LicenceServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(hdcLicence))
       whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
       service.submitLicence(
         1L,
@@ -3146,7 +3246,11 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
       whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
+
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
       val auditEventCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -3196,6 +3300,8 @@ class LicenceServiceTest {
       whenever(licenceRepository.findById(1L)).thenReturn(
         Optional.of(approvedLicence),
       )
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
       whenever(licenceRepository.save(any())).thenReturn(approvedLicence)
 
@@ -3501,5 +3607,7 @@ class LicenceServiceTest {
       firstName = "Test",
       lastName = "Test",
     )
+
+    val aPrisonerSearchPrisoner = TestData.prisonerSearchResult()
   }
 }
