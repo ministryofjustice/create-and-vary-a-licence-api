@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Schema(description = "Describes a licence within this service")
+@Schema(description = "Describes a licence variation within this service")
 @JsonTypeName(LicenceKinds.VARIATION)
 data class VariationLicence(
   @Schema(description = "Type of this licence", example = LicenceKinds.VARIATION, allowableValues = [LicenceKinds.VARIATION])
