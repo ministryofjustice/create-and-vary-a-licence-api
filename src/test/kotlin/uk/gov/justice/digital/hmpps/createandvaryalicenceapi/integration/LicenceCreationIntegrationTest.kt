@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Licen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -46,6 +47,9 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var auditEventRepository: AuditEventRepository
+
+  @Autowired
+  lateinit var hdcCurfewAddressRepository: HdcCurfewAddressRepository
 
   @BeforeEach
   fun reset() {
@@ -292,6 +296,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
       assertThat(auditEventRepository.count()).isEqualTo(0)
+      assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
 
       val result = webTestClient.post()
         .uri("/licence/create")
@@ -317,6 +322,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(standardConditionRepository.count()).isEqualTo(9)
       assertThat(auditEventRepository.count()).isEqualTo(1)
+      assertThat(hdcCurfewAddressRepository.count()).isEqualTo(1)
     }
 
     @Test
@@ -331,6 +337,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
       assertThat(auditEventRepository.count()).isEqualTo(0)
+      assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
 
       val result = webTestClient.post()
         .uri("/licence/create")
@@ -356,6 +363,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(standardConditionRepository.count()).isEqualTo(17)
       assertThat(auditEventRepository.count()).isEqualTo(1)
+      assertThat(hdcCurfewAddressRepository.count()).isEqualTo(1)
     }
 
     @Test
@@ -389,6 +397,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
+      assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
     }
 
     @Test
@@ -406,6 +415,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       assertThat(result?.userMessage).contains("Access Denied")
       assertThat(licenceRepository.count()).isEqualTo(0)
       assertThat(standardConditionRepository.count()).isEqualTo(0)
+      assertThat(hdcCurfewAddressRepository.count()).isEqualTo(0)
     }
   }
 

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -44,6 +45,7 @@ class LicenceCreationService(
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
   private val auditEventRepository: AuditEventRepository,
+  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
@@ -186,6 +188,11 @@ class LicenceCreationService(
 
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
     standardConditionRepository.saveAllAndFlush(standardConditions)
+
+    val curfewAddress = hdcService.getHdcLicenceData(createdLicence.id)?.curfewAddress
+    if (curfewAddress != null) {
+      hdcCurfewAddressRepository.saveAndFlush(transform(curfewAddress, createdLicence))
+    }
 
     recordLicenceCreation(createdBy, createdLicence)
 
