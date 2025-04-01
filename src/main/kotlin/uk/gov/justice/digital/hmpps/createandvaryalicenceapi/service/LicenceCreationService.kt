@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -44,6 +45,7 @@ class LicenceCreationService(
   private val licenceEventRepository: LicenceEventRepository,
   private val licencePolicyService: LicencePolicyService,
   private val auditEventRepository: AuditEventRepository,
+  private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
   private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
@@ -154,7 +156,9 @@ class LicenceCreationService(
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
 
-    hdcService.isEligibleForHdcLicence(nomisRecord)
+    val curfewAddress = hdcService.getCurfewAddressByBookingId(nomisRecord.bookingId!!.toLong())
+
+    hdcService.checkEligibleForHdcLicence(nomisRecord, curfewAddress)
 
     if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 
@@ -186,6 +190,8 @@ class LicenceCreationService(
 
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
     standardConditionRepository.saveAllAndFlush(standardConditions)
+
+    hdcCurfewAddressRepository.saveAndFlush(transform(curfewAddress!!, createdLicence))
 
     recordLicenceCreation(createdBy, createdLicence)
 
