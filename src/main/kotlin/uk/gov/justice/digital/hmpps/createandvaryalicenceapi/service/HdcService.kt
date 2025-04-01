@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -37,6 +38,12 @@ class HdcService(
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
   @Transactional
+  fun getCurfewAddressByBookingId(bookingId: Long): HdcCurfewAddress? {
+    val licenceData = this.hdcApiClient.getByBookingId(bookingId)
+    return licenceData.curfewAddress
+  }
+
+  @Transactional
   fun getHdcLicenceData(licenceId: Long): HdcLicenceData? {
     val licence = licenceRepository
       .findById(licenceId)
@@ -66,7 +73,7 @@ class HdcService(
     )
   }
 
-  fun isEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner): Boolean {
+  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, curfewAddress: HdcCurfewAddress?) {
     if (nomisRecord.homeDetentionCurfewActualDate == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
     }
@@ -79,10 +86,9 @@ class HdcService(
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as they are not approved for HDC")
     }
 
-    hdcApiClient.getByBookingId(nomisRecord.bookingId!!.toLong()).curfewAddress
-      ?: error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
-
-    return true
+    if (curfewAddress == null) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
+    }
   }
 
   data class HdcStatuses(val approvedIds: Set<Long>) {

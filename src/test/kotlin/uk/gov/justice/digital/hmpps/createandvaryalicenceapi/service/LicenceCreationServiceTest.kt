@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -1178,8 +1179,8 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
+      whenever(hdcService.getCurfewAddressByBookingId(any())).thenReturn(aModelCurfewAddress)
       whenever(hdcService.getHdcLicenceData(any())).thenReturn(someHdcLicenceData)
-      whenever(hdcService.isEligibleForHdcLicence(any())).thenReturn(true)
 
       service.createHdcLicence(prisonNumber)
 
@@ -1241,7 +1242,6 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(hdcService.isEligibleForHdcLicence(any())).thenReturn(true)
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)
@@ -1267,7 +1267,8 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(hdcService.isEligibleForHdcLicence(any())).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
+      whenever(hdcService.getCurfewAddressByBookingId(any())).thenReturn(null)
+      whenever(hdcService.checkEligibleForHdcLicence(any(), isNull())).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)

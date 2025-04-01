@@ -156,7 +156,9 @@ class LicenceCreationService(
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
 
-    hdcService.isEligibleForHdcLicence(nomisRecord)
+    val curfewAddress = hdcService.getCurfewAddressByBookingId(nomisRecord.bookingId!!.toLong())
+
+    hdcService.checkEligibleForHdcLicence(nomisRecord, curfewAddress)
 
     if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 
@@ -189,10 +191,7 @@ class LicenceCreationService(
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(createdLicence)
     standardConditionRepository.saveAllAndFlush(standardConditions)
 
-    val curfewAddress = hdcService.getHdcLicenceData(createdLicence.id)?.curfewAddress
-    if (curfewAddress != null) {
-      hdcCurfewAddressRepository.saveAndFlush(transform(curfewAddress, createdLicence))
-    }
+    hdcCurfewAddressRepository.saveAndFlush(transform(curfewAddress!!, createdLicence))
 
     recordLicenceCreation(createdBy, createdLicence)
 
