@@ -16,6 +16,7 @@ object LicenceKinds {
   const val VARIATION = "VARIATION"
   const val HARD_STOP = "HARD_STOP"
   const val HDC = "HDC"
+  const val HDC_VARIATION = "HDC_VARIATION"
 }
 
 @Schema(
@@ -27,6 +28,7 @@ object LicenceKinds {
     DiscriminatorMapping(value = LicenceKinds.VARIATION, schema = VariationLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HDC, schema = HdcLicence::class),
+    DiscriminatorMapping(value = LicenceKinds.HDC_VARIATION, schema = HdcVariationLicence::class),
   ],
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")

@@ -6,10 +6,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonU
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 /*
@@ -72,6 +74,15 @@ fun transform(model: ModelAuditEvent): EntityAuditEvent = EntityAuditEvent(
   eventType = model.eventType,
   summary = model.summary,
   detail = model.detail,
+)
+
+fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCurfewAddress = EntityHdcCurfewAddress(
+  licence = licence,
+  addressLine1 = model.addressLine1,
+  addressLine2 = model.addressLine2,
+  townOrCity = model.townOrCity,
+  county = model.county,
+  postcode = model.postcode,
 )
 
 fun UpdatePrisonUserRequest.toEntity() = PrisonUser(

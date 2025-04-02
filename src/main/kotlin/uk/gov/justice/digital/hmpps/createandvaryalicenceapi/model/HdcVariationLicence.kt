@@ -10,11 +10,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Schema(description = "Describes a licence variation within this service")
-@JsonTypeName(LicenceKinds.VARIATION)
-data class VariationLicence(
-  @Schema(description = "Type of this licence", example = LicenceKinds.VARIATION, allowableValues = [LicenceKinds.VARIATION])
-  override val kind: String = LicenceKinds.VARIATION,
+@Schema(description = "Describes a HDC licence variation within this service")
+@JsonTypeName(LicenceKinds.HDC_VARIATION)
+data class HdcVariationLicence(
+  @Schema(description = "Type of this licence", example = LicenceKinds.HDC_VARIATION, allowableValues = [LicenceKinds.HDC_VARIATION])
+  override val kind: String = LicenceKinds.HDC_VARIATION,
 
   override val isVariation: Boolean = true,
 
@@ -102,6 +102,20 @@ data class VariationLicence(
   @Schema(description = "The date that the licence will expire", example = "13/09/2024")
   @JsonFormat(pattern = "dd/MM/yyyy")
   override val licenceExpiryDate: LocalDate? = null,
+
+  @Schema(
+    description = "The offender’s actual home detention curfew date",
+    example = "06/05/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val homeDetentionCurfewActualDate: LocalDate? = null,
+
+  @Schema(
+    description = "The offender’s home detention curfew end date",
+    example = "06/05/2023",
+  )
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  val homeDetentionCurfewEndDate: LocalDate? = null,
 
   @Schema(
     description = "The date when the post sentence supervision period starts, from prison services",
@@ -235,6 +249,9 @@ data class VariationLicence(
   @Schema(description = "The username of the person who last updated this licence", example = "X34433")
   override val updatedByUsername: String? = null,
 
+  @Schema(description = "The curfew times for this licence")
+  val curfewTimes: HdcCurfewTimes? = null,
+
   @Schema(description = "The list of standard licence conditions on this licence")
   override val standardLicenceConditions: List<StandardCondition>? = emptyList(),
 
@@ -277,4 +294,7 @@ data class VariationLicence(
 
   @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
+
+  @Schema(description = "The curfew address for this licence")
+  val curfewAddress: HdcCurfewAddress? = null,
 ) : Licence

@@ -153,4 +153,6 @@ fun LicenceEventType.toSarLicenceEventType(): SarLicenceEventType = when (this) 
   LicenceEventType.HDC_CREATED -> SarLicenceEventType.HDC_CREATED
   LicenceEventType.HDC_VERSION_CREATED -> SarLicenceEventType.HDC_VERSION_CREATED
   LicenceEventType.HDC_SUBMITTED -> SarLicenceEventType.HDC_SUBMITTED
+  LicenceEventType.HDC_VARIATION_CREATED -> SarLicenceEventType.HDC_VARIATION_CREATED
+  LicenceEventType.HDC_VARIATION_SUBMITTED -> SarLicenceEventType.HDC_VARIATION_SUBMITTED
 }

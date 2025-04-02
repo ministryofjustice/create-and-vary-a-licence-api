@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyList
+import org.mockito.ArgumentMatchers.isNull
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -25,8 +26,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -34,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.HARD_STOP_CONDITION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PhoneDetail
@@ -61,6 +65,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
@@ -68,6 +73,7 @@ class LicenceCreationServiceTest {
   private val licencePolicyService = LicencePolicyService()
 
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
+  private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
   private val standardConditionRepository = mock<StandardConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
@@ -88,6 +94,7 @@ class LicenceCreationServiceTest {
     licenceEventRepository,
     licencePolicyService,
     auditEventRepository,
+    hdcCurfewAddressRepository,
     probationSearchApiClient,
     prisonerSearchApiClient,
     prisonApiClient,
@@ -1137,6 +1144,7 @@ class LicenceCreationServiceTest {
         licenceRepository,
         licenceEventRepository,
         auditEventRepository,
+        hdcCurfewAddressRepository,
         probationSearchApiClient,
         prisonerSearchApiClient,
         prisonApiClient,
@@ -1157,6 +1165,7 @@ class LicenceCreationServiceTest {
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
       whenever(standardConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
+      whenever(hdcCurfewAddressRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
       whenever(licenceRepository.saveAndFlush(any())).thenAnswer { it.arguments[0] }
     }
 
@@ -1170,15 +1179,18 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(hdcService.isEligibleForHdcLicence(any())).thenReturn(true)
+      whenever(hdcService.getCurfewAddressByBookingId(any())).thenReturn(aModelCurfewAddress)
+      whenever(hdcService.getHdcLicenceData(any())).thenReturn(someHdcLicenceData)
 
       service.createHdcLicence(prisonNumber)
 
+      val hdcCurfewAddressCaptor = ArgumentCaptor.forClass(EntityHdcCurfewAddress::class.java)
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(standardConditionRepository, times(1)).saveAllAndFlush(anyList())
       verify(auditEventRepository, times(1)).saveAndFlush(any())
       verify(licenceEventRepository, times(1)).saveAndFlush(any())
+      verify(hdcCurfewAddressRepository, times(1)).saveAndFlush(hdcCurfewAddressCaptor.capture())
 
       with(licenceCaptor.value as HdcLicence) {
         assertThat(kind).isEqualTo(LicenceKind.HDC)
@@ -1230,7 +1242,6 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(hdcService.isEligibleForHdcLicence(any())).thenReturn(true)
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)
@@ -1243,6 +1254,7 @@ class LicenceCreationServiceTest {
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
       verify(auditEventRepository, times(0)).saveAndFlush(any())
       verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(hdcCurfewAddressRepository, times(0)).saveAndFlush(any())
     }
 
     @Test
@@ -1255,7 +1267,8 @@ class LicenceCreationServiceTest {
 
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
-      whenever(hdcService.isEligibleForHdcLicence(any())).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
+      whenever(hdcService.getCurfewAddressByBookingId(any())).thenReturn(null)
+      whenever(hdcService.checkEligibleForHdcLicence(any(), isNull())).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)
@@ -1268,6 +1281,7 @@ class LicenceCreationServiceTest {
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
       verify(auditEventRepository, times(0)).saveAndFlush(any())
       verify(licenceEventRepository, times(0)).saveAndFlush(any())
+      verify(hdcCurfewAddressRepository, times(0)).saveAndFlush(any())
     }
   }
 
@@ -1368,6 +1382,22 @@ class LicenceCreationServiceTest {
       email = "comuser@probation.gov.uk",
       firstName = "com",
       lastName = "user",
+    )
+
+    val aModelCurfewAddress = HdcCurfewAddress(
+      1L,
+      "1 Test Street",
+      "Test Area",
+      "Test Town",
+      null,
+      "AB1 2CD",
+    )
+
+    val someHdcLicenceData = HdcLicenceData(
+      licenceId = 1L,
+      aModelCurfewAddress,
+      null,
+      null,
     )
   }
 }
