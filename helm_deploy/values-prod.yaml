@@ -43,5 +43,7 @@ generic-service:
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: cvl-alerts
+  rdsAlertsDatabases:
+    cloud-platform-19e59840f293a5ad: "CVL"
 
 dataExtractorEnabled: true
