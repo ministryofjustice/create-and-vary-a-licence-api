@@ -1273,7 +1273,7 @@ class LicenceServiceTest {
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     assertThat(exception).isInstanceOf(ValidationException::class.java)
-    assertThat(exception).message().isEqualTo("Unable to perform action, licence is missing NOMS ID")
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence 1 is missing NOMS ID")
   }
 
   @Test
@@ -1289,7 +1289,7 @@ class LicenceServiceTest {
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     assertThat(exception).isInstanceOf(ValidationException::class.java)
-    assertThat(exception).message().isEqualTo("Unable to perform action, case is ineligible for CVL")
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence 1 is ineligible for CVL")
   }
 
   @Test
@@ -2030,7 +2030,7 @@ class LicenceServiceTest {
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     assertThat(exception).isInstanceOf(ValidationException::class.java)
-    assertThat(exception).message().isEqualTo("Unable to perform action, licence is missing NOMS ID")
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence 1 is missing NOMS ID")
   }
 
   @Test
@@ -2051,7 +2051,7 @@ class LicenceServiceTest {
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
     assertThat(exception).isInstanceOf(ValidationException::class.java)
-    assertThat(exception).message().isEqualTo("Unable to perform action, case is ineligible for CVL")
+    assertThat(exception).message().isEqualTo("Unable to perform action, licence 1 is ineligible for CVL")
   }
 
   @Test
