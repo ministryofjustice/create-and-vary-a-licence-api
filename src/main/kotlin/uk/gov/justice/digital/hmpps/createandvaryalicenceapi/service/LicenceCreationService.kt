@@ -158,7 +158,9 @@ class LicenceCreationService(
 
     val curfewAddress = hdcService.getCurfewAddressByBookingId(nomisRecord.bookingId!!.toLong())
 
-    hdcService.checkEligibleForHdcLicence(nomisRecord, curfewAddress)
+    val curfewTimes = hdcService.getCurfewTimesByBookingId(nomisRecord.bookingId!!.toLong())
+
+    hdcService.checkEligibleForHdcLicence(nomisRecord, curfewAddress, curfewTimes)
 
     if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 

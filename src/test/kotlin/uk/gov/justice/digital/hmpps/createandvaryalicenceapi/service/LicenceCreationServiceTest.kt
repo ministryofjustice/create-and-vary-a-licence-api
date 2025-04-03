@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -63,7 +64,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -1180,6 +1183,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(hdcService.getCurfewAddressByBookingId(any())).thenReturn(aModelCurfewAddress)
+      whenever(hdcService.getCurfewTimesByBookingId(any())).thenReturn(aModelSetOfCurfewTimes)
       whenever(hdcService.getHdcLicenceData(any())).thenReturn(someHdcLicenceData)
 
       service.createHdcLicence(prisonNumber)
@@ -1268,7 +1272,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(hdcService.getCurfewAddressByBookingId(any())).thenReturn(null)
-      whenever(hdcService.checkEligibleForHdcLicence(any(), isNull())).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
+      whenever(hdcService.checkEligibleForHdcLicence(any(), isNull(), any())).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)
@@ -1392,6 +1396,66 @@ class LicenceCreationServiceTest {
       null,
       "AB1 2CD",
     )
+
+    val aModelSetOfCurfewTimes =
+      listOf(
+        HdcCurfewTimes(
+          1L,
+          1,
+          DayOfWeek.MONDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.TUESDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          2,
+          DayOfWeek.TUESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          3,
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.THURSDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          4,
+          DayOfWeek.THURSDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.FRIDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          5,
+          DayOfWeek.FRIDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SATURDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          6,
+          DayOfWeek.SATURDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SUNDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          7,
+          DayOfWeek.SUNDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.MONDAY,
+          LocalTime.of(8, 0),
+        ),
+      )
 
     val someHdcLicenceData = HdcLicenceData(
       licenceId = 1L,
