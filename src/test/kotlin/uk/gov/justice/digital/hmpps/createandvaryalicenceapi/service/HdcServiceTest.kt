@@ -51,6 +51,27 @@ class HdcServiceTest {
   }
 
   @Test
+  fun `getCurfewTimesByBookingId returns HDC curfew times successfully`() {
+    whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
+    val result = service.getCurfewTimesByBookingId(54321)
+    assertThat(result).isNotNull
+    assertThat(result).isEqualTo(aModelSetOfCurfewTimes)
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
+  }
+
+  @Test
+  fun `getCurfewTimesByBookingId returns null if no address present`() {
+    whenever(hdcApiClient.getByBookingId(54321)).thenReturn(
+      someHdcLicenceData.copy(
+        curfewTimes = null,
+      ),
+    )
+    val result = service.getCurfewTimesByBookingId(54321)
+    assertThat(result).isNull()
+    verify(hdcApiClient, times(1)).getByBookingId(54321L)
+  }
+
+  @Test
   fun `getCurfewAddressByBookingId returns HDC curfew address successfully`() {
     whenever(hdcApiClient.getByBookingId(54321)).thenReturn(someHdcLicenceData)
     val result = service.getCurfewAddressByBookingId(54321)
@@ -264,7 +285,7 @@ class HdcServiceTest {
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus().copy(approvalStatus = "APPROVED"))
       whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData)
       assertDoesNotThrow {
-        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress)
+        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress, aModelSetOfCurfewTimes)
       }
     }
 
@@ -275,7 +296,7 @@ class HdcServiceTest {
         homeDetentionCurfewEligibilityDate = LocalDate.now(),
       )
       val exception = assertThrows<IllegalStateException> {
-        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress)
+        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress, aModelSetOfCurfewTimes)
       }
       assertThat(exception.message).isEqualTo("HDC licence for A1234AA could not be created as it is missing a HDCAD")
     }
@@ -287,7 +308,7 @@ class HdcServiceTest {
         homeDetentionCurfewEligibilityDate = null,
       )
       val exception = assertThrows<IllegalStateException> {
-        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress)
+        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress, aModelSetOfCurfewTimes)
       }
       assertThat(exception.message).isEqualTo("HDC licence for A1234AA could not be created as it is missing a HDCED")
     }
@@ -300,7 +321,7 @@ class HdcServiceTest {
       )
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus())
       val exception = assertThrows<IllegalStateException> {
-        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress)
+        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress, aModelSetOfCurfewTimes)
       }
       assertThat(exception.message).isEqualTo("HDC licence for A1234AA could not be created as they are not approved for HDC")
     }
@@ -314,9 +335,23 @@ class HdcServiceTest {
       whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus().copy(approvalStatus = "APPROVED"))
       whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData.copy(curfewAddress = null))
       val exception = assertThrows<IllegalStateException> {
-        service.checkEligibleForHdcLicence(aPrisonerSearchResult, null)
+        service.checkEligibleForHdcLicence(aPrisonerSearchResult, null, aModelSetOfCurfewTimes)
       }
       assertThat(exception.message).isEqualTo("HDC licence for A1234AA could not be created as there is no curfew address")
+    }
+
+    @Test
+    fun `checkEligibleForHdcLicence throws error when there are no curfew times`() {
+      val aPrisonerSearchResult = aPrisonerSearchResult.copy(
+        homeDetentionCurfewActualDate = LocalDate.now(),
+        homeDetentionCurfewEligibilityDate = LocalDate.now(),
+      )
+      whenever(prisonApiClient.getHdcStatus(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(hdcPrisonerStatus().copy(approvalStatus = "APPROVED"))
+      whenever(hdcApiClient.getByBookingId(aPrisonerSearchResult.bookingId!!.toLong())).thenReturn(someHdcLicenceData.copy(curfewAddress = null))
+      val exception = assertThrows<IllegalStateException> {
+        service.checkEligibleForHdcLicence(aPrisonerSearchResult, aModelCurfewAddress, null)
+      }
+      assertThat(exception.message).isEqualTo("HDC licence for A1234AA could not be created as curfew times are missing")
     }
   }
 
