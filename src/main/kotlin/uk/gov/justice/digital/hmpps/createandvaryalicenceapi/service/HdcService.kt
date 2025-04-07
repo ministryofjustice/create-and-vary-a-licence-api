@@ -39,15 +39,9 @@ class HdcService(
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
   @Transactional
-  fun getCurfewAddressByBookingId(bookingId: Long): HdcCurfewAddress? {
+  fun getHdcLicenceDataByBookingId(bookingId: Long): HdcLicenceData? {
     val licenceData = this.hdcApiClient.getByBookingId(bookingId)
-    return licenceData.curfewAddress
-  }
-
-  @Transactional
-  fun getCurfewTimesByBookingId(bookingId: Long): List<HdcCurfewTimes>? {
-    val licenceData = this.hdcApiClient.getByBookingId(bookingId)
-    return licenceData.curfewTimes
+    return licenceData
   }
 
   @Transactional
@@ -80,7 +74,7 @@ class HdcService(
     )
   }
 
-  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, curfewAddress: HdcCurfewAddress?, curfewTimes: List<HdcCurfewTimes>?) {
+  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, hdcLicenceData: HdcLicenceData?) {
     if (nomisRecord.homeDetentionCurfewActualDate == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
     }
@@ -93,11 +87,11 @@ class HdcService(
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as they are not approved for HDC")
     }
 
-    if (curfewAddress == null) {
+    if (hdcLicenceData?.curfewAddress == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
     }
 
-    if (curfewTimes == null) {
+    if (hdcLicenceData.curfewTimes == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as curfew times are missing")
     }
   }
