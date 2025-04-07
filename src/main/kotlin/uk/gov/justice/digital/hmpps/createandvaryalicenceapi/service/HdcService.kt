@@ -4,8 +4,6 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient

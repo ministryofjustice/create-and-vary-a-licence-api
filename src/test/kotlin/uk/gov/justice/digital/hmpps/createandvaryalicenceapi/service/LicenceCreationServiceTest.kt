@@ -1271,11 +1271,17 @@ class LicenceCreationServiceTest {
       whenever(probationSearchApiClient.searchForPersonOnProbation(any())).thenReturn(anOffenderDetailResult)
       whenever(hdcService.getHdcLicenceDataByBookingId(any())).thenReturn(
         someHdcLicenceData.copy(
-        curfewAddress = null,
-      ))
-      whenever(hdcService.checkEligibleForHdcLicence(aPrisonerSearchResult, someHdcLicenceData.copy(
-        curfewAddress = null,
-      ))).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
+          curfewAddress = null,
+        ),
+      )
+      whenever(
+        hdcService.checkEligibleForHdcLicence(
+          aPrisonerSearchResult,
+          someHdcLicenceData.copy(
+            curfewAddress = null,
+          ),
+        ),
+      ).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
 
       val exception = assertThrows<IllegalStateException> {
         service.createHdcLicence(prisonNumber)
