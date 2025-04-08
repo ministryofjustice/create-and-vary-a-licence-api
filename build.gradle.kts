@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "7.1.4"
-  kotlin("plugin.spring") version "2.1.10"
-  kotlin("plugin.jpa") version "2.1.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.0.0"
+  kotlin("plugin.spring") version "2.1.20"
+  kotlin("plugin.jpa") version "2.1.20"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
@@ -20,7 +20,7 @@ dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   // hmpps-kotlin-lib
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.2")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -41,30 +41,30 @@ dependencies {
 
   implementation("com.google.code.gson:gson:2.12.1")
   implementation("io.arrow-kt:arrow-core:2.0.1")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.2")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.9")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.3.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.2")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
 
   // Digital prison reporting
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:7.10.5")
 
   // Test dependencies
-  testImplementation("org.wiremock:wiremock-standalone:3.12.0")
+  testImplementation("org.wiremock:wiremock-standalone:3.12.1")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
   testImplementation("io.jsonwebtoken:jjwt-api:0.12.6")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.12.6")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.12.6")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.25")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.26")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:localstack:1.20.5")
+  testImplementation("org.testcontainers:localstack:1.20.6")
 }
 
 detekt {
