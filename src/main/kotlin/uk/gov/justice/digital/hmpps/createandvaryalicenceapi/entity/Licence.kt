@@ -134,6 +134,8 @@ abstract class Licence(
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
   var updatedBy: Staff? = null,
+
+  var variationOfId: Long? = null,
 ) : SentenceDateHolder {
 
   companion object {
@@ -271,6 +273,8 @@ abstract class Licence(
     }
     return false
   }
+
+  fun isHdcLicence(): Boolean = kind == LicenceKind.HDC || kind == LicenceKind.HDC_VARIATION
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

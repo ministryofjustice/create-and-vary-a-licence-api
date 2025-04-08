@@ -63,8 +63,8 @@ class HdcVariationLicence(
   appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
-  val spoDiscussion: String? = null,
-  val vloDiscussion: String? = null,
+  override var spoDiscussion: String? = null,
+  override var vloDiscussion: String? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -77,7 +77,7 @@ class HdcVariationLicence(
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
-  val variationOfId: Long? = null,
+  variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
 
@@ -95,7 +95,7 @@ class HdcVariationLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
-) : Licence(
+) : Variation(
   id = id,
   kind = LicenceKind.HDC_VARIATION,
   typeCode = typeCode,
@@ -152,6 +152,9 @@ class HdcVariationLicence(
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
+  spoDiscussion = spoDiscussion,
+  vloDiscussion = vloDiscussion,
+  variationOfId = variationOfId,
 ) {
 
   fun copy(

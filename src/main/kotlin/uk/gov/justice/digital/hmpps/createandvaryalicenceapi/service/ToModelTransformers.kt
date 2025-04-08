@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -37,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HardStopLicen
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as ModelHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent as ModelLicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
@@ -104,10 +106,7 @@ fun transformToLicenceSummary(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   updatedByFullName = licence.getUpdatedByFullName(),
-  homeDetentionCurfewActualDate = when (licence) {
-    is HdcLicence -> licence.homeDetentionCurfewActualDate
-    else -> null
-  },
+  homeDetentionCurfewActualDate = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null,
 )
 
 fun toHardstop(
@@ -452,6 +451,90 @@ fun toHdc(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
+  curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
+  curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
+)
+
+fun toHdcVariation(
+  licence: HdcVariationLicence,
+  earliestReleaseDate: LocalDate?,
+  isEligibleForEarlyRelease: Boolean,
+  conditionSubmissionStatus: Map<String, Boolean>,
+) = ModelHdcVariationLicence(
+  id = licence.id,
+  typeCode = licence.typeCode,
+  version = licence.version,
+  statusCode = licence.statusCode,
+  nomsId = licence.nomsId,
+  bookingNo = licence.bookingNo,
+  bookingId = licence.bookingId,
+  crn = licence.crn,
+  pnc = licence.pnc,
+  cro = licence.cro,
+  prisonCode = licence.prisonCode,
+  prisonDescription = licence.prisonDescription,
+  prisonTelephone = licence.prisonTelephone,
+  forename = licence.forename,
+  middleNames = licence.middleNames,
+  surname = licence.surname,
+  dateOfBirth = licence.dateOfBirth,
+  conditionalReleaseDate = licence.conditionalReleaseDate,
+  actualReleaseDate = licence.actualReleaseDate,
+  sentenceStartDate = licence.sentenceStartDate,
+  sentenceEndDate = licence.sentenceEndDate,
+  licenceStartDate = licence.licenceStartDate,
+  licenceExpiryDate = licence.licenceExpiryDate,
+  homeDetentionCurfewActualDate = licence.homeDetentionCurfewActualDate,
+  homeDetentionCurfewEndDate = licence.homeDetentionCurfewEndDate,
+  topupSupervisionStartDate = licence.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+  postRecallReleaseDate = licence.postRecallReleaseDate,
+  comUsername = licence.responsibleCom!!.username,
+  comStaffId = licence.responsibleCom!!.staffIdentifier,
+  comEmail = licence.responsibleCom!!.email,
+  responsibleComFullName = with(licence.responsibleCom!!) { "$firstName $lastName" },
+  updatedByFullName = licence.getUpdatedByFullName(),
+  probationAreaCode = licence.probationAreaCode,
+  probationAreaDescription = licence.probationAreaDescription,
+  probationPduCode = licence.probationPduCode,
+  probationPduDescription = licence.probationPduDescription,
+  probationLauCode = licence.probationLauCode,
+  probationLauDescription = licence.probationLauDescription,
+  probationTeamCode = licence.probationTeamCode,
+  probationTeamDescription = licence.probationTeamDescription,
+  appointmentPerson = licence.appointmentPerson,
+  appointmentPersonType = licence.appointmentPersonType,
+  appointmentTime = licence.appointmentTime,
+  appointmentTimeType = licence.appointmentTimeType,
+  appointmentAddress = licence.appointmentAddress,
+  appointmentContact = licence.appointmentContact,
+  spoDiscussion = licence.spoDiscussion,
+  vloDiscussion = licence.vloDiscussion,
+  approvedDate = licence.approvedDate,
+  approvedByUsername = licence.approvedByUsername,
+  submittedDate = licence.submittedDate,
+  approvedByName = licence.approvedByName,
+  supersededDate = licence.supersededDate,
+  dateCreated = licence.dateCreated,
+  createdByUsername = licence.getCreator().username,
+  dateLastUpdated = licence.dateLastUpdated,
+  updatedByUsername = licence.updatedByUsername,
+  standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
+  standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional("AP", conditionSubmissionStatus),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
+  variationOf = licence.variationOfId,
+  createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
+  isInPssPeriod = licence.isInPssPeriod(),
+  isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
+  licenceVersion = licence.licenceVersion,
+  earliestReleaseDate = earliestReleaseDate,
+  isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  isReviewNeeded = false,
+  submittedByFullName = licence.getSubmittedByFullName(),
+  curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
+  curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
 )
 
 // Transform a list of entity standard conditions to model standard conditions
@@ -569,7 +652,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
 ): ModelFoundProbationRecord {
-  val hdcad = if (licence is HdcLicence) licence.homeDetentionCurfewActualDate else null
+  val hdcad = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null
   return ModelFoundProbationRecord(
     kind = licence.kind,
     bookingId = licence.bookingId,
@@ -652,6 +735,7 @@ fun Licence.getSubmittedByFullName(): String? {
     is CrdLicence -> this.submittedBy
     is VariationLicence -> this.submittedBy
     is HdcLicence -> this.submittedBy
+    is HdcVariationLicence -> this.submittedBy
     else -> error("Unexpected licence type: $this")
   }
   return if (staffMember != null) {
