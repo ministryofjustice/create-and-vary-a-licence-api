@@ -261,7 +261,7 @@ object LicenceFactory {
         typeCode = this.typeCode,
         version = this.version,
         statusCode = VARIATION_IN_PROGRESS,
-        variationOfId = licence.id,
+        variationOfId = this.id,
         createdBy = creator,
         nomsId = this.nomsId,
         bookingNo = this.bookingNo,

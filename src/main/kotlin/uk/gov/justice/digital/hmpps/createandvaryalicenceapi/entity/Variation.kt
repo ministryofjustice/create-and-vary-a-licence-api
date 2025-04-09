@@ -65,7 +65,7 @@ abstract class Variation(
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
-  variationOfId: Long? = null,
+  var variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
 ) : Licence(
@@ -125,7 +125,6 @@ abstract class Variation(
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
-  variationOfId = variationOfId,
 ) {
 
   fun updateSpoDiscussion(spoDiscussion: String?, staffMember: Staff?) {

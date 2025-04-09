@@ -422,7 +422,6 @@ class LicenceService(
         assertCaseIsEligible(licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
-      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
