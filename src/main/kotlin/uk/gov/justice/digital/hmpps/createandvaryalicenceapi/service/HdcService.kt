@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
@@ -38,9 +37,9 @@ class HdcService(
   fun isApprovedForHdc(bookingId: Long, hdced: LocalDate?) = if (hdced == null) false else prisonApiClient.getHdcStatus(bookingId).isApproved()
 
   @Transactional
-  fun getCurfewAddressByBookingId(bookingId: Long): HdcCurfewAddress? {
+  fun getHdcLicenceDataByBookingId(bookingId: Long): HdcLicenceData? {
     val licenceData = this.hdcApiClient.getByBookingId(bookingId)
-    return licenceData.curfewAddress
+    return licenceData
   }
 
   @Transactional
@@ -73,7 +72,7 @@ class HdcService(
     )
   }
 
-  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, curfewAddress: HdcCurfewAddress?) {
+  fun checkEligibleForHdcLicence(nomisRecord: PrisonerSearchPrisoner, hdcLicenceData: HdcLicenceData?) {
     if (nomisRecord.homeDetentionCurfewActualDate == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as it is missing a HDCAD")
     }
@@ -86,8 +85,12 @@ class HdcService(
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as they are not approved for HDC")
     }
 
-    if (curfewAddress == null) {
+    if (hdcLicenceData?.curfewAddress == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as there is no curfew address")
+    }
+
+    if (hdcLicenceData.curfewTimes == null) {
+      error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as curfew times are missing")
     }
   }
 

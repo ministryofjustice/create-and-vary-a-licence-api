@@ -410,16 +410,16 @@ class LicenceService(
 
     val updatedLicence = when (licenceEntity) {
       is CrdLicence -> {
-        assertCaseIsEligible(licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        assertCaseIsEligible(licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as PrisonUser)
       }
       is HdcLicence -> {
-        assertCaseIsEligible(licenceEntity.nomsId)
+        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
       else -> error("Unexpected licence type: $licenceEntity")
@@ -607,7 +607,7 @@ class LicenceService(
       return inProgressVersions[0].toSummary()
     }
 
-    assertCaseIsEligible(licence.nomsId)
+    assertCaseIsEligible(licence.id, licence.nomsId)
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1125,14 +1125,14 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun assertCaseIsEligible(nomisId: String?) {
+  private fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
     if (nomisId == null) {
-      throw ValidationException("Unable to perform action, licence is missing NOMS ID")
+      throw ValidationException("Unable to perform action, licence $licenceId is missing NOMS ID")
     }
 
     val prisoner = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(nomisId)).first()
     if (!eligibilityService.isEligibleForCvl(prisoner)) {
-      throw ValidationException("Unable to perform action, case is ineligible for CVL")
+      throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }
   }
 
