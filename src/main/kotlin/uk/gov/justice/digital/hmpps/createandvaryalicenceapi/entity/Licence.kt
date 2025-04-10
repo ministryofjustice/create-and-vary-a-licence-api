@@ -272,6 +272,8 @@ abstract class Licence(
     return false
   }
 
+  fun isHdcLicence(): Boolean = kind == LicenceKind.HDC || kind == LicenceKind.HDC_VARIATION
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Licence) return false

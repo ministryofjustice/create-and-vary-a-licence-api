@@ -57,8 +57,8 @@ class VariationLicence(
   appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
   appointmentContact: String? = null,
-  val spoDiscussion: String? = null,
-  val vloDiscussion: String? = null,
+  override var spoDiscussion: String? = null,
+  override var vloDiscussion: String? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
   approvedByName: String? = null,
@@ -71,7 +71,7 @@ class VariationLicence(
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
   responsibleCom: CommunityOffenderManager? = null,
-  val variationOfId: Long? = null,
+  override var variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
 
@@ -82,7 +82,7 @@ class VariationLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
-) : Licence(
+) : Variation(
   id = id,
   kind = LicenceKind.VARIATION,
   typeCode = typeCode,
@@ -139,6 +139,9 @@ class VariationLicence(
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
+  spoDiscussion = spoDiscussion,
+  vloDiscussion = vloDiscussion,
+  variationOfId = variationOfId,
 ) {
 
   fun copy(

@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
@@ -252,6 +253,60 @@ object LicenceFactory {
     responsibleCom = responsibleCom,
     createdBy = creator,
   )
+
+  fun createHdcVariation(licence: HdcLicence, creator: CommunityOffenderManager): HdcVariationLicence {
+    with(licence) {
+      return HdcVariationLicence(
+        id = -1,
+        typeCode = this.typeCode,
+        version = this.version,
+        statusCode = VARIATION_IN_PROGRESS,
+        variationOfId = this.id,
+        createdBy = creator,
+        nomsId = this.nomsId,
+        bookingNo = this.bookingNo,
+        bookingId = this.bookingId,
+        crn = this.crn,
+        pnc = this.pnc,
+        cro = this.cro,
+        prisonCode = this.prisonCode,
+        prisonDescription = this.prisonDescription,
+        prisonTelephone = this.prisonTelephone,
+        forename = this.forename,
+        middleNames = this.middleNames,
+        surname = this.surname,
+        dateOfBirth = this.dateOfBirth,
+        conditionalReleaseDate = this.conditionalReleaseDate,
+        actualReleaseDate = this.actualReleaseDate,
+        sentenceStartDate = this.sentenceStartDate,
+        sentenceEndDate = this.sentenceEndDate,
+        licenceStartDate = this.licenceStartDate,
+        licenceExpiryDate = this.licenceExpiryDate,
+        topupSupervisionStartDate = this.topupSupervisionStartDate,
+        topupSupervisionExpiryDate = this.topupSupervisionExpiryDate,
+        postRecallReleaseDate = this.postRecallReleaseDate,
+        homeDetentionCurfewActualDate = this.homeDetentionCurfewActualDate,
+        homeDetentionCurfewEndDate = this.homeDetentionCurfewEndDate,
+        probationAreaCode = this.probationAreaCode,
+        probationAreaDescription = this.probationAreaDescription,
+        probationPduCode = this.probationPduCode,
+        probationPduDescription = this.probationPduDescription,
+        probationLauCode = this.probationLauCode,
+        probationLauDescription = this.probationLauDescription,
+        probationTeamCode = this.probationTeamCode,
+        probationTeamDescription = this.probationTeamDescription,
+        appointmentPersonType = this.appointmentPersonType,
+        appointmentPerson = this.appointmentPerson,
+        appointmentTime = this.appointmentTime,
+        appointmentTimeType = this.appointmentTimeType,
+        appointmentAddress = this.appointmentAddress,
+        appointmentContact = this.appointmentContact,
+        responsibleCom = this.responsibleCom,
+        dateCreated = LocalDateTime.now(),
+        licenceVersion = getVariationVersion(this.licenceVersion!!),
+      )
+    }
+  }
 
   private fun getNextLicenceVersion(currentVersion: String): String {
     val (majorVersion, minorVersion) = getVersionParts(currentVersion)

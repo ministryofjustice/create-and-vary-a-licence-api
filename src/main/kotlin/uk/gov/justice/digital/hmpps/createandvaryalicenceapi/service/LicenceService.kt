@@ -13,10 +13,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -46,6 +48,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -150,6 +153,13 @@ class LicenceService(
       conditionSubmissionStatus = conditionSubmissionStatus,
     )
 
+    is HdcVariationLicence -> toHdcVariation(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      conditionSubmissionStatus = conditionSubmissionStatus,
+    )
+
     else -> error("could not convert licence of type: ${licence.kind} for licence: ${licence.id}")
   }
 
@@ -174,6 +184,7 @@ class LicenceService(
       APPROVED -> {
         when (licenceEntity) {
           is VariationLicence -> error("Cannot approve a Variation licence: ${licenceEntity.id}")
+          is HdcVariationLicence -> error("Cannot approve an HDC Variation licence: ${licenceEntity.id}")
           is CrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
           is HdcLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
         }
@@ -566,8 +577,16 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
     val creator = getCommunityOffenderManagerForCurrentUser()
-    val licenceCopy = LicenceFactory.createVariation(licence, creator)
-    val licenceVariation = populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
+    val licenceVariation = when (licence) {
+      is HdcLicence -> {
+        val licenceCopy = LicenceFactory.createHdcVariation(licence, creator)
+        populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
+      }
+      else -> {
+        val licenceCopy = LicenceFactory.createVariation(licence, creator)
+        populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
+      }
+    }
     return licenceVariation.toSummary()
   }
 
@@ -610,20 +629,18 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licenceEntity !is VariationLicence) error("Trying to update spo discussion for non-variation: $licenceId")
+    if (licenceEntity !is Variation) error("Trying to update spo discussion for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.copy(
+    licenceEntity.updateSpoDiscussion(
       spoDiscussion = spoDiscussionRequest.spoDiscussion,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-      updatedBy = staffMember ?: licenceEntity.updatedBy,
+      staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
   }
 
   @Transactional
@@ -631,20 +648,18 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licenceEntity !is VariationLicence) error("Trying to update vlo discussion for non-variation: $licenceId")
+    if (licenceEntity !is Variation) error("Trying to update vlo discussion for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.copy(
+    licenceEntity.updateVloDiscussion(
       vloDiscussion = vloDiscussionRequest.vloDiscussion,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-      updatedBy = staffMember ?: licenceEntity.updatedBy,
+      staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
   }
 
   @Transactional
@@ -652,17 +667,15 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licenceEntity !is VariationLicence) error("Trying to update variation reason for non-variation: $licenceId")
+    if (licenceEntity !is Variation) error("Trying to update variation reason for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.copy(
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-      updatedBy = staffMember ?: licenceEntity.updatedBy,
+    licenceEntity.recordUpdate(
+      staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
@@ -877,7 +890,6 @@ class LicenceService(
     licenceCopy: EntityLicence,
     creator: CommunityOffenderManager,
   ): EntityLicence {
-    val isVariation = kind == VARIATION
     val newStatus = kind.initialStatus()
 
     licenceCopy.version = licencePolicyService.currentPolicy().version
@@ -894,7 +906,7 @@ class LicenceService(
     standardConditionRepository.saveAll(standardConditions)
 
     val isNowInPssPeriod =
-      isVariation && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
+      licence is Variation && licence.typeCode == LicenceType.AP_PSS && licence.isInPssPeriod()
 
     if (!isNowInPssPeriod) {
       bespokeConditionRepository.saveAll(bespokeConditions)

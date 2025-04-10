@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
@@ -66,6 +67,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -87,6 +89,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as CrdLicenceModel
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcLicence as HdcLicenceModel
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as HdcVariationLicenceModel
 
 class LicenceServiceTest {
   private val standardConditionRepository = mock<StandardConditionRepository>()
@@ -1098,6 +1101,44 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `attempting to update a variation to APPROVED throws an error`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aVariationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    assertThrows<IllegalStateException> {
+      service.updateLicenceStatus(
+        1L,
+        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "smills", fullName = "Y"),
+      )
+    }
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
+  fun `attempting to update an HDC variation to APPROVED throws an error`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anHdcVariationLicence))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    assertThrows<IllegalStateException> {
+      service.updateLicenceStatus(
+        1L,
+        StatusUpdateRequest(status = LicenceStatus.APPROVED, username = "smills", fullName = "Y"),
+      )
+    }
+
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+  }
+
+  @Test
   fun `updating licence status to submitted should set the submitted date`() {
     val licence = aLicenceEntity.copy(
       licenceActivatedDate = LocalDateTime.now(),
@@ -1815,6 +1856,47 @@ class LicenceServiceTest {
     }
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
     assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
+  }
+
+  @Test
+  fun `creating an HDC variation`() {
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(anHdcLicenceEntity),
+    )
+    whenever(licenceRepository.save(any())).thenReturn(anHdcLicenceEntity)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val licenceEventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
+
+    service.createVariation(1L)
+
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    with(licenceCaptor.value as HdcVariationLicence) {
+      assertThat(kind).isEqualTo(LicenceKind.HDC_VARIATION)
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.VARIATION_IN_PROGRESS)
+      assertThat(variationOfId).isEqualTo(1)
+      assertThat(licenceVersion).isEqualTo("2.0")
+    }
+    verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.HDC_VARIATION_CREATED)
   }
 
   @Test
@@ -3175,6 +3257,20 @@ class LicenceServiceTest {
     }
 
     @Test
+    fun `service returns an HDC variation licence by ID`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anHdcVariationLicence))
+      whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+        AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+      )
+
+      val licence = service.getLicenceById(1L)
+
+      assertThat(licence).isExactlyInstanceOf(HdcVariationLicenceModel::class.java)
+
+      verify(licenceRepository, times(1)).findById(1L)
+    }
+
+    @Test
     fun `submitting a HDC licence`() {
       val hdcLicence = createHdcLicence()
 
@@ -3524,6 +3620,10 @@ class LicenceServiceTest {
         ),
       )
     }
+
+    val aVariationLicence = createVariationLicence()
+
+    val anHdcVariationLicence = createHdcVariationLicence()
 
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,
