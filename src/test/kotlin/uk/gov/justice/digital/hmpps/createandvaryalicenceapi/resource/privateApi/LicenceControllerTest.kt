@@ -467,7 +467,6 @@ class LicenceControllerTest {
       actualReleaseDate = LocalDate.parse("2023-09-11"),
       sentenceStartDate = LocalDate.parse("2021-09-11"),
       sentenceEndDate = LocalDate.parse("2024-09-11"),
-      licenceStartDate = LocalDate.parse("2023-09-11"),
       licenceExpiryDate = LocalDate.parse("2024-09-11"),
       topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
       topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),

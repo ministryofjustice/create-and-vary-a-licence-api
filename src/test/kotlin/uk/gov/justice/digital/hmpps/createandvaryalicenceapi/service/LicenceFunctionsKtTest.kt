@@ -36,7 +36,6 @@ class LicenceFunctionsKtTest {
   )
 
   private val testSentenceChanges = UpdateSentenceDatesRequest(
-    licenceStartDate = fiveDaysAgo,
     licenceExpiryDate = fiveDaysAgo,
     sentenceEndDate = fiveDaysAgo,
     topupSupervisionStartDate = fiveDaysAgo,
