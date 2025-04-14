@@ -105,8 +105,11 @@ interface LicenceRepository :
   @Query(
     """
       SELECT l
-      FROM VariationLicence l
-      WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
+      FROM Licence l
+      WHERE l.kind IN (
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION,
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION)
+      AND (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
       AND l.typeCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS))
       AND l.statusCode IN (
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,
