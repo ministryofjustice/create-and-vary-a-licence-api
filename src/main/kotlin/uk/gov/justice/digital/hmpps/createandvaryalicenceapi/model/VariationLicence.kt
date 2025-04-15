@@ -251,7 +251,7 @@ data class VariationLicence(
   override val bespokeConditions: List<BespokeCondition> = emptyList(),
 
   @Schema(description = "The licence Id which this licence is a variation of")
-  val variationOf: Long? = null,
+  override val variationOf: Long? = null,
 
   @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
   override val createdByFullName: String? = null,
@@ -277,4 +277,5 @@ data class VariationLicence(
 
   @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
-) : Licence
+) : Licence,
+  ModelVariation

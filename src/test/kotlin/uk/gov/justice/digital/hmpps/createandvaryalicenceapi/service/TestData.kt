@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
@@ -39,8 +41,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
 
 object TestData {
 
@@ -561,5 +569,192 @@ object TestData {
     checksPassedDate = null,
     bookingId = 1,
     passed = true,
+  )
+
+  fun someModelStandardConditions() = listOf(
+    ModelStandardCondition(
+      id = 1,
+      code = "goodBehaviour",
+      sequence = 1,
+      text = "Be of good behaviour",
+    ),
+    ModelStandardCondition(
+      id = 2,
+      code = "notBreakLaw",
+      sequence = 1,
+      text = "Do not break any law",
+    ),
+    ModelStandardCondition(
+      id = 3,
+      code = "attendMeetings",
+      sequence = 1,
+      text = "Attend meetings",
+    ),
+  )
+
+  fun someModelAssociationData() = listOf(
+    AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 1),
+    AdditionalConditionData(id = 2, field = "numberOfCurfews", value = "value2", sequence = 2),
+  )
+
+  fun someOldModelAdditionalConditions() = listOf(
+    ModelAdditionalCondition(
+      id = 1,
+      code = "599bdcae-d545-461c-b1a9-02cb3d4ba268",
+      readyToSubmit = true,
+    ),
+  )
+
+  fun someModelAdditionalConditions() = listOf(
+    ModelAdditionalCondition(
+      id = 1,
+      code = "associateWith",
+      sequence = 1,
+      text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
+      expandedText = "Do not associate with value1 for a period of value2",
+      data = someModelAssociationData(),
+      readyToSubmit = true,
+    ),
+  )
+
+  fun someModelBespokeConditions() = listOf(
+    BespokeCondition(id = 1, sequence = 1, text = "Bespoke one text"),
+    BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text"),
+  )
+
+  fun aModelLicence() = ModelCrdLicence(
+    id = 1,
+    typeCode = AP,
+    version = "1.1",
+    statusCode = LicenceStatus.IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "Bob",
+    surname = "Mortimer",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    comUsername = "X12345",
+    comStaffId = 12345,
+    comEmail = "stephen.mills@nps.gov.uk",
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.now(),
+    createdByUsername = "X12345",
+    standardLicenceConditions = someModelStandardConditions(),
+    standardPssConditions = someModelStandardConditions(),
+    additionalLicenceConditions = someModelAdditionalConditions(),
+    additionalPssConditions = someModelAdditionalConditions(),
+    bespokeConditions = someModelBespokeConditions(),
+  )
+
+  fun aModelVariation() = ModelVariationLicence(
+    id = 2,
+    typeCode = AP,
+    version = "1.1",
+    statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "Bob",
+    surname = "Mortimer",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    comUsername = "X12345",
+    comStaffId = 12345,
+    comEmail = "stephen.mills@nps.gov.uk",
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.now(),
+    createdByUsername = "X12345",
+    standardLicenceConditions = someModelStandardConditions(),
+    standardPssConditions = someModelStandardConditions(),
+    additionalLicenceConditions = someModelAdditionalConditions(),
+    additionalPssConditions = someModelAdditionalConditions(),
+    bespokeConditions = someModelBespokeConditions(),
+    variationOf = 1,
+  )
+
+  fun aModelHdcVariation() = ModelHdcVariationLicence(
+    id = 2,
+    typeCode = AP,
+    version = "1.1",
+    statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+    nomsId = "A1234AA",
+    bookingNo = "123456",
+    bookingId = 54321,
+    crn = "X12345",
+    pnc = "2019/123445",
+    cro = "12345",
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    forename = "Bob",
+    surname = "Mortimer",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = LocalDate.of(2021, 10, 22),
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    comUsername = "X12345",
+    comStaffId = 12345,
+    comEmail = "stephen.mills@nps.gov.uk",
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    dateCreated = LocalDateTime.now(),
+    createdByUsername = "X12345",
+    standardLicenceConditions = someModelStandardConditions(),
+    standardPssConditions = someModelStandardConditions(),
+    additionalLicenceConditions = someModelAdditionalConditions(),
+    additionalPssConditions = someModelAdditionalConditions(),
+    bespokeConditions = someModelBespokeConditions(),
+    variationOf = 1,
+    homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
+    homeDetentionCurfewEndDate = LocalDate.of(2022, 10, 22),
   )
 }

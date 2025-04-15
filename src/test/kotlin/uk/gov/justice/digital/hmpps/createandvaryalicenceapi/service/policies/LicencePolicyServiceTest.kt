@@ -4,7 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aModelLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.someOldModelAdditionalConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.PSS
@@ -88,14 +91,14 @@ class LicencePolicyServiceTest {
   inner class `getHardStopAdditionalConditions` {
     @Test
     fun `get Hardstop conditions for PSS`() {
-      val pssLicence = TestData.createCrdLicence().copy(typeCode = PSS)
+      val pssLicence = createCrdLicence().copy(typeCode = PSS)
       val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
       assertThat(conditions).isEmpty()
     }
 
     @Test
     fun `get HardStop conditions for AP`() {
-      val pssLicence = TestData.createCrdLicence().copy(id = 2L, typeCode = AP)
+      val pssLicence = createCrdLicence().copy(id = 2L, typeCode = AP)
       val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
       assertThat(conditions).hasSize(1)
       with(conditions.first()) {
@@ -109,7 +112,7 @@ class LicencePolicyServiceTest {
 
     @Test
     fun `get HardStop conditions for AP_PSS`() {
-      val pssLicence = TestData.createCrdLicence().copy(id = 2L, typeCode = AP_PSS)
+      val pssLicence = createCrdLicence().copy(id = 2L, typeCode = AP_PSS)
       val conditions = licencePolicyService.getHardStopAdditionalConditions(pssLicence)
       assertThat(conditions).hasSize(1)
       with(conditions.first()) {
@@ -120,5 +123,41 @@ class LicencePolicyServiceTest {
         assertThat(conditionType).isEqualTo("AP")
       }
     }
+  }
+
+  @Nested
+  inner class `compareLicenceWithPolicy` {
+    @Test
+    fun `returns an empty list if the previous licence is missing a version`() {
+      val previousLicence = aModelLicence().copy(id = 1, version = null)
+      val currentLicence = aModelLicence().copy(id = 2, statusCode = LicenceStatus.VARIATION_IN_PROGRESS)
+
+      val policyChanges = licencePolicyService.compareLicenceWithPolicy(currentLicence, previousLicence, "2.1")
+
+      assertThat(policyChanges).isEmpty()
+    }
+
+    @Test
+    fun `returns an empty list if the previous licence policy version is equal to the current licence policy version`() {
+      val previousLicence = aModelLicence().copy(id = 1, version = "2.0")
+      val currentLicence = aModelLicence().copy(id = 2, statusCode = LicenceStatus.VARIATION_IN_PROGRESS, version = "2.0")
+
+      val policyChanges = licencePolicyService.compareLicenceWithPolicy(currentLicence, previousLicence, "2.1")
+
+      assertThat(policyChanges).isEmpty()
+    }
+
+    @Test
+    fun `returns a list of policy changes`() {
+      val previousLicence = aModelLicence().copy(id = 1, version = "2.0", additionalLicenceConditions = someOldModelAdditionalConditions())
+      val currentLicence = aModelLicence().copy(id = 2, statusCode = LicenceStatus.VARIATION_IN_PROGRESS, version = "2.1", additionalLicenceConditions = someOldModelAdditionalConditions())
+
+      val policyChanges = licencePolicyService.compareLicenceWithPolicy(currentLicence, previousLicence, "2.1")
+
+      assertThat(policyChanges.size).isEqualTo(1)
+    }
+  }
+
+  private companion object {
   }
 }

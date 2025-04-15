@@ -268,7 +268,7 @@ data class HdcVariationLicence(
   override val bespokeConditions: List<BespokeCondition> = emptyList(),
 
   @Schema(description = "The licence Id which this licence is a variation of")
-  val variationOf: Long? = null,
+  override val variationOf: Long? = null,
 
   @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
   override val createdByFullName: String? = null,
@@ -297,4 +297,5 @@ data class HdcVariationLicence(
 
   @Schema(description = "The curfew address for this licence")
   val curfewAddress: HdcCurfewAddress? = null,
-) : Licence
+) : Licence,
+  ModelVariation

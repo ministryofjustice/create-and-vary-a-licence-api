@@ -2899,6 +2899,53 @@ class LicenceServiceTest {
     }
 
     @Test
+    fun happyPathWhenActivatingHdcVariation() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anHdcLicenceEntity.copy(id = 1L)))
+      whenever(licenceRepository.findById(2L)).thenReturn(
+        Optional.of(
+          anHdcVariationLicence.copy(
+            id = 2L,
+            variationOfId = 1L,
+            statusCode = LicenceStatus.VARIATION_APPROVED,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      service.activateVariation(2L)
+
+      argumentCaptor<Licence>().apply {
+        verify(licenceRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue).isInstanceOf(HdcVariationLicence::class.java)
+        assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+
+        assertThat(secondValue).isInstanceOf(HdcLicence::class.java)
+        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(2L)
+        assertThat(firstValue.summary).isEqualTo("Licence set to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+
+        assertThat(secondValue.licenceId).isEqualTo(1L)
+        assertThat(secondValue.summary).isEqualTo("Licence set to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(2)).saveAndFlush(capture())
+
+        assertThat(firstValue.eventDescription).isEqualTo("Licence updated to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.ACTIVATED)
+
+        assertThat(secondValue.eventDescription).isEqualTo("Licence updated to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.SUPERSEDED)
+      }
+    }
+
+    @Test
     fun attemptingToVaryNonVariation() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createCrdLicence().copy(id = 1L)))
 
@@ -3302,6 +3349,67 @@ class LicenceServiceTest {
           listOf(
             1L,
             LicenceEventType.HDC_SUBMITTED,
+            "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
+          ),
+        )
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            1L,
+            "smills",
+            "X Y",
+            "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
+          ),
+        )
+    }
+
+    @Test
+    fun `submitting a HDC Variation licence`() {
+      val hdcLicence = createHdcLicence()
+
+      val variation = anHdcVariationLicence.copy(
+        submittedBy = aCom,
+      )
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
+      service.submitLicence(
+        1L,
+        listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")),
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+      verify(notifyService, times(2))
+        .sendVariationForApprovalEmail(
+          any(),
+          eq(variation.id.toString()),
+          eq(variation.forename!!),
+          eq(variation.surname!!),
+          eq(variation.crn!!),
+          eq(variation.submittedBy?.username!!),
+        )
+
+      assertThat(licenceCaptor.value)
+        .extracting("id", "kind", "statusCode", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(1L, LicenceKind.HDC_VARIATION, LicenceStatus.VARIATION_SUBMITTED, aCom.username, aCom))
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "eventDescription")
+        .isEqualTo(
+          listOf(
+            1L,
+            LicenceEventType.HDC_VARIATION_SUBMITTED,
             "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
           ),
         )
