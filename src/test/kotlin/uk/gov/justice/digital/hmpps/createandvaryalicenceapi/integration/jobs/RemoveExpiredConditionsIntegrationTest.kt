@@ -91,7 +91,7 @@ class RemoveExpiredConditionsIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-hdc-licence-id-4.sql",
+    "classpath:test_data/seed-hdc-inprogress-variation.sql",
   )
   fun `Update sentence dates for HDC variation licences`() {
     webTestClient.post()
