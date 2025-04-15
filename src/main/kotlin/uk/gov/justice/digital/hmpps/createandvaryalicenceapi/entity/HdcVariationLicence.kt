@@ -95,7 +95,7 @@ class HdcVariationLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
-) : Variation(
+) : Licence(
   id = id,
   kind = LicenceKind.HDC_VARIATION,
   typeCode = typeCode,
@@ -152,10 +152,8 @@ class HdcVariationLicence(
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
-  spoDiscussion = spoDiscussion,
-  vloDiscussion = vloDiscussion,
-  variationOfId = variationOfId,
-) {
+),
+  Variation {
 
   fun copy(
     id: Long = this.id,
