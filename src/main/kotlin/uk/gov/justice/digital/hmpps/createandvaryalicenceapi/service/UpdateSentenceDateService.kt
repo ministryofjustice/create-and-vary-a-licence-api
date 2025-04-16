@@ -201,7 +201,6 @@ class UpdateSentenceDateService(
         append("ARD ${sentenceDatesRequest.actualReleaseDate} ")
         append("SSD ${sentenceDatesRequest.sentenceStartDate} ")
         append("SED ${sentenceDatesRequest.sentenceEndDate} ")
-        append("LSD ${sentenceDatesRequest.licenceStartDate} ")
         append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
         append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
         append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} ")

@@ -96,7 +96,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
         actualReleaseDate = LocalDate.parse("2023-09-11"),
         sentenceStartDate = LocalDate.parse("2021-09-11"),
         sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
         licenceExpiryDate = null,
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.now().plusDays(1),

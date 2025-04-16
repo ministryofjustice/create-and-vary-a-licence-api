@@ -22,10 +22,6 @@ data class UpdateSentenceDatesRequest(
   @JsonFormat(pattern = "dd/MM/yyyy")
   val sentenceEndDate: LocalDate? = null,
 
-  @Schema(description = "The licence start date, from prison services", example = "06/05/2021")
-  @JsonFormat(pattern = "dd/MM/yyyy")
-  val licenceStartDate: LocalDate? = null,
-
   @Schema(description = "The licence end date, from prison services", example = "06/05/2023")
   @JsonFormat(pattern = "dd/MM/yyyy")
   val licenceExpiryDate: LocalDate? = null,
