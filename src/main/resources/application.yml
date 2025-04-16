@@ -142,7 +142,7 @@ cache:
 dpr:
   lib:
     definition:
-      locations:
+      locations: "dpr_reports/"
     caseloads:
       host: ${hmpps.manageusers.api.url}
       path: /users/me/caseloads
