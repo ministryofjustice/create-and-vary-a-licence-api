@@ -422,6 +422,7 @@ class LicenceService(
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
+      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       else -> error("Unexpected licence type: $licenceEntity")
     }
 
@@ -449,7 +450,7 @@ class LicenceService(
     )
 
     // Notify the head of PDU of this submitted licence variation
-    if (updatedLicence.kind == VARIATION) {
+    if (updatedLicence is Variation) {
       notifyRequest?.forEach {
         notifyService.sendVariationForApprovalEmail(
           it,
@@ -794,7 +795,7 @@ class LicenceService(
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-    if (licence !is VariationLicence || licence.statusCode != VARIATION_APPROVED) {
+    if (licence !is Variation || licence.statusCode != VARIATION_APPROVED) {
       return
     }
 
