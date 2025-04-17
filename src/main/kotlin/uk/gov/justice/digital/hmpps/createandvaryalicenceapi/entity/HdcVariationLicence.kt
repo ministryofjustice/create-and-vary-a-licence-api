@@ -94,7 +94,7 @@ class HdcVariationLicence(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
-  var createdBy: CommunityOffenderManager? = null,
+  override var createdBy: CommunityOffenderManager? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC_VARIATION,
