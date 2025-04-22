@@ -81,7 +81,7 @@ class VariationLicence(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
-  var createdBy: CommunityOffenderManager? = null,
+  override var createdBy: CommunityOffenderManager? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.VARIATION,

@@ -695,23 +695,18 @@ class LicenceService(
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licenceEntity !is VariationLicence) error("Trying to reject non-variation: $licenceId")
+    if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = VARIATION_REJECTED,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-      updatedBy = staffMember ?: licenceEntity.updatedBy,
-    )
+    licenceEntity.referVariation(staffMember)
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.VARIATION_REFERRED,
+        eventType = if (licenceEntity is HdcVariationLicence) LicenceEventType.HDC_VARIATION_REFERRED else LicenceEventType.VARIATION_REFERRED,
         username = staffMember?.username ?: SYSTEM_USER,
         forenames = staffMember?.firstName,
         surname = staffMember?.lastName,
@@ -725,7 +720,7 @@ class LicenceService(
         username = staffMember?.username ?: SYSTEM_USER,
         fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
         summary = "Licence variation rejected for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
 
@@ -742,30 +737,22 @@ class LicenceService(
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licenceEntity !is VariationLicence) error("Trying to approve non-variation: $licenceId")
+    if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.copy(
-      statusCode = VARIATION_APPROVED,
-      dateLastUpdated = LocalDateTime.now(),
-      updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-      approvedByUsername = username,
-      approvedDate = LocalDateTime.now(),
-      approvedByName = "${staffMember?.firstName} ${staffMember?.lastName}",
-      updatedBy = staffMember ?: licenceEntity.updatedBy,
-    )
+    licenceEntity.approveVariation(username, staffMember)
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.VARIATION_APPROVED,
+        eventType = if (licenceEntity is HdcVariationLicence) LicenceEventType.HDC_VARIATION_APPROVED else LicenceEventType.VARIATION_APPROVED,
         username = staffMember?.username ?: SYSTEM_USER,
         forenames = staffMember?.firstName,
         surname = staffMember?.lastName,
-        eventDescription = "Licence variation approved for ${updatedLicenceEntity.forename} ${updatedLicenceEntity.surname}",
+        eventDescription = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
       ),
     )
 
@@ -775,7 +762,7 @@ class LicenceService(
         username = staffMember?.username ?: SYSTEM_USER,
         fullName = "${staffMember?.firstName} ${staffMember?.lastName}",
         summary = "Licence variation approved for ${licenceEntity.forename} ${licenceEntity.surname}",
-        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${updatedLicenceEntity.statusCode.name} version ${licenceEntity.version}",
+        detail = "ID $licenceId type ${licenceEntity.typeCode} status ${licenceEntity.statusCode.name} version ${licenceEntity.version}",
       ),
     )
 
