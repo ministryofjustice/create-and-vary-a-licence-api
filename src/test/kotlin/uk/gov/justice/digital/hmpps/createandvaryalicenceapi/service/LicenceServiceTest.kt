@@ -2339,7 +2339,7 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "username", "eventDescription")
-      .isEqualTo(listOf(1L, LicenceEventType.VARIATION_REFERRED, "smills", "reason"))
+      .isEqualTo(listOf(1L, LicenceEventType.HDC_VARIATION_REFERRED, "smills", "reason"))
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -2468,7 +2468,7 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.allValues[0])
       .extracting("licenceId", "eventType", "username")
-      .isEqualTo(listOf(2L, LicenceEventType.VARIATION_APPROVED, "smills"))
+      .isEqualTo(listOf(2L, LicenceEventType.HDC_VARIATION_APPROVED, "smills"))
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")

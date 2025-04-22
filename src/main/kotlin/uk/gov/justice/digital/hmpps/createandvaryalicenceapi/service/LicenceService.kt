@@ -706,7 +706,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.VARIATION_REFERRED,
+        eventType = if (licenceEntity is HdcVariationLicence) LicenceEventType.HDC_VARIATION_REFERRED else LicenceEventType.VARIATION_REFERRED,
         username = staffMember?.username ?: SYSTEM_USER,
         forenames = staffMember?.firstName,
         surname = staffMember?.lastName,
@@ -748,7 +748,7 @@ class LicenceService(
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = LicenceEventType.VARIATION_APPROVED,
+        eventType = if (licenceEntity is HdcVariationLicence) LicenceEventType.HDC_VARIATION_APPROVED else LicenceEventType.VARIATION_APPROVED,
         username = staffMember?.username ?: SYSTEM_USER,
         forenames = staffMember?.firstName,
         surname = staffMember?.lastName,
