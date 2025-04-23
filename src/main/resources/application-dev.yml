@@ -29,9 +29,6 @@ hmpps:
   manageusers:
     api:
       url: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
-  probationsearch:
-    api:
-      url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
   prisonersearch:
     api:
       url: "https://prisoner-search-dev.prison.service.justice.gov.uk"

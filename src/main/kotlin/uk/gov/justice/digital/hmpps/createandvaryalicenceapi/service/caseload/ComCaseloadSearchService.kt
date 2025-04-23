@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload
 
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.FoundProbationRecord
@@ -14,8 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
@@ -23,7 +24,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import java.time.Clock
 import java.time.LocalDate
 
@@ -31,7 +31,6 @@ import java.time.LocalDate
 class ComCaseloadSearchService(
   private val licenceRepository: LicenceRepository,
   private val deliusApiClient: DeliusApiClient,
-  private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
@@ -39,19 +38,19 @@ class ComCaseloadSearchService(
   private val clock: Clock,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
-    val teamCaseloadResult = probationSearchApiClient.searchLicenceCaseloadByTeam(
+    val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
+      body.staffIdentifier,
       body.query,
-      deliusApiClient.getTeamsCodesForUser(body.staffIdentifier),
-      body.getSortBy(),
+      PageRequest.of(0, CASELOAD_PAGE_SIZE, Sort.by(body.sortBy.map { Sort.Order(it.direction, it.field.probationSearchApiSortType) })),
     )
 
     val deliusRecordsWithLicences: List<Pair<CaseloadResult, Licence?>> =
-      teamCaseloadResult.map { it to getLicence(it) }
+      teamCaseloadResult.content.map { it to getLicence(it.crn) }
 
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsWithLicences)
 
     val cvlSearchRecords = deliusRecordsWithLicences.map { (caseloadResult, licence) ->
-      val prisonRecord = prisonerRecords[caseloadResult.identifiers.noms]
+      val prisonRecord = prisonerRecords[caseloadResult.nomisId]
       CvlProbationSearchRecord(
         caseloadResult = caseloadResult,
         prisonerSearchPrisoner = prisonRecord,
@@ -78,20 +77,17 @@ class ComCaseloadSearchService(
     return ProbationSearchResult(searchResults, inPrisonCount, onProbationCount)
   }
 
-  private fun getLicence(result: CaseloadResult): Licence? {
+  private fun getLicence(crn: String): Licence? {
     val licences =
-      licenceRepository.findAllByCrnAndStatusCodeIn(result.identifiers.crn, IN_FLIGHT_LICENCES)
+      licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
     return licences.maxWithOrNull(versionComparator)
   }
 
   private fun findPrisonersForRelevantRecords(record: List<Pair<CaseloadResult, Licence?>>): Map<String, PrisonerSearchPrisoner> {
     val prisonNumbers = record
       .filter { (_, licence) -> licence == null || !licence.statusCode.isOnProbation() }
-      .mapNotNull { (result, _) -> result.identifiers.noms }
-
-    if (prisonNumbers.isEmpty()) {
-      return emptyMap()
-    }
+      .mapNotNull { (result, _) -> result.nomisId }
+      .ifEmpty { return emptyMap() }
 
     // we gather further data from prisoner search if there is no licence or a create licence
     val prisoners = this.prisonerSearchApiClient.searchPrisonersByNomisIds(prisonNumbers)
@@ -124,13 +120,6 @@ class ComCaseloadSearchService(
       deliusOffender.toStartedRecord(licence)
 
     else -> null
-  }
-
-  private fun ProbationUserSearchRequest.getSortBy() = this.sortBy.map {
-    ProbationSearchSortByRequest(
-      it.field.probationSearchApiSortType,
-      if (it.direction == SearchDirection.ASC) "asc" else "desc",
-    )
   }
 
   private fun List<FoundProbationRecord>.filterOutHdc(prisoners: Map<String, PrisonerSearchPrisoner>): List<FoundProbationRecord> {

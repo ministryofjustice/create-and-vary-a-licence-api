@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -659,9 +660,9 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     name = "${name.forename} ${name.surname}".convertToTitleCase(),
     crn = licence.crn,
     nomisId = licence.nomsId,
-    comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
-    comStaffCode = manager.code,
-    teamName = manager.team.description ?: licence.probationTeamDescription,
+    comName = staff.name?.fullName()?.convertToTitleCase(),
+    comStaffCode = staff.code,
+    teamName = team.description,
     releaseDate = licence.licenceStartDate,
     licenceId = licence.id,
     versionOf = if (licence is CrdLicence) licence.versionOfId else null,
@@ -700,12 +701,12 @@ fun CaseloadResult.transformToUnstartedRecord(
 ): ModelFoundProbationRecord = ModelFoundProbationRecord(
   kind = null,
   bookingId = bookingId,
-  name = "${name.forename} ${name.surname}".convertToTitleCase(),
-  crn = identifiers.crn,
-  nomisId = identifiers.noms,
-  comName = manager.name?.let { "${it.forename} ${it.surname}".convertToTitleCase() },
-  comStaffCode = manager.code,
-  teamName = manager.team.description,
+  name = name.fullName(),
+  crn = crn,
+  nomisId = nomisId,
+  comName = staff.name?.fullName()?.convertToTitleCase(),
+  comStaffCode = staff.code,
+  teamName = team.description,
   releaseDate = releaseDate,
   licenceId = null,
   licenceType = licenceType,
