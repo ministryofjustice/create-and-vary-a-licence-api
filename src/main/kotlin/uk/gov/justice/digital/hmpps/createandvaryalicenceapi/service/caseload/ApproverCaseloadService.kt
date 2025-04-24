@@ -48,7 +48,7 @@ class ApproverCaseloadService(
     val comUsernames = prisonerRecord.mapNotNull { (_, licenceSummary) -> licenceSummary?.comUsername }
     val deliusStaffNames = deliusApiClient.getStaffDetailsByUsername(comUsernames)
 
-    val approvalCases = prisonerRecord.map { (activeCom, licenceSummary) ->
+    return prisonerRecord.map { (activeCom, licenceSummary) ->
       ApprovalCase(
         probationPractitioner = findProbationPractitioner(licenceSummary?.comUsername, deliusStaffNames, activeCom),
         licenceId = licenceSummary?.licenceId,
@@ -63,8 +63,6 @@ class ApproverCaseloadService(
         kind = licenceSummary?.kind,
       )
     }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
-    println(approvalCases)
-    return approvalCases
   }
 
   private fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisId: String): LicenceSummaryApproverView? {
