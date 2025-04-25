@@ -1,26 +1,23 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
-import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.springframework.data.domain.Sort
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.LicenceCaseloadSearchRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.LocalDate
 
@@ -30,8 +27,7 @@ class ComIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Given a staff member and the teams they are in, search for offenders within their teams`() {
-    deliusMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    deliusMockServer.stubGetTeamManagedCases()
     prisonApiMockServer.stubGetCourtOutcomes()
 
     val resultObject = webTestClient.post()
@@ -80,8 +76,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams where the offender does not already have a licence`() {
-    deliusMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    deliusMockServer.stubGetTeamManagedCases()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -133,8 +128,6 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from team caseload`() {
     prisonApiMockServer.stubGetCourtOutcomes()
-    deliusMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeamNoResult(Gson().toJson(aLicenceCaseloadSearchRequest))
 
     val resultList = webTestClient.post()
       .uri("/com/case-search")
@@ -153,8 +146,7 @@ class ComIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Given a staff member and the teams they are in, search for offenders within their teams with no results from prisoner search`() {
     prisonApiMockServer.stubGetCourtOutcomes()
-    deliusMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    deliusMockServer.stubGetTeamManagedCases()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIdsNoResult()
 
     val resultList = webTestClient.post()
@@ -173,9 +165,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender not on probation and their licences is ACTIVE AND CRD and ARD in future When search for offender Then offender should be part of the search results `() {
-    deliusMockServer.stubGetTeamCodesForUser()
-
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    deliusMockServer.stubGetTeamManagedCases()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -226,9 +216,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is on probation and their licences is ACTIVE AND CRD and ARD in past When search for offender Then offender should be part of the search results `() {
-    deliusMockServer.stubGetTeamCodesForUser()
-
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(aLicenceCaseloadSearchRequest))
+    deliusMockServer.stubGetTeamManagedCases()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -249,16 +237,7 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Given an offender is not in jail and licence is INACTIVE When search for offender Then offender should not be part of the search results `() {
-    val prisonerWithSentenceSpent = LicenceCaseloadSearchRequest(
-      listOf("A01B02"),
-      "Surname",
-      listOf(
-        ProbationSearchSortByRequest("name.forename", "asc"),
-      ),
-      2000,
-    )
-    deliusMockServer.stubGetTeamCodesForUser()
-    probationSearchApiMockServer.stubPostLicenceCaseloadByTeam(Gson().toJson(prisonerWithSentenceSpent))
+    deliusMockServer.stubGetTeamManagedCases()
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetHdcLatest(123L)
     prisonApiMockServer.stubGetCourtOutcomes()
@@ -278,7 +257,6 @@ class ComIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val deliusMockServer = DeliusMockServer()
-    val probationSearchApiMockServer = ProbationSearchMockServer()
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val govUkMockServer = GovUkMockServer()
@@ -287,24 +265,16 @@ class ComIntegrationTest : IntegrationTestBase() {
       "Surname",
       1L,
       listOf(
-        ProbationSearchSortBy(SearchField.FORENAME, SearchDirection.ASC),
+        ProbationSearchSortBy(SearchField.FORENAME, Sort.Direction.ASC),
       ),
     )
 
-    val aLicenceCaseloadSearchRequest = LicenceCaseloadSearchRequest(
-      listOf("A01B02"),
-      "Surname",
-      listOf(
-        ProbationSearchSortByRequest("name.forename", "asc"),
-      ),
-      2000,
-    )
+    val aLicenceCaseloadSearchRequest = LicenceCaseloadSearchRequest("Surname")
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       deliusMockServer.start()
-      probationSearchApiMockServer.start()
       prisonerSearchApiMockServer.start()
       prisonApiMockServer.start()
 
@@ -316,7 +286,6 @@ class ComIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       deliusMockServer.stop()
-      probationSearchApiMockServer.stop()
       prisonerSearchApiMockServer.stop()
       prisonApiMockServer.stop()
       govUkMockServer.stop()

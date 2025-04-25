@@ -22,10 +22,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -46,7 +45,6 @@ class LicenceCreationService(
   private val licencePolicyService: LicencePolicyService,
   private val auditEventRepository: AuditEventRepository,
   private val hdcCurfewAddressRepository: HdcCurfewAddressRepository,
-  private val probationSearchApiClient: ProbationSearchApiClient,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val deliusApiClient: DeliusApiClient,
@@ -64,7 +62,7 @@ class LicenceCreationService(
     val username = SecurityContextHolder.getContext().authentication.name
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
+    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.CRD)
@@ -105,7 +103,7 @@ class LicenceCreationService(
     val username = SecurityContextHolder.getContext().authentication.name
 
     val nomisRecord = prisonerSearchApiClient.searchPrisonersByNomisIds(listOf(prisonNumber)).first()
-    val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
+    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.HARD_STOP)
@@ -162,7 +160,7 @@ class LicenceCreationService(
 
     if (getLicenceType(nomisRecord) == LicenceType.PSS) error("HDC Licence for ${nomisRecord.prisonerNumber} can not be of type PSS")
 
-    val deliusRecord = probationSearchApiClient.searchForPersonOnProbation(prisonNumber)
+    val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
     val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.HDC)
@@ -255,9 +253,9 @@ class LicenceCreationService(
   }
 
   private fun getCurrentResponsibleOfficer(
-    deliusRecord: OffenderDetail,
+    deliusRecord: ProbationCase,
     prisonNumber: String,
-  ): CommunityOrPrisonOffenderManager = deliusApiClient.getOffenderManager(deliusRecord.otherIds.crn)
+  ): CommunityManager = deliusApiClient.getOffenderManager(deliusRecord.crn)
     ?: error("No active offender manager found for $prisonNumber")
 
   private fun missing(staffId: Long, field: String): Nothing = error("staff with staff identifier: '$staffId', missing $field")

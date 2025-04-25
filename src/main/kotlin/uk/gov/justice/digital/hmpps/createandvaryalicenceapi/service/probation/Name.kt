@@ -6,4 +6,4 @@ data class Name(
   val surname: String?,
 )
 
-fun Name.fullName() = listOfNotNull(this.forename, this.middleName, this.surname).joinToString(" ")
+fun Name.fullName() = listOfNotNull(this.forename, this.middleName, this.surname).filter { it.isNotBlank() }.joinToString(" ")

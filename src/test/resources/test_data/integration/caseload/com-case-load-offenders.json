@@ -1,18 +1,10 @@
 [
   {
-    "offenderId": 1,
-    "otherIds": {
-      "crn": "X12348",
-      "nomsNumber": "AB1234E"
-    },
-    "offenderManagers": []
+    "crn": "X12348",
+    "nomisId": "AB1234E"
   },
   {
-    "offenderId": 3,
-    "otherIds": {
-      "crn": "X12349",
-      "nomsNumber": "AB1234F"
-    },
-    "offenderManagers": []
+    "crn": "X12349",
+    "nomisId": "AB1234F"
   }
 ]
