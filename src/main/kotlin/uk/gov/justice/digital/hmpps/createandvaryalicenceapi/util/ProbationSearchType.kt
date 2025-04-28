@@ -1,13 +1,16 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util
 
-import org.springframework.data.domain.Sort
-
-data class ProbationSearchSortBy(val field: SearchField, val direction: Sort.Direction)
+data class ProbationSearchSortBy(val field: SearchField, val direction: SearchDirection)
 
 enum class SearchField(val probationSearchApiSortType: String) {
-  FORENAME("firstName"),
-  SURNAME("surname"),
-  CRN("crn"),
-  COM_FORENAME("staff.forename"),
-  COM_SURNAME("staff.surname"),
+  FORENAME("name.forename"),
+  SURNAME("name.surname"),
+  CRN("identifiers.crn"),
+  COM_FORENAME("manager.name.forename"),
+  COM_SURNAME("manager.name.surname"),
+}
+
+enum class SearchDirection {
+  ASC,
+  DESC,
 }

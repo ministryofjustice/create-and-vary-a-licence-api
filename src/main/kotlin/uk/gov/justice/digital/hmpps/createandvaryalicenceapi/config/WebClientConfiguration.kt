@@ -20,6 +20,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String,
   @Value("\${hmpps.prisonregister.api.url}") private val prisonRegisterApiUrl: String,
   @Value("\${hmpps.delius.api.url}") private val deliusApiUrl: String,
+  @Value("\${hmpps.probationsearch.api.url}") private val probationSearchApiUrl: String,
   @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String,
   @Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
@@ -114,6 +115,24 @@ class WebClientConfiguration(
 
     return WebClient.builder()
       .baseUrl(deliusApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
+  }
+
+  @Bean
+  fun oauthProbationSearchApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(probationSearchApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .exchangeStrategies(
         ExchangeStrategies.builder()

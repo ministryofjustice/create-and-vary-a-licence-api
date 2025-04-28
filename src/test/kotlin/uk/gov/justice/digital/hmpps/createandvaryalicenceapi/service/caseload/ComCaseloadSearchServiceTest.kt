@@ -13,8 +13,6 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ProbationUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
@@ -27,13 +25,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.ProbationSearchSortByRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ProbationSearchSortBy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchDirection
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.SearchField
 import java.time.Clock
 import java.time.Instant
@@ -43,6 +44,7 @@ import java.time.ZoneId
 class ComCaseloadSearchServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val deliusApiClient = mock<DeliusApiClient>()
+  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
@@ -51,6 +53,7 @@ class ComCaseloadSearchServiceTest {
   private val service = ComCaseloadSearchService(
     licenceRepository,
     deliusApiClient,
+    probationSearchApiClient,
     prisonerSearchApiClient,
     hdcService,
     eligibilityService,
@@ -63,14 +66,21 @@ class ComCaseloadSearchServiceTest {
     reset(
       licenceRepository,
       deliusApiClient,
+      probationSearchApiClient,
       prisonerSearchApiClient,
       hdcService,
       eligibilityService,
       releaseDateService,
     )
 
-    whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
-      .thenReturn(CaseloadResponse(listOf(caseloadResult())))
+    whenever(deliusApiClient.getTeamsCodesForUser(2000)).thenReturn(
+      listOf(
+        "A01B02",
+      ),
+    )
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(caseloadResult()),
+    )
   }
 
   @Test
@@ -111,19 +121,17 @@ class ComCaseloadSearchServiceTest {
   @Test
   fun `search for offenders in prison with results sorted`() {
     whenever(
-      deliusApiClient.getTeamManagedOffenders(
-        2000,
+      probationSearchApiClient.searchLicenceCaseloadByTeam(
         "Test",
-        PageRequest.of(
-          0,
-          2000,
-          Sort.by(
-            Sort.Order(Sort.Direction.ASC, SearchField.SURNAME.probationSearchApiSortType),
-            Sort.Order(Sort.Direction.DESC, SearchField.COM_FORENAME.probationSearchApiSortType),
-          ),
+        listOf("A01B02"),
+        listOf(
+          ProbationSearchSortByRequest(SearchField.SURNAME.probationSearchApiSortType, "asc"),
+          ProbationSearchSortByRequest(SearchField.COM_FORENAME.probationSearchApiSortType, "desc"),
         ),
       ),
-    ).thenReturn(CaseloadResponse(listOf(caseloadResult())))
+    ).thenReturn(
+      listOf(caseloadResult()),
+    )
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn((listOf(aLicenceEntity)))
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchResult))
@@ -132,23 +140,19 @@ class ComCaseloadSearchServiceTest {
 
     val request = request.copy(
       sortBy = listOf(
-        ProbationSearchSortBy(SearchField.SURNAME, Sort.Direction.ASC),
-        ProbationSearchSortBy(SearchField.COM_FORENAME, Sort.Direction.DESC),
+        ProbationSearchSortBy(SearchField.SURNAME, SearchDirection.ASC),
+        ProbationSearchSortBy(SearchField.COM_FORENAME, SearchDirection.DESC),
       ),
     )
 
     val result = service.searchForOffenderOnStaffCaseload(request)
 
-    verify(deliusApiClient).getTeamManagedOffenders(
-      2000,
+    verify(probationSearchApiClient).searchLicenceCaseloadByTeam(
       request.query,
-      PageRequest.of(
-        0,
-        2000,
-        Sort.by(
-          Sort.Order(Sort.Direction.ASC, SearchField.SURNAME.probationSearchApiSortType),
-          Sort.Order(Sort.Direction.DESC, SearchField.COM_FORENAME.probationSearchApiSortType),
-        ),
+      deliusApiClient.getTeamsCodesForUser(request.staffIdentifier),
+      listOf(
+        ProbationSearchSortByRequest(SearchField.SURNAME.probationSearchApiSortType, "asc"),
+        ProbationSearchSortByRequest(SearchField.COM_FORENAME.probationSearchApiSortType, "desc"),
       ),
     )
 
@@ -295,8 +299,9 @@ class ComCaseloadSearchServiceTest {
 
   @Test
   fun `search for offenders in prison without a licence where NOMIS ID is not populated`() {
-    whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
-      .thenReturn(CaseloadResponse(listOf(caseloadResult().copy(crn = "X123456", nomisId = null))))
+    whenever(probationSearchApiClient.searchLicenceCaseloadByTeam("Test", listOf("A01B02"))).thenReturn(
+      listOf(caseloadResult().copy(identifiers = Identifiers(crn = "X123456", noms = null))),
+    )
 
     whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
 

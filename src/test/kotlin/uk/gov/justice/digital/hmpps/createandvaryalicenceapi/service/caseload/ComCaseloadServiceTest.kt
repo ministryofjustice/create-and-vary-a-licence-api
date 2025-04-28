@@ -25,7 +25,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
@@ -42,6 +44,7 @@ class ComCaseloadServiceTest {
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
+  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val releaseDateService = mock<ReleaseDateService>()
 
   private val service = ComCaseloadService(
@@ -50,6 +53,7 @@ class ComCaseloadServiceTest {
     licenceService,
     eligibilityService,
     hdcService,
+    probationSearchApiClient,
     releaseDateService,
   )
 
@@ -61,7 +65,7 @@ class ComCaseloadServiceTest {
 
   @BeforeEach
   fun reset() {
-    reset(deliusApiClient, licenceService, hdcService, eligibilityService)
+    reset(deliusApiClient, licenceService, hdcService, eligibilityService, probationSearchApiClient)
   }
 
   @Test
@@ -144,11 +148,11 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(id = 1, crn = "X12346", nomsNumber = "AB1234D"),
-        createProbationCase(id = 2, crn = "X12347"),
-        createProbationCase(id = 3, crn = "X12348", nomsNumber = "AB1234E"),
+        createOffenderDetail(id = 1, crn = "X12346", nomsNumber = "AB1234D"),
+        createOffenderDetail(id = 2, crn = "X12347"),
+        createOffenderDetail(id = 3, crn = "X12348", nomsNumber = "AB1234E"),
       ),
     )
 
@@ -198,17 +202,17 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
-        createProbationCase(id = 5L, nomsNumber = "AB1234G", crn = "X12350"),
-        createProbationCase(id = 6L, nomsNumber = "AB1234L", crn = "X12351"),
-        createProbationCase(id = 7L, nomsNumber = "AB1234M", crn = "X12352"),
-        createProbationCase(id = 8L, nomsNumber = "AB1234N", crn = "X12353"),
-        createProbationCase(id = 9L, nomsNumber = "AB1234P", crn = "X12354"),
-        createProbationCase(id = 10L, nomsNumber = "AB1234Q", crn = "X12355"),
-        createProbationCase(id = 11L, nomsNumber = "AB1234R", crn = "X12356"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(id = 5L, nomsNumber = "AB1234G", crn = "X12350"),
+        createOffenderDetail(id = 6L, nomsNumber = "AB1234L", crn = "X12351"),
+        createOffenderDetail(id = 7L, nomsNumber = "AB1234M", crn = "X12352"),
+        createOffenderDetail(id = 8L, nomsNumber = "AB1234N", crn = "X12353"),
+        createOffenderDetail(id = 9L, nomsNumber = "AB1234P", crn = "X12354"),
+        createOffenderDetail(id = 10L, nomsNumber = "AB1234Q", crn = "X12355"),
+        createOffenderDetail(id = 11L, nomsNumber = "AB1234R", crn = "X12356"),
       ),
     )
 
@@ -346,10 +350,10 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(1L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(1L, nomsNumber = "AB1234F", crn = "X12349"),
       ),
     )
 
@@ -459,13 +463,13 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
-        createProbationCase(id = 5L, nomsNumber = "AB1234G", crn = "X12350"),
-        createProbationCase(id = 6L, nomsNumber = "AB1234H", crn = "X12351"),
-        createProbationCase(id = 7L, nomsNumber = "AB1234I", crn = "X12352"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(id = 5L, nomsNumber = "AB1234G", crn = "X12350"),
+        createOffenderDetail(id = 6L, nomsNumber = "AB1234H", crn = "X12351"),
+        createOffenderDetail(id = 7L, nomsNumber = "AB1234I", crn = "X12352"),
       ),
     )
 
@@ -601,10 +605,10 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
       ),
     )
 
@@ -684,10 +688,10 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
       ),
     )
 
@@ -755,10 +759,10 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
       ),
     )
 
@@ -799,9 +803,14 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(
+      probationSearchApiClient.getOffendersByCrn(
+        managedOffenders.map
+          { it.crn },
+      ),
+    ).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
       ),
     )
 
@@ -868,9 +877,14 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(
+      probationSearchApiClient.getOffendersByCrn(
+        managedOffenders.map
+          { it.crn },
+      ),
+    ).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
       ),
     )
 
@@ -946,9 +960,9 @@ class ComCaseloadServiceTest {
     whenever(
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
       ),
     )
 
@@ -1028,10 +1042,10 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(3L, nomsNumber = "AB1234F", crn = "X12349"),
       ),
     )
 
@@ -1132,9 +1146,9 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
+    whenever(probationSearchApiClient.getOffendersByCrn(managedOffenders.map { it.crn })).thenReturn(
       listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
+        createOffenderDetail(1L, nomsNumber = "AB1234E", crn = "X12348"),
       ),
     )
 
@@ -1260,9 +1274,10 @@ class ComCaseloadServiceTest {
     }
   }
 
-  private fun createProbationCase(id: Long, crn: String, nomsNumber: String? = null) = ProbationCase(
-    nomisId = nomsNumber,
-    crn = crn,
+  private fun createOffenderDetail(id: Long, crn: String, nomsNumber: String? = null) = OffenderDetail(
+    offenderId = id,
+    OtherIds(nomsNumber = nomsNumber, crn = crn),
+    offenderManagers = emptyList(),
   )
 
   private fun createLicenceSummary(

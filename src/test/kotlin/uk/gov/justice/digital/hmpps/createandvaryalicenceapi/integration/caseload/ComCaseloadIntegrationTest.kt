@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
@@ -64,7 +65,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve staff create caseload`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
-      deliusMockServer.stubGetProbationCases()
+      probationSearchMockServer.stubGetOffendersByCrn()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("staff-create-case-load-prisoners").replace(
@@ -122,7 +123,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve team create caseload`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
-      deliusMockServer.stubGetProbationCases(readFile("com-case-load-offenders"))
+      probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("team-create-case-load-prisoners").replace(
@@ -183,7 +184,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve staff vary caseload`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
-      deliusMockServer.stubGetProbationCases()
+      probationSearchMockServer.stubGetOffendersByCrn()
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("staff-vary-case-load-prisoners"))
       prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -238,7 +239,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve team vary caseload`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
-      deliusMockServer.stubGetProbationCases(readFile("com-case-load-offenders"))
+      probationSearchMockServer.stubGetOffendersByCrn(readFile("com-case-load-offenders"))
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-vary-case-load-prisoners"))
       prisonApiMockServer.stubGetCourtOutcomes()
 
@@ -262,6 +263,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
   private companion object {
     val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+    val probationSearchMockServer = ProbationSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val govUkMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
@@ -270,6 +272,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     @BeforeAll
     fun startMocks() {
       prisonerSearchApiMockServer.start()
+      probationSearchMockServer.start()
       deliusMockServer.start()
       govUkMockServer.start()
       govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
@@ -280,6 +283,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     @AfterAll
     fun stopMocks() {
       prisonerSearchApiMockServer.stop()
+      probationSearchMockServer.stop()
       deliusMockServer.stop()
       govUkMockServer.stop()
       prisonApiMockServer.stop()
