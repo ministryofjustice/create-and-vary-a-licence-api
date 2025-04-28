@@ -30,12 +30,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Identifiers
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Manager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -476,14 +476,29 @@ object TestData {
     comAllocationDate = LocalDate.parse("2025-01-27"),
   )
 
-  fun offenderManager() = OffenderManager(
-    active = true,
-    fromDate = LocalDate.of(2022, 1, 2),
-    staffDetail = ProbationSearchStaffDetail(
-      code = "staff-code-1",
-      forenames = "forenames",
-      surname = "surname",
+  fun offenderManager() = CommunityManager(
+    code = "staff-code-1",
+    id = 2000L,
+    team = TeamDetail(
+      code = "NA01A2-A",
+      description = "Cardiff South Team A",
+      borough = Detail(
+        code = "N01A",
+        description = "Cardiff",
+      ),
+      district = Detail(
+        code = "N01A2",
+        description = "Cardiff South",
+      ),
     ),
+    provider = Detail(
+      code = "N01",
+      description = "Wales",
+    ),
+    case = ProbationCase("crn-1", "A1234AA"),
+    name = Name("forenames", null, "surname"),
+    allocationDate = LocalDate.of(2022, 1, 2),
+    unallocated = false,
   )
 
   fun caseLoadItem() = CaseloadItem(
@@ -536,14 +551,15 @@ object TestData {
   )
 
   fun caseloadResult() = CaseloadResult(
-    Name("Test", surname = "Surname"),
-    Identifiers("A123456", "A1234AA"),
-    Manager(
+    "A123456",
+    "A1234AA",
+    name = Name("Test", surname = "Surname"),
+    staff = StaffDetail(
       "A01B02C",
       Name("Staff", surname = "Surname"),
-      Detail("A01B02", "Test Team"),
     ),
-    "2023/05/24",
+    team = TeamDetail("A01B02", "Test Team", Detail("B01", "Test borough"), Detail("D01", "Test district")),
+    allocationDate = LocalDate.of(2023, 5, 24),
   )
 
   fun caCase() = CaCase(
