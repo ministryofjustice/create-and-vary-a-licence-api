@@ -11,8 +11,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityOrPrisonOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -27,8 +27,8 @@ object LicenceFactory {
     version: String,
     nomisRecord: PrisonerSearchPrisoner,
     prisonInformation: Prison,
-    currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
-    deliusRecord: OffenderDetail,
+    currentResponsibleOfficerDetails: CommunityManager,
+    deliusRecord: ProbationCase,
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
     licenceStartDate: LocalDate?,
@@ -39,9 +39,9 @@ object LicenceFactory {
     nomsId = nomsId,
     bookingNo = nomisRecord.bookNumber,
     bookingId = nomisRecord.bookingId?.toLong(),
-    crn = deliusRecord.otherIds.crn,
-    pnc = deliusRecord.otherIds.pncNumber,
-    cro = deliusRecord.otherIds.croNumber ?: nomisRecord.croNumber,
+    crn = deliusRecord.crn,
+    pnc = deliusRecord.pncNumber,
+    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -77,8 +77,8 @@ object LicenceFactory {
     version: String,
     nomisRecord: PrisonerSearchPrisoner,
     prisonInformation: Prison,
-    currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
-    deliusRecord: OffenderDetail,
+    currentResponsibleOfficerDetails: CommunityManager,
+    deliusRecord: ProbationCase,
     creator: PrisonUser,
     responsibleCom: CommunityOffenderManager,
     timedOutLicence: CrdLicence?,
@@ -90,9 +90,9 @@ object LicenceFactory {
     nomsId = nomsId,
     bookingNo = nomisRecord.bookNumber,
     bookingId = nomisRecord.bookingId?.toLong(),
-    crn = deliusRecord.otherIds.crn,
-    pnc = deliusRecord.otherIds.pncNumber,
-    cro = deliusRecord.otherIds.croNumber ?: nomisRecord.croNumber,
+    crn = deliusRecord.crn,
+    pnc = deliusRecord.pncNumber,
+    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),
@@ -208,8 +208,8 @@ object LicenceFactory {
     version: String,
     nomisRecord: PrisonerSearchPrisoner,
     prisonInformation: Prison,
-    currentResponsibleOfficerDetails: CommunityOrPrisonOffenderManager,
-    deliusRecord: OffenderDetail,
+    currentResponsibleOfficerDetails: CommunityManager,
+    deliusRecord: ProbationCase,
     creator: CommunityOffenderManager,
     responsibleCom: CommunityOffenderManager,
     licenceStartDate: LocalDate?,
@@ -220,9 +220,9 @@ object LicenceFactory {
     nomsId = nomsId,
     bookingNo = nomisRecord.bookNumber,
     bookingId = nomisRecord.bookingId?.toLong(),
-    crn = deliusRecord.otherIds.crn,
-    pnc = deliusRecord.otherIds.pncNumber,
-    cro = deliusRecord.otherIds.croNumber ?: nomisRecord.croNumber,
+    crn = deliusRecord.crn,
+    pnc = deliusRecord.pncNumber,
+    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
     prisonCode = nomisRecord.prisonId,
     prisonDescription = prisonInformation.description,
     prisonTelephone = prisonInformation.getPrisonContactNumber(),

@@ -55,9 +55,6 @@ hmpps:
   manageusers:
     api:
       url: http://localhost:8096
-  probationsearch:
-    api:
-      url: http://localhost:8094
   prisonersearch:
     api:
       url: http://localhost:8099/api
