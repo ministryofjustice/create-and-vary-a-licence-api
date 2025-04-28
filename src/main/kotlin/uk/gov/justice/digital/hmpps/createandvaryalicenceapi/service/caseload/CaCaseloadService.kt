@@ -21,6 +21,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
@@ -39,6 +41,7 @@ import java.time.LocalDate
 @Service
 class CaCaseloadService(
   private val caseloadService: CaseloadService,
+  private val probationSearchApiClient: ProbationSearchApiClient,
   private val licenceService: LicenceService,
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
@@ -174,16 +177,18 @@ class CaCaseloadService(
     val cases = splitCasesByComDetails(casesToMap)
 
     val noComPrisonerNumbers = cases.withNoComId.map { c -> c.prisonerNumber }
-    val coms = deliusApiClient.getOffenderManagers(noComPrisonerNumbers).associateBy { it.case.nomisId }
+    val deliusRecords =
+      probationSearchApiClient.searchForPeopleByNomsNumber(noComPrisonerNumbers).associateBy { it.otherIds.nomsNumber }
 
     // if no code or username, hit delius to find COM details
     val caCaseListWithNoComId = cases.withNoComId.map { caCase ->
-      val com = coms[caCase.prisonerNumber]
-      if (com != null && !com.unallocated) {
+
+      val com = deliusRecords[caCase.prisonerNumber]?.offenderManagers?.find { om -> om.active }?.staffDetail
+      if (com != null && !com.unallocated!!) {
         caCase.copy(
           probationPractitioner = ProbationPractitioner(
             staffCode = com.code,
-            name = com.name.fullName(),
+            name = com.let { "${it.forenames} ${it.surname}" },
           ),
         )
       } else {
@@ -193,10 +198,10 @@ class CaCaseloadService(
 
     // If COM username but no code, do a separate call to use the data in CVL if it exists. Should help highlight any desync between Delius and CVL
     val comUsernames = cases.withStaffUsername.map { c -> c.probationPractitioner?.staffUsername!! }
-    val deliusStaffNames = deliusApiClient.getStaffDetailsByUsername(comUsernames).associateBy { it.username?.lowercase() }
+    val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames).associateBy { it.username?.lowercase() }
 
     val caCaseListWithStaffUsername = cases.withStaffUsername.map { caCase ->
-      val com = deliusStaffNames[caCase.probationPractitioner?.staffUsername?.lowercase()]
+      val com = coms[caCase.probationPractitioner?.staffUsername?.lowercase()]
       if (com != null) {
         caCase.copy(
           probationPractitioner = ProbationPractitioner(
@@ -433,24 +438,29 @@ class CaCaseloadService(
     val caseloadNomisIds = prisoners
       .map { it.prisonerNumber }
 
-    val coms = deliusApiClient.getOffenderManagers(caseloadNomisIds)
+    val deliusRecords = probationSearchApiClient.searchForPeopleByNomsNumber(caseloadNomisIds)
 
     return prisoners
       .mapNotNull { prisoner ->
         val licenceStartDate = licenceStartDates[prisoner.prisonerNumber]
-        val com = coms.find { com -> com.case.nomisId == prisoner.prisonerNumber }
-        if (com != null) {
+        val deliusRecord = deliusRecords.find { d -> d.otherIds.nomsNumber == prisoner.prisonerNumber }
+        if (deliusRecord != null) {
           ManagedCase(
             nomisRecord = prisoner.toPrisoner(),
             cvlFields = prisoner.toCaseloadItem(licenceStartDate).cvl,
             deliusRecord = DeliusRecord(
-              com.case,
+              deliusRecord,
               ManagedOffenderCrn(
-                staff = StaffDetail(
-                  code = com.code,
-                  name = com.name,
-                  unallocated = com.unallocated,
-                ),
+                staff = deliusRecord.offenderManagers.find { om -> om.active }?.staffDetail?.let {
+                  StaffDetail(
+                    code = it.code,
+                    name = Name(
+                      forename = it.forenames,
+                      surname = it.surname,
+                    ),
+                    unallocated = it.unallocated,
+                  )
+                },
               ),
             ),
           )

@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
 
 @Schema(description = "Describes an CA(OMU) caseload")
 data class ManagedCase(
@@ -26,4 +26,4 @@ data class ManagedCase(
   val cvlFields: CvlFields,
 )
 
-data class DeliusRecord(val probationCase: ProbationCase, val managedOffenderCrn: ManagedOffenderCrn)
+data class DeliusRecord(val offenderDetail: OffenderDetail, val managedOffenderCrn: ManagedOffenderCrn)

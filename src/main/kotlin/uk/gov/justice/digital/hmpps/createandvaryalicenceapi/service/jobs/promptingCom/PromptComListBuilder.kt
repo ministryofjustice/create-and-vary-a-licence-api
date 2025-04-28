@@ -9,13 +9,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
 @Service
 class PromptComListBuilder(
   private val licenceRepository: LicenceRepository,
+  private val probationSearchApiClient: ProbationSearchApiClient,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
@@ -40,19 +41,21 @@ class PromptComListBuilder(
   }
 
   fun enrichWithDeliusData(prisoners: List<PrisonerSearchPrisoner>): List<PromptCase> {
-    val coms = deliusApiClient.getOffenderManagers(prisoners.map { it.prisonerNumber }).filter { it.case.nomisId != null }.associateBy { it.case.nomisId!! }
+    val probationRecords = probationSearchApiClient.searchForPeopleByNomsNumber(prisoners.map { it.prisonerNumber })
+      .associateBy { it.otherIds.nomsNumber!! }
 
     return prisoners.mapNotNull {
-      val offenderManager = coms[it.prisonerNumber]
-      if (offenderManager == null) {
+      val probationRecord = probationRecords[it.prisonerNumber]
+      val offenderManager = probationRecord?.offenderManagers?.find { it.active }
+      if (probationRecord == null || offenderManager == null) {
         return@mapNotNull null
       }
       PromptCase(
         prisoner = it,
-        crn = offenderManager.case.crn,
-        comStaffCode = offenderManager.code,
-        comName = offenderManager.name.fullName(),
-        comAllocationDate = offenderManager.allocationDate,
+        crn = probationRecord.otherIds.crn,
+        comStaffCode = offenderManager.staffDetail.code,
+        comName = "${offenderManager.staffDetail.forenames} ${offenderManager.staffDetail.surname}",
+        comAllocationDate = offenderManager.fromDate,
       )
     }
   }

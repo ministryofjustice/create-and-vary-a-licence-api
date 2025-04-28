@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import java.time.Duration
 
@@ -81,6 +82,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
     val prisonSearchServer = PrisonerSearchMockServer()
+    val probationMockServer = ProbationSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val prisonMockServer = PrisonApiMockServer()
 
@@ -91,8 +93,10 @@ class PromptComIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
       prisonSearchServer.start()
       prisonSearchServer.stubSearchPrisonersByReleaseDate(0, inHardStop = false)
+      probationMockServer.start()
+      probationMockServer.stubSearchForPersonByNomsNumberForGetApprovalCaseload()
       deliusMockServer.start()
-      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      deliusMockServer.stubGetOffenderManagers()
       prisonMockServer.start()
       prisonMockServer.stubGetCourtOutcomes()
     }
@@ -102,6 +106,7 @@ class PromptComIntegrationTest : IntegrationTestBase() {
     fun stopMocks() {
       govUkApiMockServer.stop()
       prisonSearchServer.stop()
+      probationMockServer.stop()
       deliusMockServer.stop()
       prisonMockServer.stop()
     }

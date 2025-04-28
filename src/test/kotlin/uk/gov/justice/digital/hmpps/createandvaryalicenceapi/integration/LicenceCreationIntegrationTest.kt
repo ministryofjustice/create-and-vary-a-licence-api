@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.HdcApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
@@ -60,7 +61,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-    deliusMockServer.stubGetProbationCase()
+    probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
@@ -101,7 +102,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-    deliusMockServer.stubGetProbationCase()
+    probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
 
     val result = webTestClient.post()
@@ -168,7 +169,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-    deliusMockServer.stubGetProbationCase()
+    probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
@@ -211,7 +212,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
     prisonApiMockServer.stubGetCourtOutcomes()
-    deliusMockServer.stubGetProbationCase()
+    probationSearchMockServer.stubSearchForPersonOnProbation()
     deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(1)
@@ -288,7 +289,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stubGetPrison()
       prisonApiMockServer.stubGetHdcLatest(123, "APPROVED")
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPResult()
-      deliusMockServer.stubGetProbationCase()
+      probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
       hdcApiMockServer.stubGetHdcLicenceData(123)
 
@@ -329,7 +330,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stubGetPrison()
       prisonApiMockServer.stubGetHdcLatest(123, "APPROVED")
       prisonerSearchMockServer.stubSearchPrisonersByNomisIdsHDCAPPSSResult()
-      deliusMockServer.stubGetProbationCase()
+      probationSearchMockServer.stubSearchForPersonOnProbation()
       deliusMockServer.stubGetOffenderManager()
       hdcApiMockServer.stubGetHdcLicenceData(123)
 
@@ -422,6 +423,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val govUkApiMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
+    val probationSearchMockServer = ProbationSearchMockServer()
     val deliusMockServer = DeliusMockServer()
     val hdcApiMockServer = HdcApiMockServer()
 
@@ -431,6 +433,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.start()
       govUkApiMockServer.start()
       prisonerSearchMockServer.start()
+      probationSearchMockServer.start()
       deliusMockServer.start()
       hdcApiMockServer.start()
     }
@@ -441,6 +444,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stop()
       govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
+      probationSearchMockServer.stop()
       deliusMockServer.stop()
       hdcApiMockServer.stop()
     }

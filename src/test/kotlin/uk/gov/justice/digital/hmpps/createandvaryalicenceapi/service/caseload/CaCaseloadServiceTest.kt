@@ -28,12 +28,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchStaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -48,6 +49,7 @@ import java.time.ZoneId
 
 class CaCaseloadServiceTest {
   private val caseloadService = mock<CaseloadService>()
+  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val licenceService = mock<LicenceService>()
   private val hdcService = mock<HdcService>()
   private val deliusApiClient = mock<DeliusApiClient>()
@@ -57,6 +59,7 @@ class CaCaseloadServiceTest {
 
   private val service = CaCaseloadService(
     caseloadService,
+    probationSearchApiClient,
     licenceService,
     hdcService,
     eligibilityService,
@@ -84,6 +87,7 @@ class CaCaseloadServiceTest {
   fun reset() {
     reset(
       caseloadService,
+      probationSearchApiClient,
       licenceService,
       hdcService,
       eligibilityService,
@@ -135,8 +139,12 @@ class CaCaseloadServiceTest {
       ),
     )
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(listOf(comUser))
-    whenever(deliusApiClient.getProbationCases(any(), anyOrNull())).thenReturn(listOf(probationCase))
-    whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(listOf(aCommunityManager))
+    whenever(
+      probationSearchApiClient.searchForPeopleByNomsNumber(
+        any(),
+        anyOrNull(),
+      ),
+    ).thenReturn(listOf(offenderDetail))
   }
 
   @Nested
@@ -283,6 +291,9 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by probation practitioner`() {
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
+          listOf(offenderDetail),
+        )
         whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
           listOf(
             aLicenceSummary,
@@ -730,6 +741,12 @@ class CaCaseloadServiceTest {
 
         whenever(hdcService.getHdcStatus(listOf(prisoner))).thenReturn(HdcStatuses(emptySet()))
 
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(
+          listOf(
+            offenderDetail,
+          ),
+        )
+
         whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
@@ -780,7 +797,7 @@ class CaCaseloadServiceTest {
         )
         whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
-        whenever(deliusApiClient.getOffenderManagers(any(), anyOrNull())).thenReturn(emptyList())
+        whenever(probationSearchApiClient.searchForPeopleByNomsNumber(any(), anyOrNull())).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEmpty()
@@ -988,7 +1005,20 @@ class CaCaseloadServiceTest {
       updatedByFullName = "X Y",
     )
 
-    val probationCase = ProbationCase(crn = "X12347", nomisId = "A1234AA")
+    val offenderDetail = OffenderDetail(
+      offenderId = 1L,
+      otherIds = OtherIds(crn = "X12347", nomsNumber = "A1234AA"),
+      offenderManagers = listOf(
+        OffenderManager(
+          active = true,
+          staffDetail = ProbationSearchStaffDetail(
+            forenames = "Joe",
+            surname = "Bloggs",
+            code = "X1234",
+          ),
+        ),
+      ),
+    )
 
     val aProbationPractitioner = ProbationPractitioner(staffCode = "DEF456")
     val comUser = User(
@@ -1040,31 +1070,5 @@ class CaCaseloadServiceTest {
       topupSupervisionStartDate = null,
       croNumber = null,
     )
-
-    val aCommunityManager =
-      CommunityManager(
-        code = "X1234",
-        id = 2000L,
-        team = TeamDetail(
-          code = "NA01A2-A",
-          description = "Cardiff South Team A",
-          borough = Detail(
-            code = "N01A",
-            description = "Cardiff",
-          ),
-          district = Detail(
-            code = "N01A2",
-            description = "Cardiff South",
-          ),
-        ),
-        provider = Detail(
-          code = "N01",
-          description = "Wales",
-        ),
-        case = ProbationCase(crn = "A123456", nomisId = "A1234AA"),
-        name = Name("Joe", null, "Bloggs"),
-        allocationDate = LocalDate.of(2000, 1, 1),
-        unallocated = false,
-      )
   }
 }
