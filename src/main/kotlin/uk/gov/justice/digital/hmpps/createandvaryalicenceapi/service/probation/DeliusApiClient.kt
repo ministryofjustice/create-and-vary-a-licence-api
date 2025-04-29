@@ -35,7 +35,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     deliusApiWebClient
       .post()
       .uri("/probation-case")
-      .bodyValue(crnsOrNomisIds)
+      .bodyValue(batch)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<ProbationCase>>())
@@ -80,7 +80,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     deliusApiWebClient
       .post()
       .uri("/probation-case/responsible-community-manager")
-      .bodyValue(crnsOrNomisIds)
+      .bodyValue(batch)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<CommunityManager>>())
