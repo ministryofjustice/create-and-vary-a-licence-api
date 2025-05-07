@@ -49,12 +49,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.SentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DateChangeLicenceDeativationReason
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -462,16 +462,18 @@ class LicenceControllerTest {
 
   @Test
   fun `update sentence dates`() {
-    val expectedRequest = UpdateSentenceDatesRequest(
+    val expectedRequest = SentenceDates(
       conditionalReleaseDate = LocalDate.parse("2023-09-11"),
       actualReleaseDate = LocalDate.parse("2023-09-11"),
       sentenceStartDate = LocalDate.parse("2021-09-11"),
       sentenceEndDate = LocalDate.parse("2024-09-11"),
-      licenceStartDate = LocalDate.parse("2023-09-11"),
       licenceExpiryDate = LocalDate.parse("2024-09-11"),
       topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-      topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-      postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+      topupSupervisionExpiryDate = null,
+      postRecallReleaseDate = null,
+      homeDetentionCurfewEndDate = null,
+      homeDetentionCurfewActualDate = null,
+      homeDetentionCurfewEligibilityDate = null,
     )
 
     mvc.perform(
@@ -482,7 +484,7 @@ class LicenceControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(updateSentenceDateService, times(1)).updateSentenceDates(4, expectedRequest)
+    verify(updateSentenceDateService, times(1)).updateSentenceDates(4)
   }
 
   @Test

@@ -9,14 +9,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -33,7 +37,7 @@ class UpdateSentenceDateService(
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
   @Transactional
-  fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
+  fun updateSentenceDates(licenceId: Long) {
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(licenceEntity.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
@@ -43,29 +47,31 @@ class UpdateSentenceDateService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
+    val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
 
-    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest, licenceStartDate)
+    logUpdate(licenceId, licenceEntity, licenceStartDate, sentenceDates)
+
+    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDates, licenceStartDate)
 
     val updatedLicenceEntity = licenceEntity.updateLicenceDates(
-      status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
-      conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
-      actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
-      sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
-      sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
-      licenceStartDate = licenceStartDate,
-      licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
-      topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
-      topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
-      postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
-      homeDetentionCurfewActualDate = sentenceDatesRequest.homeDetentionCurfewActualDate,
-      homeDetentionCurfewEndDate = sentenceDatesRequest.homeDetentionCurfewEndDate,
+      status = licenceEntity.calculateStatusCode(sentenceDates),
       staffMember = staffMember,
+      licenceStartDate = licenceStartDate,
+      conditionalReleaseDate = sentenceDates.conditionalReleaseDate,
+      actualReleaseDate = sentenceDates.actualReleaseDate,
+      sentenceStartDate = sentenceDates.sentenceStartDate,
+      sentenceEndDate = sentenceDates.sentenceEndDate,
+      licenceExpiryDate = sentenceDates.licenceExpiryDate,
+      topupSupervisionStartDate = sentenceDates.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = sentenceDates.topupSupervisionExpiryDate,
+      postRecallReleaseDate = sentenceDates.postRecallReleaseDate,
+      homeDetentionCurfewActualDate = sentenceDates.homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = sentenceDates.homeDetentionCurfewEndDate,
     )
 
     val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
     val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
-    val isLicenceStatusInProgress = updatedLicenceEntity.statusCode == LicenceStatus.IN_PROGRESS
+    val isLicenceStatusInProgress = updatedLicenceEntity.statusCode == IN_PROGRESS
     val isTimedOut =
       !licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && isLicenceStatusInProgress
 
@@ -79,8 +85,8 @@ class UpdateSentenceDateService(
     if (licencePreviouslyInHardStopPeriod && !licenceCurrentlyInHardStopPeriod) {
       val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
         licenceEntity?.bookingId!!,
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
-        listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
+        listOf(CRD, HARD_STOP),
       )
       licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
     }
@@ -105,7 +111,7 @@ class UpdateSentenceDateService(
     if (sentenceChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
         updatedLicenceEntity.bookingId!!,
-        prisoner.sentenceDetail.homeDetentionCurfewEligibilityDate,
+        sentenceDates.homeDetentionCurfewEligibilityDate,
       )
       notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges, isNotApprovedForHdc)
     }
@@ -174,7 +180,8 @@ class UpdateSentenceDateService(
   private fun logUpdate(
     licenceId: Long,
     licenceEntity: Licence?,
-    sentenceDatesRequest: UpdateSentenceDatesRequest,
+    licenceStartDate: LocalDate?,
+    sentenceDates: SentenceDates,
   ) {
     log.info(
       buildString {
@@ -197,17 +204,17 @@ class UpdateSentenceDateService(
     log.info(
       buildString {
         append("Event dates - ID $licenceId ")
-        append("CRD ${sentenceDatesRequest.conditionalReleaseDate} ")
-        append("ARD ${sentenceDatesRequest.actualReleaseDate} ")
-        append("SSD ${sentenceDatesRequest.sentenceStartDate} ")
-        append("SED ${sentenceDatesRequest.sentenceEndDate} ")
-        append("LSD ${sentenceDatesRequest.licenceStartDate} ")
-        append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
-        append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
-        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} ")
-        append("PRRD ${sentenceDatesRequest.postRecallReleaseDate}")
+        append("CRD ${sentenceDates.conditionalReleaseDate} ")
+        append("ARD ${sentenceDates.actualReleaseDate} ")
+        append("SSD ${sentenceDates.sentenceStartDate} ")
+        append("SED ${sentenceDates.sentenceEndDate} ")
+        append("LSD $licenceStartDate ")
+        append("LED ${sentenceDates.licenceExpiryDate} ")
+        append("TUSSD ${sentenceDates.topupSupervisionStartDate} ")
+        append("TUSED ${sentenceDates.topupSupervisionExpiryDate} ")
+        append("PRRD ${sentenceDates.postRecallReleaseDate}")
         if (licenceEntity is HdcLicence) {
-          append("HDCAD ${sentenceDatesRequest.homeDetentionCurfewActualDate} ")
+          append("HDCAD ${sentenceDates.homeDetentionCurfewActualDate} ")
         }
       },
     )

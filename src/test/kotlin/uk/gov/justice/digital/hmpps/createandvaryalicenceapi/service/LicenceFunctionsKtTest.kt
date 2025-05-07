@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -35,8 +34,7 @@ class LicenceFunctionsKtTest {
     typeCode = LicenceType.AP_PSS,
   )
 
-  private val testSentenceChanges = UpdateSentenceDatesRequest(
-    licenceStartDate = fiveDaysAgo,
+  private val testSentenceChanges = SentenceDates(
     licenceExpiryDate = fiveDaysAgo,
     sentenceEndDate = fiveDaysAgo,
     topupSupervisionStartDate = fiveDaysAgo,
@@ -92,7 +90,10 @@ class LicenceFunctionsKtTest {
     val licence = testHdcLicence.copy(homeDetentionCurfewActualDate = fiveDaysAgo)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewActualDate = fourDaysAgo), newLsd = fiveDaysAgo),
+      licence.getSentenceChanges(
+        testSentenceChanges.copy(homeDetentionCurfewActualDate = fourDaysAgo),
+        newLsd = fiveDaysAgo,
+      ),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
@@ -113,7 +114,10 @@ class LicenceFunctionsKtTest {
     val licence = testHdcLicence.copy(homeDetentionCurfewEndDate = fiveDaysAgo)
 
     assertThat(
-      licence.getSentenceChanges(testSentenceChanges.copy(homeDetentionCurfewEndDate = fourDaysAgo), newLsd = fiveDaysAgo),
+      licence.getSentenceChanges(
+        testSentenceChanges.copy(homeDetentionCurfewEndDate = fourDaysAgo),
+        newLsd = fiveDaysAgo,
+      ),
     ).isEqualTo(
       SentenceChanges(
         lsdChanged = false,
