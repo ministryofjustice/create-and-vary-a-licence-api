@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Notif
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdatePrisonInformationRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateReasonForVariationRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSpoDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateVloDiscussionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -1074,10 +1073,8 @@ class LicenceController(
   )
   fun updateSentenceDates(
     @PathVariable("licenceId") licenceId: Long,
-    @Valid @RequestBody
-    request: UpdateSentenceDatesRequest,
   ) {
-    updateSentenceDateService.updateSentenceDates(licenceId, request)
+    updateSentenceDateService.updateSentenceDates(licenceId)
   }
 
   @Tag(name = Tags.LICENCES)

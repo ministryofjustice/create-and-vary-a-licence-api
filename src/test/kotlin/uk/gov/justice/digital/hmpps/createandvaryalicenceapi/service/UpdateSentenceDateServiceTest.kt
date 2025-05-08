@@ -17,13 +17,14 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aPrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -76,29 +77,29 @@ class UpdateSentenceDateServiceTest {
   @BeforeEach
   fun beforeEach() {
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2023, 9, 11))
-    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(TestData.aPrisonApiPrisoner())
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
   }
 
   @Test
   fun `update sentence dates persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -172,23 +173,23 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates persists the updated HDCAD if HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
-        homeDetentionCurfewActualDate = LocalDate.parse("2025-09-11"),
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+          homeDetentionCurfewActualDate = LocalDate.parse("2025-09-11"),
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -246,23 +247,23 @@ class UpdateSentenceDateServiceTest {
   fun `update sentence dates does not email if HDC licence is Approved`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aHdcLicenceEntity))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        homeDetentionCurfewActualDate = LocalDate.parse("2023-09-11"),
-        homeDetentionCurfewEndDate = LocalDate.parse("2023-09-12"),
-
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          homeDetentionCurfewActualDate = LocalDate.parse("2023-09-11"),
+          homeDetentionCurfewEndDate = LocalDate.parse("2023-09-12"),
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
@@ -290,22 +291,22 @@ class UpdateSentenceDateServiceTest {
     val licence = aCrdLicenceEntity.copy(sentenceStartDate = null, licenceExpiryDate = null)
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(licence))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = null,
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
-        postRecallReleaseDate = null,
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = null,
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+          postRecallReleaseDate = null,
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -372,21 +373,21 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive when the offender has a new future conditional release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.now().plusDays(5),
-        actualReleaseDate = null,
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.now().plusDays(5),
+          confirmedReleaseDate = null,
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -430,21 +431,21 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive when the offender has a new future actual release date`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = null,
-        actualReleaseDate = LocalDate.now().plusDays(2),
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = LocalDate.now().plusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -488,21 +489,21 @@ class UpdateSentenceDateServiceTest {
   fun `should not set the license status to inactive if existing license is not active`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.IN_PROGRESS)))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.now().plusDays(5),
-        actualReleaseDate = LocalDate.now().plusDays(2),
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.now().plusDays(5),
+          confirmedReleaseDate = LocalDate.now().plusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -546,21 +547,21 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive even if conditionalReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.now().minusDays(1),
-        actualReleaseDate = LocalDate.now().plusDays(2),
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.now().minusDays(1),
+          confirmedReleaseDate = LocalDate.now().plusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -605,21 +606,21 @@ class UpdateSentenceDateServiceTest {
   fun `should set the license status to inactive even if actualReleaseDate is before today`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity.copy(statusCode = LicenceStatus.ACTIVE)))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.now().plusDays(5),
-        actualReleaseDate = LocalDate.now().minusDays(2),
-        sentenceStartDate = LocalDate.parse("2018-10-22"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = null,
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.now().plusDays(5),
+          confirmedReleaseDate = LocalDate.now().minusDays(2),
+          sentenceStartDate = LocalDate.parse("2018-10-22"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = null,
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -671,20 +672,21 @@ class UpdateSentenceDateServiceTest {
     )
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
     whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
@@ -726,22 +728,22 @@ class UpdateSentenceDateServiceTest {
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2024, 1, 1))
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
-        postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          postRecallReleaseDate = LocalDate.parse("2025-09-11"),
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
     val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
@@ -817,27 +819,24 @@ class UpdateSentenceDateServiceTest {
     fun `should time out if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
       whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
-
-      service.updateSentenceDates(
-        1L,
-        UpdateSentenceDatesRequest(
-          conditionalReleaseDate = LocalDate.now().plusDays(5),
-          actualReleaseDate = LocalDate.now().minusDays(2),
-          sentenceStartDate = LocalDate.parse("2018-10-22"),
-          sentenceEndDate = LocalDate.parse("2024-09-11"),
-          licenceStartDate = LocalDate.parse("2023-09-11"),
-          licenceExpiryDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionExpiryDate = null,
+      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+        aPrisonApiPrisoner().copy(
+          sentenceDetail = SentenceDetail(
+            conditionalReleaseDate = LocalDate.now().plusDays(5),
+            confirmedReleaseDate = LocalDate.now().minusDays(2),
+            sentenceStartDate = LocalDate.parse("2018-10-22"),
+            sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+            licenceExpiryDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionExpiryDate = null,
+          ),
         ),
       )
 
-      verify(licenceService, times(1)).timeout(
-        any(),
-        any(),
-      )
+      service.updateSentenceDates(1L)
+
+      verify(licenceService, times(1)).timeout(any(), any())
     }
 
     @Test
@@ -850,23 +849,23 @@ class UpdateSentenceDateServiceTest {
         ),
       )
       whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
-      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
 
-      service.updateSentenceDates(
-        1L,
-        UpdateSentenceDatesRequest(
-          conditionalReleaseDate = LocalDate.now().plusDays(5),
-          actualReleaseDate = LocalDate.now().minusDays(2),
-          sentenceStartDate = LocalDate.parse("2018-10-22"),
-          sentenceEndDate = LocalDate.parse("2024-09-11"),
-          licenceStartDate = LocalDate.parse("2023-09-11"),
-          licenceExpiryDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionExpiryDate = null,
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+        aPrisonApiPrisoner().copy(
+          sentenceDetail = SentenceDetail(
+            conditionalReleaseDate = LocalDate.now().plusDays(5),
+            confirmedReleaseDate = LocalDate.now().minusDays(2),
+            sentenceStartDate = LocalDate.parse("2018-10-22"),
+            sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+            licenceExpiryDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionExpiryDate = null,
+          ),
         ),
       )
 
+      service.updateSentenceDates(1L)
       verify(licenceService, times(0)).timeout(any(), any())
     }
 
@@ -874,22 +873,22 @@ class UpdateSentenceDateServiceTest {
     fun `should not time out if the licence is in hard stop period but is not a CRD licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createVariationLicence()))
       whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
-
-      service.updateSentenceDates(
-        1L,
-        UpdateSentenceDatesRequest(
-          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-          actualReleaseDate = LocalDate.parse("2023-09-11"),
-          sentenceStartDate = LocalDate.parse("2021-09-11"),
-          sentenceEndDate = LocalDate.parse("2024-09-11"),
-          licenceStartDate = LocalDate.parse("2023-09-11"),
-          licenceExpiryDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+        aPrisonApiPrisoner().copy(
+          sentenceDetail = SentenceDetail(
+            conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+            confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+            sentenceStartDate = LocalDate.parse("2021-09-11"),
+            sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+            licenceExpiryDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+          ),
         ),
       )
+
+      service.updateSentenceDates(1L)
 
       verify(licenceService, times(0)).timeout(any(), any())
     }
@@ -916,7 +915,7 @@ class UpdateSentenceDateServiceTest {
 
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(inHardStopLicence))
       whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true, false)
       whenever(
         licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
@@ -925,20 +924,21 @@ class UpdateSentenceDateServiceTest {
           listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
         ),
       ).thenReturn(listOf(noLongerInHardStopLicence))
-
-      service.updateSentenceDates(
-        1L,
-        UpdateSentenceDatesRequest(
-          conditionalReleaseDate = LocalDate.now().plusWeeks(1),
-          actualReleaseDate = LocalDate.now().plusWeeks(1),
-          sentenceStartDate = LocalDate.now().minusYears(2),
-          sentenceEndDate = LocalDate.now().plusYears(1),
-          licenceStartDate = LocalDate.now().plusWeeks(1),
-          licenceExpiryDate = LocalDate.now().plusYears(1),
-          topupSupervisionStartDate = LocalDate.now().plusYears(1),
-          topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+        aPrisonApiPrisoner().copy(
+          sentenceDetail = SentenceDetail(
+            conditionalReleaseDate = LocalDate.now().plusWeeks(1),
+            confirmedReleaseDate = LocalDate.now().plusWeeks(1),
+            sentenceStartDate = LocalDate.now().minusYears(2),
+            sentenceExpiryDate = LocalDate.now().plusYears(1),
+            licenceExpiryDate = LocalDate.now().plusYears(1),
+            topupSupervisionStartDate = LocalDate.now().plusYears(1),
+            topupSupervisionExpiryDate = LocalDate.now().plusYears(2),
+          ),
         ),
       )
+
+      service.updateSentenceDates(1L)
 
       verify(licenceService, times(1)).inactivateLicences(
         listOf(noLongerInHardStopLicence),
@@ -953,22 +953,22 @@ class UpdateSentenceDateServiceTest {
   fun `should not time out if the licence is in hard stop period but is a HDC licence`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcLicence()))
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(true)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
-
-    service.updateSentenceDates(
-      1L,
-      UpdateSentenceDatesRequest(
-        conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
-        sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
-        licenceExpiryDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
-        topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+    whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+      aPrisonApiPrisoner().copy(
+        sentenceDetail = SentenceDetail(
+          conditionalReleaseDate = LocalDate.parse("2023-09-11"),
+          confirmedReleaseDate = LocalDate.parse("2023-09-11"),
+          sentenceStartDate = LocalDate.parse("2021-09-11"),
+          sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+          licenceExpiryDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+          topupSupervisionExpiryDate = LocalDate.parse("2025-09-11"),
+        ),
       ),
     )
+
+    service.updateSentenceDates(1L)
 
     verify(licenceService, times(0)).timeout(any(), any())
   }
