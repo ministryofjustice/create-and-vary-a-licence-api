@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDateTime
 
 interface Variation {
+  val id: Long
   var spoDiscussion: String?
   var vloDiscussion: String?
   var dateLastUpdated: LocalDateTime?

@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -44,7 +46,7 @@ class PrisonApproverService(
       // if a licence is an active variation then we want to return the original
       // licence that the variation was created from and not the variation itself
       val recentlyApprovedLicences = recentActiveAndApprovedLicences.map {
-        if (it.statusCode == ACTIVE && it is VariationLicence) {
+        if (it.statusCode == ACTIVE && it is Variation) {
           findOriginalLicenceForVariation(it)
         } else {
           it
@@ -56,7 +58,7 @@ class PrisonApproverService(
     }
   }
 
-  private fun findOriginalLicenceForVariation(variationLicence: VariationLicence): Licence {
+  private fun findOriginalLicenceForVariation(variationLicence: Variation): Licence {
     var originalLicence = variationLicence
     while (originalLicence.variationOfId != null) {
       val licence = licenceRepository
@@ -67,6 +69,7 @@ class PrisonApproverService(
         is HardStopLicence -> return licence
         is VariationLicence -> originalLicence = licence
         is HdcLicence -> return licence
+        is HdcVariationLicence -> originalLicence = licence
         else -> error("Unknown licence type in hierarchy: ${licence.javaClass}")
       }
     }
