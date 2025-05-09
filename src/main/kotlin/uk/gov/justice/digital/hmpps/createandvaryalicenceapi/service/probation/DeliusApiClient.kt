@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
@@ -35,7 +36,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     deliusApiWebClient
       .post()
       .uri("/probation-case")
-      .bodyValue(crnsOrNomisIds)
+      .bodyValue(batch)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<ProbationCase>>())
@@ -80,7 +81,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     deliusApiWebClient
       .post()
       .uri("/probation-case/responsible-community-manager")
-      .bodyValue(crnsOrNomisIds)
+      .bodyValue(batch)
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(typeReference<List<CommunityManager>>())
@@ -142,7 +143,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
         }
         .build(staffIdentifier)
     }
-    .bodyValue(query)
+    .bodyValue(SearchQueryRequest(query))
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(typeReference<CaseloadResponse>())
