@@ -33,12 +33,14 @@ class StaffService(
    */
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
+    log.info("Updating COM details, $comDetails")
     val comResult = this.staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
       comDetails.staffIdentifier,
       comDetails.staffUsername,
     )
 
     if (comResult.isNullOrEmpty()) {
+      log.info("Saving new COM record, $comDetails")
       return this.staffRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
@@ -79,17 +81,17 @@ class StaffService(
 
   @Transactional
   fun updatePrisonUser(request: UpdatePrisonUserRequest): Staff {
-    val found = this.staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
+    val found = staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
 
     return when {
-      found == null -> this.staffRepository.saveAndFlush(request.toEntity())
+      found == null -> staffRepository.saveAndFlush(request.toEntity())
       found.isUpdate(request) -> this.staffRepository.saveAndFlush(found.updatedWith(request))
       else -> found
     }
   }
 
   fun getReviewCounts(staffIdentifier: Long): ComReviewCount {
-    val com = this.staffRepository.findByStaffIdentifier(staffIdentifier)
+    val com = staffRepository.findByStaffIdentifier(staffIdentifier)
       ?: error("Staff with identifier $staffIdentifier not found")
 
     val teamCodes = this.deliusApiClient.getTeamsCodesForUser(staffIdentifier)

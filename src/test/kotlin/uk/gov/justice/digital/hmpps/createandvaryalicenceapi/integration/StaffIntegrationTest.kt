@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -14,6 +16,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCoun
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 class StaffIntegrationTest : IntegrationTestBase() {
   @Autowired
@@ -45,6 +51,51 @@ class StaffIntegrationTest : IntegrationTestBase() {
       assertThat(username).isEqualTo(updateCom.staffUsername.uppercase())
       assertThat(email).isEqualTo(updateCom.staffEmail)
       assertThat(firstName).isEqualTo("NEW NAME")
+      assertThat(lastName).isEqualTo(updateCom.lastName)
+    }
+  }
+
+  // This will fail randomly due more than one thread finding no existing COM and so
+  // attempting to create one, any threads attempting to save a COM after the first
+  // will cause a Unique index or primary key violation
+  @Disabled
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+  )
+  fun `Test adding the same COM in multiple threads`() {
+    val numberOfThreads = 5
+    val executor = Executors.newFixedThreadPool(numberOfThreads)
+    val countdownLatch = CountDownLatch(numberOfThreads)
+
+    val futures = mutableListOf<Future<*>>()
+    for (i in 1..numberOfThreads) {
+      futures.add(
+        executor.submit {
+          try {
+            doUpdate("/com/update", updateCom)
+          } finally {
+            countdownLatch.countDown()
+          }
+        },
+      )
+    }
+    countdownLatch.await()
+    futures.forEach {
+      try {
+        it.get()
+      } catch (e: ExecutionException) {
+        fail("Update com failed: $e")
+      }
+    }
+
+    assertThat(staffRepository.count()).isEqualTo(1)
+
+    with(staffRepository.findAll().first() as CommunityOffenderManager) {
+      assertThat(staffIdentifier).isEqualTo(updateCom.staffIdentifier)
+      assertThat(username).isEqualTo(updateCom.staffUsername.uppercase())
+      assertThat(email).isEqualTo(updateCom.staffEmail)
+      assertThat(firstName).isEqualTo(updateCom.firstName)
       assertThat(lastName).isEqualTo(updateCom.lastName)
     }
   }
