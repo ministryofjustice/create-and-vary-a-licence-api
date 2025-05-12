@@ -373,36 +373,6 @@ class HdcVariationLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  override fun updateLicenceDates(
-    status: LicenceStatus?,
-    conditionalReleaseDate: LocalDate?,
-    actualReleaseDate: LocalDate?,
-    sentenceStartDate: LocalDate?,
-    sentenceEndDate: LocalDate?,
-    licenceStartDate: LocalDate?,
-    licenceExpiryDate: LocalDate?,
-    topupSupervisionStartDate: LocalDate?,
-    topupSupervisionExpiryDate: LocalDate?,
-    postRecallReleaseDate: LocalDate?,
-    homeDetentionCurfewActualDate: LocalDate?,
-    homeDetentionCurfewEndDate: LocalDate?,
-    staffMember: Staff?,
-  ) = copy(
-    statusCode = status ?: this.statusCode,
-    conditionalReleaseDate = conditionalReleaseDate,
-    actualReleaseDate = actualReleaseDate,
-    sentenceStartDate = sentenceStartDate,
-    sentenceEndDate = sentenceEndDate,
-    licenceStartDate = licenceStartDate,
-    licenceExpiryDate = licenceExpiryDate,
-    topupSupervisionStartDate = topupSupervisionStartDate,
-    topupSupervisionExpiryDate = topupSupervisionExpiryDate,
-    postRecallReleaseDate = postRecallReleaseDate,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
   override fun updateOffenderDetails(
     forename: String?,
     middleNames: String?,

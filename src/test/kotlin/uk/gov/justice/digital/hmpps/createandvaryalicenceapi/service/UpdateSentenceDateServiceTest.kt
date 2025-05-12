@@ -48,6 +48,17 @@ class UpdateSentenceDateServiceTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val licenceService = mock<LicenceService>()
 
+  val aCrdLicenceEntity = TestData.createCrdLicence()
+  val aHdcLicenceEntity = createHdcLicence()
+  val aCom = TestData.com()
+  val aPreviousUser = CommunityOffenderManager(
+    staffIdentifier = 4000,
+    username = "test",
+    email = "test@test.com",
+    firstName = "Test",
+    lastName = "Test",
+  )
+
   private val service = UpdateSentenceDateService(
     licenceRepository,
     auditEventRepository,
@@ -874,18 +885,5 @@ class UpdateSentenceDateServiceTest {
     service.updateSentenceDates(1L)
 
     verify(licenceService, times(0)).timeout(any(), any())
-  }
-
-  private companion object {
-    val aCrdLicenceEntity = TestData.createCrdLicence()
-    val aHdcLicenceEntity = createHdcLicence()
-    val aCom = TestData.com()
-    val aPreviousUser = CommunityOffenderManager(
-      staffIdentifier = 4000,
-      username = "test",
-      email = "test@test.com",
-      firstName = "Test",
-      lastName = "Test",
-    )
   }
 }
