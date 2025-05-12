@@ -198,13 +198,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send dates changed email to the COM`() {
-    val datesChanged = mapOf(
-      "Release date" to true,
-      "Licence end date" to true,
-      "Sentence end date" to false,
-      "Top up supervision start date" to false,
-      "Top up supervision end date" to false,
-    )
+    val datesChanged = listOf("Release date", "Licence end date")
 
     notifyService.sendDatesChangedEmail(
       "1",
