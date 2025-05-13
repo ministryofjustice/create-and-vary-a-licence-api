@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType.SYSTEM_EVENT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType.INACTIVE as LicenceEventTypeINACTIVE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE as LicenceStatusINACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
 class DeactivateHdcLicencesService(
@@ -60,14 +60,14 @@ class DeactivateHdcLicencesService(
       licenceEventRepository.saveAndFlush(
         LicenceEvent(
           licenceId = licence.id,
-          eventType = LicenceEventTypeINACTIVE,
+          eventType = LicenceEventType.INACTIVE,
           username = "SYSTEM",
           forenames = "SYSTEM",
           surname = "SYSTEM",
           eventDescription = "HDC licence automatically deactivated as now ineligible for HDC release for ${licence.forename} ${licence.surname}",
         ),
       )
-      domainEventsService.recordDomainEvent(licence, LicenceStatusINACTIVE)
+      domainEventsService.recordDomainEvent(licence, LicenceStatus.INACTIVE)
     }
     telemetryClient.trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to licencesToDeactivate.size.toString()), null)
   }
