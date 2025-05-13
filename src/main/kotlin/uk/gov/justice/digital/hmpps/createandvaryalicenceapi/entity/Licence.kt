@@ -69,16 +69,16 @@ abstract class Licence(
   val middleNames: String? = null,
   val surname: String? = null,
   val dateOfBirth: LocalDate? = null,
-  override val conditionalReleaseDate: LocalDate? = null,
-  override val actualReleaseDate: LocalDate? = null,
-  val sentenceStartDate: LocalDate? = null,
-  val sentenceEndDate: LocalDate? = null,
-  override val licenceStartDate: LocalDate? = null,
-  val licenceExpiryDate: LocalDate? = null,
-  val licenceActivatedDate: LocalDateTime? = null,
-  val topupSupervisionStartDate: LocalDate? = null,
-  val topupSupervisionExpiryDate: LocalDate? = null,
-  val postRecallReleaseDate: LocalDate? = null,
+  override var conditionalReleaseDate: LocalDate? = null,
+  override var actualReleaseDate: LocalDate? = null,
+  var sentenceStartDate: LocalDate? = null,
+  var sentenceEndDate: LocalDate? = null,
+  override var licenceStartDate: LocalDate? = null,
+  var licenceExpiryDate: LocalDate? = null,
+  var licenceActivatedDate: LocalDateTime? = null,
+  var topupSupervisionStartDate: LocalDate? = null,
+  var topupSupervisionExpiryDate: LocalDate? = null,
+  var postRecallReleaseDate: LocalDate? = null,
   val probationAreaCode: String? = null,
   val probationAreaDescription: String? = null,
   val probationPduCode: String? = null,
@@ -223,7 +223,7 @@ abstract class Licence(
     staffMember: Staff?,
   ): Licence
 
-  abstract fun updateLicenceDates(
+  fun updateLicenceDates(
     status: LicenceStatus? = null,
     conditionalReleaseDate: LocalDate?,
     actualReleaseDate: LocalDate?,
@@ -237,7 +237,25 @@ abstract class Licence(
     homeDetentionCurfewActualDate: LocalDate?,
     homeDetentionCurfewEndDate: LocalDate?,
     staffMember: Staff?,
-  ): Licence
+  ) {
+    this.statusCode = status ?: this.statusCode
+    this.conditionalReleaseDate = conditionalReleaseDate
+    this.actualReleaseDate = actualReleaseDate
+    this.sentenceStartDate = sentenceStartDate
+    this.sentenceEndDate = sentenceEndDate
+    this.licenceStartDate = licenceStartDate
+    this.licenceExpiryDate = licenceExpiryDate
+    this.topupSupervisionStartDate = topupSupervisionStartDate
+    this.topupSupervisionExpiryDate = topupSupervisionExpiryDate
+    this.postRecallReleaseDate = postRecallReleaseDate
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+    if (this is HdcLicence) {
+      this.homeDetentionCurfewActualDate = homeDetentionCurfewActualDate
+      this.homeDetentionCurfewEndDate = homeDetentionCurfewEndDate
+    }
+  }
 
   abstract fun updateOffenderDetails(
     forename: String?,
