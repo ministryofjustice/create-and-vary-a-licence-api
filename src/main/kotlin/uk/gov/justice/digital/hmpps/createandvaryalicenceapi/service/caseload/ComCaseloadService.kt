@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -41,7 +40,6 @@ class ComCaseloadService(
   private val licenceService: LicenceService,
   private val eligibilityService: EligibilityService,
   private val hdcService: HdcService,
-  private val probationSearchApiClient: ProbationSearchApiClient,
   private val releaseDateService: ReleaseDateService,
 ) {
 
@@ -90,21 +88,21 @@ class ComCaseloadService(
   }
 
   private fun mapManagedOffenderRecordToOffenderDetail(caseload: List<ManagedOffenderCrn>): List<DeliusRecord> {
-    val crns = caseload.map { case -> case.crn }
-    val offenders = probationSearchApiClient.getOffendersByCrn(crns)
+    val crns = caseload.mapNotNull { case -> case.crn }
+    val offenders = deliusApiClient.getProbationCases(crns)
     return offenders.map { offender ->
-      DeliusRecord(offender, caseload.find { case -> case.crn == offender.otherIds.crn }!!)
+      DeliusRecord(offender, caseload.find { case -> case.crn == offender.crn }!!)
     }
   }
 
   private fun pairDeliusRecordsWithNomis(managedOffenders: List<DeliusRecord>): List<ManagedCase> {
-    val caseloadNomisIds = managedOffenders.filter { offender -> offender.offenderDetail.otherIds.nomsNumber != null }
-      .mapNotNull { offender -> offender.offenderDetail.otherIds.nomsNumber }
+    val caseloadNomisIds = managedOffenders.filter { offender -> offender.probationCase.nomisId != null }
+      .mapNotNull { offender -> offender.probationCase.nomisId }
     val nomisRecords = caseloadService.getPrisonersByNumber(caseloadNomisIds)
 
     val records = managedOffenders.map { offender ->
       val caseLoadItem =
-        nomisRecords.find { prisoner -> prisoner.prisoner.prisonerNumber == offender.offenderDetail.otherIds.nomsNumber }
+        nomisRecords.find { prisoner -> prisoner.prisoner.prisonerNumber == offender.probationCase.nomisId }
       if (caseLoadItem != null) {
         ManagedCase(
           offender,

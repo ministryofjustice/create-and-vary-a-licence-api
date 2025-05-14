@@ -2315,6 +2315,75 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `referring an HDC licence variation`() {
+    val referVariationRequest = ReferVariationRequest(reasonForReferral = "reason")
+    val variation = createHdcVariationLicence()
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    service.referLicenceVariation(1L, referVariationRequest)
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    assertThat(licenceCaptor.value)
+      .extracting("statusCode", "updatedByUsername", "updatedBy")
+      .isEqualTo(listOf(LicenceStatus.VARIATION_REJECTED, aCom.username, aCom))
+
+    assertThat(eventCaptor.value)
+      .extracting("licenceId", "eventType", "username", "eventDescription")
+      .isEqualTo(listOf(1L, LicenceEventType.HDC_VARIATION_REFERRED, "smills", "reason"))
+
+    assertThat(auditCaptor.value)
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          1L,
+          "smills",
+          "X Y",
+          "Licence variation rejected for ${variation.forename} ${variation.surname}",
+        ),
+      )
+
+    verify(notifyService, times(1)).sendVariationReferredEmail(
+      variation.createdBy?.email ?: "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
+      variation.responsibleCom?.email ?: "",
+      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      "${variation.forename} ${variation.surname}",
+      "1",
+    )
+  }
+
+  @Test
+  fun `trying to refer non-variation throws an error`() {
+    val referVariationRequest = ReferVariationRequest(reasonForReferral = "reason")
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createCrdLicence()))
+
+    assertThrows<IllegalStateException> { service.referLicenceVariation(1L, referVariationRequest) }
+
+    verify(licenceRepository, times(1)).findById(1L)
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(notifyService, times(0)).sendVariationReferredEmail(
+      any(),
+      any(),
+      any(),
+      any(),
+      any(),
+      any(),
+    )
+  }
+
+  @Test
   fun `approving a licence variation`() {
     val variation = createVariationLicence().copy(id = 2, variationOfId = 1L)
     whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
@@ -2365,6 +2434,81 @@ class LicenceServiceTest {
       "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
       "${variation.forename} ${variation.surname}",
       "2",
+    )
+  }
+
+  @Test
+  fun `approving an HDC licence variation`() {
+    val variation = createHdcVariationLicence().copy(id = 2, variationOfId = 1L)
+    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+
+    service.approveLicenceVariation(2L)
+
+    verify(licenceRepository, times(1)).findById(2L)
+
+    // Capture calls to licence, history and audit saveAndFlush - as a list
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
+
+    // Check all calls were made
+    assertThat(licenceCaptor.allValues.size).isEqualTo(1)
+    assertThat(eventCaptor.allValues.size).isEqualTo(1)
+    assertThat(auditCaptor.allValues.size).isEqualTo(1)
+
+    assertThat(licenceCaptor.allValues[0])
+      .extracting("id", "statusCode", "updatedByUsername", "approvedByUsername", "approvedByName", "updatedBy")
+      .isEqualTo(listOf(2L, LicenceStatus.VARIATION_APPROVED, aCom.username, aCom.username, "X Y", aCom))
+
+    assertThat(eventCaptor.allValues[0])
+      .extracting("licenceId", "eventType", "username")
+      .isEqualTo(listOf(2L, LicenceEventType.HDC_VARIATION_APPROVED, "smills"))
+
+    assertThat(auditCaptor.allValues[0])
+      .extracting("licenceId", "username", "fullName", "summary")
+      .isEqualTo(
+        listOf(
+          2L,
+          "smills",
+          "X Y",
+          "Licence variation approved for ${variation.forename} ${variation.surname}",
+        ),
+      )
+
+    verify(notifyService, times(1)).sendVariationApprovedEmail(
+      variation.createdBy?.email ?: "",
+      "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
+      variation.responsibleCom?.email ?: "",
+      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      "${variation.forename} ${variation.surname}",
+      "2",
+    )
+  }
+
+  @Test
+  fun `trying to approve a non-variation via approveLicenceVariation throws an error`() {
+    val variation = createCrdLicence().copy(id = 2)
+    whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(variation))
+
+    assertThrows<IllegalStateException> { service.approveLicenceVariation(2L) }
+
+    verify(licenceRepository, times(1)).findById(2L)
+    verify(licenceRepository, times(0)).saveAndFlush(any())
+    verify(licenceEventRepository, times(0)).saveAndFlush(any())
+    verify(auditEventRepository, times(0)).saveAndFlush(any())
+    verify(notifyService, times(0)).sendVariationApprovedEmail(
+      any(),
+      any(),
+      any(),
+      any(),
+      any(),
+      any(),
     )
   }
 
@@ -2899,6 +3043,53 @@ class LicenceServiceTest {
     }
 
     @Test
+    fun happyPathWhenActivatingHdcVariation() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(anHdcLicenceEntity.copy(id = 1L)))
+      whenever(licenceRepository.findById(2L)).thenReturn(
+        Optional.of(
+          anHdcVariationLicence.copy(
+            id = 2L,
+            variationOfId = 1L,
+            statusCode = LicenceStatus.VARIATION_APPROVED,
+          ),
+        ),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      service.activateVariation(2L)
+
+      argumentCaptor<Licence>().apply {
+        verify(licenceRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue).isInstanceOf(HdcVariationLicence::class.java)
+        assertThat(firstValue.statusCode).isEqualTo(LicenceStatus.ACTIVE)
+
+        assertThat(secondValue).isInstanceOf(HdcLicence::class.java)
+        assertThat(secondValue.statusCode).isEqualTo(LicenceStatus.INACTIVE)
+      }
+
+      argumentCaptor<EntityAuditEvent>().apply {
+        verify(auditEventRepository, times(2)).saveAndFlush(capture())
+        assertThat(firstValue.licenceId).isEqualTo(2L)
+        assertThat(firstValue.summary).isEqualTo("Licence set to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(USER_EVENT)
+
+        assertThat(secondValue.licenceId).isEqualTo(1L)
+        assertThat(secondValue.summary).isEqualTo("Licence set to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(USER_EVENT)
+      }
+
+      argumentCaptor<LicenceEvent>().apply {
+        verify(licenceEventRepository, times(2)).saveAndFlush(capture())
+
+        assertThat(firstValue.eventDescription).isEqualTo("Licence updated to ACTIVE for John Smith")
+        assertThat(firstValue.eventType).isEqualTo(LicenceEventType.ACTIVATED)
+
+        assertThat(secondValue.eventDescription).isEqualTo("Licence updated to INACTIVE for John Smith")
+        assertThat(secondValue.eventType).isEqualTo(LicenceEventType.SUPERSEDED)
+      }
+    }
+
+    @Test
     fun attemptingToVaryNonVariation() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createCrdLicence().copy(id = 1L)))
 
@@ -3302,6 +3493,67 @@ class LicenceServiceTest {
           listOf(
             1L,
             LicenceEventType.HDC_SUBMITTED,
+            "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
+          ),
+        )
+
+      assertThat(auditCaptor.value)
+        .extracting("licenceId", "username", "fullName", "summary")
+        .isEqualTo(
+          listOf(
+            1L,
+            "smills",
+            "X Y",
+            "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
+          ),
+        )
+    }
+
+    @Test
+    fun `submitting a HDC Variation licence`() {
+      val hdcLicence = createHdcLicence()
+
+      val variation = anHdcVariationLicence.copy(
+        submittedBy = aCom,
+      )
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(variation))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+      whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
+      service.submitLicence(
+        1L,
+        listOf(NotifyRequest("testName", "testEmail"), NotifyRequest("testName1", "testEmail2")),
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
+      verify(notifyService, times(2))
+        .sendVariationForApprovalEmail(
+          any(),
+          eq(variation.id.toString()),
+          eq(variation.forename!!),
+          eq(variation.surname!!),
+          eq(variation.crn!!),
+          eq(variation.submittedBy?.username!!),
+        )
+
+      assertThat(licenceCaptor.value)
+        .extracting("id", "kind", "statusCode", "updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(1L, LicenceKind.HDC_VARIATION, LicenceStatus.VARIATION_SUBMITTED, aCom.username, aCom))
+
+      assertThat(eventCaptor.value)
+        .extracting("licenceId", "eventType", "eventDescription")
+        .isEqualTo(
+          listOf(
+            1L,
+            LicenceEventType.HDC_VARIATION_SUBMITTED,
             "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
           ),
         )

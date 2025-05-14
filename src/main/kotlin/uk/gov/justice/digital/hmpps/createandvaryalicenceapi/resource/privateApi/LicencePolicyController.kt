@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ModelVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -142,20 +142,20 @@ class LicencePolicyController(
   fun compareLicence(
     @PathVariable("version") version: String,
     @PathVariable("licenceId") licenceId: Long,
-  ): List<LicenceConditionChanges>? {
-    val currentLicence = licenceService.getLicenceById(licenceId)
-    val currentPolicy = licencePolicyService.policyByVersion(version)
+  ): List<LicenceConditionChanges>? = when (val currentLicence = licenceService.getLicenceById(licenceId)) {
+    is ModelVariation -> getPolicyChanges(currentLicence, currentLicence.variationOf, version)
 
-    return when {
-      currentLicence !is VariationLicence -> emptyList()
-      else -> getPreviousPolicy(currentLicence)?.let {
-        licencePolicyService.compareLicenceWithPolicy(currentLicence, it, currentPolicy)
-      } ?: emptyList()
-    }
+    else -> emptyList()
   }
 
-  private fun getPreviousPolicy(currentLicence: VariationLicence): LicencePolicy? {
-    val previousLicence = currentLicence.variationOf?.let { licenceService.getLicenceById(it) }?.version
-    return previousLicence?.let { licencePolicyService.policyByVersion(it) }
+  fun getPolicyChanges(currentLicence: ModelVariation, parentLicenceId: Long?, version: String): List<LicenceConditionChanges> {
+    if (parentLicenceId === null) return emptyList()
+    val parentLicence = licenceService.getLicenceById(parentLicenceId)
+
+    return licencePolicyService.compareLicenceWithPolicy(
+      currentLicence,
+      parentLicence,
+      version,
+    )
   }
 }

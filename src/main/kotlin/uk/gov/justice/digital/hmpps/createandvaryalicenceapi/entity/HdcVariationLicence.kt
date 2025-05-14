@@ -94,8 +94,8 @@ class HdcVariationLicence(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
-  var createdBy: CommunityOffenderManager? = null,
-) : Variation(
+  override var createdBy: CommunityOffenderManager? = null,
+) : Licence(
   id = id,
   kind = LicenceKind.HDC_VARIATION,
   typeCode = typeCode,
@@ -152,10 +152,8 @@ class HdcVariationLicence(
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
-  spoDiscussion = spoDiscussion,
-  vloDiscussion = vloDiscussion,
-  variationOfId = variationOfId,
-) {
+),
+  Variation {
 
   fun copy(
     id: Long = this.id,
@@ -370,36 +368,6 @@ class HdcVariationLicence(
     additionalConditions = updatedAdditionalConditions ?: additionalConditions,
     standardConditions = updatedStandardConditions ?: standardConditions,
     bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateLicenceDates(
-    status: LicenceStatus?,
-    conditionalReleaseDate: LocalDate?,
-    actualReleaseDate: LocalDate?,
-    sentenceStartDate: LocalDate?,
-    sentenceEndDate: LocalDate?,
-    licenceStartDate: LocalDate?,
-    licenceExpiryDate: LocalDate?,
-    topupSupervisionStartDate: LocalDate?,
-    topupSupervisionExpiryDate: LocalDate?,
-    postRecallReleaseDate: LocalDate?,
-    homeDetentionCurfewActualDate: LocalDate?,
-    homeDetentionCurfewEndDate: LocalDate?,
-    staffMember: Staff?,
-  ) = copy(
-    statusCode = status ?: this.statusCode,
-    conditionalReleaseDate = conditionalReleaseDate,
-    actualReleaseDate = actualReleaseDate,
-    sentenceStartDate = sentenceStartDate,
-    sentenceEndDate = sentenceEndDate,
-    licenceStartDate = licenceStartDate,
-    licenceExpiryDate = licenceExpiryDate,
-    topupSupervisionStartDate = topupSupervisionStartDate,
-    topupSupervisionExpiryDate = topupSupervisionExpiryDate,
-    postRecallReleaseDate = postRecallReleaseDate,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,

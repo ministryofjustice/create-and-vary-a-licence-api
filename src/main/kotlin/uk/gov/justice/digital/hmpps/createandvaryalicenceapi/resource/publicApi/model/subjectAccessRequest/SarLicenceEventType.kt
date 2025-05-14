@@ -29,4 +29,6 @@ enum class SarLicenceEventType(@JsonValue val description: String) {
   HDC_SUBMITTED("HDC submitted"),
   HDC_VARIATION_CREATED("HDC variation created"),
   HDC_VARIATION_SUBMITTED("HDC variation submitted"),
+  HDC_VARIATION_APPROVED("HDC variation approved"),
+  HDC_VARIATION_REFERRED("HDC variation referred"),
 }

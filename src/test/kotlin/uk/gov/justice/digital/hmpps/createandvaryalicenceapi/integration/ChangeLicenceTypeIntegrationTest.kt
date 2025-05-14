@@ -7,23 +7,22 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.ProblemDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.ProbationSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.CreateLicenceRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceTypeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -51,7 +50,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonApiMockServer.stubGetPrisonerDetail()
-    probationSearchMockServer.stubSearchForPersonOnProbation()
+    deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
 
@@ -60,8 +59,8 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "A1234AA"))
-      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
-      .expectStatus().isOk.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
+      .expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
       .expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
 
     webTestClient.post().uri("/licence/id/1/additional-condition/AP").bodyValue(
@@ -73,7 +72,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
         conditionText = "text",
         expandedText = "some more text",
       ),
-    ).accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
+    ).accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk
 
     log.info("Expect OK: Result returned ${mapper.writeValueAsString(result)}")
@@ -88,25 +87,28 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(additionalConditions.map { it.conditionType }).allMatch { it == "AP" }
 
     // Override prisoner search response to trigger LSD change
-    mockPrisonerSearchResponse(LocalDate.parse("2023-09-11"))
-
-    webTestClient.put().uri("/licence/id/${result.licenceId}/sentence-dates").bodyValue(
-      UpdateSentenceDatesRequest(
+    prisonApiMockServer.stubGetPrisonerDetail(
+      "A1234AA",
+      SentenceDetail(
         conditionalReleaseDate = LocalDate.parse("2023-09-11"),
-        actualReleaseDate = LocalDate.parse("2023-09-11"),
+        confirmedReleaseDate = LocalDate.parse("2023-09-11"),
         sentenceStartDate = LocalDate.parse("2021-09-11"),
-        sentenceEndDate = LocalDate.parse("2024-09-11"),
-        licenceStartDate = LocalDate.parse("2023-09-11"),
+        sentenceExpiryDate = LocalDate.parse("2024-09-11"),
         licenceExpiryDate = null,
         topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
         topupSupervisionExpiryDate = LocalDate.now().plusDays(1),
       ),
-    ).accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
+    )
+    mockPrisonerSearchResponse(LocalDate.parse("2023-09-11"))
+
+    webTestClient.put().uri("/licence/id/${result.licenceId}/sentence-dates")
+      .accept(APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isOk
 
     webTestClient.post().uri("/licence/id/${result.licenceId}/override/type")
       .bodyValue(OverrideLicenceTypeRequest(licenceType = LicenceType.PSS, reason = "Some Reason"))
-      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
+      .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isAccepted
 
     val standardConditionsAfterUpdate = standardConditionRepository.findAll()
@@ -126,7 +128,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
     prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
-    probationSearchMockServer.stubSearchForPersonOnProbation()
+    deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
     assertThat(licenceRepository.count()).isEqualTo(0)
@@ -134,18 +136,18 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     assertThat(auditEventRepository.count()).isEqualTo(0)
 
     val result = webTestClient.post().uri("/licence/create").bodyValue(CreateLicenceRequest(nomsId = "NOMSID"))
-      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
-      .expectStatus().isOk.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
+      .expectStatus().isOk.expectHeader().contentType(APPLICATION_JSON)
       .expectBody(LicenceCreationResponse::class.java).returnResult().responseBody!!
 
     val response = webTestClient.post().uri("/licence/id/${result.licenceId}/override/type")
       .bodyValue(OverrideLicenceTypeRequest(licenceType = LicenceType.PSS, reason = "Some Reason"))
-      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
+      .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN"))).exchange()
       .expectStatus().isBadRequest.expectBody(ProblemDetail::class.java).returnResult().responseBody!!
 
     assertThat(response.title).isEqualTo("Incorrect dates for new licence type: PSS")
     assertThat(response.properties).isEqualTo(
-      mapOf(
+      mapOf<String, Any>(
         "fieldErrors" to mapOf(
           "LED" to "IS_PRESENT",
         ),
@@ -157,7 +159,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   fun `Unauthorized (401) when no token is supplied`() {
     webTestClient.post().uri("/licence/id/1/override/type")
       .bodyValue(OverrideLicenceTypeRequest(licenceType = LicenceType.AP, reason = "Some Reason"))
-      .accept(MediaType.APPLICATION_JSON).exchange().expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
+      .accept(APPLICATION_JSON).exchange().expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED.value())
 
     assertThat(licenceRepository.count()).isEqualTo(0)
     assertThat(standardConditionRepository.count()).isEqualTo(0)
@@ -167,7 +169,7 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
   fun `Get forbidden (403) when incorrect roles are supplied`() {
     val result = webTestClient.post().uri("/licence/id/1/override/type")
       .bodyValue(OverrideLicenceTypeRequest(licenceType = LicenceType.AP, reason = "Some Reason"))
-      .accept(MediaType.APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
+      .accept(APPLICATION_JSON).headers(setAuthorisation(roles = listOf("ROLE_CVL_VERY_WRONG")))
       .exchange().expectStatus().isEqualTo(HttpStatus.FORBIDDEN.value()).expectBody(ErrorResponse::class.java)
       .returnResult().responseBody
 
@@ -211,7 +213,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
     val govUkApiMockServer = GovUkMockServer()
     val prisonApiMockServer = PrisonApiMockServer()
     val prisonerSearchMockServer = PrisonerSearchMockServer()
-    val probationSearchMockServer = ProbationSearchMockServer()
     val deliusMockServer = DeliusMockServer()
 
     @JvmStatic
@@ -220,7 +221,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.start()
       govUkApiMockServer.start()
       prisonerSearchMockServer.start()
-      probationSearchMockServer.start()
       deliusMockServer.start()
     }
 
@@ -230,7 +230,6 @@ class ChangeLicenceTypeIntegrationTest : IntegrationTestBase() {
       prisonApiMockServer.stop()
       govUkApiMockServer.stop()
       prisonerSearchMockServer.stop()
-      probationSearchMockServer.stop()
       deliusMockServer.stop()
     }
   }

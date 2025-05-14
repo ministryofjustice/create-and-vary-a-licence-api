@@ -75,10 +75,14 @@ class LicencePolicyService(
 
   fun compareLicenceWithPolicy(
     licence: ModelLicence,
-    previousPolicy: LicencePolicy,
-    currentPolicy: LicencePolicy,
+    previousLicence: ModelLicence,
+    versionToCompare: String,
   ): List<LicenceConditionChanges> {
-    if (previousPolicy.version == currentPolicy.version) return emptyList()
+    val previousPolicy = previousLicence.version?.let { policyByVersion(it) }
+    val currentPolicy = policyByVersion(versionToCompare)
+
+    if (previousPolicy === null || previousPolicy.version == currentPolicy.version) return emptyList()
+
     val replacements = getSuggestedReplacements(previousPolicy, currentPolicy)
     return licencePolicyChanges(
       licence,

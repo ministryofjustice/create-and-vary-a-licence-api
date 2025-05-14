@@ -21,7 +21,7 @@ object LicenceKinds {
 
 @Schema(
   description = "Describes a licence within this service, A discriminator exists to distinguish between different types of licence",
-  oneOf = [CrdLicence::class, VariationLicence::class, HardStopLicence::class, HdcLicence::class],
+  oneOf = [CrdLicence::class, VariationLicence::class, HardStopLicence::class, HdcLicence::class, HdcVariationLicence::class],
   discriminatorProperty = "kind",
   discriminatorMapping = [
     DiscriminatorMapping(value = LicenceKinds.CRD, schema = CrdLicence::class),

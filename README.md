@@ -23,33 +23,36 @@ Tools required:
 
 ### Install gradle
 
-`$ ./gradlew`
+`./gradlew`
 
-`$ ./gradlew clean build`
+`./gradlew clean build`
 
 ## Running the service
 
 There is a script to help, which sets local profiles, port and DB connection properties to the 
 values required.
 
-`$ ./run-local.sh`
+```shell
+./run-local.sh`
+```
 
 To run start up the application without pulling / restarting local containers:
-
-`$ ./run-local.sh --skip-docker`
+```shell
+./run-local.sh --skip-docker
+```
 
 ## Running the unit tests
 
 Unit tests mock all external dependencies and can be run with no dependent containers.
 
-`$ ./gradlew test`
+`./gradlew test`
 
 ## Running the integration tests
 
 Integration tests use Wiremock to stub any API calls required, and use a local H2 database 
 that is seeded with data specific to each test suite.
 
-`$ ./gradlew integrationTest`
+`./gradlew integrationTest`
 
 ## Pre-commit hooks
 
@@ -63,11 +66,11 @@ This will install hooks for:
 
 To locate any linting issues
 
-`$ ./gradlew ktlintcheck`
+`./gradlew ktlintcheck`
 
 To apply some fixes following linting
 
-`$ ./gradlew ktlintformat` 
+`./gradlew ktlintformat` 
 
 ### Static Code Analysis
 
@@ -77,11 +80,11 @@ issues at `detekt-baseline.yml`.
 
 To generate/re-generate the baseline:
 
-`$ ./gradlew detektBaseline`
+`./gradlew detektBaseline`
 
 To run Detekt:
 
-`$ ./gradlew detekt`
+`./gradlew detekt`
 
 Detekt provides some helpful reports in HTML as well which can be opened in any
 browser. These are available at `build/reports/detekt`.
@@ -90,16 +93,16 @@ browser. These are available at `build/reports/detekt`.
 
 List the dependency tree
 
-`$ ./gradlew dependencies`
+`./gradlew dependencies`
 
 Pull latest dependencies according to the `build.gradle.kts` file
 
-`$ ./gradlew dependencyUpdates`
+`./gradlew dependencyUpdates`
 
 
 ## OWASP vulnerability scanning
 
-`$ ./gradlew dependencyCheckAnalyze`
+`./gradlew dependencyCheckAnalyze`
 
 
 ## Kotlin JPA specification
@@ -120,7 +123,9 @@ to manage the database locally using a SQL database manager application software
 
 For the purposes of this, we will be using DBeaver. Using Homebrew, install the community version of DBeaver
 
-`brew install --cask dbeaver-community`
+```shell
+brew install --cask dbeaver-community
+```
 
 Once installed, open up DBeaver and connect to a database using the Database Navigator and the plug type icon to connect to a database.
 

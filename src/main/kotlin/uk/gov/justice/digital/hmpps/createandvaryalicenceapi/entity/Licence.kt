@@ -70,16 +70,16 @@ abstract class Licence(
   var middleNames: String? = null,
   var surname: String? = null,
   var dateOfBirth: LocalDate? = null,
-  override val conditionalReleaseDate: LocalDate? = null,
-  override val actualReleaseDate: LocalDate? = null,
-  val sentenceStartDate: LocalDate? = null,
-  val sentenceEndDate: LocalDate? = null,
-  override val licenceStartDate: LocalDate? = null,
-  val licenceExpiryDate: LocalDate? = null,
-  val licenceActivatedDate: LocalDateTime? = null,
-  val topupSupervisionStartDate: LocalDate? = null,
-  val topupSupervisionExpiryDate: LocalDate? = null,
-  val postRecallReleaseDate: LocalDate? = null,
+  override var conditionalReleaseDate: LocalDate? = null,
+  override var actualReleaseDate: LocalDate? = null,
+  var sentenceStartDate: LocalDate? = null,
+  var sentenceEndDate: LocalDate? = null,
+  override var licenceStartDate: LocalDate? = null,
+  var licenceExpiryDate: LocalDate? = null,
+  var licenceActivatedDate: LocalDateTime? = null,
+  var topupSupervisionStartDate: LocalDate? = null,
+  var topupSupervisionExpiryDate: LocalDate? = null,
+  var postRecallReleaseDate: LocalDate? = null,
   val probationAreaCode: String? = null,
   val probationAreaDescription: String? = null,
   val probationPduCode: String? = null,
@@ -97,9 +97,9 @@ abstract class Licence(
   var appointmentTime: LocalDateTime? = null,
   var appointmentAddress: String? = null,
   var appointmentContact: String? = null,
-  val approvedDate: LocalDateTime? = null,
-  val approvedByUsername: String? = null,
-  val approvedByName: String? = null,
+  var approvedDate: LocalDateTime? = null,
+  var approvedByUsername: String? = null,
+  var approvedByName: String? = null,
   val supersededDate: LocalDateTime? = null,
   val submittedDate: LocalDateTime? = null,
   var dateCreated: LocalDateTime? = null,
@@ -238,7 +238,7 @@ abstract class Licence(
     staffMember: Staff?,
   ): Licence
 
-  abstract fun updateLicenceDates(
+  fun updateLicenceDates(
     status: LicenceStatus? = null,
     conditionalReleaseDate: LocalDate?,
     actualReleaseDate: LocalDate?,
@@ -252,7 +252,25 @@ abstract class Licence(
     homeDetentionCurfewActualDate: LocalDate?,
     homeDetentionCurfewEndDate: LocalDate?,
     staffMember: Staff?,
-  ): Licence
+  ) {
+    this.statusCode = status ?: this.statusCode
+    this.conditionalReleaseDate = conditionalReleaseDate
+    this.actualReleaseDate = actualReleaseDate
+    this.sentenceStartDate = sentenceStartDate
+    this.sentenceEndDate = sentenceEndDate
+    this.licenceStartDate = licenceStartDate
+    this.licenceExpiryDate = licenceExpiryDate
+    this.topupSupervisionStartDate = topupSupervisionStartDate
+    this.topupSupervisionExpiryDate = topupSupervisionExpiryDate
+    this.postRecallReleaseDate = postRecallReleaseDate
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+    if (this is HdcLicence) {
+      this.homeDetentionCurfewActualDate = homeDetentionCurfewActualDate
+      this.homeDetentionCurfewEndDate = homeDetentionCurfewEndDate
+    }
+  }
 
   abstract fun updateOffenderDetails(
     forename: String?,

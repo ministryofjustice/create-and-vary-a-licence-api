@@ -97,7 +97,7 @@ interface LicenceRepository :
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
         )
         AND l.licenceStartDate > :releasedAfterDate
-        ORDER BY l.conditionalReleaseDate ASC
+        ORDER BY l.licenceStartDate ASC
     """,
   )
   fun getRecentlyApprovedLicences(prisonCodes: List<String>, releasedAfterDate: LocalDate): List<Licence>
@@ -105,8 +105,11 @@ interface LicenceRepository :
   @Query(
     """
       SELECT l
-      FROM VariationLicence l
-      WHERE (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
+      FROM Licence l
+      WHERE l.kind IN (
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION,
+      uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION)
+      AND (l.licenceExpiryDate < CURRENT_DATE AND l.topupSupervisionExpiryDate >= CURRENT_DATE
       AND l.typeCode IN (uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP_PSS))
       AND l.statusCode IN (
       uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS,

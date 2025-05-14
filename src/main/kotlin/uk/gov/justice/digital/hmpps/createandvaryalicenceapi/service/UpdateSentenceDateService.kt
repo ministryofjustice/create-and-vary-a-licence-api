@@ -9,15 +9,22 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateSentenceDatesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NOW_IN_HARDSTOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NO_CHANGE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NO_LONGER_IN_HARDSTOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
-import java.time.format.DateTimeFormatter
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 
 @Service
 class UpdateSentenceDateService(
@@ -30,10 +37,9 @@ class UpdateSentenceDateService(
   private val releaseDateService: ReleaseDateService,
   private val licenceService: LicenceService,
 ) {
-  val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("dd LLLL yyyy")
 
   @Transactional
-  fun updateSentenceDates(licenceId: Long, sentenceDatesRequest: UpdateSentenceDatesRequest) {
+  fun updateSentenceDates(licenceId: Long) {
     val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val prisoner = prisonApiClient.getPrisonerDetail(licenceEntity.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
@@ -43,177 +49,103 @@ class UpdateSentenceDateService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    logUpdate(licenceId, licenceEntity, sentenceDatesRequest)
+    val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
 
-    val sentenceChanges = licenceEntity.getSentenceChanges(sentenceDatesRequest, licenceStartDate)
+    val sentenceChanges = licenceEntity.getDateChanges(sentenceDates, licenceStartDate)
+    val dateChanges = sentenceChanges.dates.filter { !it.type.hdcOnly || licenceEntity is HdcLicence }
 
-    val updatedLicenceEntity = licenceEntity.updateLicenceDates(
-      status = licenceEntity.calculateStatusCode(sentenceDatesRequest),
-      conditionalReleaseDate = sentenceDatesRequest.conditionalReleaseDate,
-      actualReleaseDate = sentenceDatesRequest.actualReleaseDate,
-      sentenceStartDate = sentenceDatesRequest.sentenceStartDate,
-      sentenceEndDate = sentenceDatesRequest.sentenceEndDate,
-      licenceStartDate = licenceStartDate,
-      licenceExpiryDate = sentenceDatesRequest.licenceExpiryDate,
-      topupSupervisionStartDate = sentenceDatesRequest.topupSupervisionStartDate,
-      topupSupervisionExpiryDate = sentenceDatesRequest.topupSupervisionExpiryDate,
-      postRecallReleaseDate = sentenceDatesRequest.postRecallReleaseDate,
-      homeDetentionCurfewActualDate = sentenceDatesRequest.homeDetentionCurfewActualDate,
-      homeDetentionCurfewEndDate = sentenceDatesRequest.homeDetentionCurfewEndDate,
+    logUpdate(licenceId, sentenceChanges.isMaterial, dateChanges)
+
+    val previousSentenceDates = licenceEntity.reifySentenceDates()
+    licenceEntity.updateLicenceDates(
+      status = licenceEntity.calculateStatusCode(sentenceDates),
       staffMember = staffMember,
+      licenceStartDate = licenceStartDate,
+      conditionalReleaseDate = sentenceDates.conditionalReleaseDate,
+      actualReleaseDate = sentenceDates.actualReleaseDate,
+      sentenceStartDate = sentenceDates.sentenceStartDate,
+      sentenceEndDate = sentenceDates.sentenceEndDate,
+      licenceExpiryDate = sentenceDates.licenceExpiryDate,
+      topupSupervisionStartDate = sentenceDates.topupSupervisionStartDate,
+      topupSupervisionExpiryDate = sentenceDates.topupSupervisionExpiryDate,
+      postRecallReleaseDate = sentenceDates.postRecallReleaseDate,
+      homeDetentionCurfewActualDate = sentenceDates.homeDetentionCurfewActualDate,
+      homeDetentionCurfewEndDate = sentenceDates.homeDetentionCurfewEndDate,
     )
 
-    val licencePreviouslyInHardStopPeriod = releaseDateService.isInHardStopPeriod(licenceEntity)
-    val licenceCurrentlyInHardStopPeriod = releaseDateService.isInHardStopPeriod(updatedLicenceEntity)
-    val isLicenceStatusInProgress = updatedLicenceEntity.statusCode == LicenceStatus.IN_PROGRESS
-    val isTimedOut =
-      !licencePreviouslyInHardStopPeriod && licenceCurrentlyInHardStopPeriod && isLicenceStatusInProgress
+    val hardstopChangeType = getHardstopChangeType(previousSentenceDates, licenceEntity)
 
-    if (isTimedOut && updatedLicenceEntity is CrdLicence) {
-      licenceService.timeout(updatedLicenceEntity, reason = "due to sentence dates update")
+    if (hardstopChangeType == NOW_IN_HARDSTOP) {
+      licenceService.timeout(licenceEntity as CrdLicence, reason = "due to sentence dates update")
     } else {
-      licenceRepository.saveAndFlush(updatedLicenceEntity)
-      recordAuditEvent(updatedLicenceEntity, "Sentence dates updated")
+      licenceRepository.saveAndFlush(licenceEntity)
+      recordAuditEvent(licenceEntity, sentenceChanges)
     }
 
-    if (licencePreviouslyInHardStopPeriod && !licenceCurrentlyInHardStopPeriod) {
+    if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
       val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
         licenceEntity?.bookingId!!,
-        listOf(LicenceStatus.IN_PROGRESS, LicenceStatus.SUBMITTED, LicenceStatus.APPROVED, LicenceStatus.TIMED_OUT),
-        listOf(LicenceKind.CRD, LicenceKind.HARD_STOP),
+        listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
+        listOf(CRD, HARD_STOP),
       )
       licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
     }
 
-    log.info(
-      buildString {
-        append("Date change flags: ")
-        append("LSD ${sentenceChanges.lsdChanged} ")
-        append("LED ${sentenceChanges.ledChanged} ")
-        append("SED ${sentenceChanges.sedChanged} ")
-        append("TUSSD ${sentenceChanges.tussdChanged} ")
-        append("TUSED ${sentenceChanges.tusedChanged} ")
-        append("PRRD ${sentenceChanges.prrdChanged} ")
-        if (licenceEntity is HdcLicence) {
-          append("HDCAD ${sentenceChanges.hdcadChanged} ")
-          append("HDCENDDATE ${sentenceChanges.hdcEndDateChanged} ")
-        }
-        append("isMaterial ${sentenceChanges.isMaterial}")
-      },
-    )
-
     if (sentenceChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
-        updatedLicenceEntity.bookingId!!,
-        prisoner.sentenceDetail.homeDetentionCurfewEligibilityDate,
+        licenceEntity.bookingId!!,
+        sentenceDates.homeDetentionCurfewEligibilityDate,
       )
-      notifyComOfUpdate(updatedLicenceEntity, licenceEntity, licenceId, sentenceChanges, isNotApprovedForHdc)
+      notifyComOfUpdate(licenceEntity, licenceId, dateChanges, isNotApprovedForHdc)
     }
   }
 
   private fun notifyComOfUpdate(
-    updatedLicenceEntity: Licence,
     licenceEntity: Licence,
     licenceId: Long,
-    sentenceChanges: SentenceChanges,
+    dateChanges: List<DateChange>,
     isNotApprovedForHdc: Boolean,
   ) {
-    val notifyCom = updatedLicenceEntity is HdcLicence || isNotApprovedForHdc
+    val notifyCom = licenceEntity is HdcLicence || isNotApprovedForHdc
     if (!notifyCom) {
       log.info("Not notifying COM as now approved for HDC for $licenceId")
       return
     }
     log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
+
     notifyService.sendDatesChangedEmail(
       licenceId.toString(),
       licenceEntity.responsibleCom?.email,
       "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceEntity.crn,
-      mapOf(
-        "Release date has changed to ${updatedLicenceEntity.licenceStartDate?.format(dateFormat)}" to sentenceChanges.lsdChanged,
-        "Licence end date has changed to ${updatedLicenceEntity.licenceExpiryDate?.format(dateFormat)}" to sentenceChanges.ledChanged,
-        "Sentence end date has changed to ${updatedLicenceEntity.sentenceEndDate?.format(dateFormat)}" to sentenceChanges.sedChanged,
-        "Top up supervision start date has changed to ${
-          updatedLicenceEntity.topupSupervisionStartDate?.format(
-            dateFormat,
-          )
-        }" to sentenceChanges.tussdChanged,
-        "Top up supervision end date has changed to ${
-          updatedLicenceEntity.topupSupervisionExpiryDate?.format(
-            dateFormat,
-          )
-        }" to sentenceChanges.tusedChanged,
-        "Post recall release date has changed to ${
-          updatedLicenceEntity.postRecallReleaseDate?.format(
-            dateFormat,
-          )
-        }" to sentenceChanges.prrdChanged,
-        "HDC actual date has changed to ${
-          if (updatedLicenceEntity is HdcLicence) {
-            updatedLicenceEntity.homeDetentionCurfewActualDate?.format(
-              dateFormat,
-            )
-          } else {
-            null
-          }
-        }" to sentenceChanges.hdcadChanged,
-        "HDC end date has changed to ${
-          if (updatedLicenceEntity is HdcLicence) {
-            updatedLicenceEntity.homeDetentionCurfewEndDate?.format(
-              dateFormat,
-            )
-          } else {
-            null
-          }
-        }" to sentenceChanges.hdcEndDateChanged,
-      ),
+      dateChanges.filter { it.changed && it.type.notifyOnChange }.map { it.toDescription() },
     )
   }
 
-  private fun logUpdate(
-    licenceId: Long,
-    licenceEntity: Licence?,
-    sentenceDatesRequest: UpdateSentenceDatesRequest,
-  ) {
+  private fun logUpdate(licenceId: Long, isMaterial: Boolean, dateChanges: List<DateChange>) {
     log.info(
       buildString {
         append("Licence dates - ID $licenceId ")
-        append("CRD ${licenceEntity?.conditionalReleaseDate} ")
-        append("ARD ${licenceEntity?.actualReleaseDate} ")
-        append("SSD ${licenceEntity?.sentenceStartDate} ")
-        append("SED ${licenceEntity?.sentenceEndDate} ")
-        append("LSD ${licenceEntity?.licenceStartDate} ")
-        append("LED ${licenceEntity?.licenceExpiryDate} ")
-        append("TUSSD ${licenceEntity?.topupSupervisionStartDate} ")
-        append("TUSED ${licenceEntity?.topupSupervisionExpiryDate} ")
-        append("PRRD ${licenceEntity?.postRecallReleaseDate}")
-        if (licenceEntity is HdcLicence) {
-          append("HDCAD ${licenceEntity.homeDetentionCurfewActualDate} ")
-        }
+        dateChanges.forEach { append("${it.type.name} ${it.oldDate} ") }
       },
     )
-
     log.info(
       buildString {
         append("Event dates - ID $licenceId ")
-        append("CRD ${sentenceDatesRequest.conditionalReleaseDate} ")
-        append("ARD ${sentenceDatesRequest.actualReleaseDate} ")
-        append("SSD ${sentenceDatesRequest.sentenceStartDate} ")
-        append("SED ${sentenceDatesRequest.sentenceEndDate} ")
-        append("LSD ${sentenceDatesRequest.licenceStartDate} ")
-        append("LED ${sentenceDatesRequest.licenceExpiryDate} ")
-        append("TUSSD ${sentenceDatesRequest.topupSupervisionStartDate} ")
-        append("TUSED ${sentenceDatesRequest.topupSupervisionExpiryDate} ")
-        append("PRRD ${sentenceDatesRequest.postRecallReleaseDate}")
-        if (licenceEntity is HdcLicence) {
-          append("HDCAD ${sentenceDatesRequest.homeDetentionCurfewActualDate} ")
-        }
+        dateChanges.forEach { append("${it.type.name} ${it.newDate} ") }
+      },
+    )
+    log.info(
+      buildString {
+        append("Date change flags: ")
+        dateChanges.forEach { append("${it.type.name} ${it.changed} ") }
+        append("isMaterial $isMaterial")
       },
     )
   }
 
-  private fun recordAuditEvent(licenceEntity: Licence, auditEventDescription: String) {
+  private fun recordAuditEvent(licenceEntity: Licence, sentenceChanges: SentenceChanges) {
     with(licenceEntity) {
       auditEventRepository.saveAndFlush(
         AuditEvent(
@@ -221,10 +153,22 @@ class UpdateSentenceDateService(
           username = "SYSTEM",
           fullName = "SYSTEM",
           eventType = AuditEventType.SYSTEM_EVENT,
-          summary = "$auditEventDescription for ${this.forename} ${this.surname}",
+          summary = "Sentence dates updated for ${this.forename} ${this.surname}",
           detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode} version ${this.version}",
+          changes = sentenceChanges.toChanges(licenceEntity.kind),
         ),
       )
+    }
+  }
+
+  private fun getHardstopChangeType(previous: SentenceDateHolder, new: Licence): HardstopChangeType {
+    val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous)
+    val nowInHardstop = releaseDateService.isInHardStopPeriod(new)
+    val isCrdInProgress = new is CrdLicence && new.statusCode == IN_PROGRESS
+    return when {
+      isCrdInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP
+      previouslyInHardstop && !nowInHardstop -> NO_LONGER_IN_HARDSTOP
+      else -> NO_CHANGE
     }
   }
 
@@ -232,5 +176,11 @@ class UpdateSentenceDateService(
     private val log = LoggerFactory.getLogger(this::class.java)
     const val LICENCE_DEACTIVATION_HARD_STOP =
       "Licence automatically inactivated as licence is no longer in hard stop period"
+  }
+
+  private enum class HardstopChangeType {
+    NOW_IN_HARDSTOP,
+    NO_LONGER_IN_HARDSTOP,
+    NO_CHANGE,
   }
 }

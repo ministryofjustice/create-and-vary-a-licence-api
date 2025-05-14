@@ -143,7 +143,7 @@ class LicenceOverrideService(
       },
     )
 
-    val updatedLicenceEntity = licence.updateLicenceDates(
+    licence.updateLicenceDates(
       conditionalReleaseDate = request.conditionalReleaseDate,
       actualReleaseDate = request.actualReleaseDate,
       sentenceStartDate = request.sentenceStartDate,
@@ -159,7 +159,7 @@ class LicenceOverrideService(
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licence)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(

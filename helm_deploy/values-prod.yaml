@@ -20,7 +20,6 @@ generic-service:
     HMPPS_PRISON_API_URL: "https://prison-api.prison.service.justice.gov.uk/api"
     HMPPS_PRISONREGISTER_API_URL: "https://prison-register.hmpps.service.justice.gov.uk"
     HMPPS_PRISONERSEARCH_API_URL: "https://prisoner-search.prison.service.justice.gov.uk"
-    HMPPS_PROBATIONSEARCH_API_URL: "https://probation-offender-search.hmpps.service.justice.gov.uk"
     SELF_LINK: "https://create-and-vary-a-licence.hmpps.service.justice.gov.uk"
     SELF_API_LINK: "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk"
     HARDSTOP_ENABLED: true

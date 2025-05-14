@@ -21,9 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.of
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OffenderDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.OtherIds
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffEmail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
@@ -31,7 +29,6 @@ import java.time.LocalDate
 class PromptComListBuilderTest {
 
   private val licenceRepository = mock<LicenceRepository>()
-  private val probationSearchApiClient = mock<ProbationSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
@@ -39,7 +36,6 @@ class PromptComListBuilderTest {
 
   private val promptComListBuilder = PromptComListBuilder(
     licenceRepository,
-    probationSearchApiClient,
     eligibilityService,
     releaseDateService,
     hdcService,
@@ -49,7 +45,6 @@ class PromptComListBuilderTest {
   @BeforeEach
   fun reset() = reset(
     licenceRepository,
-    probationSearchApiClient,
     eligibilityService,
     releaseDateService,
     hdcService,
@@ -146,15 +141,8 @@ class PromptComListBuilderTest {
     @Test
     fun presentCase() {
       val prisoner = prisonerSearchResult()
-      val offenderDetail = OffenderDetail(
-        otherIds = OtherIds(nomsNumber = prisoner.prisonerNumber, crn = "crn-1"),
-        offenderId = 1L,
-        offenderManagers = listOf(offenderManager()),
-      )
 
-      whenever(
-        probationSearchApiClient.searchForPeopleByNomsNumber(listOf(prisoner.prisonerNumber)),
-      ).thenReturn(listOf(offenderDetail))
+      whenever(deliusApiClient.getOffenderManagers(listOf(prisoner.prisonerNumber))).thenReturn(listOf(offenderManager()))
 
       val result = promptComListBuilder.enrichWithDeliusData(listOf(prisoner))
 
@@ -172,15 +160,12 @@ class PromptComListBuilderTest {
     @Test
     fun presentCaseWithInactiveCom() {
       val prisoner = prisonerSearchResult()
-      val offenderDetail = OffenderDetail(
-        otherIds = OtherIds(nomsNumber = prisoner.prisonerNumber, crn = "crn-1"),
-        offenderId = 1L,
-        offenderManagers = listOf(offenderManager().copy(active = false)),
+      val probationCase = ProbationCase(
+        nomisId = prisoner.prisonerNumber,
+        crn = "crn-1",
       )
 
-      whenever(
-        probationSearchApiClient.searchForPeopleByNomsNumber(listOf(prisoner.prisonerNumber)),
-      ).thenReturn(listOf(offenderDetail))
+      whenever(deliusApiClient.getProbationCases(listOf(prisoner.prisonerNumber))).thenReturn(listOf(probationCase))
 
       val result = promptComListBuilder.enrichWithDeliusData(listOf(prisoner))
 
@@ -191,9 +176,7 @@ class PromptComListBuilderTest {
     fun missingCase() {
       val prisoner = prisonerSearchResult()
 
-      whenever(
-        probationSearchApiClient.searchForPeopleByNomsNumber(listOf(prisoner.prisonerNumber)),
-      ).thenReturn(emptyList())
+      whenever(deliusApiClient.getProbationCases(listOf(prisoner.prisonerNumber))).thenReturn(emptyList())
 
       val result = promptComListBuilder.enrichWithDeliusData(listOf(prisoner))
 
