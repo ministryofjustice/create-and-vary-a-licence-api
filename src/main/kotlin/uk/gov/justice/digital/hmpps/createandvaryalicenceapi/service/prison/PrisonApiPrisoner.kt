@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.SentenceDates
 import java.time.LocalDate
 
 data class OffenceHistory(
@@ -63,7 +64,21 @@ data class SentenceDetail(
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   val paroleEligibilityOverrideDate: LocalDate? = null,
-)
+) {
+  fun toSentenceDates() = SentenceDates(
+    conditionalReleaseDate = conditionalReleaseOverrideDate ?: conditionalReleaseDate,
+    actualReleaseDate = confirmedReleaseDate,
+    sentenceStartDate = sentenceStartDate,
+    sentenceEndDate = sentenceExpiryOverrideDate ?: sentenceExpiryDate,
+    licenceExpiryDate = licenceExpiryOverrideDate ?: licenceExpiryDate,
+    topupSupervisionStartDate = topupSupervisionStartDate,
+    topupSupervisionExpiryDate = topupSupervisionExpiryOverrideDate ?: topupSupervisionExpiryDate,
+    postRecallReleaseDate = postRecallReleaseOverrideDate ?: postRecallReleaseDate,
+    homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate,
+    homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+    homeDetentionCurfewEndDate = homeDetentionCurfewEndDate,
+  )
+}
 
 data class PrisonApiPrisoner(
   val offenderNo: String,

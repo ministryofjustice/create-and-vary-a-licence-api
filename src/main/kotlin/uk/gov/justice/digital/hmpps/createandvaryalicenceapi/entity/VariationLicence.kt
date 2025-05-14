@@ -204,7 +204,7 @@ class VariationLicence(
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
   ): VariationLicence {
-    val variationLicence: VariationLicence = VariationLicence(
+    val variationLicence = VariationLicence(
       id = id,
       typeCode = typeCode,
       version = version,
@@ -347,36 +347,6 @@ class VariationLicence(
     additionalConditions = updatedAdditionalConditions ?: additionalConditions,
     standardConditions = updatedStandardConditions ?: standardConditions,
     bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateLicenceDates(
-    status: LicenceStatus?,
-    conditionalReleaseDate: LocalDate?,
-    actualReleaseDate: LocalDate?,
-    sentenceStartDate: LocalDate?,
-    sentenceEndDate: LocalDate?,
-    licenceStartDate: LocalDate?,
-    licenceExpiryDate: LocalDate?,
-    topupSupervisionStartDate: LocalDate?,
-    topupSupervisionExpiryDate: LocalDate?,
-    postRecallReleaseDate: LocalDate?,
-    homeDetentionCurfewActualDate: LocalDate?,
-    homeDetentionCurfewEndDate: LocalDate?,
-    staffMember: Staff?,
-  ) = copy(
-    statusCode = status ?: this.statusCode,
-    conditionalReleaseDate = conditionalReleaseDate,
-    actualReleaseDate = actualReleaseDate,
-    sentenceStartDate = sentenceStartDate,
-    sentenceEndDate = sentenceEndDate,
-    licenceStartDate = licenceStartDate,
-    licenceExpiryDate = licenceExpiryDate,
-    topupSupervisionStartDate = topupSupervisionStartDate,
-    topupSupervisionExpiryDate = topupSupervisionExpiryDate,
-    postRecallReleaseDate = postRecallReleaseDate,
     dateLastUpdated = LocalDateTime.now(),
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,

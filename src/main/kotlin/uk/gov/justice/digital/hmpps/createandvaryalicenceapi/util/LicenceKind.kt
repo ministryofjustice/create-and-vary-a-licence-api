@@ -46,7 +46,9 @@ enum class LicenceKind(
     { LicenceEventType.HDC_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
-  ),
+  ) {
+    override fun isHdc() = true
+  },
 
   HDC_VARIATION(
     { VARIATION_IN_PROGRESS },
@@ -55,5 +57,9 @@ enum class LicenceKind(
     { LicenceEventType.HDC_VARIATION_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
-  ),
+  ) {
+    override fun isHdc() = true
+  }, ;
+
+  open fun isHdc(): Boolean = false
 }

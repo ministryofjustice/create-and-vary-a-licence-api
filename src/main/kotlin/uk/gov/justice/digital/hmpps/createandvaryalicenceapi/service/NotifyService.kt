@@ -156,18 +156,14 @@ class NotifyService(
     comFullName: String,
     offenderFullName: String,
     crn: String?,
-    datesChanged: Map<String, Boolean>,
+    datesChangedDescription: List<String>,
   ) {
     if (emailAddress?.isNotBlank() == true) {
-      // For all the dates with the change flag set to true get their descriptions as a list
-      val listOfDateTypes = mutableListOf<String>()
-      datesChanged.asSequence().filter { it.value }.forEach { listOfDateTypes.add(it.key) }
-
       val values: Map<String, Any> = mapOf(
         "comFullName" to comFullName,
         "offenderFullName" to offenderFullName,
         "crn" to crn!!,
-        "dateDescriptions" to listOfDateTypes,
+        "dateDescriptions" to datesChangedDescription,
         "caseloadLink" to selfLink.plus("/licence/create/caseload"),
       )
 
