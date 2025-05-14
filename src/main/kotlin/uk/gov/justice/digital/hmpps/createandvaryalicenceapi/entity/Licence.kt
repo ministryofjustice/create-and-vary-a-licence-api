@@ -35,6 +35,7 @@ import java.util.Objects
 @Table(name = "licence")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "kind", discriminatorType = DiscriminatorType.STRING)
+@Suppress("LongParameterList")
 abstract class Licence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,10 +66,10 @@ abstract class Licence(
   val prisonCode: String? = null,
   val prisonDescription: String? = null,
   val prisonTelephone: String? = null,
-  val forename: String? = null,
-  val middleNames: String? = null,
-  val surname: String? = null,
-  val dateOfBirth: LocalDate? = null,
+  var forename: String? = null,
+  var middleNames: String? = null,
+  var surname: String? = null,
+  var dateOfBirth: LocalDate? = null,
   override val conditionalReleaseDate: LocalDate? = null,
   override val actualReleaseDate: LocalDate? = null,
   val sentenceStartDate: LocalDate? = null,
@@ -197,6 +198,20 @@ abstract class Licence(
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
+  }
+
+  fun updatePrisonerDetails(
+    forename: String,
+    middleNames: String?,
+    surname: String,
+    dateOfBirth: LocalDate,
+  ) {
+    this.forename = forename
+    this.surname = surname
+    this.dateOfBirth = dateOfBirth
+    if (middleNames != null) {
+      this.middleNames = middleNames
+    }
   }
 
   abstract fun updateStatus(
