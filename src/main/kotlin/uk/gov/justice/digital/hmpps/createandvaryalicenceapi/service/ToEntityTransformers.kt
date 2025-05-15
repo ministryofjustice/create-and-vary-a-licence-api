@@ -3,15 +3,18 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
+import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData as EntityAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition as EntityStandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData as ModelAdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent as ModelAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress as ModelHdcCurfewAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes as ModelHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition as ModelStandardCondition
 
 /*
@@ -83,6 +86,21 @@ fun transform(model: ModelHdcCurfewAddress, licence: EntityLicence): EntityHdcCu
   townOrCity = model.townOrCity,
   county = model.county,
   postcode = model.postcode,
+)
+
+// Transform a list of model hdc curfew times to a list of entity hdc curfew times, setting the licenceId
+fun List<ModelHdcCurfewTimes>.transformToEntityHdcCurfewTimes(
+  licence: EntityLicence,
+): List<EntityHdcCurfewTimes> = map { time -> transform(time, licence) }
+
+fun transform(model: ModelHdcCurfewTimes, licence: EntityLicence): EntityHdcCurfewTimes = EntityHdcCurfewTimes(
+  licence = licence,
+  curfewTimesSequence = model.curfewTimesSequence,
+  fromDay = model.fromDay,
+  fromTime = model.fromTime,
+  untilDay = model.untilDay,
+  untilTime = model.untilTime,
+  createdTimestamp = LocalDateTime.now(),
 )
 
 fun UpdatePrisonUserRequest.toEntity() = PrisonUser(

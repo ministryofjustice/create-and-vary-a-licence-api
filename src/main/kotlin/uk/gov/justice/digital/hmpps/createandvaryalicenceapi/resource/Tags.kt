@@ -19,5 +19,6 @@ class Tags {
     const val CASELOAD = "Caseload"
     const val OFFENDER = "Offender"
     const val SAR = "Subject Access Request"
+    const val HDC_LICENCE_CURFEW_TIMES = "HDC Licence Curfew Times"
   }
 }

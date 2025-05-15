@@ -2,9 +2,12 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.HdcLicenceData
@@ -20,6 +23,8 @@ class HdcService(
   private val hdcApiClient: HdcApiClient,
   private val prisonApiClient: PrisonApiClient,
   private val licenceRepository: LicenceRepository,
+  private val staffRepository: StaffRepository,
+  private val auditService: AuditService,
 ) {
 
   fun getHdcStatus(records: List<PrisonerSearchPrisoner>) = getHdcStatus(records, { it.bookingId?.toLong() }, { it.homeDetentionCurfewEligibilityDate })
@@ -92,6 +97,28 @@ class HdcService(
     if (hdcLicenceData.curfewTimes == null) {
       error("HDC licence for ${nomisRecord.prisonerNumber} could not be created as curfew times are missing")
     }
+  }
+
+  @Transactional
+  fun updateCurfewTimes(licenceId: Long, request: UpdateCurfewTimesRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") } as HdcLicence
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    val entityCurfewTimes =
+      request.curfewTimes.transformToEntityHdcCurfewTimes(licenceEntity)
+
+    licenceEntity.updateCurfewTimes(
+      updatedCurfewTimes = entityCurfewTimes,
+      staffMember = staffMember,
+    )
+
+    licenceRepository.saveAndFlush(licenceEntity)
+    auditService.recordAuditEventUpdateHdcCurfewTimes(licenceEntity, entityCurfewTimes, staffMember)
   }
 
   data class HdcStatuses(val approvedIds: Set<Long>) {
