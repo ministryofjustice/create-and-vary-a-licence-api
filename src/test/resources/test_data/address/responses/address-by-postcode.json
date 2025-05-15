@@ -1,0 +1,29 @@
+[
+  {
+    "reference": "100120991537",
+    "firstLine": "1, THE STREET",
+    "secondLine": "MORTIMER",
+    "townOrCity": "READING",
+    "county": "WILTSHIRE",
+    "postcode": "SA420UQ",
+    "country": "England"
+  },
+  {
+    "reference": "100120991538",
+    "firstLine": "2, A ROAD",
+    "secondLine": "EASTERTON",
+    "townOrCity": "READING",
+    "county": "WILTSHIRE",
+    "postcode": "SA420UQ",
+    "country": "England"
+  },
+  {
+    "reference": "100120991539",
+    "firstLine": "3, PARK ROAD",
+    "secondLine": "WHITLEY",
+    "townOrCity": "READING",
+    "county": "WILTSHIRE",
+    "postcode": "SA420UQ",
+    "country": "England"
+  }
+]

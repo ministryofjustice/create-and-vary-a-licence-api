@@ -101,6 +101,11 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+os:
+  places:
+    api:
+      url: "https://api.os.uk/search/places/v1"
+      key: ${os.places.api.key}
 
 # Template IDs for the test Notify account (overridden in production)
 notify:
