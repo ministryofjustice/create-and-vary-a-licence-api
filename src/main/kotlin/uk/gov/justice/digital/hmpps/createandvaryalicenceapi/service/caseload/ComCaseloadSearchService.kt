@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -41,7 +41,11 @@ class ComCaseloadSearchService(
     val teamCaseloadResult = deliusApiClient.getTeamManagedOffenders(
       body.staffIdentifier,
       body.query,
-      PageRequest.of(0, CASELOAD_PAGE_SIZE, Sort.by(body.sortBy.map { Sort.Order(it.direction, it.field.probationSearchApiSortType) })),
+      PageRequest.of(
+        0,
+        CASELOAD_PAGE_SIZE,
+        Sort.by(body.sortBy.map { Sort.Order(it.direction, it.field.probationSearchApiSortType) }),
+      ),
     )
 
     val deliusRecordsWithLicences: List<Pair<CaseloadResult, Licence?>> =

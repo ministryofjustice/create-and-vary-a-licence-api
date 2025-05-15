@@ -110,6 +110,14 @@ class AuditServiceTest {
   @Test
   fun `get all audit events`() {
     val aUserRequest = aRequest.copy(username = null, licenceId = null)
+    val expectedChanges = mapOf(
+      "type" to "Added something",
+      "changes" to mapOf(
+        "type" to "ADDED",
+        "conditionText" to "Something",
+      ),
+    )
+
     whenever(
       auditEventRepository
         .findAllByEventTimeBetweenOrderByEventTimeDesc(
@@ -121,7 +129,8 @@ class AuditServiceTest {
     val response = service.getAuditEvents(aUserRequest)
 
     assertThat(response).hasSize(3)
-    assertThat(response[0].summary).isEqualTo("Summary1")
+    assertThat(response.first().summary).isEqualTo("Summary1")
+    assertThat(response.first().changes).isEqualTo(expectedChanges)
 
     verify(auditEventRepository, times(1)).findAllByEventTimeBetweenOrderByEventTimeDesc(
       aUserRequest.startTime,
@@ -815,6 +824,13 @@ class AuditServiceTest {
         eventType = AuditEventType.USER_EVENT,
         summary = "Summary1",
         detail = "Detail1",
+        changes = mapOf(
+          "type" to "Added something",
+          "changes" to mapOf(
+            "type" to "ADDED",
+            "conditionText" to "Something",
+          ),
+        ),
       ),
       EntityAuditEvent(
         id = 2L,

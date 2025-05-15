@@ -42,6 +42,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -413,15 +414,18 @@ class LicenceService(
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
+
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as PrisonUser)
       }
+
       is HdcLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
+
       is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       else -> error("Unexpected licence type: $licenceEntity")
     }
@@ -583,6 +587,7 @@ class LicenceService(
         val licenceCopy = LicenceFactory.createHdcVariation(licence, creator)
         populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
       }
+
       else -> {
         val licenceCopy = LicenceFactory.createVariation(licence, creator)
         populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)

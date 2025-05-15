@@ -42,4 +42,7 @@ data class AuditEvent(
 
   @Schema(description = "A detailed description of the action taken", example = "Updated a bespoke condition")
   val detail: String? = null,
+
+  @Schema(description = "The changes that were made based on the action taken")
+  val changes: Map<String, Any>? = null,
 )

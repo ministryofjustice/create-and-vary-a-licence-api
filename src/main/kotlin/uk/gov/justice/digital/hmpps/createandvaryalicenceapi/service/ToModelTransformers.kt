@@ -630,6 +630,7 @@ private fun transform(entity: EntityAuditEvent): ModelAuditEvent = ModelAuditEve
   eventType = entity.eventType,
   summary = entity.summary,
   detail = entity.detail,
+  changes = entity.changes,
 )
 
 fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)

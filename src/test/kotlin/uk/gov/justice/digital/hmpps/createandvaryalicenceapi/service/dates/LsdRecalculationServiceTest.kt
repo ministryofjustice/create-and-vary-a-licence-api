@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -169,9 +169,19 @@ class LsdRecalculationServiceTest {
 
     assertThat(auditCaptor.allValues).hasSize(2)
     assertThat(auditCaptor.allValues[0]).extracting("detail", "summary")
-      .isEqualTo(listOf("ID 1 type AP status IN_PROGRESS version 1.1", "Licence Start Date recalculated from 2021-10-20 to 2021-10-22 for Bob Mortimer"))
+      .isEqualTo(
+        listOf(
+          "ID 1 type AP status IN_PROGRESS version 1.1",
+          "Licence Start Date recalculated from 2021-10-20 to 2021-10-22 for Bob Mortimer",
+        ),
+      )
     assertThat(auditCaptor.allValues[1]).extracting("detail", "summary")
-      .isEqualTo(listOf("ID 3 type AP status IN_PROGRESS version 1.1", "Licence Start Date recalculated from 2021-10-23 to 2021-10-22 for Bob Mortimer"))
+      .isEqualTo(
+        listOf(
+          "ID 3 type AP status IN_PROGRESS version 1.1",
+          "Licence Start Date recalculated from 2021-10-23 to 2021-10-22 for Bob Mortimer",
+        ),
+      )
   }
 
   @Test
