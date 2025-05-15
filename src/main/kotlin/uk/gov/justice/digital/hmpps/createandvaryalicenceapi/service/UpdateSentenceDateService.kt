@@ -17,8 +17,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSente
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NO_CHANGE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.UpdateSentenceDateService.HardstopChangeType.NO_LONGER_IN_HARDSTOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateChange
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.DateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.SentenceChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.getDateChanges
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.reifySentenceDates
@@ -44,10 +44,10 @@ class UpdateSentenceDateService(
 
   @Transactional
   fun updateSentenceDates(licenceId: Long) {
-    val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
-    val prisoner = prisonApiClient.getPrisonerDetail(licenceEntity.nomsId!!)
+    val licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+    val prisoner = prisonApiClient.getPrisonerDetail(licence.nomsId!!)
     val prisonerSearchPrisoner = prisoner.toPrisonerSearchPrisoner()
-    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licenceEntity.kind)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(prisonerSearchPrisoner, licence.kind)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -55,14 +55,17 @@ class UpdateSentenceDateService(
 
     val sentenceDates = prisoner.sentenceDetail.toSentenceDates()
 
-    val sentenceChanges = licenceEntity.getDateChanges(sentenceDates, licenceStartDate)
-    val dateChanges = sentenceChanges.dates.filter { !it.type.hdcOnly || licenceEntity is HdcLicence }
+    val dateChanges = licence.getDateChanges(sentenceDates, licenceStartDate)
 
-    logUpdate(licenceId, sentenceChanges.isMaterial, dateChanges)
+    logUpdate(
+      licenceId,
+      dateChanges.isMaterial,
+      dateChanges.filter { !it.type.hdcOnly || licence is HdcLicence },
+    )
 
-    val previousSentenceDates = licenceEntity.reifySentenceDates()
-    licenceEntity.updateLicenceDates(
-      status = licenceEntity.calculateStatusCode(sentenceDates),
+    val previousSentenceDates = licence.reifySentenceDates()
+    licence.updateLicenceDates(
+      status = licence.calculateStatusCode(sentenceDates),
       staffMember = staffMember,
       licenceStartDate = licenceStartDate,
       conditionalReleaseDate = sentenceDates.conditionalReleaseDate,
@@ -77,53 +80,52 @@ class UpdateSentenceDateService(
       homeDetentionCurfewEndDate = sentenceDates.homeDetentionCurfewEndDate,
     )
 
-    val hardstopChangeType = getHardstopChangeType(previousSentenceDates, licenceEntity)
+    val hardstopChangeType = getHardstopChangeType(previousSentenceDates, licence)
 
     if (hardstopChangeType == NOW_IN_HARDSTOP) {
-      licenceService.timeout(licenceEntity as CrdLicence, reason = "due to sentence dates update")
+      licenceService.timeout(licence as CrdLicence, reason = "due to sentence dates update")
     } else {
-      licenceRepository.saveAndFlush(licenceEntity)
-      recordAuditEvent(licenceEntity, sentenceChanges)
+      licenceRepository.saveAndFlush(licence)
+      recordAuditEvent(licence, dateChanges)
     }
 
     if (hardstopChangeType == NO_LONGER_IN_HARDSTOP) {
       val licences = licenceRepository.findAllByBookingIdAndStatusCodeInAndKindIn(
-        licenceEntity?.bookingId!!,
+        licence?.bookingId!!,
         listOf(IN_PROGRESS, SUBMITTED, APPROVED, TIMED_OUT),
         listOf(CRD, HARD_STOP),
       )
       licenceService.inactivateLicences(licences, LICENCE_DEACTIVATION_HARD_STOP)
     }
 
-    if (sentenceChanges.isMaterial) {
+    if (dateChanges.isMaterial) {
       val isNotApprovedForHdc = !hdcService.isApprovedForHdc(
-        licenceEntity.bookingId!!,
+        licence.bookingId!!,
         sentenceDates.homeDetentionCurfewEligibilityDate,
       )
-      notifyComOfUpdate(licenceEntity, licenceId, dateChanges, isNotApprovedForHdc)
+      notifyComOfUpdate(licence, dateChanges, isNotApprovedForHdc)
     }
   }
 
   private fun notifyComOfUpdate(
-    licenceEntity: Licence,
-    licenceId: Long,
-    dateChanges: List<DateChange>,
+    licence: Licence,
+    dateChanges: DateChanges,
     isNotApprovedForHdc: Boolean,
   ) {
-    val notifyCom = licenceEntity is HdcLicence || isNotApprovedForHdc
+    val notifyCom = licence is HdcLicence || isNotApprovedForHdc
     if (!notifyCom) {
-      log.info("Not notifying COM as now approved for HDC for $licenceId")
+      log.info("Not notifying COM as now approved for HDC for ${licence.id}")
       return
     }
-    log.info("Notifying COM ${licenceEntity.responsibleCom?.email} of date change event for $licenceId")
+    log.info("Notifying COM ${licence.responsibleCom?.email} of date change event for ${licence.id}")
 
     notifyService.sendDatesChangedEmail(
-      licenceId.toString(),
-      licenceEntity.responsibleCom?.email,
-      "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
-      "${licenceEntity.forename} ${licenceEntity.surname}",
-      licenceEntity.crn,
-      dateChanges.filter { it.changed && it.type.notifyOnChange }.map { it.toDescription() },
+      licence.id.toString(),
+      licence.responsibleCom?.email,
+      "${licence.responsibleCom?.firstName} ${licence.responsibleCom?.lastName}",
+      "${licence.forename} ${licence.surname}",
+      licence.crn,
+      dateChanges.filter { it.notifyOfChange(licence.kind) }.map { it.toDescription() },
     )
   }
 
@@ -149,7 +151,7 @@ class UpdateSentenceDateService(
     )
   }
 
-  private fun recordAuditEvent(licenceEntity: Licence, sentenceChanges: SentenceChanges) {
+  private fun recordAuditEvent(licenceEntity: Licence, dateChanges: DateChanges) {
     with(licenceEntity) {
       auditEventRepository.saveAndFlush(
         AuditEvent(
@@ -159,7 +161,7 @@ class UpdateSentenceDateService(
           eventType = AuditEventType.SYSTEM_EVENT,
           summary = "Sentence dates updated for ${this.forename} ${this.surname}",
           detail = "ID ${this.id} type ${this.typeCode} status ${this.statusCode} version ${this.version}",
-          changes = sentenceChanges.toChanges(licenceEntity.kind),
+          changes = dateChanges.toChanges(licenceEntity.kind),
         ),
       )
     }
