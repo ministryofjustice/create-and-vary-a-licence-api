@@ -99,7 +99,7 @@ class DomainEventsService(
     LICENCE_INACTIVATED("create-and-vary-a-licence.licence.inactivated"),
     HDC_LICENCE_INACTIVATED("create-and-vary-a-licence.hdc-licence.inactivated"),
     LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.variation.inactivated"),
-    HDC_LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.hdc-variation.inactivate"),
+    HDC_LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.hdc-variation.inactivated"),
   }
 
   fun LocalDateTime.toOffsetDateFormat(): String = atZone(ZoneId.of("Europe/London")).toOffsetDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)

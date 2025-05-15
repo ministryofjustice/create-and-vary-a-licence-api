@@ -26,7 +26,7 @@ data class HdcCurfewTimes(
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
-  var curfewTimesSequence: Int? = null,
+  val curfewTimesSequence: Int? = null,
   @Enumerated(EnumType.STRING)
   val fromDay: DayOfWeek? = null,
   val fromTime: LocalTime? = null,

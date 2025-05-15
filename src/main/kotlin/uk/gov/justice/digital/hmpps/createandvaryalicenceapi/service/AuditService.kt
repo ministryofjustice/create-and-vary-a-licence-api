@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
@@ -232,6 +233,28 @@ class AuditService(
 
   fun recordAuditEventInitialAppointmentUpdate(licence: Licence, changes: Map<String, Any>, staffMember: Staff?) {
     val summary = "Updated initial appointment details"
+
+    auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
+  }
+
+  fun recordAuditEventUpdateHdcCurfewTimes(
+    licence: Licence,
+    updatedCurfewTimes: List<HdcCurfewTimes>,
+    staffMember: Staff?,
+  ) {
+    val summary = "Updated HDC curfew times"
+
+    val changes = mapOf(
+      "type" to summary,
+      "changes" to updatedCurfewTimes.map {
+        mapOf(
+          "fromDay" to it.fromDay,
+          "fromTime" to it.fromTime,
+          "untilDay" to it.untilDay,
+          "untilTime" to it.untilTime,
+        )
+      },
+    )
 
     auditEventRepository.save(createAuditEvent(licence, summary, changes, staffMember))
   }

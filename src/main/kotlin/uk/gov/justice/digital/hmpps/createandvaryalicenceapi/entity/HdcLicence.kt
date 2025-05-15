@@ -79,9 +79,9 @@ class HdcLicence(
   responsibleCom: CommunityOffenderManager? = null,
   updatedBy: Staff? = null,
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true, targetEntity = HdcCurfewTimes::class)
   @OrderBy("curfewTimesSequence")
-  val curfewTimes: List<HdcCurfewTimes> = emptyList(),
+  var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   val curfewAddress: HdcCurfewAddress? = null,
@@ -271,7 +271,7 @@ class HdcLicence(
     additionalConditions = additionalConditions,
     bespokeConditions = bespokeConditions,
     responsibleCom = responsibleCom,
-    curfewTimes = curfewTimes,
+    curfewTimes = curfewTimes.toMutableList(),
     submittedBy = submittedBy,
     createdBy = createdBy,
     versionOfId = versionOfId,
@@ -342,6 +342,16 @@ class HdcLicence(
     licenceActivatedDate = licenceActivatedDate,
     updatedBy = staffMember ?: this.updatedBy,
   )
+
+  fun updateCurfewTimes(
+    updatedCurfewTimes: List<HdcCurfewTimes>,
+    staffMember: Staff?,
+  ) {
+    this.curfewTimes.clear()
+    this.curfewTimes.addAll(updatedCurfewTimes)
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   override fun overrideStatus(
     statusCode: LicenceStatus,
