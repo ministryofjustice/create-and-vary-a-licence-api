@@ -9,7 +9,7 @@ import java.time.LocalDate
 
 /**
  * This unit test is to cover logic not covered in
- *  {@link uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.AddressResourceIntegrationTest } class
+ * @see uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.AddressSearchResourceIntegrationTest
  */
 class OsPlacesMapperToAddressSearchResponseMapperTest {
 
@@ -21,21 +21,21 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       val testData = mutableListOf<Pair<DeliveryPointAddress, AddressSearchResponse>>()
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(),
           createExpectedMapTo(),
         ),
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(organisationName = null),
           createExpectedMapTo(firstLine = "ORDNANCE SUB, ORDNANCE HOUSE, 10, ADANAC DRIVE"),
         ),
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -47,7 +47,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -60,7 +60,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -74,7 +74,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -90,7 +90,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -107,7 +107,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -122,7 +122,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       )
 
       testData.add(
-        Pair<DeliveryPointAddress, AddressSearchResponse>(
+        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
