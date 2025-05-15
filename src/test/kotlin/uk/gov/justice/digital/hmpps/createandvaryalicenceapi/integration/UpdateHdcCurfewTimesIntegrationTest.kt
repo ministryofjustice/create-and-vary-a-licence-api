@@ -60,7 +60,7 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
           tuple(DayOfWeek.FRIDAY, LocalTime.of(20, 0), DayOfWeek.SATURDAY, LocalTime.of(8, 0)),
           tuple(DayOfWeek.SATURDAY, LocalTime.of(20, 0), DayOfWeek.SUNDAY, LocalTime.of(8, 0)),
           tuple(DayOfWeek.SUNDAY, LocalTime.of(20, 0), DayOfWeek.MONDAY, LocalTime.of(8, 0)),
-          ),
+        ),
       )
   }
 
@@ -135,7 +135,5 @@ class UpdateHdcCurfewTimesIntegrationTest : IntegrationTestBase() {
       govUkApiMockServer.stop()
       hdcApiMockServer.stop()
     }
-
-
   }
 }
