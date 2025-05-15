@@ -18,79 +18,60 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
   private companion object {
     @JvmStatic
     fun testMappingData(): List<Pair<DeliveryPointAddress, AddressSearchResponse>> {
-      val testData = mutableListOf<Pair<DeliveryPointAddress, AddressSearchResponse>>()
-
-      testData.add(
-        Pair(
-          createMapFromAddress(),
-          createExpectedMapTo(),
-        ),
-      )
-
-      testData.add(
-        Pair(
-          createMapFromAddress(organisationName = null),
-          createExpectedMapTo(firstLine = "ORDNANCE SUB, ORDNANCE HOUSE, 10, ADANAC DRIVE"),
-        ),
-      )
-
-      testData.add(
-        Pair(
+      val testData = buildList {
+        add(
+          createMapFromAddress() to createExpectedMapTo(),
+        )
+        add(
+          createMapFromAddress(organisationName = null)
+            to
+            createExpectedMapTo(firstLine = "ORDNANCE SUB, ORDNANCE HOUSE, 10, ADANAC DRIVE"),
+        )
+        add(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "ORDNANCE HOUSE, 10, ADANAC DRIVE",
-          ),
-        ),
-      )
-
-      testData.add(
-        Pair(
+          ) to
+            createExpectedMapTo(
+              firstLine = "ORDNANCE HOUSE, 10, ADANAC DRIVE",
+            ),
+        )
+        add(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
             buildingName = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "10, ADANAC DRIVE",
-          ),
-        ),
-      )
-
-      testData.add(
-        Pair(
+          ) to
+            createExpectedMapTo(
+              firstLine = "10, ADANAC DRIVE",
+            ),
+        )
+        add(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
             buildingName = null,
             buildingNumber = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "ADANAC DRIVE",
-          ),
-        ),
-      )
-
-      testData.add(
-        Pair(
+          ) to
+            createExpectedMapTo(
+              firstLine = "ADANAC DRIVE",
+            ),
+        )
+        add(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
             buildingName = null,
             buildingNumber = null,
             locality = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "ADANAC DRIVE",
-            secondLine = null,
-          ),
-        ),
-      )
+          ) to
+            createExpectedMapTo(
+              firstLine = "ADANAC DRIVE",
+              secondLine = null,
+            ),
+        )
+        add(
 
-      testData.add(
-        Pair(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
@@ -98,45 +79,38 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             buildingNumber = null,
             locality = null,
             thoroughfareName = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "",
-            secondLine = null,
-          ),
-        ),
-      )
-
-      testData.add(
-        Pair(
+          ) to
+            createExpectedMapTo(
+              firstLine = "",
+              secondLine = null,
+            ),
+        )
+        add(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
             buildingName = null,
             thoroughfareName = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "10, MORTIMER",
-            secondLine = null,
-          ),
-        ),
-      )
-
-      testData.add(
-        Pair(
+          ) to
+            createExpectedMapTo(
+              firstLine = "10, MORTIMER",
+              secondLine = null,
+            ),
+        )
+        add(
           createMapFromAddress(
             organisationName = null,
             subBuildingName = null,
             buildingName = null,
             buildingNumber = null,
             thoroughfareName = null,
-          ),
-          createExpectedMapTo(
-            firstLine = "MORTIMER",
-            secondLine = null,
-          ),
-        ),
-      )
-
+          ) to
+            createExpectedMapTo(
+              firstLine = "MORTIMER",
+              secondLine = null,
+            ),
+        )
+      }
       return testData
     }
 

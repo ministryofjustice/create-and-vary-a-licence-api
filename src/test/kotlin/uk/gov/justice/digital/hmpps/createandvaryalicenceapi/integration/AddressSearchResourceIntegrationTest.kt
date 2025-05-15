@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets
 
 private const val SEARCH_STRING = "Glan-y-mor"
 private const val POSTCODE = "SW1X9AH"
-private const val REFERENCE = "200010019924"
+private const val REFERENCE = "2345678"
 private const val SEARCH_FOR_ADDRESSES_URL = "/address/search/by/text/$SEARCH_STRING"
 private const val POSTCODE_SEARCH_FOR_ADDRESSES_URL = "/address/search/by/postcode/$POSTCODE"
 private const val GET_ADDRESS_BY_REFERENCE_URL = "/address/search/by/reference/$REFERENCE"
