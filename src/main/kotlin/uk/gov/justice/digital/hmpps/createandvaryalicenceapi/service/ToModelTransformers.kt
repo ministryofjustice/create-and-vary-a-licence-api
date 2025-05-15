@@ -907,15 +907,3 @@ fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCu
   county = entity.county,
   postcode = entity.postcode,
 )
-
-fun EntityAuditEvent.transformToModelAuditEvent(): ModelAuditEvent = ModelAuditEvent(
-  id = this.id,
-  licenceId = this.licenceId,
-  eventTime = this.eventTime,
-  username = this.username,
-  fullName = this.fullName,
-  eventType = this.eventType,
-  summary = this.summary,
-  detail = this.detail,
-  changes = this.changes,
-)
