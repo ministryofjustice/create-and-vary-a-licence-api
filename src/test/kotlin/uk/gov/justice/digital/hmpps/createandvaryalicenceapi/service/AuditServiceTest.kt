@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
@@ -26,7 +27,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Standa
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
+import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 
@@ -749,6 +752,80 @@ class AuditServiceTest {
     }
   }
 
+  @Nested
+  inner class `audit events for HDC curfew times` {
+    @Test
+    fun `records an audit event when curfew times are updated`() {
+      service.recordAuditEventUpdateHdcCurfewTimes(aLicenceEntity, aSetOfCurfewTimes, aCom)
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Updated HDC curfew times for " +
+            "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Updated HDC curfew times",
+            listOf(
+              mapOf(
+                "fromDay" to DayOfWeek.MONDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.TUESDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+              mapOf(
+                "fromDay" to DayOfWeek.TUESDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.WEDNESDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+              mapOf(
+                "fromDay" to DayOfWeek.WEDNESDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.THURSDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+              mapOf(
+                "fromDay" to DayOfWeek.THURSDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.FRIDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+              mapOf(
+                "fromDay" to DayOfWeek.FRIDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.SATURDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+              mapOf(
+                "fromDay" to DayOfWeek.SATURDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.SUNDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+              mapOf(
+                "fromDay" to DayOfWeek.SUNDAY,
+                "fromTime" to LocalTime.of(20, 0),
+                "untilDay" to DayOfWeek.MONDAY,
+                "untilTime" to LocalTime.of(8, 0),
+              ),
+            ),
+          ),
+        )
+    }
+  }
+
   companion object {
     val anEvent = AuditEvent(
       licenceId = 1L,
@@ -776,6 +853,8 @@ class AuditServiceTest {
     )
 
     val aLicenceEntity = TestData.createCrdLicence()
+
+    val aHdcLicenceEntity = TestData.createHdcLicence()
 
     val someAdditionalConditionData = listOf(
       AdditionalConditionData(
@@ -853,5 +932,72 @@ class AuditServiceTest {
         detail = "Detail3",
       ),
     )
+
+    val aSetOfCurfewTimes =
+      listOf(
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          1,
+          DayOfWeek.MONDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.TUESDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          2,
+          DayOfWeek.TUESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          3,
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.THURSDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          4,
+          DayOfWeek.THURSDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.FRIDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          5,
+          DayOfWeek.FRIDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SATURDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          6,
+          DayOfWeek.SATURDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.SUNDAY,
+          LocalTime.of(8, 0),
+        ),
+        HdcCurfewTimes(
+          1L,
+          aHdcLicenceEntity,
+          7,
+          DayOfWeek.SUNDAY,
+          LocalTime.of(20, 0),
+          DayOfWeek.MONDAY,
+          LocalTime.of(8, 0),
+        ),
+      )
   }
 }

@@ -1,17 +1,26 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import org.mockito.ArgumentCaptor
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
@@ -36,18 +45,32 @@ class HdcServiceTest {
   private val hdcApiClient = mock<HdcApiClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val licenceRepository = mock<LicenceRepository>()
+  private val staffRepository = mock<StaffRepository>()
+  private val auditService = mock<AuditService>()
 
   private val service =
     HdcService(
       hdcApiClient,
       prisonApiClient,
       licenceRepository,
+      staffRepository,
+      auditService,
     )
 
   @BeforeEach
   fun reset() {
-    reset(licenceRepository)
-    reset(hdcApiClient)
+    val authentication = mock<Authentication>()
+    val securityContext = mock<SecurityContext>()
+    whenever(authentication.name).thenReturn("smills")
+    whenever(securityContext.authentication).thenReturn(authentication)
+
+    SecurityContextHolder.setContext(securityContext)
+
+    reset(
+      licenceRepository,
+      hdcApiClient,
+      staffRepository,
+    )
   }
 
   @Test
@@ -365,8 +388,56 @@ class HdcServiceTest {
     }
   }
 
+  @Nested
+  inner class `update curfew times` {
+    @Test
+    fun `update curfew times for a licence`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
+      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+      val curfewTimes = aUpdatedModelSetOfCurfewTimes
+
+      service.updateCurfewTimes(
+        1,
+        UpdateCurfewTimesRequest(
+          curfewTimes = curfewTimes,
+        ),
+      )
+
+      val licenceCaptor = ArgumentCaptor.forClass(HdcLicence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventUpdateHdcCurfewTimes(any(), any(), any())
+
+      assertThat(licenceCaptor.value)
+        .extracting("updatedByUsername", "updatedBy")
+        .isEqualTo(listOf(aCom.username, aCom))
+
+      assertThat(licenceCaptor.value.curfewTimes)
+        .extracting<Tuple> {
+          Tuple.tuple(
+            it?.fromDay,
+            it?.fromTime,
+            it?.untilDay,
+            it?.untilTime,
+          )
+        }
+        .contains(
+          Tuple.tuple(DayOfWeek.MONDAY, LocalTime.of(21, 0), DayOfWeek.TUESDAY, LocalTime.of(9, 0)),
+          Tuple.tuple(DayOfWeek.TUESDAY, LocalTime.of(21, 0), DayOfWeek.WEDNESDAY, LocalTime.of(9, 0)),
+          Tuple.tuple(DayOfWeek.WEDNESDAY, LocalTime.of(21, 0), DayOfWeek.THURSDAY, LocalTime.of(9, 0)),
+          Tuple.tuple(DayOfWeek.THURSDAY, LocalTime.of(21, 0), DayOfWeek.FRIDAY, LocalTime.of(9, 0)),
+          Tuple.tuple(DayOfWeek.FRIDAY, LocalTime.of(21, 0), DayOfWeek.SATURDAY, LocalTime.of(9, 0)),
+          Tuple.tuple(DayOfWeek.SATURDAY, LocalTime.of(21, 0), DayOfWeek.SUNDAY, LocalTime.of(9, 0)),
+          Tuple.tuple(DayOfWeek.SUNDAY, LocalTime.of(21, 0), DayOfWeek.MONDAY, LocalTime.of(9, 0)),
+        )
+    }
+  }
+
   private companion object {
     val aLicenceEntity = createHdcLicence()
+
+    val aCom = TestData.com()
 
     val anEntityCurfewAddress = EntityHdcCurfewAddress(
       1L,
@@ -523,6 +594,66 @@ class HdcServiceTest {
           LocalTime.of(20, 0),
           DayOfWeek.MONDAY,
           LocalTime.of(8, 0),
+        ),
+      )
+
+    val aUpdatedModelSetOfCurfewTimes =
+      listOf(
+        ModelHdcCurfewTimes(
+          1L,
+          1,
+          DayOfWeek.MONDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.TUESDAY,
+          LocalTime.of(9, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          2,
+          DayOfWeek.TUESDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(9, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          3,
+          DayOfWeek.WEDNESDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.THURSDAY,
+          LocalTime.of(9, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          4,
+          DayOfWeek.THURSDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.FRIDAY,
+          LocalTime.of(9, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          5,
+          DayOfWeek.FRIDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.SATURDAY,
+          LocalTime.of(9, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          6,
+          DayOfWeek.SATURDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.SUNDAY,
+          LocalTime.of(9, 0),
+        ),
+        ModelHdcCurfewTimes(
+          1L,
+          7,
+          DayOfWeek.SUNDAY,
+          LocalTime.of(21, 0),
+          DayOfWeek.MONDAY,
+          LocalTime.of(9, 0),
         ),
       )
 
