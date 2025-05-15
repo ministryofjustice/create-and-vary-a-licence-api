@@ -630,6 +630,7 @@ private fun transform(entity: EntityAuditEvent): ModelAuditEvent = ModelAuditEve
   eventType = entity.eventType,
   summary = entity.summary,
   detail = entity.detail,
+  changes = entity.changes,
 )
 
 fun List<EntityLicenceEvent>.transformToModelEvents(): List<ModelLicenceEvent> = map(::transform)
@@ -905,4 +906,16 @@ fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCu
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
+)
+
+fun EntityAuditEvent.transformToModelAuditEvent(): ModelAuditEvent = ModelAuditEvent(
+  id = this.id,
+  licenceId = this.licenceId,
+  eventTime = this.eventTime,
+  username = this.username,
+  fullName = this.fullName,
+  eventType = this.eventType,
+  summary = this.summary,
+  detail = this.detail,
+  changes = this.changes,
 )
