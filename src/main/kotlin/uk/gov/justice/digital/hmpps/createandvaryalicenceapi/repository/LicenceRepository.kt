@@ -97,7 +97,7 @@ interface LicenceRepository :
             uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
         )
         AND l.licenceStartDate > :releasedAfterDate
-        ORDER BY l.conditionalReleaseDate ASC
+        ORDER BY l.licenceStartDate ASC
     """,
   )
   fun getRecentlyApprovedLicences(prisonCodes: List<String>, releasedAfterDate: LocalDate): List<Licence>

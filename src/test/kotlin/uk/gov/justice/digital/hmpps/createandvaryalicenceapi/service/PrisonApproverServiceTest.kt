@@ -21,7 +21,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.com
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -205,7 +207,7 @@ class PrisonApproverServiceTest {
       submittedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     )
 
-    val activeVariationLicence = createVariationLicence().copy(
+    val activeVariationLicence = createHdcVariationLicence().copy(
       id = aRecentlyApprovedLicence.id + 1,
       statusCode = LicenceStatus.ACTIVE,
       variationOfId = aRecentlyApprovedLicence.id,

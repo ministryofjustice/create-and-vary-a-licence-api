@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -40,7 +40,7 @@ class LsdRecalculationService(
       if (it.licenceStartDate != licenceStartDate) {
         val oldLsd = it.licenceStartDate
 
-        val updatedLicence = it.updateLicenceDates(
+        it.updateLicenceDates(
           status = it.statusCode,
           conditionalReleaseDate = it.conditionalReleaseDate,
           actualReleaseDate = it.actualReleaseDate,
@@ -56,7 +56,7 @@ class LsdRecalculationService(
           staffMember = null,
         )
 
-        licenceRepository.saveAndFlush(updatedLicence)
+        licenceRepository.saveAndFlush(it)
 
         auditEventRepository.saveAndFlush(
           AuditEvent(

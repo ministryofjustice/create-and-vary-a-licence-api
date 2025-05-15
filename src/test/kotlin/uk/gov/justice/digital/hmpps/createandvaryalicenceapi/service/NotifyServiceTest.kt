@@ -13,6 +13,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.UnapprovedLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.promptingCom.PromptComNotification
 import uk.gov.service.notify.NotificationClient
 import uk.gov.service.notify.NotificationClientException
@@ -198,13 +199,7 @@ class NotifyServiceTest {
 
   @Test
   fun `send dates changed email to the COM`() {
-    val datesChanged = mapOf(
-      "Release date" to true,
-      "Licence end date" to true,
-      "Sentence end date" to false,
-      "Top up supervision start date" to false,
-      "Top up supervision end date" to false,
-    )
+    val datesChanged = listOf("Release date", "Licence end date")
 
     notifyService.sendDatesChangedEmail(
       "1",
