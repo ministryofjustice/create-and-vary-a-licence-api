@@ -142,5 +142,5 @@ class LicenceDatesTest {
     assertThat(sentenceChanges.isMaterial).isTrue
   }
 
-  private fun SentenceChanges.changedTypes(): List<LicenceDateType> = this.dates.filter { it.changed }.map { it.type }
+  private fun DateChanges.changedTypes(): List<LicenceDateType> = this.filter { it.changed }.map { it.type }
 }
