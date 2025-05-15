@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
