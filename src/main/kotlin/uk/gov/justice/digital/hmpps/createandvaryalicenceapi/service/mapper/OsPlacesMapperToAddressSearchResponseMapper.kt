@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSear
 private const val ADDRESS_ITEM_SEPARATOR = ", "
 
 @Component
-class OsPlacesMapperToAddressSearchResponse {
+class OsPlacesMapperToAddressSearchResponseMapper {
 
   fun map(deliveryPointAddress: DeliveryPointAddress): AddressSearchResponse {
     val firstLineDetails = getAddressFirstLine(deliveryPointAddress)

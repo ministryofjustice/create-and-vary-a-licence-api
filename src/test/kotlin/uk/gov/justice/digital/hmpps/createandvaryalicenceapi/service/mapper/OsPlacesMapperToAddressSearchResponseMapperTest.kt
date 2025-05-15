@@ -11,9 +11,9 @@ import java.time.LocalDate
  * This unit test is to cover logic not covered in
  *  {@link uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.AddressResourceIntegrationTest } class
  */
-class OsPlacesMapperToAddressSearchResponseTest {
+class OsPlacesMapperToAddressSearchResponseMapperTest {
 
-  private val toTest: OsPlacesMapperToAddressSearchResponse = OsPlacesMapperToAddressSearchResponse()
+  private val toTest: OsPlacesMapperToAddressSearchResponseMapper = OsPlacesMapperToAddressSearchResponseMapper()
 
   private companion object {
     @JvmStatic
