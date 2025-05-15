@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.SentenceDates
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.SentenceDates
 import java.time.LocalDate
 
 data class OffenceHistory(

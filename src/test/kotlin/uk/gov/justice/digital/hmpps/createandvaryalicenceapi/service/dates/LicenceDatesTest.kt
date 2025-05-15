@@ -1,13 +1,14 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDateType.HDCAD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDateType.HDCENDDATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDateType.LED
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDateType.LSD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDateType.PRRD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceDateType.SED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCAD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.HDCENDDATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.LSD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.LicenceDateType.SED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
@@ -141,5 +142,5 @@ class LicenceDatesTest {
     assertThat(sentenceChanges.isMaterial).isTrue
   }
 
-  private fun SentenceChanges.changedTypes(): List<LicenceDateType> = this.dates.filter { it.changed }.map { it.type }
+  private fun DateChanges.changedTypes(): List<LicenceDateType> = this.filter { it.changed }.map { it.type }
 }

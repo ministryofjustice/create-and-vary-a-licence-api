@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -13,6 +13,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
@@ -41,7 +42,10 @@ class ReleaseDateServiceTest {
     whenever(bankHolidayService.getBankHolidaysForEnglandAndWales()).thenReturn(bankHolidays)
   }
 
-  private fun getEarliestDate(licenceStartDate: LocalDate?, homeDetentionCurfewActualDate: LocalDate? = null): LocalDate? = service.getEarliestReleaseDate(
+  private fun getEarliestDate(
+    licenceStartDate: LocalDate?,
+    homeDetentionCurfewActualDate: LocalDate? = null,
+  ): LocalDate? = service.getEarliestReleaseDate(
     object : SentenceDateHolder {
       override val licenceStartDate: LocalDate? = licenceStartDate
       override val conditionalReleaseDate: LocalDate? = null
