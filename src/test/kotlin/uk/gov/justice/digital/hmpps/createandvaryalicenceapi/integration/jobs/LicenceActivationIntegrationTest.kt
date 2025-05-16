@@ -54,7 +54,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "2"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "3"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "7"),
-          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "8"),
+          tuple(LicenceDomainEventType.HDC_LICENCE_ACTIVATED.value, "8"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "4"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "5"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "6"),

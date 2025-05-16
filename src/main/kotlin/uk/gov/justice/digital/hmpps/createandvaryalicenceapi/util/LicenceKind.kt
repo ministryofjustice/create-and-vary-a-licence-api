@@ -44,8 +44,8 @@ enum class LicenceKind(
     { LicenceEventType.CREATED },
     { LicenceEventType.VERSION_CREATED },
     { LicenceEventType.SUBMITTED },
-    { LicenceDomainEventType.LICENCE_ACTIVATED },
-    { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
+    { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
   ) {
     override fun isHdc() = true
   },
