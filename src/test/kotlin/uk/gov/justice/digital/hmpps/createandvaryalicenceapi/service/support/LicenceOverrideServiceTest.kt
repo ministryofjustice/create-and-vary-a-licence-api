@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicencePrisonerDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -530,6 +531,71 @@ class LicenceOverrideServiceTest {
       )
   }
 
+  @Test
+  fun `Override prisoner details updates licence and creates audit event`() {
+    val licence = activeLicence.copy()
+    whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
+    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+
+    val request = OverrideLicencePrisonerDetailsRequest(
+      forename = "New",
+      middleNames = "Middle",
+      surname = "Name",
+      dateOfBirth = LocalDate.of(1998, 1, 1),
+      reason = "Test override prisoner details",
+    )
+
+    licenceOverrideService.changePrisonerDetails(licence.id, request)
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+    val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase("smills")
+
+    assertThat(licenceCaptor.value)
+      .extracting("forename", "middleNames", "surname", "dateOfBirth")
+      .isEqualTo(listOf("New", "Middle", "Name", LocalDate.of(1998, 1, 1)))
+
+    assertThat(auditCaptor.value).extracting("licenceId", "username", "eventType", "summary", "changes")
+      .isEqualTo(
+        listOf(
+          activeLicence.id,
+          aCom.username,
+          AuditEventType.USER_EVENT,
+          "Prisoner details overridden for licence with ID ${activeLicence.id}: ${request.reason}",
+          mapOf(
+            "dateOfBirth" to "1998-01-01",
+            "forename" to "New",
+            "middleNames" to "Middle",
+            "reason" to "Test override prisoner details",
+            "surname" to "Name",
+          ),
+        ),
+      )
+  }
+
+  @Test
+  fun `Override prisoner details does not update middleNames when not given`() {
+    val licence = activeLicence.copy()
+    whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
+
+    val request = OverrideLicencePrisonerDetailsRequest(
+      forename = "New",
+      surname = "Name",
+      dateOfBirth = LocalDate.of(1998, 1, 1),
+      reason = "Test override prisoner details",
+    )
+
+    licenceOverrideService.changePrisonerDetails(licence.id, request)
+    val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
+
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+    assertThat(licenceCaptor.value)
+      .extracting("forename", "middleNames", "surname", "dateOfBirth")
+      .isEqualTo(listOf("New", null, "Name", LocalDate.of(1998, 1, 1)))
+  }
+
   private companion object {
     val inactiveLicenceA = createCrdLicence().copy(
       statusCode = INACTIVE,
@@ -551,6 +617,9 @@ class LicenceOverrideServiceTest {
     )
     val variationApprovedLicence = createCrdLicence().copy(
       statusCode = VARIATION_APPROVED,
+    )
+    val activeLicence = createCrdLicence().copy(
+      statusCode = ACTIVE,
     )
 
     val aCom = TestData.com()

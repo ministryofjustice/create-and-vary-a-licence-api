@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicencePrisonerDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceStatusRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceTypeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
@@ -171,5 +172,47 @@ class LicenceOverrideController(
     request: OverrideLicenceTypeRequest,
   ) {
     licenceTypeOverrideService.changeType(licenceId, request.licenceType, request.reason)
+  }
+
+  @PostMapping(value = ["/prisoner-details"])
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @ResponseBody
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @Operation(
+    summary = "Override prisoner details on a licence",
+    description = "Override the prisoner details for an existing licence. Only to be used in exceptional circumstances." +
+      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(responseCode = "202", description = "Prisoner details updated"),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun changePrisonerDetails(
+    @PathVariable("licenceId") licenceId: Long,
+    @RequestBody @Valid request: OverrideLicencePrisonerDetailsRequest,
+  ) {
+    licenceOverrideService.changePrisonerDetails(licenceId, request)
   }
 }
