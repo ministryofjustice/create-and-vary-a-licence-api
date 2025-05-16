@@ -23,6 +23,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AddressSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.AddressSearchService
 
+private const val MIN_PAGE_RESULTS = 2L
+private const val MAX_PAGE_RESULTS = 200L
+
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 @Tag(name = Tags.ANCILLARY)
@@ -85,8 +88,8 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
       description = "Pagination size per page, min/max = 2/200",
       example = "50",
     )
-    @Min(2)
-    @Max(200)
+    @Min(MIN_PAGE_RESULTS)
+    @Max(MAX_PAGE_RESULTS)
     pageSize: Int = 50,
   ): List<AddressSearchResponse> = addressSearchService.searchForAddressesByText(searchQuery, page, pageSize)
 
@@ -147,8 +150,8 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
       description = "Pagination size per page, min/max = 2/200",
       example = "50",
     )
-    @Min(2)
-    @Max(200)
+    @Min(MIN_PAGE_RESULTS)
+    @Max(MAX_PAGE_RESULTS)
     pageSize: Int = 50,
   ): List<AddressSearchResponse> = addressSearchService.searchForAddressesByPostcode(postcode, page, pageSize)
 
