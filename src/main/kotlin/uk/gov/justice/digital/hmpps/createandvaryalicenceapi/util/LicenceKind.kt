@@ -41,9 +41,9 @@ enum class LicenceKind(
 
   HDC(
     { IN_PROGRESS },
-    { LicenceEventType.HDC_CREATED },
-    { LicenceEventType.HDC_VERSION_CREATED },
-    { LicenceEventType.HDC_SUBMITTED },
+    { LicenceEventType.CREATED },
+    { LicenceEventType.VERSION_CREATED },
+    { LicenceEventType.SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_INACTIVATED },
   ) {
@@ -53,8 +53,8 @@ enum class LicenceKind(
   HDC_VARIATION(
     { VARIATION_IN_PROGRESS },
     { error("HDC variation licences are only copied from existing HDC licences") },
-    { LicenceEventType.HDC_VARIATION_CREATED },
-    { LicenceEventType.HDC_VARIATION_SUBMITTED },
+    { LicenceEventType.VARIATION_CREATED },
+    { LicenceEventType.VARIATION_SUBMITTED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_ACTIVATED },
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
   ) {

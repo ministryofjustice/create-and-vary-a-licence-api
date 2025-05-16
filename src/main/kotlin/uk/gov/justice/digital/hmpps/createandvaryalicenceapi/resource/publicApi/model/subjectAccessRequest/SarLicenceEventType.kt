@@ -24,11 +24,4 @@ enum class SarLicenceEventType(@JsonValue val description: String) {
   VERSION_CREATED("Version created"),
   NOT_STARTED("Not started"),
   TIMED_OUT("Timed out"),
-  HDC_CREATED("HDC created"),
-  HDC_VERSION_CREATED("HDC version created"),
-  HDC_SUBMITTED("HDC submitted"),
-  HDC_VARIATION_CREATED("HDC variation created"),
-  HDC_VARIATION_SUBMITTED("HDC variation submitted"),
-  HDC_VARIATION_APPROVED("HDC variation approved"),
-  HDC_VARIATION_REFERRED("HDC variation referred"),
 }

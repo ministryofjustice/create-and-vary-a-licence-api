@@ -1897,7 +1897,7 @@ class LicenceServiceTest {
       assertThat(licenceVersion).isEqualTo("2.0")
     }
     verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
-    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.HDC_VARIATION_CREATED)
+    assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VARIATION_CREATED)
   }
 
   @Test
@@ -2340,7 +2340,7 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.value)
       .extracting("licenceId", "eventType", "username", "eventDescription")
-      .isEqualTo(listOf(1L, LicenceEventType.HDC_VARIATION_REFERRED, "smills", "reason"))
+      .isEqualTo(listOf(1L, LicenceEventType.VARIATION_REFERRED, "smills", "reason"))
 
     assertThat(auditCaptor.value)
       .extracting("licenceId", "username", "fullName", "summary")
@@ -2469,7 +2469,7 @@ class LicenceServiceTest {
 
     assertThat(eventCaptor.allValues[0])
       .extracting("licenceId", "eventType", "username")
-      .isEqualTo(listOf(2L, LicenceEventType.HDC_VARIATION_APPROVED, "smills"))
+      .isEqualTo(listOf(2L, LicenceEventType.VARIATION_APPROVED, "smills"))
 
     assertThat(auditCaptor.allValues[0])
       .extracting("licenceId", "username", "fullName", "summary")
@@ -3493,7 +3493,7 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             1L,
-            LicenceEventType.HDC_SUBMITTED,
+            LicenceEventType.SUBMITTED,
             "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
           ),
         )
@@ -3554,7 +3554,7 @@ class LicenceServiceTest {
         .isEqualTo(
           listOf(
             1L,
-            LicenceEventType.HDC_VARIATION_SUBMITTED,
+            LicenceEventType.VARIATION_SUBMITTED,
             "Licence submitted for approval for ${hdcLicence.forename} ${hdcLicence.surname}",
           ),
         )
@@ -3615,7 +3615,7 @@ class LicenceServiceTest {
       }
 
       verify(licenceEventRepository).saveAndFlush(licenceEventCaptor.capture())
-      assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.HDC_VERSION_CREATED)
+      assertThat(licenceEventCaptor.value.eventType).isEqualTo(LicenceEventType.VERSION_CREATED)
       assertThat(licenceEventCaptor.value.eventDescription).isEqualTo("A new licence version was created for ${approvedLicence.forename} ${approvedLicence.surname} from ID ${approvedLicence.id}")
       verify(auditEventRepository).saveAndFlush(auditEventCaptor.capture())
       assertThat(auditEventCaptor.value.summary).isEqualTo("New licence version created for ${approvedLicence.forename} ${approvedLicence.surname}")
