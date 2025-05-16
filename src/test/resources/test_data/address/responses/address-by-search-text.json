@@ -1,0 +1,20 @@
+[
+  {
+    "reference": "23456789",
+    "firstLine": "10, THE ALED AV",
+    "secondLine": "ALEDTON",
+    "townOrCity": "ALEDSVILL",
+    "county": "ALEDSHIRE",
+    "postcode": "AL74IOU",
+    "country": "Wales"
+  },
+  {
+    "reference": "234567891",
+    "firstLine": "12, THE ALED AV",
+    "secondLine": "ALEDTON",
+    "townOrCity": "ALEDSVILL",
+    "county": "ALEDSHIRE",
+    "postcode": "AL74IOU",
+    "country": "Wales"
+  }
+]

@@ -67,6 +67,12 @@ hmpps:
       url: http://localhost:8100
       enabled: true
 
+os:
+  places:
+    api:
+      url: http://localhost:8099
+      key: "os-places-api-key"
+
 notify:
   enabled: false
 
