@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.AddressSearchService
 
 private const val MIN_PAGE_RESULTS = 2L
-private const val MAX_PAGE_RESULTS = 200L
+private const val MAX_PAGE_RESULTS = 100L
 
 @RestController
 @RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
