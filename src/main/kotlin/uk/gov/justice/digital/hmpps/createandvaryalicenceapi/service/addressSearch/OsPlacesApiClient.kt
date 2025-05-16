@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSea
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -14,10 +15,10 @@ class OsPlacesApiClient(
   @Qualifier("osPlacesClient") private val osPlacesApiWebClient: WebClient,
   @Value("\${os.places.api.key}") private val apiKey: String,
 ) {
-  fun searchForAddressesByText(searchQuery: String): List<DeliveryPointAddress> {
+  fun searchForAddressesByText(pageable: PageRequest, searchQuery: String): List<DeliveryPointAddress> {
     val searchResult = osPlacesApiWebClient
       .get()
-      .uri("/find?query=$searchQuery&key=$apiKey")
+      .uri("/find?query=$searchQuery&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(OsPlacesApiResponse::class.java)
@@ -26,10 +27,10 @@ class OsPlacesApiClient(
     return searchResult?.results?.map { it.dpa } ?: emptyList()
   }
 
-  fun searchForAddressesByPostcode(postcode: String): List<DeliveryPointAddress> {
+  fun searchForAddressesByPostcode(pageable: PageRequest, postcode: String): List<DeliveryPointAddress> {
     val searchResult = osPlacesApiWebClient
       .get()
-      .uri("/postcode?postcode=$postcode&key=$apiKey")
+      .uri("/postcode?postcode=$postcode&key=$apiKey&offset=${pageable.offset}&maxresults=${pageable.pageSize}")
       .accept(MediaType.APPLICATION_JSON)
       .retrieve()
       .bodyToMono(OsPlacesApiResponse::class.java)
