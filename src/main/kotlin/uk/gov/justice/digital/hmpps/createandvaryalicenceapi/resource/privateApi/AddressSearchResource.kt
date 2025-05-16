@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.PositiveOrZero
 import jakarta.validation.constraints.Size
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
@@ -81,7 +82,7 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
       description = "Pagination page number, starting at zero",
       example = "0",
     )
-    @Min(0)
+    @PositiveOrZero
     page: Int = 0,
     @RequestParam(value = "pageSize", required = false)
     @Parameter(
@@ -143,7 +144,7 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
       description = "Pagination page number, starting at zero",
       example = "0",
     )
-    @Min(0)
+    @PositiveOrZero
     page: Int = 0,
     @RequestParam(value = "pageSize", required = false)
     @Parameter(
