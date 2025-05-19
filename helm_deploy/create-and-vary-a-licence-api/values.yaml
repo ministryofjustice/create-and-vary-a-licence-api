@@ -56,7 +56,6 @@ generic-service:
       NOTIFY_API_KEY: "NOTIFY_API_KEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
-      OS_PLACES_API_KEY: "OS_PLACES_API_KEY"
     rds-instance-output:
       DB_SERVER: "rds_instance_address"
       DB_NAME: "database_name"

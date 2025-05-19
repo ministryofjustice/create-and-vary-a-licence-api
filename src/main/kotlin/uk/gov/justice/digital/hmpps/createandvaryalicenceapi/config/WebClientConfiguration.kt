@@ -24,7 +24,6 @@ class WebClientConfiguration(
   @Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
   @Value("\${hmpps.hdc.api.url}") private val hdcApiUrl: String,
-  @Value("\${os.places.api.url}") private val osPlacesApiUrl: String,
 ) {
   @Bean
   fun oauthApiHealthWebClient(): WebClient = WebClient.builder().baseUrl(oauthApiUrl).build()
@@ -43,29 +42,87 @@ class WebClientConfiguration(
 
   @Bean
   fun oauthPrisonClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOAuthClient(authorizedClientManager)
-    return getWebClient(prisonApiUrl, oauth2Client)
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(prisonApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
   }
 
   @Bean
   fun oauthPrisonerSearchClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOAuthClient(authorizedClientManager)
-    return getWebClient(prisonerSearchApiUrl, oauth2Client)
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(prisonerSearchApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
   }
 
   @Bean
   fun oauthDocumentApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOAuthClient(authorizedClientManager)
-    return getWebClient(documentApiUrl, oauth2Client)
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(documentApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
   }
 
   @Bean
-  fun prisonRegisterApiWebClient(): WebClient = getWebClient(prisonRegisterApiUrl)
+  fun prisonRegisterApiWebClient(): WebClient = WebClient.builder()
+    .baseUrl(prisonRegisterApiUrl)
+    .exchangeStrategies(
+      ExchangeStrategies.builder()
+        .codecs { configurer ->
+          configurer.defaultCodecs()
+            .maxInMemorySize(-1)
+        }
+        .build(),
+    )
+    .build()
 
   @Bean
   fun oauthDeliusApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOAuthClient(authorizedClientManager)
-    return getWebClient(deliusApiUrl, oauth2Client)
+    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
+    oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
+
+    return WebClient.builder()
+      .baseUrl(deliusApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
   }
 
   @Bean
@@ -73,39 +130,19 @@ class WebClientConfiguration(
 
   @Bean
   fun oauthHdcApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
-    val oauth2Client = getOAuthClient(authorizedClientManager)
-    return getWebClient(hdcApiUrl, oauth2Client)
-  }
-
-  @Bean
-  fun osPlacesClient(): WebClient = getWebClient(osPlacesApiUrl)
-
-  private fun getOAuthClient(authorizedClientManager: OAuth2AuthorizedClientManager): ServletOAuth2AuthorizedClientExchangeFilterFunction {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId(HMPPS_AUTH)
-    return oauth2Client
+
+    return WebClient.builder()
+      .baseUrl(hdcApiUrl)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build(),
+      ).build()
   }
-
-  private fun getWebClient(url: String, oauth2Client: ServletOAuth2AuthorizedClientExchangeFilterFunction): WebClient = WebClient.builder()
-    .baseUrl(url)
-    .apply(oauth2Client.oauth2Configuration())
-    .exchangeStrategies(
-      ExchangeStrategies.builder()
-        .codecs { configurer ->
-          configurer.defaultCodecs()
-            .maxInMemorySize(-1)
-        }
-        .build(),
-    ).build()
-
-  private fun getWebClient(url: String): WebClient = WebClient.builder()
-    .baseUrl(url)
-    .exchangeStrategies(
-      ExchangeStrategies.builder()
-        .codecs { configurer ->
-          configurer.defaultCodecs()
-            .maxInMemorySize(-1)
-        }
-        .build(),
-    ).build()
 }
