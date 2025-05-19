@@ -39,6 +39,7 @@ export SERVER_PORT=8089
 
 # Client id/secret to access local container-hosted services
 # Matches with the seeded client details in hmpps-auth for its dev profile
+export OS_PLACES_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.OS_PLACES_API_KEY | @base64d')
 export SYSTEM_CLIENT_ID=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.SYSTEM_CLIENT_ID | @base64d')
 export SYSTEM_CLIENT_SECRET=$(kubectl -n create-and-vary-a-licence-api-dev get secrets create-and-vary-a-licence-api -o json  | jq -r '.data.SYSTEM_CLIENT_SECRET | @base64d')
 
