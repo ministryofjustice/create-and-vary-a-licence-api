@@ -28,8 +28,8 @@ class ControllerAdvice {
   @ExceptionHandler(HandlerMethodValidationException::class)
   fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
     val separator = ","
-    val message = e.allErrors.joinToString(separator) { it -> it.defaultMessage?.toString() ?: "" }
-    val developerMessage = e.allErrors.joinToString(separator) { it -> "${it.defaultMessage} ${it.codes?.joinToString(separator)}" }
+    val message = e.allErrors.joinToString(separator) { it.defaultMessage?.toString() ?: "" }
+    val developerMessage = e.allErrors.joinToString(separator) { "${it.defaultMessage} ${it.codes?.joinToString(separator)}" }
     return ResponseEntity
       .status(BAD_REQUEST)
       .body(
