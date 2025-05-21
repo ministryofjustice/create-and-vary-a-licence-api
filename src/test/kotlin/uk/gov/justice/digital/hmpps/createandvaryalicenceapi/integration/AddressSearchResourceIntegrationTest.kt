@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import java.nio.charset.StandardCharsets
 
 private const val SEARCH_STRING = "Glan-y-mor"
-private const val POSTCODE = "SW1X9AH"
+private const val POSTCODE = "FA11KE"
 private const val REFERENCE = "2345678"
 private const val SEARCH_FOR_ADDRESSES_URL = "/address/search/by/text/$SEARCH_STRING"
 private const val POSTCODE_SEARCH_FOR_ADDRESSES_URL = "/address/search/by/postcode/$POSTCODE"
@@ -115,8 +115,8 @@ class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
     @Test
     fun `should return addresses results with irregular postcode`() {
       // Given
-      val irregularPostcode = "SW1X-9AH"
-      osPlacesMockServer.stubGetAddressesForPostcode(POSTCODE)
+      val irregularPostcode = "FA1X-1KE"
+      osPlacesMockServer.stubGetAddressesForIrregularPostcode("FA1X1KE")
 
       // When
       val result = webTestClient.get()
@@ -127,7 +127,7 @@ class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
       // Then
       result.expectStatus()
         .isOk
-        .expectBody().json(serializedContent("address-by-postcode"), JsonCompareMode.STRICT)
+        .expectBody().json(serializedContent("address-by-irregular-postcode"), JsonCompareMode.STRICT)
     }
   }
 

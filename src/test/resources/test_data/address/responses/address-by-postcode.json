@@ -2,28 +2,28 @@
   {
     "reference": "1234567",
     "firstLine": "1, THE ROAD",
-    "secondLine": "Dinas",
-    "townOrCity": "Newport",
-    "county": "Pembrokeshire",
-    "postcode": "SA420UQ",
+    "secondLine": "Fakeline",
+    "townOrCity": "Faketon",
+    "county": "Fakeshire",
+    "postcode": "FA11KE",
     "country": "Wales"
   },
   {
     "reference": "12345678",
     "firstLine": "2, A ROAD",
-    "secondLine": "Dinas",
-    "townOrCity": "Newport",
-    "county": "Pembrokeshire",
-    "postcode": "SA420UQ",
+    "secondLine": "Fakeline",
+    "townOrCity": "Faketon",
+    "county": "Fakeshire",
+    "postcode": "FA11KE",
     "country": "Wales"
   },
   {
     "reference": "123456789",
-    "firstLine": "3, WELSH ROAD",
-    "secondLine": "Dinas",
-    "townOrCity": "Newport",
-    "county": "Pembrokeshire",
-    "postcode": "SA420UQ",
+    "firstLine": "3, A ROAD",
+    "secondLine": "Fakeline",
+    "townOrCity": "Faketon",
+    "county": "Fakeshire",
+    "postcode": "FA11KE",
     "country": "Wales"
   }
 ]

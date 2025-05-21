@@ -659,7 +659,7 @@ class PublicLicenceServiceTest {
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
       forename = "Bob",
-      surname = "Mortimer",
+      surname = "Bloggs",
       approvedByUsername = "TestApprover",
       approvedDate = LocalDateTime.of(2023, 10, 11, 12, 0),
       dateOfBirth = LocalDate.of(1985, 12, 28),

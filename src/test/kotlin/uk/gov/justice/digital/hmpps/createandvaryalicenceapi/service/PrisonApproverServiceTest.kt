@@ -47,7 +47,7 @@ class PrisonApproverServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -368,7 +368,7 @@ class PrisonApproverServiceTest {
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
       forename = "Bob",
-      surname = "Mortimer",
+      surname = "Bloggs",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
@@ -390,14 +390,14 @@ class PrisonApproverServiceTest {
       standardConditions = emptyList(),
       responsibleCom = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
       ),
       createdBy = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
@@ -435,7 +435,7 @@ class PrisonApproverServiceTest {
     val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
       forename = "Bob",
-      surname = "Mortimer",
+      surname = "Bloggs",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       licenceStatus = LicenceStatus.SUBMITTED,
       kind = LicenceKind.CRD,
@@ -453,7 +453,7 @@ class PrisonApproverServiceTest {
       probationLauDescription = "Cardiff South",
       probationTeamCode = "NA01A2-A",
       probationTeamDescription = "Cardiff South Team A",
-      comUsername = "smills",
+      comUsername = "tcom",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       sentenceStartDate = LocalDate.of(2018, 10, 22),

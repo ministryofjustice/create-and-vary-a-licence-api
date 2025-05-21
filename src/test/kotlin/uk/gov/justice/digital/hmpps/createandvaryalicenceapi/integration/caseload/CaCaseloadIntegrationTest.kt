@@ -93,7 +93,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
 
       assertThat(caseload).hasSize(3)
       with(caseload.first()) {
-        assertThat(name).isEqualTo("harry hope")
+        assertThat(name).isEqualTo("joe bloggs")
         assertThat(prisonerNumber).isEqualTo("A1234AB")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
         assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)

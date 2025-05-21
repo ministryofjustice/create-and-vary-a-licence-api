@@ -47,7 +47,7 @@ class AppointmentServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -70,7 +70,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment person persists updated entity correctly`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     service.updateAppointmentPerson(
       1L,
@@ -94,7 +94,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointmentPerson = "Bob")))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     service.updateAppointmentPerson(
       1L,
@@ -138,7 +138,7 @@ class AppointmentServiceTest {
   @Test
   fun `update initial appointment time persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     service.updateAppointmentTime(
       1L,
@@ -178,7 +178,7 @@ class AppointmentServiceTest {
   @Test
   fun `update contact number persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
 
@@ -206,7 +206,7 @@ class AppointmentServiceTest {
   @Test
   fun `update appointment address persists the updated entity`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     service.updateAppointmentAddress(
       1L,
@@ -246,7 +246,7 @@ class AppointmentServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
     service.updateAppointmentPerson(
       1L,
@@ -284,7 +284,7 @@ class AppointmentServiceTest {
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
       forename = "Bob",
-      surname = "Mortimer",
+      surname = "Bloggs",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
@@ -306,14 +306,14 @@ class AppointmentServiceTest {
       standardConditions = emptyList(),
       responsibleCom = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
       ),
       createdBy = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",

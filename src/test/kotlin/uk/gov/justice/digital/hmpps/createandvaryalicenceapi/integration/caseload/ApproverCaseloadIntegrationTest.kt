@@ -129,14 +129,14 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
       assertThat(caseload).hasSize(2)
       with(caseload.first()) {
-        assertThat(name).isEqualTo("Bob Bobson")
+        assertThat(name).isEqualTo("Person Two")
         assertThat(prisonerNumber).isEqualTo("B1234BB")
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()
         assertThat(releaseDate).isBeforeOrEqualTo(LocalDate.now().minusDays(10))
       }
       with(caseload.last()) {
-        assertThat(name).isEqualTo("Jim Smith")
+        assertThat(name).isEqualTo("Person Eight")
         assertThat(prisonerNumber).isEqualTo("F2504MG")
         assertThat(approvedBy).isNotNull()
         assertThat(approvedOn).isNotNull()

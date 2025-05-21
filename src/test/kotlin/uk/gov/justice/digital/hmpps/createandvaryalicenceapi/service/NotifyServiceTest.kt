@@ -228,13 +228,13 @@ class NotifyServiceTest {
       creatorName = "Joe Bloggs",
       comEmail = "",
       comName = "",
-      popName = "Peter Falk",
+      popName = "John Doe",
       licenceId = "1",
     )
 
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "fullName" to "Peter Falk",
+      "fullName" to "John Doe",
       "caseListLink" to "http://somewhere/licence/vary/caseload",
     )
 
@@ -248,13 +248,13 @@ class NotifyServiceTest {
       creatorName = "Joe Bloggs",
       comEmail = EMAIL_ADDRESS,
       comName = "Joe Bloggs",
-      popName = "Peter Falk",
+      popName = "John Doe",
       licenceId = "1",
     )
 
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "fullName" to "Peter Falk",
+      "fullName" to "John Doe",
       "caseListLink" to "http://somewhere/licence/vary/caseload",
     )
 
@@ -268,7 +268,7 @@ class NotifyServiceTest {
       creatorName = "Joe Bloggs",
       comEmail = EMAIL_ADDRESS2,
       comName = "Joe Bloggs-Two",
-      popName = "Peter Falk",
+      popName = "John Doe",
       licenceId = "1",
     )
     verify(notificationClient, times(2)).sendEmail(any(), any(), any(), anyOrNull())
@@ -281,13 +281,13 @@ class NotifyServiceTest {
       creatorName = "Joe Bloggs",
       comEmail = "",
       comName = "",
-      popName = "Peter Falk",
+      popName = "John Doe",
       licenceId = "1",
     )
 
     val expectedMap = mapOf(
       "comName" to "Joe Bloggs",
-      "fullName" to "Peter Falk",
+      "fullName" to "John Doe",
       "caseListLink" to "http://somewhere/licence/vary/caseload",
     )
 
@@ -299,15 +299,15 @@ class NotifyServiceTest {
     val dateTime = LocalDate.of(2016, Month.FEBRUARY, 10)
     notifyService.sendVariationForReApprovalEmail(
       EMAIL_ADDRESS,
-      "Peter",
-      "Falk",
+      "John",
+      "Doe",
       "ABC123",
       dateTime,
     )
 
     val expectedMap = mapOf(
-      "prisonerFirstName" to "Peter",
-      "prisonerLastName" to "Falk",
+      "prisonerFirstName" to "John",
+      "prisonerLastName" to "Doe",
       "prisonerNumber" to "ABC123",
       "crd" to "10 February 2016",
     )
@@ -319,8 +319,8 @@ class NotifyServiceTest {
   fun `No re-approval email is sent when CRD is empty`() {
     notifyService.sendVariationForReApprovalEmail(
       EMAIL_ADDRESS,
-      "Peter",
-      "Falk",
+      "John",
+      "Doe",
       "ABC123",
       null,
     )

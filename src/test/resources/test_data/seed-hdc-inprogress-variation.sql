@@ -44,7 +44,7 @@ values (
            'MDI',
            'Moorland (HMP)',
            'Bob',
-           'Mortimer',
+           'Bloggs',
            '2020-10-25',
            '2022-02-12',
            '2022-02-25',
@@ -75,7 +75,7 @@ values (
            'MDI',
            'Moorland (HMP)',
            'Bob',
-           'Mortimer',
+           'Bloggs',
            '2020-10-25',
            '2022-02-12',
            '2022-02-25',
@@ -104,7 +104,7 @@ values (
         'MDI',
         'Moorland (HMP)',
         'Bob',
-        'Mortimer',
+        'Bloggs',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -133,7 +133,7 @@ values (
         'MDI',
         'Moorland (HMP)',
         'Bob',
-        'Mortimer',
+        'Bloggs',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -243,43 +243,43 @@ values (11, 6, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (1, 1, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (1, 1, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (2, 1, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (3, 2, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (3, 2, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (4, 2, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (5, 3, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (5, 3, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (6, 3, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (7, 4, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (7, 4, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (8, 4, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (9, 5, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (9, 5, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (10, 5, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (11, 6, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (11, 6, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (12, 7, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (13, 8, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (13, 8, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (14, 9, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');

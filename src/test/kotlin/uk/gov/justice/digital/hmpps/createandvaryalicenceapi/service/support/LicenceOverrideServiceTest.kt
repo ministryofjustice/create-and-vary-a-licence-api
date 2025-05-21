@@ -65,7 +65,7 @@ class LicenceOverrideServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -80,7 +80,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val exception = assertThrows<ValidationException> {
       licenceOverrideService.changeStatus(approvedLicenceB.id, APPROVED, "Test Exception")
@@ -100,7 +100,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceB.id)).thenReturn(Optional.of(approvedLicenceB))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $APPROVED to $INACTIVE"
 
@@ -147,7 +147,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $APPROVED to $SUBMITTED"
 
@@ -194,7 +194,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val reasonForChange = "Test licenceActivatedDate when licence is made $ACTIVE"
 
@@ -243,7 +243,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val reasonForChange = "Test licenceActivatedDate when licence is made $ACTIVE"
 
@@ -267,7 +267,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(variationApprovedLicence.id)).thenReturn(Optional.of(variationApprovedLicence))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $VARIATION_APPROVED to $ACTIVE"
 
@@ -314,7 +314,7 @@ class LicenceOverrideServiceTest {
 
     whenever(licenceRepository.findById(activeVariationLicence.id)).thenReturn(Optional.of(activeVariationLicence))
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val reasonForChange = "Test override from $ACTIVE to $INACTIVE"
 
@@ -356,7 +356,7 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override dates updates licence dates`() {
     whenever(licenceRepository.findById(approvedLicenceA.id)).thenReturn(Optional.of(approvedLicenceA))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
@@ -413,7 +413,7 @@ class LicenceOverrideServiceTest {
   @Test
   fun `Override dates updates HDC licence dates`() {
     whenever(licenceRepository.findById(approvedHdcLicenceA.id)).thenReturn(Optional.of(approvedHdcLicenceA))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
@@ -477,7 +477,7 @@ class LicenceOverrideServiceTest {
         ),
       ),
     )
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
     val request = OverrideLicenceDatesRequest(
       conditionalReleaseDate = LocalDate.now(),
