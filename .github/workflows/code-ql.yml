@@ -10,6 +10,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      packages: read
       security-events: write
     runs-on: ubuntu-latest
 
