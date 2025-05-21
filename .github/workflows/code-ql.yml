@@ -2,7 +2,7 @@ name: CodeQL analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "CVSL-2898-test-codeql-config" ]
 
 jobs:
   analyze:
@@ -10,6 +10,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      packages: read
       security-events: write
     runs-on: ubuntu-latest
 
