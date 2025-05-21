@@ -1,11 +1,8 @@
 name: CodeQL analysis
 
 on:
-  pull_request:
-    #    branches: [ "main" ]
-    types: [ opened ]
   push:
-    branches: [ "main", "CVSL-2898-add-codeql-action" ]
+    branches: [ "main" ]
 
 jobs:
   analyze:
