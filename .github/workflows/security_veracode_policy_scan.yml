@@ -7,6 +7,8 @@ jobs:
   security-veracode-policy-check:
     name: Project security veracode policy scan
     permissions:
+      contents: read
+      actions: read
       security-events: write
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_policy_scan.yml@v2 # WORKFLOW_VERSION
     with:
