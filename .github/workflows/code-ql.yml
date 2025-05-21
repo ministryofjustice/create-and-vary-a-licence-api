@@ -2,7 +2,7 @@ name: CodeQL analysis
 
 on:
   push:
-    branches: [ "main", "CVSL-2898-test-codeql-config" ]
+    branches: [ "main" ]
 
 jobs:
   analyze:
