@@ -93,7 +93,7 @@ class AppointmentServiceTest {
 
   @Test
   fun `update initial appointment clears specific person if not a appointment type is not with a specific person `() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointmentPerson = "Bob")))
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity.copy(appointmentPerson = "Duty Officer")))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     service.updateAppointmentPerson(
@@ -283,8 +283,8 @@ class AppointmentServiceTest {
       cro = "12345",
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
-      forename = "Bob",
-      surname = "Bloggs",
+      forename = "Person",
+      surname = "One",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),

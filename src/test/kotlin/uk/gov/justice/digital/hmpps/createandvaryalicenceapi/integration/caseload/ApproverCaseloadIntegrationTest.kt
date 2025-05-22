@@ -73,7 +73,7 @@ class ApproverCaseloadIntegrationTest : IntegrationTestBase() {
 
       assertThat(caseload).hasSize(3)
       with(caseload.first()) {
-        assertThat(name).isEqualTo("Prisoner Seven")
+        assertThat(name).isEqualTo("Person Seven")
         assertThat(prisonerNumber).isEqualTo("A1234BC")
         assertThat(approvedBy).isNull()
         assertThat(approvedOn).isNull()

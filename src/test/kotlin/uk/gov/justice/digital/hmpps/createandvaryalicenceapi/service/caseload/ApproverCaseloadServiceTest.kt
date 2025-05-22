@@ -58,7 +58,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Bloggs")
+          assertThat(name).isEqualTo("Person One")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
@@ -145,7 +145,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Bloggs")
+          assertThat(name).isEqualTo("Person One")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
@@ -428,7 +428,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Bloggs")
+          assertThat(name).isEqualTo("Person One")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.now().minusDays(14)))
@@ -880,8 +880,8 @@ class ApproverCaseloadServiceTest {
 
     val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
-      forename = "Bob",
-      surname = "Bloggs",
+      forename = "Person",
+      surname = "One",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       licenceStatus = LicenceStatus.SUBMITTED,
       kind = LicenceKind.CRD,

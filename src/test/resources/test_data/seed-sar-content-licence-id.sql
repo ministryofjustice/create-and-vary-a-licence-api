@@ -41,8 +41,8 @@ values (1,
         'CRO1',
         'MDI',
         'Moorland (HMP)',
-        'Bob',
-        'Bloggs',
+        'Person',
+        'One',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -112,8 +112,8 @@ values (2,
         'CRO1',
         'MDI',
         'Moorland (HMP)',
-        'Bob',
-        'Bloggs',
+        'Person',
+        'One',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -141,17 +141,17 @@ insert into standard_condition (licence_id, condition_code, condition_sequence, 
 values (2, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
 insert into audit_event (id, licence_id, username, full_name, event_type, summary, detail, changes)
-values (1, 1, 'USER', 'Bob Smith', 'USER_EVENT', 'Summary1', 'Detail1', null),
-       (2, 1, 'USER', 'Bob Smith', 'USER_EVENT', 'Summary2', 'Detail2', null),
-       (3, 1, 'USER', 'Bob Smith', 'USER_EVENT', 'Summary3', 'Detail3', null),
-       (4, 2, 'USER', 'Bob Smith', 'USER_EVENT', 'Summary4', 'Detail4', null),
-       (5, 2, 'USER', 'Bob Smith', 'USER_EVENT', 'Summary5', 'Detail5', null);
+values (1, 1, 'USER', 'Test User', 'USER_EVENT', 'Summary1', 'Detail1', null),
+       (2, 1, 'USER', 'Test User', 'USER_EVENT', 'Summary2', 'Detail2', null),
+       (3, 1, 'USER', 'Test User', 'USER_EVENT', 'Summary3', 'Detail3', null),
+       (4, 2, 'USER', 'Test User', 'USER_EVENT', 'Summary4', 'Detail4', null),
+       (5, 2, 'USER', 'Test User', 'USER_EVENT', 'Summary5', 'Detail5', null);
 
 insert into licence_event (id, licence_id, event_type, username, forenames, surname, event_description, event_time)
-values (1, 1, 'CREATED', 'Bob Smith', 'Bob', 'Smith', 'Licence created1', null),
-       (2, 1, 'SUBMITTED', 'Bob Smith', 'Bob', 'Smith', 'Licence submitted1', null),
-       (3, 1, 'CREATED', 'Bob Smith', 'Bob', 'Smith', 'Licence created2', null),
-       (4, 2, 'SUBMITTED', 'Bob Smith', 'Bob', 'Smith', 'Licence submitted2', null),
-       (5, 2, 'SUBMITTED', 'Bob Smith', 'Bob', 'Smith', 'Licence submitted3', null);
+values (1, 1, 'CREATED', 'Test User', 'Test', 'User', 'Licence created1', null),
+       (2, 1, 'SUBMITTED', 'Test User', 'Test', 'User', 'Licence submitted1', null),
+       (3, 1, 'CREATED', 'Test User', 'Test', 'User', 'Licence created2', null),
+       (4, 2, 'SUBMITTED', 'Test User', 'Test', 'User', 'Licence submitted2', null),
+       (5, 2, 'SUBMITTED', 'Test User', 'Test', 'User', 'Licence submitted3', null);
 
 

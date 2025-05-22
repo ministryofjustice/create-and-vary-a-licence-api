@@ -82,8 +82,8 @@ class ComCaseloadServiceTest {
       ManagedCase(
         nomisRecord = Prisoner(
           prisonerNumber = "ABC123",
-          firstName = "Bob",
-          lastName = "Smith",
+          firstName = "Person",
+          lastName = "One",
           dateOfBirth = LocalDate.of(1970, 1, 1),
           conditionalReleaseDate = tenDaysFromNow,
         ),
@@ -114,8 +114,8 @@ class ComCaseloadServiceTest {
       ManagedCase(
         nomisRecord = Prisoner(
           prisonerNumber = "ABC123",
-          firstName = "Bob",
-          lastName = "Smith",
+          firstName = "Person",
+          lastName = "One",
           dateOfBirth = LocalDate.of(1970, 1, 1),
         ),
         cvlFields = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.AP),
@@ -1220,8 +1220,8 @@ class ComCaseloadServiceTest {
     prisoner = Prisoner(
       prisonerNumber = prisonerNumber,
       conditionalReleaseDate = conditionalReleaseDate,
-      firstName = "Bob",
-      lastName = "Smith",
+      firstName = "Person",
+      lastName = "One",
       dateOfBirth = LocalDate.of(1970, 1, 1),
       status = status,
       bookingId = bookingId,

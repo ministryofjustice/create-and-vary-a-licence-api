@@ -367,8 +367,8 @@ class PrisonApproverServiceTest {
       cro = "12345",
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
-      forename = "Bob",
-      surname = "Bloggs",
+      forename = "Person",
+      surname = "One",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
@@ -434,8 +434,8 @@ class PrisonApproverServiceTest {
 
     val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
-      forename = "Bob",
-      surname = "Bloggs",
+      forename = "Person",
+      surname = "One",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       licenceStatus = LicenceStatus.SUBMITTED,
       kind = LicenceKind.CRD,
