@@ -88,6 +88,7 @@
     <ID>TooManyFunctions:CaCaseloadService.kt$CaCaseloadService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
     <ID>TooManyFunctions:ComCaseloadService.kt$ComCaseloadService</ID>
+    <ID>TooManyFunctions:ControllerAdvice.kt$ControllerAdvice</ID>
     <ID>TooManyFunctions:CrdLicence.kt$CrdLicence : Licence</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt$DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt$EligibilityService</ID>

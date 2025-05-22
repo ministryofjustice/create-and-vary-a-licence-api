@@ -7,10 +7,10 @@ private const val OS_PLACES_WIREMOCK_PORT = 8099
 
 class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_WIREMOCK_PORT) {
 
-  fun stubGetAddressesForPostcode(postcode: String) {
+  fun stubGetAddressesForPostcode(postcode: String, offset: Int = 0, maxResults: Int = 50) {
     val json = """{
       "header": {
-        "uri": "https://api.os.uk/search/places/v1/postcode?postcode=$postcode",
+        "uri": "https://api.os.uk/search/places/v1/postcode?postcode=$postcode&offset=$offset&maxresults=$maxResults",
         "query": "query=$postcode",
         "offset": 0,
         "totalresults": 29,
@@ -207,7 +207,7 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     """.trimIndent()
 
     stubFor(
-      WireMock.get(WireMock.urlEqualTo("/postcode?postcode=$postcode&key=$apiKey"))
+      WireMock.get(WireMock.urlEqualTo("/postcode?postcode=$postcode&key=$apiKey&offset=$offset&maxresults=$maxResults"))
         .willReturn(
           WireMock.aResponse().withHeader(
             "Content-Type",
@@ -219,10 +219,10 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     )
   }
 
-  fun stubSearchForAddresses(searchQuery: String) {
+  fun stubSearchForAddresses(searchQuery: String, offset: Int = 0, maxResults: Int = 50) {
     val json = """{
       "header": {
-        "uri": "https://api.os.uk/search/places/v1/find?query=$searchQuery",
+        "uri": "https://api.os.uk/search/places/v1/find?query=$searchQuery&offset=$offset&maxresults=$maxResults",
         "query": "query=$searchQuery",
         "offset": 0,
         "totalresults": 29,
@@ -313,7 +313,7 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     """.trimIndent()
 
     stubFor(
-      WireMock.get(WireMock.urlEqualTo("/find?query=$searchQuery&key=$apiKey"))
+      WireMock.get(WireMock.urlEqualTo("/find?query=$searchQuery&key=$apiKey&offset=$offset&maxresults=$maxResults"))
         .willReturn(
           WireMock.aResponse().withHeader(
             "Content-Type",

@@ -89,6 +89,26 @@ class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
         .isOk
         .expectBody().json(serializedContent("address-by-search-text"), JsonCompareMode.STRICT)
     }
+
+    @Test
+    fun `should return addresses results when paginated`() {
+      // Given
+      val page = 3
+      val pageSize = 20
+      val offset = page * pageSize
+      val url = "$SEARCH_FOR_ADDRESSES_URL?page=$page&pageSize=$pageSize"
+      osPlacesMockServer.stubSearchForAddresses(SEARCH_STRING, offset = offset, maxResults = pageSize)
+
+      // When
+      val result = webTestClient.get()
+        .uri(url)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      result.expectStatus()
+        .isOk
+    }
   }
 
   @Nested
@@ -128,6 +148,26 @@ class AddressSearchResourceIntegrationTest : IntegrationTestBase() {
       result.expectStatus()
         .isOk
         .expectBody().json(serializedContent("address-by-irregular-postcode"), JsonCompareMode.STRICT)
+    }
+
+    @Test
+    fun `should return addresses results when paginated`() {
+      // Given
+      val page = 2
+      val pageSize = 20
+      val offset = page * pageSize
+      val url = "$POSTCODE_SEARCH_FOR_ADDRESSES_URL?page=$page&pageSize=$pageSize"
+      osPlacesMockServer.stubGetAddressesForPostcode(POSTCODE, offset = offset, maxResults = pageSize)
+
+      // When
+      val result = webTestClient.get()
+        .uri(url)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+
+      // Then
+      result.expectStatus()
+        .isOk
     }
   }
 
