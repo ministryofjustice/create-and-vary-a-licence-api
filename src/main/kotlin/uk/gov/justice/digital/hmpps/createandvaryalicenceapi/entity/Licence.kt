@@ -65,10 +65,10 @@ abstract class Licence(
   val prisonCode: String? = null,
   val prisonDescription: String? = null,
   val prisonTelephone: String? = null,
-  val forename: String? = null,
-  val middleNames: String? = null,
-  val surname: String? = null,
-  val dateOfBirth: LocalDate? = null,
+  var forename: String? = null,
+  var middleNames: String? = null,
+  var surname: String? = null,
+  var dateOfBirth: LocalDate? = null,
   override var conditionalReleaseDate: LocalDate? = null,
   override var actualReleaseDate: LocalDate? = null,
   var sentenceStartDate: LocalDate? = null,
@@ -194,6 +194,22 @@ abstract class Licence(
   ) {
     this.appointmentPersonType = appointmentPersonType
     this.appointmentPerson = if (appointmentPersonType == SPECIFIC_PERSON) appointmentPerson else null
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
+
+  fun updatePrisonerDetails(
+    forename: String,
+    middleNames: String?,
+    surname: String,
+    dateOfBirth: LocalDate,
+    staffMember: Staff?,
+  ) {
+    this.forename = forename
+    this.surname = surname
+    this.dateOfBirth = dateOfBirth
+    this.middleNames = middleNames
     this.dateLastUpdated = LocalDateTime.now()
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
