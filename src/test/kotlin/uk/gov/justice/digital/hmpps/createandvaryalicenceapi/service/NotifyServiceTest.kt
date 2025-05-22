@@ -388,7 +388,7 @@ class NotifyServiceTest {
     )
 
     notifyService.sendUnapprovedLicenceEmail(emailContent)
-    verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@mail.com", expectedMap, null)
+    verify(notificationClient).sendEmail(TEMPLATE_ID, "joe.bloggs@test.com", expectedMap, null)
     verify(notificationClient).sendEmail(TEMPLATE_ID, INTERNAL_EMAIL_ADDRESS, expectedMap, null)
   }
 
@@ -535,8 +535,8 @@ class NotifyServiceTest {
 
   private companion object {
     const val TEMPLATE_ID = "xxx-xxx-xxx-xxx"
-    const val EMAIL_ADDRESS = "joe.bloggs@mail.com"
-    const val EMAIL_ADDRESS2 = "joe.bloggs2@mail.com"
+    const val EMAIL_ADDRESS = "joe.bloggs@test.com"
+    const val EMAIL_ADDRESS2 = "joe.bloggs2@test.com"
     const val INTERNAL_EMAIL_ADDRESS = "testemail@probation.gov.uk"
   }
 }

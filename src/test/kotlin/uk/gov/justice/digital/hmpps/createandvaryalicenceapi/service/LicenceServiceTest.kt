@@ -771,7 +771,7 @@ class LicenceServiceTest {
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
       OmuContact(
         prisonCode = aLicenceEntity.prisonCode!!,
-        email = "test@OMU.testing.com",
+        email = "test@test.com",
         dateCreated = LocalDateTime.now(),
       ),
     )
@@ -790,7 +790,7 @@ class LicenceServiceTest {
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(notifyService, times(1)).sendVariationForReApprovalEmail(
-      eq("test@OMU.testing.com"),
+      eq("test@test.com"),
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
@@ -843,7 +843,7 @@ class LicenceServiceTest {
     )
 
     verify(notifyService, times(0)).sendVariationForReApprovalEmail(
-      eq("test@OMU.testing.com"),
+      eq("test@test.com"),
       eq(aLicenceEntity.forename ?: ""),
       eq(aLicenceEntity.surname ?: ""),
       eq(aLicenceEntity.nomsId),
@@ -2081,7 +2081,7 @@ class LicenceServiceTest {
     whenever(omuService.getOmuContactEmail(any())).thenReturn(
       OmuContact(
         prisonCode = aLicenceEntity.prisonCode!!,
-        email = "test@OMU.testing.com",
+        email = "test@test.com",
         dateCreated = LocalDateTime.now(),
       ),
     )
@@ -2089,7 +2089,7 @@ class LicenceServiceTest {
 
     service.editLicence(1L)
     verify(notifyService, times(1)).sendVariationForReApprovalEmail(
-      eq("test@OMU.testing.com"),
+      eq("test@test.com"),
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
