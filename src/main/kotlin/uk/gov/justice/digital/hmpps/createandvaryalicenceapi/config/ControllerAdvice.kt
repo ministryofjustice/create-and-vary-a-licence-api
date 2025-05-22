@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.ResourceAlreadyExistsException
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValidationException
 
@@ -22,6 +23,22 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.DetailedValida
 class ControllerAdvice {
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
+  @ExceptionHandler(HandlerMethodValidationException::class)
+  fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+    val separator = ","
+    val message = e.allErrors.joinToString(separator) { it.defaultMessage?.toString() ?: "" }
+    val developerMessage = e.allErrors.joinToString(separator) { "${it.defaultMessage} ${it.codes?.joinToString(separator)}" }
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = "Validation failure: $message",
+          developerMessage = developerMessage,
+        ),
+      ).also { log.info("Validation exception: {}", e.message) }
   }
 
   @ExceptionHandler(AccessDeniedException::class)
@@ -98,10 +115,10 @@ class ControllerAdvice {
   fun handleRequestUnreadableException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
     log.info("Message not readable exception: {}", e.message)
     return ResponseEntity
-      .status(HttpStatus.BAD_REQUEST)
+      .status(BAD_REQUEST)
       .body(
         ErrorResponse(
-          status = HttpStatus.BAD_REQUEST.value(),
+          status = BAD_REQUEST.value(),
           userMessage = "Bad request: ${e.message}",
           developerMessage = e.message,
         ),
@@ -112,10 +129,10 @@ class ControllerAdvice {
   fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
     return ResponseEntity
-      .status(HttpStatus.BAD_REQUEST)
+      .status(BAD_REQUEST)
       .body(
         ErrorResponse(
-          status = HttpStatus.BAD_REQUEST.value(),
+          status = BAD_REQUEST.value(),
           userMessage = "Validation failure: ${e.message}",
           developerMessage = e.message,
         ),
