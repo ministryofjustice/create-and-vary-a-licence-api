@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ProblemDetail
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -175,7 +174,7 @@ class LicenceOverrideController(
     licenceTypeOverrideService.changeType(licenceId, request.licenceType, request.reason)
   }
 
-  @PatchMapping(value = ["/prisoner-details"])
+  @PostMapping(value = ["/prisoner-details"])
   @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
