@@ -10,7 +10,7 @@ data class VaryApproverCase(
   @Schema(description = "Unique identifier for this licence within the service", example = "99999")
   val licenceId: Long?,
 
-  @Schema(description = "The full name of the person on licence", example = "John Doe")
+  @Schema(description = "The full name of the person on licence", example = "An offender")
   val name: String?,
 
   @Schema(description = "The case reference number (CRN) for the person on this licence", example = "X12444")

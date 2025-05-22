@@ -113,7 +113,7 @@ object TestData {
 
   fun createCrdLicence() = CrdLicence(
     id = 1,
-    typeCode = LicenceType.AP,
+    typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",
@@ -165,7 +165,7 @@ object TestData {
 
   fun createHardStopLicence() = HardStopLicence(
     id = 1,
-    typeCode = LicenceType.AP,
+    typeCode = AP,
     version = "2.1",
     statusCode = LicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",
@@ -219,7 +219,7 @@ object TestData {
 
   fun createVariationLicence() = VariationLicence(
     id = 1,
-    typeCode = LicenceType.AP,
+    typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
     nomsId = "A1234AA",
@@ -266,7 +266,7 @@ object TestData {
 
   fun createHdcLicence() = HdcLicence(
     id = 1,
-    typeCode = LicenceType.AP,
+    typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.IN_PROGRESS,
     nomsId = "A1234AA",
@@ -365,7 +365,7 @@ object TestData {
 
   fun createHdcVariationLicence() = HdcVariationLicence(
     id = 1,
-    typeCode = LicenceType.AP,
+    typeCode = AP,
     version = "1.1",
     statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
     nomsId = "A1234AA",
@@ -506,7 +506,7 @@ object TestData {
 
   fun caseLoadItem() = CaseloadItem(
     cvl = CvlFields(
-      licenceType = LicenceType.AP,
+      licenceType = AP,
       hardStopDate = LocalDate.of(2023, 10, 12),
       hardStopWarningDate = LocalDate.of(2023, 10, 11),
       isInHardStopPeriod = true,
@@ -815,7 +815,7 @@ object TestData {
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     bookingId = 54321,
     dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-    approvedByName = "jim smith",
+    approvedByName = "approver name",
     approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
     licenceVersion = "1.0",
     isReviewNeeded = false,
@@ -830,8 +830,8 @@ object TestData {
 
   fun aPrisoner() = Prisoner(
     prisonerNumber = "AB1234E",
-    firstName = "Gary",
-    lastName = "Pittard",
+    firstName = "First-1",
+    lastName = "Surname-2",
     releaseDate = TEN_DAYS_FROM_NOW,
     status = "INACTIVE OUT",
   )
