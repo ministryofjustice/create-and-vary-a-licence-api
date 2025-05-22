@@ -61,7 +61,7 @@ class HdcServiceTest {
   fun reset() {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
 
     SecurityContextHolder.setContext(securityContext)
@@ -393,7 +393,7 @@ class HdcServiceTest {
     @Test
     fun `update curfew times for a licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val curfewTimes = aUpdatedModelSetOfCurfewTimes
 

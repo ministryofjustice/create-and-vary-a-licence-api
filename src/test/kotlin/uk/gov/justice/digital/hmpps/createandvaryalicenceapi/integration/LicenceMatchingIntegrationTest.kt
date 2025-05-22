@@ -118,7 +118,7 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
     assertThat(result?.size).isEqualTo(1)
     assertThat(result)
       .extracting<Tuple> { tuple(it.licenceId, it.nomisId, it.licenceStatus, it.surname) }
-      .containsExactly(tuple(3L, "C1234CC", LicenceStatus.ACTIVE, "Cookson"))
+      .containsExactly(tuple(3L, "C1234CC", LicenceStatus.ACTIVE, "Three"))
   }
 
   @Test
@@ -149,9 +149,9 @@ class LicenceMatchingIntegrationTest : IntegrationTestBase() {
         tuple(it.licenceId, it.licenceStatus, it.nomisId, it.surname, it.forename, it.prisonCode, it.prisonDescription)
       }
       .contains(
-        tuple(1L, LicenceStatus.SUBMITTED, "A1234AA", "Alda", "Alan", "MDI", "Moorland HMP"),
-        tuple(2L, LicenceStatus.SUBMITTED, "B1234BB", "Bobson", "Bob", "MDI", "Moorland HMP"),
-        tuple(4L, LicenceStatus.APPROVED, "C1234DD", "Harcourt", "Kate", "BMI", "Birmingham HMP"),
+        tuple(1L, LicenceStatus.SUBMITTED, "A1234AA", "One", "Person", "MDI", "Moorland HMP"),
+        tuple(2L, LicenceStatus.SUBMITTED, "B1234BB", "Two", "Person", "MDI", "Moorland HMP"),
+        tuple(4L, LicenceStatus.APPROVED, "C1234DD", "Four", "Person", "BMI", "Birmingham HMP"),
       )
   }
 

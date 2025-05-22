@@ -113,9 +113,9 @@ class OffenderControllerTest {
   @Test
   fun `update offender details`() {
     val body = UpdateOffenderDetailsRequest(
-      forename = "Alex",
-      middleNames = "Brian Cameron",
-      surname = "David-Edgar",
+      forename = "John",
+      middleNames = "Joe Jim",
+      surname = "Bloggs-Doe",
       dateOfBirth = LocalDate.parse("1970-01-01"),
     )
 

@@ -98,9 +98,9 @@ class CaCaseloadServiceTest {
           licenceId = 2,
           licenceStatus = LicenceStatus.IN_PROGRESS,
           nomisId = "A1234AB",
-          forename = "Smith",
-          surname = "Cena",
-          comUsername = "Andy",
+          forename = "Person",
+          surname = "Two",
+          comUsername = "tcom",
         ),
       ),
     )
@@ -110,8 +110,8 @@ class CaCaseloadServiceTest {
         TestData.caseLoadItem().copy(
           prisoner = Prisoner(
             prisonerNumber = "A1234AB",
-            firstName = "Smith",
-            lastName = "Cena",
+            firstName = "Person",
+            lastName = "Two",
             legalStatus = "SENTENCED",
             dateOfBirth = LocalDate.of(1985, 12, 28),
             mostSeriousOffence = "Robbery",
@@ -125,8 +125,8 @@ class CaCaseloadServiceTest {
           aPrisonerSearchPrisoner,
           aPrisonerSearchPrisoner.copy(
             prisonerNumber = "A1234AB",
-            firstName = "Smith",
-            lastName = "Cena",
+            firstName = "Person",
+            lastName = "Two",
             legalStatus = "SENTENCED",
             dateOfBirth = LocalDate.of(1985, 12, 28),
             mostSeriousOffence = "Robbery",
@@ -174,7 +174,7 @@ class CaCaseloadServiceTest {
         assertThat(prisonOmuCaseload).hasSize(1)
 
         with(prisonOmuCaseload.first()) {
-          assertThat(name).isEqualTo("Phil Cena")
+          assertThat(name).isEqualTo("Person Four")
           assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
         }
@@ -254,15 +254,15 @@ class CaCaseloadServiceTest {
     inner class `apply Search` {
       @Test
       fun `should successfully search by name`() {
-        assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "Smith")).isEqualTo(
+        assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "Two")).isEqualTo(
           listOf(
             TestData.caCase().copy(
               licenceId = 2,
               prisonerNumber = "A1234AB",
-              name = "Smith Cena",
+              name = "Person Two",
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
-              probationPractitioner = ProbationPractitioner(staffUsername = "Andy"),
+              probationPractitioner = ProbationPractitioner(staffUsername = "tcom"),
             ),
           ),
         )
@@ -273,7 +273,7 @@ class CaCaseloadServiceTest {
         assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "A1234AA")).isEqualTo(
           listOf(
             TestData.caCase().copy(
-              name = "John Cena",
+              name = "Person One",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
             ),
@@ -290,15 +290,15 @@ class CaCaseloadServiceTest {
               licenceId = 2,
               licenceStatus = LicenceStatus.IN_PROGRESS,
               nomisId = "A1234AB",
-              forename = "Smith",
-              surname = "Cena",
+              forename = "Person",
+              surname = "Two",
             ),
           ),
         )
         assertThat(service.getPrisonOmuCaseload(setOf("BAI"), "com")).isEqualTo(
           listOf(
             TestData.caCase().copy(
-              name = "John Cena",
+              name = "Person One",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(
                 staffCode = "AB00001",
@@ -310,7 +310,7 @@ class CaCaseloadServiceTest {
             TestData.caCase().copy(
               licenceId = 2,
               prisonerNumber = "A1234AB",
-              name = "Smith Cena",
+              name = "Person Two",
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(
@@ -330,8 +330,8 @@ class CaCaseloadServiceTest {
       whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
-            forename = "Steve",
-            surname = "Cena",
+            forename = "Person",
+            surname = "Three",
             nomisId = "AB1234E",
             licenceId = 2,
             licenceType = LicenceType.PSS,
@@ -349,8 +349,8 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caseLoadItem().copy(
             prisoner = Prisoner(
-              firstName = "Steve",
-              lastName = "Cena",
+              firstName = "Person",
+              lastName = "Three",
               prisonerNumber = "AB1234E",
               conditionalReleaseDate = twoMonthsFromNow,
               confirmedReleaseDate = twoDaysFromNow,
@@ -373,8 +373,8 @@ class CaCaseloadServiceTest {
         PageImpl(
           listOf(
             aPrisonerSearchPrisoner.copy(
-              firstName = "Steve",
-              lastName = "Cena",
+              firstName = "Person",
+              lastName = "Three",
               prisonerNumber = "AB1234E",
               conditionalReleaseDate = twoMonthsFromNow,
               confirmedReleaseDate = twoDaysFromNow,
@@ -392,7 +392,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should query for cases being released within 4 weeks`() {
-      service.getPrisonOmuCaseload(setOf("BAI"), "Smith")
+      service.getPrisonOmuCaseload(setOf("BAI"), "Five")
       verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(
         LocalDate.now(clock),
         LocalDate.now(clock).plusWeeks(4),
@@ -406,8 +406,8 @@ class CaCaseloadServiceTest {
       whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
-            forename = "Steve",
-            surname = "Cena",
+            forename = "Person",
+            surname = "Three",
             nomisId = "AB1234E",
             licenceId = 2,
             licenceType = LicenceType.PSS,
@@ -426,8 +426,8 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caseLoadItem().copy(
             prisoner = Prisoner(
-              firstName = "Steve",
-              lastName = "Cena",
+              firstName = "Person",
+              lastName = "Three",
               prisonerNumber = "AB1234E",
               conditionalReleaseDate = twoMonthsFromNow,
               confirmedReleaseDate = twoDaysFromNow,
@@ -450,8 +450,8 @@ class CaCaseloadServiceTest {
         PageImpl(
           listOf(
             aPrisonerSearchPrisoner.copy(
-              firstName = "Steve",
-              lastName = "Cena",
+              firstName = "Person",
+              lastName = "Three",
               prisonerNumber = "AB1234E",
               conditionalReleaseDate = twoMonthsFromNow,
               confirmedReleaseDate = twoDaysFromNow,
@@ -468,7 +468,7 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caCase().copy(
             licenceId = 2,
-            name = "Steve Cena",
+            name = "Person Three",
             prisonerNumber = "AB1234E",
             probationPractitioner = ProbationPractitioner(
               staffCode = "AB00001",
@@ -501,9 +501,9 @@ class CaCaseloadServiceTest {
             licenceId = 2,
             licenceStatus = LicenceStatus.IN_PROGRESS,
             nomisId = "A1234AB",
-            forename = "Smith",
-            surname = "Cena",
-            comUsername = "Andy",
+            forename = "Person",
+            surname = "Two",
+            comUsername = "tcom",
             conditionalReleaseDate = tenDaysFromNow,
             actualReleaseDate = twoDaysFromNow,
             licenceStartDate = twoDaysFromNow,
@@ -516,8 +516,8 @@ class CaCaseloadServiceTest {
           TestData.caseLoadItem().copy(
             prisoner = Prisoner(
               prisonerNumber = "A1234AB",
-              firstName = "Smith",
-              lastName = "Cena",
+              firstName = "Person",
+              lastName = "Two",
               legalStatus = "SENTENCED",
               dateOfBirth = LocalDate.of(1985, 12, 28),
               mostSeriousOffence = "Robbery",
@@ -531,8 +531,8 @@ class CaCaseloadServiceTest {
           TestData.caseLoadItem().copy(
             prisoner = Prisoner(
               prisonerNumber = "A1234AB",
-              firstName = "Smith",
-              lastName = "Cena",
+              firstName = "Person",
+              lastName = "Two",
               legalStatus = "SENTENCED",
               dateOfBirth = LocalDate.of(1985, 12, 28),
               mostSeriousOffence = "Robbery",
@@ -545,7 +545,7 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caCase().copy(
             licenceId = 2,
-            name = "Smith Cena",
+            name = "Person Two",
             prisonerNumber = "A1234AB",
             releaseDate = twoDaysFromNow,
             releaseDateLabel = "Confirmed release date",
@@ -553,12 +553,12 @@ class CaCaseloadServiceTest {
               staffCode = null,
               name = null,
               staffIdentifier = null,
-              staffUsername = "Andy",
+              staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
           ),
           TestData.caCase().copy(
-            name = "John Cena",
+            name = "Person One",
             releaseDate = tenDaysFromNow,
             releaseDateLabel = "CRD",
             probationPractitioner = ProbationPractitioner(
@@ -585,8 +585,8 @@ class CaCaseloadServiceTest {
               ),
               aPrisonerSearchPrisoner.copy(
                 prisonerNumber = "A1234AB",
-                firstName = "Smith",
-                lastName = "Cena",
+                firstName = "Person",
+                lastName = "Two",
                 legalStatus = "SENTENCED",
                 paroleEligibilityDate = twoDaysFromNow,
                 dateOfBirth = LocalDate.of(1985, 12, 28),
@@ -738,7 +738,7 @@ class CaCaseloadServiceTest {
             TestData.caCase().copy(
               kind = null,
               licenceId = null,
-              name = "Phil Cena",
+              name = "Person Four",
               prisonerNumber = "A1234AA",
               releaseDate = twoDaysFromNow,
               licenceStatus = LicenceStatus.NOT_STARTED,
@@ -802,9 +802,9 @@ class CaCaseloadServiceTest {
             licenceId = 2,
             licenceStatus = LicenceStatus.IN_PROGRESS,
             nomisId = "A1234AB",
-            forename = "Smith",
-            surname = "Cena",
-            comUsername = "Andy",
+            forename = "Person",
+            surname = "Two",
+            comUsername = "tcom",
             licenceStartDate = tenDaysFromNow,
             actualReleaseDate = tenDaysFromNow,
           ),
@@ -812,9 +812,9 @@ class CaCaseloadServiceTest {
             licenceId = 3,
             licenceStatus = LicenceStatus.IN_PROGRESS,
             nomisId = "A1234AC",
-            forename = "Andy",
-            surname = "Smith",
-            comUsername = "Andy",
+            forename = "Person",
+            surname = "Six",
+            comUsername = "tcom",
             licenceStartDate = twoMonthsFromNow,
             actualReleaseDate = twoMonthsFromNow,
           ),
@@ -822,9 +822,9 @@ class CaCaseloadServiceTest {
             licenceId = 4,
             licenceStatus = LicenceStatus.IN_PROGRESS,
             nomisId = "A1234AD",
-            forename = "John",
-            surname = "Smith",
-            comUsername = "Andy",
+            forename = "Person",
+            surname = "Five",
+            comUsername = "tcom",
             licenceStartDate = oneDayFromNow,
             actualReleaseDate = oneDayFromNow,
           ),
@@ -836,7 +836,7 @@ class CaCaseloadServiceTest {
         listOf(
           TestData.caCase().copy(
             licenceId = 3,
-            name = "Andy Smith",
+            name = "Person Six",
             prisonerNumber = "A1234AC",
             releaseDate = twoMonthsFromNow,
             tabType = null,
@@ -845,13 +845,13 @@ class CaCaseloadServiceTest {
               staffCode = null,
               name = null,
               staffIdentifier = null,
-              staffUsername = "Andy",
+              staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
           ),
           TestData.caCase().copy(
             licenceId = 2,
-            name = "Smith Cena",
+            name = "Person Two",
             prisonerNumber = "A1234AB",
             releaseDate = tenDaysFromNow,
             tabType = null,
@@ -860,13 +860,13 @@ class CaCaseloadServiceTest {
               staffCode = null,
               name = null,
               staffIdentifier = null,
-              staffUsername = "Andy",
+              staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
           ),
           TestData.caCase().copy(
             licenceId = 1,
-            name = "John Cena",
+            name = "Person One",
             prisonerNumber = "A1234AA",
             releaseDate = twoDaysFromNow,
             tabType = null,
@@ -882,7 +882,7 @@ class CaCaseloadServiceTest {
           TestData.caCase().copy(
             licenceId = 4,
             prisonerNumber = "A1234AD",
-            name = "John Smith",
+            name = "Person Five",
             releaseDate = oneDayFromNow,
             tabType = null,
             nomisLegalStatus = null,
@@ -890,7 +890,7 @@ class CaCaseloadServiceTest {
               staffCode = null,
               name = null,
               staffIdentifier = null,
-              staffUsername = "Andy",
+              staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
           ),
@@ -916,7 +916,7 @@ class CaCaseloadServiceTest {
       listOf(
         TestData.caCase().copy(
           licenceId = 1,
-          name = "John Cena",
+          name = "Person One",
           prisonerNumber = "A1234AA",
           releaseDate = oneDayFromNow,
           tabType = null,
@@ -953,8 +953,8 @@ class CaCaseloadServiceTest {
       licenceType = LicenceType.AP,
       licenceStatus = LicenceStatus.IN_PROGRESS,
       nomisId = "A1234AA",
-      forename = "John",
-      surname = "Cena",
+      forename = "Person",
+      surname = "One",
       crn = "X12345",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       prisonCode = "BAI",
@@ -978,7 +978,7 @@ class CaCaseloadServiceTest {
       comUsername = "com-user",
       bookingId = 54321,
       dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
-      approvedByName = "jim smith",
+      approvedByName = "Approver Name",
       approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
       licenceVersion = "1.0",
       isReviewNeeded = false,
@@ -1030,9 +1030,9 @@ class CaCaseloadServiceTest {
       locationDescription = null,
       prisonName = null,
       bookNumber = null,
-      firstName = "PHIL",
+      firstName = "PERSON",
       middleNames = null,
-      lastName = "CENA",
+      lastName = "FOUR",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDateOverrideDate = null,
       sentenceStartDate = null,

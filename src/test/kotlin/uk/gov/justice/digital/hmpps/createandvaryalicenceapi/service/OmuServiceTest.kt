@@ -28,7 +28,7 @@ class OmuServiceTest {
   @Test
   fun `gets existing OMU email`() {
     val expectedOmuContact =
-      OmuContact(email = "test.omu@testing.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
+      OmuContact(email = "test.omu@test.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
     whenever(omuContactRepository.findByPrisonCode("FPI")).thenReturn(expectedOmuContact)
     val result = omuService.getOmuContactEmail("FPI")
 
@@ -51,9 +51,9 @@ class OmuServiceTest {
   @Test
   fun `updates existing OMU email`() {
     val expectedOmuContact =
-      OmuContact(email = "test.omu@testing.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
+      OmuContact(email = "test.omu@test.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
     whenever(omuContactRepository.saveAndFlush(any())).thenReturn(expectedOmuContact)
-    val omuContactRequest = UpdateOmuEmailRequest(email = "test.omu@testing.com")
+    val omuContactRequest = UpdateOmuEmailRequest(email = "test.omu@test.com")
 
     val result = omuService.updateOmuEmail("FPI", omuContactRequest)
 
@@ -65,10 +65,10 @@ class OmuServiceTest {
   @Test
   fun `create new OMU email if one does not exist`() {
     val expectedOmuContact =
-      OmuContact(email = "test.omu@testing.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
+      OmuContact(email = "test.omu@test.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
     whenever(omuContactRepository.findByPrisonCode("FPI")).thenReturn(null)
     whenever(omuContactRepository.saveAndFlush(any())).thenReturn(expectedOmuContact)
-    val omuContactRequest = UpdateOmuEmailRequest(email = "test.omu@testing.com")
+    val omuContactRequest = UpdateOmuEmailRequest(email = "test.omu@test.com")
 
     val result = omuService.updateOmuEmail("FPI", omuContactRequest)
 
@@ -80,7 +80,7 @@ class OmuServiceTest {
   @Test
   fun `deletes OMU email if one exists`() {
     val expectedOmuContact =
-      OmuContact(email = "test.omu@testing.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
+      OmuContact(email = "test.omu@test.com", dateCreated = LocalDateTime.now(), prisonCode = "FPI")
     whenever(omuContactRepository.findByPrisonCode("FPI")).thenReturn(expectedOmuContact)
 
     omuService.deleteOmuEmail("FPI")

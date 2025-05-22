@@ -57,7 +57,7 @@ class OmuContactControllerTest {
 
   @Test
   fun `get OMU email contact`() {
-    val expectedOmuEmail = OmuContact(email = "test@testing.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
+    val expectedOmuEmail = OmuContact(email = "test@test.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
     whenever(omuService.getOmuContactEmail("LEI")).thenReturn(expectedOmuEmail)
 
     val request = get("/omu/LEI/contact/email")
@@ -71,9 +71,9 @@ class OmuContactControllerTest {
 
   @Test
   fun `update OMU email contact`() {
-    val body = UpdateOmuEmailRequest(email = "test@testing.com")
+    val body = UpdateOmuEmailRequest(email = "test@test.com")
 
-    val expectedOmuEmail = OmuContact(email = "test@testing.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
+    val expectedOmuEmail = OmuContact(email = "test@test.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
     whenever(omuService.updateOmuEmail("LEI", body)).thenReturn(expectedOmuEmail)
 
     val request = put("/omu/LEI/contact/email")
@@ -88,7 +88,7 @@ class OmuContactControllerTest {
 
   @Test
   fun `delete OMU email contact`() {
-    val expectedOmuEmail = OmuContact(email = "test@testing.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
+    val expectedOmuEmail = OmuContact(email = "test@test.com", prisonCode = "LEI", dateCreated = LocalDateTime.now())
     whenever(omuService.getOmuContactEmail("LEI")).thenReturn(expectedOmuEmail)
 
     val request = delete("/omu/LEI/contact/email")

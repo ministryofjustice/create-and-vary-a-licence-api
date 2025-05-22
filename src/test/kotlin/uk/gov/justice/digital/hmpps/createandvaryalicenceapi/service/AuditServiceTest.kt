@@ -43,7 +43,7 @@ class AuditServiceTest {
   fun reset() {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
 
     SecurityContextHolder.setContext(securityContext)
@@ -148,7 +148,7 @@ class AuditServiceTest {
       mapOf(
         "field" to "appointmentPerson",
         "previousValue" to "Joe Bloggs",
-        "newValue" to "Bob Robertson",
+        "newValue" to "John Doe",
       ),
       aCom,
     )
@@ -166,7 +166,7 @@ class AuditServiceTest {
       mapOf(
         "field" to "appointmentPerson",
         "previousValue" to "Joe Bloggs",
-        "newValue" to "Bob Robertson",
+        "newValue" to "John Doe",
       ),
     )
   }
@@ -846,7 +846,7 @@ class AuditServiceTest {
 
     val aCom = CommunityOffenderManager(
       staffIdentifier = 2000,
-      username = "smills",
+      username = "tcom",
       email = "testemail@probation.gov.uk",
       firstName = "X",
       lastName = "Y",

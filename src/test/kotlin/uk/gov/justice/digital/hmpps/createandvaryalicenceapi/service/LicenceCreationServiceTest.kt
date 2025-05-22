@@ -116,14 +116,14 @@ class LicenceCreationServiceTest {
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
 
-      whenever(authentication.name).thenReturn("smills")
+      whenever(authentication.name).thenReturn("tcom")
       whenever(securityContext.authentication).thenReturn(authentication)
       SecurityContextHolder.setContext(securityContext)
 
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(com)
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
@@ -369,7 +369,7 @@ class LicenceCreationServiceTest {
         .isEqualTo(
           listOf(
             -1L,
-            "smills",
+            "tcom",
             "X Y",
             "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
           ),
@@ -381,7 +381,7 @@ class LicenceCreationServiceTest {
           listOf(
             -1L,
             LicenceEventType.CREATED,
-            "smills",
+            "tcom",
             "X",
             "Y",
             "Licence created for ${aPrisonerSearchResult.firstName} ${aPrisonerSearchResult.lastName}",
@@ -539,7 +539,7 @@ class LicenceCreationServiceTest {
     fun `service throws an error if no user found for this person`() {
       val expectedCom = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
@@ -551,7 +551,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(expectedCom)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
         service.createLicence(prisonNumber)
@@ -559,7 +559,7 @@ class LicenceCreationServiceTest {
 
       assertThat(exception)
         .isInstanceOf(IllegalStateException::class.java)
-        .hasMessage("Staff with username smills not found")
+        .hasMessage("Staff with username tcom not found")
 
       verify(licenceRepository, times(0)).saveAndFlush(any())
       verify(standardConditionRepository, times(0)).saveAllAndFlush(anyList())
@@ -1036,7 +1036,7 @@ class LicenceCreationServiceTest {
     fun `service throws an error if no user found for this person`() {
       val expectedCom = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
@@ -1081,14 +1081,14 @@ class LicenceCreationServiceTest {
       val authentication = mock<Authentication>()
       val securityContext = mock<SecurityContext>()
 
-      whenever(authentication.name).thenReturn("smills")
+      whenever(authentication.name).thenReturn("tcom")
       whenever(securityContext.authentication).thenReturn(authentication)
       SecurityContextHolder.setContext(securityContext)
 
       whenever(prisonApiClient.getPrisonInformation(any())).thenReturn(somePrisonInformation)
 
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(com)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(com)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(com)
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(aCommunityManager)
 
       whenever(additionalConditionRepository.saveAllAndFlush(anyList())).thenAnswer { it.arguments[0] }
@@ -1278,7 +1278,7 @@ class LicenceCreationServiceTest {
 
     val com = CommunityOffenderManager(
       staffIdentifier = 2000,
-      username = "smills",
+      username = "tcom",
       email = "testemail@probation.gov.uk",
       firstName = "X",
       lastName = "Y",

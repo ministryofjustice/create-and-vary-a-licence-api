@@ -82,8 +82,8 @@ class ComCaseloadServiceTest {
       ManagedCase(
         nomisRecord = Prisoner(
           prisonerNumber = "ABC123",
-          firstName = "Bob",
-          lastName = "Smith",
+          firstName = "Person",
+          lastName = "One",
           dateOfBirth = LocalDate.of(1970, 1, 1),
           conditionalReleaseDate = tenDaysFromNow,
         ),
@@ -114,8 +114,8 @@ class ComCaseloadServiceTest {
       ManagedCase(
         nomisRecord = Prisoner(
           prisonerNumber = "ABC123",
-          firstName = "Bob",
-          lastName = "Smith",
+          firstName = "Person",
+          lastName = "One",
           dateOfBirth = LocalDate.of(1970, 1, 1),
         ),
         cvlFields = CvlFields(isInHardStopPeriod = true, licenceType = LicenceType.AP),
@@ -334,11 +334,11 @@ class ComCaseloadServiceTest {
     val managedOffenders = listOf(
       ManagedOffenderCrn(
         crn = "X12348",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
 
@@ -389,7 +389,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
           licenceExpiryDate = elevenDaysFromNow,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
           licenceStartDate = LocalDate.now().minusDays(2),
         ),
         createLicenceSummary(
@@ -399,7 +399,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
           licenceExpiryDate = elevenDaysFromNow,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -409,9 +409,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
       ),
@@ -426,7 +426,7 @@ class ComCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.SUBMITTED,
       expectedLicenceType = LicenceType.AP_PSS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
     )
   }
 
@@ -525,7 +525,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP_PSS,
           licenceStatus = LicenceStatus.SUBMITTED,
           licenceExpiryDate = elevenDaysFromNow,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
           licenceStartDate = elevenDaysFromNow,
         ),
       ),
@@ -534,9 +534,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
       ),
@@ -577,7 +577,7 @@ class ComCaseloadServiceTest {
       expectedReleaseDate = elevenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
-        name = "Sherlock Holmes",
+        name = "John Doe",
       ),
     )
   }
@@ -593,7 +593,7 @@ class ComCaseloadServiceTest {
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
 
@@ -660,7 +660,7 @@ class ComCaseloadServiceTest {
       expectedReleaseDate = tenDaysFromNow,
       expectedProbationPractitioner = ProbationPractitioner(
         staffCode = "X54321",
-        name = "Sherlock Holmes",
+        name = "John Doe",
       ),
     )
   }
@@ -676,7 +676,7 @@ class ComCaseloadServiceTest {
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
 
@@ -747,7 +747,7 @@ class ComCaseloadServiceTest {
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
 
@@ -829,7 +829,7 @@ class ComCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
         ),
       ),
     )
@@ -837,9 +837,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
       ),
@@ -853,7 +853,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
     )
   }
 
@@ -898,7 +898,7 @@ class ComCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
         ),
         createLicenceSummary(
           crn = "X12348",
@@ -906,7 +906,7 @@ class ComCaseloadServiceTest {
           kind = LicenceKind.CRD,
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
         ),
       ),
     )
@@ -914,9 +914,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
       ),
@@ -930,7 +930,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
     )
   }
 
@@ -977,7 +977,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceStartDate = tenDaysFromNow,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
           isReviewNeeded = true,
         ),
       ),
@@ -986,9 +986,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
       ),
@@ -1004,7 +1004,7 @@ class ComCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
       expectedReviewNeeded = true,
     )
   }
@@ -1020,7 +1020,7 @@ class ComCaseloadServiceTest {
       ),
       ManagedOffenderCrn(
         crn = "X12349",
-        staff = StaffDetail(name = Name(forename = "Sherlock", surname = "Holmes"), code = "X54321"),
+        staff = StaffDetail(name = Name(forename = "John", surname = "Doe"), code = "X54321"),
       ),
     )
 
@@ -1072,7 +1072,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
           licenceExpiryDate = elevenDaysFromNow,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
       ),
@@ -1081,9 +1081,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
         User(
@@ -1115,7 +1115,7 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
     )
   }
 
@@ -1168,7 +1168,7 @@ class ComCaseloadServiceTest {
           licenceType = LicenceType.AP,
           licenceStatus = LicenceStatus.ACTIVE,
           licenceExpiryDate = elevenDaysFromNow,
-          comUsername = "sherlockholmes",
+          comUsername = "johndoe",
           licenceStartDate = LocalDate.now(),
           isReviewNeeded = true,
         ),
@@ -1178,9 +1178,9 @@ class ComCaseloadServiceTest {
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
         User(
-          username = "sherlockholmes",
+          username = "johndoe",
           code = "X54321",
-          name = Name(forename = "Sherlock", surname = "Holmes"),
+          name = Name(forename = "John", surname = "Doe"),
           teams = emptyList(),
         ),
       ),
@@ -1196,7 +1196,7 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedReleaseDate = LocalDate.now(),
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "Sherlock Holmes"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
       expectedReviewNeeded = true,
     )
   }
@@ -1220,8 +1220,8 @@ class ComCaseloadServiceTest {
     prisoner = Prisoner(
       prisonerNumber = prisonerNumber,
       conditionalReleaseDate = conditionalReleaseDate,
-      firstName = "Bob",
-      lastName = "Smith",
+      firstName = "Person",
+      lastName = "One",
       dateOfBirth = LocalDate.of(1970, 1, 1),
       status = status,
       bookingId = bookingId,

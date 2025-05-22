@@ -28,7 +28,7 @@ class SendNeedsApprovalReminderServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -46,7 +46,7 @@ class SendNeedsApprovalReminderServiceTest {
         override fun getSurname() = "smith"
         override fun getComFirstName() = "ComF"
         override fun getComLastName() = "ComL"
-        override fun getComEmail() = "com@gmail.com"
+        override fun getComEmail() = "com@test.com"
       },
     )
 
@@ -57,7 +57,7 @@ class SendNeedsApprovalReminderServiceTest {
         surname = "smith",
         comFirstName = "ComF",
         comLastName = "ComL",
-        comEmail = "com@gmail.com",
+        comEmail = "com@test.com",
       ),
     )
 

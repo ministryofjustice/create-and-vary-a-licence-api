@@ -29,7 +29,7 @@ data class AuditEvent(
 
   @Schema(
     description = "The full name of the person who performed this auditable event, or SYSTEM if an automated event.",
-    example = "Robert Mortimer",
+    example = "Joe Bloggs",
   )
   val fullName: String? = "SYSTEM",
 

@@ -26,9 +26,9 @@ class SendNeedsApprovalReminderIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     val expectedUnapprovedLicences = listOf(
-      UnapprovedLicence("H598679", "prisoner", "two", "Brian", "DDD", "testDDD@probation.gov.uk"),
-      UnapprovedLicence("Z265290", "prisoner", "three", "Brian", "BBB", "testBBB@probation.gov.uk"),
-      UnapprovedLicence("A123456", "prisoner", "six", "Brian", "BBB", "testBBB@probation.gov.uk"),
+      UnapprovedLicence("H598679", "Person", "Two", "Com", "DDD", "testDDD@probation.gov.uk"),
+      UnapprovedLicence("Z265290", "Person", "Three", "Com", "BBB", "testBBB@probation.gov.uk"),
+      UnapprovedLicence("A123456", "Person", "Six", "Com", "BBB", "testBBB@probation.gov.uk"),
     )
     verify(notifyService).sendUnapprovedLicenceEmail(expectedUnapprovedLicences)
   }

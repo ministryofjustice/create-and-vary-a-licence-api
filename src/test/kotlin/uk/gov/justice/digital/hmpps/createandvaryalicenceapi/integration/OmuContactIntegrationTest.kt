@@ -14,7 +14,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
   fun `Get forbidden (403) when incorrect roles are supplied`() {
     val result = webTestClient.put()
       .uri("/omu/FPI/contact/email")
-      .bodyValue(UpdateOmuEmailRequest(email = "test@testing.com"))
+      .bodyValue(UpdateOmuEmailRequest(email = "test@test.com"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
       .exchange()
@@ -62,7 +62,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
   fun `query for creating new OMU email address`() {
     webTestClient.put()
       .uri("/omu/FPI/contact/email")
-      .bodyValue(UpdateOmuEmailRequest(email = "test@testing.com"))
+      .bodyValue(UpdateOmuEmailRequest(email = "test@test.com"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
@@ -76,7 +76,7 @@ class OmuContactIntegrationTest : IntegrationTestBase() {
   fun `query for updating new OMU email address`() {
     webTestClient.put()
       .uri("/omu/FPI/contact/email")
-      .bodyValue(UpdateOmuEmailRequest(email = "test@testing.com"))
+      .bodyValue(UpdateOmuEmailRequest(email = "test@test.com"))
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()

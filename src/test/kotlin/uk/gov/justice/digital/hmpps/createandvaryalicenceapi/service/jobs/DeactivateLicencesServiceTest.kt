@@ -47,7 +47,7 @@ class DeactivateLicencesServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -102,8 +102,8 @@ class DeactivateLicencesServiceTest {
       .isEqualTo(
         listOf(
           1L,
-          "smills",
-          "smills",
+          "tcom",
+          "tcom",
           AuditEventType.SYSTEM_EVENT,
           "Licence deactivated automatically as it passed release date for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
           "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode} status ${LicenceStatus.INACTIVE} version ${aLicenceEntity.version}",
@@ -116,9 +116,9 @@ class DeactivateLicencesServiceTest {
         listOf(
           1L,
           LicenceEventType.INACTIVE,
-          "smills",
-          "smills",
-          "smills",
+          "tcom",
+          "tcom",
+          "tcom",
           "Licence deactivated automatically as it passed release date for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )

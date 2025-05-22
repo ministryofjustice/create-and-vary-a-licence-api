@@ -74,7 +74,7 @@ class LicenceConditionServiceTest {
   fun reset() {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     whenever(policyService.getConfigForCondition(any(), any())).thenReturn(CONDITION_CONFIG)
     whenever(conditionFormatter.format(any(), any())).thenReturn("expanded text")
@@ -96,7 +96,7 @@ class LicenceConditionServiceTest {
     fun `update standard conditions for an individual licence`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
       whenever(policyService.currentPolicy()).thenReturn(aPolicy)
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val apConditions = listOf(
         StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
@@ -166,7 +166,7 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       service.deleteAdditionalCondition(1L, 2)
 
@@ -206,7 +206,7 @@ class LicenceConditionServiceTest {
         ),
       )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       service.deleteConditions(licenceEntity, listOf(2, 3), listOf(1, 2), listOf(1, 3))
 
@@ -254,7 +254,7 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       service.deleteAdditionalConditionsByCode(1L, DeleteAdditionalConditionsByCodeRequest(listOf("code2")))
 
@@ -288,7 +288,7 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       service.deleteAdditionalConditionsByCode(1L, DeleteAdditionalConditionsByCodeRequest(listOf("code2", "code1")))
 
@@ -363,7 +363,7 @@ class LicenceConditionServiceTest {
             ),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val request = AdditionalConditionsRequest(
         additionalConditions = listOf(
@@ -428,7 +428,7 @@ class LicenceConditionServiceTest {
         AllAdditionalConditions(mapOf("1.0" to mapOf(policyApCondition.code to policyApCondition))),
       )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val request = AddAdditionalConditionRequest(
         conditionCode = "code",
@@ -481,7 +481,7 @@ class LicenceConditionServiceTest {
     @Test
     fun `update bespoke conditions persists multiple entities`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val bespokeEntities = listOf(
         BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),
@@ -526,7 +526,7 @@ class LicenceConditionServiceTest {
           ),
         ),
       )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       service.updateBespokeConditions(1L, BespokeConditionRequest())
 
@@ -642,7 +642,7 @@ class LicenceConditionServiceTest {
             anAdditionalConditionEntity.copy(),
           ),
         )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
@@ -702,7 +702,7 @@ class LicenceConditionServiceTest {
           ),
         )
 
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val request = UpdateAdditionalConditionDataRequest(
         data = listOf(
@@ -740,7 +740,7 @@ class LicenceConditionServiceTest {
           ),
         ),
       )
-      whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
       val bespokeEntities = listOf(
         BespokeCondition(id = -1L, licence = aLicenceEntity, conditionSequence = 1, conditionText = "Condition 2"),

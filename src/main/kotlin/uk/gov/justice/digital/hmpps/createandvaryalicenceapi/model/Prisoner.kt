@@ -19,13 +19,13 @@ data class Prisoner(
   @get:Schema(description = "Book Number", example = "38412A")
   val bookNumber: String? = null,
 
-  @get:Schema(required = true, description = "First Name", example = "Robert")
+  @get:Schema(required = true, description = "First Name", example = "Joe")
   val firstName: String? = null,
 
   @get:Schema(description = "Middle Names", example = "John James")
   val middleNames: String? = null,
 
-  @get:Schema(required = true, description = "Last name", example = "Larsen")
+  @get:Schema(required = true, description = "Last name", example = "Bloggs")
   val lastName: String? = null,
 
   @get:Schema(required = true, description = "Date of Birth", example = "1975-04-02")

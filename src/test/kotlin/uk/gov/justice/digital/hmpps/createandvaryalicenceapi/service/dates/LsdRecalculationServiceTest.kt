@@ -43,7 +43,7 @@ class LsdRecalculationServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -172,14 +172,14 @@ class LsdRecalculationServiceTest {
       .isEqualTo(
         listOf(
           "ID 1 type AP status IN_PROGRESS version 1.1",
-          "Licence Start Date recalculated from 2021-10-20 to 2021-10-22 for Bob Mortimer",
+          "Licence Start Date recalculated from 2021-10-20 to 2021-10-22 for Person One",
         ),
       )
     assertThat(auditCaptor.allValues[1]).extracting("detail", "summary")
       .isEqualTo(
         listOf(
           "ID 3 type AP status IN_PROGRESS version 1.1",
-          "Licence Start Date recalculated from 2021-10-23 to 2021-10-22 for Bob Mortimer",
+          "Licence Start Date recalculated from 2021-10-23 to 2021-10-22 for Person One",
         ),
       )
   }
@@ -221,8 +221,8 @@ class LsdRecalculationServiceTest {
       cro = "12345",
       prisonCode = "MDI",
       prisonDescription = "Moorland (HMP)",
-      forename = "Bob",
-      surname = "Mortimer",
+      forename = "Person",
+      surname = "One",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
@@ -244,14 +244,14 @@ class LsdRecalculationServiceTest {
       standardConditions = emptyList(),
       responsibleCom = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
       ),
       createdBy = CommunityOffenderManager(
         staffIdentifier = 2000,
-        username = "smills",
+        username = "tcom",
         email = "testemail@probation.gov.uk",
         firstName = "X",
         lastName = "Y",
