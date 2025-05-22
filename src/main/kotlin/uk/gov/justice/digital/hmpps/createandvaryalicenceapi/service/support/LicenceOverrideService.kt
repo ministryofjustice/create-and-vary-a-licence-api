@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicenceDatesRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.OverrideLicencePrisonerDetailsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -77,8 +78,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
-        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
+        username = staffMember?.username ?: Licence.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
         summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason",
       ),
     )
@@ -87,7 +88,7 @@ class LicenceOverrideService(
       LicenceEvent(
         licenceId = licence.id,
         username = username,
-        eventType = LicenceStatus.Companion.lookupLicenceEventByStatus(newStatus),
+        eventType = LicenceStatus.lookupLicenceEventByStatus(newStatus),
         eventDescription = reason,
       ),
     )
@@ -166,9 +167,47 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
-        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
+        username = staffMember?.username ?: Licence.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
         summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
+      ),
+    )
+  }
+
+  @Transactional
+  fun changePrisonerDetails(licenceId: Long, request: OverrideLicencePrisonerDetailsRequest) {
+    val licence: Licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    licence.updatePrisonerDetails(
+      forename = request.forename,
+      middleNames = request.middleNames,
+      surname = request.surname,
+      dateOfBirth = request.dateOfBirth,
+      staffMember = staffMember,
+    )
+
+    licenceRepository.saveAndFlush(licence)
+
+    val changes: Map<String, String> = mapOf(
+      "forename" to request.forename,
+      "middleNames" to request.middleNames.orEmpty(),
+      "surname" to request.surname,
+      "dateOfBirth" to request.dateOfBirth.toString(),
+      "reason" to request.reason,
+    )
+
+    auditEventRepository.saveAndFlush(
+      AuditEvent(
+        licenceId = licence.id,
+        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
+        eventTime = LocalDateTime.now(),
+        eventType = AuditEventType.USER_EVENT,
+        username = staffMember?.username ?: Licence.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
+        summary = "Prisoner details overridden for licence with ID ${licence.id}: ${request.reason}",
+        changes = changes,
       ),
     )
   }
