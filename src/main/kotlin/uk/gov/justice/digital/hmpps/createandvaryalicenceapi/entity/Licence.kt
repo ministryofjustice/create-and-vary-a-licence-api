@@ -35,7 +35,6 @@ import java.util.Objects
 @Table(name = "licence")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "kind", discriminatorType = DiscriminatorType.STRING)
-@Suppress("LongParameterList")
 abstract class Licence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -205,13 +204,15 @@ abstract class Licence(
     middleNames: String?,
     surname: String,
     dateOfBirth: LocalDate,
+    staffMember: Staff?,
   ) {
     this.forename = forename
     this.surname = surname
     this.dateOfBirth = dateOfBirth
-    if (middleNames != null) {
-      this.middleNames = middleNames
-    }
+    this.middleNames = middleNames
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
   }
 
   abstract fun updateStatus(

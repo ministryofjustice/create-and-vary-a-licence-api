@@ -78,8 +78,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
-        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
+        username = staffMember?.username ?: Licence.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
         summary = "Licence status overridden to $newStatus for ${licence.forename} ${licence.surname}: $reason",
       ),
     )
@@ -88,7 +88,7 @@ class LicenceOverrideService(
       LicenceEvent(
         licenceId = licence.id,
         username = username,
-        eventType = LicenceStatus.Companion.lookupLicenceEventByStatus(newStatus),
+        eventType = LicenceStatus.lookupLicenceEventByStatus(newStatus),
         eventDescription = reason,
       ),
     )
@@ -167,8 +167,8 @@ class LicenceOverrideService(
         detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
         eventTime = LocalDateTime.now(),
         eventType = AuditEventType.USER_EVENT,
-        username = staffMember?.username ?: Licence.Companion.SYSTEM_USER,
-        fullName = staffMember?.fullName ?: Licence.Companion.SYSTEM_USER,
+        username = staffMember?.username ?: Licence.SYSTEM_USER,
+        fullName = staffMember?.fullName ?: Licence.SYSTEM_USER,
         summary = "Sentence dates overridden for ${licence.forename} ${licence.surname}: ${request.reason}",
       ),
     )
@@ -178,12 +178,14 @@ class LicenceOverrideService(
   fun changePrisonerDetails(licenceId: Long, request: OverrideLicencePrisonerDetailsRequest) {
     val licence: Licence = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
     val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     licence.updatePrisonerDetails(
       forename = request.forename,
       middleNames = request.middleNames,
       surname = request.surname,
       dateOfBirth = request.dateOfBirth,
+      staffMember = staffMember,
     )
 
     licenceRepository.saveAndFlush(licence)
@@ -196,7 +198,6 @@ class LicenceOverrideService(
       "reason" to request.reason,
     )
 
-    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
     auditEventRepository.saveAndFlush(
       AuditEvent(
         licenceId = licence.id,
