@@ -22,7 +22,7 @@ class VaryApproverCaseloadService(
   fun getVaryApproverCaseload(varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest): List<VaryApproverCase> {
     val licences: List<LicenceSummary> = findLicences(varyApproverCaseloadSearchRequest)
     var cases = mapLicencesToOffenders(licences)
-    cases = mapResponsibleComsToCases(cases)
+    cases = addProbationPractitionerCases(cases)
     return buildCaseload(cases, varyApproverCaseloadSearchRequest.searchTerm)
   }
 
@@ -39,7 +39,7 @@ class VaryApproverCaseloadService(
     emptyList()
   }
 
-  fun mapLicencesToOffenders(licences: List<LicenceSummary>): List<AcoCase> {
+  private fun mapLicencesToOffenders(licences: List<LicenceSummary>): List<AcoCase> {
     val nomisIds = licences.map { it.nomisId }
     val deliusRecords = deliusApiClient.getProbationCases(nomisIds)
     val nomisRecords = caseloadService.getPrisonersByNumber(nomisIds)
@@ -59,7 +59,7 @@ class VaryApproverCaseloadService(
     }
   }
 
-  private fun mapResponsibleComsToCases(caseload: List<AcoCase>): List<AcoCase> {
+  private fun addProbationPractitionerCases(caseload: List<AcoCase>): List<AcoCase> {
     val comUsernames = caseload.mapNotNull { it.licence.comUsername }
 
     val deliusStaffNames = deliusApiClient.getStaffDetailsByUsername(comUsernames)
@@ -119,7 +119,7 @@ class VaryApproverCaseloadService(
 
 private fun applySort(cases: List<VaryApproverCase>): List<VaryApproverCase> = cases.sortedBy { it.releaseDate }
 
-data class AcoCase(
+private data class AcoCase(
   val crn: String,
   val nomisRecord: CaseloadItem,
   val licence: LicenceSummary,
