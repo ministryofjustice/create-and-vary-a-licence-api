@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceKinds
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarLicence
@@ -36,6 +37,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -51,6 +53,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VariationLicence as ModelVariationLicence
 
 object TestData {
+  private val TEN_DAYS_FROM_NOW = LocalDate.now().plusDays(10)
 
   fun com() = CommunityOffenderManager(
     staffIdentifier = 2000,
@@ -772,5 +775,75 @@ object TestData {
     variationOf = 1,
     homeDetentionCurfewActualDate = LocalDate.of(2021, 10, 22),
     homeDetentionCurfewEndDate = LocalDate.of(2022, 10, 22),
+  )
+
+  fun aLicenceSummary(
+    id: Long = 1,
+    kind: LicenceKind = LicenceKind.CRD,
+    type: LicenceType = LicenceType.AP_PSS,
+    status: LicenceStatus = LicenceStatus.IN_PROGRESS,
+    nomsId: String = "AB1234E",
+    startDate: LocalDate = TEN_DAYS_FROM_NOW,
+  ) = LicenceSummary(
+    licenceId = id,
+    kind = kind,
+    licenceType = type,
+    nomisId = nomsId,
+    licenceStatus = status,
+    comUsername = "joebloggs",
+    forename = "test",
+    surname = "user",
+    crn = "X12345",
+    dateOfBirth = LocalDate.of(1985, 12, 28),
+    prisonCode = "MDI",
+    prisonDescription = "Moorland (HMP)",
+    probationAreaCode = "N01",
+    probationAreaDescription = "Wales",
+    probationPduCode = "N01A",
+    probationPduDescription = "Cardiff",
+    probationLauCode = "N01A2",
+    probationLauDescription = "Cardiff South",
+    probationTeamCode = "NA01A2-A",
+    probationTeamDescription = "Cardiff South Team A",
+    conditionalReleaseDate = LocalDate.of(2022, 12, 28),
+    actualReleaseDate = LocalDate.of(2022, 12, 30),
+    sentenceStartDate = LocalDate.of(2018, 10, 22),
+    sentenceEndDate = LocalDate.of(2021, 10, 22),
+    licenceStartDate = startDate,
+    licenceExpiryDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionStartDate = LocalDate.of(2021, 10, 22),
+    topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
+    bookingId = 54321,
+    dateCreated = LocalDateTime.of(2022, 7, 27, 15, 0, 0),
+    approvedByName = "jim smith",
+    approvedDate = LocalDateTime.of(2023, 9, 19, 16, 38, 42),
+    licenceVersion = "1.0",
+    isReviewNeeded = false,
+    updatedByFullName = "X Y",
+  )
+
+  fun aProbationCase(nomisId: String = "AB1234E", crn: String = "X12348") = ProbationCase(
+    nomisId = nomisId,
+    crn = crn,
+    croNumber = "AB01/234567C",
+  )
+
+  fun aPrisoner() = Prisoner(
+    prisonerNumber = "AB1234E",
+    firstName = "Gary",
+    lastName = "Pittard",
+    releaseDate = TEN_DAYS_FROM_NOW,
+    status = "INACTIVE OUT",
+  )
+
+  fun someCvlFields(licenceType: LicenceType) = CvlFields(
+    licenceType = licenceType,
+  )
+
+  fun aDeliusUser() = User(
+    id = 1,
+    username = "joebloggs",
+    code = "X1234",
+    name = Name(forename = "Delius", surname = "User"),
   )
 }
