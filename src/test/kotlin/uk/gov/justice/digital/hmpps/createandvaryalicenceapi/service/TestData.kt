@@ -405,7 +405,7 @@ object TestData {
     createdBy = com(),
     appointmentPersonType = AppointmentPersonType.SPECIFIC_PERSON,
   ).let {
-    it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = emptyList())
+    it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = mutableListOf())
   }
 
   fun prisonerSearchResult() = PrisonerSearchPrisoner(

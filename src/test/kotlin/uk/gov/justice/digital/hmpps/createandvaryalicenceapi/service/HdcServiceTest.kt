@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.hdcPrisonerStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.hdc.FirstNight
@@ -203,6 +204,18 @@ class HdcServiceTest {
     )
     val result = service.getHdcLicenceData(1)
     assertThat(result?.firstNightCurfewHours).isEqualTo(HdcService.DEFAULT_FIRST_NIGHT_HOURS)
+  }
+
+  @Test
+  fun `getHdcLicenceData returns curfew information for HDC variations`() {
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createHdcVariationLicence()))
+    whenever(hdcApiClient.getByBookingId(54321L)).thenReturn(
+      someHdcLicenceData,
+    )
+    val result = service.getHdcLicenceData(1)
+    assertThat(result?.curfewAddress).isEqualTo(someHdcLicenceData.curfewAddress)
+    assertThat(result?.firstNightCurfewHours).isEqualTo(someHdcLicenceData.firstNightCurfewHours)
+    assertThat(result?.curfewTimes).isEqualTo(someHdcLicenceData.curfewTimes)
   }
 
   @Test
