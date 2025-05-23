@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.1.0"
-  kotlin("plugin.spring") version "2.1.20"
-  kotlin("plugin.jpa") version "2.1.20"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.2.0"
+  kotlin("plugin.spring") version "2.1.21"
+  kotlin("plugin.jpa") version "2.1.21"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
 }
 
@@ -20,7 +20,7 @@ dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   // hmpps-kotlin-lib
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.4")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -32,22 +32,22 @@ dependencies {
   implementation("uk.gov.service.notify:notifications-java-client:5.2.1-RELEASE")
 
   // PDF Box - for processing MapMaker file upload to get image / text for exclusion zone
-  implementation("org.apache.pdfbox:pdfbox:3.0.4")
+  implementation("org.apache.pdfbox:pdfbox:3.0.5")
   implementation("org.apache.pdfbox:jbig2-imageio:3.0.4")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.5")
 
-  implementation("com.google.code.gson:gson:2.12.1")
-  implementation("io.arrow-kt:arrow-core:2.0.1")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.9")
+  implementation("com.google.code.gson:gson:2.13.1")
+  implementation("io.arrow-kt:arrow-core:2.1.2")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.10")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.5")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 
   // Digital prison reporting
   implementation("uk.gov.justice.service.hmpps:hmpps-digital-prison-reporting-lib:7.10.5")
@@ -59,12 +59,12 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-api:0.12.6")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.12.6")
   testImplementation("io.jsonwebtoken:jjwt-orgjson:0.12.6")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.0")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.26")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:4.1.1")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.28")
   testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
-  testImplementation("org.testcontainers:localstack:1.20.6")
+  testImplementation("org.testcontainers:localstack:1.21.0")
 }
 
 detekt {
