@@ -83,10 +83,10 @@ class HdcVariationLicence(
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @OrderBy("curfewTimesSequence")
-  val curfewTimes: List<HdcCurfewTimes> = emptyList(),
+  override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  val curfewAddress: HdcCurfewAddress? = null,
+  override val curfewAddress: HdcCurfewAddress? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
@@ -153,7 +153,8 @@ class HdcVariationLicence(
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
-  Variation {
+  Variation,
+  HdcCase {
 
   fun copy(
     id: Long = this.id,
@@ -215,7 +216,7 @@ class HdcVariationLicence(
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
     responsibleCom: CommunityOffenderManager? = this.responsibleCom,
-    curfewTimes: List<HdcCurfewTimes> = this.curfewTimes,
+    curfewTimes: MutableList<HdcCurfewTimes> = this.curfewTimes.toMutableList(),
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,

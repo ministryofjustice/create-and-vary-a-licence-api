@@ -81,10 +81,10 @@ class HdcLicence(
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true, targetEntity = HdcCurfewTimes::class)
   @OrderBy("curfewTimesSequence")
-  var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
+  override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
   @OneToOne(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  val curfewAddress: HdcCurfewAddress? = null,
+  override val curfewAddress: HdcCurfewAddress? = null,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "submitted_by_com_id", nullable = true)
@@ -150,7 +150,8 @@ class HdcLicence(
   bespokeConditions = bespokeConditions,
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
-) {
+),
+  HdcCase {
 
   fun copy(
     id: Long = this.id,
