@@ -207,8 +207,8 @@ class LicenceController(
     ],
   )
   fun submittedVariations(
-    @PathVariable("areaCode") areaCode: String,
-  ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode = areaCode)
+    @PathVariable("areaCode") probationAreaCode: String,
+  ): List<LicenceSummary> = licenceService.findSubmittedVariationsByRegion(probationAreaCode)
 
   @Tag(name = Tags.LICENCES)
   @PostMapping(value = ["/match"])

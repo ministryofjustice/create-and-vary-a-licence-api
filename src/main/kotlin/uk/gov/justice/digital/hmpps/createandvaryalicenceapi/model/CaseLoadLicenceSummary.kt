@@ -74,10 +74,10 @@ data class CaseLoadLicenceSummary(
   val releaseDate: LocalDate? = null,
 
   @Schema(description = "Is the prisoner due for early release")
-  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
+  val isDueToBeReleasedInTheNextTwoWorkingDays: Boolean = false,
 
   @Schema(description = "Is a review of this licence is required", example = "true")
-  val isReviewNeeded: Boolean,
+  val isReviewNeeded: Boolean = false,
 
   @Schema(description = "How this licence will need to be created", example = "PRISON_WILL_CREATE_THIS_LICENCE")
   val licenceCreationType: LicenceCreationType? = null,

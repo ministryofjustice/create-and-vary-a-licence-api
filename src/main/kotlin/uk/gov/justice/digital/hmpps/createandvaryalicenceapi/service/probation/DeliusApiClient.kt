@@ -99,7 +99,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
       .block()
   }
 
-  fun getStaffDetailsByUsername(usernames: List<String>) = batchRequests(STAFF_USERNAME_BATCH, usernames) { batch ->
+  fun getStaffDetailsByUsername(usernames: List<String>): List<User> = batchRequests(STAFF_USERNAME_BATCH, usernames) { batch ->
     deliusApiWebClient
       .post()
       .uri("/staff")
