@@ -81,4 +81,4 @@ data class FoundPrisonRecord(
   @Schema(description = "Is a review of this licence is required", example = "true")
   val isReviewNeeded: Boolean? = null,
 
-  )
+)
