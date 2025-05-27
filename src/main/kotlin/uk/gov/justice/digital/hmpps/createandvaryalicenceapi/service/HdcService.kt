@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateCurfewTimesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -51,7 +52,7 @@ class HdcService(
   fun getHdcLicenceData(licenceId: Long): HdcLicenceData? {
     val licence = licenceRepository
       .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("No licence data found for $licenceId") } as HdcLicence
+      .orElseThrow { EntityNotFoundException("No licence data found for $licenceId") } as HdcCase
 
     val licenceData = this.hdcApiClient.getByBookingId(licence.bookingId!!)
 
