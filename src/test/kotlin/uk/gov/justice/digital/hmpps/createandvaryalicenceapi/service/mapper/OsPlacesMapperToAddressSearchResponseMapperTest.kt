@@ -25,7 +25,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         add(
           createMapFromAddress(organisationName = null)
             to
-            createExpectedMapTo(firstLine = "ORDNANCE SUB, ORDNANCE HOUSE, 10, ADANAC DRIVE"),
+            createExpectedMapTo(firstLine = "ORDNANCE SUB, ORDNANCE HOUSE, 10, FAKE DRIVE"),
         )
         add(
           createMapFromAddress(
@@ -33,7 +33,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             subBuildingName = null,
           ) to
             createExpectedMapTo(
-              firstLine = "ORDNANCE HOUSE, 10, ADANAC DRIVE",
+              firstLine = "ORDNANCE HOUSE, 10, FAKE DRIVE",
             ),
         )
         add(
@@ -43,7 +43,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             buildingName = null,
           ) to
             createExpectedMapTo(
-              firstLine = "10, ADANAC DRIVE",
+              firstLine = "10, FAKE DRIVE",
             ),
         )
         add(
@@ -54,7 +54,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             buildingNumber = null,
           ) to
             createExpectedMapTo(
-              firstLine = "ADANAC DRIVE",
+              firstLine = "FAKE DRIVE",
             ),
         )
         add(
@@ -66,7 +66,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             locality = null,
           ) to
             createExpectedMapTo(
-              firstLine = "ADANAC DRIVE",
+              firstLine = "FAKE DRIVE",
               secondLine = null,
             ),
         )
@@ -93,7 +93,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             thoroughfareName = null,
           ) to
             createExpectedMapTo(
-              firstLine = "10, MORTIMER",
+              firstLine = "10, FAKEALITY",
               secondLine = null,
             ),
         )
@@ -106,7 +106,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
             thoroughfareName = null,
           ) to
             createExpectedMapTo(
-              firstLine = "MORTIMER",
+              firstLine = "FAKEALITY",
               secondLine = null,
             ),
         )
@@ -116,16 +116,16 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
 
     private fun createMapFromAddress(
       uprn: String = "100120991537",
-      address: String = "10, THE STREET, MORTIMER, READING, AG12 1RW",
+      address: String = "10, THE STREET, FAKEALITY, FAKETON, FA1 1KE",
       subBuildingName: String? = "ORDNANCE SUB",
       organisationName: String? = "ORDNANCE SURVEY",
       buildingName: String? = "ORDNANCE HOUSE",
       buildingNumber: String? = "10",
-      thoroughfareName: String? = "ADANAC DRIVE",
-      locality: String? = "MORTIMER",
-      postTown: String = "READING",
-      county: String = "WILTSHIRE",
-      postcode: String = "SA420UQ",
+      thoroughfareName: String? = "FAKE DRIVE",
+      locality: String? = "FAKEALITY",
+      postTown: String = "FAKETON",
+      county: String = "FAKESHIRE",
+      postcode: String = "FA11KE",
       countryDescription: String = "This record is within England",
       xCoordinate: Double = Double.MIN_VALUE,
       yCoordinate: Double = Double.MAX_VALUE,
@@ -150,11 +150,11 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
 
     private fun createExpectedMapTo(
       reference: String = "100120991537",
-      firstLine: String = "ORDNANCE SURVEY, ORDNANCE SUB, ORDNANCE HOUSE, 10, ADANAC DRIVE",
-      secondLine: String? = "MORTIMER",
-      townOrCity: String = "READING",
-      county: String = "WILTSHIRE",
-      postcode: String = "SA420UQ",
+      firstLine: String = "ORDNANCE SURVEY, ORDNANCE SUB, ORDNANCE HOUSE, 10, FAKE DRIVE",
+      secondLine: String? = "FAKEALITY",
+      townOrCity: String = "FAKETON",
+      county: String = "FAKESHIRE",
+      postcode: String = "FA11KE",
       country: String = "England",
     ) = AddressSearchResponse(
       reference = reference,
