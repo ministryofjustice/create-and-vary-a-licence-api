@@ -38,11 +38,11 @@ class StaffController(
     value = ["/com/update"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Create/updates the details of a community offender manager.",
-    description = "Create/updates the details of a community offender manager (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Create/updates the details of a community offender manager (e.g. email address). Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -80,11 +80,11 @@ class StaffController(
     value = ["/prison-case-administrator/update", "/prison-user/update"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Create/updates the details of a prison user.",
-    description = "Create/updates the details of a prison user (e.g. email address). Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Create/updates the details of a prison user (e.g. email address). Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -122,11 +122,11 @@ class StaffController(
     value = ["/com/case-search"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Search for offenders on a given staff member's caseload.",
-    description = "Search for offenders on a given staff member's caseload. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Search for offenders on a given staff member's caseload. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -167,11 +167,11 @@ class StaffController(
     value = ["/com/{staffIdentifier}/review-counts"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Retrieve the individual and team count of cases that the probation practitioner needs to review",
-    description = "Retrieve the individual and team count of cases that the probation practitioner needs to review. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Retrieve the individual and team count of cases that the probation practitioner needs to review. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

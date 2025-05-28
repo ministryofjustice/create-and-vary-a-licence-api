@@ -26,11 +26,11 @@ class BulkDeactivateLicencesController(
 ) {
 
   @PostMapping(value = ["/licence/inactivate-licences"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Inactivate licences in bulk",
-    description = "Set licence statuses to INACTIVE. Accepts a list of licence IDs. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Set licence statuses to INACTIVE. Accepts a list of licence IDs. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

@@ -54,11 +54,11 @@ class CaseloadController(
 ) {
 
   @PostMapping("/prisoner-search/prisoner-numbers")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns enriched prisoners by prison number",
     description = "Match prisoners by a list of prisoner numbers",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -97,11 +97,11 @@ class CaseloadController(
   fun findByNumbers(@Parameter(required = true) @Valid @RequestBody criteria: PrisonerNumbers) = caseloadService.getPrisonersByNumber(criteria.prisonerNumbers)
 
   @GetMapping("/prisoner-search/nomisid/{nomsId}")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns a single prisoner by prison number",
     description = "Returns a single prisoner by prison number",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -150,11 +150,11 @@ class CaseloadController(
   fun findByNumber(@Parameter(required = true) @PathVariable nomsId: String) = caseloadService.getPrisoner(nomsId)
 
   @PostMapping("/prisoner-search/release-date-by-prison")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns prisoners by release date and prison id",
     description = "Match prisoners in a subset of prisons with a release date within a given range",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -201,11 +201,11 @@ class CaseloadController(
   ).content
 
   @PostMapping("/release-date-by-prison")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns prisoners by release date and prison id",
     description = "Match prisoners in a subset of prisons with a release date within a given range",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -255,11 +255,11 @@ class CaseloadController(
   )
 
   @PostMapping("/caseload/prison-approver/approval-needed")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns a caseload waiting for approval",
     description = "Returns an enriched list of cases which are awaiting approval",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -298,11 +298,11 @@ class CaseloadController(
   fun getApprovalNeeded(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getApprovalNeeded(prisonCodes)
 
   @PostMapping("/caseload/prison-approver/recently-approved")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns a caseload that has recently been approved",
     description = "Returns an enriched list of cases which have recently been approved",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -341,11 +341,11 @@ class CaseloadController(
   fun getRecentlyApproved(@Parameter(required = true) @Valid @RequestBody prisonCodes: List<String>) = approverCaseloadService.getRecentlyApproved(prisonCodes)
 
   @PostMapping("/caseload/case-admin/prison-view")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns a case admin caseload",
     description = "Returns an enriched list of cases for people on prison",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -389,11 +389,11 @@ class CaseloadController(
   )
 
   @PostMapping("/caseload/case-admin/probation-view")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns a case admin caseload",
     description = "Returns an enriched list of cases for people on probation",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -434,11 +434,11 @@ class CaseloadController(
   ) = caCaseloadService.getProbationOmuCaseload(caCaseloadSearch.prisonCodes, caCaseloadSearch.searchString)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/create-case-load")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns the create caseload for a member of staff",
     description = "Returns an enriched list of cases which require a licence to be created",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -477,11 +477,11 @@ class CaseloadController(
   fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/create-case-load")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns the create caseload for a team",
     description = "Returns an enriched list of cases which require a licence to be created for a team",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -520,11 +520,11 @@ class CaseloadController(
   fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns the vary caseload for a member of staff",
     description = "Returns an enriched list of cases which can have a variation created for a member of staff",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -563,11 +563,11 @@ class CaseloadController(
   fun getStaffVaryCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCaseloadService.getStaffVaryCaseload(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/vary-case-load")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns the vary caseload for a team",
     description = "Returns an enriched list of cases which can have a variation created for a team",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -606,11 +606,11 @@ class CaseloadController(
   fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
 
   @PostMapping("/caseload/vary-approver")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Returns the variation approver caseload for a probation region",
     description = "Returns an enriched list of cases for people that have a variation to be approved",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

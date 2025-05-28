@@ -34,11 +34,11 @@ class OffenderController(
     value = ["/crn/{crn}/responsible-com"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender.",
-    description = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Updates in-flight licences associated with an offender with the community offender manager who is responsible for that offender. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -76,11 +76,11 @@ class OffenderController(
     value = ["/crn/{crn}/probation-team"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates in-flight licences associated with an offender with a new probation team.",
-    description = "Updates in-flight licences associated with an offender with a new probation team. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Updates in-flight licences associated with an offender with a new probation team. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -114,11 +114,11 @@ class OffenderController(
   }
 
   @PutMapping(value = ["nomisid/{nomsId}/update-offender-details"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates the offender's personal information on all of their licences.",
-    description = "Updates the name and date of birth stored on all licences associated with the given offender. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Updates the name and date of birth stored on all licences associated with the given offender. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

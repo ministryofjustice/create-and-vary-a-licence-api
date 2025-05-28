@@ -27,13 +27,13 @@ class DatesController(
 
   @Tag(name = Tags.ANCILLARY)
   @GetMapping(value = ["/bank-holidays"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get the bank holiday dates for England and Wales",
     description = "Returns a list of bank holiday dates for England and Wales. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
