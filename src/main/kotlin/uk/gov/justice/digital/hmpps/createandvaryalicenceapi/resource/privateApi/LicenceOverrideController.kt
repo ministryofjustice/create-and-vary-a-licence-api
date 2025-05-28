@@ -37,14 +37,14 @@ class LicenceOverrideController(
   private val licenceTypeOverrideService: LicenceTypeOverrideService,
 ) {
   @PostMapping(value = ["/status"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(
     summary = "Override a licence status",
     description = "Override the status for an exising licence. Only to be used in exceptional circumstances." +
-      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -83,14 +83,14 @@ class LicenceOverrideController(
   }
 
   @PutMapping(value = ["/dates"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(
     summary = "Override licence dates",
     description = "Override the dates for an exising licence. Only to be used in exceptional circumstances." +
-      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -129,14 +129,14 @@ class LicenceOverrideController(
   }
 
   @PostMapping(value = ["/type"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(
     summary = "Override a licence type",
     description = "Override the type for an exising licence. Only to be used in exceptional circumstances." +
-      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -175,14 +175,14 @@ class LicenceOverrideController(
   }
 
   @PostMapping(value = ["/prisoner-details"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @ResponseStatus(HttpStatus.ACCEPTED)
   @Operation(
     summary = "Override prisoner details on a licence",
     description = "Override the prisoner details for an existing licence. Only to be used in exceptional circumstances." +
-      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

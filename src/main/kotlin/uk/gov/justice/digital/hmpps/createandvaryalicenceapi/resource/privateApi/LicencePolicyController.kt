@@ -31,13 +31,13 @@ class LicencePolicyController(
 ) {
 
   @GetMapping(value = ["/active"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get the active licence policy",
     description = "Returns the active policy using its unique identifier. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -61,13 +61,13 @@ class LicencePolicyController(
   fun getCurrentPolicy(): LicencePolicy? = licencePolicyService.currentPolicy()
 
   @GetMapping(value = ["/version/{version}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get licence policy be version number",
     description = "Returns a single policy using its unique identifier. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -96,13 +96,13 @@ class LicencePolicyController(
   fun getPolicyByVersion(@PathVariable("version") version: String): LicencePolicy? = licencePolicyService.policyByVersion(version)
 
   @GetMapping(value = ["/"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get all licence policy versions",
     description = "Returns a list of policies, active and present" +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -131,13 +131,13 @@ class LicencePolicyController(
   fun getPolicies(): List<LicencePolicy> = licencePolicyService.allPolicies()
 
   @GetMapping(value = ["/compare/{version}/licence/{licenceId}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get differences between saved licences conditions and new policy",
     description = "Returns condition data saved against a licence no longer present within the new licence policy" +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   fun compareLicence(
     @PathVariable("version") version: String,

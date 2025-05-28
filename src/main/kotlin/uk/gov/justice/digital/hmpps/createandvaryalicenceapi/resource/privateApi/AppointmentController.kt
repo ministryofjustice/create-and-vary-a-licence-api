@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Appointment
 
 @RestController
 @Tag(name = Tags.APPOINTMENTS)
-@PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+@PreAuthorize("hasAnyRole('CVL_ADMIN')")
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
 class AppointmentController(
   private val appointmentService: AppointmentService,
@@ -35,8 +35,8 @@ class AppointmentController(
   @Operation(
     summary = "Update the person to meet at the initial appointment",
     description = "Update the person the person on probation will meet at the initial appointment" +
-      " Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      " Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -77,8 +77,8 @@ class AppointmentController(
   @PutMapping(value = ["/id/{licenceId}/appointmentTime"])
   @Operation(
     summary = "Update the appointment date and time",
-    description = "Update the date and time for the initial appointment. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Update the date and time for the initial appointment. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -119,8 +119,8 @@ class AppointmentController(
   @PutMapping(value = ["/id/{licenceId}/contact-number"])
   @Operation(
     summary = "Update the officer contact number for a licence",
-    description = "Update the contact number for the officer related to this licence. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Update the contact number for the officer related to this licence. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -161,8 +161,8 @@ class AppointmentController(
   @PutMapping(value = ["/id/{licenceId}/appointment-address"])
   @Operation(
     summary = "Update the address where the initial appointment will take place",
-    description = "Update the address where the initial appointment will take place. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Update the address where the initial appointment will take place. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

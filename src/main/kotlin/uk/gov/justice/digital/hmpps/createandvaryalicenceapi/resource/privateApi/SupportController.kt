@@ -26,11 +26,11 @@ class SupportController(private val supportService: SupportService) {
     value = ["/nomisid/{nomsId}/ineligibility-reasons"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Retrieve ineligibility reasons for offender",
-    description = "Returns ineligibility reasons for creating a licence for a specific prisoner. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Returns ineligibility reasons for creating a licence for a specific prisoner. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -75,11 +75,11 @@ class SupportController(private val supportService: SupportService) {
     value = ["/nomisid/{nomsId}/is-91-status"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Retrieve IS-91 status for offender",
-    description = "Returns IS-91 status for creating a licence for a specific prisoner. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Returns IS-91 status for creating a licence for a specific prisoner. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

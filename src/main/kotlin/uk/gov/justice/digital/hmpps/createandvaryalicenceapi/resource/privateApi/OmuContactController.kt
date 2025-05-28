@@ -33,11 +33,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OmuService
 class OmuContactController(private val omuService: OmuService) {
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Get OMU email address.",
-    description = "Obtain prison Offender Management Unit email address. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Obtain prison Offender Management Unit email address. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -72,11 +72,11 @@ class OmuContactController(private val omuService: OmuService) {
   }
 
   @PutMapping
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Updates the OMU email address.",
-    description = "Updates the OMU email address used to contact members of a prison OMU. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Updates the OMU email address used to contact members of a prison OMU. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -108,12 +108,12 @@ class OmuContactController(private val omuService: OmuService) {
     @PathVariable("prisonCode") prisonCode: String,
   ): OmuContact = this.omuService.updateOmuEmail(prisonCode = prisonCode, contactRequest = body)
 
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @DeleteMapping()
   @Operation(
     summary = "Delete the OMU email address.",
-    description = "Delete prison Offender Management Unit email address. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Delete prison Offender Management Unit email address. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

@@ -32,11 +32,11 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
     consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Upload a multipart/form-data request containing a PDF exclusion zone file.",
-    description = "Uploads a PDF file containing an exclusion zone map and description. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Uploads a PDF file containing an exclusion zone map and description. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -71,11 +71,11 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
     value = ["/id/{licenceId}/condition/id/{conditionId}/remove-upload"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Removes a previously uploaded exclusion zone file from an additional condition.",
-    description = "Removes a previously uploaded exclusion zone file. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Removes a previously uploaded exclusion zone file. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -109,12 +109,12 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
     value = ["/id/{licenceId}/condition/id/{conditionId}/full-size-image"],
     produces = [MediaType.IMAGE_JPEG_VALUE],
   )
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseBody
   @Operation(
     summary = "Get the exclusion zone map image for a specified licence and condition",
-    description = "Get the exclusion zone map image. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Get the exclusion zone map image. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

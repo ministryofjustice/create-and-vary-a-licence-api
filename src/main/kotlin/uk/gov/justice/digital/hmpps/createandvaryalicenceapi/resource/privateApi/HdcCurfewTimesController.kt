@@ -28,11 +28,11 @@ class HdcCurfewTimesController(
 
   @Tag(name = Tags.HDC_LICENCE_CURFEW_TIMES)
   @PutMapping("/id/{licenceId}/curfew-times")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Update the curfew times for a HDC licence.",
-    description = "Replace the curfew times against a HDC licence if curfew times change. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Replace the curfew times against a HDC licence if curfew times change. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
