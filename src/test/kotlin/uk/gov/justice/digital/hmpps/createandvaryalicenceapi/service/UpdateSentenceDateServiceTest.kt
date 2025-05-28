@@ -76,7 +76,7 @@ class UpdateSentenceDateServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -95,7 +95,7 @@ class UpdateSentenceDateServiceTest {
   @BeforeEach
   fun beforeEach() {
     whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2023, 9, 11))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
   }
 
   @Test
@@ -616,7 +616,7 @@ class UpdateSentenceDateServiceTest {
       ),
     )
     whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(null)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
     whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
       aPrisonApiPrisoner().copy(
         sentenceDetail = SentenceDetail(

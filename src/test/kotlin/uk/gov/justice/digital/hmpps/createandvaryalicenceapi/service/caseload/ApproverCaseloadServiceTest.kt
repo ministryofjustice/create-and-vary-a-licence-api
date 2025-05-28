@@ -42,7 +42,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `It builds the approval needed caseload successfully`() {
         val nomisId = "A1234AA"
-        val comUsernames = listOf("smills")
+        val comUsernames = listOf("tcom")
 
         whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -58,7 +58,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Mortimer")
+          assertThat(name).isEqualTo("Person One")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
@@ -81,7 +81,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `It builds the approval needed caseload successfully with multiple cases`() {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("smills", "jdoe")
+        val comUsernames = listOf("tcom", "jdoe")
 
         whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -145,7 +145,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Mortimer")
+          assertThat(name).isEqualTo("Person One")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.of(2021, 10, 22)))
@@ -185,7 +185,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `the approval needed caseload is sorted correctly`() {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("smills", "jdoe")
+        val comUsernames = listOf("tcom", "jdoe")
 
         whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -259,7 +259,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `null release dates are surfaced above other release dates for the approval needed caseload`() {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("smills", "jdoe", "smills")
+        val comUsernames = listOf("tcom", "jdoe", "tcom")
 
         whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -287,7 +287,7 @@ class ApproverCaseloadServiceTest {
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
-              comUsername = "smills",
+              comUsername = "tcom",
               licenceStatus = LicenceStatus.ACTIVE,
               licenceStartDate = null,
             ),
@@ -371,7 +371,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `LSD is selected for releaseDate`() {
       val nomisId = "A1234AA"
-      val comUsernames = listOf("smills")
+      val comUsernames = listOf("tcom")
 
       whenever(prisonApproverService.getLicencesForApproval(aListOfPrisonCodes)).thenReturn(
         listOf(
@@ -407,7 +407,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `It builds the recently approved caseload successfully`() {
         val nomisId = "A1234AA"
-        val comUsernames = listOf("smills")
+        val comUsernames = listOf("tcom")
 
         val aLicenceSummaryApproverView = aLicenceSummaryApproverView.copy(
           licenceStatus = LicenceStatus.APPROVED,
@@ -428,7 +428,7 @@ class ApproverCaseloadServiceTest {
 
         with(approvalCases.first()) {
           assertThat(licenceId).isEqualTo(1L)
-          assertThat(name).isEqualTo("Bob Mortimer")
+          assertThat(name).isEqualTo("Person One")
           assertThat(prisonerNumber).isEqualTo("A1234AA")
           assertThat(submittedByFullName).isEqualTo("X Y")
           assertThat(releaseDate).isEqualTo((LocalDate.now().minusDays(14)))
@@ -451,7 +451,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `It builds the recently approved caseload successfully with multiple cases`() {
         val nomisIds = listOf("B1234BB", "C1234CC")
-        val comUsernames = listOf("jdoe", "smills")
+        val comUsernames = listOf("jdoe", "tcom")
 
         whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -476,7 +476,7 @@ class ApproverCaseloadServiceTest {
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
-              comUsername = "smills",
+              comUsername = "tcom",
               licenceStatus = LicenceStatus.ACTIVE,
               licenceStartDate = LocalDate.now().minusDays(14),
             ),
@@ -566,7 +566,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `the recently approved caseload is sorted correctly`() {
         val nomisIds = listOf("B1234BB", "C1234CC")
-        val comUsernames = listOf("jdoe", "smills")
+        val comUsernames = listOf("jdoe", "tcom")
 
         whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -591,7 +591,7 @@ class ApproverCaseloadServiceTest {
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
-              comUsername = "smills",
+              comUsername = "tcom",
               licenceStatus = LicenceStatus.ACTIVE,
               licenceStartDate = LocalDate.now().minusDays(14),
             ),
@@ -647,7 +647,7 @@ class ApproverCaseloadServiceTest {
       @Test
       fun `null release dates are surfaced above other release dates for the recently approved caseload`() {
         val nomisIds = listOf("A1234AA", "B1234BB", "C1234CC")
-        val comUsernames = listOf("smills", "jdoe", "smills")
+        val comUsernames = listOf("tcom", "jdoe", "tcom")
 
         whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
           listOf(
@@ -675,7 +675,7 @@ class ApproverCaseloadServiceTest {
               forename = "Jane",
               surname = "Doe",
               prisonCode = "MDI",
-              comUsername = "smills",
+              comUsername = "tcom",
               licenceStatus = LicenceStatus.ACTIVE,
               licenceStartDate = null,
             ),
@@ -741,7 +741,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `a null release date is returned when LSD is not set`() {
       val nomisId = "A1234AA"
-      val comUsernames = listOf("smills")
+      val comUsernames = listOf("tcom")
 
       whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
         listOf(
@@ -769,7 +769,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `It derives if urgent approval is needed`() {
       val nomisId = "A1234AA"
-      val comUsernames = listOf("smills")
+      val comUsernames = listOf("tcom")
 
       whenever(prisonApproverService.findRecentlyApprovedLicences(aListOfPrisonCodes)).thenReturn(
         listOf(
@@ -880,8 +880,8 @@ class ApproverCaseloadServiceTest {
 
     val aLicenceSummaryApproverView = LicenceSummaryApproverView(
       licenceId = 1,
-      forename = "Bob",
-      surname = "Mortimer",
+      forename = "Person",
+      surname = "One",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       licenceStatus = LicenceStatus.SUBMITTED,
       kind = LicenceKind.CRD,
@@ -899,7 +899,7 @@ class ApproverCaseloadServiceTest {
       probationLauDescription = "Cardiff South",
       probationTeamCode = "NA01A2-A",
       probationTeamDescription = "Cardiff South Team A",
-      comUsername = "smills",
+      comUsername = "tcom",
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
       actualReleaseDate = LocalDate.of(2021, 10, 22),
       sentenceStartDate = LocalDate.of(2018, 10, 22),
@@ -928,7 +928,7 @@ class ApproverCaseloadServiceTest {
 
     val aUser = User(
       id = 2000,
-      username = "smills",
+      username = "tcom",
       email = "testemail@probation.gov.uk",
       name = Name(
         forename = "Test",

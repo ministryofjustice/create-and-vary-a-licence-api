@@ -39,8 +39,8 @@ values (1,
         'CRO1',
         'MDI',
         'Moorland (HMP)',
-        'Test',
-        'User',
+        'Person',
+        'One',
         '2020-10-25',
         '2022-02-12',
         '2022-02-25',
@@ -72,7 +72,7 @@ values (1, 1, '1.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b
 
 -- Create the data for the exclusion zone condition
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
-values (1, 1, 1, 'outOfBoundArea', 'Plymouth town centre');
+values (1, 1, 1, 'outOfBoundArea', 'Town centre');
 
 insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
 values (2, 1, 2, 'outOfBoundFile', 'Test_map_2021-12-06_112550.pdf');

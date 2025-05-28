@@ -75,7 +75,7 @@ class DeliusMockServer : WireMockServer(8093) {
               "code": "probationArea-code-1", 
               "description": "probationArea-description-1"
             },
-            "email": "user@email.com"
+            "email": "user@test.com"
           }""",
         ).withStatus(200),
       ),
@@ -103,7 +103,7 @@ class DeliusMockServer : WireMockServer(8093) {
               "code": "probationArea-code-1", 
               "description": "probationArea-description-1"
             },
-            "email": "user@email.com"
+            "email": "user@test.com"
           }]""",
         ).withStatus(200),
       ),
@@ -140,7 +140,7 @@ class DeliusMockServer : WireMockServer(8093) {
                     "description": "probationArea-description-1"
                   },
                   "unallocated": false,
-                  "email": "user@email.com"
+                  "email": "user@test.com"
                 },
                 {
                   "code": "staff-code-2",
@@ -229,7 +229,7 @@ class DeliusMockServer : WireMockServer(8093) {
                   "description": "probationArea-description-1"
                 },
                 "unallocated": false,
-                "email": "user@email.com"
+                "email": "user@test.com"
               },
               {
                 "code": "staff-code-2",
