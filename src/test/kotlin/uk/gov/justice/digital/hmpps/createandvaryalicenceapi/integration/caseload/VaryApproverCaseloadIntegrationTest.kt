@@ -1,0 +1,125 @@
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.caseload
+
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus.FORBIDDEN
+import org.springframework.http.HttpStatus.OK
+import org.springframework.http.HttpStatus.UNAUTHORIZED
+import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import kotlin.text.Charsets.UTF_8
+
+private const val DELIUS_STAFF_IDENTIFIER = 3492L
+private const val GET_VARY_APPROVER_CASELOAD = "/caseload/vary-approver"
+
+class VaryApproverCaseloadIntegrationTest : IntegrationTestBase() {
+
+  fun readFile(filename: String): String = this.javaClass.getResourceAsStream("/test_data/integration/caseload/$filename.json")!!.bufferedReader(UTF_8)
+    .readText()
+
+  @Nested
+  inner class GetVaryApproverCaseload {
+    private val caseSearchRequest = VaryApproverCaseloadSearchRequest(probationAreaCode = "N55")
+
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.post()
+        .uri(GET_VARY_APPROVER_CASELOAD)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
+        .bodyValue(caseSearchRequest)
+        .exchange()
+        .expectStatus().isForbidden
+        .expectStatus().isEqualTo(FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.post()
+        .uri(GET_VARY_APPROVER_CASELOAD)
+        .accept(APPLICATION_JSON)
+        .bodyValue(caseSearchRequest)
+        .exchange()
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
+    }
+
+    @Sql(
+      "classpath:test_data/seed-variation-submitted-licence.sql",
+    )
+    @Test
+    fun `Successfully retrieve vary approver caseload`() {
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
+      deliusMockServer.stubGetProbationCases()
+      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+      val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
+      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
+        readFile("vary-approver-case-load-prisoners").replace(
+          "\$releaseDate",
+          releaseDate,
+        ),
+      )
+      prisonApiMockServer.stubGetCourtOutcomes()
+
+      val caseload = webTestClient.post()
+        .uri(GET_VARY_APPROVER_CASELOAD)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .bodyValue(caseSearchRequest)
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<List<VaryApproverCase>>())
+        .returnResult().responseBody!!
+
+      assertThat(caseload).hasSize(1)
+      with(caseload.first()) {
+        assertThat(crnNumber).isEqualTo("X12349")
+        assertThat(name).isEqualTo("Test2 Person2")
+      }
+    }
+  }
+
+  private companion object {
+    val prisonerSearchApiMockServer = PrisonerSearchMockServer()
+    val deliusMockServer = DeliusMockServer()
+    val govUkMockServer = GovUkMockServer()
+    val prisonApiMockServer = PrisonApiMockServer()
+
+    @JvmStatic
+    @BeforeAll
+    fun startMocks() {
+      prisonerSearchApiMockServer.start()
+      deliusMockServer.start()
+      govUkMockServer.start()
+      govUkMockServer.stubGetBankHolidaysForEnglandAndWales()
+      prisonApiMockServer.start()
+    }
+
+    @JvmStatic
+    @AfterAll
+    fun stopMocks() {
+      prisonerSearchApiMockServer.stop()
+      deliusMockServer.stop()
+      govUkMockServer.stop()
+      prisonApiMockServer.stop()
+    }
+  }
+}

@@ -138,7 +138,7 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     """.trimIndent()
 
     stubFor(
-      WireMock.get(WireMock.urlEqualTo("/postcode?postcode=$postcode&key=$apiKey"))
+      WireMock.get(WireMock.urlEqualTo("/postcode?postcode=$postcode&key=$apiKey&offset=$offset&maxresults=$maxResults"))
         .willReturn(
           WireMock.aResponse().withHeader(
             "Content-Type",
@@ -150,7 +150,7 @@ class OsPlacesMockServer(private val apiKey: String) : WireMockServer(OS_PLACES_
     )
   }
 
-  fun stubGetAddressesForIrregularPostcode(postcode: String) {
+  fun stubGetAddressesForIrregularPostcode(postcode: String, offset: Int = 0, maxResults: Int = 50) {
     val json = """{
       "header": {
         "uri": "https://api.os.uk/search/places/v1/postcode?postcode=$postcode",

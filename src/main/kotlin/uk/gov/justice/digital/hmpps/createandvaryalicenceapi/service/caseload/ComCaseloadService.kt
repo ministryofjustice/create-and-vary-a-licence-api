@@ -161,11 +161,6 @@ class ComCaseloadService(
                 crn = case.deliusRecord?.managedOffenderCrn?.crn,
                 nomisId = case.nomisRecord.prisonerNumber,
                 name = name,
-                hardStopDate = null,
-                hardStopWarningDate = null,
-                isDueToBeReleasedInTheNextTwoWorkingDays = false,
-                releaseDate = null,
-                isReviewNeeded = false,
               ),
             ),
           )

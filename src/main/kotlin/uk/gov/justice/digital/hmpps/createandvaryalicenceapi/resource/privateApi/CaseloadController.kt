@@ -29,12 +29,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonerNumbers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ReleaseDateSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.VaryApproverCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
 
 @Tag(
   name = Tags.CASELOAD,
@@ -47,6 +50,7 @@ class CaseloadController(
   val approverCaseloadService: ApproverCaseloadService,
   val caCaseloadService: CaCaseloadService,
   val comCaseloadService: ComCaseloadService,
+  val varyApproverCaseloadService: VaryApproverCaseloadService,
 ) {
 
   @PostMapping("/prisoner-search/prisoner-numbers")
@@ -600,6 +604,51 @@ class CaseloadController(
     ],
   )
   fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
+
+  @PostMapping("/caseload/vary-approver")
+  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @Operation(
+    summary = "Returns the variation approver caseload for a probation region",
+    description = "Returns an enriched list of cases for people that have a variation to be approved",
+    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Returns a list of cases with variations awaiting approval",
+        content = [
+          Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = VaryApproverCase::class)),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [
+          Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  fun getVaryApproverCaseload(
+    @Parameter(required = true) @Valid @RequestBody varyApproverCaseloadSearchRequest: VaryApproverCaseloadSearchRequest,
+  ): List<VaryApproverCase> = varyApproverCaseloadService.getVaryApproverCaseload(varyApproverCaseloadSearchRequest)
 }
 
 class SearchResultsPage : PagedModel<CaseloadItem>(Page.empty())
