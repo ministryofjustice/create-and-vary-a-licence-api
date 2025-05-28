@@ -535,7 +535,7 @@ class LicenceOverrideServiceTest {
   fun `Override prisoner details updates licence and creates audit event`() {
     val licence = activeLicence.copy()
     whenever(licenceRepository.findById(licence.id)).thenReturn(Optional.of(licence))
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
     val request = OverrideLicencePrisonerDetailsRequest(
       forename = "New",
@@ -551,7 +551,7 @@ class LicenceOverrideServiceTest {
 
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(staffRepository, times(1)).findByUsernameIgnoreCase("smills")
+    verify(staffRepository, times(1)).findByUsernameIgnoreCase("tcom")
 
     assertThat(licenceCaptor.value)
       .extracting("forename", "middleNames", "surname", "dateOfBirth")
