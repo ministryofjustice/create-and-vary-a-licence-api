@@ -59,12 +59,12 @@ class LicenceTypeOverrideServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
     reset(staffRepository, licenceRepository)
 
-    whenever(staffRepository.findByUsernameIgnoreCase("smills")).thenReturn(aCom)
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
   }
 
   @Test
@@ -142,7 +142,7 @@ class LicenceTypeOverrideServiceTest {
       argumentCaptor<AuditEvent>().apply {
         verify(auditEventRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.detail).isEqualTo("ID 1 type AP status IN_PROGRESS version 1.1")
-        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.username).isEqualTo("tcom")
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from PSS to AP: Test change to AP")
         assertThat(firstValue.changes).containsEntry("oldType", "PSS")
         assertThat(firstValue.changes).containsEntry("newType", "AP")
@@ -175,7 +175,7 @@ class LicenceTypeOverrideServiceTest {
       argumentCaptor<AuditEvent>().apply {
         verify(auditEventRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.detail).isEqualTo("ID 1 type AP status IN_PROGRESS version 1.1")
-        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.username).isEqualTo("tcom")
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from AP_PSS to AP: Test change to AP")
         assertThat(firstValue.changes).containsEntry("oldType", "AP_PSS")
         assertThat(firstValue.changes).containsEntry("newType", "AP")
@@ -286,7 +286,7 @@ class LicenceTypeOverrideServiceTest {
       argumentCaptor<AuditEvent>().apply {
         verify(auditEventRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.detail).isEqualTo("ID 1 type PSS status IN_PROGRESS version 1.1")
-        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.username).isEqualTo("tcom")
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from AP to PSS: Test change to PSS")
         assertThat(firstValue.changes).containsEntry("oldType", "AP")
         assertThat(firstValue.changes).containsEntry("newType", "PSS")
@@ -315,7 +315,7 @@ class LicenceTypeOverrideServiceTest {
       argumentCaptor<AuditEvent>().apply {
         verify(auditEventRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.detail).isEqualTo("ID 1 type PSS status IN_PROGRESS version 1.1")
-        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.username).isEqualTo("tcom")
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from AP_PSS to PSS: Test change to PSS")
         assertThat(firstValue.changes).containsEntry("oldType", "AP_PSS")
         assertThat(firstValue.changes).containsEntry("newType", "PSS")
@@ -420,7 +420,7 @@ class LicenceTypeOverrideServiceTest {
       argumentCaptor<AuditEvent>().apply {
         verify(auditEventRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.detail).isEqualTo("ID 1 type AP_PSS status IN_PROGRESS version 1.1")
-        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.username).isEqualTo("tcom")
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from AP to AP_PSS: Test change to AP_PSS")
         assertThat(firstValue.changes).containsEntry("oldType", "AP")
         assertThat(firstValue.changes).containsEntry("newType", "AP_PSS")
@@ -450,7 +450,7 @@ class LicenceTypeOverrideServiceTest {
       argumentCaptor<AuditEvent>().apply {
         verify(auditEventRepository, times(1)).saveAndFlush(capture())
         assertThat(firstValue.detail).isEqualTo("ID 1 type AP_PSS status IN_PROGRESS version 1.1")
-        assertThat(firstValue.username).isEqualTo("smills")
+        assertThat(firstValue.username).isEqualTo("tcom")
         assertThat(firstValue.summary).isEqualTo("Licence type overridden for John Smith: from PSS to AP_PSS: Test change to AP_PSS")
         assertThat(firstValue.changes).containsEntry("oldType", "PSS")
         assertThat(firstValue.changes).containsEntry("newType", "AP_PSS")
