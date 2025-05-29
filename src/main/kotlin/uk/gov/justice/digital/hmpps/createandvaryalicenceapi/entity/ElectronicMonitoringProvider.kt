@@ -8,6 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDateTime
 
 @Entity
@@ -15,7 +16,8 @@ import java.time.LocalDateTime
 data class ElectronicMonitoringProvider(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = 0,
+  @NotNull
+  val id: Long = -1L,
 
   @OneToOne
   @JoinColumn(name = "licence_id", nullable = false, unique = true)
