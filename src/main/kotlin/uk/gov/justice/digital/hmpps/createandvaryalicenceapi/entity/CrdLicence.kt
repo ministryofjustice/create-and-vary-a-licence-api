@@ -4,7 +4,9 @@ import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.CascadeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -80,6 +82,9 @@ class CrdLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
+
+  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true)
+  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.CRD,
@@ -198,6 +203,7 @@ class CrdLicence(
     versionOfId: Long? = this.versionOfId,
     licenceVersion: String? = this.licenceVersion,
     updatedBy: Staff? = this.updatedBy,
+    electronicMonitoringProvider: ElectronicMonitoringProvider? = this.electronicMonitoringProvider,
   ): CrdLicence = CrdLicence(
     id = id,
     typeCode = typeCode,
@@ -257,6 +263,7 @@ class CrdLicence(
     versionOfId = versionOfId,
     licenceVersion = licenceVersion,
     updatedBy = updatedBy,
+    electronicMonitoringProvider = electronicMonitoringProvider,
   )
 
   override fun activate() = copy(
@@ -446,6 +453,7 @@ class CrdLicence(
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy" +
+    "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 
   override fun equals(other: Any?): Boolean {

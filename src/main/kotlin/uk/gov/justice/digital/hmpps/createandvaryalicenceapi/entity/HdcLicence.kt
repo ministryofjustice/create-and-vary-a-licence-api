@@ -93,6 +93,9 @@ class HdcLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
+
+  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true , orphanRemoval = true)
+  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -216,6 +219,7 @@ class HdcLicence(
     licenceVersion: String? = this.licenceVersion,
     updatedBy: Staff? = this.updatedBy,
     curfewAddress: HdcCurfewAddress? = this.curfewAddress,
+    electronicMonitoringProvider: ElectronicMonitoringProvider? = this.electronicMonitoringProvider,
   ): HdcLicence = HdcLicence(
     id = id,
     typeCode = typeCode,
@@ -279,6 +283,7 @@ class HdcLicence(
     licenceVersion = licenceVersion,
     updatedBy = updatedBy,
     curfewAddress = curfewAddress,
+    electronicMonitoringProvider = electronicMonitoringProvider,
   )
 
   override fun activate() = copy(
@@ -482,6 +487,7 @@ class HdcLicence(
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy," +
     "curfewAddress=$curfewAddress" +
+    "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 
   override fun equals(other: Any?): Boolean {
