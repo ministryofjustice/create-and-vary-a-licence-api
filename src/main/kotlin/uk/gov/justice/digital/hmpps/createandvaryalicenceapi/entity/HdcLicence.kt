@@ -94,7 +94,7 @@ class HdcLicence(
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true , orphanRemoval = true)
+  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true, orphanRemoval = true)
   val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,

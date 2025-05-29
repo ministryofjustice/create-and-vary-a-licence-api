@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
-import jakarta.persistence.OneToOne
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.Column
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
@@ -31,5 +31,5 @@ data class ElectronicMonitoringProvider(
   val dateCreated: LocalDateTime = LocalDateTime.now(),
 
   @Column(name = "last_update_date", nullable = false)
-  val dateLastUpdated: LocalDateTime = LocalDateTime.now()
+  val dateLastUpdated: LocalDateTime = LocalDateTime.now(),
 )
