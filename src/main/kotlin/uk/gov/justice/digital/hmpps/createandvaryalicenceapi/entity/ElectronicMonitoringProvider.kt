@@ -27,9 +27,9 @@ data class ElectronicMonitoringProvider(
   @Column(name = "programme_name", length = 100)
   val programmeName: String? = null,
 
-  @Column(name = "create_date", nullable = false, updatable = false)
+  @Column(name = "date_created", nullable = false, updatable = false)
   val dateCreated: LocalDateTime = LocalDateTime.now(),
 
-  @Column(name = "last_update_date", nullable = false)
+  @Column(name = "date_last_updated", nullable = false)
   val dateLastUpdated: LocalDateTime = LocalDateTime.now(),
 )
