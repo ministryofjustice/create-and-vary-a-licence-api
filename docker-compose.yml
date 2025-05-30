@@ -44,6 +44,3 @@ services:
 
 networks:
   hmpps:
-
-volumes:
-  pgdata:

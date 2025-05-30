@@ -37,7 +37,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       "\"https://hmpps-workload.hmpps.service.justice.gov.uk/allocation/person/1d9ab4b2-7b80-4784-8104-f9a77fd93a31",
       1,
       "2025-04-07T11:56:00Z",
-      "Licence activated for 1",
+      "Person allocated event",
       PersonReference(
         listOf(
           Identifiers("CRN", crn),
