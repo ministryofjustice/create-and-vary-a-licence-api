@@ -8,7 +8,6 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import java.util.concurrent.TimeUnit
 
@@ -44,6 +43,6 @@ class OutboundEventsPublisher(
         )
         .build(),
     ).get(FUTURE_TIMEOUT, TimeUnit.MILLISECONDS)
-    log.info("Event {} raised for licence ID {}", eventType, event.additionalInformation?.licenceId)
+    log.info("Event {} raised for licence ID {}", eventType, event.additionalInformation["licenceId"])
   }
 }

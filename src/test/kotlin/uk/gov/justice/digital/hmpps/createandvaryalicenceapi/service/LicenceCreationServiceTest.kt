@@ -26,7 +26,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -60,9 +59,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -138,7 +135,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2022, 10, 10))
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -196,7 +193,7 @@ class LicenceCreationServiceTest {
         offender,
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -218,7 +215,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult.copy(croNumber = null),
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -240,7 +237,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -262,7 +259,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -279,7 +276,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -304,7 +301,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -334,7 +331,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CrdLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -356,7 +353,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -395,13 +392,13 @@ class LicenceCreationServiceTest {
       whenever(
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
-            prisonNumber,
+            PRISON_NUMBER,
             listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
           ),
       ).thenReturn(listOf(existingLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createLicence(prisonNumber)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -424,13 +421,13 @@ class LicenceCreationServiceTest {
       whenever(
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
-            prisonNumber,
+            PRISON_NUMBER,
             listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
           ),
       ).thenReturn(listOf(approvedLicence, notApprovedLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createLicence(prisonNumber)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -453,7 +450,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createLicence(prisonNumber)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -473,7 +470,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createLicence(prisonNumber)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -495,7 +492,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createLicence(prisonNumber)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -518,7 +515,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
       whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
-      service.createLicence(prisonNumber)
+      service.createLicence(PRISON_NUMBER)
 
       argumentCaptor<CommunityOffenderManager>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
@@ -554,7 +551,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createLicence(prisonNumber)
+        service.createLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -605,7 +602,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
       whenever(releaseDateService.getLicenceStartDate(any(), any())).thenReturn(LocalDate.of(2022, 10, 10))
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
@@ -657,7 +654,7 @@ class LicenceCreationServiceTest {
       )
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -679,7 +676,7 @@ class LicenceCreationServiceTest {
         offender,
       )
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -699,7 +696,7 @@ class LicenceCreationServiceTest {
       )
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult.copy(croNumber = null))
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -721,7 +718,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -743,7 +740,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -770,7 +767,7 @@ class LicenceCreationServiceTest {
         ),
       ).thenReturn(listOf(previousLicence))
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -787,7 +784,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -821,7 +818,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -852,7 +849,7 @@ class LicenceCreationServiceTest {
         aProbationCaseResult,
       )
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<HardStopLicence>().apply {
         verify(licenceRepository, times(1)).saveAndFlush(capture())
@@ -882,7 +879,7 @@ class LicenceCreationServiceTest {
       whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(anyList())).thenReturn(listOf(aPrisonerSearchResult))
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
       val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
@@ -922,13 +919,13 @@ class LicenceCreationServiceTest {
       whenever(
         licenceRepository
           .findAllByNomsIdAndStatusCodeIn(
-            prisonNumber,
+            PRISON_NUMBER,
             listOf(IN_PROGRESS, SUBMITTED, APPROVED, REJECTED),
           ),
       ).thenReturn(listOf(existingLicence))
 
       val exception = assertThrows<ResourceAlreadyExistsException> {
-        service.createHardStopLicence(prisonNumber)
+        service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -950,7 +947,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getOffenderManager(any())).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createHardStopLicence(prisonNumber)
+        service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -970,7 +967,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createHardStopLicence(prisonNumber)
+        service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -992,7 +989,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByStaffIdentifier(2000)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createHardStopLicence(prisonNumber)
+        service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -1015,7 +1012,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getStaffByIdentifier(any())).thenReturn(comUser)
       whenever(staffRepository.saveAndFlush(any())).thenReturn(newCom)
 
-      service.createHardStopLicence(prisonNumber)
+      service.createHardStopLicence(PRISON_NUMBER)
 
       argumentCaptor<CommunityOffenderManager>().apply {
         verify(staffRepository, times(1)).saveAndFlush(capture())
@@ -1051,7 +1048,7 @@ class LicenceCreationServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase(prisonUser.username)).thenReturn(null)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createHardStopLicence(prisonNumber)
+        service.createHardStopLicence(PRISON_NUMBER)
       }
 
       assertThat(exception)
@@ -1110,7 +1107,7 @@ class LicenceCreationServiceTest {
       whenever(hdcService.getHdcLicenceDataByBookingId(any())).thenReturn(someHdcLicenceData)
       whenever(hdcService.getHdcLicenceData(any())).thenReturn(someHdcLicenceData)
 
-      service.createHdcLicence(prisonNumber)
+      service.createHdcLicence(PRISON_NUMBER)
 
       val hdcCurfewAddressCaptor = ArgumentCaptor.forClass(EntityHdcCurfewAddress::class.java)
       val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1172,7 +1169,7 @@ class LicenceCreationServiceTest {
       whenever(deliusApiClient.getProbationCase(any())).thenReturn(aProbationCaseResult)
 
       val exception = assertThrows<IllegalStateException> {
-        service.createHdcLicence(prisonNumber)
+        service.createHdcLicence(PRISON_NUMBER)
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
@@ -1210,7 +1207,7 @@ class LicenceCreationServiceTest {
       ).thenThrow(IllegalStateException("HDC licence for ${aPrisonerSearchResult.prisonerNumber} could not be created as there is no curfew address"))
 
       val exception = assertThrows<IllegalStateException> {
-        service.createHdcLicence(prisonNumber)
+        service.createHdcLicence(PRISON_NUMBER)
       }
 
       assertThat(exception).isInstanceOf(IllegalStateException::class.java)
@@ -1225,7 +1222,7 @@ class LicenceCreationServiceTest {
   }
 
   private companion object {
-    val prisonNumber = "NOMSID"
+    const val PRISON_NUMBER = "NOMSID"
     val aProbationCaseResult = ProbationCase(
       crn = "X12345",
       croNumber = "AB01/234567C",
@@ -1274,6 +1271,7 @@ class LicenceCreationServiceTest {
         name = Name("com", null, "user"),
         allocationDate = LocalDate.of(2000, 1, 1),
         unallocated = false,
+        username = "aComUser",
       )
 
     val com = CommunityOffenderManager(
@@ -1320,66 +1318,6 @@ class LicenceCreationServiceTest {
       null,
       "AB1 2CD",
     )
-
-    val aModelSetOfCurfewTimes =
-      listOf(
-        HdcCurfewTimes(
-          1L,
-          1,
-          DayOfWeek.MONDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.TUESDAY,
-          LocalTime.of(8, 0),
-        ),
-        HdcCurfewTimes(
-          1L,
-          2,
-          DayOfWeek.TUESDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.WEDNESDAY,
-          LocalTime.of(8, 0),
-        ),
-        HdcCurfewTimes(
-          1L,
-          3,
-          DayOfWeek.WEDNESDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.THURSDAY,
-          LocalTime.of(8, 0),
-        ),
-        HdcCurfewTimes(
-          1L,
-          4,
-          DayOfWeek.THURSDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.FRIDAY,
-          LocalTime.of(8, 0),
-        ),
-        HdcCurfewTimes(
-          1L,
-          5,
-          DayOfWeek.FRIDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.SATURDAY,
-          LocalTime.of(8, 0),
-        ),
-        HdcCurfewTimes(
-          1L,
-          6,
-          DayOfWeek.SATURDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.SUNDAY,
-          LocalTime.of(8, 0),
-        ),
-        HdcCurfewTimes(
-          1L,
-          7,
-          DayOfWeek.SUNDAY,
-          LocalTime.of(20, 0),
-          DayOfWeek.MONDAY,
-          LocalTime.of(8, 0),
-        ),
-      )
 
     val someHdcLicenceData = HdcLicenceData(
       licenceId = 1L,

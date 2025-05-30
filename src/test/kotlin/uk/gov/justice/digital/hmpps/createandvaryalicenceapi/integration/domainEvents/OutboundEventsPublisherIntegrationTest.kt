@@ -10,23 +10,27 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Message
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
 class OutboundEventsPublisherIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `Outbound licence activated event is published to domain event topic`() {
-    val sentEvent = DomainEventsService.HMPPSDomainEvent(
+    val sentEvent = HMPPSDomainEvent(
       DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value,
-      DomainEventsService.AdditionalInformation("1"),
+      additionalInformation = mapOf("licenceId" to "1"),
       "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
       1,
       "2023-12-05T00:00:00Z",
       "Licence activated for 1",
-      DomainEventsService.PersonReference(
+      PersonReference(
         listOf(
-          DomainEventsService.Identifiers("CRN", "A123456"),
-          DomainEventsService.Identifiers("NOMS", "A1234BC"),
+          Identifiers("CRN", "A123456"),
+          Identifiers("NOMS", "A1234BC"),
         ),
       ),
     )
@@ -51,7 +55,7 @@ class OutboundEventsPublisherIntegrationTest : IntegrationTestBase() {
       ).get().messages()[0].body(),
       Message::class.java,
     )
-    val receivedEvent = mapper.readValue(receivedMessage, DomainEventsService.HMPPSDomainEvent::class.java)
+    val receivedEvent = mapper.readValue(receivedMessage, HMPPSDomainEvent::class.java)
 
     assertThat(receivedEvent.eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_ACTIVATED.value)
     assertThat(receivedEvent.description).isEqualTo("Licence activated for 1")

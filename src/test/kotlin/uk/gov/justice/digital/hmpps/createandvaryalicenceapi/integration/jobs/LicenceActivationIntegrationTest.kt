@@ -20,8 +20,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -48,7 +48,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       verify(eventsPublisher, times(8)).publishDomainEvent(capture())
 
       assertThat(allValues)
-        .extracting<Tuple> { tuple(it.eventType, it.additionalInformation?.licenceId) }
+        .extracting<Tuple> { tuple(it.eventType, it.additionalInformation["licenceId"]) }
         .containsExactly(
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "1"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "2"),

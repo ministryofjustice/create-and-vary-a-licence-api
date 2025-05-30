@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -148,4 +149,11 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(typeReference<CaseloadResponse>())
     .block() ?: error("Unexpected null response from Delius staff caseload")
+
+  fun assignDeliusRole(username: String): ResponseEntity<Void> = deliusApiWebClient.put()
+    .uri("/users/$username/roles")
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .toBodilessEntity()
+    .block() ?: error("Unexpected response while assigning delius role for user: $username")
 }

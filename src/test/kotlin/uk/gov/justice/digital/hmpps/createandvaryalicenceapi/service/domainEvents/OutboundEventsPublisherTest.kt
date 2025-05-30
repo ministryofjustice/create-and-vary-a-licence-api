@@ -18,11 +18,7 @@ import software.amazon.awssdk.services.sns.SnsAsyncClient
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import software.amazon.awssdk.services.sns.model.PublishResponse
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.AdditionalInformation
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.HMPPSDomainEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.LicenceDomainEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService.PersonReference
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsTopic
 import java.util.concurrent.CompletableFuture
@@ -59,7 +55,8 @@ class OutboundEventsPublisherTest {
         .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType)
+              .build(),
           ),
         )
         .build()
@@ -407,7 +404,8 @@ class OutboundEventsPublisherTest {
       .message(objectMapper.writeValueAsString(aHMPPSDomainEvent))
       .messageAttributes(
         mapOf(
-          "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType).build(),
+          "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(aHMPPSDomainEvent.eventType)
+            .build(),
         ),
       )
       .build()
@@ -426,7 +424,7 @@ class OutboundEventsPublisherTest {
 
     val aHMPPSDomainEvent = HMPPSDomainEvent(
       LicenceDomainEventType.LICENCE_ACTIVATED.value,
-      AdditionalInformation("1"),
+      additionalInformation = mapOf("licenceId" to "1"),
       "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk/public/licences/id/1",
       1,
       "2023-12-05T00:00:00Z",

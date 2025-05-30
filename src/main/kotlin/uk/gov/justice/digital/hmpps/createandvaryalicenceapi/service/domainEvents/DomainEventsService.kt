@@ -51,7 +51,7 @@ class DomainEventsService(
     nomsNumber: String?,
     description: String,
   ): HMPPSDomainEvent {
-    val additionalInformation = AdditionalInformation(licenceId)
+    val additionalInformation = mapOf("licenceId" to licenceId)
     val personReferenceIdentifiers = PersonReference(
       listOf(Identifiers("CRN", crn), Identifiers("NOMS", nomsNumber)),
     )
@@ -67,29 +67,6 @@ class DomainEventsService(
       personReferenceIdentifiers,
     )
   }
-
-  data class AdditionalInformation(
-    val licenceId: String,
-  )
-
-  data class PersonReference(
-    val identifiers: List<Identifiers>,
-  )
-
-  data class Identifiers(
-    val type: String,
-    val value: String?,
-  )
-
-  data class HMPPSDomainEvent(
-    val eventType: String? = null,
-    val additionalInformation: AdditionalInformation?,
-    val detailUrl: String,
-    val version: Int,
-    val occurredAt: String,
-    val description: String,
-    val personReference: PersonReference,
-  )
 
   enum class LicenceDomainEventType(val value: String) {
     LICENCE_ACTIVATED("create-and-vary-a-licence.licence.activated"),
