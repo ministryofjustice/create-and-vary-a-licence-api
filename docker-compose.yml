@@ -12,7 +12,7 @@ services:
       - POSTGRES_USER=cvl
       - POSTGRES_DB=create-and-vary-a-licence-db
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d create-and-vary-a-licence-db -U cvl"]
+      test: [ "CMD-SHELL", "pg_isready -d create-and-vary-a-licence-db -U cvl" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,3 +44,6 @@ services:
 
 networks:
   hmpps:
+
+volumes:
+  pgdata:
