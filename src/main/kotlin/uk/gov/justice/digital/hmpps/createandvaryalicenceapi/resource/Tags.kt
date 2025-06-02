@@ -20,5 +20,6 @@ class Tags {
     const val OFFENDER = "Offender"
     const val SAR = "Subject Access Request"
     const val HDC_LICENCE_CURFEW_TIMES = "HDC Licence Curfew Times"
+    const val ELECTRONIC_MONITORING_PROGRAMME = "Electronic Monitoring Programme"
   }
 }

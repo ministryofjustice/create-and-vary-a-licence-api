@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -354,6 +355,23 @@ class LicenceConditionService(
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
     auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
+  }
+
+  @Transactional
+  fun updateElectronicMonitoringProgramme(licenceId: Long, body: ElectronicMonitoringProgrammeRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+//    val username = SecurityContextHolder.getContext().authentication.name
+//
+//    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+//
+//    val updatedLicence = licenceEntity.updateElectronicMonitoringProgramme(body)
+//
+//    licenceRepository.saveAndFlush(updatedLicence)
+//
+//    auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, body, staffMember)
   }
 
   companion object {
