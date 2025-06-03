@@ -97,12 +97,12 @@ class LicenceConditionService(
       ),
     )
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedAdditionalConditions = newConditions,
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
     val newCondition =
@@ -158,12 +158,12 @@ class LicenceConditionService(
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedAdditionalConditions = (newConditions + updatedConditions),
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
     removedConditions.forEach { oldCondition ->
@@ -242,11 +242,11 @@ class LicenceConditionService(
       return
     }
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedBespokeConditions = emptyList(),
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // Replace the bespoke conditions
     request.conditions.forEachIndexed { index, condition ->
@@ -300,14 +300,13 @@ class LicenceConditionService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicence = licenceEntity.updateConditions(staffMember = staffMember)
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceEntity.updateConditions(staffMember = staffMember)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
 
-  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
-    conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
+  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
   fun deleteConditions(
@@ -344,13 +343,13 @@ class LicenceConditionService(
     val removedBespokeConditions =
       licenceEntity.bespokeConditions.filter { bespokeConditionIds.contains(it.id) }
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedAdditionalConditions = revisedAdditionalConditions,
       updatedStandardConditions = revisedStandardConditions,
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
