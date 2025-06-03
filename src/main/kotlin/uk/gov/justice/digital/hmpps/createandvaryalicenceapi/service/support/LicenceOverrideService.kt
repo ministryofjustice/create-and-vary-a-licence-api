@@ -64,13 +64,12 @@ class LicenceOverrideService(
       )
     }
 
-    licenceRepository.saveAndFlush(
-      licence.overrideStatus(
-        statusCode = newStatus,
-        staffMember = staffMember,
-        licenceActivatedDate = licenceActivatedDate,
-      ),
+    licence.overrideStatus(
+      statusCode = newStatus,
+      staffMember = staffMember,
+      licenceActivatedDate = licenceActivatedDate,
     )
+    licenceRepository.saveAndFlush(licence)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(

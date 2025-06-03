@@ -326,18 +326,6 @@ class VariationLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  override fun overrideStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    dateLastUpdated = LocalDateTime.now(),
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
   override fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>?,
     updatedStandardConditions: List<StandardCondition>?,
