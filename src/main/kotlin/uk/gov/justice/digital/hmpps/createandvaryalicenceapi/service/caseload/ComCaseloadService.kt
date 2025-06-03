@@ -264,10 +264,10 @@ class ComCaseloadService(
     }
   }
 
-  private fun getComDetails(crnsToLicences: Map<ManagedOffenderCrn, LicenceSummary>): Map<String?, ProbationPractitioner> {
-    val comUsernames = crnsToLicences.mapNotNull { (_, licence) -> licence.comUsername }.distinct()
+  private fun getComDetails(casesToLicences: Map<ManagedOffenderCrn, LicenceSummary>): Map<String?, ProbationPractitioner> {
+    val comUsernames = casesToLicences.mapNotNull { (_, licence) -> licence.comUsername }.distinct()
     val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames)
-    return crnsToLicences.map { (case, licence) ->
+    return casesToLicences.map { (case, licence) ->
       val com = coms.find { c -> licence.comUsername?.lowercase() == c.username?.lowercase() }
       if (com != null) {
         case.crn to ProbationPractitioner(
