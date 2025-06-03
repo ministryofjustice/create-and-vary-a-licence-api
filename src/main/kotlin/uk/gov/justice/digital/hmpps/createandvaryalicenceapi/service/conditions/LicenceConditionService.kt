@@ -309,7 +309,8 @@ class LicenceConditionService(
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
 
-  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
+  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
+    conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
   fun deleteConditions(
