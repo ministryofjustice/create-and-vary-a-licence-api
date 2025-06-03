@@ -55,14 +55,14 @@ class LicenceConditionService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedStandardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
       staffMember = staffMember,
     )
 
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion, staffMember)
   }
 
@@ -306,7 +306,8 @@ class LicenceConditionService(
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
 
-  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
+  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
+    conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
   fun deleteConditions(

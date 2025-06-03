@@ -115,17 +115,17 @@ abstract class Licence(
   )
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
-  var standardConditions: List<StandardCondition> = emptyList(),
+  var standardConditions: MutableList<StandardCondition> = mutableListOf(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
-  val additionalConditions: List<AdditionalCondition> = emptyList(),
+  var additionalConditions: MutableList<AdditionalCondition> = mutableListOf(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
-  val bespokeConditions: List<BespokeCondition> = emptyList(),
+  var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
@@ -238,12 +238,29 @@ abstract class Licence(
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  abstract fun updateConditions(
+  fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>? = null,
     updatedStandardConditions: List<StandardCondition>? = null,
     updatedBespokeConditions: List<BespokeCondition>? = null,
     staffMember: Staff?,
-  ): Licence
+  ) {
+    if (updatedAdditionalConditions != null) {
+      this.additionalConditions.clear()
+      this.additionalConditions.addAll(updatedAdditionalConditions)
+    }
+    if (updatedStandardConditions != null) {
+      this.standardConditions.clear()
+      this.standardConditions.addAll(updatedStandardConditions)
+    }
+    if (updatedBespokeConditions != null) {
+      this.bespokeConditions.clear()
+      this.bespokeConditions.addAll(updatedBespokeConditions)
+    }
+
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   fun updateLicenceDates(
     status: LicenceStatus? = null,
