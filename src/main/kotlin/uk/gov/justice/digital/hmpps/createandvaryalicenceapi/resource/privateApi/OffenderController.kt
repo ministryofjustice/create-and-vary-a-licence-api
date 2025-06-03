@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.core.env.Environment
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,11 +23,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Updat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DOMAIN_EVENT_LISTENER_ENABLED_PROFILE
 
 @RestController
 @Tag(name = Tags.OFFENDER)
 @RequestMapping("/offender", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenderController(
+  private val environment: Environment,
   private val offenderService: OffenderService,
   private val staffService: StaffService,
 ) {
@@ -68,8 +71,10 @@ class OffenderController(
     @Valid @RequestBody
     body: UpdateComRequest,
   ) {
-    val newCom = this.staffService.updateComDetails(body)
-    this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
+    if (!environment.activeProfiles.contains(DOMAIN_EVENT_LISTENER_ENABLED_PROFILE)) {
+      val newCom = this.staffService.updateComDetails(body)
+      this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
+    }
   }
 
   @PutMapping(
@@ -110,7 +115,9 @@ class OffenderController(
     @Valid @RequestBody
     body: UpdateProbationTeamRequest,
   ) {
-    this.offenderService.updateProbationTeam(crn, body)
+    if (!environment.activeProfiles.contains(DOMAIN_EVENT_LISTENER_ENABLED_PROFILE)) {
+      this.offenderService.updateProbationTeam(crn, body)
+    }
   }
 
   @PutMapping(value = ["nomisid/{nomsId}/update-offender-details"])

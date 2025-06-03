@@ -14,13 +14,14 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.COM_ALLOCATED_EVENT_TYPE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DOMAIN_EVENT_LISTENER_ENABLED_PROFILE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import java.time.Duration
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@ActiveProfiles("domain-event-listener-enabled")
+@ActiveProfiles(DOMAIN_EVENT_LISTENER_ENABLED_PROFILE)
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private val awaitAtMost30Secs
