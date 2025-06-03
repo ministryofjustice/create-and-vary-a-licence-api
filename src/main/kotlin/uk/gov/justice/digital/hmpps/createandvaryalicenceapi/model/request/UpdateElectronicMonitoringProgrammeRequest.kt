@@ -5,8 +5,6 @@ import jakarta.validation.Constraint
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 import jakarta.validation.Payload
-import jakarta.validation.constraints.NotNull
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewTimes
 import kotlin.reflect.KClass
 
 @ValidProgrammeName
@@ -25,13 +23,13 @@ data class ElectronicMonitoringProgrammeRequest(
 annotation class ValidProgrammeName(
   val message: String = "If 'isToBeTaggedForProgramme' is true, 'programmeName' must be provided",
   val groups: Array<KClass<*>> = [],
-  val payload: Array<KClass<out Payload>> = []
+  val payload: Array<KClass<out Payload>> = [],
 )
 
 class ProgrammeNameValidator : ConstraintValidator<ValidProgrammeName, ElectronicMonitoringProgrammeRequest> {
   override fun isValid(
     value: ElectronicMonitoringProgrammeRequest?,
-    context: ConstraintValidatorContext
+    context: ConstraintValidatorContext,
   ): Boolean {
     if (value == null) return true
     return !(value.isToBeTaggedForProgramme == true && value.programmeName.isNullOrBlank())

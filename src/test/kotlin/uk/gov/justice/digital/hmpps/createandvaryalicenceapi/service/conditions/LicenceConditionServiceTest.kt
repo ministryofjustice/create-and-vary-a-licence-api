@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Delet
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProgrammeRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
@@ -58,6 +59,7 @@ class LicenceConditionServiceTest {
   private val conditionFormatter = mock<ConditionFormatter>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
+  private val electronicMonitoringProgrammeRepository = mock<ElectronicMonitoringProgrammeRepository>()
 
   private val service = LicenceConditionService(
     licenceRepository,
@@ -68,6 +70,7 @@ class LicenceConditionServiceTest {
     policyService,
     auditService,
     staffRepository,
+    electronicMonitoringProgrammeRepository,
   )
 
   @BeforeEach
