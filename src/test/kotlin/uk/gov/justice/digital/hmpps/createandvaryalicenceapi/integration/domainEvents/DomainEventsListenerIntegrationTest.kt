@@ -8,20 +8,19 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
 import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.COM_ALLOCATED_EVENT_TYPE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DOMAIN_EVENT_LISTENER_ENABLED_PROFILE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.Identifiers
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.PersonReference
 import java.time.Duration
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@ActiveProfiles(DOMAIN_EVENT_LISTENER_ENABLED_PROFILE)
+@TestPropertySource(properties = ["domain.event.listener.enabled=true"])
 class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
   private val awaitAtMost30Secs
