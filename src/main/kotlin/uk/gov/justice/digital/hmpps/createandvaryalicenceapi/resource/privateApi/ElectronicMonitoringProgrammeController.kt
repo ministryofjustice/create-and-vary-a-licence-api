@@ -22,7 +22,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
-class ElectronicMonitoringProgrammeController {
+class ElectronicMonitoringProgrammeController(
+  private val licenceConditionService: LicenceConditionService
+) {
 
   @Tag(name = Tags.ELECTRONIC_MONITORING_PROGRAMME)
   @PostMapping(value = ["/id/{licenceId}/electronic-monitoring-programmes"])
@@ -84,5 +86,5 @@ class ElectronicMonitoringProgrammeController {
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     body: ElectronicMonitoringProgrammeRequest,
-  ) = LicenceConditionService.updateElectronicMonitoringProgramme(licenceId, body)
+  ) = licenceConditionService.updateElectronicMonitoringProgramme(licenceId, body)
 }

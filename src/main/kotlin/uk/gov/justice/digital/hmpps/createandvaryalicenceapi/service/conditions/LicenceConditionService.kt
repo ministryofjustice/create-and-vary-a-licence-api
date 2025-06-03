@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProgrammeRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transform
@@ -29,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformTo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditionalData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 
 @Service
 class LicenceConditionService(
@@ -40,6 +42,7 @@ class LicenceConditionService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
+  private val electronicMonitoringProgrammeRepository: ElectronicMonitoringProgrammeRepository,
 ) {
 
   @Transactional
@@ -358,20 +361,22 @@ class LicenceConditionService(
   }
 
   @Transactional
-  fun updateElectronicMonitoringProgramme(licenceId: Long, body: ElectronicMonitoringProgrammeRequest) {
+  fun updateElectronicMonitoringProgramme(licenceId: Long, request: ElectronicMonitoringProgrammeRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
-//    val username = SecurityContextHolder.getContext().authentication.name
-//
-//    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
-//
-//    val updatedLicence = licenceEntity.updateElectronicMonitoringProgramme(body)
-//
-//    licenceRepository.saveAndFlush(updatedLicence)
-//
-//    auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, body, staffMember)
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    val electronicMonitoringProvider = EntityElectronicMonitoringProvider(
+      isToBeTaggedForProgramme = request.isToBeTaggedForProgramme,
+      programmeName = request.programmeName,
+      licence = licenceEntity,
+    )
+    electronicMonitoringProgrammeRepository.save(electronicMonitoringProvider)
+
+    auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, request, staffMember)
   }
 
   companion object {
