@@ -79,7 +79,13 @@ class HdcLicence(
   responsibleCom: CommunityOffenderManager? = null,
   updatedBy: Staff? = null,
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true, targetEntity = HdcCurfewTimes::class)
+  @OneToMany(
+    mappedBy = "licence",
+    fetch = FetchType.LAZY,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+    targetEntity = HdcCurfewTimes::class,
+  )
   @OrderBy("curfewTimesSequence")
   override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
@@ -94,7 +100,13 @@ class HdcLicence(
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true, orphanRemoval = true)
+  @OneToOne(
+    mappedBy = "licence",
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.LAZY,
+    optional = true,
+    orphanRemoval = true,
+  )
   val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
@@ -358,18 +370,6 @@ class HdcLicence(
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
-
-  override fun overrideStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    dateLastUpdated = LocalDateTime.now(),
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
 
   override fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>?,

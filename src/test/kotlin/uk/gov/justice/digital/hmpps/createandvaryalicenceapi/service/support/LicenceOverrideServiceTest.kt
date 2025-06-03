@@ -61,6 +61,41 @@ class LicenceOverrideServiceTest {
       licenceService,
     )
 
+  val inactiveLicenceA = createCrdLicence().copy(
+    statusCode = INACTIVE,
+  )
+  val inactiveLicenceB = createCrdLicence().copy(
+    statusCode = INACTIVE,
+  )
+  val approvedLicenceA = createCrdLicence().copy(
+    statusCode = APPROVED,
+  )
+  val approvedLicenceB = createCrdLicence().copy(
+    statusCode = APPROVED,
+  )
+  val approvedHdcLicenceA = createHdcLicence().copy(
+    statusCode = APPROVED,
+  )
+  val activeVariationLicence = createVariationLicence().copy(
+    statusCode = ACTIVE,
+  )
+  val variationApprovedLicence = createCrdLicence().copy(
+    statusCode = VARIATION_APPROVED,
+  )
+  val activeLicence = createCrdLicence().copy(
+    statusCode = ACTIVE,
+  )
+
+  val aCom = TestData.com()
+
+  val aPreviousUser = CommunityOffenderManager(
+    staffIdentifier = 4000,
+    username = "test",
+    email = "test@test.com",
+    firstName = "Test",
+    lastName = "Test",
+  )
+
   @BeforeEach
   fun reset() {
     val authentication = mock<Authentication>()
@@ -594,42 +629,5 @@ class LicenceOverrideServiceTest {
     assertThat(licenceCaptor.value)
       .extracting("forename", "middleNames", "surname", "dateOfBirth")
       .isEqualTo(listOf("New", null, "Name", LocalDate.of(1998, 1, 1)))
-  }
-
-  private companion object {
-    val inactiveLicenceA = createCrdLicence().copy(
-      statusCode = INACTIVE,
-    )
-    val inactiveLicenceB = createCrdLicence().copy(
-      statusCode = INACTIVE,
-    )
-    val approvedLicenceA = createCrdLicence().copy(
-      statusCode = APPROVED,
-    )
-    val approvedLicenceB = createCrdLicence().copy(
-      statusCode = APPROVED,
-    )
-    val approvedHdcLicenceA = createHdcLicence().copy(
-      statusCode = APPROVED,
-    )
-    val activeVariationLicence = createVariationLicence().copy(
-      statusCode = ACTIVE,
-    )
-    val variationApprovedLicence = createCrdLicence().copy(
-      statusCode = VARIATION_APPROVED,
-    )
-    val activeLicence = createCrdLicence().copy(
-      statusCode = ACTIVE,
-    )
-
-    val aCom = TestData.com()
-
-    val aPreviousUser = CommunityOffenderManager(
-      staffIdentifier = 4000,
-      username = "test",
-      email = "test@test.com",
-      firstName = "Test",
-      lastName = "Test",
-    )
   }
 }
