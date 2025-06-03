@@ -25,11 +25,15 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -130,5 +134,30 @@ class CaseloadControllerTest {
 
     assertThat(mapper.readValue(response, Array<ApprovalCase>::class.java)).isEqualTo(arrayOf(approvalCase))
     verify(approverCaseloadService, times(1)).getRecentlyApproved(request)
+  }
+
+  @Test
+  fun `Search for offender on prison case admin caseload`() {
+    val request = PrisonUserSearchRequest(
+      "ABC",
+      "MDI",
+    )
+
+    val result = PrisonCaseAdminSearchResult(listOf(TestData.caCase().copy(prisonerNumber = "ABC")), emptyList())
+
+    whenever(caCaseloadService.searchForOffenderOnPrisonCaseAdminCaseload(request)).thenReturn(result)
+
+    val response = mvc.perform(
+      post("/caseload/case-admin/case-search")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn().response.contentAsString
+
+    assertThat(mapper.readValue(response, PrisonCaseAdminSearchResult::class.java)).isEqualTo(result)
+    verify(caCaseloadService, times(1)).searchForOffenderOnPrisonCaseAdminCaseload(request)
   }
 }

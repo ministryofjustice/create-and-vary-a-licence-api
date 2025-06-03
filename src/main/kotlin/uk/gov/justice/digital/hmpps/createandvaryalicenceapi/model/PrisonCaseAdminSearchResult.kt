@@ -6,8 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class PrisonCaseAdminSearchResult(
 
   @Schema(description = "A list of offender in prison search results")
-  val inPrisonResults: List<FoundPrisonRecord>,
+  val inPrisonResults: List<CaCase>,
 
   @Schema(description = "A list of offender on probation search results")
-  val onProbationResults: List<FoundPrisonRecord>,
+  val onProbationResults: List<CaCase>,
 )
