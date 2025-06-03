@@ -13,7 +13,12 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.*
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
@@ -921,7 +926,7 @@ class CaCaseloadServiceTest {
             ),
           ),
           onProbationResults = emptyList(),
-        )
+        ),
       )
     }
 
@@ -936,11 +941,11 @@ class CaCaseloadServiceTest {
               name = "Smith Cena",
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
-              probationPractitioner = ProbationPractitioner(staffCode= "AB00001", name = "com user"),
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
             ),
           ),
           onProbationResults = emptyList(),
-        )
+        ),
       )
     }
 
@@ -955,11 +960,11 @@ class CaCaseloadServiceTest {
               name = "John Cena",
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
-              probationPractitioner = ProbationPractitioner(staffCode= "AB00001", name = "com user"),
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
             ),
           ),
           onProbationResults = emptyList(),
-        )
+        ),
       )
     }
 
@@ -972,7 +977,7 @@ class CaCaseloadServiceTest {
         VARIATION_SUBMITTED,
       )
 
-      //work out what obj should be
+      // work out what obj should be
       val licenceQueryObject = LicenceQueryObject(
         statusCodes = statuses,
         prisonCodes = listOf("BAI"),
@@ -1003,7 +1008,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = ProbationPractitioner(staffUsername = "Andy"),
             ),
           ),
-        )
+        ),
       )
     }
 
@@ -1023,7 +1028,7 @@ class CaCaseloadServiceTest {
               probationPractitioner = ProbationPractitioner(staffUsername = "Andy"),
             ),
           ),
-        )
+        ),
       )
     }
 
@@ -1041,8 +1046,8 @@ class CaCaseloadServiceTest {
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(name = "Andy"),
             ),
+          ),
         ),
-        )
       )
     }
 
@@ -1061,11 +1066,11 @@ class CaCaseloadServiceTest {
               probationPractitioner = ProbationPractitioner(name = "Andy"),
             ),
           ),
-        )
+        ),
       )
     }
 
-    //test with empty string return both empty
+    // test with empty string return both empty
   }
 
   @Test
@@ -1238,7 +1243,7 @@ class CaCaseloadServiceTest {
 
     val aPrisonUserSearchRequest = PrisonUserSearchRequest(
       query = "Smith",
-      prisonCaseload = "BAI"
+      prisonCaseload = "BAI",
     )
   }
 }
