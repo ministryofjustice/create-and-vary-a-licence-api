@@ -194,14 +194,14 @@ class PromptComListBuilderTest {
         listOf(
           StaffEmail(
             code = promptCase.comStaffCode,
-            email = "com@user.com",
+            email = "com@test.com",
           ),
         ),
       )
 
       val result = promptComListBuilder.enrichWithComEmail(listOf(promptCase))
 
-      assertThat(result).containsExactly(promptCase to "com@user.com")
+      assertThat(result).containsExactly(promptCase to "com@test.com")
     }
 
     @Test
@@ -230,9 +230,9 @@ class PromptComListBuilderTest {
         ),
       )
 
-      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@email.com"))
+      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"))
       assertThat(result).containsExactly(
-        promptCase to "com@email.com" to LocalDate.of(2022, 1, 2),
+        promptCase to "com@test.com" to LocalDate.of(2022, 1, 2),
       )
     }
 
@@ -244,7 +244,7 @@ class PromptComListBuilderTest {
         releaseDateService.getLicenceStartDates(listOf(promptCase.prisoner)),
       ).thenReturn(emptyMap())
 
-      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@email.com"))
+      val result = promptComListBuilder.enrichWithLicenceStartDates(listOf(promptCase to "com@test.com"))
       assertThat(result).isEmpty()
     }
   }
@@ -261,7 +261,7 @@ class PromptComListBuilderTest {
       ],
     )
     fun check(start: String, end: String, excluded: Boolean) {
-      val promptCase = promptCase() to "user@email.com" to LocalDate.of(2022, 1, 10)
+      val promptCase = promptCase() to "user@test.com" to LocalDate.of(2022, 1, 10)
       val result = promptComListBuilder.excludeOutOfRangeDates(
         listOf(promptCase),
         LocalDate.parse(start),
@@ -280,7 +280,7 @@ class PromptComListBuilderTest {
   inner class ExcludeWithHardStop {
     @Test
     fun notInHardStop() {
-      val promptCase = promptCase() to "user@email.com" to LocalDate.of(2022, 1, 2)
+      val promptCase = promptCase() to "user@test.com" to LocalDate.of(2022, 1, 2)
 
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false)
 
@@ -291,7 +291,7 @@ class PromptComListBuilderTest {
 
     @Test
     fun inHardStopPeriod() {
-      val promptCase = promptCase() to "user@email.com" to LocalDate.of(2022, 1, 2)
+      val promptCase = promptCase() to "user@test.com" to LocalDate.of(2022, 1, 2)
 
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
 
@@ -309,24 +309,24 @@ class PromptComListBuilderTest {
         crn = "crn-1",
         prisoner = prisonerSearchResult().copy("A1234AA"),
         comStaffCode = "AAA",
-      ) to "user1@email.com" to LocalDate.of(2022, 1, 1)
+      ) to "user1@test.com" to LocalDate.of(2022, 1, 1)
       val promptCase2 = promptCase().copy(
         crn = "crn-2",
         prisoner = prisonerSearchResult().copy("A1234BB"),
         comStaffCode = "AAA",
-      ) to "user1@email.com" to LocalDate.of(2022, 1, 2)
+      ) to "user1@test.com" to LocalDate.of(2022, 1, 2)
       val promptCase3 = promptCase().copy(
         crn = "crn-3",
         prisoner = prisonerSearchResult().copy("A1234CC"),
         comStaffCode = "BBB",
-      ) to "user2@email.com" to LocalDate.of(2022, 1, 3)
+      ) to "user2@test.com" to LocalDate.of(2022, 1, 3)
 
       val result = promptComListBuilder.buildEmailsToSend(listOf(promptCase1, promptCase2, promptCase3))
 
       assertThat(result).isEqualTo(
         listOf(
           PromptComNotification(
-            email = "user1@email.com",
+            email = "user1@test.com",
             comName = "John Doe",
             initialPromptCases = listOf(
               Case(
@@ -342,7 +342,7 @@ class PromptComListBuilderTest {
             ),
           ),
           PromptComNotification(
-            email = "user2@email.com",
+            email = "user2@test.com",
             comName = "John Doe",
             initialPromptCases = listOf(
               Case(

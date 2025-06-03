@@ -31,7 +31,7 @@ class EventServiceTest {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
 
-    whenever(authentication.name).thenReturn("smills")
+    whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     SecurityContextHolder.setContext(securityContext)
 
@@ -83,9 +83,9 @@ class EventServiceTest {
     val aLicenceEventEntity = LicenceEvent(
       licenceId = 1,
       eventType = LicenceEventType.SUBMITTED,
-      username = "smills",
-      forenames = "Stephen",
-      surname = "Mills",
+      username = "tcom",
+      forenames = "Test",
+      surname = "Com",
       eventDescription = "Licence submitted for approval",
       eventTime = LocalDateTime.now(),
     )

@@ -129,11 +129,11 @@ class PromptComServiceTest {
 
     val cases = listOf(TestData.prisonerSearchResult())
     val casesWithDeliusData = listOf(TestData.promptCase())
-    val casesWithEmails = casesWithDeliusData.map { it to "com@email.com" }
+    val casesWithEmails = casesWithDeliusData.map { it to "com@test.com" }
     val casesWithEmailsAndLocalDates = casesWithEmails.map { it to LocalDate.of(2022, 1, 2) }
 
     val com = PromptComNotification(
-      email = "com@email.com",
+      email = "com@test.com",
       comName = "com name",
       initialPromptCases = listOf(
         Case(

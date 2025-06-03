@@ -38,11 +38,11 @@ class ConditionController(
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/bespoke-conditions"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Add or replace the bespoke conditions for a licence.",
-    description = "Add or replace the bespoke conditions on a licence with the content of this request. Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    description = "Add or replace the bespoke conditions on a licence with the content of this request. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -102,14 +102,14 @@ class ConditionController(
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PostMapping(value = ["/id/{licenceId}/additional-condition/{conditionType}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Add additional condition to the licence.",
     description = "Add additional condition to the licence. " +
       "This does not include accompanying data per condition. Existing conditions which appear on " +
       "the licence will be unaffected. More than one condition with the same code can be added " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -168,13 +168,13 @@ class ConditionController(
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @DeleteMapping(value = ["/id/{licenceId}/additional-condition/id/{conditionId}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @ResponseStatus(code = HttpStatus.NO_CONTENT)
   @Operation(
     summary = "Remove additional condition with specified condition Id",
     description = "Remove additional condition from the licence list of additional conditions." +
       "All user submitted condition data will also be removed.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -221,13 +221,13 @@ class ConditionController(
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PostMapping(value = ["/id/{licenceId}/delete-additional-conditions-by-code"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Remove additional conditions from the licence.",
     description = "Remove any instances of the additional conditions with the supplied condition codes from the licence. " +
       "This includes any existing accompanying data per condition. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -285,14 +285,14 @@ class ConditionController(
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Update the set of additional conditions on the licence.",
     description = "Update the set of additional conditions on the licence. " +
       "This does not include accompanying data per condition. Existing conditions which appear on " +
       "the licence but which are not supplied to this endpoint will be deleted. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -353,13 +353,13 @@ class ConditionController(
    */
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping("/id/{licenceId}/standard-conditions")
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Update the standard conditions for a licence.",
     description = "Replace the standard conditions against a licence if policy changes. " +
       "Existing data for a condition which does not appear in this request will be deleted. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [
@@ -417,13 +417,13 @@ class ConditionController(
 
   @Tag(name = Tags.LICENCE_CONDITIONS)
   @PutMapping(value = ["/id/{licenceId}/additional-conditions/condition/{additionalConditionId}"])
-  @PreAuthorize("hasAnyRole('SYSTEM_USER', 'CVL_ADMIN')")
+  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
   @Operation(
     summary = "Update the user entered data to accompany an additional condition template.",
     description = "Update the user entered data to accompany an additional condition template. " +
       "Existing data for a condition which does not appear in this request will be deleted. " +
-      "Requires ROLE_SYSTEM_USER or ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_SYSTEM_USER"), SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+      "Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
   )
   @ApiResponses(
     value = [

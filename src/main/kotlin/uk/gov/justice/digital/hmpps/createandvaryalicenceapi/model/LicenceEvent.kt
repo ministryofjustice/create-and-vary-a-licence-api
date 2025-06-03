@@ -27,13 +27,13 @@ data class LicenceEvent(
 
   @Schema(
     description = "The forename of the person related to this event, or SYSTEM if an automated event.",
-    example = "Robert Mortimer",
+    example = "Joe",
   )
   val forenames: String? = null,
 
   @Schema(
     description = "The surname of the person related to this event, or SYSTEM if an automated event.",
-    example = "Robert Mortimer",
+    example = "Bloggs",
   )
   val surname: String? = null,
 
