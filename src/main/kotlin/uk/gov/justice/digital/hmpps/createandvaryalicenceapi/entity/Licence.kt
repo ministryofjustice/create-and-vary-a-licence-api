@@ -226,11 +226,17 @@ abstract class Licence(
     licenceActivatedDate: LocalDateTime?,
   ): Licence
 
-  abstract fun overrideStatus(
+  fun overrideStatus(
     statusCode: LicenceStatus,
     staffMember: Staff?,
     licenceActivatedDate: LocalDateTime?,
-  ): Licence
+  ) {
+    this.statusCode = statusCode
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.dateLastUpdated = LocalDateTime.now()
+    this.licenceActivatedDate = licenceActivatedDate
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   abstract fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>? = null,
