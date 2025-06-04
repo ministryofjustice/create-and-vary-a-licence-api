@@ -62,9 +62,9 @@ abstract class Licence(
   val crn: String? = null,
   val pnc: String? = null,
   val cro: String? = null,
-  val prisonCode: String? = null,
-  val prisonDescription: String? = null,
-  val prisonTelephone: String? = null,
+  var prisonCode: String? = null,
+  var prisonDescription: String? = null,
+  var prisonTelephone: String? = null,
   var forename: String? = null,
   var middleNames: String? = null,
   var surname: String? = null,
@@ -154,12 +154,19 @@ abstract class Licence(
   abstract fun deactivate(): Licence
   abstract fun deactivate(staffMember: Staff?): Licence
 
-  abstract fun updatePrisonInfo(
+  fun updatePrisonInfo(
     prisonCode: String,
     prisonDescription: String,
     prisonTelephone: String?,
     staffMember: Staff?,
-  ): Licence
+  ) {
+    this.prisonCode = prisonCode
+    this.prisonDescription = prisonDescription
+    this.prisonTelephone = prisonTelephone
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   fun updateAppointmentAddress(appointmentAddress: String?, staffMember: Staff?) {
     this.appointmentAddress = appointmentAddress

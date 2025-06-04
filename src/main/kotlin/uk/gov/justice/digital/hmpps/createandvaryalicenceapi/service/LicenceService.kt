@@ -856,14 +856,14 @@ class LicenceService(
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.updatePrisonInfo(
+    licenceEntity.updatePrisonInfo(
       prisonCode = prisonInformationRequest.prisonCode,
       prisonDescription = prisonInformationRequest.prisonDescription,
       prisonTelephone = prisonInformationRequest.prisonTelephone,
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
