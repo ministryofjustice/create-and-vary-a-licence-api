@@ -320,18 +320,6 @@ class HardStopLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  override fun updateOffenderDetails(
-    forename: String?,
-    middleNames: String?,
-    surname: String?,
-    dateOfBirth: LocalDate?,
-  ) = copy(
-    forename = forename,
-    middleNames = middleNames,
-    surname = surname,
-    dateOfBirth = dateOfBirth,
-  )
-
   override fun updateProbationTeam(
     probationAreaCode: String?,
     probationAreaDescription: String?,
