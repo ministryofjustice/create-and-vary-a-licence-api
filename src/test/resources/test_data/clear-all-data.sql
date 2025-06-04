@@ -1,3 +1,4 @@
+DELETE from electronic_monitoring_provider;
 DELETE from standard_condition;
 DELETE from additional_condition_data;
 DELETE from additional_condition_upload_detail;

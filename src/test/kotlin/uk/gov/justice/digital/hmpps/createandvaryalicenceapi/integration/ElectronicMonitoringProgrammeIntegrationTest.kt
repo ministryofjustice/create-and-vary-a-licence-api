@@ -43,9 +43,6 @@ class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
   fun `should return 400 for invalid request`() {
     val request = ElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
@@ -62,9 +59,6 @@ class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
   }
 
   @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
-  )
   fun `should return 403 for unauthorized role`() {
     val request = ElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
