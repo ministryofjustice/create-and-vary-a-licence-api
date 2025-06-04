@@ -320,10 +320,6 @@ class HardStopLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  override fun updateResponsibleCom(responsibleCom: CommunityOffenderManager) = copy(
-    responsibleCom = responsibleCom,
-  )
-
   fun markAsReviewed(staff: Staff?) {
     reviewDate = LocalDateTime.now()
     dateLastUpdated = LocalDateTime.now()

@@ -328,8 +328,6 @@ abstract class Licence(
     this.probationTeamDescription = probationTeamDescription
   }
 
-  abstract fun updateResponsibleCom(responsibleCom: CommunityOffenderManager): Licence
-
   abstract fun getCreator(): Creator
 
   fun isActivatedInPssPeriod(): Boolean {
