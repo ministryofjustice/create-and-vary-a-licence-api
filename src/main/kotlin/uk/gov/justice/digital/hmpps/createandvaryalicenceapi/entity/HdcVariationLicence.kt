@@ -312,20 +312,6 @@ class HdcVariationLicence(
     updatedBy = submittedBy,
   )
 
-  override fun updatePrisonInfo(
-    prisonCode: String,
-    prisonDescription: String,
-    prisonTelephone: String?,
-    staffMember: Staff?,
-  ) = copy(
-    prisonCode = prisonCode,
-    prisonDescription = prisonDescription,
-    prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
   override fun updateStatus(
     statusCode: LicenceStatus,
     staffMember: Staff?,
