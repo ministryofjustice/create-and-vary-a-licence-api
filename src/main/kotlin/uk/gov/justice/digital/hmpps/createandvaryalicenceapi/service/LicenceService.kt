@@ -484,11 +484,11 @@ class LicenceService(
 
   @Transactional
   fun activateLicences(licences: List<EntityLicence>, reason: String? = null) {
-    val activatedLicences = licences.map { it.activate() }
-    if (activatedLicences.isNotEmpty()) {
-      licenceRepository.saveAllAndFlush(activatedLicences)
+    licences.forEach { it.activate() }
+    if (licences.isNotEmpty()) {
+      licenceRepository.saveAllAndFlush(licences)
 
-      activatedLicences.map { licence ->
+      licences.map { licence ->
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,
@@ -514,11 +514,11 @@ class LicenceService(
         domainEventsService.recordDomainEvent(licence, ACTIVE)
       }
       inactivateInProgressLicenceVersions(
-        activatedLicences,
+        licences,
         "Licence automatically deactivated as the approved licence version was activated",
       )
       inactivateTimedOutLicenceVersions(
-        activatedLicences,
+        licences,
         "Licence automatically deactivated as the approved licence version was activated",
       )
     }
@@ -530,11 +530,11 @@ class LicenceService(
     reason: String? = null,
     deactivateInProgressVersions: Boolean? = true,
   ) {
-    val inActivatedLicences = licences.map { it.deactivate() }
-    if (inActivatedLicences.isNotEmpty()) {
-      licenceRepository.saveAllAndFlush(inActivatedLicences)
+    licences.forEach { it.deactivate() }
+    if (licences.isNotEmpty()) {
+      licenceRepository.saveAllAndFlush(licences)
 
-      inActivatedLicences.map { licence ->
+      licences.map { licence ->
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = licence.id,
@@ -560,7 +560,7 @@ class LicenceService(
         domainEventsService.recordDomainEvent(licence, INACTIVE)
       }
       if (deactivateInProgressVersions == true) {
-        inactivateInProgressLicenceVersions(inActivatedLicences)
+        inactivateInProgressLicenceVersions(licences)
       }
     }
   }
