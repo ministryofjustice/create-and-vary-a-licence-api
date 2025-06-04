@@ -147,9 +147,9 @@ class HdcVariationLicence(
   dateLastUpdated = dateLastUpdated,
   updatedByUsername = updatedByUsername,
   licenceVersion = licenceVersion,
-  standardConditions = standardConditions,
-  additionalConditions = additionalConditions,
-  bespokeConditions = bespokeConditions,
+  standardConditions = standardConditions.toMutableList(),
+  additionalConditions = additionalConditions.toMutableList(),
+  bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
@@ -345,20 +345,6 @@ class HdcVariationLicence(
     supersededDate = supersededDate,
     submittedDate = submittedDate,
     licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateConditions(
-    updatedAdditionalConditions: List<AdditionalCondition>?,
-    updatedStandardConditions: List<StandardCondition>?,
-    updatedBespokeConditions: List<BespokeCondition>?,
-    staffMember: Staff?,
-  ) = copy(
-    additionalConditions = updatedAdditionalConditions ?: additionalConditions,
-    standardConditions = updatedStandardConditions ?: standardConditions,
-    bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,
   )
 
