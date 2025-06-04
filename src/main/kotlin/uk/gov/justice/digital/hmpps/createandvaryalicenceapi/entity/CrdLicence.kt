@@ -329,26 +329,6 @@ class CrdLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  override fun updateProbationTeam(
-    probationAreaCode: String?,
-    probationAreaDescription: String?,
-    probationPduCode: String?,
-    probationPduDescription: String?,
-    probationLauCode: String?,
-    probationLauDescription: String?,
-    probationTeamCode: String?,
-    probationTeamDescription: String?,
-  ) = copy(
-    probationAreaCode = probationAreaCode,
-    probationAreaDescription = probationAreaDescription,
-    probationPduCode = probationPduCode,
-    probationPduDescription = probationPduDescription,
-    probationLauCode = probationLauCode,
-    probationLauDescription = probationLauDescription,
-    probationTeamCode = probationTeamCode,
-    probationTeamDescription = probationTeamDescription,
-  )
-
   override fun updateResponsibleCom(responsibleCom: CommunityOffenderManager) = copy(
     responsibleCom = responsibleCom,
   )
