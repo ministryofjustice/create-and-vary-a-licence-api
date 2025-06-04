@@ -99,8 +99,8 @@ abstract class Licence(
   var approvedDate: LocalDateTime? = null,
   var approvedByUsername: String? = null,
   var approvedByName: String? = null,
-  val supersededDate: LocalDateTime? = null,
-  val submittedDate: LocalDateTime? = null,
+  var supersededDate: LocalDateTime? = null,
+  var submittedDate: LocalDateTime? = null,
   var dateCreated: LocalDateTime? = null,
   var dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
@@ -229,7 +229,7 @@ abstract class Licence(
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  abstract fun updateStatus(
+  fun updateStatus(
     statusCode: LicenceStatus,
     staffMember: Staff?,
     approvedByUsername: String?,
@@ -238,7 +238,18 @@ abstract class Licence(
     supersededDate: LocalDateTime?,
     submittedDate: LocalDateTime?,
     licenceActivatedDate: LocalDateTime?,
-  ): Licence
+  ) {
+    this.statusCode = statusCode
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.approvedByUsername = approvedByUsername
+    this.approvedByName = approvedByName
+    this.approvedDate = approvedDate
+    this.supersededDate = supersededDate
+    this.submittedDate = submittedDate
+    this.licenceActivatedDate = licenceActivatedDate
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   fun overrideStatus(
     statusCode: LicenceStatus,
