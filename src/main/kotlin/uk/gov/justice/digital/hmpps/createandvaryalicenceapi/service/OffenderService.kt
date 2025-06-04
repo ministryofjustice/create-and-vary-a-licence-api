@@ -28,10 +28,10 @@ OffenderService(
 
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
-    var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
+    val offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
     // Update the in-flight licences for this person on probation
-    offenderLicences = offenderLicences.map { it.updateResponsibleCom(responsibleCom = newCom) }
+    offenderLicences.forEach { it.responsibleCom = newCom }
     this.licenceRepository.saveAllAndFlush(offenderLicences)
 
     val inprogressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }

@@ -371,10 +371,6 @@ class HdcLicence(
     this.updatedBy = staffMember ?: this.updatedBy
   }
 
-  override fun updateResponsibleCom(responsibleCom: CommunityOffenderManager) = copy(
-    responsibleCom = responsibleCom,
-  )
-
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
   override fun toString(): String = "HdcLicence(" +
