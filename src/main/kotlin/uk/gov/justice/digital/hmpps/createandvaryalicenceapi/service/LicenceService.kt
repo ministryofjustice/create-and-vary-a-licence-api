@@ -236,7 +236,7 @@ class LicenceService(
 
     val isReApproval = licenceEntity.statusCode === APPROVED && request.status === IN_PROGRESS
 
-    val updatedLicence = licenceEntity.updateStatus(
+    licenceEntity.updateStatus(
       statusCode = request.status,
       staffMember = staffMember,
       approvedByUsername = approvedByUser,
@@ -246,7 +246,7 @@ class LicenceService(
       submittedDate = submittedDate,
       licenceActivatedDate = licenceActivatedDate,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // if previous status was APPROVED and the new status is IN_PROGRESS then email OMU regarding re-approval
     if (isReApproval) {
@@ -257,9 +257,9 @@ class LicenceService(
       notifyComAboutHardstopLicenceApproval(licenceEntity)
     }
 
-    recordLicenceEventForStatus(licenceEntity.id, updatedLicence, request)
-    auditStatusChange(updatedLicence, staffMember)
-    domainEventsService.recordDomainEvent(updatedLicence, request.status)
+    recordLicenceEventForStatus(licenceEntity, request)
+    auditStatusChange(licenceEntity, staffMember)
+    domainEventsService.recordDomainEvent(licenceEntity, request.status)
   }
 
   private fun auditStatusChange(licenceEntity: EntityLicence, staffMember: Staff?) {
@@ -299,11 +299,7 @@ class LicenceService(
     AuditEventType.USER_EVENT
   }
 
-  private fun recordLicenceEventForStatus(
-    licenceId: Long,
-    licenceEntity: EntityLicence,
-    request: StatusUpdateRequest,
-  ) {
+  private fun recordLicenceEventForStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest) {
     // Only interested when moving to the APPROVED, ACTIVE or INACTIVE states
     val eventType = when (licenceEntity.statusCode) {
       APPROVED -> LicenceEventType.APPROVED
@@ -315,7 +311,7 @@ class LicenceService(
     val (firstName, lastName) = splitName(request.fullName)
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
-        licenceId = licenceId,
+        licenceId = licenceEntity.id,
         eventType = eventType,
         username = request.username,
         forenames = firstName,
