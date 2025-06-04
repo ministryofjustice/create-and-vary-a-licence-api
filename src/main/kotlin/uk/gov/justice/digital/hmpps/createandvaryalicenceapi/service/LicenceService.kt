@@ -360,25 +360,14 @@ class LicenceService(
       licenceRepository.findById(previousVersionId)
         .orElseThrow { EntityNotFoundException("$previousVersionId") }
 
-    val updatedLicence = when (previousLicenceVersion) {
-      is CrdLicence -> previousLicenceVersion.copy(
-        dateLastUpdated = LocalDateTime.now(),
-        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-        statusCode = INACTIVE,
-        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
-      )
-
-      is HdcLicence -> previousLicenceVersion.copy(
-        dateLastUpdated = LocalDateTime.now(),
-        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-        statusCode = INACTIVE,
-        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
-      )
+    when (previousLicenceVersion) {
+      is CrdLicence -> previousLicenceVersion.deactivate(staffMember)
+      is HdcLicence -> previousLicenceVersion.deactivate(staffMember)
 
       else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(previousLicenceVersion)
 
     val (firstName, lastName) = splitName(fullName)
     licenceEventRepository.saveAndFlush(
@@ -392,7 +381,7 @@ class LicenceService(
       ),
     )
 
-    auditStatusChange(updatedLicence, staffMember)
+    auditStatusChange(previousLicenceVersion, staffMember)
   }
 
   @Transactional
