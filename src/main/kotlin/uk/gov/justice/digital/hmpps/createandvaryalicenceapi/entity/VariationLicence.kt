@@ -269,14 +269,14 @@ class VariationLicence(
     return variationLicence
   }
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.VARIATION_SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(submittedBy: CommunityOffenderManager) {
+    this.statusCode = LicenceStatus.VARIATION_SUBMITTED
+    this.submittedBy = submittedBy
+    this.updatedByUsername = submittedBy.username
+    this.submittedDate = LocalDateTime.now()
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedBy = submittedBy
+  }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 

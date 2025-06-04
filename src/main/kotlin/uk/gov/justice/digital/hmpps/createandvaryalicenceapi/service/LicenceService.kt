@@ -397,7 +397,7 @@ class LicenceService(
 
   @Transactional
   fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>?) {
-    val licenceEntity = licenceRepository
+    val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
@@ -405,37 +405,37 @@ class LicenceService(
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
       ?: throw ValidationException("Staff with username $username not found")
 
-    val updatedLicence = when (licenceEntity) {
+    when (licence) {
       is CrdLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
-        licenceEntity.submit(submitter as CommunityOffenderManager)
+        assertCaseIsEligible(licence.id, licence.nomsId)
+        licence.submit(submitter as CommunityOffenderManager)
       }
 
-      is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
+      is VariationLicence -> licence.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
-        licenceEntity.submit(submitter as PrisonUser)
+        assertCaseIsEligible(licence.id, licence.nomsId)
+        licence.submit(submitter as PrisonUser)
       }
 
       is HdcLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
-        licenceEntity.submit(submitter as CommunityOffenderManager)
+        assertCaseIsEligible(licence.id, licence.nomsId)
+        licence.submit(submitter as CommunityOffenderManager)
       }
 
-      is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
-      else -> error("Unexpected licence type: $licenceEntity")
+      is HdcVariationLicence -> licence.submit(submitter as CommunityOffenderManager)
+      else -> error("Unexpected licence type: $licence")
     }
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licence)
 
     licenceEventRepository.saveAndFlush(
       EntityLicenceEvent(
         licenceId = licenceId,
-        eventType = updatedLicence.kind.submittedEventType(),
+        eventType = licence.kind.submittedEventType(),
         username = username,
         forenames = submitter.firstName,
         surname = submitter.lastName,
-        eventDescription = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
+        eventDescription = "Licence submitted for approval for ${licence.forename} ${licence.surname}",
       ),
     )
 
@@ -444,20 +444,20 @@ class LicenceService(
         licenceId = licenceId,
         username = username,
         fullName = "${submitter.firstName} ${submitter.lastName}",
-        summary = "Licence submitted for approval for ${updatedLicence.forename} ${updatedLicence.surname}",
-        detail = "ID $licenceId type ${updatedLicence.typeCode} status ${licenceEntity.statusCode.name} version ${updatedLicence.version}",
+        summary = "Licence submitted for approval for ${licence.forename} ${licence.surname}",
+        detail = "ID $licenceId type ${licence.typeCode} status ${licence.statusCode.name} version ${licence.version}",
       ),
     )
 
     // Notify the head of PDU of this submitted licence variation
-    if (updatedLicence is Variation) {
+    if (licence is Variation) {
       notifyRequest?.forEach {
         notifyService.sendVariationForApprovalEmail(
           it,
           licenceId.toString(),
-          updatedLicence.forename!!,
-          updatedLicence.surname!!,
-          updatedLicence.crn!!,
+          licence.forename!!,
+          licence.surname!!,
+          licence.crn!!,
           username!!,
         )
       }
@@ -1054,32 +1054,32 @@ class LicenceService(
 
   @Transactional
   fun timeout(licence: CrdLicence, reason: String? = null) {
-    val timedOutLicence = licence.timeOut()
-    licenceRepository.saveAndFlush(timedOutLicence)
+    licence.timeOut()
+    licenceRepository.saveAndFlush(licence)
     auditEventRepository.saveAndFlush(
       AuditEvent(
-        licenceId = timedOutLicence.id,
+        licenceId = licence.id,
         username = "SYSTEM",
         fullName = "SYSTEM",
         eventType = AuditEventType.SYSTEM_EVENT,
-        summary = "Licence automatically timed out for ${timedOutLicence.forename} ${timedOutLicence.surname} ${reason ?: ""}",
-        detail = "ID ${timedOutLicence.id} type ${timedOutLicence.typeCode} status ${timedOutLicence.statusCode} version ${timedOutLicence.version}",
+        summary = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
+        detail = "ID ${licence.id} type ${licence.typeCode} status ${licence.statusCode} version ${licence.version}",
       ),
     )
     licenceEventRepository.saveAndFlush(
       LicenceEvent(
-        licenceId = timedOutLicence.id,
+        licenceId = licence.id,
         eventType = LicenceEventType.TIMED_OUT,
         username = "SYSTEM",
         forenames = "SYSTEM",
         surname = "SYSTEM",
-        eventDescription = "Licence automatically timed out for ${timedOutLicence.forename} ${timedOutLicence.surname} ${reason ?: ""}",
+        eventDescription = "Licence automatically timed out for ${licence.forename} ${licence.surname} ${reason ?: ""}",
       ),
     )
-    if (timedOutLicence.versionOfId != null) {
-      val com = timedOutLicence.responsibleCom
+    if (licence.versionOfId != null) {
+      val com = licence.responsibleCom
       if (com != null) {
-        with(timedOutLicence) {
+        with(licence) {
           notifyService.sendEditedLicenceTimedOutEmail(
             com.email,
             "${com.firstName} ${com.lastName}",

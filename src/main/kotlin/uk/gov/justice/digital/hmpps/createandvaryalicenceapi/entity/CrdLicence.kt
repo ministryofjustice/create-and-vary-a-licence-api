@@ -266,20 +266,20 @@ class CrdLicence(
     electronicMonitoringProvider = electronicMonitoringProvider,
   )
 
-  fun timeOut() = copy(
-    statusCode = LicenceStatus.TIMED_OUT,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = "SYSTEM",
-  )
+  fun timeOut() {
+    this.statusCode = LicenceStatus.TIMED_OUT
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = "SYSTEM"
+  }
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(submittedBy: CommunityOffenderManager) {
+    this.statusCode = LicenceStatus.SUBMITTED
+    this.submittedBy = submittedBy
+    this.updatedByUsername = submittedBy.username
+    this.submittedDate = LocalDateTime.now()
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedBy = submittedBy
+  }
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
