@@ -170,7 +170,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
   inner class CaseAdminSearch {
     val request = PrisonUserSearchRequest(
       query = "Person",
-      prisonCaseload = "BAI"
+      prisonCaseload = "BAI",
     )
 
     @Test
