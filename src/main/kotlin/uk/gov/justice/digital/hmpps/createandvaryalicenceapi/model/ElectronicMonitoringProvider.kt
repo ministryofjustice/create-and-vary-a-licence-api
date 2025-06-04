@@ -6,9 +6,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMoni
 @Schema(description = "Describes a electronic monitoring provider on a licence")
 data class ElectronicMonitoringProvider(
 
-  @Schema(description = "The internal ID for this electronic monitoring provider on this licence", example = "98987")
-  val id: Long? = null,
-
   @Schema(description = "Internal identifier for this licence generated within this service", example = "123344")
   val licenceId: Long,
 
