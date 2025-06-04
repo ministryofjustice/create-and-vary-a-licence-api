@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -37,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -464,6 +466,40 @@ class LicenceConditionServiceTest {
 
       // No way of providing additional condition data via this endpoint so no point running through formatter
       verifyNoInteractions(conditionFormatter)
+    }
+  }
+
+  @Nested
+  inner class `electronic monitoring programme` {
+    @Test
+    fun `update electronic monitoring programme details`() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity,
+          ),
+        )
+
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val request = ElectronicMonitoringProgrammeRequest(
+        isToBeTaggedForProgramme = true,
+        programmeName = "Programme Name",
+      )
+
+      service.updateElectronicMonitoringProgramme(1L, request)
+
+      val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
+
+      verify(electronicMonitoringProgrammeRepository, times(1)).save(electronicMonitoringProviderCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventUpdateElectronicMonitoringProgramme(any(), any(), any())
+
+      assertThat(electronicMonitoringProviderCaptor.value)
+        .extracting("isToBeTaggedForProgramme", "programmeName")
+        .containsExactly(
+          true,
+          "Programme Name",
+        )
     }
   }
 
