@@ -36,16 +36,19 @@ class DeactivateHdcLicencesService(
       log.info("There are no HDC licences to deactivate")
       return
     }
-    log.info("Found {} prisoners who have draft HDC licences that are now ineligible for HDC release", licencesToDeactivate.size)
+    log.info(
+      "Found {} prisoners who have draft HDC licences that are now ineligible for HDC release",
+      licencesToDeactivate.size,
+    )
     updateLicencesStatus(licencesToDeactivate)
   }
 
   private fun updateLicencesStatus(licences: List<Licence>) {
-    val licencesToDeactivate = licences.map { it.deactivate() }
+    licences.forEach { it.deactivate() }
 
-    licenceRepository.saveAllAndFlush(licencesToDeactivate)
+    licenceRepository.saveAllAndFlush(licences)
 
-    licencesToDeactivate.forEach { licence ->
+    licences.forEach { licence ->
       auditEventRepository.saveAndFlush(
         AuditEvent(
           licenceId = licence.id,
@@ -69,6 +72,6 @@ class DeactivateHdcLicencesService(
       )
       domainEventsService.recordDomainEvent(licence, LicenceStatus.INACTIVE)
     }
-    telemetryClient.trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to licencesToDeactivate.size.toString()), null)
+    telemetryClient.trackEvent("DeactivateHdcLicencesJob", mapOf("licences" to licences.size.toString()), null)
   }
 }

@@ -150,9 +150,16 @@ abstract class Licence(
     return false
   }
 
-  abstract fun activate(): Licence
-  abstract fun deactivate(): Licence
-  abstract fun deactivate(staffMember: Staff?): Licence
+  fun activate() {
+    statusCode = LicenceStatus.ACTIVE
+    licenceActivatedDate = LocalDateTime.now()
+  }
+
+  fun deactivate(staffMember: Staff? = null) {
+    statusCode = LicenceStatus.INACTIVE
+    updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    updatedBy = staffMember ?: this.updatedBy
+  }
 
   fun updatePrisonInfo(
     prisonCode: String,
