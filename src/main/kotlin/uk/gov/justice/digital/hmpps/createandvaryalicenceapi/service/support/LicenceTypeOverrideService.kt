@@ -55,13 +55,13 @@ class LicenceTypeOverrideService(
     val (relevantConditions, conditionsToRemove) = licence.getAdditionalConditionsByRelevancy()
     val standardConditions = licencePolicyService.getStandardConditionsForLicence(licence)
 
-    val licenceToPersist = licence.updateConditions(
+    licence.updateConditions(
       updatedAdditionalConditions = relevantConditions,
       updatedStandardConditions = standardConditions,
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(licenceToPersist)
+    licenceRepository.saveAndFlush(licence)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
