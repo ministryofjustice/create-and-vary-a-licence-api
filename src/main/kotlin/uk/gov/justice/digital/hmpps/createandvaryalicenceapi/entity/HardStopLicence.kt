@@ -272,28 +272,6 @@ class HardStopLicence(
     updatedBy = submittedBy,
   )
 
-  override fun updateStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    approvedByUsername: String?,
-    approvedByName: String?,
-    approvedDate: LocalDateTime?,
-    supersededDate: LocalDateTime?,
-    submittedDate: LocalDateTime?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    approvedByUsername = approvedByUsername,
-    approvedByName = approvedByName,
-    approvedDate = approvedDate,
-    supersededDate = supersededDate,
-    submittedDate = submittedDate,
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
   fun markAsReviewed(staff: Staff?) {
     reviewDate = LocalDateTime.now()
     dateLastUpdated = LocalDateTime.now()
