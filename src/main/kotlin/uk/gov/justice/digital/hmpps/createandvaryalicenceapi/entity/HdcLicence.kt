@@ -79,7 +79,13 @@ class HdcLicence(
   responsibleCom: CommunityOffenderManager? = null,
   updatedBy: Staff? = null,
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true, targetEntity = HdcCurfewTimes::class)
+  @OneToMany(
+    mappedBy = "licence",
+    fetch = FetchType.LAZY,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+    targetEntity = HdcCurfewTimes::class,
+  )
   @OrderBy("curfewTimesSequence")
   override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
@@ -93,6 +99,15 @@ class HdcLicence(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
+
+  @OneToOne(
+    mappedBy = "licence",
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.LAZY,
+    optional = true,
+    orphanRemoval = true,
+  )
+  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -145,9 +160,9 @@ class HdcLicence(
   dateLastUpdated = dateLastUpdated,
   updatedByUsername = updatedByUsername,
   licenceVersion = licenceVersion,
-  standardConditions = standardConditions,
-  additionalConditions = additionalConditions,
-  bespokeConditions = bespokeConditions,
+  standardConditions = standardConditions.toMutableList(),
+  additionalConditions = additionalConditions.toMutableList(),
+  bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
@@ -216,6 +231,7 @@ class HdcLicence(
     licenceVersion: String? = this.licenceVersion,
     updatedBy: Staff? = this.updatedBy,
     curfewAddress: HdcCurfewAddress? = this.curfewAddress,
+    electronicMonitoringProvider: ElectronicMonitoringProvider? = this.electronicMonitoringProvider,
   ): HdcLicence = HdcLicence(
     id = id,
     typeCode = typeCode,
@@ -279,6 +295,7 @@ class HdcLicence(
     licenceVersion = licenceVersion,
     updatedBy = updatedBy,
     curfewAddress = curfewAddress,
+    electronicMonitoringProvider = electronicMonitoringProvider,
   )
 
   override fun activate() = copy(
@@ -353,44 +370,6 @@ class HdcLicence(
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
-
-  override fun overrideStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    dateLastUpdated = LocalDateTime.now(),
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateConditions(
-    updatedAdditionalConditions: List<AdditionalCondition>?,
-    updatedStandardConditions: List<StandardCondition>?,
-    updatedBespokeConditions: List<BespokeCondition>?,
-    staffMember: Staff?,
-  ) = copy(
-    additionalConditions = updatedAdditionalConditions ?: additionalConditions,
-    standardConditions = updatedStandardConditions ?: standardConditions,
-    bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateOffenderDetails(
-    forename: String?,
-    middleNames: String?,
-    surname: String?,
-    dateOfBirth: LocalDate?,
-  ) = copy(
-    forename = forename,
-    middleNames = middleNames,
-    surname = surname,
-    dateOfBirth = dateOfBirth,
-  )
 
   override fun updateProbationTeam(
     probationAreaCode: String?,
@@ -482,6 +461,7 @@ class HdcLicence(
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy," +
     "curfewAddress=$curfewAddress" +
+    "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 
   override fun equals(other: Any?): Boolean {

@@ -147,9 +147,9 @@ class HdcVariationLicence(
   dateLastUpdated = dateLastUpdated,
   updatedByUsername = updatedByUsername,
   licenceVersion = licenceVersion,
-  standardConditions = standardConditions,
-  additionalConditions = additionalConditions,
-  bespokeConditions = bespokeConditions,
+  standardConditions = standardConditions.toMutableList(),
+  additionalConditions = additionalConditions.toMutableList(),
+  bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
@@ -346,44 +346,6 @@ class HdcVariationLicence(
     submittedDate = submittedDate,
     licenceActivatedDate = licenceActivatedDate,
     updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun overrideStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    dateLastUpdated = LocalDateTime.now(),
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateConditions(
-    updatedAdditionalConditions: List<AdditionalCondition>?,
-    updatedStandardConditions: List<StandardCondition>?,
-    updatedBespokeConditions: List<BespokeCondition>?,
-    staffMember: Staff?,
-  ) = copy(
-    additionalConditions = updatedAdditionalConditions ?: additionalConditions,
-    standardConditions = updatedStandardConditions ?: standardConditions,
-    bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateOffenderDetails(
-    forename: String?,
-    middleNames: String?,
-    surname: String?,
-    dateOfBirth: LocalDate?,
-  ) = copy(
-    forename = forename,
-    middleNames = middleNames,
-    surname = surname,
-    dateOfBirth = dateOfBirth,
   )
 
   override fun updateProbationTeam(
