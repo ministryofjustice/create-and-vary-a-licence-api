@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -470,13 +471,15 @@ class LicenceConditionServiceTest {
   inner class `electronic monitoring programme` {
     @Test
     fun `update electronic monitoring programme details`() {
-      whenever(licenceRepository.findById(1L))
-        .thenReturn(
-          Optional.of(
-            aLicenceEntity,
-          ),
-        )
+      val electronicMonitoringProvider = ElectronicMonitoringProvider(
+        isToBeTaggedForProgramme = false,
+        programmeName = "Old Programme",
+        licence = aLicenceEntity,
+      )
 
+      val crdLicence = aLicenceEntity.copy(electronicMonitoringProvider = electronicMonitoringProvider)
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val request = UpdateElectronicMonitoringProgrammeRequest(
