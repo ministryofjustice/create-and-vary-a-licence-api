@@ -369,12 +369,16 @@ class LicenceConditionService(
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val electronicMonitoringProvider = when (licenceEntity) {
-      is CrdLicence -> licenceEntity.electronicMonitoringProvider
-      is HdcLicence -> licenceEntity.electronicMonitoringProvider
+      is CrdLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
+        "ElectronicMonitoringProvider is null for CrdLicence: $licenceId"
+      }
+      is HdcLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
+        "ElectronicMonitoringProvider is null for HdcLicence: $licenceId"
+      }
       else -> error("Trying to update electronic monitoring provider details for non-crd or non-hdc: $licenceId")
     }
-    electronicMonitoringProvider?.isToBeTaggedForProgramme = request.isToBeTaggedForProgramme
-    electronicMonitoringProvider?.programmeName = request.programmeName
+    electronicMonitoringProvider.isToBeTaggedForProgramme = request.isToBeTaggedForProgramme
+    electronicMonitoringProvider.programmeName = request.programmeName
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, request, staffMember)

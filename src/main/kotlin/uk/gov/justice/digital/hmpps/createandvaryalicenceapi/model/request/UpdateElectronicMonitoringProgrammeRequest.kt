@@ -8,7 +8,7 @@ import jakarta.validation.Payload
 import kotlin.reflect.KClass
 
 @ValidProgrammeName
-@Schema(description = "Request for adding a electronic monitoring programme request")
+@Schema(description = "Request for providing details about any electronic monitoring programme")
 data class UpdateElectronicMonitoringProgrammeRequest(
   @Schema(description = "Is the licence to be tagged for electronic monitoring programme")
   val isToBeTaggedForProgramme: Boolean? = null,
