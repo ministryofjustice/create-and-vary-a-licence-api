@@ -16,8 +16,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
@@ -37,7 +39,15 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.T
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_APPROVED
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.Instant
@@ -66,18 +76,31 @@ class CaCaseloadServiceTest {
     releaseDateService,
   )
 
-  private val statuses = listOf(
-    LicenceStatus.APPROVED,
-    LicenceStatus.SUBMITTED,
-    LicenceStatus.IN_PROGRESS,
-    LicenceStatus.TIMED_OUT,
-    LicenceStatus.ACTIVE,
+  private val prisonStatuses = listOf(
+    APPROVED,
+    SUBMITTED,
+    IN_PROGRESS,
+    TIMED_OUT,
+    ACTIVE,
   )
 
-  private val licenceQueryObject = LicenceQueryObject(
-    statusCodes = statuses,
+  val probationStatuses = listOf(
+    ACTIVE,
+    VARIATION_APPROVED,
+    VARIATION_IN_PROGRESS,
+    VARIATION_SUBMITTED,
+  )
+
+  private val prisonLicenceQueryObject = LicenceQueryObject(
+    statusCodes = prisonStatuses,
     prisonCodes = listOf("BAI"),
     sortBy = "licenceStartDate",
+  )
+
+  val probationLicenceQueryObject = LicenceQueryObject(
+    statusCodes = probationStatuses,
+    prisonCodes = listOf("BAI"),
+    sortBy = "conditionalReleaseDate",
   )
 
   @BeforeEach
@@ -91,12 +114,12 @@ class CaCaseloadServiceTest {
       prisonerSearchApiClient,
       releaseDateService,
     )
-    whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+    whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
       listOf(
         aLicenceSummary,
         aLicenceSummary.copy(
           licenceId = 2,
-          licenceStatus = LicenceStatus.IN_PROGRESS,
+          licenceStatus = IN_PROGRESS,
           nomisId = "A1234AB",
           forename = "Person",
           surname = "Two",
@@ -145,7 +168,7 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
         whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
@@ -175,11 +198,11 @@ class CaCaseloadServiceTest {
 
         with(prisonOmuCaseload.first()) {
           assertThat(name).isEqualTo("Person Four")
-          assertThat(licenceStatus).isEqualTo(LicenceStatus.TIMED_OUT)
+          assertThat(licenceStatus).isEqualTo(TIMED_OUT)
           assertThat(isInHardStopPeriod).isTrue()
         }
 
-        verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)
+        verify(licenceService, times(1)).findLicencesMatchingCriteria(prisonLicenceQueryObject)
         verify(caseloadService, times(0)).getPrisonersByNumber(listOf(aLicenceSummary.nomisId))
         verify(prisonerSearchApiClient, times(1)).searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())
       }
@@ -189,7 +212,7 @@ class CaCaseloadServiceTest {
     inner class `find latest licenceSummary` {
       @Test
       fun `should return the first element if the licences length is one`() {
-        val licences = aLicenceSummary.copy(licenceStatus = LicenceStatus.APPROVED)
+        val licences = aLicenceSummary.copy(licenceStatus = APPROVED)
         assertThat(service.findLatestLicenceSummary(listOf(licences))).isEqualTo(licences)
       }
 
@@ -197,8 +220,8 @@ class CaCaseloadServiceTest {
       fun `should return the IN_PROGRESS licence if there are IN_PROGRESS and TIMED_OUT licences`() {
         val licences =
           listOf(
-            aLicenceSummary.copy(licenceStatus = LicenceStatus.IN_PROGRESS),
-            aLicenceSummary.copy(licenceStatus = LicenceStatus.TIMED_OUT),
+            aLicenceSummary.copy(licenceStatus = IN_PROGRESS),
+            aLicenceSummary.copy(licenceStatus = TIMED_OUT),
           )
         assertThat(service.findLatestLicenceSummary(licences)).isEqualTo(licences.first())
       }
@@ -207,8 +230,8 @@ class CaCaseloadServiceTest {
       fun `should return the SUBMITTED licence if there are IN_PROGRESS and SUBMITTED licences`() {
         val licences =
           listOf(
-            aLicenceSummary.copy(licenceStatus = LicenceStatus.SUBMITTED),
-            aLicenceSummary.copy(licenceStatus = LicenceStatus.IN_PROGRESS),
+            aLicenceSummary.copy(licenceStatus = SUBMITTED),
+            aLicenceSummary.copy(licenceStatus = IN_PROGRESS),
           )
         assertThat(service.findLatestLicenceSummary(licences)).isEqualTo(licences.first())
       }
@@ -283,12 +306,12 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should successfully search by probation practitioner`() {
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           listOf(
             aLicenceSummary,
             aLicenceSummary.copy(
               licenceId = 2,
-              licenceStatus = LicenceStatus.IN_PROGRESS,
+              licenceStatus = IN_PROGRESS,
               nomisId = "A1234AB",
               forename = "Person",
               surname = "Two",
@@ -327,7 +350,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should filter out cases with an existing ACTIVE licence`() {
-      whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
             forename = "Person",
@@ -335,7 +358,7 @@ class CaCaseloadServiceTest {
             nomisId = "AB1234E",
             licenceId = 2,
             licenceType = LicenceType.PSS,
-            licenceStatus = LicenceStatus.ACTIVE,
+            licenceStatus = ACTIVE,
             isInHardStopPeriod = false,
             isDueToBeReleasedInTheNextTwoWorkingDays = true,
             conditionalReleaseDate = twoMonthsFromNow,
@@ -403,7 +426,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should filter out duplicate cases, prioritising existing licences`() {
-      whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
             forename = "Person",
@@ -411,7 +434,7 @@ class CaCaseloadServiceTest {
             nomisId = "AB1234E",
             licenceId = 2,
             licenceType = LicenceType.PSS,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             isInHardStopPeriod = false,
             isDueToBeReleasedInTheNextTwoWorkingDays = true,
             licenceStartDate = twoDaysFromNow,
@@ -490,7 +513,7 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should return sorted results in ascending order`() {
-      whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
             conditionalReleaseDate = tenDaysFromNow,
@@ -499,7 +522,7 @@ class CaCaseloadServiceTest {
           ),
           aLicenceSummary.copy(
             licenceId = 2,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             nomisId = "A1234AB",
             forename = "Person",
             surname = "Two",
@@ -596,7 +619,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -614,7 +637,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -632,7 +655,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -650,7 +673,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -672,7 +695,7 @@ class CaCaseloadServiceTest {
           ),
         )
 
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(emptyList())
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(emptyList<CaCase>())
@@ -680,7 +703,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out cases with an approved HDC licence and HDCED`() {
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
         val prisoner = aPrisonerSearchPrisoner.copy(
@@ -709,7 +732,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should not filter out cases with an unapproved HDC licence`() {
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
         whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
@@ -741,7 +764,7 @@ class CaCaseloadServiceTest {
               name = "Person Four",
               prisonerNumber = "A1234AA",
               releaseDate = twoDaysFromNow,
-              licenceStatus = LicenceStatus.NOT_STARTED,
+              licenceStatus = NOT_STARTED,
               probationPractitioner = ProbationPractitioner(
                 staffCode = "X1234",
                 name = "Joe Bloggs",
@@ -757,7 +780,7 @@ class CaCaseloadServiceTest {
 
       @Test
       fun `should filter out cases with no deliusRecord`() {
-        whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(
+        whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
         whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(
@@ -800,7 +823,7 @@ class CaCaseloadServiceTest {
           ),
           aLicenceSummary.copy(
             licenceId = 2,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             nomisId = "A1234AB",
             forename = "Person",
             surname = "Two",
@@ -810,7 +833,7 @@ class CaCaseloadServiceTest {
           ),
           aLicenceSummary.copy(
             licenceId = 3,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             nomisId = "A1234AC",
             forename = "Person",
             surname = "Six",
@@ -820,7 +843,7 @@ class CaCaseloadServiceTest {
           ),
           aLicenceSummary.copy(
             licenceId = 4,
-            licenceStatus = LicenceStatus.IN_PROGRESS,
+            licenceStatus = IN_PROGRESS,
             nomisId = "A1234AD",
             forename = "Person",
             surname = "Five",
@@ -899,6 +922,253 @@ class CaCaseloadServiceTest {
     }
   }
 
+  @Nested
+  inner class `Search for offender on prison case admin caseload` {
+    @Test
+    fun `should successfully search by name for offender in prison`() {
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "One"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 1,
+              prisonerNumber = "A1234AA",
+              name = "Person One",
+              nomisLegalStatus = "SENTENCED",
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+          onProbationResults = emptyList(),
+        ),
+      )
+    }
+
+    @Test
+    fun `should successfully search by prison number for offender in prison`() {
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "A1234AA"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 1,
+              prisonerNumber = "A1234AA",
+              name = "Person One",
+              nomisLegalStatus = "SENTENCED",
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+          onProbationResults = emptyList(),
+        ),
+      )
+    }
+
+    @Test
+    fun `should successfully search by probation practitioner name for offender in prison`() {
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 1,
+              prisonerNumber = "A1234AA",
+              name = "Person One",
+              nomisLegalStatus = "SENTENCED",
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+          onProbationResults = emptyList(),
+        ),
+      )
+    }
+
+    @Test
+    fun `should successfully search by name for offender on probation`() {
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        listOf(
+          aLicenceSummary.copy(
+            licenceId = 3,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234AC",
+            forename = "Person",
+            surname = "Three",
+          ),
+        ),
+      )
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "Three"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = emptyList(),
+          onProbationResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 3,
+              prisonerNumber = "A1234AC",
+              licenceStatus = ACTIVE,
+              name = "Person Three",
+              nomisLegalStatus = null,
+              tabType = null,
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `should successfully search by prison number for offender on probation`() {
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        listOf(
+          aLicenceSummary.copy(
+            licenceId = 3,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234AC",
+            forename = "Person",
+            surname = "Three",
+          ),
+        ),
+      )
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "A1234AC"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = emptyList(),
+          onProbationResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 3,
+              prisonerNumber = "A1234AC",
+              licenceStatus = ACTIVE,
+              name = "Person Three",
+              nomisLegalStatus = null,
+              tabType = null,
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `should successfully search by probation practitioner name for offender on probation`() {
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(emptyList())
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        listOf(
+          aLicenceSummary.copy(
+            licenceId = 3,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234AC",
+            forename = "Person",
+            surname = "Three",
+          ),
+        ),
+      )
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = emptyList(),
+          onProbationResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 3,
+              prisonerNumber = "A1234AC",
+              licenceStatus = ACTIVE,
+              name = "Person Three",
+              nomisLegalStatus = null,
+              tabType = null,
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `should successfully search and return both prison and probation results`() {
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        listOf(
+          aLicenceSummary.copy(
+            licenceId = 3,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234AC",
+            forename = "Person",
+            surname = "Three",
+          ),
+        ),
+      )
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 1,
+              prisonerNumber = "A1234AA",
+              name = "Person One",
+              nomisLegalStatus = "SENTENCED",
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+          onProbationResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 3,
+              prisonerNumber = "A1234AC",
+              licenceStatus = ACTIVE,
+              name = "Person Three",
+              nomisLegalStatus = null,
+              tabType = null,
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `should return all results when query string is empty`() {
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        listOf(
+          aLicenceSummary.copy(
+            licenceId = 3,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234AC",
+            forename = "Person",
+            surname = "Three",
+          ),
+        ),
+      )
+      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = ""))).isEqualTo(
+        PrisonCaseAdminSearchResult(
+          inPrisonResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 1,
+              prisonerNumber = "A1234AA",
+              name = "Person One",
+              nomisLegalStatus = "SENTENCED",
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+            TestData.caCase().copy(
+              licenceId = 2,
+              prisonerNumber = "A1234AB",
+              name = "Person Two",
+              nomisLegalStatus = "SENTENCED",
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffUsername = "tcom"),
+            ),
+          ),
+          onProbationResults = listOf(
+            TestData.caCase().copy(
+              licenceId = 3,
+              prisonerNumber = "A1234AC",
+              licenceStatus = ACTIVE,
+              name = "Person Three",
+              nomisLegalStatus = null,
+              tabType = null,
+              lastWorkedOnBy = "X Y",
+              probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+            ),
+          ),
+        ),
+      )
+    }
+  }
+
   @Test
   fun `should use HDCAD as release label where a HDCAD is set`() {
     whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
@@ -951,7 +1221,7 @@ class CaCaseloadServiceTest {
       kind = LicenceKind.CRD,
       licenceId = 1,
       licenceType = LicenceType.AP,
-      licenceStatus = LicenceStatus.IN_PROGRESS,
+      licenceStatus = IN_PROGRESS,
       nomisId = "A1234AA",
       forename = "Person",
       surname = "One",
@@ -1066,5 +1336,10 @@ class CaCaseloadServiceTest {
         allocationDate = LocalDate.of(2000, 1, 1),
         unallocated = false,
       )
+
+    val aPrisonUserSearchRequest = PrisonUserSearchRequest(
+      query = "Person",
+      prisonCaseload = "BAI",
+    )
   }
 }

@@ -6,7 +6,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
@@ -106,6 +108,13 @@ class CaCaseloadService(
     val cases = mapCasesToComs(formattedLicences)
 
     return buildCaseload(cases, searchString, "probation")
+  }
+
+  fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
+    val inPrisonResults = getPrisonOmuCaseload(setOf(body.prisonCaseload), body.query)
+    val onProbationResults = getProbationOmuCaseload(setOf(body.prisonCaseload), body.query)
+
+    return PrisonCaseAdminSearchResult(inPrisonResults, onProbationResults)
   }
 
   fun splitCasesByComDetails(cases: List<CaCase>): GroupedByCom = cases.fold(
