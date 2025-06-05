@@ -105,9 +105,8 @@ class HdcLicence(
     cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
     optional = true,
-    orphanRemoval = true,
   )
-  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -325,20 +324,6 @@ class HdcLicence(
     updatedBy = submittedBy,
   )
 
-  override fun updatePrisonInfo(
-    prisonCode: String,
-    prisonDescription: String,
-    prisonTelephone: String?,
-    staffMember: Staff?,
-  ) = copy(
-    prisonCode = prisonCode,
-    prisonDescription = prisonDescription,
-    prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
   override fun updateStatus(
     statusCode: LicenceStatus,
     staffMember: Staff?,
@@ -435,8 +420,8 @@ class HdcLicence(
     "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
-    "updatedBy=$updatedBy," +
-    "curfewAddress=$curfewAddress" +
+    "updatedBy=$updatedBy, " +
+    "curfewAddress=$curfewAddress, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 

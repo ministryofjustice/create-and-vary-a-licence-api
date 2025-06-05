@@ -22,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
@@ -37,6 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -461,6 +464,42 @@ class LicenceConditionServiceTest {
 
       // No way of providing additional condition data via this endpoint so no point running through formatter
       verifyNoInteractions(conditionFormatter)
+    }
+  }
+
+  @Nested
+  inner class `electronic monitoring programme` {
+    @Test
+    fun `update electronic monitoring programme details`() {
+      val electronicMonitoringProvider = ElectronicMonitoringProvider(
+        isToBeTaggedForProgramme = false,
+        programmeName = "Old Programme",
+        licence = aLicenceEntity,
+      )
+
+      val crdLicence = aLicenceEntity.copy(electronicMonitoringProvider = electronicMonitoringProvider)
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val request = UpdateElectronicMonitoringProgrammeRequest(
+        isToBeTaggedForProgramme = true,
+        programmeName = "Programme Name",
+      )
+
+      service.updateElectronicMonitoringProgramme(1L, request)
+
+      val licenceCaptor = ArgumentCaptor.forClass(CrdLicence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventUpdateElectronicMonitoringProgramme(any(), any(), any())
+
+      assertThat(licenceCaptor.value.electronicMonitoringProvider)
+        .extracting("isToBeTaggedForProgramme", "programmeName")
+        .containsExactly(
+          true,
+          "Programme Name",
+        )
     }
   }
 
