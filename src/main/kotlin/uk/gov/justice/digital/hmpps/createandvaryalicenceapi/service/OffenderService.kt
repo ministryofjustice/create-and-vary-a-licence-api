@@ -114,7 +114,7 @@ OffenderService(
     val existingLicences = this.licenceRepository.findAllByNomsIdAndStatusCodeIn(nomsId, IN_FLIGHT_LICENCES)
     val licencesToChange = existingLicences.filter { it.isOffenderDetailUpdated(request) }
     if (licencesToChange.isNotEmpty()) {
-      val updatedLicences = licencesToChange.map {
+      licencesToChange.forEach {
         it.updateOffenderDetails(
           forename = request.forename,
           middleNames = request.middleNames,
@@ -122,8 +122,8 @@ OffenderService(
           dateOfBirth = request.dateOfBirth,
         )
       }
-      this.licenceRepository.saveAllAndFlush(updatedLicences)
-      val events = updatedLicences.map {
+      this.licenceRepository.saveAllAndFlush(licencesToChange)
+      val events = licencesToChange.map {
         AuditEvent(
           licenceId = it.id,
           username = "SYSTEM",
