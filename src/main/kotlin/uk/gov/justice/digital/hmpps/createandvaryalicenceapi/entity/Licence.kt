@@ -79,14 +79,14 @@ abstract class Licence(
   var topupSupervisionStartDate: LocalDate? = null,
   var topupSupervisionExpiryDate: LocalDate? = null,
   var postRecallReleaseDate: LocalDate? = null,
-  val probationAreaCode: String? = null,
-  val probationAreaDescription: String? = null,
-  val probationPduCode: String? = null,
-  val probationPduDescription: String? = null,
-  val probationLauCode: String? = null,
-  val probationLauDescription: String? = null,
-  val probationTeamCode: String? = null,
-  val probationTeamDescription: String? = null,
+  var probationAreaCode: String? = null,
+  var probationAreaDescription: String? = null,
+  var probationPduCode: String? = null,
+  var probationPduDescription: String? = null,
+  var probationLauCode: String? = null,
+  var probationLauDescription: String? = null,
+  var probationTeamCode: String? = null,
+  var probationTeamDescription: String? = null,
 
   @Enumerated(EnumType.STRING)
   var appointmentPersonType: AppointmentPersonType? = null,
@@ -296,14 +296,19 @@ abstract class Licence(
     }
   }
 
-  abstract fun updateOffenderDetails(
+  fun updateOffenderDetails(
     forename: String?,
     middleNames: String?,
     surname: String?,
     dateOfBirth: LocalDate?,
-  ): Licence
+  ) {
+    this.forename = forename
+    this.middleNames = middleNames
+    this.surname = surname
+    this.dateOfBirth = dateOfBirth
+  }
 
-  abstract fun updateProbationTeam(
+  fun updateProbationTeam(
     probationAreaCode: String?,
     probationAreaDescription: String?,
     probationPduCode: String?,
@@ -312,9 +317,16 @@ abstract class Licence(
     probationLauDescription: String?,
     probationTeamCode: String?,
     probationTeamDescription: String?,
-  ): Licence
-
-  abstract fun updateResponsibleCom(responsibleCom: CommunityOffenderManager): Licence
+  ) {
+    this.probationAreaCode = probationAreaCode
+    this.probationAreaDescription = probationAreaDescription
+    this.probationPduCode = probationPduCode
+    this.probationPduDescription = probationPduDescription
+    this.probationLauCode = probationLauCode
+    this.probationLauDescription = probationLauDescription
+    this.probationTeamCode = probationTeamCode
+    this.probationTeamDescription = probationTeamDescription
+  }
 
   abstract fun getCreator(): Creator
 

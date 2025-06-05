@@ -56,7 +56,7 @@ class OffenderControllerTest {
     reset(offenderService, staffService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(OffenderController(offenderService, staffService))
+      .standaloneSetup(OffenderController(offenderService, staffService, false))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
