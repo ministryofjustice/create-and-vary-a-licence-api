@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -20,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Elect
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProgrammeRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
@@ -42,7 +43,6 @@ class LicenceConditionService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  private val electronicMonitoringProgrammeRepository: ElectronicMonitoringProgrammeRepository,
 ) {
 
   @Transactional
@@ -374,7 +374,13 @@ class LicenceConditionService(
       programmeName = request.programmeName,
       licence = licenceEntity,
     )
-    electronicMonitoringProgrammeRepository.save(electronicMonitoringProvider)
+
+    when (licenceEntity) {
+      is CrdLicence -> licenceEntity.electronicMonitoringProvider = electronicMonitoringProvider
+      is HdcLicence -> licenceEntity.electronicMonitoringProvider = electronicMonitoringProvider
+      else -> error("Trying to update electronic monitoring provider details for non-crd or non-hdc: $licenceId")
+    }
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, request, staffMember)
   }

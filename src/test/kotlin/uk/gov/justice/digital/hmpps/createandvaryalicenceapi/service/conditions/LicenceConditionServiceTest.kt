@@ -22,7 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
@@ -42,7 +42,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Elect
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProgrammeRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
@@ -61,7 +60,6 @@ class LicenceConditionServiceTest {
   private val conditionFormatter = mock<ConditionFormatter>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
-  private val electronicMonitoringProgrammeRepository = mock<ElectronicMonitoringProgrammeRepository>()
 
   private val service = LicenceConditionService(
     licenceRepository,
@@ -72,7 +70,6 @@ class LicenceConditionServiceTest {
     policyService,
     auditService,
     staffRepository,
-    electronicMonitoringProgrammeRepository,
   )
 
   @BeforeEach
@@ -489,12 +486,12 @@ class LicenceConditionServiceTest {
 
       service.updateElectronicMonitoringProgramme(1L, request)
 
-      val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
+      val licenceCaptor = ArgumentCaptor.forClass(CrdLicence::class.java)
 
-      verify(electronicMonitoringProgrammeRepository, times(1)).save(electronicMonitoringProviderCaptor.capture())
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateElectronicMonitoringProgramme(any(), any(), any())
 
-      assertThat(electronicMonitoringProviderCaptor.value)
+      assertThat(licenceCaptor.value.electronicMonitoringProvider)
         .extracting("isToBeTaggedForProgramme", "programmeName")
         .containsExactly(
           true,

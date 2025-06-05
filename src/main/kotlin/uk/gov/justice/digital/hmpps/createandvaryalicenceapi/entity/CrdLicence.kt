@@ -84,7 +84,7 @@ class CrdLicence(
   var createdBy: CommunityOffenderManager? = null,
 
   @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true)
-  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.CRD,
@@ -414,7 +414,7 @@ class CrdLicence(
     "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
-    "updatedBy=$updatedBy" +
+    "updatedBy=$updatedBy, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 
