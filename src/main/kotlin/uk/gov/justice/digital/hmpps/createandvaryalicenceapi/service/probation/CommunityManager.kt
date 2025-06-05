@@ -9,6 +9,7 @@ data class CommunityManager(
   val name: Name,
   val provider: Detail,
   val team: TeamDetail,
+  val username: String? = null,
   val allocationDate: LocalDate,
   val unallocated: Boolean,
   val email: String? = null,

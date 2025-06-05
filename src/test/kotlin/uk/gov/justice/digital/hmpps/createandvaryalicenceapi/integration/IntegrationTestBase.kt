@@ -23,10 +23,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.MissingTopicException
+import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
 /*
 ** The abstract parent class for integration tests.
@@ -53,6 +55,9 @@ abstract class IntegrationTestBase {
   @MockitoSpyBean
   lateinit var telemetryClient: TelemetryClient
 
+  @MockitoSpyBean
+  lateinit var comAllocatedHandler: ComAllocatedHandler
+
   @BeforeEach
   fun `Clear queues`() {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
@@ -60,8 +65,7 @@ abstract class IntegrationTestBase {
   }
 
   protected val domainEventsTopic by lazy {
-    hmppsQueueService.findByTopicId("domainevents")
-      ?: throw MissingQueueException("HmppsTopic domainevents not found")
+    hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
   }
   protected val domainEventsTopicSnsClient by lazy { domainEventsTopic.snsClient }
   protected val domainEventsTopicArn by lazy { domainEventsTopic.arn }
@@ -74,7 +78,6 @@ abstract class IntegrationTestBase {
   protected val domainEventsSqsClient by lazy { domainEventsQueue.sqsClient }
   protected val domainEventsQueueUrl by lazy { domainEventsQueue.queueUrl }
 
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   lateinit var webTestClient: WebTestClient
 
@@ -98,13 +101,7 @@ abstract class IntegrationTestBase {
     roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
 
-  data class EventType(val Value: String, val Type: String)
-  data class MessageAttributes(val eventType: EventType)
-  data class Message(
-    val Message: String,
-    val MessageId: String,
-    val MessageAttributes: MessageAttributes,
-  )
+  fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
