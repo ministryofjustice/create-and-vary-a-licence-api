@@ -167,7 +167,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
   }
 
   @Nested
-  inner class CaseAdminSearch {
+  inner class CaseAdminSearchTest {
     val request = PrisonUserSearchRequest(
       query = "Person",
       prisonCaseload = "BAI",
@@ -203,7 +203,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
     @Sql(
       "classpath:test_data/seed-ca-caseload-licences.sql",
     )
-    fun success() {
+    fun successfullyRetrievePrisonProbationCases() {
       prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
       prisonApiMockServer.getHdcStatuses()
       prisonApiMockServer.stubGetCourtOutcomes()
