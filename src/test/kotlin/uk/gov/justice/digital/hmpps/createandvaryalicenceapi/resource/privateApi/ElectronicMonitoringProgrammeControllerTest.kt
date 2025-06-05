@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
 
 @ExtendWith(SpringExtension::class)
@@ -53,7 +53,7 @@ class ElectronicMonitoringProgrammeControllerTest {
 
   @Test
   fun `Updates the electronic monitoring programme details`() {
-    val request = ElectronicMonitoringProgrammeRequest(isToBeTaggedForProgramme = true, programmeName = "Test Programme")
+    val request = UpdateElectronicMonitoringProgrammeRequest(isToBeTaggedForProgramme = true, programmeName = "Test Programme")
     mvc.perform(
       post("/licence/id/1/electronic-monitoring-programmes")
         .accept(APPLICATION_JSON)

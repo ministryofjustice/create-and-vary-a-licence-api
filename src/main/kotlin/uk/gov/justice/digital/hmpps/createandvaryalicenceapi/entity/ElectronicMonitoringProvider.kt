@@ -24,10 +24,10 @@ data class ElectronicMonitoringProvider(
   val licence: Licence,
 
   @Column(name = "is_to_be_tagged_for_programme")
-  val isToBeTaggedForProgramme: Boolean? = null,
+  var isToBeTaggedForProgramme: Boolean? = null,
 
   @Column(name = "programme_name", length = 100)
-  val programmeName: String? = null,
+  var programmeName: String? = null,
 
   @Column(name = "date_created", nullable = false, updatable = false)
   val dateCreated: LocalDateTime = LocalDateTime.now(),

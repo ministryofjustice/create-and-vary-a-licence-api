@@ -21,7 +21,7 @@ class ProgrammeNameValidatorTest {
 
   @Test
   fun `should return true when isToBeTaggedForProgramme is false`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = false,
       programmeName = null,
     )
@@ -30,7 +30,7 @@ class ProgrammeNameValidatorTest {
 
   @Test
   fun `should return true when isToBeTaggedForProgramme is true and programmeName is provided`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = "Valid Programme",
     )
@@ -39,7 +39,7 @@ class ProgrammeNameValidatorTest {
 
   @Test
   fun `should return false when isToBeTaggedForProgramme is true and programmeName is null`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = null,
     )
@@ -48,7 +48,7 @@ class ProgrammeNameValidatorTest {
 
   @Test
   fun `should return false when isToBeTaggedForProgramme is true and programmeName is blank`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = "   ",
     )

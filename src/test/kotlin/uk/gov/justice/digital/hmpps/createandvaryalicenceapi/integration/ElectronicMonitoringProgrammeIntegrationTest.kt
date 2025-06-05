@@ -9,7 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 
 class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
@@ -22,7 +22,7 @@ class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `should update electronic monitoring programme details successfully`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = "Test Programme",
     )
@@ -44,7 +44,7 @@ class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `should return 400 for invalid request`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = null,
     )
@@ -60,7 +60,7 @@ class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
 
   @Test
   fun `should return 403 for unauthorized role`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = "Test Programme",
     )
@@ -79,7 +79,7 @@ class ElectronicMonitoringProgrammeIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `should return 404 for non-existent licence ID`() {
-    val request = ElectronicMonitoringProgrammeRequest(
+    val request = UpdateElectronicMonitoringProgrammeRequest(
       isToBeTaggedForProgramme = true,
       programmeName = "Test Programme",
     )

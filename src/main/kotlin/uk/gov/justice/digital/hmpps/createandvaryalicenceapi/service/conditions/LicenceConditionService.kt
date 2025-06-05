@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -31,7 +31,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformTo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityAdditionalData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToEntityStandard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition as EntityAdditionalCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 
 @Service
 class LicenceConditionService(
@@ -361,7 +360,7 @@ class LicenceConditionService(
   }
 
   @Transactional
-  fun updateElectronicMonitoringProgramme(licenceId: Long, request: ElectronicMonitoringProgrammeRequest) {
+  fun updateElectronicMonitoringProgramme(licenceId: Long, request: UpdateElectronicMonitoringProgrammeRequest) {
     val licenceEntity = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
@@ -369,17 +368,13 @@ class LicenceConditionService(
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val electronicMonitoringProvider = EntityElectronicMonitoringProvider(
-      isToBeTaggedForProgramme = request.isToBeTaggedForProgramme,
-      programmeName = request.programmeName,
-      licence = licenceEntity,
-    )
-
-    when (licenceEntity) {
-      is CrdLicence -> licenceEntity.electronicMonitoringProvider = electronicMonitoringProvider
-      is HdcLicence -> licenceEntity.electronicMonitoringProvider = electronicMonitoringProvider
+    val electronicMonitoringProvider = when (licenceEntity) {
+      is CrdLicence -> licenceEntity.electronicMonitoringProvider
+      is HdcLicence -> licenceEntity.electronicMonitoringProvider
       else -> error("Trying to update electronic monitoring provider details for non-crd or non-hdc: $licenceId")
     }
+    electronicMonitoringProvider?.isToBeTaggedForProgramme = request.isToBeTaggedForProgramme
+    electronicMonitoringProvider?.programmeName = request.programmeName
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, request, staffMember)

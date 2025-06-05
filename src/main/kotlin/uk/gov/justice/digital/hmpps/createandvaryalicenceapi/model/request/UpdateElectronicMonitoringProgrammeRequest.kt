@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 
 @ValidProgrammeName
 @Schema(description = "Request for adding a electronic monitoring programme request")
-data class ElectronicMonitoringProgrammeRequest(
+data class UpdateElectronicMonitoringProgrammeRequest(
   @Schema(description = "Is the licence to be tagged for electronic monitoring programme")
   val isToBeTaggedForProgramme: Boolean? = null,
 
@@ -26,9 +26,9 @@ annotation class ValidProgrammeName(
   val payload: Array<KClass<out Payload>> = [],
 )
 
-class ProgrammeNameValidator : ConstraintValidator<ValidProgrammeName, ElectronicMonitoringProgrammeRequest> {
+class ProgrammeNameValidator : ConstraintValidator<ValidProgrammeName, UpdateElectronicMonitoringProgrammeRequest> {
   override fun isValid(
-    value: ElectronicMonitoringProgrammeRequest?,
+    value: UpdateElectronicMonitoringProgrammeRequest?,
     context: ConstraintValidatorContext,
   ): Boolean {
     if (value == null) return true

@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
@@ -234,7 +234,7 @@ class AuditService(
 
   fun recordAuditEventUpdateElectronicMonitoringProgramme(
     licence: Licence,
-    electronicMonitoringProgrammeRequest: ElectronicMonitoringProgrammeRequest,
+    electronicMonitoringProgrammeRequest: UpdateElectronicMonitoringProgrammeRequest,
     staffMember: Staff?,
   ) {
     val summary = "Updated electronic monitoring programme details"
