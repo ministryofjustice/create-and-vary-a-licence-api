@@ -33,7 +33,7 @@ class DomainEventListener(
       }
 
       else -> {
-        log.debug("Ignoring message with type ${hmppsMessage.eventType}")
+        log.warn("Ignoring message with type ${hmppsMessage.eventType}")
       }
     }
   }
