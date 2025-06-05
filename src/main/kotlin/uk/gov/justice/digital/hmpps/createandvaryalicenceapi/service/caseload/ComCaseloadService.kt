@@ -181,11 +181,12 @@ class ComCaseloadService(
 
   fun mapCaseToVaryLicence(cases: List<ManagedOffenderCrn>): Map<ManagedOffenderCrn, LicenceSummary> {
     val licences = findExistingActiveAndVariationLicences(cases.mapNotNull { it.crn })
-    val casesToLicences = cases.associateWith { case -> findVaryLicenceToDisplay(licences.filter { licence -> case.crn == licence.crn }) }
-    return casesToLicences.mapNotNull { (case, licence) ->
+    return cases.mapNotNull { case ->
+      val caseLicences = licences.filter { licence -> case.crn == licence.crn }
+      val varyLicence = findVaryLicenceToDisplay(caseLicences)
       when {
-        licence == null -> null
-        else -> case to licence
+        varyLicence == null -> null
+        else -> case to varyLicence
       }
     }.toMap()
   }
@@ -312,16 +313,14 @@ class ComCaseloadService(
   private fun findExistingActiveAndVariationLicences(crnList: List<String>): List<LicenceSummary> = if (crnList.isEmpty()) {
     emptyList()
   } else {
-    licenceService.findLicencesMatchingCriteria(
-      LicenceQueryObject(
-        crns = crnList,
-        statusCodes = listOf(
-          ACTIVE,
-          VARIATION_IN_PROGRESS,
-          VARIATION_SUBMITTED,
-          VARIATION_APPROVED,
-          VARIATION_REJECTED,
-        ),
+    licenceService.findLicencesForCrnsAndStatuses(
+      crns = crnList,
+      statusCodes = listOf(
+        ACTIVE,
+        VARIATION_IN_PROGRESS,
+        VARIATION_SUBMITTED,
+        VARIATION_APPROVED,
+        VARIATION_REJECTED,
       ),
     )
   }

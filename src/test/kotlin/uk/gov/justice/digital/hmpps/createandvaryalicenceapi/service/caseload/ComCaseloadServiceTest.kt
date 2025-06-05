@@ -799,7 +799,7 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -846,7 +846,7 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -903,7 +903,7 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -963,7 +963,7 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -1042,7 +1042,7 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",

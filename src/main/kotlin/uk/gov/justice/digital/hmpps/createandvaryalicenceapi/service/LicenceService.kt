@@ -51,6 +51,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventTy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -481,6 +482,11 @@ class LicenceService(
   fun findSubmittedVariationsByRegion(probationAreaCode: String): List<LicenceSummary> {
     val matchingLicences =
       licenceRepository.findByStatusCodeAndProbationAreaCode(VARIATION_SUBMITTED, probationAreaCode)
+    return matchingLicences.map { it.toSummary() }
+  }
+
+  fun findLicencesForCrnsAndStatuses(crns: List<String>, statusCodes: List<LicenceStatus>): List<LicenceSummary> {
+    val matchingLicences = licenceRepository.findAllByCrnInAndStatusCodeIn(crns, statusCodes)
     return matchingLicences.map { it.toSummary() }
   }
 
