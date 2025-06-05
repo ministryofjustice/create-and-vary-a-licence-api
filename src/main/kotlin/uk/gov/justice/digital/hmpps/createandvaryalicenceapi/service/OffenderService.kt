@@ -71,12 +71,12 @@ OffenderService(
 
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
-    var offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
+    val offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
     var probationTeamChanged = false
 
     // Update the in-flight licences for this person on probation
-    offenderLicences = offenderLicences.map {
+    offenderLicences.forEach {
       if (it.probationTeamCode != request.probationTeamCode) {
         probationTeamChanged = true
       }
@@ -95,7 +95,7 @@ OffenderService(
     if (probationTeamChanged) {
       this.licenceRepository.saveAllAndFlush(offenderLicences)
       // Create an audit event for each of the licences updated
-      offenderLicences.map {
+      offenderLicences.forEach {
         auditEventRepository.saveAndFlush(
           AuditEvent(
             licenceId = it.id,
