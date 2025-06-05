@@ -296,12 +296,17 @@ abstract class Licence(
     }
   }
 
-  abstract fun updateOffenderDetails(
+  fun updateOffenderDetails(
     forename: String?,
     middleNames: String?,
     surname: String?,
     dateOfBirth: LocalDate?,
-  ): Licence
+  ) {
+    this.forename = forename
+    this.middleNames = middleNames
+    this.surname = surname
+    this.dateOfBirth = dateOfBirth
+  }
 
   abstract fun updateProbationTeam(
     probationAreaCode: String?,
