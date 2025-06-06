@@ -289,7 +289,7 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
     val version = licenceEntity.version!!
-    val conditionCode = additionalCondition.conditionCode!!
+    val conditionCode = additionalCondition.conditionCode
     val additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
 
     val updatedAdditionalCondition = additionalCondition.copy(
@@ -372,9 +372,11 @@ class LicenceConditionService(
       is CrdLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
         "ElectronicMonitoringProvider is null for CrdLicence: $licenceId"
       }
+
       is HdcLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
         "ElectronicMonitoringProvider is null for HdcLicence: $licenceId"
       }
+
       else -> error("Trying to update electronic monitoring provider details for non-crd or non-hdc: $licenceId")
     }
     electronicMonitoringProvider.isToBeTaggedForProgramme = request.isToBeTaggedForProgramme

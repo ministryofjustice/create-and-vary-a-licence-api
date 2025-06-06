@@ -76,7 +76,7 @@ class HdcLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager? = null,
+  responsibleCom: CommunityOffenderManager,
   updatedBy: Staff? = null,
 
   @OneToMany(
@@ -222,7 +222,7 @@ class HdcLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager? = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.responsibleCom,
     curfewTimes: List<HdcCurfewTimes> = this.curfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
@@ -307,12 +307,6 @@ class HdcLicence(
     statusCode = LicenceStatus.INACTIVE,
     updatedByUsername = staffMember?.username ?: SYSTEM_USER,
     updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  fun timeOut() = copy(
-    statusCode = LicenceStatus.TIMED_OUT,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = "SYSTEM",
   )
 
   fun submit(submittedBy: CommunityOffenderManager) = copy(

@@ -6,14 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class StandardCondition(
 
   @Schema(description = "The internal ID for this standard condition on this licence", example = "98987")
-  val id: Long? = null,
+  val id: Long,
 
   @Schema(description = "The unique code for this standard condition", example = "9ce9d594-e346-4785-9642-c87e764bee37")
-  val code: String? = null,
+  val code: String,
 
   @Schema(description = "The sequence of this standard condition", example = "1")
-  val sequence: Int? = null,
+  val sequence: Int,
 
   @Schema(description = "The text of this standard condition", example = "Be of generally good behaviour")
-  val text: String? = null,
+  val text: String,
 )
