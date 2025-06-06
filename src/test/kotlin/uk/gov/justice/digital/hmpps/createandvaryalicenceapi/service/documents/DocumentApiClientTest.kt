@@ -19,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.web.reactive.function.client.WebClient
-import java.util.*
+import java.util.UUID
 
 class DocumentApiClientTest {
   private lateinit var documentApiClient: DocumentApiClient
