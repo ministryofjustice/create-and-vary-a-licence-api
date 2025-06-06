@@ -26,7 +26,7 @@ abstract class Staff(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
-  var id: Long? = -1,
+  var id: Long = -1,
 
   @NotNull
   @Enumerated(EnumType.STRING)

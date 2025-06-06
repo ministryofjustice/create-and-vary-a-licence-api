@@ -23,7 +23,7 @@ data class LicenceEvent(
   val licenceId: Long = -1,
 
   @Enumerated(EnumType.STRING)
-  val eventType: LicenceEventType? = null,
+  val eventType: LicenceEventType,
 
   val username: String? = null,
   val forenames: String? = null,

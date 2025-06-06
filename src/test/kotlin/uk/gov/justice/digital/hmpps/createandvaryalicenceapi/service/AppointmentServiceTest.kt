@@ -328,6 +328,7 @@ class AppointmentServiceTest {
             conditionCode = "goodBehaviour",
             conditionSequence = 1,
             conditionText = "Be of good behaviour",
+            conditionType = "AP",
             licence = it,
           ),
           EntityStandardCondition(
@@ -335,6 +336,7 @@ class AppointmentServiceTest {
             conditionCode = "notBreakLaw",
             conditionSequence = 2,
             conditionText = "Do not break any law",
+            conditionType = "AP",
             licence = it,
           ),
           EntityStandardCondition(
@@ -342,6 +344,7 @@ class AppointmentServiceTest {
             conditionCode = "attendMeetings",
             conditionSequence = 3,
             conditionText = "Attend meetings",
+            conditionType = "AP",
             licence = it,
           ),
         ),

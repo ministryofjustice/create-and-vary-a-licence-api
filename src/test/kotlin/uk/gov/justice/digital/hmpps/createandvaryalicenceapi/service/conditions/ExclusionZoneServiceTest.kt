@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import java.util.Optional
 
 class ExclusionZoneServiceTest {
@@ -114,13 +115,13 @@ class ExclusionZoneServiceTest {
         id = 1,
         dataField = "outOfBoundArea",
         dataValue = "Bristol town centre",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 1, licence = aLicenceEntity),
       ),
       AdditionalConditionData(
         id = 2,
         dataField = "outOfBoundFile",
         dataValue = "test.pdf",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 2, licence = aLicenceEntity),
       ),
     )
 
@@ -132,6 +133,7 @@ class ExclusionZoneServiceTest {
       conditionCategory = "Freedom of movement",
       conditionSequence = 1,
       conditionText = "text",
+      conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = emptyList(),
     )
@@ -155,6 +157,7 @@ class ExclusionZoneServiceTest {
       conditionCategory = "Freedom of movement",
       conditionSequence = 1,
       conditionText = "text",
+      conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = listOf(someUploadSummaryData),
     )

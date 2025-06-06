@@ -13,7 +13,7 @@ fun mapConditionsToConfig(
   licenceConditions: List<AdditionalCondition>,
   policyConditions: AllAdditionalConditions,
 ): List<AdditionalConditionWithConfig> = licenceConditions.map {
-  val policyCondition = policyConditions.getCondition(it.conditionVersion, it.conditionCode!!)
+  val policyCondition = policyConditions.getCondition(it.conditionVersion, it.conditionCode)
   AdditionalConditionWithConfig(it, policyCondition)
 }
 
@@ -36,7 +36,7 @@ fun isLicenceReadyToSubmit(
         val policyInputs = it.config.getConditionInputs()!!.flatMap { input -> input.getAllFieldNames() }
         policyInputs.any { name -> enteredFields.contains(name) }
       }
-    Pair(it.additionalCondition.conditionCode!!, readyToSubmit)
+    Pair(it.additionalCondition.conditionCode, readyToSubmit)
   }
 }
 

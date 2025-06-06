@@ -76,7 +76,7 @@ class HdcVariationLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager? = null,
+  responsibleCom: CommunityOffenderManager,
   override var variationOfId: Long? = null,
   licenceVersion: String? = "1.0",
   updatedBy: Staff? = null,
@@ -215,14 +215,14 @@ class HdcVariationLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager? = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.responsibleCom,
     curfewTimes: MutableList<HdcCurfewTimes> = this.curfewTimes.toMutableList(),
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
     updatedBy: Staff? = this.updatedBy,
     curfewAddress: HdcCurfewAddress? = this.curfewAddress,
   ): HdcVariationLicence {
-    val hdcVariationLicence: HdcVariationLicence = HdcVariationLicence(
+    val hdcVariationLicence = HdcVariationLicence(
       id = id,
       typeCode = typeCode,
       version = version,

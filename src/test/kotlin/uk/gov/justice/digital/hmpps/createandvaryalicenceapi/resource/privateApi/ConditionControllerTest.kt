@@ -159,9 +159,9 @@ class ConditionControllerTest {
 
     val anUpdateStandardConditionRequest = UpdateStandardConditionDataRequest(
       standardLicenceConditions = listOf(
-        StandardCondition(code = "code1", sequence = 0, text = "text"),
-        StandardCondition(code = "code2", sequence = 1, text = "text"),
-        StandardCondition(code = "code3", sequence = 2, text = "text"),
+        StandardCondition(id = 1, code = "code1", sequence = 0, text = "text"),
+        StandardCondition(id = 2, code = "code2", sequence = 1, text = "text"),
+        StandardCondition(id = 3, code = "code3", sequence = 2, text = "text"),
       ),
     )
 

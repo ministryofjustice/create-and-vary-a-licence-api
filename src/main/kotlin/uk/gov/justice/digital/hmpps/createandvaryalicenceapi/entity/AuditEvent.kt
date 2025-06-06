@@ -21,7 +21,7 @@ data class AuditEvent(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @NotNull
-  val id: Long? = -1,
+  val id: Long = -1,
 
   val licenceId: Long? = null,
 

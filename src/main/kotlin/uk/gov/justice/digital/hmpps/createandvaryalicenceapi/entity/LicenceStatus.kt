@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull
 data class LicenceStatus(
   @Id
   @NotNull
-  val statusCode: String = "",
+  val statusCode: String,
 
-  val description: String? = null,
+  val description: String,
 )
