@@ -19,15 +19,19 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
+import kotlin.collections.first
 
 private const val GET_PRISON_CASELOAD = "/caseload/case-admin/prison-view"
 private const val GET_PROBATION_CASELOAD = "/caseload/case-admin/probation-view"
+private const val SEARCH_PRISONERS_CA_CASELOAD = "/caseload/case-admin/case-search"
 private val caCaseloadSearch = CaCaseloadSearch(prisonCodes = setOf("BAI"), searchString = null)
 
 class CaCaseloadIntegrationTest : IntegrationTestBase() {
@@ -153,6 +157,83 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
 
       assertThat(caseload).hasSize(2)
       with(caseload.first()) {
+        assertThat(name).isEqualTo("Person Five")
+        assertThat(prisonerNumber).isEqualTo("A1234AE")
+        assertThat(licenceStatus).isEqualTo(LicenceStatus.ACTIVE)
+        assertThat(tabType).isNull()
+        assertThat(isInHardStopPeriod).isFalse()
+      }
+    }
+  }
+
+  @Nested
+  inner class CaseAdminSearchTest {
+    val request = PrisonUserSearchRequest(
+      query = "Person",
+      prisonCaseload = "BAI",
+    )
+
+    @Test
+    fun `Get forbidden (403) when incorrect roles are supplied`() {
+      val result = webTestClient.post()
+        .uri(SEARCH_PRISONERS_CA_CASELOAD)
+        .bodyValue(request)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_WRONG ROLE")))
+        .exchange()
+        .expectStatus().isForbidden
+        .expectStatus().isEqualTo(FORBIDDEN.value())
+        .expectBody(ErrorResponse::class.java)
+        .returnResult().responseBody
+
+      assertThat(result?.userMessage).contains("Access Denied")
+    }
+
+    @Test
+    fun `Unauthorized (401) when no token is supplied`() {
+      webTestClient.post()
+        .uri(SEARCH_PRISONERS_CA_CASELOAD)
+        .bodyValue(request)
+        .accept(APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isEqualTo(UNAUTHORIZED.value())
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/seed-ca-caseload-licences.sql",
+    )
+    fun successfullyRetrievePrisonProbationCases() {
+      prisonerSearchMockServer.stubSearchPrisonersByReleaseDate(0)
+      prisonApiMockServer.getHdcStatuses()
+      prisonApiMockServer.stubGetCourtOutcomes()
+      prisonerSearchMockServer.stubSearchPrisonersByNomisIds()
+      deliusMockServer.stubGetStaffDetailsByUsername()
+      deliusMockServer.stubGetManagersForGetApprovalCaseload()
+
+      val caseload = webTestClient.post()
+        .uri(SEARCH_PRISONERS_CA_CASELOAD)
+        .bodyValue(request)
+        .accept(APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+        .exchange()
+        .expectStatus().isEqualTo(OK.value())
+        .expectHeader().contentType(APPLICATION_JSON)
+        .expectBody(typeReference<PrisonCaseAdminSearchResult>())
+        .returnResult().responseBody!!
+
+      assertThat(caseload.inPrisonResults).hasSize(3)
+      assertThat(caseload.onProbationResults).hasSize(2)
+
+      with(caseload.inPrisonResults.first()) {
+        assertThat(name).isEqualTo("Person Two")
+        assertThat(prisonerNumber).isEqualTo("A1234AB")
+        assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
+        assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
+        assertThat(isInHardStopPeriod).isFalse()
+      }
+
+      with(caseload.onProbationResults.first()) {
         assertThat(name).isEqualTo("Person Five")
         assertThat(prisonerNumber).isEqualTo("A1234AE")
         assertThat(licenceStatus).isEqualTo(LicenceStatus.ACTIVE)

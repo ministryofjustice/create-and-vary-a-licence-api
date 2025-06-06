@@ -24,8 +24,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AuditRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.LicencePolicy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import java.time.DayOfWeek
 import java.time.LocalDateTime
@@ -826,6 +828,44 @@ class AuditServiceTest {
     }
   }
 
+  @Nested
+  inner class `audit events for Electronic Monitoring Programme` {
+    @Test
+    fun `records an audit event when electronic monitoring programme details are updated`() {
+      service.recordAuditEventUpdateElectronicMonitoringProgramme(
+        aLicenceEntity,
+        electronicMonitoringProgrammeRequest,
+        aCom,
+      )
+
+      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
+      verify(auditEventRepository, times(1)).save(auditCaptor.capture())
+
+      assertThat(auditCaptor.value.username).isEqualTo(aCom.username)
+      assertThat(auditCaptor.value.summary)
+        .isEqualTo(
+          "Updated electronic monitoring programme details for " +
+            "${aLicenceEntity.forename} ${aLicenceEntity.surname}",
+        )
+      assertThat(auditCaptor.value.detail)
+        .isEqualTo(
+          "ID ${aLicenceEntity.id} type ${aLicenceEntity.typeCode.name} " +
+            "status ${aLicenceEntity.statusCode.name} version ${aLicenceEntity.version}",
+        )
+      assertThat(auditCaptor.value.changes)
+        .extracting("type", "changes")
+        .isEqualTo(
+          listOf(
+            "Updated electronic monitoring programme details",
+            mapOf(
+              "isToBeTaggedForProgramme" to true,
+              "programmeName" to "valid name",
+            ),
+          ),
+        )
+    }
+  }
+
   companion object {
     val anEvent = AuditEvent(
       licenceId = 1L,
@@ -861,12 +901,12 @@ class AuditServiceTest {
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 1, licence = aLicenceEntity),
       ),
     )
 
     val someBespokeConditions = listOf(
-      BespokeCondition(1, licence = aLicenceEntity).copy(conditionText = "condition 1"),
+      BespokeCondition(1, licence = aLicenceEntity, conditionText = "condition 1"),
     )
 
     val newBespokeConditions = listOf(
@@ -884,6 +924,11 @@ class AuditServiceTest {
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = emptyList(),
       conditionType = "AP",
+    )
+
+    val electronicMonitoringProgrammeRequest = UpdateElectronicMonitoringProgrammeRequest(
+      isToBeTaggedForProgramme = true,
+      programmeName = "valid name",
     )
 
     val aPolicy = LicencePolicy(

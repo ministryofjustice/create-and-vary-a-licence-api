@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
@@ -16,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditio
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -55,14 +58,14 @@ class LicenceConditionService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedStandardConditions = entityStandardLicenceConditions + entityStandardPssConditions,
       staffMember = staffMember,
     )
 
     val currentPolicyVersion = licencePolicyService.currentPolicy().version
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
     auditService.recordAuditEventUpdateStandardCondition(licenceEntity, currentPolicyVersion, staffMember)
   }
 
@@ -97,12 +100,12 @@ class LicenceConditionService(
       ),
     )
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedAdditionalConditions = newConditions,
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
     val newCondition =
@@ -158,12 +161,12 @@ class LicenceConditionService(
 
     val updatedConditions = existingConditions.getUpdatedConditions(submittedConditions, removedConditions)
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedAdditionalConditions = (newConditions + updatedConditions),
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
     removedConditions.forEach { oldCondition ->
@@ -242,11 +245,11 @@ class LicenceConditionService(
       return
     }
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedBespokeConditions = emptyList(),
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // Replace the bespoke conditions
     request.conditions.forEachIndexed { index, condition ->
@@ -286,7 +289,7 @@ class LicenceConditionService(
       .orElseThrow { EntityNotFoundException("$additionalConditionId") }
 
     val version = licenceEntity.version!!
-    val conditionCode = additionalCondition.conditionCode!!
+    val conditionCode = additionalCondition.conditionCode
     val additionalConditionData = request.data.transformToEntityAdditionalData(additionalCondition)
 
     val updatedAdditionalCondition = additionalCondition.copy(
@@ -300,8 +303,8 @@ class LicenceConditionService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicence = licenceEntity.updateConditions(staffMember = staffMember)
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceEntity.updateConditions(staffMember = staffMember)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
@@ -343,17 +346,44 @@ class LicenceConditionService(
     val removedBespokeConditions =
       licenceEntity.bespokeConditions.filter { bespokeConditionIds.contains(it.id) }
 
-    val updatedLicence = licenceEntity.updateConditions(
+    licenceEntity.updateConditions(
       updatedAdditionalConditions = revisedAdditionalConditions,
       updatedStandardConditions = revisedStandardConditions,
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(updatedLicence)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
     auditService.recordAuditEventDeleteBespokeConditions(licenceEntity, removedBespokeConditions, staffMember)
+  }
+
+  @Transactional
+  fun updateElectronicMonitoringProgramme(licenceId: Long, request: UpdateElectronicMonitoringProgrammeRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val username = SecurityContextHolder.getContext().authentication.name
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    val electronicMonitoringProvider = when (licenceEntity) {
+      is CrdLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
+        "ElectronicMonitoringProvider is null for CrdLicence: $licenceId"
+      }
+
+      is HdcLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
+        "ElectronicMonitoringProvider is null for HdcLicence: $licenceId"
+      }
+
+      else -> error("Trying to update electronic monitoring provider details for non-crd or non-hdc: $licenceId")
+    }
+    electronicMonitoringProvider.isToBeTaggedForProgramme = request.isToBeTaggedForProgramme
+    electronicMonitoringProvider.programmeName = request.programmeName
+    licenceRepository.saveAndFlush(licenceEntity)
+
+    auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, request, staffMember)
   }
 
   companion object {

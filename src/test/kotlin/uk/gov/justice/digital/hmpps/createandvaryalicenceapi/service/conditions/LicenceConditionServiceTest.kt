@@ -22,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionRequest
@@ -37,6 +39,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Licenc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.StandardConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.DeleteAdditionalConditionsByCodeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
@@ -44,6 +47,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.POLICY_V2_1
 import java.util.Optional
@@ -99,12 +103,12 @@ class LicenceConditionServiceTest {
       whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
 
       val apConditions = listOf(
-        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+        StandardCondition(id = 1, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
       )
 
       val pssConditions = listOf(
-        StandardCondition(code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
-        StandardCondition(code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
+        StandardCondition(id = 2, code = "goodBehaviour", sequence = 1, text = "Be of good behaviour"),
+        StandardCondition(id = 3, code = "doNotBreakLaw", sequence = 2, text = "Do not break any law"),
       )
 
       service.updateStandardConditions(
@@ -200,9 +204,9 @@ class LicenceConditionServiceTest {
           standardCondition(3).copy(conditionType = "PSS"),
         ),
         bespokeConditions = listOf(
-          BespokeCondition(1, licence = aLicenceEntity).copy(conditionText = "condition 1"),
-          BespokeCondition(2, licence = aLicenceEntity).copy(conditionText = "condition 2"),
-          BespokeCondition(3, licence = aLicenceEntity).copy(conditionText = "condition 3"),
+          BespokeCondition(1, licence = aLicenceEntity, conditionText = "condition 1"),
+          BespokeCondition(2, licence = aLicenceEntity, conditionText = "condition 2"),
+          BespokeCondition(3, licence = aLicenceEntity, conditionText = "condition 3"),
         ),
       )
 
@@ -223,7 +227,7 @@ class LicenceConditionServiceTest {
       )
 
       assertThat(licenceCaptor.value.bespokeConditions).containsExactly(
-        BespokeCondition(2, licence = aLicenceEntity).copy(conditionText = "condition 2"),
+        BespokeCondition(2, licence = aLicenceEntity, conditionText = "condition 2"),
       )
 
       // Verify last contact info is recorded
@@ -461,6 +465,42 @@ class LicenceConditionServiceTest {
 
       // No way of providing additional condition data via this endpoint so no point running through formatter
       verifyNoInteractions(conditionFormatter)
+    }
+  }
+
+  @Nested
+  inner class `electronic monitoring programme` {
+    @Test
+    fun `update electronic monitoring programme details`() {
+      val electronicMonitoringProvider = ElectronicMonitoringProvider(
+        isToBeTaggedForProgramme = false,
+        programmeName = "Old Programme",
+        licence = aLicenceEntity,
+      )
+
+      val crdLicence = aLicenceEntity.copy(electronicMonitoringProvider = electronicMonitoringProvider)
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+
+      val request = UpdateElectronicMonitoringProgrammeRequest(
+        isToBeTaggedForProgramme = true,
+        programmeName = "Programme Name",
+      )
+
+      service.updateElectronicMonitoringProgramme(1L, request)
+
+      val licenceCaptor = ArgumentCaptor.forClass(CrdLicence::class.java)
+
+      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+      verify(auditService, times(1)).recordAuditEventUpdateElectronicMonitoringProgramme(any(), any(), any())
+
+      assertThat(licenceCaptor.value.electronicMonitoringProvider)
+        .extracting("isToBeTaggedForProgramme", "programmeName")
+        .containsExactly(
+          true,
+          "Programme Name",
+        )
     }
   }
 
@@ -783,7 +823,7 @@ class LicenceConditionServiceTest {
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 1, licence = aLicenceEntity),
       ),
     )
 
@@ -792,7 +832,7 @@ class LicenceConditionServiceTest {
         id = 2,
         dataField = "dataField",
         dataValue = "dataValue2",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 2, licence = aLicenceEntity),
       ),
     )
 

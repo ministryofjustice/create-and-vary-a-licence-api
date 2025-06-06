@@ -70,6 +70,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     // Check that the upload detail values are also stored and referenced by the ID column in the summary
     val detailRow = additionalConditionUploadDetailRepository.findById(uploadCondition.uploadDetailId).orElseThrow()
+    assertThat(detailRow.licenceId).isEqualTo(2)
     assertThat(detailRow.fullSizeImage).isNotEmpty
     assertThat(detailRow.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
   }

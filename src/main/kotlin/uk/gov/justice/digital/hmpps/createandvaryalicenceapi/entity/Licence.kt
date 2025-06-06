@@ -62,9 +62,9 @@ abstract class Licence(
   val crn: String? = null,
   val pnc: String? = null,
   val cro: String? = null,
-  val prisonCode: String? = null,
-  val prisonDescription: String? = null,
-  val prisonTelephone: String? = null,
+  var prisonCode: String? = null,
+  var prisonDescription: String? = null,
+  var prisonTelephone: String? = null,
   var forename: String? = null,
   var middleNames: String? = null,
   var surname: String? = null,
@@ -79,14 +79,14 @@ abstract class Licence(
   var topupSupervisionStartDate: LocalDate? = null,
   var topupSupervisionExpiryDate: LocalDate? = null,
   var postRecallReleaseDate: LocalDate? = null,
-  val probationAreaCode: String? = null,
-  val probationAreaDescription: String? = null,
-  val probationPduCode: String? = null,
-  val probationPduDescription: String? = null,
-  val probationLauCode: String? = null,
-  val probationLauDescription: String? = null,
-  val probationTeamCode: String? = null,
-  val probationTeamDescription: String? = null,
+  var probationAreaCode: String? = null,
+  var probationAreaDescription: String? = null,
+  var probationPduCode: String? = null,
+  var probationPduDescription: String? = null,
+  var probationLauCode: String? = null,
+  var probationLauDescription: String? = null,
+  var probationTeamCode: String? = null,
+  var probationTeamDescription: String? = null,
 
   @Enumerated(EnumType.STRING)
   var appointmentPersonType: AppointmentPersonType? = null,
@@ -115,21 +115,21 @@ abstract class Licence(
   )
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
-  var standardConditions: List<StandardCondition> = emptyList(),
+  var standardConditions: MutableList<StandardCondition> = mutableListOf(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
-  val additionalConditions: List<AdditionalCondition> = emptyList(),
+  var additionalConditions: MutableList<AdditionalCondition> = mutableListOf(),
 
   @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @Fetch(value = FetchMode.SUBSELECT)
   @OrderBy("conditionSequence")
-  val bespokeConditions: List<BespokeCondition> = emptyList(),
+  var bespokeConditions: MutableList<BespokeCondition> = mutableListOf(),
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
-  var responsibleCom: CommunityOffenderManager? = null,
+  var responsibleCom: CommunityOffenderManager,
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
@@ -154,12 +154,19 @@ abstract class Licence(
   abstract fun deactivate(): Licence
   abstract fun deactivate(staffMember: Staff?): Licence
 
-  abstract fun updatePrisonInfo(
+  fun updatePrisonInfo(
     prisonCode: String,
     prisonDescription: String,
     prisonTelephone: String?,
     staffMember: Staff?,
-  ): Licence
+  ) {
+    this.prisonCode = prisonCode
+    this.prisonDescription = prisonDescription
+    this.prisonTelephone = prisonTelephone
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   fun updateAppointmentAddress(appointmentAddress: String?, staffMember: Staff?) {
     this.appointmentAddress = appointmentAddress
@@ -226,18 +233,41 @@ abstract class Licence(
     licenceActivatedDate: LocalDateTime?,
   ): Licence
 
-  abstract fun overrideStatus(
+  fun overrideStatus(
     statusCode: LicenceStatus,
     staffMember: Staff?,
     licenceActivatedDate: LocalDateTime?,
-  ): Licence
+  ) {
+    this.statusCode = statusCode
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.dateLastUpdated = LocalDateTime.now()
+    this.licenceActivatedDate = licenceActivatedDate
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
-  abstract fun updateConditions(
+  fun updateConditions(
     updatedAdditionalConditions: List<AdditionalCondition>? = null,
     updatedStandardConditions: List<StandardCondition>? = null,
     updatedBespokeConditions: List<BespokeCondition>? = null,
     staffMember: Staff?,
-  ): Licence
+  ) {
+    if (updatedAdditionalConditions != null) {
+      this.additionalConditions.clear()
+      this.additionalConditions.addAll(updatedAdditionalConditions)
+    }
+    if (updatedStandardConditions != null) {
+      this.standardConditions.clear()
+      this.standardConditions.addAll(updatedStandardConditions)
+    }
+    if (updatedBespokeConditions != null) {
+      this.bespokeConditions.clear()
+      this.bespokeConditions.addAll(updatedBespokeConditions)
+    }
+
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    this.updatedBy = staffMember ?: this.updatedBy
+  }
 
   fun updateLicenceDates(
     status: LicenceStatus? = null,
@@ -273,14 +303,19 @@ abstract class Licence(
     }
   }
 
-  abstract fun updateOffenderDetails(
+  fun updateOffenderDetails(
     forename: String?,
     middleNames: String?,
     surname: String?,
     dateOfBirth: LocalDate?,
-  ): Licence
+  ) {
+    this.forename = forename
+    this.middleNames = middleNames
+    this.surname = surname
+    this.dateOfBirth = dateOfBirth
+  }
 
-  abstract fun updateProbationTeam(
+  fun updateProbationTeam(
     probationAreaCode: String?,
     probationAreaDescription: String?,
     probationPduCode: String?,
@@ -289,9 +324,16 @@ abstract class Licence(
     probationLauDescription: String?,
     probationTeamCode: String?,
     probationTeamDescription: String?,
-  ): Licence
-
-  abstract fun updateResponsibleCom(responsibleCom: CommunityOffenderManager): Licence
+  ) {
+    this.probationAreaCode = probationAreaCode
+    this.probationAreaDescription = probationAreaDescription
+    this.probationPduCode = probationPduCode
+    this.probationPduDescription = probationPduDescription
+    this.probationLauCode = probationLauCode
+    this.probationLauDescription = probationLauDescription
+    this.probationTeamCode = probationTeamCode
+    this.probationTeamDescription = probationTeamDescription
+  }
 
   abstract fun getCreator(): Creator
 

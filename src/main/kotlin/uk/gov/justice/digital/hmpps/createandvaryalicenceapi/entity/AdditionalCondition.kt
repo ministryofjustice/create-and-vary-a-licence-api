@@ -19,8 +19,8 @@ import org.hibernate.annotations.FetchMode
 @Table(name = "additional_condition")
 data class AdditionalCondition(
   @Id
-  @GeneratedValue(strategy = IDENTITY)
   @NotNull
+  @GeneratedValue(strategy = IDENTITY)
   val id: Long = -1,
 
   @ManyToOne
@@ -28,19 +28,29 @@ data class AdditionalCondition(
   var licence: Licence,
 
   val conditionVersion: String,
-  val conditionCode: String? = null,
-  var conditionCategory: String? = null,
+  val conditionCode: String,
+  var conditionCategory: String,
   var conditionSequence: Int? = null,
-  var conditionText: String? = null,
+  var conditionText: String,
   var expandedConditionText: String? = null,
-  var conditionType: String? = null,
+  var conditionType: String,
 
-  @OneToMany(mappedBy = "additionalCondition", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(
+    mappedBy = "additionalCondition",
+    fetch = FetchType.EAGER,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+  )
   @Fetch(FetchMode.SUBSELECT)
   @OrderBy("dataSequence")
   val additionalConditionData: List<AdditionalConditionData> = emptyList(),
 
-  @OneToMany(mappedBy = "additionalCondition", fetch = FetchType.EAGER, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(
+    mappedBy = "additionalCondition",
+    fetch = FetchType.EAGER,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+  )
   @Fetch(FetchMode.SUBSELECT)
   @OrderBy("id")
   val additionalConditionUploadSummary: List<AdditionalConditionUploadSummary> = emptyList(),

@@ -69,7 +69,7 @@ class HardStopLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager? = null,
+  responsibleCom: CommunityOffenderManager,
   updatedBy: Staff? = null,
 
   var reviewDate: LocalDateTime? = null,
@@ -134,9 +134,9 @@ class HardStopLicence(
   dateLastUpdated = dateLastUpdated,
   updatedByUsername = updatedByUsername,
   licenceVersion = licenceVersion,
-  standardConditions = standardConditions,
-  additionalConditions = additionalConditions,
-  bespokeConditions = bespokeConditions,
+  standardConditions = standardConditions.toMutableList(),
+  additionalConditions = additionalConditions.toMutableList(),
+  bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ) {
@@ -194,7 +194,7 @@ class HardStopLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager? = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.responsibleCom,
     submittedBy: PrisonUser? = this.submittedBy,
     createdBy: PrisonUser? = this.createdBy,
     substituteOfId: Long? = this.substituteOfId,
@@ -284,20 +284,6 @@ class HardStopLicence(
     updatedBy = submittedBy,
   )
 
-  override fun updatePrisonInfo(
-    prisonCode: String,
-    prisonDescription: String,
-    prisonTelephone: String?,
-    staffMember: Staff?,
-  ) = copy(
-    prisonCode = prisonCode,
-    prisonDescription = prisonDescription,
-    prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
   override fun updateStatus(
     statusCode: LicenceStatus,
     staffMember: Staff?,
@@ -318,68 +304,6 @@ class HardStopLicence(
     submittedDate = submittedDate,
     licenceActivatedDate = licenceActivatedDate,
     updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun overrideStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    dateLastUpdated = LocalDateTime.now(),
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateConditions(
-    updatedAdditionalConditions: List<AdditionalCondition>?,
-    updatedStandardConditions: List<StandardCondition>?,
-    updatedBespokeConditions: List<BespokeCondition>?,
-    staffMember: Staff?,
-  ) = copy(
-    additionalConditions = updatedAdditionalConditions ?: additionalConditions,
-    standardConditions = updatedStandardConditions ?: standardConditions,
-    bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateOffenderDetails(
-    forename: String?,
-    middleNames: String?,
-    surname: String?,
-    dateOfBirth: LocalDate?,
-  ) = copy(
-    forename = forename,
-    middleNames = middleNames,
-    surname = surname,
-    dateOfBirth = dateOfBirth,
-  )
-
-  override fun updateProbationTeam(
-    probationAreaCode: String?,
-    probationAreaDescription: String?,
-    probationPduCode: String?,
-    probationPduDescription: String?,
-    probationLauCode: String?,
-    probationLauDescription: String?,
-    probationTeamCode: String?,
-    probationTeamDescription: String?,
-  ) = copy(
-    probationAreaCode = probationAreaCode,
-    probationAreaDescription = probationAreaDescription,
-    probationPduCode = probationPduCode,
-    probationPduDescription = probationPduDescription,
-    probationLauCode = probationLauCode,
-    probationLauDescription = probationLauDescription,
-    probationTeamCode = probationTeamCode,
-    probationTeamDescription = probationTeamDescription,
-  )
-
-  override fun updateResponsibleCom(responsibleCom: CommunityOffenderManager) = copy(
-    responsibleCom = responsibleCom,
   )
 
   fun markAsReviewed(staff: Staff?) {

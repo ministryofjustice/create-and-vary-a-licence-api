@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
@@ -29,7 +31,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffServic
 class OffenderController(
   private val offenderService: OffenderService,
   private val staffService: StaffService,
+  @Value("\${domain.event.listener.enabled}") private val domainEventListenerEnabled: Boolean,
 ) {
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
   @PutMapping(
     value = ["/crn/{crn}/responsible-com"],
     produces = [MediaType.APPLICATION_JSON_VALUE],
@@ -68,8 +75,12 @@ class OffenderController(
     @Valid @RequestBody
     body: UpdateComRequest,
   ) {
-    val newCom = this.staffService.updateComDetails(body)
-    this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
+    if (domainEventListenerEnabled) {
+      log.warn("Domain event listener to process COM allocation events enabled so ignoring this")
+    } else {
+      val newCom = this.staffService.updateComDetails(body)
+      this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
+    }
   }
 
   @PutMapping(
@@ -110,7 +121,11 @@ class OffenderController(
     @Valid @RequestBody
     body: UpdateProbationTeamRequest,
   ) {
-    this.offenderService.updateProbationTeam(crn, body)
+    if (domainEventListenerEnabled) {
+      log.warn("Domain event listener to process COM allocation events enabled so ignoring this")
+    } else {
+      this.offenderService.updateProbationTeam(crn, body)
+    }
   }
 
   @PutMapping(value = ["nomisid/{nomsId}/update-offender-details"])

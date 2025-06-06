@@ -76,10 +76,16 @@ class HdcLicence(
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
   bespokeConditions: List<BespokeCondition> = emptyList(),
-  responsibleCom: CommunityOffenderManager? = null,
+  responsibleCom: CommunityOffenderManager,
   updatedBy: Staff? = null,
 
-  @OneToMany(mappedBy = "licence", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true, targetEntity = HdcCurfewTimes::class)
+  @OneToMany(
+    mappedBy = "licence",
+    fetch = FetchType.LAZY,
+    cascade = [CascadeType.ALL],
+    orphanRemoval = true,
+    targetEntity = HdcCurfewTimes::class,
+  )
   @OrderBy("curfewTimesSequence")
   override var curfewTimes: MutableList<HdcCurfewTimes> = mutableListOf(),
 
@@ -94,8 +100,13 @@ class HdcLicence(
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true, orphanRemoval = true)
-  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  @OneToOne(
+    mappedBy = "licence",
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.LAZY,
+    optional = true,
+  )
+  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -148,9 +159,9 @@ class HdcLicence(
   dateLastUpdated = dateLastUpdated,
   updatedByUsername = updatedByUsername,
   licenceVersion = licenceVersion,
-  standardConditions = standardConditions,
-  additionalConditions = additionalConditions,
-  bespokeConditions = bespokeConditions,
+  standardConditions = standardConditions.toMutableList(),
+  additionalConditions = additionalConditions.toMutableList(),
+  bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
@@ -211,7 +222,7 @@ class HdcLicence(
     standardConditions: List<StandardCondition> = this.standardConditions,
     additionalConditions: List<AdditionalCondition> = this.additionalConditions,
     bespokeConditions: List<BespokeCondition> = this.bespokeConditions,
-    responsibleCom: CommunityOffenderManager? = this.responsibleCom,
+    responsibleCom: CommunityOffenderManager = this.responsibleCom,
     curfewTimes: List<HdcCurfewTimes> = this.curfewTimes,
     submittedBy: CommunityOffenderManager? = this.submittedBy,
     createdBy: CommunityOffenderManager? = this.createdBy,
@@ -298,12 +309,6 @@ class HdcLicence(
     updatedBy = staffMember ?: this.updatedBy,
   )
 
-  fun timeOut() = copy(
-    statusCode = LicenceStatus.TIMED_OUT,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = "SYSTEM",
-  )
-
   fun submit(submittedBy: CommunityOffenderManager) = copy(
     statusCode = LicenceStatus.SUBMITTED,
     submittedBy = submittedBy,
@@ -311,20 +316,6 @@ class HdcLicence(
     submittedDate = LocalDateTime.now(),
     dateLastUpdated = LocalDateTime.now(),
     updatedBy = submittedBy,
-  )
-
-  override fun updatePrisonInfo(
-    prisonCode: String,
-    prisonDescription: String,
-    prisonTelephone: String?,
-    staffMember: Staff?,
-  ) = copy(
-    prisonCode = prisonCode,
-    prisonDescription = prisonDescription,
-    prisonTelephone = prisonTelephone,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
   )
 
   override fun updateStatus(
@@ -358,68 +349,6 @@ class HdcLicence(
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
-
-  override fun overrideStatus(
-    statusCode: LicenceStatus,
-    staffMember: Staff?,
-    licenceActivatedDate: LocalDateTime?,
-  ) = copy(
-    statusCode = statusCode,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    dateLastUpdated = LocalDateTime.now(),
-    licenceActivatedDate = licenceActivatedDate,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateConditions(
-    updatedAdditionalConditions: List<AdditionalCondition>?,
-    updatedStandardConditions: List<StandardCondition>?,
-    updatedBespokeConditions: List<BespokeCondition>?,
-    staffMember: Staff?,
-  ) = copy(
-    additionalConditions = updatedAdditionalConditions ?: additionalConditions,
-    standardConditions = updatedStandardConditions ?: standardConditions,
-    bespokeConditions = updatedBespokeConditions ?: bespokeConditions,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
-  )
-
-  override fun updateOffenderDetails(
-    forename: String?,
-    middleNames: String?,
-    surname: String?,
-    dateOfBirth: LocalDate?,
-  ) = copy(
-    forename = forename,
-    middleNames = middleNames,
-    surname = surname,
-    dateOfBirth = dateOfBirth,
-  )
-
-  override fun updateProbationTeam(
-    probationAreaCode: String?,
-    probationAreaDescription: String?,
-    probationPduCode: String?,
-    probationPduDescription: String?,
-    probationLauCode: String?,
-    probationLauDescription: String?,
-    probationTeamCode: String?,
-    probationTeamDescription: String?,
-  ) = copy(
-    probationAreaCode = probationAreaCode,
-    probationAreaDescription = probationAreaDescription,
-    probationPduCode = probationPduCode,
-    probationPduDescription = probationPduDescription,
-    probationLauCode = probationLauCode,
-    probationLauDescription = probationLauDescription,
-    probationTeamCode = probationTeamCode,
-    probationTeamDescription = probationTeamDescription,
-  )
-
-  override fun updateResponsibleCom(responsibleCom: CommunityOffenderManager) = copy(
-    responsibleCom = responsibleCom,
-  )
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 
@@ -485,8 +414,8 @@ class HdcLicence(
     "createdBy=$createdBy, " +
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
-    "updatedBy=$updatedBy," +
-    "curfewAddress=$curfewAddress" +
+    "updatedBy=$updatedBy, " +
+    "curfewAddress=$curfewAddress, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 

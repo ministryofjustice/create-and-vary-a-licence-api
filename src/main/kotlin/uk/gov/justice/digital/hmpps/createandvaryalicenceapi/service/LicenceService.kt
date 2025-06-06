@@ -338,16 +338,14 @@ class LicenceService(
 
   private fun notifyComAboutHardstopLicenceApproval(licenceEntity: EntityLicence) {
     val com = licenceEntity.responsibleCom
-    if (com != null) {
-      notifyService.sendHardStopLicenceApprovedEmail(
-        com.email,
-        licenceEntity.forename!!,
-        licenceEntity.surname!!,
-        licenceEntity.crn,
-        licenceEntity.licenceStartDate,
-        licenceEntity.id.toString(),
-      )
-    }
+    notifyService.sendHardStopLicenceApprovedEmail(
+      com.email,
+      licenceEntity.forename!!,
+      licenceEntity.surname!!,
+      licenceEntity.crn,
+      licenceEntity.licenceStartDate,
+      licenceEntity.id.toString(),
+    )
   }
 
   private fun deactivatePreviousLicenceVersion(licence: EntityLicence, fullName: String?, staffMember: Staff?) {
@@ -738,8 +736,8 @@ class LicenceService(
     notifyService.sendVariationReferredEmail(
       licenceEntity.createdBy?.email ?: "",
       "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.responsibleCom?.email ?: "",
-      "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+      licenceEntity.responsibleCom.email ?: "",
+      "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceId.toString(),
     )
@@ -780,8 +778,8 @@ class LicenceService(
     notifyService.sendVariationApprovedEmail(
       licenceEntity.createdBy?.email ?: "",
       "${licenceEntity.createdBy?.firstName} ${licenceEntity.createdBy?.lastName}",
-      licenceEntity.responsibleCom?.email ?: "",
-      "${licenceEntity.responsibleCom?.firstName} ${licenceEntity.responsibleCom?.lastName}",
+      licenceEntity.responsibleCom.email ?: "",
+      "${licenceEntity.responsibleCom.firstName} ${licenceEntity.responsibleCom.lastName}",
       "${licenceEntity.forename} ${licenceEntity.surname}",
       licenceId.toString(),
     )
@@ -862,14 +860,14 @@ class LicenceService(
 
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
 
-    val updatedLicenceEntity = licenceEntity.updatePrisonInfo(
+    licenceEntity.updatePrisonInfo(
       prisonCode = prisonInformationRequest.prisonCode,
       prisonDescription = prisonInformationRequest.prisonDescription,
       prisonTelephone = prisonInformationRequest.prisonTelephone,
       staffMember = staffMember,
     )
 
-    licenceRepository.saveAndFlush(updatedLicenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditEventRepository.saveAndFlush(
       AuditEvent(
@@ -991,7 +989,7 @@ class LicenceService(
     return if (staff is CommunityOffenderManager) staff else error("Cannot find staff with username: $username")
   }
 
-  private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType!!) != LicenceType.AP
+  private fun AdditionalCondition.isNotAp() = LicenceType.valueOf(this.conditionType) != LicenceType.AP
 
   private fun splitName(fullName: String?): Pair<String?, String?> {
     val names = fullName?.split(" ")?.toMutableList()
@@ -1088,18 +1086,16 @@ class LicenceService(
     )
     if (timedOutLicence.versionOfId != null) {
       val com = timedOutLicence.responsibleCom
-      if (com != null) {
-        with(timedOutLicence) {
-          notifyService.sendEditedLicenceTimedOutEmail(
-            com.email,
-            "${com.firstName} ${com.lastName}",
-            this.forename!!,
-            this.surname!!,
-            this.crn,
-            this.licenceStartDate,
-            this.id.toString(),
-          )
-        }
+      with(timedOutLicence) {
+        notifyService.sendEditedLicenceTimedOutEmail(
+          com.email,
+          "${com.firstName} ${com.lastName}",
+          this.forename!!,
+          this.surname!!,
+          this.crn,
+          this.licenceStartDate,
+          this.id.toString(),
+        )
       }
     }
   }

@@ -70,7 +70,17 @@ object TestData {
     lastName = "Y",
   )
 
-  fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
+  fun anAdditionalCondition(id: Long, licence: Licence) = AdditionalCondition(
+    id = id,
+    licence = licence,
+    conditionType = "AP",
+    conditionCode = "de9306cb-cf1f-41e0-bef8-49dc369945c9",
+    conditionCategory = "condition category",
+    conditionText = "condition text",
+    conditionVersion = "1.0",
+  )
+
+  private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
     licence = licence,
     id = 2L,
     conditionSequence = 1,
@@ -81,10 +91,10 @@ object TestData {
     conditionVersion = licence.version!!,
     additionalConditionData = emptyList(),
     additionalConditionUploadSummary = emptyList(),
-    conditionCategory = HARD_STOP_CONDITION.categoryShort,
+    conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 
-  fun someEntityStandardConditions(licence: Licence) = listOf(
+  private fun someEntityStandardConditions(licence: Licence) = listOf(
     StandardCondition(
       id = 1,
       conditionCode = "goodBehaviour",
@@ -418,15 +428,9 @@ object TestData {
     mostSeriousOffence = "Robbery",
     licenceExpiryDate = LocalDate.of(2021, 10, 22),
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
-    homeDetentionCurfewActualDate = null,
-    homeDetentionCurfewEligibilityDate = null,
-    homeDetentionCurfewEndDate = null,
     releaseDate = LocalDate.of(2021, 10, 22),
     confirmedReleaseDate = LocalDate.of(2021, 10, 22),
     conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    paroleEligibilityDate = null,
-    actualParoleDate = null,
-    postRecallReleaseDate = null,
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
     recall = false,
@@ -434,14 +438,10 @@ object TestData {
     locationDescription = "HMP Moorland",
     bookNumber = "12345A",
     firstName = "A",
-    middleNames = null,
     lastName = "Prisoner",
     dateOfBirth = LocalDate.of(1985, 12, 28),
-    conditionalReleaseDateOverrideDate = null,
     sentenceStartDate = LocalDate.of(2018, 10, 22),
     sentenceExpiryDate = LocalDate.of(2021, 10, 22),
-    topupSupervisionStartDate = null,
-    croNumber = null,
   )
 
   fun aPrisonApiPrisoner() = PrisonApiPrisoner(
@@ -457,15 +457,10 @@ object TestData {
     sentenceDetail = SentenceDetail(
       confirmedReleaseDate = LocalDate.of(2021, 10, 22),
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      homeDetentionCurfewEligibilityDate = null,
-      homeDetentionCurfewActualDate = null,
-      topupSupervisionStartDate = null,
-      topupSupervisionExpiryDate = null,
-      paroleEligibilityDate = null,
     ),
   )
 
-  fun anOffenceHistory() = OffenceHistory(
+  private fun anOffenceHistory() = OffenceHistory(
     offenceDescription = "SOME_OFFENCE",
     offenceCode = "123",
     mostSerious = true,
@@ -502,6 +497,7 @@ object TestData {
     name = Name("forenames", null, "surname"),
     allocationDate = LocalDate.of(2022, 1, 2),
     unallocated = false,
+    username = "aComUser",
   )
 
   fun caseLoadItem() = CaseloadItem(
@@ -517,21 +513,15 @@ object TestData {
     ),
     prisoner = Prisoner(
       prisonerNumber = "A1234AA",
-      pncNumber = null,
-      croNumber = null,
       bookingId = "123456",
       bookNumber = "12345A",
       firstName = "Person",
-      middleNames = null,
       lastName = "Two",
       dateOfBirth = LocalDate.of(1985, 12, 28),
       status = "ACTIVE IN",
       prisonId = "MDI",
-      prisonName = null,
       locationDescription = "HMP Moorland",
       legalStatus = "SENTENCED",
-      imprisonmentStatus = null,
-      imprisonmentStatusDescription = null,
       mostSeriousOffence = "Robbery",
       recall = false,
       indeterminateSentence = false,
@@ -540,16 +530,9 @@ object TestData {
       confirmedReleaseDate = LocalDate.of(2021, 10, 22),
       sentenceExpiryDate = LocalDate.of(2021, 10, 22),
       licenceExpiryDate = LocalDate.of(2021, 10, 22),
-      homeDetentionCurfewEligibilityDate = null,
-      homeDetentionCurfewActualDate = null,
-      homeDetentionCurfewEndDate = null,
-      topupSupervisionStartDate = null,
       topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
       paroleEligibilityDate = LocalDate.of(2021, 10, 22),
-      postRecallReleaseDate = null,
       conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-      actualParoleDate = null,
-      releaseOnTemporaryLicenceDate = null,
     ),
   )
 
@@ -582,15 +565,12 @@ object TestData {
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
-    approvalStatusDate = null,
     approvalStatus = "REJECTED",
-    refusedReason = null,
-    checksPassedDate = null,
     bookingId = 1,
     passed = true,
   )
 
-  fun someModelStandardConditions() = listOf(
+  private fun someModelStandardConditions() = listOf(
     ModelStandardCondition(
       id = 1,
       code = "goodBehaviour",
@@ -611,7 +591,7 @@ object TestData {
     ),
   )
 
-  fun someModelAssociationData() = listOf(
+  private fun someModelAssociationData() = listOf(
     AdditionalConditionData(id = 1, field = "field1", value = "value1", sequence = 1),
     AdditionalConditionData(id = 2, field = "numberOfCurfews", value = "value2", sequence = 2),
   )
@@ -624,7 +604,7 @@ object TestData {
     ),
   )
 
-  fun someModelAdditionalConditions() = listOf(
+  private fun someModelAdditionalConditions() = listOf(
     ModelAdditionalCondition(
       id = 1,
       code = "associateWith",
@@ -636,7 +616,7 @@ object TestData {
     ),
   )
 
-  fun someModelBespokeConditions() = listOf(
+  private fun someModelBespokeConditions() = listOf(
     BespokeCondition(id = 1, sequence = 1, text = "Bespoke one text"),
     BespokeCondition(id = 2, sequence = 2, text = "Bespoke two text"),
   )

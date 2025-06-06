@@ -1020,6 +1020,7 @@ class ConditionFormatterTest {
     additionalConditionData = emptyList(),
     additionalConditionUploadSummary = emptyList(),
     conditionVersion = "1.0",
+    conditionType = "AP",
     licence = licence,
   )
 }

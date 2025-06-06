@@ -25,9 +25,9 @@ class RemoveExpiredConditionsService(
 
     licencesInPSSPeriod.forEach { licence ->
       val additionalApConditionIds =
-        licence.additionalConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }.map { it.id }
+        licence.additionalConditions.filter { LicenceType.valueOf(it.conditionType) == LicenceType.AP }.map { it.id }
       val standardApConditionIds =
-        licence.standardConditions.filter { LicenceType.valueOf(it.conditionType!!) == LicenceType.AP }.map { it.id }
+        licence.standardConditions.filter { LicenceType.valueOf(it.conditionType) == LicenceType.AP }.map { it.id }
       val bespokeConditionIds = licence.bespokeConditions.map { it.id }
       this.licenceConditionService.deleteConditions(
         licence,
