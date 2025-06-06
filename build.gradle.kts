@@ -65,6 +65,8 @@ dependencies {
   testImplementation("io.projectreactor:reactor-test")
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:localstack:1.21.0")
+  testImplementation("org.testcontainers:postgresql:1.20.6")
+  testImplementation("org.testcontainers:localstack:1.20.6")
 }
 
 detekt {
@@ -106,6 +108,11 @@ tasks {
       excludeTestsMatching("*.integration.*")
     }
   }
+
+  register<Test>("initialiseDatabase", fun Test.() {
+    include("**/InitialiseDatabaseTest.class")
+  })
+
   register<Test>("integrationTest") {
     description = "Integration tests"
     group = "verification"
