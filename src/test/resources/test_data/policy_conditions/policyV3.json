@@ -166,7 +166,7 @@
         "subtext": null,
         "type": "RegionOfResidence",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
@@ -217,7 +217,7 @@
         "subtext": null,
         "type": "RestrictionOfResidencyPolicyV3",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
@@ -256,7 +256,7 @@
         "subtext": null,
         "type": "MedicalAppointmentType",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
@@ -269,7 +269,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "75a6aac6-02a7-4414-af14-942be6736892",
@@ -282,7 +282,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4858cd8b-bca6-4f11-b6ee-439e27216d7d",
@@ -322,7 +322,7 @@
         "subtext": null,
         "type": "NoContactWithVictim",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
@@ -385,7 +385,7 @@
         "subtext": null,
         "type": "UnsupervisedContactPolicyV3",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "355700a9-6184-40c0-9759-0dfed1994e1e",
@@ -413,7 +413,7 @@
         "subtext": null,
         "type": "NamedIndividuals",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0aa669bf-db8a-4b8e-b8ba-ca82fc245b94",
@@ -426,7 +426,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "cc80d02b-0b62-4940-bac6-0bcd374c725e",
@@ -439,7 +439,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "18b69f61-800f-46b2-95c4-2019d33e34d6",
@@ -467,7 +467,7 @@
         "subtext": null,
         "type": "NamedOrganisation",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "48c4ae87-b8d8-45d1-aded-daefe8ad07fe",
@@ -480,7 +480,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "d5998ca1-62a2-4409-88cd-3137d893c2a0",
@@ -493,7 +493,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "86e7a2cb-33b5-4079-84a4-f6579347c890",
@@ -506,7 +506,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "1905aa46-59dd-4eb7-b009-81467cc8c426",
@@ -519,7 +519,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "df3f08a8-4ae0-41fe-b3bc-d0be1fd2d8aa",
@@ -566,7 +566,7 @@
         "subtext": null,
         "type": "BehaviourProblems",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9da214a3-c6ae-45e1-a465-12e22adf7c87",
@@ -592,7 +592,7 @@
         "subtext": null,
         "type": "WorkingWithChildrenPolicyV3",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0EDB6D01-46B6-408F-971C-0EBFF5FA93F0",
@@ -605,7 +605,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "625feb82-a5ab-4490-82e9-241218f775c5",
@@ -656,7 +656,7 @@
         "subtext": null,
         "type": "RegisterForServices",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "b149bc47-b279-427b-9ddc-c472fdc74ba5",
@@ -669,7 +669,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
@@ -682,7 +682,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "5fa04bbf-6b7c-4b65-9388-a0115cd365a6",
@@ -695,7 +695,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "bfbc693c-ab65-4042-920e-ddb085bc7aba",
@@ -708,7 +708,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
@@ -751,7 +751,7 @@
         "subtext": null,
         "type": "UsageHistory",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
@@ -779,7 +779,7 @@
         "subtext": null,
         "type": "SpecifiedItem",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "2a93b784-b8cb-49ed-95e2-a0df60723cda",
@@ -792,7 +792,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
@@ -805,7 +805,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "c5e91330-748d-46f3-93f6-bbe5ea8324ce",
@@ -818,7 +818,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "79ac033f-9d7a-4dab-8344-475106e58b71",
@@ -831,7 +831,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "8686a815-b7f0-43b6-9886-f01df6a48773",
@@ -870,7 +870,7 @@
         "subtext": null,
         "type": "BankAccountDetails",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
@@ -1063,7 +1063,7 @@
         "subtext": null,
         "type": "CurfewTerms",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
@@ -1089,7 +1089,7 @@
         "subtext": null,
         "type": "OutOfBoundsRegionPolicyV3",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
@@ -1173,7 +1173,7 @@
         "subtext": null,
         "type": "OutOfBoundsPremises",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
@@ -1199,7 +1199,7 @@
         "subtext": null,
         "type": "OutOfBoundsPremisesType",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "5d0416a9-a4ce-4b2c-8636-0b7abaa3680a",
@@ -1212,7 +1212,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "99195049-f355-46fb-b7d8-aef87a1b19c5",
@@ -1250,7 +1250,7 @@
         "subtext": null,
         "type": "OutOfBoundsEvent",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "1e9a66c6-f083-4c29-b209-b625252afbe5",
@@ -1263,7 +1263,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
@@ -1438,7 +1438,7 @@
         "subtext": null,
         "type": "ReportToApprovedPremisesPolicyV3",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
@@ -1592,7 +1592,7 @@
         "subtext": null,
         "type": "ReportToPoliceStation",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
@@ -1605,7 +1605,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "985d339a-b652-40e3-b0a8-5aafd5e121f1",
@@ -1618,7 +1618,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "3b6b7c4f-6c06-438f-97a4-03c4167484dc",
@@ -1682,7 +1682,7 @@
         "subtext": null,
         "type": "TypesOfWebsites",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "50c8c01e-ec95-45f9-ad48-efa89c4faec0",
@@ -1708,7 +1708,7 @@
         "subtext": null,
         "type": "WebsiteAccess",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "762677a4-4593-4bd2-a4bc-55d49b4c4230",
@@ -1751,7 +1751,7 @@
         "subtext": null,
         "type": "DigitalServices",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
@@ -1764,7 +1764,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9785d8f8-31a9-4c32-a06d-eff049ecebcd",
@@ -1777,7 +1777,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9efba199-87d4-468e-a5a1-1c0945571afa",
@@ -1790,7 +1790,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "3d771cc6-b85f-47e4-9e13-75bfb80706f4",
@@ -1803,7 +1803,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "e0421c22-1be7-4d06-aba7-3c17822b0c1c",
@@ -1816,7 +1816,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "1dc7ee29-df47-48a8-90b6-69e286692d8a",
@@ -1829,7 +1829,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
@@ -1842,7 +1842,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "f1d2888b-be86-4732-8874-44cb867865c2",
@@ -1881,7 +1881,7 @@
         "subtext": null,
         "type": "SubstanceMisuse",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
@@ -1932,7 +1932,7 @@
         "subtext": null,
         "type": "ElectronicMonitoringTypes",
         "skippable": false,
-        "requiresEmResponse": true
+        "requiresElectronicMonitoringResponse": true
       },
       {
         "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -1958,7 +1958,7 @@
         "subtext": null,
         "type": "ElectronicMonitoringPeriod",
         "skippable": true,
-        "requiresEmResponse": true
+        "requiresElectronicMonitoringResponse": true
       },
       {
         "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
@@ -1984,7 +1984,7 @@
         "subtext": null,
         "type": "ApprovedAddress",
         "skippable": false,
-        "requiresEmResponse": true
+        "requiresElectronicMonitoringResponse": true
       },
       {
         "code": "d36a3b77-30ba-40ce-8953-83e761d3b487",
@@ -2010,7 +2010,7 @@
         "subtext": null,
         "type": "AlcoholRestrictionPeriod",
         "skippable": true,
-        "requiresEmResponse": true
+        "requiresElectronicMonitoringResponse": true
       },
       {
         "code": "2F8A5418-C6E4-4F32-9E58-64B23550E504",
@@ -2036,7 +2036,7 @@
         "subtext": null,
         "type": "ElectronicTagPeriod",
         "skippable": true,
-        "requiresEmResponse": true
+        "requiresElectronicMonitoringResponse": true
       },
       {
         "code": "9678FD9E-F80D-423A-A6FB-B79909094887",
@@ -2049,7 +2049,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "e8478345-019a-4335-9656-73a77ffd3c42",
@@ -2075,7 +2075,7 @@
         "subtext": null,
         "type": "CashInPossession",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "001328d0-d8bb-48ca-9f99-9c305081d0a2",
@@ -2101,7 +2101,7 @@
         "subtext": null,
         "type": "ValueOfAssets",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "a9ef7376-2ab6-4490-a568-a275f4f649ab",
@@ -2140,7 +2140,7 @@
         "subtext": null,
         "type": "EvidenceOfIncome",
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "62e035ff-e755-472b-8047-3c5ea1d5b74e",
@@ -2153,7 +2153,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4e52fd9c-d436-4f82-9032-7813b130f620",
@@ -2166,7 +2166,7 @@
         "subtext": null,
         "type": null,
         "skippable": false,
-        "requiresEmResponse":false
+        "requiresElectronicMonitoringResponse":false
       }
     ],
     "PSS": [
