@@ -412,6 +412,7 @@ class PrisonApproverServiceTest {
             conditionCode = "goodBehaviour",
             conditionSequence = 1,
             conditionText = "Be of good behaviour",
+            conditionType = "AP",
             licence = it,
           ),
           EntityStandardCondition(
@@ -419,6 +420,7 @@ class PrisonApproverServiceTest {
             conditionCode = "notBreakLaw",
             conditionSequence = 2,
             conditionText = "Do not break any law",
+            conditionType = "AP",
             licence = it,
           ),
           EntityStandardCondition(
@@ -426,6 +428,7 @@ class PrisonApproverServiceTest {
             conditionCode = "attendMeetings",
             conditionSequence = 3,
             conditionText = "Attend meetings",
+            conditionType = "AP",
             licence = it,
           ),
         ),

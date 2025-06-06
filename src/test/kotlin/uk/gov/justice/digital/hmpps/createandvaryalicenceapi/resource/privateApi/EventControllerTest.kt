@@ -76,6 +76,7 @@ class EventControllerTest {
 
   private companion object {
     val aLicenceEvent = LicenceEvent(
+      id = 1,
       licenceId = 1,
       eventType = LicenceEventType.SUBMITTED,
       username = "tcom",

@@ -8,16 +8,16 @@ import java.time.LocalDateTime
 @Schema(description = "Describes an event that was related to a licence")
 data class LicenceEvent(
   @Schema(description = "The internal ID of the licence event", example = "1234")
-  val id: Long? = null,
+  val id: Long,
 
   @Schema(
     description = "The internal ID of the licence that this event relates to",
     example = "1234",
   )
-  val licenceId: Long? = null,
+  val licenceId: Long,
 
   @Schema(description = "The licence event type", example = "LicenceEventType.VARIATION_SUBMITTED")
-  val eventType: LicenceEventType? = null,
+  val eventType: LicenceEventType,
 
   @Schema(
     description = "The username related to this event or SYSTEM if an automated event",
@@ -42,5 +42,5 @@ data class LicenceEvent(
 
   @Schema(description = "The date and time of the event", example = "12/01/2022 23:14:23")
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-  val eventTime: LocalDateTime? = null,
+  val eventTime: LocalDateTime,
 )

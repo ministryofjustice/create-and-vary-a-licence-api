@@ -16,7 +16,7 @@ data class OmuContact(
   @NotNull
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", nullable = false)
-  var id: Long? = null,
+  var id: Long = -1,
 
   val prisonCode: String,
   val email: String,

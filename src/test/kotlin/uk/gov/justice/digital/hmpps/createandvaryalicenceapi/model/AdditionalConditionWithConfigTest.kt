@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Option
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.AdditionalConditionWithConfig
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isConditionReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
@@ -21,7 +22,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 class AdditionalConditionWithConfigTest {
 
   @Nested
-  inner class `mapConditionsToConfig` {
+  inner class MapConditionsToConfig {
     @Test
     fun `maps conditions and policy together`() {
       assertThat(
@@ -36,7 +37,7 @@ class AdditionalConditionWithConfigTest {
   }
 
   @Nested
-  inner class `checkConditionsReadyToSubmit` {
+  inner class CheckConditionsReadyToSubmit {
     @Test
     fun `returns if there are no conditions on the licence`() {
       assertThat(
@@ -157,7 +158,7 @@ class AdditionalConditionWithConfigTest {
   }
 
   @Nested
-  inner class `checkConditionReadyToSubmit` {
+  inner class CheckConditionReadyToSubmit {
     @Test
     fun `returns true for a condition that has inputs`() {
       assertThat(
@@ -256,12 +257,12 @@ class AdditionalConditionWithConfigTest {
     )
 
     val someAdditionalConditionData = AdditionalConditionData(
-      additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "2.1"),
+      additionalCondition = anAdditionalCondition(id = 1, licence = aLicenceEntity),
       dataField = "name",
     )
 
     val conditionalAdditionalConditionData = AdditionalConditionData(
-      additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "2.1"),
+      additionalCondition = anAdditionalCondition(id = 2, licence = aLicenceEntity),
       dataField = "conditionalName",
     )
 

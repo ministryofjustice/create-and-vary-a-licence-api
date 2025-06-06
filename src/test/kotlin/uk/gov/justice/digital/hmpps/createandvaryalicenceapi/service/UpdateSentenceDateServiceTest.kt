@@ -156,8 +156,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -303,8 +303,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aHdcLicenceEntity.responsibleCom?.email,
-      "${aHdcLicenceEntity.responsibleCom?.firstName} ${aHdcLicenceEntity.responsibleCom?.lastName}",
+      aHdcLicenceEntity.responsibleCom.email,
+      "${aHdcLicenceEntity.responsibleCom.firstName} ${aHdcLicenceEntity.responsibleCom.lastName}",
       "${aHdcLicenceEntity.forename} ${aHdcLicenceEntity.surname}",
       aHdcLicenceEntity.crn,
       listOf(
@@ -377,8 +377,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      licence.responsibleCom?.email,
-      "${licence.responsibleCom?.firstName} ${licence.responsibleCom?.lastName}",
+      licence.responsibleCom.email,
+      "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
       "${licence.forename} ${licence.surname}",
       licence.crn,
       listOf(
@@ -420,8 +420,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -463,8 +463,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -506,8 +506,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -549,8 +549,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -592,8 +592,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(
@@ -708,8 +708,8 @@ class UpdateSentenceDateServiceTest {
 
     verify(notifyService, times(1)).sendDatesChangedEmail(
       "1",
-      aCrdLicenceEntity.responsibleCom?.email,
-      "${aCrdLicenceEntity.responsibleCom?.firstName} ${aCrdLicenceEntity.responsibleCom?.lastName}",
+      aCrdLicenceEntity.responsibleCom.email,
+      "${aCrdLicenceEntity.responsibleCom.firstName} ${aCrdLicenceEntity.responsibleCom.lastName}",
       "${aCrdLicenceEntity.forename} ${aCrdLicenceEntity.surname}",
       aCrdLicenceEntity.crn,
       listOf(

@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.Conditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licence.PssConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapToPublicLicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
@@ -467,8 +468,7 @@ class PublicLicenceServiceTest {
   inner class `Get licence by id` {
     @Test
     fun `service returns a licence by id`() {
-      val licenceId: Long
-      licenceId = 12345
+      val licenceId: Long = 12345
       whenever(licenceService.getLicenceById(any())).thenReturn(modelLicence)
       val actualLicence = service.getLicenceById(licenceId)
 
@@ -729,13 +729,13 @@ class PublicLicenceServiceTest {
         id = 1,
         dataField = "outOfBoundArea",
         dataValue = "Bristol town centre",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 1, aLicenceEntity),
       ),
       AdditionalConditionData(
         id = 2,
         dataField = "outOfBoundFile",
         dataValue = "test.pdf",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 2, licence = aLicenceEntity),
       ),
     )
 
@@ -757,6 +757,7 @@ class PublicLicenceServiceTest {
       conditionCategory = "Freedom of movement",
       conditionSequence = 1,
       conditionText = "text",
+      conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = listOf(someUploadSummaryData),
     )
@@ -777,6 +778,7 @@ class PublicLicenceServiceTest {
       conditionCategory = "Freedom of movement",
       conditionSequence = 1,
       conditionText = "text",
+      conditionType = "AP",
       additionalConditionData = someAdditionalConditionData,
       additionalConditionUploadSummary = emptyList(),
     )

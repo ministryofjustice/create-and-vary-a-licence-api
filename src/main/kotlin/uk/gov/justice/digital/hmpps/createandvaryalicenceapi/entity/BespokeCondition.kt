@@ -22,7 +22,7 @@ data class BespokeCondition(
   var licence: Licence,
 
   val conditionSequence: Int? = null,
-  val conditionText: String? = null,
+  val conditionText: String,
 ) {
   override fun toString(): String = "BespokeCondition(" +
     "id=$id, " +

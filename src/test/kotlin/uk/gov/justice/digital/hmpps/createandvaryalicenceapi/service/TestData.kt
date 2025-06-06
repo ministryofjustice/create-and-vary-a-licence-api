@@ -70,7 +70,17 @@ object TestData {
     lastName = "Y",
   )
 
-  fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
+  fun anAdditionalCondition(id: Long, licence: Licence) = AdditionalCondition(
+    id = id,
+    licence = licence,
+    conditionType = "AP",
+    conditionCode = "de9306cb-cf1f-41e0-bef8-49dc369945c9",
+    conditionCategory = "condition category",
+    conditionText = "condition text",
+    conditionVersion = "1.0",
+  )
+
+  private fun hardStopAdditionalCondition(licence: Licence) = AdditionalCondition(
     licence = licence,
     id = 2L,
     conditionSequence = 1,
@@ -81,10 +91,10 @@ object TestData {
     conditionVersion = licence.version!!,
     additionalConditionData = emptyList(),
     additionalConditionUploadSummary = emptyList(),
-    conditionCategory = HARD_STOP_CONDITION.categoryShort,
+    conditionCategory = HARD_STOP_CONDITION.categoryShort!!,
   )
 
-  fun someEntityStandardConditions(licence: Licence) = listOf(
+  private fun someEntityStandardConditions(licence: Licence) = listOf(
     StandardCondition(
       id = 1,
       conditionCode = "goodBehaviour",

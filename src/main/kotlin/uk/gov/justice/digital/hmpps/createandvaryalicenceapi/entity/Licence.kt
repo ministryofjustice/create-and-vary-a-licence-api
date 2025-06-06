@@ -129,7 +129,7 @@ abstract class Licence(
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "responsible_com_id", nullable = false)
-  var responsibleCom: CommunityOffenderManager? = null,
+  var responsibleCom: CommunityOffenderManager,
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "updated_by_id", nullable = true)
