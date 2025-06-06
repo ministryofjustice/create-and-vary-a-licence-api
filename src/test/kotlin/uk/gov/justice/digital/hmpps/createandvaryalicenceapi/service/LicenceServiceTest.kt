@@ -64,6 +64,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
@@ -2316,8 +2317,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationReferredEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom?.email ?: "",
-      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      variation.responsibleCom.email ?: "",
+      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
       "${variation.forename} ${variation.surname}",
       "1",
     )
@@ -2364,8 +2365,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationReferredEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom?.email ?: "",
-      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      variation.responsibleCom.email ?: "",
+      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
       "${variation.forename} ${variation.surname}",
       "1",
     )
@@ -2439,8 +2440,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationApprovedEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom?.email ?: "",
-      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      variation.responsibleCom.email ?: "",
+      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
       "${variation.forename} ${variation.surname}",
       "2",
     )
@@ -2493,8 +2494,8 @@ class LicenceServiceTest {
     verify(notifyService, times(1)).sendVariationApprovedEmail(
       variation.createdBy?.email ?: "",
       "${variation.createdBy?.firstName} ${variation.createdBy?.lastName}",
-      variation.responsibleCom?.email ?: "",
-      "${variation.responsibleCom?.firstName} ${variation.responsibleCom?.lastName}",
+      variation.responsibleCom.email ?: "",
+      "${variation.responsibleCom.firstName} ${variation.responsibleCom.lastName}",
       "${variation.forename} ${variation.surname}",
       "2",
     )
@@ -3376,67 +3377,14 @@ class LicenceServiceTest {
         )
 
       verify(notifyService, times(1)).sendEditedLicenceTimedOutEmail(
-        approvedThenEditedLicence.responsibleCom?.email,
-        "${approvedThenEditedLicence.responsibleCom?.firstName} ${approvedThenEditedLicence.responsibleCom?.lastName}",
+        approvedThenEditedLicence.responsibleCom.email,
+        "${approvedThenEditedLicence.responsibleCom.firstName} ${approvedThenEditedLicence.responsibleCom.lastName}",
         approvedThenEditedLicence.forename!!,
         approvedThenEditedLicence.surname!!,
         approvedThenEditedLicence.crn!!,
         approvedThenEditedLicence.licenceStartDate,
         approvedThenEditedLicence.id.toString(),
       )
-    }
-
-    @Test
-    fun `should not send notification when there is no com`() {
-      val approvedThenEditedLicence = aLicenceEntity.copy(
-        id = 2L,
-        versionOfId = 1L,
-        responsibleCom = null,
-      )
-      service.timeout(
-        approvedThenEditedLicence,
-        "due to sentence date changes",
-      )
-
-      val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-      val auditCaptor = ArgumentCaptor.forClass(EntityAuditEvent::class.java)
-      val eventCaptor = ArgumentCaptor.forClass(EntityLicenceEvent::class.java)
-
-      verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      assertThat(licenceCaptor.value)
-        .extracting("statusCode", "updatedByUsername")
-        .isEqualTo(listOf(LicenceStatus.TIMED_OUT, "SYSTEM"))
-
-      verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-
-      assertThat(auditCaptor.value)
-        .extracting("licenceId", "username", "fullName", "summary", "eventType")
-        .isEqualTo(
-          listOf(
-            2L,
-            "SYSTEM",
-            "SYSTEM",
-            "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname} due to sentence date changes",
-            SYSTEM_EVENT,
-          ),
-        )
-
-      verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
-
-      assertThat(eventCaptor.value)
-        .extracting("licenceId", "eventType", "username", "forenames", "surname", "eventDescription")
-        .isEqualTo(
-          listOf(
-            2L,
-            LicenceEventType.TIMED_OUT,
-            "SYSTEM",
-            "SYSTEM",
-            "SYSTEM",
-            "Licence automatically timed out for ${approvedThenEditedLicence.forename} ${approvedThenEditedLicence.surname} due to sentence date changes",
-          ),
-        )
-
-      verifyNoInteractions(notifyService)
     }
   }
 
@@ -3783,6 +3731,7 @@ class LicenceServiceTest {
           conditionCode = "goodBehaviour",
           conditionSequence = 1,
           conditionText = "Be of good behaviour",
+          conditionType = "AP",
           licence = it,
         ),
         EntityStandardCondition(
@@ -3790,6 +3739,7 @@ class LicenceServiceTest {
           conditionCode = "notBreakLaw",
           conditionSequence = 2,
           conditionText = "Do not break any law",
+          conditionType = "AP",
           licence = it,
         ),
         EntityStandardCondition(
@@ -3797,6 +3747,7 @@ class LicenceServiceTest {
           conditionCode = "attendMeetings",
           conditionSequence = 3,
           conditionText = "Attend meetings",
+          conditionType = "AP",
           licence = it,
         ),
       ),
@@ -3861,6 +3812,7 @@ class LicenceServiceTest {
           conditionCode = "goodBehaviour",
           conditionSequence = 1,
           conditionText = "Be of good behaviour",
+          conditionType = "AP",
           licence = it,
         ),
         EntityStandardCondition(
@@ -3868,6 +3820,7 @@ class LicenceServiceTest {
           conditionCode = "notBreakLaw",
           conditionSequence = 2,
           conditionText = "Do not break any law",
+          conditionType = "AP",
           licence = it,
         ),
         EntityStandardCondition(
@@ -3875,17 +3828,18 @@ class LicenceServiceTest {
           conditionCode = "attendMeetings",
           conditionSequence = 3,
           conditionText = "Attend meetings",
+          conditionType = "AP",
           licence = it,
         ),
       ),
     )
   }
 
-  val aVariationLicence = createVariationLicence()
+  private val aVariationLicence = createVariationLicence()
 
   val anHdcVariationLicence = createHdcVariationLicence()
 
-  val aLicenceSummary = LicenceSummary(
+  private val aLicenceSummary = LicenceSummary(
     kind = LicenceKind.CRD,
     licenceId = 1,
     licenceType = LicenceType.AP,
@@ -3922,14 +3876,14 @@ class LicenceServiceTest {
     isReviewNeeded = false,
   )
 
-  val someAdditionalConditionData = listOf(
+  private val someAdditionalConditionData = listOf(
     AdditionalConditionData(
       id = 1,
       dataField = "dataField",
       dataValue = "dataValue",
-      additionalCondition = AdditionalCondition(
+      additionalCondition = anAdditionalCondition(
+        id = 1,
         licence = aLicenceEntity,
-        conditionVersion = "1.0",
       ),
     ),
   )

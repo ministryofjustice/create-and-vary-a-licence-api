@@ -117,12 +117,12 @@ class UpdateSentenceDateService(
       log.info("Not notifying COM as now approved for HDC for ${licence.id}")
       return
     }
-    log.info("Notifying COM ${licence.responsibleCom?.email} of date change event for ${licence.id}")
+    log.info("Notifying COM ${licence.responsibleCom.email} of date change event for ${licence.id}")
 
     notifyService.sendDatesChangedEmail(
       licence.id.toString(),
-      licence.responsibleCom?.email,
-      "${licence.responsibleCom?.firstName} ${licence.responsibleCom?.lastName}",
+      licence.responsibleCom.email,
+      "${licence.responsibleCom.firstName} ${licence.responsibleCom.lastName}",
       "${licence.forename} ${licence.surname}",
       licence.crn,
       dateChanges.filter { it.notifyOfChange(licence.kind) }.map { it.toDescription() },

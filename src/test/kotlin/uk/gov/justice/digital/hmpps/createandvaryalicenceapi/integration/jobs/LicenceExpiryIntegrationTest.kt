@@ -47,7 +47,7 @@ class LicenceExpiryIntegrationTest : IntegrationTestBase() {
 
     assertThat(inactiveLicences?.size).isEqualTo(6)
     assertThat(inactiveLicences)
-      .extracting<org.assertj.core.groups.Tuple> {
+      .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
       }
       .contains(

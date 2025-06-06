@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 
@@ -114,40 +112,4 @@ fun transformToSarAuditEvents(entity: AuditEvent): SarAuditEvent = SarAuditEvent
 fun AuditEventType.toSarAuditEventType(): SarAuditEventType = when (this) {
   AuditEventType.USER_EVENT -> SarAuditEventType.USER_EVENT
   AuditEventType.SYSTEM_EVENT -> SarAuditEventType.SYSTEM_EVENT
-}
-
-fun List<LicenceEvent>.transformToSarLicenceEvents(): List<SarLicenceEvent> = map(::transformToSarLicenceEvents)
-
-fun transformToSarLicenceEvents(entity: LicenceEvent): SarLicenceEvent = SarLicenceEvent(
-  licenceId = entity.licenceId,
-  eventType = entity.eventType?.toSarLicenceEventType(),
-  username = entity.username,
-  forenames = entity.forenames,
-  surname = entity.surname,
-  eventDescription = entity.eventDescription,
-  eventTime = entity.eventTime,
-)
-
-fun LicenceEventType.toSarLicenceEventType(): SarLicenceEventType = when (this) {
-  LicenceEventType.CREATED -> SarLicenceEventType.CREATED
-  LicenceEventType.SUBMITTED -> SarLicenceEventType.SUBMITTED
-  LicenceEventType.BACK_IN_PROGRESS -> SarLicenceEventType.BACK_IN_PROGRESS
-  LicenceEventType.APPROVED -> SarLicenceEventType.APPROVED
-  LicenceEventType.ACTIVATED -> SarLicenceEventType.ACTIVATED
-  LicenceEventType.SUPERSEDED -> SarLicenceEventType.SUPERSEDED
-  LicenceEventType.HARD_STOP_CREATED -> SarLicenceEventType.HARD_STOP_CREATED
-  LicenceEventType.HARD_STOP_SUBMITTED -> SarLicenceEventType.HARD_STOP_SUBMITTED
-  LicenceEventType.HARD_STOP_REVIEWED_WITHOUT_VARIATION -> SarLicenceEventType.HARD_STOP_REVIEWED_WITHOUT_VARIATION
-  LicenceEventType.HARD_STOP_REVIEWED_WITH_VARIATION -> SarLicenceEventType.HARD_STOP_REVIEWED_WITH_VARIATION
-  LicenceEventType.VARIATION_CREATED -> SarLicenceEventType.VARIATION_CREATED
-  LicenceEventType.VARIATION_SUBMITTED_REASON -> SarLicenceEventType.VARIATION_SUBMITTED_REASON
-  LicenceEventType.VARIATION_IN_PROGRESS -> SarLicenceEventType.VARIATION_IN_PROGRESS
-  LicenceEventType.VARIATION_SUBMITTED -> SarLicenceEventType.VARIATION_SUBMITTED
-  LicenceEventType.VARIATION_REFERRED -> SarLicenceEventType.VARIATION_REFERRED
-  LicenceEventType.VARIATION_APPROVED -> SarLicenceEventType.VARIATION_APPROVED
-  LicenceEventType.INACTIVE -> SarLicenceEventType.INACTIVE
-  LicenceEventType.RECALLED -> SarLicenceEventType.RECALLED
-  LicenceEventType.VERSION_CREATED -> SarLicenceEventType.VERSION_CREATED
-  LicenceEventType.NOT_STARTED -> SarLicenceEventType.NOT_STARTED
-  LicenceEventType.TIMED_OUT -> SarLicenceEventType.TIMED_OUT
 }

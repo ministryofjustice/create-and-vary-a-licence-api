@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -18,9 +18,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs.RemoveExpiredConditionsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -85,9 +85,9 @@ class RemoveExpiredConditionsServiceTest {
             ),
           ),
           bespokeConditions = listOf(
-            BespokeCondition(1, licence = aLicenceEntity).copy(conditionText = "condition 1"),
-            BespokeCondition(2, licence = aLicenceEntity).copy(conditionText = "condition 2"),
-            BespokeCondition(3, licence = aLicenceEntity).copy(conditionText = "condition 3"),
+            BespokeCondition(1, licence = aLicenceEntity, conditionText = "condition 1"),
+            BespokeCondition(2, licence = aLicenceEntity, conditionText = "condition 2"),
+            BespokeCondition(3, licence = aLicenceEntity, conditionText = "condition 3"),
           ),
         ),
       ),
@@ -218,7 +218,7 @@ class RemoveExpiredConditionsServiceTest {
         id = 1,
         dataField = "dataField",
         dataValue = "dataValue",
-        additionalCondition = AdditionalCondition(licence = aLicenceEntity, conditionVersion = "1.0"),
+        additionalCondition = anAdditionalCondition(id = 1, licence = aLicenceEntity),
       ),
     )
   }

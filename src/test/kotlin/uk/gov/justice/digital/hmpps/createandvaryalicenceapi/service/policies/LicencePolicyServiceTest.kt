@@ -68,7 +68,7 @@ class LicencePolicyServiceTest {
   }
 
   @Nested
-  inner class `getAllAdditionalConditions` {
+  inner class GetAllAdditionalConditions {
     @Test
     fun `builds object containing conditions for all policy versions`() {
       val allPolicyVersions = licencePolicyService.allPolicies().map { it.version }
@@ -88,7 +88,7 @@ class LicencePolicyServiceTest {
   }
 
   @Nested
-  inner class `getHardStopAdditionalConditions` {
+  inner class GetHardStopAdditionalConditions {
     @Test
     fun `get Hardstop conditions for PSS`() {
       val pssLicence = createCrdLicence().copy(typeCode = PSS)
@@ -126,7 +126,7 @@ class LicencePolicyServiceTest {
   }
 
   @Nested
-  inner class `compareLicenceWithPolicy` {
+  inner class CompareLicenceWithPolicy {
     @Test
     fun `returns an empty list if the previous licence is missing a version`() {
       val previousLicence = aModelLicence().copy(id = 1, version = null)
@@ -140,7 +140,8 @@ class LicencePolicyServiceTest {
     @Test
     fun `returns an empty list if the previous licence policy version is equal to the current licence policy version`() {
       val previousLicence = aModelLicence().copy(id = 1, version = "2.0")
-      val currentLicence = aModelLicence().copy(id = 2, statusCode = LicenceStatus.VARIATION_IN_PROGRESS, version = "2.0")
+      val currentLicence =
+        aModelLicence().copy(id = 2, statusCode = LicenceStatus.VARIATION_IN_PROGRESS, version = "2.0")
 
       val policyChanges = licencePolicyService.compareLicenceWithPolicy(currentLicence, previousLicence, "2.1")
 
@@ -149,8 +150,14 @@ class LicencePolicyServiceTest {
 
     @Test
     fun `returns a list of policy changes`() {
-      val previousLicence = aModelLicence().copy(id = 1, version = "2.0", additionalLicenceConditions = someOldModelAdditionalConditions())
-      val currentLicence = aModelLicence().copy(id = 2, statusCode = LicenceStatus.VARIATION_IN_PROGRESS, version = "2.1", additionalLicenceConditions = someOldModelAdditionalConditions())
+      val previousLicence =
+        aModelLicence().copy(id = 1, version = "2.0", additionalLicenceConditions = someOldModelAdditionalConditions())
+      val currentLicence = aModelLicence().copy(
+        id = 2,
+        statusCode = LicenceStatus.VARIATION_IN_PROGRESS,
+        version = "2.1",
+        additionalLicenceConditions = someOldModelAdditionalConditions(),
+      )
 
       val policyChanges = licencePolicyService.compareLicenceWithPolicy(currentLicence, previousLicence, "2.1")
 
@@ -158,6 +165,5 @@ class LicencePolicyServiceTest {
     }
   }
 
-  private companion object {
-  }
+  private companion object
 }

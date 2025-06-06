@@ -21,10 +21,10 @@ data class StandardCondition(
   @JoinColumn(name = "licence_id", nullable = false)
   var licence: Licence,
 
-  val conditionCode: String? = null,
-  val conditionSequence: Int? = null,
-  val conditionText: String? = null,
-  val conditionType: String? = null,
+  val conditionCode: String,
+  val conditionSequence: Int,
+  val conditionText: String,
+  val conditionType: String,
 ) {
   override fun toString(): String = "StandardCondition(" +
     "id=$id, " +

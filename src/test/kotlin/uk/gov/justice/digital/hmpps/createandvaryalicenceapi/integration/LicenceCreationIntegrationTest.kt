@@ -84,7 +84,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
     assertThat(licenceRepository.count()).isEqualTo(1)
     val licence = licenceRepository.findAll().first()
-    assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
 
@@ -196,7 +196,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.kind).isEqualTo(LicenceKind.HARD_STOP)
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
     assertThat(licence.createdBy!!.id).isEqualTo(9L)
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(auditEventRepository.count()).isEqualTo(1)
@@ -238,7 +238,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     val crdLicence = licenceRepository.findAll().find { it.kind == LicenceKind.CRD } as CrdLicence
     val hardStopLicence = licenceRepository.findAll().find { it.kind == LicenceKind.HARD_STOP } as HardStopLicence
 
-    assertThat(hardStopLicence.responsibleCom!!.username).isEqualTo("AAA")
+    assertThat(hardStopLicence.responsibleCom.username).isEqualTo("AAA")
     assertThat(hardStopLicence.createdBy!!.id).isEqualTo(9L)
     assertThat(hardStopLicence.substituteOfId).isEqualTo(crdLicence.id)
     assertThat(hardStopLicence.kind).isEqualTo(LicenceKind.HARD_STOP)
@@ -314,7 +314,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(1)
       val licence = licenceRepository.findAll().first()
-      assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+      assertThat(licence.responsibleCom.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
@@ -355,7 +355,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
       assertThat(licenceRepository.count()).isEqualTo(1)
       val licence = licenceRepository.findAll().first()
-      assertThat(licence.responsibleCom!!.username).isEqualTo("AAA")
+      assertThat(licence.responsibleCom.username).isEqualTo("AAA")
       assertThat(licence.kind).isEqualTo(LicenceKind.HDC)
       assertThat(licence.typeCode).isEqualTo(LicenceType.AP_PSS)
       assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)

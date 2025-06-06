@@ -160,7 +160,7 @@ class CaCaseloadService(
         licenceVersionOf = licence?.versionOf,
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
-        releaseDate = licence?.licenceStartDate,
+        releaseDate = licence.licenceStartDate,
         releaseDateLabel =
         when (licence.licenceStartDate) {
           null -> "CRD"

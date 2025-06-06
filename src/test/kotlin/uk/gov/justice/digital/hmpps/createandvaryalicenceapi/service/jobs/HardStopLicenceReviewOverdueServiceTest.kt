@@ -6,7 +6,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
@@ -62,30 +61,13 @@ class HardStopLicenceReviewOverdueServiceTest {
     verify(licenceRepository, times(1)).getHardStopLicencesNeedingReview()
 
     verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
-      aHardStopLicenceEntity.responsibleCom?.email,
-      "${aHardStopLicenceEntity.responsibleCom?.firstName} ${aHardStopLicenceEntity.responsibleCom?.lastName}",
+      aHardStopLicenceEntity.responsibleCom.email,
+      "${aHardStopLicenceEntity.responsibleCom.firstName} ${aHardStopLicenceEntity.responsibleCom.lastName}",
       aHardStopLicenceEntity.forename!!,
       aHardStopLicenceEntity.surname!!,
       aHardStopLicenceEntity.crn!!,
       aHardStopLicenceEntity.id.toString(),
     )
-  }
-
-  @Test
-  fun `should not send notifications if there is no COM attached to the licence`() {
-    whenever(licenceRepository.getHardStopLicencesNeedingReview()).thenReturn(
-      listOf(
-        aHardStopLicenceEntity.copy(
-          responsibleCom = null,
-        ),
-      ),
-    )
-
-    service.sendComReviewEmail()
-
-    verify(licenceRepository, times(1)).getHardStopLicencesNeedingReview()
-
-    verifyNoInteractions(notifyService)
   }
 
   private companion object {
