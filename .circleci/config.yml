@@ -12,6 +12,9 @@ parameters:
   localstack-version:
     type: string
     default: "3.0.2"
+  postgres-version:
+    type: string
+    default: "17.5"
 jobs:
   validate:
     executor:
@@ -39,12 +42,28 @@ jobs:
           path: build/reports/jacoco
   integration-test:
     executor:
-      name: hmpps/localstack
+      name: hmpps/java_localstack_postgres_with_db_name
       jdk_tag: << pipeline.parameters.java-version >>
       localstack_tag: << pipeline.parameters.localstack-version >>
+      postgres_tag: << pipeline.parameters.postgres-version >>
+      postgres_db: create-and-vary-a-licence-db
+      postgres_username: cvl
+      postgres_password: cvl
+      postgres_port: 5433
       services: "sns,sqs"
     steps:
+      - run:
+          command: |
+              while true; do
+                sleep 5
+                ps auxwwf
+                echo "======"
+              done
+          background: true
       - checkout
+      - hmpps/wait_till_ready_postgres:
+          port: 5433
+      - hmpps/wait_till_ready
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
@@ -63,6 +82,19 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
+      - hmpps/database_schema_report:
+            jdk_tag: << pipeline.parameters.java-version >>
+            localstack_tag: << pipeline.parameters.localstack-version >>
+            postgres_tag: << pipeline.parameters.postgres-version >>
+            postgres_db: create-and-vary-a-licence-db
+            postgres_username: cvl
+            postgres_password: cvl
+            postgres_port: 5433
+            initialise_database: "./gradlew initialiseDatabase"
+            filters:
+              branches:
+                only:
+                  - main
       - validate:
           filters:
             tags:

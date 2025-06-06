@@ -242,6 +242,7 @@ class LicenceControllerTest {
     val licenceQueryObject = LicenceQueryObject(
       prisonCodes = listOf("LEI"),
       statusCodes = listOf(LicenceStatus.APPROVED),
+      sortBy = "id",
     )
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
@@ -273,6 +274,7 @@ class LicenceControllerTest {
     val licenceQueryObject = LicenceQueryObject(
       staffIds = listOf(1, 2, 3),
       statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+      sortBy = "id",
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
@@ -302,31 +304,39 @@ class LicenceControllerTest {
 
   @Test
   fun `match licences by pdu and status`() {
+    // Given
+    val pduList = listOf("A", "B", "C")
+
     val licenceQueryObject = LicenceQueryObject(
-      pdus = listOf("A", "B", "C"),
+      pdus = pduList,
       statusCodes = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+      sortBy = "id",
+    )
+    val request = MatchLicencesRequest(
+      status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
+      pdu = pduList,
     )
 
     whenever(licenceService.findLicencesMatchingCriteria(licenceQueryObject)).thenReturn(listOf(aLicenceSummary))
 
+    // When
     val result = mvc.perform(
       post("/licence/match")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(
           mapper.writeValueAsBytes(
-            MatchLicencesRequest(
-              status = listOf(LicenceStatus.APPROVED, LicenceStatus.ACTIVE),
-              pdu = listOf("A", "B", "C"),
-            ),
+            request,
           ),
         ),
     )
-      .andExpect(status().isOk)
+
+    // Then
+    result.andExpect(status().isOk)
       .andExpect(content().contentType(APPLICATION_JSON))
       .andReturn()
 
-    assertThat(result.response.contentAsString)
+    assertThat(result.andReturn().response.contentAsString)
       .isEqualTo(mapper.writeValueAsString(listOf(aLicenceSummary)))
 
     verify(licenceService, times(1)).findLicencesMatchingCriteria(licenceQueryObject)

@@ -255,7 +255,7 @@ class LicenceController(
   fun getLicencesMatchingCriteria(
     @Valid @RequestBody
     body: MatchLicencesRequest,
-    @RequestParam(name = "sortBy", required = false) sortBy: String?,
+    @RequestParam(name = "sortBy", required = false) sortBy: String = "id",
     @RequestParam(name = "sortOrder", required = false) sortOrder: String?,
   ): List<LicenceSummary> = licenceService.findLicencesMatchingCriteria(
     LicenceQueryObject(

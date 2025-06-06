@@ -8,6 +8,7 @@ import org.mockito.Mockito.reset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
@@ -16,11 +17,21 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD
+import org.springframework.test.context.jdbc.SqlConfig
+import org.springframework.test.context.jdbc.SqlGroup
 import org.springframework.test.context.jdbc.SqlMergeMode
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.DB_DEFAULT_URL
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.DB_PASSWORD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.DB_USERNAME
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
@@ -42,15 +53,18 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 **     - An ObjectMapper called mapper.
 **     - A logger.
 */
-@SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @ExtendWith(OAuthExtension::class)
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
-@Sql(
-  "classpath:test_data/clear-all-data.sql",
-  "classpath:test_data/seed-community-offender-manager.sql",
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"])
+@SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
+@SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
+@SqlGroup(
+  Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
+  Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
-abstract class IntegrationTestBase {
+@AutoConfigureWebTestClient(timeout = "15000") // 15 seconds
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+class IntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var telemetryClient: TelemetryClient
@@ -106,11 +120,23 @@ abstract class IntegrationTestBase {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     private val localStackContainer = LocalStackContainer.instance
+    private val postgresContainer = PostgresContainer.instance
 
     @JvmStatic
     @DynamicPropertySource
-    fun testcontainers(registry: DynamicPropertyRegistry) {
+    fun containers(registry: DynamicPropertyRegistry) {
       localStackContainer?.also { setLocalStackProperties(it, registry) }
+
+      val url = postgresContainer?.let { postgresContainer.jdbcUrl } ?: DB_DEFAULT_URL
+      log.info("Using TestContainers?: ${postgresContainer != null}, DB url: $url")
+      registry.add("spring.datasource.url") { url }
+      registry.add("spring.datasource.username") { DB_USERNAME }
+      registry.add("spring.datasource.password") { DB_PASSWORD }
+      registry.add("spring.flyway.url") { url }
+      registry.add("spring.flyway.user") { DB_USERNAME }
+      registry.add("spring.flyway.password") { DB_PASSWORD }
+      registry.add("spring.datasource.placeholders.database_update_password") { DB_PASSWORD }
+      registry.add("spring.datasource.placeholders.database_read_only_password") { DB_USERNAME }
     }
   }
 }
