@@ -155,7 +155,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "RegionOfResidence",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "fce34fb2-02f4-4eb0-9b8d-d091e11451fa",
@@ -214,7 +215,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "RestrictionOfResidency",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "b72fdbf2-0dc9-4e7f-81e4-c2ccb5d1bc90",
@@ -252,7 +254,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": "MedicalAppointmentType",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9ae2a336-3491-4667-aaed-dd852b09b4b9",
@@ -264,7 +267,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "a7c57e4e-30fe-4797-9fe7-70a35dbd7b65",
@@ -313,7 +317,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": "AppointmentTimeAndPlace",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "75a6aac6-02a7-4414-af14-942be6736892",
@@ -325,7 +330,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4858cd8b-bca6-4f11-b6ee-439e27216d7d",
@@ -364,7 +370,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": "NoContactWithVictim",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4a5fed48-0fb9-4711-8ddf-b46ddfd90246",
@@ -435,7 +442,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": "UnsupervisedContact",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "355700a9-6184-40c0-9759-0dfed1994e1e",
@@ -462,7 +470,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": "NamedIndividuals",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0aa669bf-db8a-4b8e-b8ba-ca82fc245b94",
@@ -474,7 +483,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "cc80d02b-0b62-4940-bac6-0bcd374c725e",
@@ -486,7 +496,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "18b69f61-800f-46b2-95c4-2019d33e34d6",
@@ -513,7 +524,8 @@
         "categoryShort": "Contact with a person",
         "subtext": null,
         "type": "NamedOrganisation",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "89e656ec-77e8-4832-acc4-6ec05d3e9a98",
@@ -591,7 +603,8 @@
         "categoryShort": "Programmes or activities",
         "subtext": null,
         "type": "BehaviourProblems",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9da214a3-c6ae-45e1-a465-12e22adf7c87",
@@ -625,7 +638,8 @@
         "categoryShort": "Programmes or activities",
         "subtext": null,
         "type": "WorkingWithChildren",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "8e52e16e-1abf-4251-baca-2fabfcb243d0",
@@ -637,7 +651,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "72d281c3-b194-43ab-812d-fea0683ada65",
@@ -649,7 +664,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "ed607a91-fe3a-4816-8eb9-b447c945935c",
@@ -661,7 +677,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "680b3b27-43cc-46c6-9ba6-b10d4aba6531",
@@ -673,7 +690,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "5fa04bbf-6b7c-4b65-9388-a0115cd365a6",
@@ -685,7 +703,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "bfbc693c-ab65-4042-920e-ddb085bc7aba",
@@ -697,7 +716,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "2d67f68a-8adf-47a9-a68d-a6fc9f2c4556",
@@ -709,7 +729,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "3932e5c9-4d21-4251-a747-ce6dc52dc9c0",
@@ -736,7 +757,8 @@
         "categoryShort": "Items and documents",
         "subtext": null,
         "type": "SpecifiedItem",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "2a93b784-b8cb-49ed-95e2-a0df60723cda",
@@ -748,7 +770,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02",
@@ -786,7 +809,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "IntimateRelationshipWithGender",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "c5e91330-748d-46f3-93f6-bbe5ea8324ce",
@@ -798,7 +822,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "79ac033f-9d7a-4dab-8344-475106e58b71",
@@ -810,7 +835,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "8686a815-b7f0-43b6-9886-f01df6a48773",
@@ -822,7 +848,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0a370862-5426-49c1-b6d4-3d074d78a81a",
@@ -1014,7 +1041,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "CurfewTerms",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "c2435d4a-20a0-47de-b080-e1e740d1514c",
@@ -1063,7 +1091,8 @@
         "categoryShort": null,
         "subtext": "You must have PPCS approval if the curfew time is longer than 12 hours.",
         "type": "CurfewAddress",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "0f9a20f4-35c7-4c77-8af8-f200f153fa11",
@@ -1100,7 +1129,8 @@
         "categoryShort": null,
         "subtext": "If you need to upload more than one map, add one here and then email all maps directly to the prison OMU. Make sure the names of areas shown on all maps are entered here as a list. For example, Bridgend, Porthcawl and Port Talbot.",
         "type": "OutOfBoundsRegion",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "42f71b40-84cd-446d-8647-f00bbb6c079c",
@@ -1137,7 +1167,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "OutOfBoundsPremises",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "c4a17002-88a3-43b4-b3f7-82ff476cb217",
@@ -1162,7 +1193,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "OutOfBoundsPremisesType",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "bb401b88-2137-4154-be4a-5e05c168638a",
@@ -1174,7 +1206,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "5d0416a9-a4ce-4b2c-8636-0b7abaa3680a",
@@ -1186,7 +1219,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "4673ebe4-9fc0-4e48-87c9-eb17d5280867",
@@ -1260,7 +1294,8 @@
         "categoryShort": "Supervision in the community",
         "subtext": null,
         "type": "ReportToApprovedPremisesPolicyV2_0",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "2027ae19-04a2-4fa6-8d1b-a62dffba2e62",
@@ -1334,7 +1369,8 @@
         "categoryShort": "Supervision in the community",
         "subtext": null,
         "type": "ReportToPoliceStationPolicyV2_0",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "7a9ca3bb-922a-433a-9601-1e475c6c0095",
@@ -1346,7 +1382,8 @@
         "categoryShort": "Restriction of conduct or acts",
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "86f8b3d6-be31-48b2-a29e-5cf662c95ad1",
@@ -1358,7 +1395,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9785d8f8-31a9-4c32-a06d-eff049ecebcd",
@@ -1370,7 +1408,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "9efba199-87d4-468e-a5a1-1c0945571afa",
@@ -1382,7 +1421,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "3d771cc6-b85f-47e4-9e13-75bfb80706f4",
@@ -1394,7 +1434,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "e0421c22-1be7-4d06-aba7-3c17822b0c1c",
@@ -1406,7 +1447,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "1dc7ee29-df47-48a8-90b6-69e286692d8a",
@@ -1418,7 +1460,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": null,
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "322bb3f7-2ee1-46aa-ae1c-3f743efd4327",
@@ -1455,7 +1498,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "DrugTestLocation",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "fd129172-bdd3-4d97-a4a0-efd7b47a49d4",
@@ -1505,7 +1549,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "ElectronicMonitoringTypes",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "524f2fd6-ad53-47dd-8edc-2161d3dd2ed4",
@@ -1530,7 +1575,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "ElectronicMonitoringPeriod",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "86e6f2a9-bb60-40f8-9ac4-310ebc72ac2f",
@@ -1555,7 +1601,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "ApprovedAddress",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       },
       {
         "code": "599bdcae-d545-461c-b1a9-02cb3d4ba268",
@@ -1592,7 +1639,8 @@
         "categoryShort": null,
         "subtext": null,
         "type": "AlcoholMonitoringPeriod",
-        "skippable": false
+        "skippable": false,
+        "requiresElectronicMonitoringResponse":false
       }
     ],
     "PSS": [

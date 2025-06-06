@@ -1206,6 +1206,7 @@ val POLICY_V3_0 = LicencePolicy(
         text = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your [INSERT TYPES OF CONDITIONS TO BE ELECTRONICALLY MONITORED HERE] licence condition(s) unless otherwise authorised by your supervising officer.",
         tpl = "Allow person(s) as designated by your supervising officer to install an electronic monitoring tag on you and access to install any associated equipment in your property, and for the purpose of ensuring that equipment is functioning correctly. You must not damage or tamper with these devices and ensure that the tag is charged, and report to your supervising officer and the EM provider immediately if the tag or the associated equipment are not working correctly. This will be for the purpose of monitoring your {electronicMonitoringTypes} licence condition(s) unless otherwise authorised by your supervising officer.",
         type = "ElectronicMonitoringTypes",
+        requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1222,6 +1223,7 @@ val POLICY_V3_0 = LicencePolicy(
         tpl = "You will be subject to trail monitoring. Your whereabouts will be electronically monitored by GPS Satellite Tagging, ending on {endDate}, and you must cooperate with the monitoring as directed by your supervising officer unless otherwise authorised by your supervising officer.",
         type = "ElectronicMonitoringPeriod",
         skippable = true,
+        requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1237,6 +1239,7 @@ val POLICY_V3_0 = LicencePolicy(
         text = "You must stay at [APPROVED ADDRESS] between 5pm and midnight every day until your electronic tag is installed unless otherwise authorised by your supervising officer.",
         tpl = "You must stay at {approvedAddress} between 5pm and midnight every day until your electronic tag is installed unless otherwise authorised by your supervising officer.",
         type = "ApprovedAddress",
+        requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1253,6 +1256,7 @@ val POLICY_V3_0 = LicencePolicy(
         tpl = "You must not drink any alcohol until {endDate}. You will need to wear an electronic tag all the time so we can check this.",
         type = "AlcoholRestrictionPeriod",
         skippable = true,
+        requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
         category = "Electronic monitoring",
@@ -1269,6 +1273,7 @@ val POLICY_V3_0 = LicencePolicy(
         tpl = "You will need to wear an electronic tag all the time until {endDate} so we can check how much alcohol you are drinking, and if you are drinking alcohol when you have been told you must not. To help you drink less alcohol you must take part in any activities, like treatment programmes, your probation officer asks you to.",
         type = "ElectronicTagPeriod",
         skippable = true,
+        requiresElectronicMonitoringResponse = true,
       ),
       AdditionalConditionAp(
         category = "Terrorist personal search",
