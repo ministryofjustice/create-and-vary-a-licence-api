@@ -55,14 +55,14 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 */
 @ExtendWith(OAuthExtension::class)
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=false"])
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"])
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
 @SqlGroup(
   Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
   Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
-@AutoConfigureWebTestClient(timeout = "40000") // 30 seconds
+@AutoConfigureWebTestClient(timeout = "20000") // 20 seconds
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 abstract class IntegrationTestBase {
 
@@ -71,12 +71,6 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var comAllocatedHandler: ComAllocatedHandler
-
-  @BeforeEach
-  fun `Clear queues`() {
-    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
-    reset(telemetryClient)
-  }
 
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
@@ -114,6 +108,12 @@ abstract class IntegrationTestBase {
     user: String = "test-client",
     roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
+
+  @BeforeEach
+  fun `Clear queues`() {
+    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
+    reset(telemetryClient)
+  }
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()
 
