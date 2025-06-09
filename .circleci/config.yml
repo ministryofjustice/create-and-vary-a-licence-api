@@ -41,8 +41,7 @@ jobs:
       - store_artifacts:
           path: build/reports/jacoco
   integration-test:
-        docker:
-          - image: cimg/base:stable
+        machine: true
         environment:
           POSTGRES_VERSION: "17.5"
           POSTGRES_DB: "create-and-vary-a-licence-db"
@@ -53,61 +52,51 @@ jobs:
           LOCALSTACK_SERVICES: "sqs,sns"
         steps:
           - checkout
+          - restore_cache:
+                keys:
+                  - gradle-cache-{{ checksum "build.gradle.kts" }}
+                  - gradle-cache-
           - run:
-              name: Create Docker network
-              command: docker network create test-net
+                name: Create Docker network
+                command: docker network create test-net
           - run:
-              name: Start PostgreSQL in memory (tmpfs)
-              command: |
-                docker run -d \
-                  --rm \
-                  --name postgres \
-                  --network test-net \
-                  -e POSTGRES_DB=$POSTGRES_DB \
-                  -e POSTGRES_USER=$POSTGRES_USER \
-                  -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-                  --tmpfs /var/lib/postgresql/data \
-                  -p $POSTGRES_PORT:5432 \
-                  postgres:$POSTGRES_VERSION
+                name: Start PostgreSQL in RAM
+                command: |
+                  docker run -d \
+                    --rm \
+                    --name postgres \
+                    --network test-net \
+                    -e POSTGRES_DB=$POSTGRES_DB \
+                    -e POSTGRES_USER=$POSTGRES_USER \
+                    -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                    --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
+                    -p $POSTGRES_PORT:5432 \
+                    postgres:$POSTGRES_VERSION
           - run:
-              name: Start LocalStack
-              command: |
-                docker run -d \
-                  --rm \
-                  --name localstack \
-                  --network test-net \
-                  -e SERVICES=$LOCALSTACK_SERVICES \
-                  -e DEFAULT_REGION=eu-west-2 \
-                  -p 4566:4566 \
-                  localstack/localstack:$LOCALSTACK_VERSION
+                name: Start LocalStack
+                command: |
+                  docker run -d \
+                    --rm \
+                    --name localstack \
+                    --network test-net \
+                    -e SERVICES=$LOCALSTACK_SERVICES \
+                    -e DEFAULT_REGION=eu-west-2 \
+                    -p 4566:4566 \
+                    localstack/localstack:$LOCALSTACK_VERSION
           - run:
-              name: Wait for services to be ready
-              command: |
-                echo "Waiting for PostgreSQL..."
-                for i in $(seq 1 30); do
-                  nc -z localhost $POSTGRES_PORT && break
-                  sleep 1
-                done
-                echo "PostgreSQL is up!"
-
-                echo "Waiting for LocalStack..."
-                for i in $(seq 1 30); do
-                  nc -z localhost 4566 && break
-                  sleep 1
-                done
-                echo "LocalStack is up!"
-
+                name: Wait for services
+                command: |
+                  for i in {1..30}; do nc -z localhost $POSTGRES_PORT && break; sleep 1; done
+                  for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
           - run:
-              name: Run integration tests
-              command: ./gradlew integrationTest
+                name: Run integration tests
+                command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
           - save_cache:
-              paths:
-                - ~/.gradle
-              key: gradle-{{ checksum "build.gradle.kts" }}
-          - store_test_results:
-              path: build/test-results
-          - store_artifacts:
-              path: build/reports/tests
+                paths:
+                  - ~/.gradle
+                  - ~/.gradle/caches
+                  - ~/.gradle/wrapper
+                key: gradle-cache-{{ checksum "build.gradle.kts" }}
   integration-test-old:
     executor:
       name: hmpps/java_localstack_postgres_with_db_name
