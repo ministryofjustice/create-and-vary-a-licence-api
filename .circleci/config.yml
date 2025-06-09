@@ -69,7 +69,7 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
       - run:
-          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit -Xmx1048m -Xms512m" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest --daemon
+          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit -Xmx2048m -Xms1024m" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest --daemon
       - save_cache:
           paths:
             - ~/.gradle
