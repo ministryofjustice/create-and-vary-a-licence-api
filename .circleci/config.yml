@@ -40,7 +40,7 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
-  integration-test-ram:
+  integration-test:
         docker:
           - image: cimg/base:stable
         environment:
@@ -108,7 +108,7 @@ jobs:
               path: build/test-results
           - store_artifacts:
               path: build/reports/tests
-  integration-test:
+  integration-test-old:
     executor:
       name: hmpps/java_localstack_postgres_with_db_name
       jdk_tag: << pipeline.parameters.java-version >>
