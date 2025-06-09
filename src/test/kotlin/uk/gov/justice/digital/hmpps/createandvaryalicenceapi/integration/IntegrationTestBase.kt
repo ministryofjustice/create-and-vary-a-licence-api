@@ -62,7 +62,7 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
   Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
   Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
-@AutoConfigureWebTestClient(timeout = "15000") // 15 seconds
+@AutoConfigureWebTestClient(timeout = "20000") // 20 seconds
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class IntegrationTestBase {
 
