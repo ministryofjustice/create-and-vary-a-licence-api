@@ -66,7 +66,6 @@ dependencies {
   testImplementation("com.h2database:h2")
   testImplementation("org.testcontainers:localstack:1.21.0")
   testImplementation("org.testcontainers:postgresql:1.20.6")
-  testImplementation("org.testcontainers:localstack:1.20.6")
 }
 
 detekt {
