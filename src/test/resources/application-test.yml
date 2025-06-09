@@ -14,9 +14,13 @@ spring:
   datasource:
     hikari:
       pool-name: CVL-CP
-      maximum-pool-size: 5
-      connectionTimeout: 2000
-      validationTimeout: 1000
+      maximum-pool-size: 4
+      minimum-idle: 0
+      idle-timeout: 10000           # 10 seconds
+      max-lifetime: 30000           # 30 seconds
+      connection-timeout: 2000      # 2 seconds
+      validation-timeout: 1000      # 1 second
+      initialization-fail-timeout: 0
 
   flyway:
     locations: classpath:/migration/common,/migration/{vendor}

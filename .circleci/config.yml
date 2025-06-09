@@ -90,13 +90,17 @@ jobs:
                   for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
           - run:
                 name: Run integration tests
-                command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
+                command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit -Xmx2048m -Xms512m" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
           - save_cache:
-                paths:
-                  - ~/.gradle
-                  - ~/.gradle/caches
-                  - ~/.gradle/wrapper
-                key: gradle-cache-{{ checksum "build.gradle.kts" }}
+              paths:
+                - ~/.gradle
+                - ~/.gradle/caches
+                - ~/.gradle/wrapper
+              key: gradle-{{ checksum "build.gradle.kts" }}
+          - store_test_results:
+              path: build/test-results
+          - store_artifacts:
+              path: build/reports/tests
   integration-test-old:
     executor:
       name: hmpps/java_localstack_postgres_with_db_name
