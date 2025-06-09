@@ -33,6 +33,7 @@ object PostgresContainer {
       withPassword(DB_PASSWORD)
       setWaitStrategy(Wait.forListeningPort())
       withReuse(true)
+      withTmpFs(mapOf("/var/lib/postgresql/data" to "rw"))
       start()
       followOutput(logConsumer)
     }
