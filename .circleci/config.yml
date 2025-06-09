@@ -90,7 +90,7 @@ jobs:
                   for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
           - run:
                 name: Run integration tests
-                command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit -Xmx2048m -Xms512m" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
+                command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
           - save_cache:
               paths:
                 - ~/.gradle
@@ -111,7 +111,7 @@ workflows:
             user: cvl
             password: cvl
             port: 5433
-            initialise_database: "./gradlew initialiseDatabase"
+            initialise_database: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" initialiseDatabase
             filters:
               branches:
                 only:
