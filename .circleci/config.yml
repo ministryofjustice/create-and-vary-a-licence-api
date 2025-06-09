@@ -86,10 +86,10 @@ workflows:
             jdk_tag: << pipeline.parameters.java-version >>
             localstack_tag: << pipeline.parameters.localstack-version >>
             postgres_tag: << pipeline.parameters.postgres-version >>
-            postgres_db: create-and-vary-a-licence-db
-            postgres_username: cvl
-            postgres_password: cvl
-            postgres_port: 5433
+            database_name: create-and-vary-a-licence-db
+            user: cvl
+            password: cvl
+            port: 5433
             initialise_database: "./gradlew initialiseDatabase"
             filters:
               branches:
