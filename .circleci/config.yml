@@ -43,12 +43,12 @@ jobs:
   integration-test-in-ram:
         machine: true
         environment:
-          POSTGRES_VERSION: "17.5"
+          POSTGRES_VERSION: << pipeline.parameters.postgres-version >>
           POSTGRES_DB: "create-and-vary-a-licence-db"
           POSTGRES_USER: "cvl"
           POSTGRES_PASSWORD: "cvl"
           POSTGRES_PORT: "5433"
-          LOCALSTACK_VERSION: "3.0.2"
+          LOCALSTACK_VERSION: << pipeline.parameters.localstack-version >>
           LOCALSTACK_SERVICES: "sqs,sns"
         steps:
           - checkout
