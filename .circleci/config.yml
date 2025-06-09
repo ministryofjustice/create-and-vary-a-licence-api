@@ -40,6 +40,74 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
+  integration-test-ram:
+        docker:
+          - image: cimg/base:stable
+        environment:
+          POSTGRES_VERSION: "17.5"
+          POSTGRES_DB: "create-and-vary-a-licence-db"
+          POSTGRES_USER: "cvl"
+          POSTGRES_PASSWORD: "cvl"
+          POSTGRES_PORT: "5433"
+          LOCALSTACK_VERSION: "3.0.2"
+          LOCALSTACK_SERVICES: "sqs,sns"
+        steps:
+          - checkout
+          - run:
+              name: Create Docker network
+              command: docker network create test-net
+          - run:
+              name: Start PostgreSQL in memory (tmpfs)
+              command: |
+                docker run -d \
+                  --rm \
+                  --name postgres \
+                  --network test-net \
+                  -e POSTGRES_DB=$POSTGRES_DB \
+                  -e POSTGRES_USER=$POSTGRES_USER \
+                  -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                  --tmpfs /var/lib/postgresql/data \
+                  -p $POSTGRES_PORT:5432 \
+                  postgres:$POSTGRES_VERSION
+          - run:
+              name: Start LocalStack
+              command: |
+                docker run -d \
+                  --rm \
+                  --name localstack \
+                  --network test-net \
+                  -e SERVICES=$LOCALSTACK_SERVICES \
+                  -e DEFAULT_REGION=eu-west-2 \
+                  -p 4566:4566 \
+                  localstack/localstack:$LOCALSTACK_VERSION
+          - run:
+              name: Wait for services to be ready
+              command: |
+                echo "Waiting for PostgreSQL..."
+                for i in $(seq 1 30); do
+                  nc -z localhost $POSTGRES_PORT && break
+                  sleep 1
+                done
+                echo "PostgreSQL is up!"
+
+                echo "Waiting for LocalStack..."
+                for i in $(seq 1 30); do
+                  nc -z localhost 4566 && break
+                  sleep 1
+                done
+                echo "LocalStack is up!"
+
+          - run:
+              name: Run integration tests
+              command: ./gradlew integrationTest
+          - save_cache:
+              paths:
+                - ~/.gradle
+              key: gradle-{{ checksum "build.gradle.kts" }}
+          - store_test_results:
+              path: build/test-results
+          - store_artifacts:
+              path: build/reports/tests
   integration-test:
     executor:
       name: hmpps/java_localstack_postgres_with_db_name
