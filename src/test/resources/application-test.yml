@@ -15,14 +15,18 @@ spring:
     hikari:
       pool-name: CVL-CP
       maximum-pool-size: 5
-      connectionTimeout: 1000
-      validationTimeout: 500
+      connectionTimeout: 2000
+      validationTimeout: 1000
 
   flyway:
     locations: classpath:/migration/common,/migration/{vendor}
 
   jpa:
     show-sql: true
+    open-in-view: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
 
   sql:
     init:
