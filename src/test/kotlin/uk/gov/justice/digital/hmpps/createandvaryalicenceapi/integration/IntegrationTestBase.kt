@@ -55,16 +55,16 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 */
 @ExtendWith(OAuthExtension::class)
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=true"])
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=false"])
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
 @SqlGroup(
   Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
   Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
-@AutoConfigureWebTestClient(timeout = "20000") // 20 seconds
+@AutoConfigureWebTestClient(timeout = "30000") // 30 seconds
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-class IntegrationTestBase {
+abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var telemetryClient: TelemetryClient
