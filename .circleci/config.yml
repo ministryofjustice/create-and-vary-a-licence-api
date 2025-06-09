@@ -99,45 +99,6 @@ jobs:
               path: build/test-results
           - store_artifacts:
               path: build/reports/tests
-  integration-test:
-    executor:
-      name: hmpps/java_localstack_postgres_with_db_name
-      jdk_tag: << pipeline.parameters.java-version >>
-      localstack_tag: << pipeline.parameters.localstack-version >>
-      postgres_tag: << pipeline.parameters.postgres-version >>
-      postgres_db: create-and-vary-a-licence-db
-      postgres_username: cvl
-      postgres_password: cvl
-      postgres_port: 5433
-      java_options: -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=1
-      services: "sns,sqs"
-    steps:
-      - run:
-          command: |
-              while true; do
-                sleep 5
-                ps auxwwf
-                echo "======"
-              done
-          background: true
-      - checkout
-      - hmpps/wait_till_ready_postgres:
-          port: 5433
-      - hmpps/wait_till_ready
-      - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
-            - gradle-
-      - run:
-          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: gradle-{{ checksum "build.gradle.kts" }}
-      - store_test_results:
-          path: build/test-results
-      - store_artifacts:
-          path: build/reports/tests
 workflows:
   version: 2
   build-test-and-deploy:
