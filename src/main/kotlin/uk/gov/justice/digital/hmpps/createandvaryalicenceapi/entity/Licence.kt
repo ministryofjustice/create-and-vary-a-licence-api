@@ -157,6 +157,7 @@ abstract class Licence(
 
   fun deactivate(staffMember: Staff? = null) {
     statusCode = LicenceStatus.INACTIVE
+    dateLastUpdated = LocalDateTime.now()
     updatedByUsername = staffMember?.username ?: SYSTEM_USER
     updatedBy = staffMember ?: this.updatedBy
   }

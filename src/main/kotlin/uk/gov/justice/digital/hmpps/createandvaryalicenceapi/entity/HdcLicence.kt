@@ -304,14 +304,14 @@ class HdcLicence(
     updatedByUsername = "SYSTEM",
   )
 
-  fun submit(submittedBy: CommunityOffenderManager) = copy(
-    statusCode = LicenceStatus.SUBMITTED,
-    submittedBy = submittedBy,
-    updatedByUsername = submittedBy.username,
-    submittedDate = LocalDateTime.now(),
-    dateLastUpdated = LocalDateTime.now(),
-    updatedBy = submittedBy,
-  )
+  fun submit(submittedBy: CommunityOffenderManager) {
+    this.statusCode = LicenceStatus.SUBMITTED
+    this.submittedBy = submittedBy
+    this.updatedByUsername = submittedBy.username
+    this.submittedDate = LocalDateTime.now()
+    this.dateLastUpdated = LocalDateTime.now()
+    this.updatedBy = submittedBy
+  }
 
   fun updateCurfewTimes(
     updatedCurfewTimes: List<HdcCurfewTimes>,
