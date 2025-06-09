@@ -40,7 +40,7 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
-  integration-test:
+  integration-test-in-ram:
         machine: true
         environment:
           POSTGRES_VERSION: "17.5"
@@ -94,14 +94,12 @@ jobs:
           - save_cache:
               paths:
                 - ~/.gradle
-                - ~/.gradle/caches
-                - ~/.gradle/wrapper
               key: gradle-{{ checksum "build.gradle.kts" }}
           - store_test_results:
               path: build/test-results
           - store_artifacts:
               path: build/reports/tests
-  integration-test-old:
+  integration-test:
     executor:
       name: hmpps/java_localstack_postgres_with_db_name
       jdk_tag: << pipeline.parameters.java-version >>
@@ -161,7 +159,7 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-      - integration-test:
+      - integration-test-in-ram:
           filters:
             tags:
               ignore: /.*/
@@ -184,7 +182,7 @@ workflows:
                 - main
           requires:
             - validate
-            - integration-test
+            - integration-test-in-ram
             - build_docker
             - helm_lint
       - request-preprod-approval:
