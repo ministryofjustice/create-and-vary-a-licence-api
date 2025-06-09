@@ -40,7 +40,7 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
-  integration-test-in-ram:
+  integration-test:
         machine: true
         environment:
           POSTGRES_VERSION: << pipeline.parameters.postgres-version >>
@@ -120,7 +120,7 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-      - integration-test-in-ram:
+      - integration-test:
           filters:
             tags:
               ignore: /.*/
@@ -143,7 +143,7 @@ workflows:
                 - main
           requires:
             - validate
-            - integration-test-in-ram
+            - integration-test
             - build_docker
             - helm_lint
       - request-preprod-approval:
