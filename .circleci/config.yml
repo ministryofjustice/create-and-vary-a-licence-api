@@ -72,7 +72,7 @@ jobs:
       - run:
           name: Wait for services
           command: |
-            for i in {1..30}; do pg_isready -h localhost -p 5432 && break; sleep 1; done
+            for i in {1..30}; do pg_isready -h localhost -p 5433 && break; sleep 1; done
             for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
       - run:
           name: Run integration tests
