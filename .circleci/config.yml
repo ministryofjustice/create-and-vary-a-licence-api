@@ -15,6 +15,12 @@ parameters:
   postgres-version:
     type: string
     default: "17.5"
+  services:
+    type: string
+    default: "sns,sqs"
+  resource_class:
+    default: medium
+    type: string
 jobs:
   validate:
     executor:
