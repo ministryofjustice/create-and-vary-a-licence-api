@@ -30,7 +30,7 @@ parameters:
   postgres-db:
     type: string
     default: create-and-vary-a-licence-db
-  db_port:
+  postgres-port:
     type: integer
     default: 5433
 jobs:
@@ -101,7 +101,7 @@ jobs:
               -e POSTGRES_USER=<< pipeline.parameters.postgres-user >> \
               -e POSTGRES_DB=<< pipeline.parameters.postgres-db >> \
               --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
-              -p << pipeline.parameters.db-port >>:5432 \
+              -p << pipeline.parameters.postgres-port >>:5432 \
               postgres:<< pipeline.parameters.postgres-version >>
 
       - run:
