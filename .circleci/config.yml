@@ -51,8 +51,8 @@ jobs:
       postgres_password: cvl
       postgres_port: 5433
       services: "sns,sqs"
-    environment:
-      PGDATA: /dev/shm/pgdata  # RAM disk
+      environment:
+        PGDATA: /dev/shm/pgdata  # RAM disk
     steps:
       - checkout
       - restore_cache:
@@ -62,18 +62,10 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Set up PostgreSQL in /dev/shm
+          name: Prepare PGDATA in RAM
           command: |
-            # Stop default PostgreSQL instance
-            sudo service postgresql stop || true
-
-            # Create in-memory PGDATA
-            mkdir -p $PGDATA
-            chmod 700 $PGDATA
-
-            # Initialize and start PostgreSQL manually in RAM
-            sudo -u postgres initdb -D $PGDATA
-            sudo -u postgres pg_ctl -D $PGDATA -o "-F -p 5433" -w start
+            sudo mkdir -p $PGDATA
+            sudo chown -R circleci $PGDATA
       - run:
           name: Create Docker network
           command: docker network create test-net
