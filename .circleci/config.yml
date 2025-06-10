@@ -12,15 +12,27 @@ parameters:
   localstack-version:
     type: string
     default: "3.0.2"
-  postgres-version:
-    type: string
-    default: "17.5"
   services:
     type: string
     default: "sns,sqs"
-  resource_class:
-    default: medium
+  docker-resource-class:
     type: string
+    default: medium
+  postgres-version:
+    type: string
+    default: "17.5"
+  postgres-password:
+    type: string
+    default: cvl
+  postgres-user:
+    type: string
+    default: cvl
+  postgres-db:
+    type: string
+    default: create-and-vary-a-licence-db
+  db_port:
+    type: string
+    default: 5433
 jobs:
   validate:
     executor:
@@ -58,18 +70,14 @@ jobs:
           AWS_EXECUTION_ENV: true
           PERSISTENCE: 1
     environment:
-      POSTGRES_PASSWORD: cvl
-      POSTGRES_USER: cvl
-      POSTGRES_DB: create-and-vary-a-licence-db
-      PGPORT: 5433
       _JAVA_OPTIONS: >-
-        -Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2
+        -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2
         -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
         -Dorg.gradle.daemon=false
         -Dkotlin.compiler.execution.strategy=in-process
         -Dorg.gradle.workers.max=1
     working_directory: ~/app
-    resource_class: << pipeline.parameters.resource_class >>
+    resource_class: << pipeline.parameters.docker-resource-class >>
     steps:
       - checkout
 
@@ -89,11 +97,11 @@ jobs:
             
             docker run -d \
               --name pg-tmpfs \
-              -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-              -e POSTGRES_USER=$POSTGRES_USER \
-              -e POSTGRES_DB=$POSTGRES_DB \
+              -e POSTGRES_PASSWORD=<< pipeline.parameters.postgres-password >> \
+              -e POSTGRES_USER=<< pipeline.parameters.postgres-user >> \
+              -e POSTGRES_DB=<< pipeline.parameters.postgres-db >> \
               --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
-              -p $PGPORT:5432 \
+              -p << pipeline.parameters.db-port >>:5432 \
               postgres:<< pipeline.parameters.postgres-version >>
 
       - run:
@@ -134,10 +142,10 @@ workflows:
             jdk_tag: << pipeline.parameters.java-version >>
             localstack_tag: << pipeline.parameters.localstack-version >>
             postgres_tag: << pipeline.parameters.postgres-version >>
-            database_name: create-and-vary-a-licence-db
-            user: cvl
-            password: cvl
-            port: 5433
+            database_name: << pipeline.parameters.postgres-db >>
+            user: << pipeline.parameters.postgres-user >>
+            password: << pipeline.parameters.postgres-password >>
+            port: << pipeline.parameters.db_port >>
             initialise_database: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" initialiseDatabase
             filters:
               branches:
