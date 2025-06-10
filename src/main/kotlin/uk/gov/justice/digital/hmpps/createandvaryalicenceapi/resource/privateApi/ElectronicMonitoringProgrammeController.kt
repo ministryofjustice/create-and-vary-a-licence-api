@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ElectronicMonitoringResponseService
 
 @RestController
 @RequestMapping("/licence", produces = [MediaType.APPLICATION_JSON_VALUE])
 class ElectronicMonitoringProgrammeController(
-  private val licenceConditionService: LicenceConditionService,
+  private val electronicMonitoringResponseService: ElectronicMonitoringResponseService,
 ) {
 
   @Tag(name = Tags.ELECTRONIC_MONITORING_PROGRAMME)
@@ -86,5 +86,5 @@ class ElectronicMonitoringProgrammeController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     body: UpdateElectronicMonitoringProgrammeRequest,
-  ) = licenceConditionService.updateElectronicMonitoringProgramme(licenceId, body)
+  ) = electronicMonitoringResponseService.updateElectronicMonitoringProgramme(licenceId, body)
 }

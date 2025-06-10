@@ -102,6 +102,10 @@ class LicencePolicyService(
     .find { it.code == conditionCode }
     ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
 
+  fun getConditionsRequiringElectronicMonitoringResponse(version: String, conditionCodes: List<String>): List<IAdditionalCondition> = policyByVersion(version)
+    .additionalConditions.ap
+    .filter { it.requiresElectronicMonitoringResponse && conditionCodes.contains(it.code) }
+
   fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == PSS) {
     emptyList()
   } else {

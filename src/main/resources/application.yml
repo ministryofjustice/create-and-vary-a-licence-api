@@ -154,4 +154,7 @@ dpr:
     user:
       role: ROLE_NOMIS_BATCHLOAD
 
+feature:
+  toggle:
+    electronicMonitoringResponseHandling: true
 
