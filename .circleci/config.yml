@@ -50,7 +50,6 @@ jobs:
     environment:
       LOCALSTACK_VERSION: << pipeline.parameters.localstack-version >>
       LOCALSTACK_SERVICES: "sqs,sns"
-      PGDATA: /dev/shm/pgdata  # RAM disk
     steps:
       - checkout
 
@@ -60,15 +59,19 @@ jobs:
             - gradle-cache-
 
       - setup_remote_docker:
+
       - run:
-          name: Prepare PGDATA in RAM
+          name: Prepare PostgreSQL to use RAM disk
           command: |
-            sudo mkdir -p $PGDATA
-            sudo chown -R circleci $PGDATA
+            sudo service postgresql stop || true
+            sudo mkdir -p /dev/shm/pgdata
+            sudo chown -R circleci /dev/shm/pgdata
+            initdb -D /dev/shm/pgdata
+            pg_ctl -D /dev/shm/pgdata -o "-F -p 5432" -w start
 
       - run:
           name: Create Docker network
-          command: docker network create test-net
+          command: docker network create test-net || true
 
       - run:
           name: Start LocalStack
