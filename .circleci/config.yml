@@ -42,7 +42,7 @@ jobs:
           path: build/reports/jacoco
   integration-test:
     docker:
-      - image: cimg/postgres:17.5.0
+      - image: postgres:17.5.0
         environment:
           POSTGRES_DB: create-and-vary-a-licence-db
           POSTGRES_USER: cvl
