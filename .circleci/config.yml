@@ -47,10 +47,10 @@ jobs:
           POSTGRES_DB: create-and-vary-a-licence-db
           POSTGRES_USER: cvl
           POSTGRES_PASSWORD: cvl
-          PGDATA: /dev/shm/pgdata  # RAM disk
     environment:
       LOCALSTACK_VERSION: << pipeline.parameters.localstack-version >>
       LOCALSTACK_SERVICES: "sqs,sns"
+      PGDATA: /dev/shm/pgdata  # RAM disk
     steps:
       - checkout
 
