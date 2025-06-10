@@ -48,7 +48,7 @@ object PostgresContainer {
     true
   }
 
-  fun setPostgresContainerProperties(instance:  PostgreSQLContainer<Nothing>?, registry: DynamicPropertyRegistry) {
+  fun setPostgresContainerProperties(instance: PostgreSQLContainer<Nothing>?, registry: DynamicPropertyRegistry) {
     val url = instance?.let { instance.jdbcUrl } ?: DB_DEFAULT_URL
     IntegrationTestBase.log.info("Using TestContainers?: ${instance != null}, DB url: $url")
     registry.add("spring.datasource.url") { url }
