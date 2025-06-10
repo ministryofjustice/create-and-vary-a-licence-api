@@ -75,11 +75,13 @@ jobs:
             for i in {1..30}; do pg_isready -h localhost -p 5433 && break; sleep 1; done
             for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
       - run:
-          name: Verify RAM disk setup
+          name: Verify RAM-based PostgreSQL initialized
           command: |
-            echo "PGDATA: $PGDATA"
-            mount | grep /dev/shm || echo "/dev/shm not mounted"
-            df -h /dev/shm
+            if [ ! -f "$PGDATA/PG_VERSION" ]; then
+              echo "ERROR: PostgreSQL not initialized in RAM disk."
+              exit 1
+            fi
+            echo "PostgreSQL successfully initialized in RAM at $PGDATA"
             ls -lh $PGDATA
       - run:
           name: Run integration tests
