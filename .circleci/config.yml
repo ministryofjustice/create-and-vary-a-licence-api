@@ -82,16 +82,15 @@ jobs:
           command: |
             docker stop pg-tmpfs || true
             docker rm pg-tmpfs || true
-
+      
             docker run -d \
-              --name pg-tmpfs \
-              --network container:$(hostname) \
-              -e POSTGRES_PASSWORD=cvl \
-              -e POSTGRES_USER=cvl \
-              -e POSTGRES_DB=create-and-vary-a-licence-db \
-              --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
-              -p 5433:5432 \
-              postgres:17.5
+            --name pg-tmpfs \
+            -e POSTGRES_PASSWORD=cvl \
+            -e POSTGRES_USER=cvl \
+            -e POSTGRES_DB=create-and-vary-a-licence-db \
+            --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
+            -p 5433:5432 \
+            postgres:17.5
 
       - run:
           name: Wait for services
