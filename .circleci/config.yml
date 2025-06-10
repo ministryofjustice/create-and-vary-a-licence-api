@@ -31,7 +31,7 @@ parameters:
     type: string
     default: create-and-vary-a-licence-db
   db_port:
-    type: string
+    type: integer
     default: 5433
 jobs:
   validate:
