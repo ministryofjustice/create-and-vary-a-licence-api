@@ -1,27 +1,36 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   security:
     oauth2:
       resourceserver:
         jwt:
           public-key-location: classpath:local-public-key.pub
+  server:
+    tomcat:
+      threads:
+        max: 50
 
   datasource:
-    url: 'jdbc:h2:mem:licences-db;MODE=PostgreSQL;DB_CLOSE_DELAY=-1'
-    username: create_vary
-    password: dummy
+    hikari:
+      pool-name: CVL-CP
+      maximum-pool-size: 4
+      minimum-idle: 0
+      idle-timeout: 10000           # 10 seconds
+      max-lifetime: 30000           # 30 seconds
+      connection-timeout: 2000      # 2 seconds
+      validation-timeout: 1000      # 1 second
+      initialization-fail-timeout: 0
 
   flyway:
-    locations: classpath:/migration/common
-    url: ${spring.datasource.url}
-    user: create_vary
-    password: dummy
-
-  h2:
-    console:
-      enabled: true
+    locations: classpath:/migration/common,/migration/{vendor}
 
   jpa:
     show-sql: true
+    open-in-view: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
 
   sql:
     init:
