@@ -42,22 +42,20 @@ jobs:
           path: build/reports/jacoco
   integration-test:
     docker:
-      - image: cimg/openjdk:21.0
-      - image: localstack/localstack:3.0.2
+      - image: cimg/openjdk:<< pipeline.parameters.java-version >>
+      - image: localstack/localstack:<< pipeline.parameters.localstack-version >>
         environment:
-          SERVICES: "sns,sqs"
+          SERVICES: << pipeline.parameters.services >>
           ES_PORT_EXTERNAL: 4571
           DEBUG: ${DEBUG- }
           DOCKER_HOST: unix:///var/run/docker.sock
           AWS_EXECUTION_ENV: true
           PERSISTENCE: 1
-      - image: postgres:17.5
-        environment:
-          POSTGRES_PASSWORD: cvl
-          POSTGRES_USER: cvl
-          POSTGRES_DB: create-and-vary-a-licence-db
-          PGPORT: 5433
     environment:
+      POSTGRES_PASSWORD: cvl
+      POSTGRES_USER: cvl
+      POSTGRES_DB: create-and-vary-a-licence-db
+      PGPORT: 5433
       _JAVA_OPTIONS: >-
         -Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2
         -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
@@ -65,7 +63,7 @@ jobs:
         -Dkotlin.compiler.execution.strategy=in-process
         -Dorg.gradle.workers.max=1
     working_directory: ~/app
-    resource_class: medium
+    resource_class: << pipeline.parameters.resource_class >>
     steps:
       - checkout
 
@@ -82,27 +80,31 @@ jobs:
           command: |
             docker stop pg-tmpfs || true
             docker rm pg-tmpfs || true
-      
+            
             docker run -d \
-            --name pg-tmpfs \
-            -e POSTGRES_PASSWORD=cvl \
-            -e POSTGRES_USER=cvl \
-            -e POSTGRES_DB=create-and-vary-a-licence-db \
-            --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
-            -p 5433:5432 \
-            postgres:17.5
+              --name pg-tmpfs \
+              -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+              -e POSTGRES_USER=$POSTGRES_USER \
+              -e POSTGRES_DB=$POSTGRES_DB \
+              --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
+              -p $PGPORT:5432 \
+              postgres:<< pipeline.parameters.postgres-version >>
 
       - run:
-          name: Wait for services
+          name: Wait for PostgreSQL
           command: |
-            for i in {1..30}; do pg_isready -h localhost -p 5433 && break; sleep 1; done
-            for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
+            for i in {1..30}; do pg_isready -h localhost -p $PGPORT && break; sleep 1; done
 
       - run:
           name: Confirm PostgreSQL is in RAM
           command: |
             docker exec pg-tmpfs mount | grep /var/lib/postgresql/data
             docker exec pg-tmpfs df -h /var/lib/postgresql/data
+
+      - run:
+          name: Wait for LocalStack
+          command: |
+            for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
 
       - run:
           name: Run integration tests
