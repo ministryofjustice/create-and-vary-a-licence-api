@@ -92,8 +92,10 @@ jobs:
       - run:
           name: Start PostgreSQL in RAM using tmpfs
           command: |
-            docker stop pg-tmpfs || true
-            docker rm pg-tmpfs || true
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^pg-tmpfs$'; then
+                docker stop pg-tmpfs
+                docker rm pg-tmpfs
+            fi
             
             docker run -d \
               --name pg-tmpfs \

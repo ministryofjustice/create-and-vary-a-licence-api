@@ -29,9 +29,7 @@ import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.DB_DEFAULT_URL
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.DB_PASSWORD
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.DB_USERNAME
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
@@ -126,17 +124,7 @@ abstract class IntegrationTestBase {
     @DynamicPropertySource
     fun containers(registry: DynamicPropertyRegistry) {
       localStackContainer?.also { setLocalStackProperties(it, registry) }
-
-      val url = postgresContainer?.let { postgresContainer.jdbcUrl } ?: DB_DEFAULT_URL
-      log.info("Using TestContainers?: ${postgresContainer != null}, DB url: $url")
-      registry.add("spring.datasource.url") { url }
-      registry.add("spring.datasource.username") { DB_USERNAME }
-      registry.add("spring.datasource.password") { DB_PASSWORD }
-      registry.add("spring.flyway.url") { url }
-      registry.add("spring.flyway.user") { DB_USERNAME }
-      registry.add("spring.flyway.password") { DB_PASSWORD }
-      registry.add("spring.datasource.placeholders.database_update_password") { DB_PASSWORD }
-      registry.add("spring.datasource.placeholders.database_read_only_password") { DB_USERNAME }
+      postgresContainer?.also { setPostgresContainerProperties(it, registry) }
     }
   }
 }
