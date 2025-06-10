@@ -41,57 +41,82 @@ jobs:
       - store_artifacts:
           path: build/reports/jacoco
   integration-test:
-    executor:
-      name: hmpps/java_localstack_postgres_with_db_name
-      jdk_tag: << pipeline.parameters.java-version >>
-      localstack_tag: << pipeline.parameters.localstack-version >>
-      postgres_tag: << pipeline.parameters.postgres-version >>
-      postgres_db: create-and-vary-a-licence-db
-      postgres_username: cvl
-      postgres_password: cvl
-      postgres_port: 5433
-      services: "sns,sqs"
-      environment:
-        PGDATA: /dev/shm/pgdata  # RAM disk
+    docker:
+      - image: cimg/openjdk:21.0
+      - image: localstack/localstack:3.0.2
+        environment:
+          SERVICES: "sns,sqs"
+          ES_PORT_EXTERNAL: 4571
+          DEBUG: ${DEBUG- }
+          DOCKER_HOST: unix:///var/run/docker.sock
+          AWS_EXECUTION_ENV: true
+          PERSISTENCE: 1
+      - image: postgres:17.5
+        environment:
+          POSTGRES_PASSWORD: cvl
+          POSTGRES_USER: cvl
+          POSTGRES_DB: create-and-vary-a-licence-db
+          PGPORT: 5433
+    environment:
+      _JAVA_OPTIONS: >-
+        -Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2
+        -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+        -Dorg.gradle.daemon=false
+        -Dkotlin.compiler.execution.strategy=in-process
+        -Dorg.gradle.workers.max=1
+    working_directory: ~/app
+    resource_class: medium
     steps:
       - checkout
+
       - restore_cache:
           keys:
             - gradle-cache-{{ checksum "build.gradle.kts" }}
             - gradle-cache-
+
       - setup_remote_docker:
           docker_layer_caching: true
+
       - run:
-          name: Prepare PGDATA in RAM
+          name: Start PostgreSQL in RAM using tmpfs
           command: |
-            sudo mkdir -p $PGDATA
-            sudo chown -R circleci $PGDATA
-      - run:
-          name: Create Docker network
-          command: docker network create test-net
+            docker stop pg-tmpfs || true
+            docker rm pg-tmpfs || true
+
+            docker run -d \
+              --name pg-tmpfs \
+              --network container:$(hostname) \
+              -e POSTGRES_PASSWORD=cvl \
+              -e POSTGRES_USER=cvl \
+              -e POSTGRES_DB=create-and-vary-a-licence-db \
+              --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
+              -p 5433:5432 \
+              postgres:17.5
+
       - run:
           name: Wait for services
           command: |
             for i in {1..30}; do pg_isready -h localhost -p 5433 && break; sleep 1; done
             for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
+
       - run:
-          name: Verify RAM-based PostgreSQL initialized
+          name: Confirm PostgreSQL is in RAM
           command: |
-            if [ ! -f "$PGDATA/PG_VERSION" ]; then
-              echo "ERROR: PostgreSQL not initialized in RAM disk."
-              exit 1
-            fi
-            echo "PostgreSQL successfully initialized in RAM at $PGDATA"
-            ls -lh $PGDATA
+            docker exec pg-tmpfs mount | grep /var/lib/postgresql/data
+            docker exec pg-tmpfs df -h /var/lib/postgresql/data
+
       - run:
           name: Run integration tests
           command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
+
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle.kts" }}
+
       - store_test_results:
           path: build/test-results
+
       - store_artifacts:
           path: build/reports/tests
 workflows:
