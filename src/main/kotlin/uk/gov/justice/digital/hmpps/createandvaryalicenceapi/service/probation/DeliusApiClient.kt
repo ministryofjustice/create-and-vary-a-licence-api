@@ -73,7 +73,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
         else -> Mono.error(it)
       }
     }
-    .block() ?: error("Unexpected null response from API")
+    .block()
 
   fun getOffenderManagers(
     crnsOrNomisIds: List<String>,

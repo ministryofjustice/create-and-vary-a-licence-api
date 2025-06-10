@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEven
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
@@ -57,5 +59,18 @@ class ComAllocatedHandlerTest {
         probationTeamDescription = offenderManager.team.description,
       ),
     )
+  }
+
+  @Test
+  fun `should stop processing if offender manager can't be found`() {
+    val crn = "X666322"
+
+    whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(null)
+
+    handler.processComAllocation(crn)
+
+    verify(deliusApiClient, never()).assignDeliusRole(any())
+    verifyNoInteractions(staffService)
+    verifyNoInteractions(offenderService)
   }
 }

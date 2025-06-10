@@ -78,6 +78,7 @@
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>NestedBlockDepth:OsPlacesMapperToAddressSearchResponseMapper.kt$OsPlacesMapperToAddressSearchResponseMapper$private fun getAddressFirstLine(deliveryPointAddress: DeliveryPointAddress): Pair&lt;String, Boolean&gt;</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
+    <ID>ReturnCount:ComAllocatedHandler.kt$ComAllocatedHandler$fun processComAllocation(crn: String?)</ID>
     <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:ExclusionZoneService.kt$ExclusionZoneService$fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray?</ID>
     <ID>ReturnCount:LsdRecalculationService.kt$LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long</ID>
@@ -90,11 +91,8 @@
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
     <ID>TooManyFunctions:ComCaseloadService.kt$ComCaseloadService</ID>
     <ID>TooManyFunctions:ControllerAdvice.kt$ControllerAdvice</ID>
-    <ID>TooManyFunctions:CrdLicence.kt$CrdLicence : Licence</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt$DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt$EligibilityService</ID>
-    <ID>TooManyFunctions:HardStopLicence.kt$HardStopLicence : Licence</ID>
-    <ID>TooManyFunctions:HdcLicence.kt$HdcLicence : LicenceHdcCase</ID>
     <ID>TooManyFunctions:JPASpecificationDSL.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.kotlinjpaspecificationdsl.JPASpecificationDSL.kt</ID>
     <ID>TooManyFunctions:Licence.kt$Licence : SentenceDateHolder</ID>
     <ID>TooManyFunctions:LicenceConditionService.kt$LicenceConditionService</ID>

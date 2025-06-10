@@ -22,11 +22,19 @@ class ComAllocatedHandler(
   fun processComAllocation(crn: String?) {
     if (crn == null) return
 
+    log.info("processing COM allocation for CRN $crn")
     val offenderManager = deliusApiClient.getOffenderManager(crn)
-    log.info("responsible offender manager code for crn $crn is ${offenderManager?.code}")
+    if (offenderManager == null) {
+      log.warn("Could not find offender manager for CRN $crn")
+      return
+    }
 
     // If the COM does not have a username, they are assumed to be ineligible for use of this service. (e.g. the "unallocated" staff members)
-    if (offenderManager?.username == null) return
+    log.info("responsible offender manager code for crn $crn is ${offenderManager.code}")
+    if (offenderManager.username == null) {
+      log.warn("offender manager with code ${offenderManager.code} does not have a username")
+      return
+    }
 
     // Assign the com role to the user if they do not have it already
     deliusApiClient.assignDeliusRole(offenderManager.username.trim().uppercase())
