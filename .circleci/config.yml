@@ -40,70 +40,70 @@ jobs:
           path: build/reports/tests
       - store_artifacts:
           path: build/reports/jacoco
-integration-test:
-  docker:
-    - image: cimg/postgres:17.5.0
-      environment:
-        POSTGRES_DB: create-and-vary-a-licence-db
-        POSTGRES_USER: cvl
-        POSTGRES_PASSWORD: cvl
-        PGDATA: /dev/shm/pgdata  # RAM disk
-  environment:
-    LOCALSTACK_VERSION: << pipeline.parameters.localstack-version >>
-    LOCALSTACK_SERVICES: "sqs,sns"
-  steps:
-    - checkout
+  integration-test:
+    docker:
+      - image: cimg/postgres:17.5.0
+        environment:
+          POSTGRES_DB: create-and-vary-a-licence-db
+          POSTGRES_USER: cvl
+          POSTGRES_PASSWORD: cvl
+          PGDATA: /dev/shm/pgdata  # RAM disk
+    environment:
+      LOCALSTACK_VERSION: << pipeline.parameters.localstack-version >>
+      LOCALSTACK_SERVICES: "sqs,sns"
+    steps:
+      - checkout
 
-    - restore_cache:
-        keys:
-          - gradle-cache-{{ checksum "build.gradle.kts" }}
-          - gradle-cache-
+      - restore_cache:
+          keys:
+            - gradle-cache-{{ checksum "build.gradle.kts" }}
+            - gradle-cache-
 
-    - setup_remote_docker:
-        version: 20.10.18
+      - setup_remote_docker:
+          version: 20.10.18
 
-    - run:
-        name: Prepare PGDATA in RAM
-        command: |
-          sudo mkdir -p $PGDATA
-          sudo chown -R circleci $PGDATA
+      - run:
+          name: Prepare PGDATA in RAM
+          command: |
+            sudo mkdir -p $PGDATA
+            sudo chown -R circleci $PGDATA
 
-    - run:
-        name: Create Docker network
-        command: docker network create test-net
+      - run:
+          name: Create Docker network
+          command: docker network create test-net
 
-    - run:
-        name: Start LocalStack
-        command: |
-          docker run -d \
-            --rm \
-            --name localstack \
-            --network test-net \
-            -e SERVICES=$LOCALSTACK_SERVICES \
-            -e DEFAULT_REGION=eu-west-2 \
-            -p 4566:4566 \
-            localstack/localstack:$LOCALSTACK_VERSION
+      - run:
+          name: Start LocalStack
+          command: |
+            docker run -d \
+              --rm \
+              --name localstack \
+              --network test-net \
+              -e SERVICES=$LOCALSTACK_SERVICES \
+              -e DEFAULT_REGION=eu-west-2 \
+              -p 4566:4566 \
+              localstack/localstack:$LOCALSTACK_VERSION
 
-    - run:
-        name: Wait for services
-        command: |
-          for i in {1..30}; do pg_isready -h localhost -p 5432 && break; sleep 1; done
-          for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
+      - run:
+          name: Wait for services
+          command: |
+            for i in {1..30}; do pg_isready -h localhost -p 5432 && break; sleep 1; done
+            for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
 
-    - run:
-        name: Run integration tests
-        command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
+      - run:
+          name: Run integration tests
+          command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
 
-    - save_cache:
-        paths:
-          - ~/.gradle
-        key: gradle-{{ checksum "build.gradle.kts" }}
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle.kts" }}
 
-    - store_test_results:
-        path: build/test-results
+      - store_test_results:
+          path: build/test-results
 
-    - store_artifacts:
-        path: build/reports/tests
+      - store_artifacts:
+          path: build/reports/tests
 workflows:
   version: 2
   build-test-and-deploy:
