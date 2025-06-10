@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditServic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 
 @Service
-class ElectronicMonitoringResponseService(
+class ElectronicMonitoringProgrammeService(
   private val licenceRepository: LicenceRepository,
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,

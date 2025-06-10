@@ -40,7 +40,7 @@ class LicenceConditionService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  private val electronicMonitoringResponseService: ElectronicMonitoringResponseService,
+  private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
   @Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
   private val electronicMonitoringResponseHandlingEnabled: Boolean,
 ) {
@@ -107,7 +107,7 @@ class LicenceConditionService(
     )
 
     if (electronicMonitoringResponseHandlingEnabled) {
-      electronicMonitoringResponseService.handleElectronicMonitoringResponseRecords(licenceEntity)
+      electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
     }
 
     licenceRepository.saveAndFlush(licenceEntity)
@@ -172,7 +172,7 @@ class LicenceConditionService(
     )
 
     if (electronicMonitoringResponseHandlingEnabled) {
-      electronicMonitoringResponseService.handleElectronicMonitoringResponseRecords(licenceEntity)
+      electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
     }
     licenceRepository.saveAndFlush(licenceEntity)
 
@@ -361,7 +361,7 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
     if (electronicMonitoringResponseHandlingEnabled) {
-      electronicMonitoringResponseService.handleElectronicMonitoringResponseRecords(licenceEntity)
+      electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
     }
     licenceRepository.saveAndFlush(licenceEntity)
 
