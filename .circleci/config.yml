@@ -60,8 +60,6 @@ jobs:
             - gradle-cache-
 
       - setup_remote_docker:
-          version: 20.10.18
-
       - run:
           name: Prepare PGDATA in RAM
           command: |
