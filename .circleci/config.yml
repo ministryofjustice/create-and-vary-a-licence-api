@@ -140,19 +140,6 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
-      - hmpps/database_schema_report:
-            jdk_tag: << pipeline.parameters.java-version >>
-            localstack_tag: << pipeline.parameters.localstack-version >>
-            postgres_tag: << pipeline.parameters.postgres-version >>
-            database_name: << pipeline.parameters.postgres-db >>
-            user: << pipeline.parameters.postgres-user >>
-            password: << pipeline.parameters.postgres-password >>
-            port: << pipeline.parameters.postgres-port >>
-            initialise_database: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" initialiseDatabase
-            filters:
-              branches:
-                only:
-                  - main
       - validate:
           filters:
             tags:
