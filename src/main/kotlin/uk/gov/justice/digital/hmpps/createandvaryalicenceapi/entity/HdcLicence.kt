@@ -403,7 +403,7 @@ class HdcLicence(
     "versionOfId=$versionOfId, " +
     "licenceVersion=$licenceVersion, " +
     "updatedBy=$updatedBy, " +
-    "curfewAddress=$curfewAddress" +
+    "curfewAddress=$curfewAddress, " +
     "electronicMonitoringProvider=$electronicMonitoringProvider" +
     ")"
 

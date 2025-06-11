@@ -776,6 +776,88 @@ class LicenceConditionServiceTest {
     }
   }
 
+  @Nested
+  inner class `feature flag electronicMonitoringResponseHandlingEnabled` {
+    @BeforeEach
+    fun setup() {
+      whenever(licenceRepository.findById(1L))
+        .thenReturn(
+          Optional.of(
+            aLicenceEntity.copy(
+              additionalConditions = listOf(
+                additionalCondition(1),
+                additionalCondition(3).copy(
+                  conditionCode = "code3",
+                  conditionSequence = 6,
+                  additionalConditionData = someDifferentAdditionalConditionData,
+                ),
+              ),
+            ),
+          ),
+        )
+      whenever(policyService.getAllAdditionalConditions()).thenReturn(
+        AllAdditionalConditions(mapOf("1.0" to mapOf(policyApCondition.code to policyApCondition))),
+      )
+      whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+    }
+
+    @Test
+    fun `should handle electronic monitoring response when feature flag is enabled`() {
+      val request = AddAdditionalConditionRequest(
+        conditionCode = "code",
+        conditionCategory = "category",
+        conditionText = "text",
+        sequence = 7,
+        conditionType = "AP",
+        expandedText = "Hello",
+      )
+
+      val serviceWithFlagEnabled = LicenceConditionService(
+        licenceRepository,
+        additionalConditionRepository,
+        bespokeConditionRepository,
+        additionalConditionUploadDetailRepository,
+        conditionFormatter,
+        policyService,
+        auditService,
+        staffRepository,
+        electronicMonitoringProgrammeService,
+        electronicMonitoringResponseHandlingEnabled = true, // Feature flag enabled
+      )
+      serviceWithFlagEnabled.addAdditionalCondition(1L, request)
+
+      verify(electronicMonitoringProgrammeService, times(1)).handleElectronicMonitoringResponseRecords(any())
+    }
+
+    @Test
+    fun `should not handle electronic monitoring response when feature flag is disabled`() {
+      val request = AddAdditionalConditionRequest(
+        conditionCode = "code",
+        conditionCategory = "category",
+        conditionText = "text",
+        sequence = 7,
+        conditionType = "AP",
+        expandedText = "Hello",
+      )
+
+      val serviceWithFlagEnabled = LicenceConditionService(
+        licenceRepository,
+        additionalConditionRepository,
+        bespokeConditionRepository,
+        additionalConditionUploadDetailRepository,
+        conditionFormatter,
+        policyService,
+        auditService,
+        staffRepository,
+        electronicMonitoringProgrammeService,
+        electronicMonitoringResponseHandlingEnabled = false, // Feature flag enabled
+      )
+      serviceWithFlagEnabled.addAdditionalCondition(1L, request)
+
+      verify(electronicMonitoringProgrammeService, times(0)).handleElectronicMonitoringResponseRecords(any())
+    }
+  }
+
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
 

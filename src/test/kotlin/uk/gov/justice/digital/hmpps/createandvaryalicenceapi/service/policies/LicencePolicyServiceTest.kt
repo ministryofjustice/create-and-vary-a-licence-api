@@ -175,34 +175,6 @@ class LicencePolicyServiceTest {
       )
       assertThat(result).isEmpty()
     }
-
-//    @Test
-//    fun `returns conditions requiring electronic monitoring response`() {
-//      val policyApCondition = AdditionalConditionAp(
-//        code = "condition1",
-//        category = "category",
-//        text = "text",
-//        requiresInput = true,
-//        requiresElectronicMonitoringResponse = true
-//      )
-//      whenever(licencePolicyServiceMock.currentPolicy()).thenReturn(
-//        LicencePolicy(
-//          "3.0",
-//          standardConditions = StandardConditions(emptyList(), emptyList()),
-//          additionalConditions = AdditionalConditions(
-//            ap = listOf(policyApCondition),
-//            pss = emptyList(),
-//          ),
-//          changeHints = emptyList(),
-//        ),
-//      )
-//      whenever(licencePolicyServiceMock.policyByVersion("3.0")).thenReturn(aPolicy("3.0"))
-//      val result = licencePolicyServiceMock.getConditionsRequiringElectronicMonitoringResponse(
-//        version = "3.0",
-//        conditionCodes = listOf("condition1", "condition2", "condition3")
-//      )
-//      assertThat(result).isNotEmpty()
-//    }
   }
 
   private companion object
