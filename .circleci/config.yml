@@ -12,6 +12,27 @@ parameters:
   localstack-version:
     type: string
     default: "3.0.2"
+  services:
+    type: string
+    default: "sns,sqs"
+  docker-resource-class:
+    type: string
+    default: medium
+  postgres-version:
+    type: string
+    default: "17.5"
+  postgres-password:
+    type: string
+    default: cvl
+  postgres-user:
+    type: string
+    default: cvl
+  postgres-db:
+    type: string
+    default: create-and-vary-a-licence-db
+  postgres-port:
+    type: integer
+    default: 5433
 jobs:
   validate:
     executor:
@@ -38,25 +59,81 @@ jobs:
       - store_artifacts:
           path: build/reports/jacoco
   integration-test:
-    executor:
-      name: hmpps/localstack
-      jdk_tag: << pipeline.parameters.java-version >>
-      localstack_tag: << pipeline.parameters.localstack-version >>
-      services: "sns,sqs"
+    docker:
+      - image: cimg/openjdk:<< pipeline.parameters.java-version >>
+      - image: localstack/localstack:<< pipeline.parameters.localstack-version >>
+        environment:
+          SERVICES: << pipeline.parameters.services >>
+          ES_PORT_EXTERNAL: 4571
+          DEBUG: ${DEBUG- }
+          DOCKER_HOST: unix:///var/run/docker.sock
+          AWS_EXECUTION_ENV: true
+          PERSISTENCE: 1
+    environment:
+      _JAVA_OPTIONS: >-
+        -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2
+        -Djava.util.concurrent.ForkJoinPool.common.parallelism=2
+        -Dorg.gradle.daemon=false
+        -Dkotlin.compiler.execution.strategy=in-process
+        -Dorg.gradle.workers.max=1
+    working_directory: ~/app
+    resource_class: << pipeline.parameters.docker-resource-class >>
     steps:
       - checkout
+
       - restore_cache:
           keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
-            - gradle-
+            - gradle-cache-{{ checksum "build.gradle.kts" }}
+            - gradle-cache-
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
       - run:
+          name: Start PostgreSQL in RAM using tmpfs
+          command: |
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^pg-tmpfs$'; then
+                docker stop pg-tmpfs
+                docker rm pg-tmpfs
+            fi
+            
+            docker run -d \
+              --name pg-tmpfs \
+              -e POSTGRES_PASSWORD=<< pipeline.parameters.postgres-password >> \
+              -e POSTGRES_USER=<< pipeline.parameters.postgres-user >> \
+              -e POSTGRES_DB=<< pipeline.parameters.postgres-db >> \
+              --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=512m \
+              -p << pipeline.parameters.postgres-port >>:5432 \
+              postgres:<< pipeline.parameters.postgres-version >>
+
+      - run:
+          name: Wait for PostgreSQL
+          command: |
+            for i in {1..30}; do pg_isready -h localhost -p $PGPORT && break; sleep 1; done
+
+      - run:
+          name: Confirm PostgreSQL is in RAM
+          command: |
+            docker exec pg-tmpfs mount | grep /var/lib/postgresql/data
+            docker exec pg-tmpfs df -h /var/lib/postgresql/data
+
+      - run:
+          name: Wait for LocalStack
+          command: |
+            for i in {1..30}; do nc -z localhost 4566 && break; sleep 1; done
+
+      - run:
+          name: Run integration tests
           command: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" integrationTest
+
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle.kts" }}
+
       - store_test_results:
           path: build/test-results
+
       - store_artifacts:
           path: build/reports/tests
 workflows:
