@@ -33,6 +33,8 @@ interface LicenceRepository :
     kind: List<LicenceKind>,
   ): List<Licence>
 
+  fun findAllByCrnInAndStatusCodeIn(crn: List<String>, status: List<LicenceStatus>): List<Licence>
+
   @Query(
     """
     SELECT l.bookingId
