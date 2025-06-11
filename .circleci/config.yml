@@ -148,12 +148,12 @@ workflows:
             user: << pipeline.parameters.postgres-user >>
             password: << pipeline.parameters.postgres-password >>
             port: << pipeline.parameters.postgres-port >>
+            initialise_database: "./gradlew initialiseDatabase"
             environment:
               DB_SERVER: localhost
               DB_NAME: << pipeline.parameters.postgres-db >>
               DB_USER: << pipeline.parameters.postgres-user >>
               DB_PASSWORD: << pipeline.parameters.postgres-password >>
-            initialise_database: "./gradlew initialiseDatabase"
       - validate:
           filters:
             tags:
