@@ -5,6 +5,7 @@ import org.assertj.core.groups.Tuple
 import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -22,10 +23,18 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 
 private const val CONDITION_CODE = "db2d7e24-b130-4c7e-a1bf-6bb5f3036c02"
 
+private const val EM_CONDITION_CODE = "fd129172-bdd3-4d97-a4a0-efd7b47a49d4"
+
 class LicenceConditionIntegrationTest : IntegrationTestBase() {
+
+  @BeforeEach
+  fun reset() {
+    govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+  }
 
   @Autowired
   lateinit var licenceRepository: LicenceRepository
@@ -125,11 +134,74 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .containsAll(
         listOf(
           tuple(CONDITION_CODE, "category", "text", 0),
-          tuple(CONDITION_CODE, "category", "text", 1),
+          tuple(EM_CONDITION_CODE, "category", "text", 1),
           tuple(CONDITION_CODE, "category", "text", 2),
           tuple(CONDITION_CODE, "category", "text", 3),
         ),
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-5.sql",
+  )
+  fun `initialise electronic monitoring provider if not exists`() {
+    webTestClient.put()
+      .uri("/licence/id/1/additional-conditions")
+      .bodyValue(anAdditionalConditionsRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = licenceRepository.findById(1).get() as CrdLicence
+    assertThat(result.electronicMonitoringProvider)
+      .isNotNull
+      .extracting("isToBeTaggedForProgramme", "programmeName")
+      .containsExactly(null, null)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-6.sql",
+  )
+  fun `don't initialise electronic monitoring provider if exists`() {
+    webTestClient.put()
+      .uri("/licence/id/1/additional-conditions")
+      .bodyValue(anAdditionalConditionsRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = licenceRepository.findById(1).get() as CrdLicence
+    assertThat(result.electronicMonitoringProvider)
+      .isNotNull
+      .extracting("isToBeTaggedForProgramme", "programmeName")
+      .containsExactly(true, "Test Programme")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
+  fun `clear electronic monitoring provider`() {
+    val result = licenceRepository.findById(1).get() as CrdLicence
+    assertThat(result.electronicMonitoringProvider)
+      .isNotNull
+      .extracting("isToBeTaggedForProgramme", "programmeName")
+      .containsExactly(true, "Test Programme")
+
+    webTestClient.post()
+      .uri("/licence/id/1/additional-condition/AP")
+      .bodyValue(anAddAdditionalConditionRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result1 = licenceRepository.findById(1).get() as CrdLicence
+    assertThat(result1.electronicMonitoringProvider).isNull()
   }
 
   @Test
@@ -234,7 +306,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
     val anAdditionalConditionsRequest = AdditionalConditionsRequest(
       additionalConditions = listOf(
         AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 0, text = "text"),
-        AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 1, text = "text"),
+        AdditionalConditionRequest(code = EM_CONDITION_CODE, category = "category", sequence = 1, text = "text"),
         AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 2, text = "text"),
         AdditionalConditionRequest(code = CONDITION_CODE, category = "category", sequence = 3, text = "text"),
       ),

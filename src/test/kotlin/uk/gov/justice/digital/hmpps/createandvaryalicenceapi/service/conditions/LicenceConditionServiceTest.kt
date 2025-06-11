@@ -62,6 +62,7 @@ class LicenceConditionServiceTest {
   private val conditionFormatter = mock<ConditionFormatter>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
+  private val electronicMonitoringProgrammeService = mock<ElectronicMonitoringProgrammeService>()
 
   private val service = LicenceConditionService(
     licenceRepository,
@@ -72,6 +73,7 @@ class LicenceConditionServiceTest {
     policyService,
     auditService,
     staffRepository,
+    electronicMonitoringProgrammeService,
   )
 
   @BeforeEach
@@ -488,7 +490,7 @@ class LicenceConditionServiceTest {
         programmeName = "Programme Name",
       )
 
-      service.updateElectronicMonitoringProgramme(1L, request)
+      electronicMonitoringProgrammeService.updateElectronicMonitoringProgramme(1L, request)
 
       val licenceCaptor = ArgumentCaptor.forClass(CrdLicence::class.java)
 

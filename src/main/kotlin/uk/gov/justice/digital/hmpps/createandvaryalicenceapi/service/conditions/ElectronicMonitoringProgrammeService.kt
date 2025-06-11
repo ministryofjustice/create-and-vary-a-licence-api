@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProviderRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
@@ -22,6 +23,7 @@ class ElectronicMonitoringProgrammeService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
+  private val electronicMonitoringProviderRepository: ElectronicMonitoringProviderRepository,
 ) {
 
   @Transactional
@@ -51,6 +53,7 @@ class ElectronicMonitoringProgrammeService(
     auditService.recordAuditEventUpdateElectronicMonitoringProgramme(licenceEntity, request, staffMember)
   }
 
+  @Transactional
   fun handleElectronicMonitoringResponseRecords(licenceEntity: Licence) {
     val additionalApConditions = licenceEntity.additionalConditions.filter { it.conditionType == "AP" }
     val conditionsRequiringElectronicMonitoringResponse = licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(licenceEntity.version!!, additionalApConditions.map { it.conditionCode })
@@ -62,32 +65,47 @@ class ElectronicMonitoringProgrammeService(
     }
   }
 
-  private fun clearElectronicMonitoringProvider(licenceEntity: Licence) {
+  @Transactional
+  fun clearElectronicMonitoringProvider(licenceEntity: Licence) {
     LicenceConditionService.log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
     when (licenceEntity) {
-      is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
-      is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
-      else -> error("ElectronicMonitoringProvider can only be cleared for CrdLicence or HdcLicence")
+      is CrdLicence -> {
+        licenceEntity.electronicMonitoringProvider?.let {
+          electronicMonitoringProviderRepository.delete(it)
+        }
+        licenceEntity.electronicMonitoringProvider = null
+      }
+      is HdcLicence -> {
+        licenceEntity.electronicMonitoringProvider?.let {
+          electronicMonitoringProviderRepository.delete(it)
+        }
+        licenceEntity.electronicMonitoringProvider = null
+      }
     }
   }
 
-  private fun initialiseElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
+  @Transactional
+  fun initialiseElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
     when (licenceEntity) {
       is CrdLicence -> {
         if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = ElectronicMonitoringProvider(
-            licence = licenceEntity,
-            isToBeTaggedForProgramme = null,
-            programmeName = null,
+          licenceEntity.electronicMonitoringProvider = electronicMonitoringProviderRepository.saveAndFlush(
+            ElectronicMonitoringProvider(
+              licence = licenceEntity,
+              isToBeTaggedForProgramme = null,
+              programmeName = null,
+            ),
           )
         }
       }
       is HdcLicence -> {
         if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = ElectronicMonitoringProvider(
-            licence = licenceEntity,
-            isToBeTaggedForProgramme = null,
-            programmeName = null,
+          licenceEntity.electronicMonitoringProvider = electronicMonitoringProviderRepository.saveAndFlush(
+            ElectronicMonitoringProvider(
+              licence = licenceEntity,
+              isToBeTaggedForProgramme = null,
+              programmeName = null,
+            ),
           )
         }
       }

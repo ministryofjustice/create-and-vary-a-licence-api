@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.LicenceConditionService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ElectronicMonitoringProgrammeService
 
 @ExtendWith(SpringExtension::class)
 @ActiveProfiles("test")
@@ -33,7 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 class ElectronicMonitoringProgrammeControllerTest {
 
   @MockitoBean
-  private lateinit var licenceConditionService: LicenceConditionService
+  private lateinit var electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService
 
   @Autowired
   private lateinit var mvc: MockMvc
@@ -43,10 +43,10 @@ class ElectronicMonitoringProgrammeControllerTest {
 
   @BeforeEach
   fun reset() {
-    reset(licenceConditionService)
+    reset(electronicMonitoringProgrammeService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(ElectronicMonitoringProgrammeController(licenceConditionService))
+      .standaloneSetup(ElectronicMonitoringProgrammeController(electronicMonitoringProgrammeService))
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
@@ -62,6 +62,6 @@ class ElectronicMonitoringProgrammeControllerTest {
     )
       .andExpect(status().isOk)
 
-    verify(licenceConditionService, times(1)).updateElectronicMonitoringProgramme(1, request)
+    verify(electronicMonitoringProgrammeService, times(1)).updateElectronicMonitoringProgramme(1, request)
   }
 }

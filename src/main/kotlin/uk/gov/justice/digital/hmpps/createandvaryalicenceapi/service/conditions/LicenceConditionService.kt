@@ -42,7 +42,7 @@ class LicenceConditionService(
   private val staffRepository: StaffRepository,
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
   @Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
-  private val electronicMonitoringResponseHandlingEnabled: Boolean,
+  private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
 
   @Transactional
@@ -109,7 +109,6 @@ class LicenceConditionService(
     if (electronicMonitoringResponseHandlingEnabled) {
       electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
     }
-
     licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
@@ -171,11 +170,10 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
 
+    licenceRepository.saveAndFlush(licenceEntity)
     if (electronicMonitoringResponseHandlingEnabled) {
       electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
     }
-    licenceRepository.saveAndFlush(licenceEntity)
-
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
     removedConditions.forEach { oldCondition ->
       oldCondition.additionalConditionUploadSummary.forEach {

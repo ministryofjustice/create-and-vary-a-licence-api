@@ -156,5 +156,5 @@ dpr:
 
 feature:
   toggle:
-    electronicMonitoringResponseHandling: true
+    electronicMonitoringResponseHandling: false
 

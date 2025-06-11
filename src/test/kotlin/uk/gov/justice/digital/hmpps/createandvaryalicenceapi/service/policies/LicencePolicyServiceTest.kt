@@ -165,5 +165,45 @@ class LicencePolicyServiceTest {
     }
   }
 
+  @Nested
+  inner class `get conditions requiring electronic monitoring response` {
+    @Test
+    fun `returns empty list when no conditions require electronic monitoring response`() {
+      val result = licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(
+        version = "2.1",
+        conditionCodes = listOf("condition1", "condition3", "599bdcae-d545-461c-b1a9-02cb3d4ba268"),
+      )
+      assertThat(result).isEmpty()
+    }
+
+//    @Test
+//    fun `returns conditions requiring electronic monitoring response`() {
+//      val policyApCondition = AdditionalConditionAp(
+//        code = "condition1",
+//        category = "category",
+//        text = "text",
+//        requiresInput = true,
+//        requiresElectronicMonitoringResponse = true
+//      )
+//      whenever(licencePolicyServiceMock.currentPolicy()).thenReturn(
+//        LicencePolicy(
+//          "3.0",
+//          standardConditions = StandardConditions(emptyList(), emptyList()),
+//          additionalConditions = AdditionalConditions(
+//            ap = listOf(policyApCondition),
+//            pss = emptyList(),
+//          ),
+//          changeHints = emptyList(),
+//        ),
+//      )
+//      whenever(licencePolicyServiceMock.policyByVersion("3.0")).thenReturn(aPolicy("3.0"))
+//      val result = licencePolicyServiceMock.getConditionsRequiringElectronicMonitoringResponse(
+//        version = "3.0",
+//        conditionCodes = listOf("condition1", "condition2", "condition3")
+//      )
+//      assertThat(result).isNotEmpty()
+//    }
+  }
+
   private companion object
 }
