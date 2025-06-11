@@ -83,7 +83,6 @@ class ElectronicMonitoringProgrammeServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(CrdLicence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-      verify(auditService, times(1)).recordAuditEventUpdateElectronicMonitoringProgramme(any(), any(), any())
 
       assertThat(licenceCaptor.value.electronicMonitoringProvider)
         .extracting("isToBeTaggedForProgramme", "programmeName")
@@ -116,7 +115,10 @@ class ElectronicMonitoringProgrammeServiceTest {
 
       service.handleElectronicMonitoringResponseRecords(licenceEntity)
 
-      assertThat(licenceEntity.electronicMonitoringProvider)
+      val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
+      verify(electronicMonitoringProviderRepository, times(1)).saveAndFlush(electronicMonitoringProviderCaptor.capture())
+
+      assertThat(electronicMonitoringProviderCaptor.value)
         .extracting("licence", "isToBeTaggedForProgramme", "programmeName")
         .containsExactly(
           licenceEntity,
@@ -139,7 +141,8 @@ class ElectronicMonitoringProgrammeServiceTest {
 
       service.handleElectronicMonitoringResponseRecords(licenceEntity)
 
-      assertThat(licenceEntity.electronicMonitoringProvider).isNull()
+      val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
+      verify(electronicMonitoringProviderRepository, times(1)).delete(electronicMonitoringProviderCaptor.capture())
     }
   }
 
