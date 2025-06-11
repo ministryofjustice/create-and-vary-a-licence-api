@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "Describes each additional condition on the licence policy")
-data class LicencePolicyAdditionalCondition(
+data class LicencePolicyAdditionalConditionPss(
 
   @Schema(description = "The additional condition's unique code", example = "5a105297-dce1-4d18-b9ea-4195b46b7594")
   val code: String,
