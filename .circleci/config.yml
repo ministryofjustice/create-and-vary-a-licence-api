@@ -148,11 +148,12 @@ workflows:
             user: << pipeline.parameters.postgres-user >>
             password: << pipeline.parameters.postgres-password >>
             port: << pipeline.parameters.postgres-port >>
-            initialise_database: ./gradlew -Dorg.gradle.jvmargs="--illegal-access=permit" -Dkotlin.daemon.jvm.options="--illegal-access=permit" initialiseDatabase
-            filters:
-              branches:
-                only:
-                  - main
+            environment:
+              DB_SERVER: localhost
+              DB_NAME: << pipeline.parameters.postgres-db >>
+              DB_USER: << pipeline.parameters.postgres-user >>
+              DB_PASSWORD: << pipeline.parameters.postgres-password >>
+            initialise_database: "./gradlew initialiseDatabase"
       - validate:
           filters:
             tags:
