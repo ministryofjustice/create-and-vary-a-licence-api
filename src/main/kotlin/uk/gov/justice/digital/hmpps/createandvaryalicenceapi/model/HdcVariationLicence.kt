@@ -270,7 +270,7 @@ data class HdcVariationLicence(
   @Schema(description = "The licence Id which this licence is a variation of")
   override val variationOf: Long? = null,
 
-  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   override val createdByFullName: String? = null,
 
   @Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")

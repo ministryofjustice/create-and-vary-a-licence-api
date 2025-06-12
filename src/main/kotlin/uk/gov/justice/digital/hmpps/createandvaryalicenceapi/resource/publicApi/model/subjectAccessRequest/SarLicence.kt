@@ -88,7 +88,7 @@ data class SarLicence(
   @Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<String> = emptyList(),
 
-  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   val createdByFullName: String?,
 
   @Schema(description = "The version number of this licence", example = "1.3")

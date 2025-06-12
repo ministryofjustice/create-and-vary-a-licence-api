@@ -257,7 +257,7 @@ sealed interface Licence {
   @get:Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<BespokeCondition>
 
-  @get:Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @get:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   val createdByFullName: String?
 
   @get:Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
