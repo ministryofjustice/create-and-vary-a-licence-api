@@ -244,7 +244,7 @@ data class CrdLicence(
   @Schema(description = "The list of bespoke conditions on this licence")
   override val bespokeConditions: List<BespokeCondition> = emptyList(),
 
-  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   override val createdByFullName: String? = null,
 
   @Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
