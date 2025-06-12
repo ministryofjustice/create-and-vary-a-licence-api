@@ -29,6 +29,7 @@ class ElectronicMonitoringProgrammeService(
   private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
 
+  @Transactional
   fun handleResponseIfEnabled(licence: Licence) {
     if (electronicMonitoringResponseHandlingEnabled) {
       handleElectronicMonitoringResponseRecords(licence)
