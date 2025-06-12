@@ -136,6 +136,54 @@ class ElectronicMonitoringProgrammeServiceTest {
     }
   }
 
+  @Nested
+  inner class `feature flag electronicMonitoringResponseHandlingEnabled` {
+
+    @Test
+    fun `should handle response when feature toggle is enabled`() {
+      val licenceEntity = aLicenceEntity
+
+      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
+      whenever(electronicMonitoringProviderRepository.saveAndFlush(any()))
+        .thenReturn(ElectronicMonitoringProvider(licence = aLicenceEntity))
+
+      // Enable the feature toggle
+      val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
+        licenceRepository,
+        policyService,
+        auditService,
+        staffRepository,
+        electronicMonitoringProviderRepository,
+        electronicMonitoringResponseHandlingEnabled = true,
+      )
+
+      serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
+
+      verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity)
+      verify(electronicMonitoringProviderRepository, times(1)).saveAndFlush(any())
+    }
+
+    @Test
+    fun `should not handle response when feature toggle is disabled`() {
+      val licenceEntity = aLicenceEntity
+
+      // Disable the feature toggle
+      val serviceWithFeatureDisabled = ElectronicMonitoringProgrammeService(
+        licenceRepository,
+        policyService,
+        auditService,
+        staffRepository,
+        electronicMonitoringProviderRepository,
+        electronicMonitoringResponseHandlingEnabled = false,
+      )
+
+      serviceWithFeatureDisabled.handleResponseIfEnabled(licenceEntity)
+
+      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any())
+      verify(electronicMonitoringProviderRepository, times(0)).saveAndFlush(any())
+    }
+  }
+
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
 

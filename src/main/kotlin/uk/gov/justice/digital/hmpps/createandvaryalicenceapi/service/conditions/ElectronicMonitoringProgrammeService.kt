@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,7 +25,15 @@ class ElectronicMonitoringProgrammeService(
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
   private val electronicMonitoringProviderRepository: ElectronicMonitoringProviderRepository,
+  @Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
+  private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
+
+  fun handleResponseIfEnabled(licence: Licence) {
+    if (electronicMonitoringResponseHandlingEnabled) {
+      handleElectronicMonitoringResponseRecords(licence)
+    }
+  }
 
   @Transactional
   fun updateElectronicMonitoringProgramme(licenceId: Long, request: UpdateElectronicMonitoringProgrammeRequest) {

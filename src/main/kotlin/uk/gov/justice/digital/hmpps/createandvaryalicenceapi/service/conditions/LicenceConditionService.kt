@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,8 +40,6 @@ class LicenceConditionService(
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
-  @Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
-  private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
 
   @Transactional
@@ -105,10 +102,7 @@ class LicenceConditionService(
       updatedAdditionalConditions = newConditions,
       staffMember = staffMember,
     )
-
-    if (electronicMonitoringResponseHandlingEnabled) {
-      electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
-    }
+    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
     licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
@@ -169,11 +163,9 @@ class LicenceConditionService(
       updatedAdditionalConditions = (newConditions + updatedConditions),
       staffMember = staffMember,
     )
-
+    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
     licenceRepository.saveAndFlush(licenceEntity)
-    if (electronicMonitoringResponseHandlingEnabled) {
-      electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
-    }
+
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
     removedConditions.forEach { oldCondition ->
       oldCondition.additionalConditionUploadSummary.forEach {
@@ -358,9 +350,7 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    if (electronicMonitoringResponseHandlingEnabled) {
-      electronicMonitoringProgrammeService.handleElectronicMonitoringResponseRecords(licenceEntity)
-    }
+    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
