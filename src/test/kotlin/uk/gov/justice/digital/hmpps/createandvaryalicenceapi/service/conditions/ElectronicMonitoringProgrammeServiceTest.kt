@@ -130,7 +130,7 @@ class ElectronicMonitoringProgrammeServiceTest {
   }
 
   @Nested
-  inner class `feature flag electronicMonitoringResponseHandlingEnabled` {
+  inner class `feature toggle electronicMonitoringResponseHandlingEnabled` {
 
     @Test
     fun `should handle response when feature toggle is enabled`() {
