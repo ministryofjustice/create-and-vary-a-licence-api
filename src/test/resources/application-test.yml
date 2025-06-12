@@ -76,6 +76,10 @@ hmpps:
       url: http://localhost:8100
       enabled: true
 
+feature:
+  toggle:
+    electronicMonitoringResponseHandling: true
+
 os:
   places:
     api:
