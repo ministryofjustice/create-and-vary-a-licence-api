@@ -97,12 +97,11 @@ class ElectronicMonitoringProgrammeService(
     }
   }
 
-  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider =
-    ElectronicMonitoringProvider(
-      licence = licenceEntity,
-      isToBeTaggedForProgramme = null,
-      programmeName = null,
-    )
+  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
+    licence = licenceEntity,
+    isToBeTaggedForProgramme = null,
+    programmeName = null,
+  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

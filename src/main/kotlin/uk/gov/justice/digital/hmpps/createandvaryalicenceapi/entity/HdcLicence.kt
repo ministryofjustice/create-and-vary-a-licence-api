@@ -105,7 +105,7 @@ class HdcLicence(
     cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
     optional = true,
-    orphanRemoval =  true
+    orphanRemoval = true,
   )
   var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
