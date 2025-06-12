@@ -305,4 +305,7 @@ data class HdcLicence(
 
   @Schema(description = "The curfew address for this licence")
   val curfewAddress: HdcCurfewAddress? = null,
+
+  @Schema(description = "Describes a electronic monitoring provider on a licence")
+  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence
