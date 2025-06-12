@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProviderRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
@@ -24,7 +23,6 @@ class ElectronicMonitoringProgrammeService(
   private val licencePolicyService: LicencePolicyService,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
-  private val electronicMonitoringProviderRepository: ElectronicMonitoringProviderRepository,
   @Value("\${feature.toggle.electronicMonitoringResponseHandling:false}")
   private val electronicMonitoringResponseHandlingEnabled: Boolean = false,
 ) {
@@ -77,18 +75,8 @@ class ElectronicMonitoringProgrammeService(
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
     when (licenceEntity) {
-      is CrdLicence -> {
-        licenceEntity.electronicMonitoringProvider?.let {
-          electronicMonitoringProviderRepository.delete(it)
-        }
-        licenceEntity.electronicMonitoringProvider = null
-      }
-      is HdcLicence -> {
-        licenceEntity.electronicMonitoringProvider?.let {
-          electronicMonitoringProviderRepository.delete(it)
-        }
-        licenceEntity.electronicMonitoringProvider = null
-      }
+      is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
+      is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
     }
   }
 
@@ -109,13 +97,12 @@ class ElectronicMonitoringProgrammeService(
     }
   }
 
-  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider = electronicMonitoringProviderRepository.saveAndFlush(
+  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider =
     ElectronicMonitoringProvider(
       licence = licenceEntity,
       isToBeTaggedForProgramme = null,
       programmeName = null,
-    ),
-  )
+    )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

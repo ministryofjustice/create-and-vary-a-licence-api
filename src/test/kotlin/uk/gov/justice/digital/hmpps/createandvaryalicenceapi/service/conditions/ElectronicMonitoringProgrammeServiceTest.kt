@@ -17,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProviderRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
@@ -31,14 +30,12 @@ class ElectronicMonitoringProgrammeServiceTest {
   private val policyService = mock<LicencePolicyService>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
-  private val electronicMonitoringProviderRepository = mock<ElectronicMonitoringProviderRepository>()
 
   private val service = ElectronicMonitoringProgrammeService(
     licenceRepository,
     policyService,
     auditService,
     staffRepository,
-    electronicMonitoringProviderRepository,
   )
 
   @BeforeEach
@@ -54,7 +51,6 @@ class ElectronicMonitoringProgrammeServiceTest {
     reset(
       licenceRepository,
       staffRepository,
-      electronicMonitoringProviderRepository,
     )
   }
 
@@ -94,42 +90,6 @@ class ElectronicMonitoringProgrammeServiceTest {
   }
 
   @Nested
-  inner class `handle electronic monitoring response records` {
-
-    @Test
-    fun `should create electronic monitoring provider when conditions require response`() {
-      val licenceEntity = aLicenceEntity
-
-      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
-      whenever(electronicMonitoringProviderRepository.saveAndFlush(any()))
-        .thenReturn(ElectronicMonitoringProvider(licence = aLicenceEntity))
-
-      service.handleElectronicMonitoringResponseRecords(licenceEntity)
-
-      val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
-      verify(electronicMonitoringProviderRepository, times(1)).saveAndFlush(electronicMonitoringProviderCaptor.capture())
-    }
-
-    @Test
-    fun `should clear electronic monitoring provider when no conditions require response`() {
-      val licenceEntity = aLicenceEntity.copy(
-        electronicMonitoringProvider = ElectronicMonitoringProvider(
-          licence = aLicenceEntity,
-          isToBeTaggedForProgramme = true,
-          programmeName = "Test Programme",
-        ),
-      )
-
-      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(false)
-
-      service.handleElectronicMonitoringResponseRecords(licenceEntity)
-
-      val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
-      verify(electronicMonitoringProviderRepository, times(1)).delete(electronicMonitoringProviderCaptor.capture())
-    }
-  }
-
-  @Nested
   inner class `feature toggle electronicMonitoringResponseHandlingEnabled` {
 
     @Test
@@ -137,8 +97,6 @@ class ElectronicMonitoringProgrammeServiceTest {
       val licenceEntity = aLicenceEntity
 
       whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
-      whenever(electronicMonitoringProviderRepository.saveAndFlush(any()))
-        .thenReturn(ElectronicMonitoringProvider(licence = aLicenceEntity))
 
       // Enable the feature toggle
       val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
@@ -146,14 +104,12 @@ class ElectronicMonitoringProgrammeServiceTest {
         policyService,
         auditService,
         staffRepository,
-        electronicMonitoringProviderRepository,
         electronicMonitoringResponseHandlingEnabled = true,
       )
 
       serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
 
       verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity)
-      verify(electronicMonitoringProviderRepository, times(1)).saveAndFlush(any())
     }
 
     @Test
@@ -166,14 +122,12 @@ class ElectronicMonitoringProgrammeServiceTest {
         policyService,
         auditService,
         staffRepository,
-        electronicMonitoringProviderRepository,
         electronicMonitoringResponseHandlingEnabled = false,
       )
 
       serviceWithFeatureDisabled.handleResponseIfEnabled(licenceEntity)
 
       verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any())
-      verify(electronicMonitoringProviderRepository, times(0)).saveAndFlush(any())
     }
   }
 

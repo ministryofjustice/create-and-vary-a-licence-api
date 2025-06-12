@@ -102,8 +102,8 @@ class LicenceConditionService(
       updatedAdditionalConditions = newConditions,
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(licenceEntity)
     electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
     val newCondition =
@@ -163,8 +163,8 @@ class LicenceConditionService(
       updatedAdditionalConditions = (newConditions + updatedConditions),
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(licenceEntity)
     electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
     removedConditions.forEach { oldCondition ->
@@ -350,8 +350,8 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    licenceRepository.saveAndFlush(licenceEntity)
     electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
     auditService.recordAuditEventDeleteStandardConditions(licenceEntity, removedStandardConditions, staffMember)
