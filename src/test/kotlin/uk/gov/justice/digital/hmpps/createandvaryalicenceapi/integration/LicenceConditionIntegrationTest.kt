@@ -145,7 +145,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-5.sql",
   )
-  fun `initialise electronic monitoring provider if not exists`() {
+  fun `create electronic monitoring provider if not exists`() {
     webTestClient.put()
       .uri("/licence/id/1/additional-conditions")
       .bodyValue(anAdditionalConditionsRequest)
@@ -165,7 +165,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-6.sql",
   )
-  fun `don't initialise electronic monitoring provider if exists`() {
+  fun `don't create electronic monitoring provider if exists`() {
     webTestClient.put()
       .uri("/licence/id/1/additional-conditions")
       .bodyValue(anAdditionalConditionsRequest)

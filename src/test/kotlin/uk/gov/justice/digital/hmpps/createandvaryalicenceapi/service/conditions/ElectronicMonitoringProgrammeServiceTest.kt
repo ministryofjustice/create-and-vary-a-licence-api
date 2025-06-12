@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ElectronicMonitoringProviderRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -97,21 +96,12 @@ class ElectronicMonitoringProgrammeServiceTest {
   inner class `handle electronic monitoring response records` {
 
     @Test
-    fun `should initialize electronic monitoring provider when conditions require response`() {
+    fun `should create electronic monitoring provider when conditions require response`() {
       val licenceEntity = aLicenceEntity
 
-      whenever(policyService.getConditionsRequiringElectronicMonitoringResponse(any(), any())).thenReturn(
-        listOf(
-          AdditionalConditionAp(
-            code = "condition1",
-            requiresElectronicMonitoringResponse = true,
-            category = "category1",
-            text = "text1",
-            requiresInput = true,
-            type = "ElectronicMonitoringTypes",
-          ),
-        ),
-      )
+      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
+      whenever(electronicMonitoringProviderRepository.saveAndFlush(any()))
+        .thenReturn(ElectronicMonitoringProvider(licence = aLicenceEntity))
 
       service.handleElectronicMonitoringResponseRecords(licenceEntity)
 
@@ -137,7 +127,7 @@ class ElectronicMonitoringProgrammeServiceTest {
         ),
       )
 
-      whenever(policyService.getConditionsRequiringElectronicMonitoringResponse(any(), any())).thenReturn(emptyList())
+      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(false)
 
       service.handleElectronicMonitoringResponseRecords(licenceEntity)
 

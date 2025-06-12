@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.EntityNotFoundException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
@@ -106,6 +108,19 @@ class LicencePolicyService(
     .additionalConditions.ap
     .filter { it.requiresElectronicMonitoringResponse && conditionCodes.contains(it.code) }
 
+  fun isElectronicMonitoringResponseRequired(licenceEntity: Licence): Boolean {
+    val additionalApConditions = licenceEntity.additionalConditions.filter { it.conditionType == "AP" }
+    val conditionsRequiringResponse = getConditionsRequiringElectronicMonitoringResponse(
+      licenceEntity.version!!,
+      additionalApConditions.map { it.conditionCode },
+    )
+    if (conditionsRequiringResponse.isNotEmpty()) {
+      log.info("Handling Electronic Monitoring response record for conditions: ${conditionsRequiringResponse.joinToString(",") { it.code }}")
+      return true
+    }
+    return false
+  }
+
   fun getCurrentStandardConditions(licenceType: LicenceType) = if (licenceType == PSS) {
     emptyList()
   } else {
@@ -165,5 +180,9 @@ class LicencePolicyService(
     )
 
     else -> emptyList()
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 }

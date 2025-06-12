@@ -55,19 +55,17 @@ class ElectronicMonitoringProgrammeService(
 
   @Transactional
   fun handleElectronicMonitoringResponseRecords(licenceEntity: Licence) {
-    val additionalApConditions = licenceEntity.additionalConditions.filter { it.conditionType == "AP" }
-    val conditionsRequiringElectronicMonitoringResponse = licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(licenceEntity.version!!, additionalApConditions.map { it.conditionCode })
-    if (conditionsRequiringElectronicMonitoringResponse.isNotEmpty()) {
-      LicenceConditionService.log.info("Handling Electronic Monitoring response record for conditions: ${conditionsRequiringElectronicMonitoringResponse.joinToString(",") { it.code }}")
-      initialiseElectronicMonitoringProviderIfNotExists(licenceEntity)
+    val isResponseRequired = licencePolicyService.isElectronicMonitoringResponseRequired(licenceEntity)
+    if (isResponseRequired) {
+      createElectronicMonitoringProviderIfNotExists(licenceEntity)
     } else {
-      clearElectronicMonitoringProvider(licenceEntity)
+      deleteElectronicMonitoringProvider(licenceEntity)
     }
   }
 
   @Transactional
-  fun clearElectronicMonitoringProvider(licenceEntity: Licence) {
-    LicenceConditionService.log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
+  fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
+    log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
     when (licenceEntity) {
       is CrdLicence -> {
         licenceEntity.electronicMonitoringProvider?.let {
@@ -85,33 +83,29 @@ class ElectronicMonitoringProgrammeService(
   }
 
   @Transactional
-  fun initialiseElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
+  fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
     when (licenceEntity) {
       is CrdLicence -> {
         if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = electronicMonitoringProviderRepository.saveAndFlush(
-            ElectronicMonitoringProvider(
-              licence = licenceEntity,
-              isToBeTaggedForProgramme = null,
-              programmeName = null,
-            ),
-          )
+          licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
         }
       }
       is HdcLicence -> {
         if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = electronicMonitoringProviderRepository.saveAndFlush(
-            ElectronicMonitoringProvider(
-              licence = licenceEntity,
-              isToBeTaggedForProgramme = null,
-              programmeName = null,
-            ),
-          )
+          licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
         }
       }
       else -> error("ElectronicMonitoringProvider can only be initialized for CrdLicence or HdcLicence")
     }
   }
+
+  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider = electronicMonitoringProviderRepository.saveAndFlush(
+    ElectronicMonitoringProvider(
+      licence = licenceEntity,
+      isToBeTaggedForProgramme = null,
+      programmeName = null,
+    ),
+  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
