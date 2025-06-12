@@ -27,10 +27,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.ConditionTypes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicy
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyAdditionalConditionAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyAdditionalConditionPss
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditionsAp
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditionsPss
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.LicencePolicyConditions
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.licencePolicy.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.PolicyVersion
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.PublicLicencePolicyService
@@ -101,21 +99,19 @@ class PublicLicencePolicyControllerTest {
     )
 
     val someApAdditionalConditions = listOf(
-      LicencePolicyAdditionalConditionAp(
+      LicencePolicyAdditionalCondition(
         code = "code1",
         text = "Do not associate with [NAME] for a period of [TIME PERIOD]",
         category = "Maintaining contact with a person",
         categoryShort = "Contact with a person",
         requiresUserInput = true,
-        requiresElectronicMonitoringResponse = false,
       ),
-      LicencePolicyAdditionalConditionAp(
+      LicencePolicyAdditionalCondition(
         code = "code2",
         text = "Engage with Integrated Offender Management team",
         category = "Participate in activities",
         categoryShort = "Programmes or activities",
         requiresUserInput = false,
-        requiresElectronicMonitoringResponse = false,
       ),
     )
 
@@ -126,14 +122,14 @@ class PublicLicencePolicyControllerTest {
     )
 
     val somePssAdditionalConditions = listOf(
-      LicencePolicyAdditionalConditionPss(
+      LicencePolicyAdditionalCondition(
         code = "code1",
         text = "Attend [INSERT APPOINTMENT TIME DATE AND ADDRESS]",
         category = "Appointment",
         categoryShort = null,
         requiresUserInput = true,
       ),
-      LicencePolicyAdditionalConditionPss(
+      LicencePolicyAdditionalCondition(
         code = "code2",
         text = "Attend [INSERT NAME AND ADDRESS] as reasonably required by your supervisor",
         category = "Testing",
@@ -142,12 +138,12 @@ class PublicLicencePolicyControllerTest {
       ),
     )
 
-    val someApConditions = LicencePolicyConditionsAp(
+    val someApConditions = LicencePolicyConditions(
       standard = someApStandardConditions,
       additional = someApAdditionalConditions,
     )
 
-    val somePssConditions = LicencePolicyConditionsPss(
+    val somePssConditions = LicencePolicyConditions(
       standard = somePssStandardConditions,
       additional = somePssAdditionalConditions,
     )
