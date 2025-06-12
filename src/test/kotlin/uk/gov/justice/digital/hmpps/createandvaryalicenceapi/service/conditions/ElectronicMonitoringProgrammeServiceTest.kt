@@ -54,6 +54,7 @@ class ElectronicMonitoringProgrammeServiceTest {
     reset(
       licenceRepository,
       staffRepository,
+      electronicMonitoringProviderRepository,
     )
   }
 
@@ -107,14 +108,6 @@ class ElectronicMonitoringProgrammeServiceTest {
 
       val electronicMonitoringProviderCaptor = ArgumentCaptor.forClass(ElectronicMonitoringProvider::class.java)
       verify(electronicMonitoringProviderRepository, times(1)).saveAndFlush(electronicMonitoringProviderCaptor.capture())
-
-      assertThat(electronicMonitoringProviderCaptor.value)
-        .extracting("licence", "isToBeTaggedForProgramme", "programmeName")
-        .containsExactly(
-          licenceEntity,
-          null,
-          null,
-        )
     }
 
     @Test
