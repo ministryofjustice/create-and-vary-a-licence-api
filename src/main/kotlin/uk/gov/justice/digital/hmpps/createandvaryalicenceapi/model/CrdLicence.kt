@@ -285,4 +285,7 @@ data class CrdLicence(
 
   @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
+
+  @Schema(description = "Describes a electronic monitoring provider on a licence")
+  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence
