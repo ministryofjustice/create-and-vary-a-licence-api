@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -32,6 +33,8 @@ class ElectronicMonitoringProgrammeServiceTest {
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
   private val electronicMonitoringProviderRepository = mock<ElectronicMonitoringProviderRepository>()
+  private val aLicenceEntity = TestData.createCrdLicence()
+  private val aCom = TestData.com()
 
   private val service = ElectronicMonitoringProgrammeService(
     licenceRepository,
@@ -39,20 +42,35 @@ class ElectronicMonitoringProgrammeServiceTest {
     auditService,
     staffRepository,
     electronicMonitoringProviderRepository,
+    electronicMonitoringResponseHandlingEnabled = false,
+  )
+
+  // Enable the feature toggle
+  private val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
+    licenceRepository,
+    policyService,
+    auditService,
+    staffRepository,
+    electronicMonitoringProviderRepository,
+    electronicMonitoringResponseHandlingEnabled = true,
   )
 
   @BeforeEach
-  fun reset() {
+  fun setup() {
     val authentication = mock<Authentication>()
     val securityContext = mock<SecurityContext>()
     whenever(authentication.name).thenReturn("tcom")
     whenever(securityContext.authentication).thenReturn(authentication)
     whenever(policyService.getConfigForCondition(any(), any())).thenReturn(CONDITION_CONFIG)
-
     SecurityContextHolder.setContext(securityContext)
+  }
 
+  @AfterEach
+  fun tearDown() {
     reset(
       licenceRepository,
+      policyService,
+      auditService,
       staffRepository,
       electronicMonitoringProviderRepository,
     )
@@ -140,16 +158,6 @@ class ElectronicMonitoringProgrammeServiceTest {
       whenever(electronicMonitoringProviderRepository.saveAndFlush(any()))
         .thenReturn(ElectronicMonitoringProvider(licence = aLicenceEntity))
 
-      // Enable the feature toggle
-      val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
-        licenceRepository,
-        policyService,
-        auditService,
-        staffRepository,
-        electronicMonitoringProviderRepository,
-        electronicMonitoringResponseHandlingEnabled = true,
-      )
-
       serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
 
       verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity)
@@ -179,9 +187,5 @@ class ElectronicMonitoringProgrammeServiceTest {
 
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
-
-    val aLicenceEntity = TestData.createCrdLicence()
-
-    val aCom = TestData.com()
   }
 }
