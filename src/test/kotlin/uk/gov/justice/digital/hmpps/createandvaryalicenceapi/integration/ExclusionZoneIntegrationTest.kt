@@ -10,6 +10,7 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneUploadFile
 import java.time.Duration
 
 class ExclusionZoneIntegrationTest : IntegrationTestBase() {
@@ -56,23 +58,26 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     // Read back the single additional condition from the repository
-    val conditions = additionalConditionRepository.findById(1).map { condition -> condition.additionalConditionUploadSummary }.orElseThrow()
+    val conditions = additionalConditionRepository.findById(1)
+      .map { it.additionalConditionUploadSummary }
+      .orElseThrow()
     assertThat(conditions).hasSize(1)
 
-    val uploadCondition = conditions.first()
+    val uploadFile = ExclusionZoneUploadFile(MockMultipartFile("file", fileResource.contentAsByteArray))
 
     // Check that the upload summary values are present shows against this additional condition
-    assertThat(uploadCondition.uploadDetailId).isGreaterThan(0)
-    assertThat(uploadCondition.filename).isEqualTo(fileResource.filename)
-    assertThat(uploadCondition.fileType).isEqualTo("application/pdf")
-    assertThat(uploadCondition.thumbnailImage).isNotEmpty
-    assertThat(uploadCondition.description?.trim()).isEqualTo("Description")
+    val uploadSummary = conditions.first()
+    assertThat(uploadSummary.uploadDetailId).isGreaterThan(0)
+    assertThat(uploadSummary.filename).isEqualTo(fileResource.filename)
+    assertThat(uploadSummary.fileType).isEqualTo("application/pdf")
+    assertThat(uploadSummary.thumbnailImage).isEqualTo(uploadFile.thumbnailImage)
+    assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
 
     // Check that the upload detail values are also stored and referenced by the ID column in the summary
-    val detailRow = additionalConditionUploadDetailRepository.findById(uploadCondition.uploadDetailId).orElseThrow()
-    assertThat(detailRow.licenceId).isEqualTo(2)
-    assertThat(detailRow.fullSizeImage).isNotEmpty
-    assertThat(detailRow.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
+    val uploadDetail = additionalConditionUploadDetailRepository.findById(uploadSummary.uploadDetailId).orElseThrow()
+    assertThat(uploadDetail.licenceId).isEqualTo(2)
+    assertThat(uploadDetail.fullSizeImage).isEqualTo(uploadFile.fullSizeImage)
+    assertThat(uploadDetail.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
   }
 
   @Test
