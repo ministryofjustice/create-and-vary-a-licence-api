@@ -14,6 +14,7 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
@@ -33,6 +34,7 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+    documentApiMockServer.stubUploadDocument()
   }
 
   @Test
@@ -78,6 +80,34 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(uploadDetail.licenceId).isEqualTo(2)
     assertThat(uploadDetail.fullSizeImage).isEqualTo(uploadFile.fullSizeImage)
     assertThat(uploadDetail.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
+
+    documentApiMockServer.verifyUploadedDocument(
+      didHappenXTimes = 1,
+      fileWasUploaded = uploadFile.fullSizeImage!!,
+      withMetadata = mapOf(
+        "licenceId" to "2",
+        "additionalConditionId" to "1",
+        "type" to "FULL_IMAGE",
+      ),
+    )
+    documentApiMockServer.verifyUploadedDocument(
+      didHappenXTimes = 1,
+      fileWasUploaded = uploadFile.thumbnailImage!!,
+      withMetadata = mapOf(
+        "licenceId" to "2",
+        "additionalConditionId" to "1",
+        "type" to "THUMBNAIL",
+      ),
+    )
+    documentApiMockServer.verifyUploadedDocument(
+      didHappenXTimes = 1,
+      fileWasUploaded = fileResource.contentAsByteArray,
+      withMetadata = mapOf(
+        "licenceId" to "2",
+        "additionalConditionId" to "1",
+        "type" to "PDF",
+      ),
+    )
   }
 
   @Test
@@ -182,17 +212,20 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   }
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
+    val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      documentApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       govUkApiMockServer.stop()
+      documentApiMockServer.stop()
     }
   }
 }
