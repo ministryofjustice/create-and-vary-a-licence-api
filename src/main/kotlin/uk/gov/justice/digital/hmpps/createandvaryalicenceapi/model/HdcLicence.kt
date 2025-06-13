@@ -310,6 +310,6 @@ data class HdcLicence(
   @Schema(description = "Describes a electronic monitoring provider on a licence")
   val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 
-  @get:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
+  @Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_STARTED,
 ) : Licence

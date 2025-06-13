@@ -279,7 +279,7 @@ data class VariationLicence(
   @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
 
-  @get:Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
+  @Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
 ) : Licence,
   ModelVariation

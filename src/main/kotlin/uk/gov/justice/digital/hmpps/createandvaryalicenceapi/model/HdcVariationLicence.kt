@@ -299,7 +299,7 @@ data class HdcVariationLicence(
   @Schema(description = "The curfew address for this licence")
   val curfewAddress: HdcCurfewAddress? = null,
 
-  @get:Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
+  @Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
   override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
 ) : Licence,
   ModelVariation
