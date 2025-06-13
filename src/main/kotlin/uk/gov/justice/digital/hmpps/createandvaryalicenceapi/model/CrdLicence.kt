@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -288,4 +289,7 @@ data class CrdLicence(
 
   @Schema(description = "Describes a electronic monitoring provider on a licence")
   val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+
+  @get:Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
+  override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_STARTED,
 ) : Licence

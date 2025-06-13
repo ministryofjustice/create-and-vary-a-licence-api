@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -363,6 +364,7 @@ fun toCrd(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
+  electronicMonitoringProviderStatus = if (licence.electronicMonitoringProvider != null) ElectronicMonitoringProviderStatus.COMPLETE else ElectronicMonitoringProviderStatus.NOT_STARTED,
 )
 
 fun toHdc(
@@ -454,6 +456,7 @@ fun toHdc(
   submittedByFullName = licence.getSubmittedByFullName(),
   curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
+  electronicMonitoringProviderStatus = if (licence.electronicMonitoringProvider != null) ElectronicMonitoringProviderStatus.COMPLETE else ElectronicMonitoringProviderStatus.NOT_STARTED,
 )
 
 fun toHdcVariation(
