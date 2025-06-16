@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -270,7 +271,7 @@ data class HdcVariationLicence(
   @Schema(description = "The licence Id which this licence is a variation of")
   override val variationOf: Long? = null,
 
-  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   override val createdByFullName: String? = null,
 
   @Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
@@ -297,5 +298,8 @@ data class HdcVariationLicence(
 
   @Schema(description = "The curfew address for this licence")
   val curfewAddress: HdcCurfewAddress? = null,
+
+  @Schema(description = "The status of the electronic monitoring provider", example = "NOT_STARTED")
+  override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_NEEDED,
 ) : Licence,
   ModelVariation

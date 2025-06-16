@@ -1,13 +1,14 @@
-DELETE from electronic_monitoring_provider;
-DELETE from standard_condition;
-DELETE from additional_condition_data;
-DELETE from additional_condition_upload_detail;
-DELETE from additional_condition_upload_summary;
-DELETE from additional_condition;
-DELETE from bespoke_condition;
-DELETE from hdc_curfew_address;
-DELETE from hdc_curfew_times;
-DELETE from licence;
-DELETE from staff;
-DELETE from audit_event;
-DELETE from omu_contact;
+TRUNCATE TABLE electronic_monitoring_provider RESTART IDENTITY CASCADE;
+TRUNCATE TABLE standard_condition RESTART IDENTITY CASCADE;
+TRUNCATE TABLE additional_condition_data RESTART IDENTITY CASCADE;
+TRUNCATE TABLE additional_condition_upload_detail RESTART IDENTITY CASCADE;
+TRUNCATE TABLE additional_condition_upload_summary RESTART IDENTITY CASCADE;
+TRUNCATE TABLE additional_condition RESTART IDENTITY CASCADE;
+TRUNCATE TABLE bespoke_condition RESTART IDENTITY CASCADE;
+TRUNCATE TABLE hdc_curfew_address RESTART IDENTITY CASCADE;
+TRUNCATE TABLE hdc_curfew_times RESTART IDENTITY CASCADE;
+TRUNCATE TABLE licence RESTART IDENTITY CASCADE;
+TRUNCATE TABLE staff RESTART IDENTITY CASCADE;
+TRUNCATE TABLE audit_event RESTART IDENTITY CASCADE;
+TRUNCATE TABLE omu_contact RESTART IDENTITY CASCADE;
+

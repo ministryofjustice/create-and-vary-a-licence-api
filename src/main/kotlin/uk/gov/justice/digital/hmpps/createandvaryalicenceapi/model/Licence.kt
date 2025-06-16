@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -257,7 +258,7 @@ sealed interface Licence {
   @get:Schema(description = "The list of bespoke conditions on this licence")
   val bespokeConditions: List<BespokeCondition>
 
-  @get:Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @get:Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   val createdByFullName: String?
 
   @get:Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
@@ -280,4 +281,10 @@ sealed interface Licence {
 
   @get:Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   val submittedByFullName: String?
+
+  @get:Schema(
+    description = "The status of the electronic monitoring provider",
+    example = "NOT_NEEDED",
+  )
+  val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus
 }

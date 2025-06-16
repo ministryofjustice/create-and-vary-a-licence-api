@@ -8,6 +8,7 @@ import org.mockito.Mockito.reset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
@@ -16,11 +17,19 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD
+import org.springframework.test.context.jdbc.SqlConfig
+import org.springframework.test.context.jdbc.SqlGroup
 import org.springframework.test.context.jdbc.SqlMergeMode
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.LocalStackContainer.setLocalStackProperties
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
@@ -42,14 +51,17 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 **     - An ObjectMapper called mapper.
 **     - A logger.
 */
-@SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @ExtendWith(OAuthExtension::class)
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
-@Sql(
-  "classpath:test_data/clear-all-data.sql",
-  "classpath:test_data/seed-community-offender-manager.sql",
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=false"])
+@SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
+@SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
+@SqlGroup(
+  Sql("classpath:test_data/seed-community-offender-manager.sql", executionPhase = BEFORE_TEST_METHOD),
+  Sql("classpath:test_data/clear-all-data.sql", executionPhase = AFTER_TEST_METHOD),
 )
+@AutoConfigureWebTestClient(timeout = "25000") // 25 seconds
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 abstract class IntegrationTestBase {
 
   @MockitoSpyBean
@@ -57,12 +69,6 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var comAllocatedHandler: ComAllocatedHandler
-
-  @BeforeEach
-  fun `Clear queues`() {
-    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
-    reset(telemetryClient)
-  }
 
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
@@ -101,16 +107,24 @@ abstract class IntegrationTestBase {
     roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
 
+  @BeforeEach
+  fun `Clear queues`() {
+    domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
+    reset(telemetryClient)
+  }
+
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     private val localStackContainer = LocalStackContainer.instance
+    private val postgresContainer = PostgresContainer.instance
 
     @JvmStatic
     @DynamicPropertySource
-    fun testcontainers(registry: DynamicPropertyRegistry) {
+    fun containers(registry: DynamicPropertyRegistry) {
       localStackContainer?.also { setLocalStackProperties(it, registry) }
+      postgresContainer?.also { setPostgresContainerProperties(it, registry) }
     }
   }
 }

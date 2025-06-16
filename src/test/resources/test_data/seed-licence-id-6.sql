@@ -1,4 +1,5 @@
-insert into licence (kind,
+insert into licence (id,
+                     kind,
                      type_code,
                      version,
                      status_code,
@@ -28,11 +29,11 @@ insert into licence (kind,
                      responsible_com_id,
                      created_by_com_id,
                      licence_version)
-values (
+values (1,
         'CRD',
         'AP',
-        '1.0',
-        'APPROVED',
+        '3.0',
+        'IN_PROGRESS',
         'A1234AA',
         'BOOKNO',
         12345,
@@ -50,7 +51,7 @@ values (
         '2022-02-25',
         '2022-02-25',
         '2022-02-25',
-        '2022-02-25',
+        current_date,
         '2023-02-25',
         'N01',
         'PDU1',
@@ -58,7 +59,7 @@ values (
         'TEAM1',
         1,
         1,
-        '1.0');
+        '3.0');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
@@ -68,3 +69,6 @@ values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
+
+insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
+VALUES (1, true, 'Test Programme');

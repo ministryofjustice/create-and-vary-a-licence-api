@@ -83,7 +83,7 @@ class CrdLicence(
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true)
+  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true, orphanRemoval = true)
   var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
@@ -264,18 +264,6 @@ class CrdLicence(
     licenceVersion = licenceVersion,
     updatedBy = updatedBy,
     electronicMonitoringProvider = electronicMonitoringProvider,
-  )
-
-  override fun activate() = copy(
-    statusCode = LicenceStatus.ACTIVE,
-    licenceActivatedDate = LocalDateTime.now(),
-  )
-
-  override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
-  override fun deactivate(staffMember: Staff?) = copy(
-    statusCode = LicenceStatus.INACTIVE,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
   )
 
   fun timeOut() = copy(

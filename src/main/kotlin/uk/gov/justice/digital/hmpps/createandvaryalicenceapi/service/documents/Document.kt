@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents
 
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class Document(
   val documentUuid: UUID,

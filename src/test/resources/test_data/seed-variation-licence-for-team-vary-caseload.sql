@@ -1,5 +1,5 @@
 insert into staff(id, kind, staff_identifier, username, email, first_name, last_name)
-values (98765, 'COMMUNITY_OFFENDER_MANAGER', 2000, 'tclient', 'testClient@probation.gov.uk', 'Test', 'Client');
+values (98765, 'COMMUNITY_OFFENDER_MANAGER', 2002, 'tclient', 'testClient@probation.gov.uk', 'Test', 'Client');
 
 insert into licence (id,
                      kind,

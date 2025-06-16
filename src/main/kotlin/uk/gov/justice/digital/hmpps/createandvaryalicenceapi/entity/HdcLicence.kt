@@ -105,6 +105,7 @@ class HdcLicence(
     cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
     optional = true,
+    orphanRemoval = true,
   )
   var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
@@ -295,18 +296,6 @@ class HdcLicence(
     updatedBy = updatedBy,
     curfewAddress = curfewAddress,
     electronicMonitoringProvider = electronicMonitoringProvider,
-  )
-
-  override fun activate() = copy(
-    statusCode = LicenceStatus.ACTIVE,
-    licenceActivatedDate = LocalDateTime.now(),
-  )
-
-  override fun deactivate() = copy(statusCode = LicenceStatus.INACTIVE)
-  override fun deactivate(staffMember: Staff?) = copy(
-    statusCode = LicenceStatus.INACTIVE,
-    updatedByUsername = staffMember?.username ?: SYSTEM_USER,
-    updatedBy = staffMember ?: this.updatedBy,
   )
 
   fun submit(submittedBy: CommunityOffenderManager) = copy(

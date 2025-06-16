@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
@@ -244,7 +245,7 @@ data class CrdLicence(
   @Schema(description = "The list of bespoke conditions on this licence")
   override val bespokeConditions: List<BespokeCondition> = emptyList(),
 
-  @Schema(description = "The full name of the person who created licence or variation", example = "Gordon Sumner")
+  @Schema(description = "The full name of the person who created licence or variation", example = "Test Person")
   override val createdByFullName: String? = null,
 
   @Schema(description = "Is this licence in PSS period?(LED < TODAY <= TUSED)")
@@ -285,4 +286,10 @@ data class CrdLicence(
 
   @Schema(description = "The full name of the person who last submitted this licence", example = "Jane Jones")
   override val submittedByFullName: String? = null,
+
+  @Schema(description = "Describes a electronic monitoring provider on a licence")
+  val electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+
+  @Schema(description = "The status of the electronic monitoring provider", example = "COMPLETE")
+  override val electronicMonitoringProviderStatus: ElectronicMonitoringProviderStatus = ElectronicMonitoringProviderStatus.NOT_STARTED,
 ) : Licence
