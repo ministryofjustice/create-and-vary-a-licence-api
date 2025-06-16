@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -19,20 +20,27 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ExclusionZoneUploadsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
+import java.util.UUID
 
 class ExclusionZoneServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
+  private val documentService = mock<DocumentService>()
+  private val exclusionZoneUploadsRepository = mock<ExclusionZoneUploadsRepository>()
 
   private val service = ExclusionZoneService(
     licenceRepository,
     additionalConditionRepository,
     additionalConditionUploadDetailRepository,
+    documentService,
+    exclusionZoneUploadsRepository,
   )
 
   @BeforeEach
@@ -41,7 +49,11 @@ class ExclusionZoneServiceTest {
       licenceRepository,
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
+      documentService,
+      exclusionZoneUploadsRepository,
     )
+
+    Mockito.`when`(documentService.uploadDocument(any(), any())).thenReturn(UUID.randomUUID())
   }
 
   @Test

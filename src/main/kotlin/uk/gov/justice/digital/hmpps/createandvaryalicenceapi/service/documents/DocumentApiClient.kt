@@ -21,7 +21,7 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .header("Service-Name", "create-and-vary-a-licence-api")
     .bodyValue(
       MultipartBodyBuilder().apply {
-        part("file", file, contentTypeFor(documentType))
+        part("file", file)
         part("metadata", metadata)
       }.build(),
     )
@@ -30,8 +30,4 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .bodyToMono(Document::class.java)
     .onErrorResume { Mono.empty() }
     .block() ?: error("Unable to upload document: $documentType/$documentUuid")
-
-  private fun contentTypeFor(documentType: DocumentType) = when (documentType) {
-    DocumentType.EXCLUSION_ZONE_MAP -> MediaType.APPLICATION_PDF
-  }
 }

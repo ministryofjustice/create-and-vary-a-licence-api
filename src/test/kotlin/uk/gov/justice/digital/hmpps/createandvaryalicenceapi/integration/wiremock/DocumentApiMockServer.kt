@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import net.minidev.json.JSONObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentType
+import java.util.UUID
 
 class DocumentApiMockServer : WireMockServer(8097) {
   fun stubUploadDocument() {
@@ -28,16 +29,15 @@ class DocumentApiMockServer : WireMockServer(8097) {
     withType: DocumentType = DocumentType.EXCLUSION_ZONE_MAP,
     fileWasUploaded: ByteArray = ByteArray(0),
     withMetadata: Map<String, String> = mapOf(),
-  ) {
-    verify(
-      didHappenXTimes,
-      postRequestedFor(urlMatching("/documents/$withType/$withUuid"))
-        .withRequestBodyPart(
-          aMultipart("file").withBody(binaryEqualTo(fileWasUploaded)).build(),
-        )
-        .withRequestBodyPart(
-          aMultipart("metadata").withBody(equalToJson(JSONObject(withMetadata).toString())).build(),
-        ),
+  ): UUID? {
+    val request = postRequestedFor(urlMatching("/documents/$withType/$withUuid"))
+      .withRequestBodyPart(aMultipart("file").withBody(binaryEqualTo(fileWasUploaded)).build())
+      .withRequestBodyPart(aMultipart("metadata").withBody(equalToJson(JSONObject(withMetadata).toString())).build())
+
+    verify(didHappenXTimes, request)
+
+    return UUID.fromString(
+      findAll(request).first().url.substringAfter("/documents/$withType/"),
     )
   }
 

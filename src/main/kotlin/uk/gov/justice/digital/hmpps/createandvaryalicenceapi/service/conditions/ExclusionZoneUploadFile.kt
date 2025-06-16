@@ -15,24 +15,28 @@ import java.io.IOException
 import javax.imageio.ImageIO
 
 class ExclusionZoneUploadFile(file: MultipartFile) {
+  val filename = file.originalFilename
+  val contentType = file.contentType
+  val fileSize = file.size.toInt()
+  val bytes: ByteArray = file.bytes
 
   var thumbnailImage: ByteArray? = null
   var fullSizeImage: ByteArray? = null
   var description: String? = null
 
   init {
-    Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
-      try {
+    try {
+      Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
         initDescription(pdfDoc)
         initFullSizeImage(pdfDoc)
-        initThumbnail()
-      } catch (io: IOException) {
-        log.error("IO error ${io.message}")
-      } catch (ipe: InvalidPasswordException) {
-        log.error("Invalid password ${ipe.message}")
-      } catch (iae: IllegalArgumentException) {
-        log.error("Illegal Argument ${iae.message}")
       }
+      initThumbnail()
+    } catch (io: IOException) {
+      log.error("IO error ${io.message}")
+    } catch (ipe: InvalidPasswordException) {
+      log.error("Invalid password ${ipe.message}")
+    } catch (iae: IllegalArgumentException) {
+      log.error("Illegal Argument ${iae.message}")
     }
   }
 
