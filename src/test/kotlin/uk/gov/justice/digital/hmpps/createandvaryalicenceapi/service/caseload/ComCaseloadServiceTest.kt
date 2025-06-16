@@ -799,29 +799,7 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
-      listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-      ),
-    )
-
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          licenceExpiryDate = LocalDate.of(
-            2022,
-            Month.DECEMBER,
-            26,
-          ),
-          status = "INACTIVE OUT",
-        ),
-      ),
-    )
-
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -853,7 +831,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
     )
   }
 
@@ -868,29 +846,7 @@ class ComCaseloadServiceTest {
 
     whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
-      listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-      ),
-    )
-
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          licenceExpiryDate = LocalDate.of(
-            2022,
-            Month.DECEMBER,
-            26,
-          ),
-          status = "INACTIVE OUT",
-        ),
-      ),
-    )
-
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -930,7 +886,7 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
     )
   }
 
@@ -946,29 +902,8 @@ class ComCaseloadServiceTest {
     whenever(
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
-      listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-      ),
-    )
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          licenceExpiryDate = LocalDate.of(
-            2022,
-            Month.DECEMBER,
-            26,
-          ),
-          status = "INACTIVE OUT",
-        ),
-      ),
-    )
-
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -1004,7 +939,7 @@ class ComCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
       expectedReviewNeeded = true,
     )
   }
@@ -1028,32 +963,7 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffendersByTeam(selectedTeam),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
-      listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-        createProbationCase(3L, nomsNumber = "AB1234F", crn = "X12349"),
-      ),
-    )
-
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          status = "INACTIVE OUT",
-        ),
-        createCaseloadItem(
-          prisonerNumber = "AB1234F",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          status = "INACTIVE OUT",
-          licenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-        ),
-      ),
-    )
-
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -1106,7 +1016,7 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.PSS,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs", staffUsername = "joebloggs"),
     )
     verifyCase(
       caseload[1],
@@ -1115,7 +1025,7 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
     )
   }
 
@@ -1132,34 +1042,7 @@ class ComCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(managedOffenders)
 
-    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(
-      listOf(
-        createProbationCase(1L, nomsNumber = "AB1234E", crn = "X12348"),
-      ),
-    )
-
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          licenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-          status = "INACTIVE OUT",
-        ),
-        createCaseloadItem(
-          prisonerNumber = "AB1234F",
-          conditionalReleaseDate = null,
-          confirmedReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          status = "INACTIVE OUT",
-          licenceExpiryDate = LocalDate.of(2022, Month.DECEMBER, 26),
-        ),
-      ),
-    )
-
-    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
       listOf(
         createLicenceSummary(
           crn = "X12348",
@@ -1196,7 +1079,7 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedReleaseDate = LocalDate.now(),
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe"),
+      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
       expectedReviewNeeded = true,
     )
   }

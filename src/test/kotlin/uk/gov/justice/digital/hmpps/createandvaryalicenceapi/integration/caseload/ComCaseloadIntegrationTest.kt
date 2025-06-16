@@ -175,32 +175,29 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
         .exchange()
         .expectStatus().isEqualTo(UNAUTHORIZED.value())
     }
+  }
 
-    @Test
-    @Sql(
-      "classpath:test_data/seed-variation-licence-for-staff-vary-caseload.sql",
-    )
-    fun `Successfully retrieve staff vary caseload`() {
-      deliusMockServer.stubGetStaffDetailsByUsername()
-      deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
-      deliusMockServer.stubGetProbationCases()
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("staff-vary-case-load-prisoners"))
-      prisonApiMockServer.stubGetCourtOutcomes()
+  @Test
+  @Sql(
+    "classpath:test_data/seed-variation-licence-for-staff-vary-caseload.sql",
+  )
+  fun `Successfully retrieve staff vary caseload`() {
+    deliusMockServer.stubGetStaffDetailsByUsername()
+    deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
 
-      val caseload = webTestClient.get()
-        .uri(GET_STAFF_VARY_CASELOAD)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .exchange()
-        .expectStatus().isEqualTo(OK.value())
-        .expectHeader().contentType(APPLICATION_JSON)
-        .expectBody(typeReference<List<ComCase>>())
-        .returnResult().responseBody!!
+    val caseload = webTestClient.get()
+      .uri(GET_STAFF_VARY_CASELOAD)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isEqualTo(OK.value())
+      .expectHeader().contentType(APPLICATION_JSON)
+      .expectBody(typeReference<List<ComCase>>())
+      .returnResult().responseBody!!
 
-      assertThat(caseload).hasSize(1)
-      with(caseload.first()) {
-        assertThat(crnNumber).isEqualTo("X12348")
-        assertThat(prisonerNumber).isEqualTo("AB1234E")
-      }
+    assertThat(caseload).hasSize(1)
+    with(caseload.first()) {
+      assertThat(crnNumber).isEqualTo("X12348")
+      assertThat(prisonerNumber).isEqualTo("AB1234E")
     }
   }
 
@@ -238,9 +235,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve team vary caseload`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
-      deliusMockServer.stubGetProbationCases(readFile("com-case-load-offenders"))
-      prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(readFile("team-vary-case-load-prisoners"))
-      prisonApiMockServer.stubGetCourtOutcomes()
 
       val caseload = webTestClient.post()
         .uri(GET_TEAM_VARY_CASELOAD)
