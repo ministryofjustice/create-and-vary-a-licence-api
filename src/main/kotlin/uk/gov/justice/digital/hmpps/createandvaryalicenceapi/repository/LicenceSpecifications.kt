@@ -27,7 +27,6 @@ fun LicenceQueryObject.toSpecification(): Specification<Licence> = and(
   hasStatusCodeIn(statusCodes),
   hasPrisonCodeIn(prisonCodes),
   hasNomsIdIn(nomsIds),
-  hasCrnIn(crns),
   hasResponsibleComIn(staffIds),
   hasPdusIn(pdus),
   hasProbationAreaCodeIn(probationAreaCodes),
@@ -59,10 +58,6 @@ fun hasStatusCodeIn(statusCodes: List<LicenceStatus>?): Specification<Licence>? 
 
 fun hasNomsIdIn(nomsIds: List<String>?): Specification<Licence>? = nomsIds?.let {
   Licence::nomsId.includedIn(it)
-}
-
-fun hasCrnIn(crns: List<String>?): Specification<Licence>? = crns?.let {
-  Licence::crn.includedIn(it)
 }
 
 fun hasResponsibleComIn(staffIds: List<Int>?): Specification<Licence>? = staffIds?.let {
