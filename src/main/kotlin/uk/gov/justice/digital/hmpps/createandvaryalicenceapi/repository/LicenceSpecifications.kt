@@ -16,7 +16,6 @@ data class LicenceQueryObject(
   val statusCodes: List<LicenceStatus>? = null,
   val staffIds: List<Int>? = null,
   val nomsIds: List<String>? = null,
-  val crns: List<String>? = null,
   val pdus: List<String>? = null,
   val probationAreaCodes: List<String>? = null,
   val sortBy: String? = null,
