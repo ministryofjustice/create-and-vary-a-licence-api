@@ -270,21 +270,17 @@ class ComCaseloadService(
     val coms = deliusApiClient.getStaffDetailsByUsername(comUsernames)
     return casesToLicences.map { (case, licence) ->
       val com = coms.find { c -> licence.comUsername?.lowercase() == c.username?.lowercase() }
-      if (com != null) {
-        case.crn to ProbationPractitioner(
+      when {
+        com != null -> case.crn to ProbationPractitioner(
           com.code,
           name = com.name?.fullName(),
           staffUsername = com.username,
         )
-      } else {
-        if (case.staff == null || case.staff.unallocated == true) {
-          case.crn to ProbationPractitioner()
-        } else {
-          case.crn to ProbationPractitioner(
-            staffCode = case.staff.code,
-            name = case.staff.name?.fullName(),
-          )
-        }
+        case.staff == null || case.staff.unallocated == true -> case.crn to ProbationPractitioner()
+        else -> case.crn to ProbationPractitioner(
+          staffCode = case.staff.code,
+          name = case.staff.name?.fullName(),
+        )
       }
     }.toMap()
   }
@@ -418,14 +414,10 @@ class ComCaseloadService(
     }
   }
 
-  private fun findVaryLicenceToDisplay(licences: List<LicenceSummary>): LicenceSummary? {
-    return if (licences.isEmpty()) {
-      return null
-    } else if (licences.size > 1) {
-      licences.find { licence -> licence.licenceStatus != ACTIVE && !licence.isReviewNeeded }
-    } else {
-      licences.first()
-    }
+  private fun findVaryLicenceToDisplay(licences: List<LicenceSummary>): LicenceSummary? = when {
+    licences.isEmpty() -> null
+    licences.size > 1 -> licences.find { licence -> licence.licenceStatus != ACTIVE && !licence.isReviewNeeded }
+    else -> licences.first()
   }
 
   private fun ManagedCase.findRelevantLicence() = licences.find { licence -> licences.size == 1 || licence.licenceStatus != ACTIVE }
