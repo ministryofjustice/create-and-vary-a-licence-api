@@ -6,11 +6,16 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ExclusionZoneUpload
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ExclusionZoneUploadsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import javax.imageio.ImageIO
 
 @Service
@@ -18,6 +23,8 @@ class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val documentService: DocumentService,
+  private val exclusionZoneUploadsRepository: ExclusionZoneUploadsRepository,
 ) {
 
   init {
@@ -26,21 +33,12 @@ class ExclusionZoneService(
 
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
+    val licenceEntity = licenceRepository.findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
+    val additionalCondition = additionalConditionRepository.findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove any existing upload detail rows manually - intentionally not linked to the additionalCondition entity
-    // There can only be one uploaded exclusion map on this licence/condition
-    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
-      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
-        additionalConditionUploadDetailRepository.delete(detail)
-      }
-    }
+    removeExistingDbRows(additionalCondition)
 
     log.info("uploadExclusionZoneFile:  Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
 
@@ -60,6 +58,8 @@ class ExclusionZoneService(
       log.error("uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
+
+    uploadExclusionMapDocumentToService(uploadFile, licenceEntity, additionalCondition)
 
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
@@ -85,6 +85,33 @@ class ExclusionZoneService(
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
+  private fun uploadExclusionMapDocumentToService(
+    uploadFile: ExclusionZoneUploadFile,
+    licenceEntity: Licence,
+    additionalCondition: AdditionalCondition,
+  ) {
+    val metadata = mapOf(
+      "licenceId" to licenceEntity.id.toString(),
+      "additionalConditionId" to additionalCondition.id.toString(),
+    )
+    val pdf = documentService
+      .uploadDocument(file = uploadFile.bytes, metadata = metadata + mapOf("kind" to "pdf"))
+    val image = documentService
+      .uploadDocument(file = uploadFile.fullSizeImage!!, metadata = metadata + mapOf("kind" to "fullSizeImage"))
+    val thumb = documentService
+      .uploadDocument(file = uploadFile.thumbnailImage!!, metadata = metadata + mapOf("kind" to "thumbnail"))
+
+    exclusionZoneUploadsRepository.save(
+      ExclusionZoneUpload(
+        licence = licenceEntity,
+        additionalCondition = additionalCondition,
+        pdfId = pdf,
+        fullImageId = image,
+        thumbnailId = thumb,
+      ),
+    )
+  }
+
   @Transactional
   fun removeExclusionZoneFile(licenceId: Long, conditionId: Long) {
     licenceRepository
@@ -95,12 +122,7 @@ class ExclusionZoneService(
       .findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove uploadDetail rows manually - intentionally not linked to the additionalCondition entity
-    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
-      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
-        additionalConditionUploadDetailRepository.delete(detail)
-      }
-    }
+    removeExistingDbRows(additionalCondition)
 
     // Remove the additionalConditionData item for 'outOfBoundFilename'
     val updatedAdditionalConditionData = additionalCondition
@@ -114,6 +136,14 @@ class ExclusionZoneService(
     )
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+  }
+
+  private fun removeExistingDbRows(additionalCondition: AdditionalCondition) {
+    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
+      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
+        additionalConditionUploadDetailRepository.delete(detail)
+      }
+    }
   }
 
   fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {

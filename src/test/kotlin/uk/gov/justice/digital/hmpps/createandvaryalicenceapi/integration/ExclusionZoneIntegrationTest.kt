@@ -14,10 +14,12 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ExclusionZoneUploadsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneUploadFile
 import java.time.Duration
 
@@ -29,10 +31,14 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
 
+  @Autowired
+  lateinit var exclusionZoneUploadsRepository: ExclusionZoneUploadsRepository
+
   @BeforeEach
   fun setupClient() {
     webTestClient = webTestClient.mutate().responseTimeout(Duration.ofSeconds(60)).build()
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+    documentApiMockServer.stubUploadDocument()
   }
 
   @Test
@@ -78,6 +84,29 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
     assertThat(uploadDetail.licenceId).isEqualTo(2)
     assertThat(uploadDetail.fullSizeImage).isEqualTo(uploadFile.fullSizeImage)
     assertThat(uploadDetail.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
+
+    // Check that file contents are sent to the document api
+    val fullSizeUuid = documentApiMockServer.verifyUploadedDocument(
+      fileWasUploaded = uploadFile.fullSizeImage!!,
+      withMetadata = mapOf("licenceId" to "2", "additionalConditionId" to "1", "kind" to "fullSizeImage"),
+    )
+    val thumbnailUuid = documentApiMockServer.verifyUploadedDocument(
+      fileWasUploaded = uploadFile.thumbnailImage!!,
+      withMetadata = mapOf("licenceId" to "2", "additionalConditionId" to "1", "kind" to "thumbnail"),
+    )
+    val pdfUuid = documentApiMockServer.verifyUploadedDocument(
+      fileWasUploaded = fileResource.contentAsByteArray,
+      withMetadata = mapOf("licenceId" to "2", "additionalConditionId" to "1", "kind" to "pdf"),
+    )
+
+    // Check that we are saving reference to the uuids of the docs sent to the remote api
+    assertThat(exclusionZoneUploadsRepository.count()).isEqualTo(1)
+    val exclusionZoneUpload = exclusionZoneUploadsRepository.findById(1).get()
+    assertThat(exclusionZoneUpload.licence.id).isEqualTo(2L)
+    assertThat(exclusionZoneUpload.additionalCondition.id).isEqualTo(1L)
+    assertThat(exclusionZoneUpload.pdfId).isEqualTo(pdfUuid)
+    assertThat(exclusionZoneUpload.thumbnailId).isEqualTo(thumbnailUuid)
+    assertThat(exclusionZoneUpload.fullImageId).isEqualTo(fullSizeUuid)
   }
 
   @Test
@@ -182,17 +211,20 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   }
   private companion object {
     val govUkApiMockServer = GovUkMockServer()
+    val documentApiMockServer = DocumentApiMockServer()
 
     @JvmStatic
     @BeforeAll
     fun startMocks() {
       govUkApiMockServer.start()
+      documentApiMockServer.start()
     }
 
     @JvmStatic
     @AfterAll
     fun stopMocks() {
       govUkApiMockServer.stop()
+      documentApiMockServer.stop()
     }
   }
 }
