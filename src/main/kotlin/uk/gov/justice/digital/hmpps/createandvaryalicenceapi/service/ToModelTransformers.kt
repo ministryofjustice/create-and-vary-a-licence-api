@@ -924,11 +924,9 @@ fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitor
 )
 
 fun determineElectronicMonitoringProviderStatus(
-  electronicMonitoringProvider: EntityElectronicMonitoringProvider?
-): ElectronicMonitoringProviderStatus {
-  return when {
-    electronicMonitoringProvider == null -> ElectronicMonitoringProviderStatus.NOT_NEEDED
-    electronicMonitoringProvider.isToBeTaggedForProgramme == null -> ElectronicMonitoringProviderStatus.NOT_STARTED
-    else -> ElectronicMonitoringProviderStatus.COMPLETE
-  }
+  electronicMonitoringProvider: EntityElectronicMonitoringProvider?,
+): ElectronicMonitoringProviderStatus = when {
+  electronicMonitoringProvider == null -> ElectronicMonitoringProviderStatus.NOT_NEEDED
+  electronicMonitoringProvider.isToBeTaggedForProgramme == null -> ElectronicMonitoringProviderStatus.NOT_STARTED
+  else -> ElectronicMonitoringProviderStatus.COMPLETE
 }
