@@ -367,7 +367,7 @@ fun toCrd(
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
-  electronicMonitoringProviderStatus = if (licence.electronicMonitoringProvider != null) ElectronicMonitoringProviderStatus.COMPLETE else ElectronicMonitoringProviderStatus.NOT_STARTED,
+  electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
 fun toHdc(
@@ -460,7 +460,7 @@ fun toHdc(
   curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
   electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
-  electronicMonitoringProviderStatus = if (licence.electronicMonitoringProvider != null) ElectronicMonitoringProviderStatus.COMPLETE else ElectronicMonitoringProviderStatus.NOT_STARTED,
+  electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
 fun toHdcVariation(
@@ -922,3 +922,13 @@ fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitor
   isToBeTaggedForProgramme = entity.isToBeTaggedForProgramme,
   programmeName = entity.programmeName,
 )
+
+fun determineElectronicMonitoringProviderStatus(
+  electronicMonitoringProvider: EntityElectronicMonitoringProvider?
+): ElectronicMonitoringProviderStatus {
+  return when {
+    electronicMonitoringProvider == null -> ElectronicMonitoringProviderStatus.NOT_NEEDED
+    electronicMonitoringProvider.isToBeTaggedForProgramme == null -> ElectronicMonitoringProviderStatus.NOT_STARTED
+    else -> ElectronicMonitoringProviderStatus.COMPLETE
+  }
+}
