@@ -14,19 +14,25 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.imageio.ImageIO
 
-class ExclusionZoneUploadFile(file: MultipartFile) {
+class ExclusionZoneUploadFile(private val file: MultipartFile) {
 
   var thumbnailImage: ByteArray? = null
   var fullSizeImage: ByteArray? = null
   var description: String? = null
 
+  fun status(): String = "(file=${if (file.isEmpty()) "empty" else "missing"}, thumbnail=${thumbnailImage?.size}"
+
   init {
     try {
-      Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
-        initDescription(pdfDoc)
-        initFullSizeImage(pdfDoc)
+      if (!file.isEmpty) {
+        // Process the MapMaker PDF file to ...
+        // get the fullSizeImage from page 1, descriptive text on page 2 and generate a thumbnail
+        Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
+          initDescription(pdfDoc)
+          initFullSizeImage(pdfDoc)
+        }
+        initThumbnail()
       }
-      initThumbnail()
     } catch (io: IOException) {
       log.error("IO error ${io.message}")
     } catch (ipe: InvalidPasswordException) {

@@ -41,23 +41,16 @@ class ExclusionZoneService(
 
     removeExistingDbRows(additionalCondition)
 
-    log.info("uploadExclusionZoneFile:  Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
+    log.info("uploadExclusionZoneFile: Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
 
-    if (file.isEmpty) {
-      log.error("uploadExclusion:  Empty file uploaded, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
-      throw ValidationException("Exclusion zone - file was empty.")
-    }
-
-    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and generate a thumbnail
     val uploadFile = ExclusionZoneUploadFile(file)
     val fullSizeImage = uploadFile.fullSizeImage
     val description = uploadFile.description
     val thumbnailImage = uploadFile.thumbnailImage
 
-    // Validate that we were able to extract meaningful data from the uploaded file
-    if (fullSizeImage == null || thumbnailImage == null) {
-      log.error("uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
-      throw ValidationException("Exclusion zone - failed to extract the expected image map")
+    if (file.isEmpty || null in listOf(thumbnailImage, fullSizeImage, description)) {
+      val reason = if (file.isEmpty) "Empty file" else "failed to extract the expected image map"
+      throw ValidationException("Exclusion zone upload document - $reason")
     }
 
     var originalDataDsUuid: UUID? = null
