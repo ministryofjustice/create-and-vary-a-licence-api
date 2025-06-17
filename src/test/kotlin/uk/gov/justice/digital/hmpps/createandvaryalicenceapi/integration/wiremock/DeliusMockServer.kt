@@ -82,30 +82,10 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetOffenderManagers() {
+  fun stubGetOffenderManagerError(crn: String = "X12345") {
     stubFor(
-      post(urlEqualTo("/probation-case/responsible-community-manager")).willReturn(
-        aResponse().withHeader("Content-Type", "application/json").withBody(
-          // language=json
-          """[{
-            "code": "staff-code-1",
-            "id": 125,
-            "case": { "crn": "A123456" },
-            "name": { "forename": "Test", "surname": "Test" },
-            "allocationDate": "2022-01-02",
-            "team": {
-              "code": "team-code-1",
-              "description": "staff-description-1",
-              "borough": { "code": "borough-code-1", "description": "borough-description-1" },
-              "district": { "code": "district-code-1", "description": "district-description-1" }
-            },
-            "provider": { 
-              "code": "probationArea-code-1", 
-              "description": "probationArea-description-1"
-            },
-            "email": "user@test.com"
-          }]""",
-        ).withStatus(200),
+      get(urlEqualTo("/probation-case/$crn/responsible-community-manager")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(byteArrayOf()).withStatus(200),
       ),
     )
   }

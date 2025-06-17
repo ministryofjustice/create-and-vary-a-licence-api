@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -13,14 +14,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 class ComAllocatedHandler(
   private val deliusApiClient: DeliusApiClient,
   private val offenderService: OffenderService,
+  private val objectMapper: ObjectMapper,
   private val staffService: StaffService,
 ) {
   private companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun processComAllocation(crn: String?) {
-    if (crn == null) return
+  fun processComAllocation(message: String) {
+    val event = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
+    val crn = event.personReference.crn() ?: return
 
     log.info("processing COM allocation for CRN $crn")
     val offenderManager = deliusApiClient.getOffenderManager(crn)

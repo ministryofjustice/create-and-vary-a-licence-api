@@ -24,6 +24,7 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api-preprod.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DOMAIN_EVENT_LISTENER_ENABLED: false
+    UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
 
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

@@ -45,10 +45,11 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       ),
     )
 
+    val message = mapper.writeValueAsString(sentEvent)
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
         .topicArn(domainEventsTopicArn)
-        .message(mapper.writeValueAsString(sentEvent))
+        .message(message)
         .messageAttributes(
           mapOf(
             "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(sentEvent.eventType).build(),
@@ -58,7 +59,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     ).get()
 
     awaitAtMost30Secs untilAsserted {
-      verify(comAllocatedHandler).processComAllocation(crn = sentEvent.personReference.crn())
+      verify(comAllocatedHandler).processComAllocation(message)
     }
     assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
