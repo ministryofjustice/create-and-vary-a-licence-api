@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary as EntityAdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition as EntityBespokeCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewAddress as EntityHdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcCurfewTimes as EntityHdcCurfewTimes
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -364,6 +366,7 @@ fun toCrd(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
   electronicMonitoringProviderStatus = if (licence.electronicMonitoringProvider != null) ElectronicMonitoringProviderStatus.COMPLETE else ElectronicMonitoringProviderStatus.NOT_STARTED,
 )
 
@@ -456,6 +459,7 @@ fun toHdc(
   submittedByFullName = licence.getSubmittedByFullName(),
   curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
   electronicMonitoringProviderStatus = if (licence.electronicMonitoringProvider != null) ElectronicMonitoringProviderStatus.COMPLETE else ElectronicMonitoringProviderStatus.NOT_STARTED,
 )
 
@@ -912,4 +916,9 @@ fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCu
   townOrCity = entity.townOrCity,
   county = entity.county,
   postcode = entity.postcode,
+)
+
+fun transformToModelElectronicMonitoringProvider(entity: EntityElectronicMonitoringProvider): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
+  isToBeTaggedForProgramme = entity.isToBeTaggedForProgramme,
+  programmeName = entity.programmeName,
 )
