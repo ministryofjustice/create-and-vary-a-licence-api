@@ -9,11 +9,8 @@ import org.springframework.web.multipart.MultipartFile
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ExclusionZoneUpload
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ExclusionZoneUploadsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import javax.imageio.ImageIO
@@ -24,7 +21,6 @@ class ExclusionZoneService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val documentService: DocumentService,
-  private val exclusionZoneUploadsRepository: ExclusionZoneUploadsRepository,
 ) {
 
   init {
@@ -59,13 +55,24 @@ class ExclusionZoneService(
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
 
-    uploadExclusionMapDocumentToService(uploadFile, licenceEntity, additionalCondition)
+    val metadata = mapOf(
+      "licenceId" to licenceEntity.id.toString(),
+      "additionalConditionId" to additionalCondition.id.toString(),
+    )
+    val originalDataDsUuid = documentService
+      .uploadDocument(file = file.bytes, metadata = metadata + mapOf("kind" to "pdf"))
+    val fullSizeImageDsUuid = documentService
+      .uploadDocument(file = uploadFile.fullSizeImage!!, metadata = metadata + mapOf("kind" to "fullSizeImage"))
+    val thumbnailImageDsUuid = documentService
+      .uploadDocument(file = uploadFile.thumbnailImage!!, metadata = metadata + mapOf("kind" to "thumbnail"))
 
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
       additionalConditionId = additionalCondition.id,
       originalData = file.bytes,
+      originalDataDsUuid = originalDataDsUuid.toString(),
       fullSizeImage = fullSizeImage,
+      fullSizeImageDsUuid = fullSizeImageDsUuid.toString(),
     )
 
     val savedDetail = additionalConditionUploadDetailRepository.saveAndFlush(uploadDetail)
@@ -77,39 +84,13 @@ class ExclusionZoneService(
       fileSize = file.size.toInt(),
       description = description,
       thumbnailImage = thumbnailImage,
+      thumbnailImageDsUuid = thumbnailImageDsUuid.toString(),
       uploadDetailId = savedDetail.id,
     )
 
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
-  }
-
-  private fun uploadExclusionMapDocumentToService(
-    uploadFile: ExclusionZoneUploadFile,
-    licenceEntity: Licence,
-    additionalCondition: AdditionalCondition,
-  ) {
-    val metadata = mapOf(
-      "licenceId" to licenceEntity.id.toString(),
-      "additionalConditionId" to additionalCondition.id.toString(),
-    )
-    val pdf = documentService
-      .uploadDocument(file = uploadFile.bytes, metadata = metadata + mapOf("kind" to "pdf"))
-    val image = documentService
-      .uploadDocument(file = uploadFile.fullSizeImage!!, metadata = metadata + mapOf("kind" to "fullSizeImage"))
-    val thumb = documentService
-      .uploadDocument(file = uploadFile.thumbnailImage!!, metadata = metadata + mapOf("kind" to "thumbnail"))
-
-    exclusionZoneUploadsRepository.save(
-      ExclusionZoneUpload(
-        licence = licenceEntity,
-        additionalCondition = additionalCondition,
-        pdfId = pdf,
-        fullImageId = image,
-        thumbnailId = thumb,
-      ),
-    )
   }
 
   @Transactional

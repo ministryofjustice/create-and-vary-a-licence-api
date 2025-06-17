@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.ExclusionZoneUploadsRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneUploadFile
 import java.time.Duration
 
@@ -30,9 +29,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
   @Autowired
   lateinit var additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository
-
-  @Autowired
-  lateinit var exclusionZoneUploadsRepository: ExclusionZoneUploadsRepository
 
   @BeforeEach
   fun setupClient() {
@@ -71,20 +67,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     val uploadFile = ExclusionZoneUploadFile(MockMultipartFile("file", fileResource.contentAsByteArray))
 
-    // Check that the upload summary values are present shows against this additional condition
-    val uploadSummary = conditions.first()
-    assertThat(uploadSummary.uploadDetailId).isGreaterThan(0)
-    assertThat(uploadSummary.filename).isEqualTo(fileResource.filename)
-    assertThat(uploadSummary.fileType).isEqualTo("application/pdf")
-    assertThat(uploadSummary.thumbnailImage).isEqualTo(uploadFile.thumbnailImage)
-    assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
-
-    // Check that the upload detail values are also stored and referenced by the ID column in the summary
-    val uploadDetail = additionalConditionUploadDetailRepository.findById(uploadSummary.uploadDetailId).orElseThrow()
-    assertThat(uploadDetail.licenceId).isEqualTo(2)
-    assertThat(uploadDetail.fullSizeImage).isEqualTo(uploadFile.fullSizeImage)
-    assertThat(uploadDetail.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
-
     // Check that file contents are sent to the document api
     val fullSizeUuid = documentApiMockServer.verifyUploadedDocument(
       fileWasUploaded = uploadFile.fullSizeImage!!,
@@ -99,14 +81,22 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       withMetadata = mapOf("licenceId" to "2", "additionalConditionId" to "1", "kind" to "pdf"),
     )
 
-    // Check that we are saving reference to the uuids of the docs sent to the remote api
-    assertThat(exclusionZoneUploadsRepository.count()).isEqualTo(1)
-    val exclusionZoneUpload = exclusionZoneUploadsRepository.findById(1).get()
-    assertThat(exclusionZoneUpload.licence.id).isEqualTo(2L)
-    assertThat(exclusionZoneUpload.additionalCondition.id).isEqualTo(1L)
-    assertThat(exclusionZoneUpload.pdfId).isEqualTo(pdfUuid)
-    assertThat(exclusionZoneUpload.thumbnailId).isEqualTo(thumbnailUuid)
-    assertThat(exclusionZoneUpload.fullImageId).isEqualTo(fullSizeUuid)
+    // Check that the upload summary values are present shows against this additional condition
+    val uploadSummary = conditions.first()
+    assertThat(uploadSummary.uploadDetailId).isGreaterThan(0)
+    assertThat(uploadSummary.filename).isEqualTo(fileResource.filename)
+    assertThat(uploadSummary.fileType).isEqualTo("application/pdf")
+    assertThat(uploadSummary.thumbnailImage).isEqualTo(uploadFile.thumbnailImage)
+    assertThat(uploadSummary.thumbnailImageDsUuid).isEqualTo(thumbnailUuid.toString())
+    assertThat(uploadSummary.description?.trim()).isEqualTo("Description")
+
+    // Check that the upload detail values are also stored and referenced by the ID column in the summary
+    val uploadDetail = additionalConditionUploadDetailRepository.findById(uploadSummary.uploadDetailId).orElseThrow()
+    assertThat(uploadDetail.licenceId).isEqualTo(2)
+    assertThat(uploadDetail.fullSizeImage).isEqualTo(uploadFile.fullSizeImage)
+    assertThat(uploadDetail.fullSizeImageDsUuid).isEqualTo(fullSizeUuid.toString())
+    assertThat(uploadDetail.originalData).isEqualTo(fileResource.inputStream.readAllBytes())
+    assertThat(uploadDetail.originalDataDsUuid).isEqualTo(pdfUuid.toString())
   }
 
   @Test

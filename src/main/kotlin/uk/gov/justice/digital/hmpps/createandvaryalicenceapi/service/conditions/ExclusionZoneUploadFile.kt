@@ -15,10 +15,6 @@ import java.io.IOException
 import javax.imageio.ImageIO
 
 class ExclusionZoneUploadFile(file: MultipartFile) {
-  val filename = file.originalFilename
-  val contentType = file.contentType
-  val fileSize = file.size.toInt()
-  val bytes: ByteArray = file.bytes
 
   var thumbnailImage: ByteArray? = null
   var fullSizeImage: ByteArray? = null
