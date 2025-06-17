@@ -23,6 +23,7 @@ class DocumentApiMockServer : WireMockServer(8097) {
       ),
     )
   }
+
   fun verifyUploadedDocument(
     didHappenXTimes: Int = 1,
     withUuid: String = "[a-z0-9A-Z|-]{36}",
@@ -39,6 +40,13 @@ class DocumentApiMockServer : WireMockServer(8097) {
     return UUID.fromString(
       findAll(request).first().url.substringAfter("/documents/$withType/"),
     )
+  }
+
+  fun verifyNoUploadedDocuments(
+    withUuid: String = "[a-z0-9A-Z|-]{36}",
+    withType: DocumentType = DocumentType.EXCLUSION_ZONE_MAP,
+  ) {
+    verify(0, postRequestedFor(urlMatching("/documents/$withType/$withUuid")))
   }
 
   private var happyResponse = """

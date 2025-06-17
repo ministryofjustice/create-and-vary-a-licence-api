@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -13,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
+import java.util.*
 import javax.imageio.ImageIO
 
 @Service
@@ -22,6 +24,9 @@ class ExclusionZoneService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val documentService: DocumentService,
 ) {
+
+  @Value("\${hmpps.document.api.enabled:false}")
+  private val documentServiceEnabled: Boolean = false
 
   init {
     ImageIO.scanForPlugins()
@@ -55,16 +60,22 @@ class ExclusionZoneService(
       throw ValidationException("Exclusion zone - failed to extract the expected image map")
     }
 
-    val metadata = mapOf(
-      "licenceId" to licenceEntity.id.toString(),
-      "additionalConditionId" to additionalCondition.id.toString(),
-    )
-    val originalDataDsUuid = documentService
-      .uploadDocument(file = file.bytes, metadata = metadata + mapOf("kind" to "pdf"))
-    val fullSizeImageDsUuid = documentService
-      .uploadDocument(file = uploadFile.fullSizeImage!!, metadata = metadata + mapOf("kind" to "fullSizeImage"))
-    val thumbnailImageDsUuid = documentService
-      .uploadDocument(file = uploadFile.thumbnailImage!!, metadata = metadata + mapOf("kind" to "thumbnail"))
+    var originalDataDsUuid: UUID? = null
+    var fullSizeImageDsUuid: UUID? = null
+    var thumbnailImageDsUuid: UUID? = null
+
+    if (documentServiceEnabled) {
+      val metadata = mapOf(
+        "licenceId" to licenceEntity.id.toString(),
+        "additionalConditionId" to additionalCondition.id.toString(),
+      )
+      originalDataDsUuid = documentService
+        .uploadDocument(file = file.bytes, metadata = metadata + mapOf("kind" to "pdf"))
+      fullSizeImageDsUuid = documentService
+        .uploadDocument(file = uploadFile.fullSizeImage!!, metadata = metadata + mapOf("kind" to "fullSizeImage"))
+      thumbnailImageDsUuid = documentService
+        .uploadDocument(file = uploadFile.thumbnailImage!!, metadata = metadata + mapOf("kind" to "thumbnail"))
+    }
 
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licenceEntity.id,
