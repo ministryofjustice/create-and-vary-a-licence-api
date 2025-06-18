@@ -15,9 +15,8 @@ class PrisonerUpdatedHandler(
   fun handleEvent(message: String) {
     val event = objectMapper.readValue(message, HMPPSPrisonerUpdatedEvent::class.java)
     if (event.additionalInformation.categoriesChanged.contains(DiffCategory.PERSONAL_DETAILS)) {
-      println(event)
+      updatePrisonerDetails(event.additionalInformation.nomsNumber)
     }
-    updatePrisonerDetails(event.additionalInformation.nomsNumber)
   }
 
   fun updatePrisonerDetails(nomsId: String) {
@@ -36,9 +35,9 @@ class PrisonerUpdatedHandler(
 }
 
 data class HMPPSPrisonerUpdatedEvent(
-  val eventType: String? = null,
+  val eventType: String? = PRISONER_UPDATED_EVENT_TYPE,
   val additionalInformation: AdditionalInformationPrisonerUpdated,
-  val version: String,
+  val version: Int,
   val occurredAt: String,
   val description: String,
 )

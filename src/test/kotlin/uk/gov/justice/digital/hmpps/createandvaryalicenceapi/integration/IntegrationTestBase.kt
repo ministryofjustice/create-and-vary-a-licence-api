@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresCont
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.PostgresContainer.setPostgresContainerProperties
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.OAuthExtension
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.ComAllocatedHandler
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
@@ -53,7 +52,10 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 */
 @ExtendWith(OAuthExtension::class)
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=false"])
+@SpringBootTest(
+  webEnvironment = RANDOM_PORT,
+  properties = ["spring.jpa.properties.hibernate.enable_lazy_load_no_trans=false"],
+)
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
 @SqlGroup(
@@ -66,9 +68,6 @@ abstract class IntegrationTestBase {
 
   @MockitoSpyBean
   lateinit var telemetryClient: TelemetryClient
-
-  @MockitoSpyBean
-  lateinit var comAllocatedHandler: ComAllocatedHandler
 
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")

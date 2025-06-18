@@ -33,7 +33,7 @@ class ComAllocatedHandlerTest {
     whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(offenderManager)
     whenever(staffService.updateComDetails(any())).thenReturn(com)
 
-    handler.processComAllocation(aComAllocatedEventMessage(crn))
+    handler.handleEvent(aComAllocatedEventMessage(crn))
 
     verify(deliusApiClient).assignDeliusRole(offenderManager.username?.trim()?.uppercase()!!)
     verify(staffService).updateComDetails(
@@ -69,7 +69,7 @@ class ComAllocatedHandlerTest {
 
     whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(null)
 
-    handler.processComAllocation(aComAllocatedEventMessage(crn))
+    handler.handleEvent(aComAllocatedEventMessage(crn))
 
     verify(deliusApiClient, never()).assignDeliusRole(any())
     verifyNoInteractions(staffService)

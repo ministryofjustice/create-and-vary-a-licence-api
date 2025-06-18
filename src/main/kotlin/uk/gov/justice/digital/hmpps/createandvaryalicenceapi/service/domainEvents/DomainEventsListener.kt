@@ -30,7 +30,7 @@ class DomainEventListener(
 
     when (val eventType = messageAttributes.eventType.value) {
       COM_ALLOCATED_EVENT_TYPE -> {
-        comAllocatedHandler.processComAllocation(message)
+        comAllocatedHandler.handleEvent(message)
       }
 
       PRISONER_UPDATED_EVENT_TYPE -> {

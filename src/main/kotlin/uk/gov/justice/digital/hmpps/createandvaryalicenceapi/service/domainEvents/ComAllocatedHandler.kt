@@ -21,10 +21,15 @@ class ComAllocatedHandler(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun processComAllocation(message: String) {
+  fun handleEvent(message: String) {
     val event = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
-    val crn = event.personReference.crn() ?: return
+    val crn = event.personReference.crn()
+    if (crn != null) {
+      processComAllocation(crn)
+    }
+  }
 
+  fun processComAllocation(crn: String) {
     log.info("processing COM allocation for CRN $crn")
     val offenderManager = deliusApiClient.getOffenderManager(crn)
     if (offenderManager == null) {
