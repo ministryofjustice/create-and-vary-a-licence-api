@@ -10,15 +10,15 @@
   },
   "datasource": [
     {
-      "id": "postgres",
-      "name": "postgres"
+      "id": "cvl",
+      "name": "cvl"
     }
   ],
   "dataset": [
     {
       "id": "licence-dataset",
       "name": "licence-dataset",
-      "datasource": "postgres",
+      "datasource": "cvl",
       "query": "SELECT noms_id, prison_description, prison_code, licence_start_date from licence where status_code = 'ACTIVE'",
       "schema": {
         "field": [
@@ -34,7 +34,7 @@
           },
           {
             "name": "prison_code",
-            "type": "date",
+            "type": "string",
             "display": ""
           },
           {
@@ -44,43 +44,9 @@
           }
         ]
       }
-    },
-    {
-      "id": "CVL-active-licences-total-count",
-      "name": "Total active licences",
-      "datasource": "cvl",
-      "query": "SELECT count(distinct(noms_id)) from licence where status_code = 'ACTIVE'",
-      "schema": {
-        "field": [
-          {
-            "name": "TOTAL_ACTIVE_LICENCE",
-            "type": "int",
-            "display": "Total ACTIVE"
-          }
-        ]
-      }
     }
   ],
   "policy": [
-    {
-      "id": "caseload",
-      "type": "row-level",
-      "action": [
-        "(prison_code in (${caseloads})"
-      ],
-      "rule": [
-        {
-          "effect": "permit",
-          "condition": [
-            {
-              "exists": [
-                "${caseload}"
-              ]
-            }
-          ]
-        }
-      ]
-    },
     {
       "id": "access",
       "type": "access",
@@ -91,7 +57,7 @@
             {
               "match": [
                 "${role}",
-                "ROLE_PRISONS_REPORTING_USER"
+                "ROLE_PRISON"
               ]
             }
           ]
@@ -107,12 +73,12 @@
       "classification": "list",
       "version": "v1.0",
       "render": "HTML",
-      "dataset": "$ref:CVL-active-licences-total-count",
+      "dataset": "$ref:licence-dataset",
       "summary": [
         {
           "id": "Active-Licences-total-count",
           "template": "page-header",
-          "dataset": "$ref:CVL-active-licences-total-count"
+          "dataset": "$ref:licence-dataset"
         }
       ],
       "feature": [
