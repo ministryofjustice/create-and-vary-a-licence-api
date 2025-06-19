@@ -20,17 +20,17 @@ SELECT l.id,
 FROM licence l
 		 LEFT JOIN LATERAL (
 	-- removes duplicate elements
-		SELECT REPLACE(TRIM(string_agg(value,',' ORDER BY ord)),',,',',') AS VALUE
-			FROM (
-				SELECT DISTINCT ON (TRIM (VALUE)) TRIM (VALUE) AS VALUE, ord FROM unnest(string_to_array(l.appointment_address, ',')) WITH ORDINALITY AS t(VALUE, ord) ) ) address_cleaned
-		ON TRUE
-		LEFT JOIN LATERAL ( SELECT string_to_array(address_cleaned.value, ',') AS VALUE ) address_array ON TRUE
-		LEFT JOIN LATERAL (
-			SELECT (regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '(([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])\s*[0-9][ABD-HJLNP-UW-Z]{2})', 'i' ))[1] AS full_postcode,
-			       (regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])', 'i' ))[1] AS outward_code,
-			       (regexp_matches(address_array.value[array_length(address_array.value, 1)], '^[A-Za-z](?=.*[0-9])(?=.*[A-Za-z0-9]).*'))[1] AS left_over )
-			sub ON TRUE
-		CROSS JOIN LATERAL ( SELECT regexp_replace(COALESCE (sub.full_postcode, ''), '[^A-Za-z0-9]', '', 'g') AS cleaned ) C
+	SELECT REPLACE(TRIM(string_agg(value,',' ORDER BY ord)),',,',',') AS VALUE
+FROM (
+	SELECT DISTINCT ON (TRIM (VALUE)) TRIM (VALUE) AS VALUE, ord FROM unnest(string_to_array(l.appointment_address, ',')) WITH ORDINALITY AS t(VALUE, ord) ) ) address_cleaned
+ON TRUE
+	LEFT JOIN LATERAL ( SELECT string_to_array(address_cleaned.value, ',') AS VALUE ) address_array ON TRUE
+	LEFT JOIN LATERAL (
+	SELECT (regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '(([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])\s*[0-9][ABD-HJLNP-UW-Z]{2})', 'i' ))[1] AS full_postcode,
+	(regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])', 'i' ))[1] AS outward_code,
+	(regexp_matches(address_array.value[array_length(address_array.value, 1)], '^[A-Za-z](?=.*[0-9])(?=.*[A-Za-z0-9]).*'))[1] AS left_over )
+	sub ON TRUE
+	CROSS JOIN LATERAL ( SELECT regexp_replace(COALESCE (sub.full_postcode, ''), '[^A-Za-z0-9]', '', 'g') AS cleaned ) C
 WHERE l.appointment_address IS NOT NULL;
 
 -- A Simple table to allow us to determine the Country by 2 digit post code prefix
@@ -1063,30 +1063,35 @@ DELETE
 FROM tmp_stage_5 USING tmp_stage_6
 WHERE tmp_stage_5.id = tmp_stage_6.id;
 
+
+-- check to see if the correct count
+select (select count(*) as processed from tmp_stage_6),(select count(*) as orgininal from licence where appointment_address is not null );
+
 -- tmp table to derived from above processing to create table of postcode, urban_name, postcode_prefix AS postcode_prefix, county, country
 CREATE
 TEMP TABLE tmp_post_code_to_urban_name AS
-SELECT postcode, urban_name, MAX(postcode_prefix) AS postcode_prefix, MAX(county) AS county, MAX(country) AS country
+SELECT postcode, max(urban_name) as urban_name, MAX(postcode_prefix) AS postcode_prefix, MAX(county) AS county, MAX(country) AS country
 FROM tmp_stage_6
 WHERE length(postcode) > 6
   AND urban_name IS NOT NULL
-GROUP BY postcode, urban_name;
+GROUP BY postcode;
+
 
 -- Stage 7 -- finds addresses with matching postcodes and pulls in details if they exist from the above tmp_post_code_to_urban_name
 -- Primarily for filling in missing urban_name
 
 CREATE
 TEMP TABLE tmp_stage_7 AS
-SELECT id,
-	   appointment_address,
-	   address_line_1,
-	   address_line_2,
-	   address_part_length,
-	   urban.urban_name,
-	   urban.postcode,
-	   urban.postcode_prefix,
-	   COALESCE(l.county,urban.county) AS county,
-	   COALESCE(l.country,urban.country) AS country
+SELECT DISTINCT id,
+				appointment_address,
+				address_line_1,
+				address_line_2,
+				address_part_length,
+				urban.urban_name,
+				urban.postcode,
+				urban.postcode_prefix,
+				COALESCE(l.county,urban.county) AS county,
+				COALESCE(l.country,urban.country) AS country
 FROM tmp_stage_6 l
 		 JOIN tmp_post_code_to_urban_name AS urban ON urban.postcode = l.postcode
 WHERE l.urban_name IS NULL;
@@ -1115,6 +1120,7 @@ DELETE
 FROM tmp_stage_6 USING tmp_stage_7
 WHERE tmp_stage_6.id = tmp_stage_7.id;
 
+/*
 DROP TABLE IF EXISTS tmp_postcode_country;
 DROP TABLE IF EXISTS tmp_uk_counties;
 DROP TABLE IF EXISTS tmp_uk_urban_places;
@@ -1126,9 +1132,7 @@ DROP TABLE IF EXISTS tmp_stage_3;
 DROP TABLE IF EXISTS tmp_stage_4;
 DROP TABLE IF EXISTS tmp_stage_5;
 DROP TABLE IF EXISTS tmp_stage_6;
-
+*/
 -- DROP TABLE IF EXISTS tmp_stage_7;
-
-
-
-
+-- query to match the result with the inital data
+-- select (select count(*) as processed from tmp_stage_7),(select count(*) as orgininal from licence where appointment_address is not null );
