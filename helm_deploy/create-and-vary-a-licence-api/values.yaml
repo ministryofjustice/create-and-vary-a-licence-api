@@ -43,7 +43,7 @@ generic-service:
     HMPPS_DOCUMENT_API_ENABLED: false
     HARDSTOP_ENABLED: false
     POLICYV3_ENABLED: true
-    FEATUTRE_TOGGLE_ELECTRONIC_MONITORING_RESPONSE_HANDLING: false
+    FEATURE_TOGGLE_ELECTRONIC_MONITORING_RESPONSE_HANDLING: false
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
