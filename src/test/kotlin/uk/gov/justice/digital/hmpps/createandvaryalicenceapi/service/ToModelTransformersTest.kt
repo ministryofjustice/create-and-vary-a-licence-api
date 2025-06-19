@@ -15,7 +15,7 @@ class ToModelTransformersTest {
   @Test
   fun `determineElectronicMonitoringProviderStatus returns NOT_STARTED when isToBeTaggedForProgramme is null`() {
     val provider = electronicMonitoringProvider.copy(
-      isToBeTaggedForProgramme = null
+      isToBeTaggedForProgramme = null,
     )
     val status = determineElectronicMonitoringProviderStatus(provider)
     assertThat(status).isEqualTo(ElectronicMonitoringProviderStatus.NOT_STARTED)
@@ -31,7 +31,7 @@ class ToModelTransformersTest {
   fun `determineElectronicMonitoringProviderStatus returns COMPLETE when isToBeTaggedForProgramme is false`() {
     val provider = electronicMonitoringProvider.copy(
       isToBeTaggedForProgramme = false,
-      programmeName = null
+      programmeName = null,
     )
     val status = determineElectronicMonitoringProviderStatus(provider)
     assertThat(status).isEqualTo(ElectronicMonitoringProviderStatus.COMPLETE)
