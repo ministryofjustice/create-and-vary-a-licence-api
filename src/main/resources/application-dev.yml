@@ -60,3 +60,9 @@ domain:
   event:
     listener:
       enabled: false
+
+update:
+  offender:
+    details:
+      handler:
+        enabled: false

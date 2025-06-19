@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -18,9 +19,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 class ComAllocatedHandlerTest {
   private val deliusApiClient = mock<DeliusApiClient>()
   private val offenderService = mock<OffenderService>()
+  private val objectMapper = jacksonObjectMapper()
   private val staffService = mock<StaffService>()
 
-  private val handler = ComAllocatedHandler(deliusApiClient, offenderService, staffService)
+  private val handler = ComAllocatedHandler(deliusApiClient, offenderService, objectMapper, staffService)
 
   @Test
   fun `should allocate a com to an offender`() {
@@ -31,7 +33,7 @@ class ComAllocatedHandlerTest {
     whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(offenderManager)
     whenever(staffService.updateComDetails(any())).thenReturn(com)
 
-    handler.processComAllocation(crn)
+    handler.handleEvent(aComAllocatedEventMessage(crn))
 
     verify(deliusApiClient).assignDeliusRole(offenderManager.username?.trim()?.uppercase()!!)
     verify(staffService).updateComDetails(
@@ -63,14 +65,25 @@ class ComAllocatedHandlerTest {
 
   @Test
   fun `should stop processing if offender manager can't be found`() {
-    val crn = "X666322"
+    val crn = "X696325"
 
     whenever(deliusApiClient.getOffenderManager(crn)).thenReturn(null)
 
-    handler.processComAllocation(crn)
+    handler.handleEvent(aComAllocatedEventMessage(crn))
 
     verify(deliusApiClient, never()).assignDeliusRole(any())
     verifyNoInteractions(staffService)
     verifyNoInteractions(offenderService)
   }
+
+  private fun aComAllocatedEventMessage(crn: String) = jacksonObjectMapper().writeValueAsString(
+    HMPPSDomainEvent(
+      eventType = COM_ALLOCATED_EVENT_TYPE,
+      version = 0,
+      occurredAt = "2023-12-05T00:00:00Z",
+      personReference = PersonReference(
+        listOf(Identifiers("CRN", crn)),
+      ),
+    ),
+  )
 }

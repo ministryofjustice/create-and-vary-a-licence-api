@@ -56,7 +56,14 @@ class OffenderControllerTest {
     reset(offenderService, staffService)
 
     mvc = MockMvcBuilders
-      .standaloneSetup(OffenderController(offenderService, staffService, false))
+      .standaloneSetup(
+        OffenderController(
+          offenderService,
+          staffService,
+          domainEventListenerEnabled = false,
+          updateOffenderDetailsHandleEnabled = false,
+        ),
+      )
       .setControllerAdvice(ControllerAdvice())
       .build()
   }
