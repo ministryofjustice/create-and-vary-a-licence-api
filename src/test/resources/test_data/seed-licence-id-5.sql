@@ -70,3 +70,6 @@ values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
+insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
+VALUES (1, null, null);
+
