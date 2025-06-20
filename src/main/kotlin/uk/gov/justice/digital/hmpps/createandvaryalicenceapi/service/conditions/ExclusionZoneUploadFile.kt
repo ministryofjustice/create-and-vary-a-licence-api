@@ -16,6 +16,12 @@ import javax.imageio.ImageIO
 
 class ExclusionZoneUploadFile(private val file: MultipartFile) {
 
+  var isEmpty = file.isEmpty
+  var bytes = file.bytes
+  var originalFilename = file.originalFilename
+  var contentType = file.contentType
+  var size = file.size.toInt()
+
   var thumbnailImage: ByteArray? = null
   var fullSizeImage: ByteArray? = null
   var description: String? = null
