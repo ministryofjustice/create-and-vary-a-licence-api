@@ -941,7 +941,7 @@ TEMPORARY TABLE tmp_common_addresses (
 
 INSERT INTO tmp_common_addresses (appointment_address,address_line_1,address_line_2,urban_name,county,postcode,
 								  postcode_prefix,country)
-VALUES (TO BE PROVIDED);
+VALUES (<TO_BE_FOUND_ON_TICKET>);
 
 -- Stage 5 finds regular address and adds urban_name postcode postcode_prefix county country if present
 
