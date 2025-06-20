@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request
 
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.NotEmpty
 
 @Schema(description = "Request object for searching for offenders within a set of teams attached to a staff member")
 data class PrisonUserSearchRequest(
@@ -9,7 +9,7 @@ data class PrisonUserSearchRequest(
   @Schema(description = "The query the user wishes to search for (e.g. CRN, name, NOMIS ID)", example = "Joe Bloggs")
   val query: String,
 
-  @Schema(description = "The prison caseloads of the prison staff member", example = "BAI")
-  @field:NotNull
-  val prisonCaseload: String,
+  @Schema(description = "The prison caseloads of the prison staff member", example = "[BAI]")
+  @field:NotEmpty
+  val prisonCaseload: List<String>,
 )

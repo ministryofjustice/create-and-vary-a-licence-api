@@ -139,7 +139,7 @@ class CaseloadControllerTest {
   fun `Search for offender on prison case admin caseload`() {
     val request = PrisonUserSearchRequest(
       "ABC",
-      "MDI",
+      listOf("MDI"),
     )
 
     val result = PrisonCaseAdminSearchResult(listOf(TestData.caCase().copy(prisonerNumber = "ABC")), emptyList())

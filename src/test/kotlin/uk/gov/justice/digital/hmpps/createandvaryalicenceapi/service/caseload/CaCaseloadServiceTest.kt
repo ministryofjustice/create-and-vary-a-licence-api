@@ -1385,7 +1385,7 @@ class CaCaseloadServiceTest {
 
     val aPrisonUserSearchRequest = PrisonUserSearchRequest(
       query = "Person",
-      prisonCaseload = "BAI",
+      prisonCaseload = listOf("BAI"),
     )
   }
 }
