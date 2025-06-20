@@ -175,6 +175,8 @@ class CaCaseloadService(
         probationPractitioner = ProbationPractitioner(
           staffUsername = licence.comUsername,
         ),
+        prisonCode = licence.prisonCode,
+        prisonDescription = licence.prisonDescription,
       )
     }
   }
@@ -308,6 +310,8 @@ class CaCaseloadService(
         staffCode = com?.code,
         name = com?.name?.fullName(),
       ),
+      prisonCode = c.nomisRecord.prisonId,
+      prisonDescription = c.nomisRecord.prisonName,
     )
   }
 
@@ -353,6 +357,8 @@ class CaCaseloadService(
           licence,
         ),
         probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
+        prisonCode = licence.prisonCode,
+        prisonDescription = licence.prisonDescription,
       )
     }.filterNotNull()
   }
