@@ -13,10 +13,10 @@ SELECT l.id,
 	   address_cleaned.value AS appointment_address,
 	   array_length(address_array.value,1) AS address_part_length,
 	   UPPER(CASE
-				 WHEN full_postcode IS NOT NULL THEN SUBSTRING(cleaned FROM 1 FOR length(cleaned) - 3) || ' ' ||
+				 WHEN length(full_postcode) > 5 THEN SUBSTRING(cleaned FROM 1 FOR length(cleaned) - 3) || ' ' ||
 													 SUBSTRING(cleaned FROM length(cleaned) - 2 FOR 3)
-				 WHEN outward_code IS NOT NULL THEN outward_code
-				 ELSE left_over END) AS postcode
+				 ELSE coalesce(left_over_1,left_over_2,left_over_3) end
+	   ) AS postcode
 FROM licence l
 		 LEFT JOIN LATERAL (
 	-- removes duplicate elements
@@ -25,12 +25,19 @@ FROM (
 	SELECT DISTINCT ON (TRIM (VALUE)) TRIM (VALUE) AS VALUE, ord FROM unnest(string_to_array(l.appointment_address, ',')) WITH ORDINALITY AS t(VALUE, ord) ) ) address_cleaned
 ON TRUE
 	LEFT JOIN LATERAL ( SELECT string_to_array(address_cleaned.value, ',') AS VALUE ) address_array ON TRUE
+	-- 👇 Extract full postcode (with or without space), clean, and standardize
 	LEFT JOIN LATERAL (
-	SELECT (regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '(([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])\s*[0-9][ABD-HJLNP-UW-Z]{2})', 'i' ))[1] AS full_postcode,
-	(regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])', 'i' ))[1] AS outward_code,
-	(regexp_matches(address_array.value[array_length(address_array.value, 1)], '^[A-Za-z](?=.*[0-9])(?=.*[A-Za-z0-9]).*'))[1] AS left_over )
-	sub ON TRUE
-	CROSS JOIN LATERAL ( SELECT regexp_replace(COALESCE (sub.full_postcode, ''), '[^A-Za-z0-9]', '', 'g') AS cleaned ) C
+	SELECT
+	(regexp_matches( regexp_replace(address_cleaned.value, '[^A-Za-z0-9 ,]', '', 'g'), '(([A-PR-UWYZ][0-9][0-9]?|[A-PR-UWYZ][A-HK-Y][0-9][0-9]?|[A-PR-UWYZ][0-9][A-HJKPSTUW]|[A-PR-UWYZ][A-HK-Y][0-9][ABEHMNPRVWXY])\s*[0-9][ABD-HJLNP-UW-Z]{2})', 'i' ))[1]
+	AS full_postcode
+	) best_match ON true
+	LEFT JOIN LATERAL (
+	SELECT 	(regexp_matches(TRIM(address_array.value[array_length(address_array.value, 1)]), '^(?=[A-Za-z][A-Za-z0-9 ]{2,7}$)(?=.*\d)[A-Za-z0-9 ]{3,8}$'))[1] AS left_over_1,
+	(regexp_matches(TRIM(address_array.value[array_length(address_array.value, 1)-1]), '^(?=[A-Za-z][A-Za-z0-9 ]{2,7}$)(?=.*\d)[A-Za-z0-9 ]{3,8}$'))[1] AS left_over_2,
+	(regexp_matches(TRIM(address_array.value[array_length(address_array.value, 1)-2]), '^(?=[A-Za-z][A-Za-z0-9 ]{2,7}$)(?=.*\d)[A-Za-z0-9 ]{3,8}$'))[1] AS left_over_3
+	where  full_postcode is null
+	) sub ON true
+	CROSS JOIN LATERAL ( SELECT regexp_replace(COALESCE (full_postcode, ''), '[^A-Za-z0-9]', '', 'g') AS cleaned )
 WHERE l.appointment_address IS NOT NULL;
 
 -- A Simple table to allow us to determine the Country by 2 digit post code prefix
