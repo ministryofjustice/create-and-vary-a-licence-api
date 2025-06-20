@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
@@ -22,17 +23,21 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
+import java.util.UUID
 
 class ExclusionZoneServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
+  private val documentService = mock<DocumentService>()
 
   private val service = ExclusionZoneService(
     licenceRepository,
     additionalConditionRepository,
     additionalConditionUploadDetailRepository,
+    documentService,
   )
 
   @BeforeEach
@@ -41,7 +46,10 @@ class ExclusionZoneServiceTest {
       licenceRepository,
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
+      documentService,
     )
+
+    Mockito.`when`(documentService.uploadDocument(any(), any())).thenReturn(UUID.randomUUID())
   }
 
   @Test

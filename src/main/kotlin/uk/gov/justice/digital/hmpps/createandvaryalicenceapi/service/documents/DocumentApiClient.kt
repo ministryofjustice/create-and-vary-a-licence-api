@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.client.bodyToMono
 import java.util.UUID
 
 @Service
@@ -16,22 +18,21 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     documentType: DocumentType,
     file: ByteArray,
     metadata: Map<String, String> = mapOf(),
-  ): Document = documentApiClient.post()
+  ): Document? = documentApiClient.post()
     .uri("/documents/$documentType/$documentUuid")
     .header("Service-Name", "create-and-vary-a-licence-api")
     .bodyValue(
       MultipartBodyBuilder().apply {
-        part("file", file, contentTypeFor(documentType))
+        part("file", ByteArrayResource(file)).filename(documentUuid.toString())
         part("metadata", metadata)
       }.build(),
     )
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
+    .onStatus(HttpStatusCode::isError) { response ->
+      val errorResponse = response.bodyToMono<Map<String, String>>()
+      error("Error during uploading document (status=${response.statusCode()}, body=$errorResponse)")
+    }
     .bodyToMono(Document::class.java)
-    .onErrorResume { Mono.empty() }
-    .block() ?: error("Unable to upload document: $documentType/$documentUuid")
-
-  private fun contentTypeFor(documentType: DocumentType) = when (documentType) {
-    DocumentType.EXCLUSION_ZONE_MAP -> MediaType.APPLICATION_PDF
-  }
+    .block()
 }
