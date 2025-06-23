@@ -37,7 +37,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.LocalDate
-import java.util.stream.Collectors.toSet
 
 @Service
 class CaCaseloadService(
@@ -112,8 +111,8 @@ class CaCaseloadService(
   }
 
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
-    val inPrisonResults = getPrisonOmuCaseload(body.prisonCaseload.toSet(), body.query)
-    val onProbationResults = getProbationOmuCaseload(body.prisonCaseload.toSet(), body.query)
+    val inPrisonResults = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
+    val onProbationResults = getProbationOmuCaseload(body.prisonCaseloads, body.query)
 
     return PrisonCaseAdminSearchResult(inPrisonResults, onProbationResults)
   }

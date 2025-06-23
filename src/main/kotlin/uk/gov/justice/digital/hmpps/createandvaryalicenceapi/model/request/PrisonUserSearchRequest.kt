@@ -11,5 +11,5 @@ data class PrisonUserSearchRequest(
 
   @Schema(description = "The prison caseloads of the prison staff member", example = "[BAI]")
   @field:NotEmpty
-  val prisonCaseload: List<String>,
+  val prisonCaseloads: Set<String>,
 )
