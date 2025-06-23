@@ -111,8 +111,8 @@ class CaCaseloadService(
   }
 
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
-    val inPrisonResults = getPrisonOmuCaseload(setOf(body.prisonCaseload), body.query)
-    val onProbationResults = getProbationOmuCaseload(setOf(body.prisonCaseload), body.query)
+    val inPrisonResults = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
+    val onProbationResults = getProbationOmuCaseload(body.prisonCaseloads, body.query)
 
     return PrisonCaseAdminSearchResult(inPrisonResults, onProbationResults)
   }
