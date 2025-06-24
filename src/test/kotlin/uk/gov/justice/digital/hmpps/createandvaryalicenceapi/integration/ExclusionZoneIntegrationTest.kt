@@ -21,7 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneUploadFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZonePdfExtract
 import java.time.Duration
 
 class ExclusionZoneIntegrationTest : IntegrationTestBase() {
@@ -68,15 +68,15 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .orElseThrow()
     assertThat(conditions).hasSize(1)
 
-    val uploadFile = ExclusionZoneUploadFile(MockMultipartFile("file", fileResource.contentAsByteArray))
+    val uploadFile = ExclusionZonePdfExtract.fromMultipartFile(MockMultipartFile("file", fileResource.contentAsByteArray))!!
 
     // Check that file contents are sent to the document api
     val fullSizeUuid = documentApiMockServer.verifyUploadedDocument(
-      fileWasUploaded = uploadFile.fullSizeImage!!,
+      fileWasUploaded = uploadFile.fullSizeImage,
       withMetadata = mapOf("licenceId" to "2", "additionalConditionId" to "1", "kind" to "fullSizeImage"),
     )
     val thumbnailUuid = documentApiMockServer.verifyUploadedDocument(
-      fileWasUploaded = uploadFile.thumbnailImage!!,
+      fileWasUploaded = uploadFile.thumbnailImage,
       withMetadata = mapOf("licenceId" to "2", "additionalConditionId" to "1", "kind" to "thumbnail"),
     )
     val pdfUuid = documentApiMockServer.verifyUploadedDocument(

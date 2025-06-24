@@ -44,30 +44,31 @@ class ExclusionZoneService(
 
     log.info("uploadExclusionZoneFile: Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
 
-    val uploadFile = ExclusionZoneUploadFile(file)
+    val pdfExtract = ExclusionZonePdfExtract.fromMultipartFile(file)
 
-    if (uploadFile.isEmpty || null in listOf(uploadFile.fullSizeImage, uploadFile.thumbnailImage, uploadFile.description)) {
+    if (pdfExtract == null) {
       val reason = if (file.isEmpty) "Empty file" else "failed to extract the expected image map"
       throw ValidationException("Exclusion zone upload document - $reason")
     }
 
-    logAndUploadExclusionZoneFile(uploadFile = uploadFile, licence = licenceEntity, additionalCondition = additionalCondition)
+    logAndUploadExclusionZoneFile(file, pdfExtract, licenceEntity, additionalCondition)
   }
 
   fun logAndUploadExclusionZoneFile(
-    uploadFile: ExclusionZoneUploadFile,
+    originalFile: MultipartFile,
+    pdfExtract: ExclusionZonePdfExtract,
     licence: Licence,
     additionalCondition: AdditionalCondition,
   ) {
     val (originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid) =
-      uploadDocuments(uploadFile = uploadFile, licence = licence, additionalCondition = additionalCondition)
+      uploadDocuments(originalFile, pdfExtract, licence, additionalCondition)
 
     val uploadDetail = AdditionalConditionUploadDetail(
       licenceId = licence.id,
       additionalConditionId = additionalCondition.id,
-      originalData = uploadFile.bytes,
+      originalData = originalFile.bytes,
       originalDataDsUuid = originalDataDsUuid?.toString(),
-      fullSizeImage = uploadFile.fullSizeImage!!,
+      fullSizeImage = pdfExtract.fullSizeImage,
       fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
     )
 
@@ -75,11 +76,11 @@ class ExclusionZoneService(
 
     val uploadSummary = AdditionalConditionUploadSummary(
       additionalCondition = additionalCondition,
-      filename = uploadFile.originalFilename,
-      fileType = uploadFile.contentType,
-      fileSize = uploadFile.size,
-      description = uploadFile.description,
-      thumbnailImage = uploadFile.thumbnailImage,
+      filename = originalFile.originalFilename,
+      fileType = originalFile.contentType,
+      fileSize = originalFile.size.toInt(),
+      description = pdfExtract.description,
+      thumbnailImage = pdfExtract.thumbnailImage,
       thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
       uploadDetailId = savedDetail.id,
     )
@@ -90,7 +91,8 @@ class ExclusionZoneService(
   }
 
   private fun uploadDocuments(
-    uploadFile: ExclusionZoneUploadFile,
+    originalFile: MultipartFile,
+    pdfExtract: ExclusionZonePdfExtract,
     licence: Licence,
     additionalCondition: AdditionalCondition,
   ): Triple<UUID?, UUID?, UUID?> {
@@ -104,11 +106,11 @@ class ExclusionZoneService(
     )
 
     val originalDataDsUuid = documentService
-      .uploadDocument(file = uploadFile.bytes, metadata = metadata + mapOf("kind" to "pdf"))
+      .uploadDocument(file = originalFile.bytes, metadata = metadata + mapOf("kind" to "pdf"))
     val fullSizeImageDsUuid = documentService
-      .uploadDocument(file = uploadFile.fullSizeImage!!, metadata = metadata + mapOf("kind" to "fullSizeImage"))
+      .uploadDocument(file = pdfExtract.fullSizeImage, metadata = metadata + mapOf("kind" to "fullSizeImage"))
     val thumbnailImageDsUuid = documentService
-      .uploadDocument(file = uploadFile.thumbnailImage!!, metadata = metadata + mapOf("kind" to "thumbnail"))
+      .uploadDocument(file = pdfExtract.thumbnailImage, metadata = metadata + mapOf("kind" to "thumbnail"))
 
     return Triple(originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid)
   }

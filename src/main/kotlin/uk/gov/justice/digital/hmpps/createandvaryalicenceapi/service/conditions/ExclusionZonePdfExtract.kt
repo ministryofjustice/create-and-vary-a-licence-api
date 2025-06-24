@@ -14,30 +14,31 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.imageio.ImageIO
 
-class ExclusionZoneUploadFile(private val file: MultipartFile) {
+data class ExclusionZonePdfExtract(
+  var thumbnailImage: ByteArray,
+  var fullSizeImage: ByteArray,
+  var description: String,
+) {
+  companion object {
+    fun fromMultipartFile(file: MultipartFile): ExclusionZonePdfExtract? = Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
+      return ExclusionZonePdfExtractBuilder(pdfDoc).build()
+    }
+  }
+}
 
-  var isEmpty = file.isEmpty
-  var bytes = file.bytes
-  var originalFilename = file.originalFilename
-  var contentType = file.contentType
-  var size = file.size.toInt()
-
-  var thumbnailImage: ByteArray? = null
-  var fullSizeImage: ByteArray? = null
-  var description: String? = null
-
-  fun status(): String = "(file=${if (file.isEmpty()) "empty" else "missing"}, thumbnail=${thumbnailImage?.size}"
-
-  init {
+class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
+  fun build(): ExclusionZonePdfExtract? {
     try {
-      if (!file.isEmpty) {
-        // Process the MapMaker PDF file to ...
-        // get the fullSizeImage from page 1, descriptive text on page 2 and generate a thumbnail
-        Loader.loadPDF(RandomAccessReadBuffer(file.inputStream)).use { pdfDoc ->
-          initDescription(pdfDoc)
-          initFullSizeImage(pdfDoc)
-        }
-        initThumbnail()
+      val description = description()
+      val fullSizeImage = fullSizeImage()
+      val thumbnailImage = thumbnailImage(fullSizeImage)
+
+      if (!listOf(description, thumbnailImage, fullSizeImage).contains(null)) {
+        return ExclusionZonePdfExtract(
+          description = description!!,
+          fullSizeImage = fullSizeImage,
+          thumbnailImage = thumbnailImage,
+        )
       }
     } catch (io: IOException) {
       log.error("IO error ${io.message}")
@@ -46,36 +47,36 @@ class ExclusionZoneUploadFile(private val file: MultipartFile) {
     } catch (iae: IllegalArgumentException) {
       log.error("Illegal Argument ${iae.message}")
     }
+
+    return null
   }
 
-  private fun initDescription(pdfDoc: PDDocument) {
-    val stripper = PDFTextStripper()
-    stripper.sortByPosition = true
-    stripper.startPage = 2
-    description = stripper.getText(pdfDoc)
+  private fun description(): String? = with(PDFTextStripper()) {
+    sortByPosition = true
+    startPage = 2
+    getText(pdfDoc)
   }
 
-  private fun initFullSizeImage(pdfDoc: PDDocument) {
-    val renderer = PDFRenderer(pdfDoc)
-    val firstImage = renderer.renderImage(0)
-    val croppedImage = firstImage.getSubimage(
-      IMAGE_LOCATION_X,
-      IMAGE_LOCATION_Y,
-      firstImage.width - IMAGE_PADDING,
-      firstImage.height - IMAGE_PADDING,
-    )
+  private fun fullSizeImage(): ByteArray = with(PDFRenderer(pdfDoc)) {
+    val firstImage = renderImage(0)
+    val croppedImage = firstImage
+      .getSubimage(
+        IMAGE_LOCATION_X,
+        IMAGE_LOCATION_Y,
+        firstImage.width - IMAGE_PADDING,
+        firstImage.height - IMAGE_PADDING,
+      )
 
     with(ByteArrayOutputStream()) {
       ImageIO.write(croppedImage, "png", this)
-      fullSizeImage = toByteArray()
+      return toByteArray()
     }
   }
 
-  private fun initThumbnail() {
+  private fun thumbnailImage(fullSizeImage: ByteArray?): ByteArray {
     if (fullSizeImage?.isEmpty() == true) {
       log.error("Creating thumbnail image - full size image was empty.")
-      thumbnailImage = ByteArray(0)
-      return
+      return ByteArray(0)
     }
 
     val inputStream = fullSizeImage!!.inputStream()
@@ -92,7 +93,7 @@ class ExclusionZoneUploadFile(private val file: MultipartFile) {
 
     with(ByteArrayOutputStream()) {
       ImageIO.write(outputImage, "jpg", this)
-      thumbnailImage = toByteArray()
+      return toByteArray()
     }
   }
 
