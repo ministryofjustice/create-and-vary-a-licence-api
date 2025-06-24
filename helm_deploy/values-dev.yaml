@@ -38,6 +38,7 @@ generic-service:
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: cvl-alerts-non-prod
+  businessHoursOnly: true
 
 jobs:
   - name: prompt-licence-creation-job
