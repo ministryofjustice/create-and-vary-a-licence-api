@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -25,9 +24,6 @@ class ExclusionZoneService(
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val documentService: DocumentService,
 ) {
-
-  @Value("\${hmpps.document.api.enabled:false}")
-  private val documentServiceEnabled: Boolean = false
 
   init {
     ImageIO.scanForPlugins()
@@ -96,10 +92,6 @@ class ExclusionZoneService(
     licence: Licence,
     additionalCondition: AdditionalCondition,
   ): Triple<UUID?, UUID?, UUID?> {
-    if (!documentServiceEnabled) {
-      return Triple(null, null, null)
-    }
-
     val metadata = mapOf(
       "licenceId" to licence.id.toString(),
       "additionalConditionId" to additionalCondition.id.toString(),
