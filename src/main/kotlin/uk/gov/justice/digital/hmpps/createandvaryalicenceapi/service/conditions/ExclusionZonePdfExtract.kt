@@ -83,13 +83,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
     val original = ImageIO.read(inputStream)
     val scaled = original.getScaledInstance(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, Image.SCALE_DEFAULT)
     val outputImage = BufferedImage(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, BufferedImage.TYPE_INT_RGB)
-    val ready = outputImage.graphics.drawImage(scaled, 0, 0, null)
-
-    if (!ready) {
-      // Not seen it get here, but just in case.
-      log.info("Initial image response not ready - waiting 500ms")
-      Thread.sleep(WAIT_FOR_IMAGE_READY_MS)
-    }
+    outputImage.graphics.drawImage(scaled, 0, 0, null)
 
     with(ByteArrayOutputStream()) {
       ImageIO.write(outputImage, "jpg", this)
