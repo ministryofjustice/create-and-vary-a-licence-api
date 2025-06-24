@@ -36,6 +36,7 @@ data class AdditionalConditionUploadSummary(
 
   @Basic
   val thumbnailImage: ByteArray? = null,
+  val thumbnailImageDsUuid: String? = null,
 
   @NotNull
   val uploadDetailId: Long,
