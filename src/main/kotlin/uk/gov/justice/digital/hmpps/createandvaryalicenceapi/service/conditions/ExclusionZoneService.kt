@@ -36,7 +36,7 @@ class ExclusionZoneService(
     val additionalCondition = additionalConditionRepository.findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    removeExistingDbRows(additionalCondition)
+    removeExistingUploads(additionalCondition)
 
     log.info("uploadExclusionZoneFile: Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
 
@@ -117,7 +117,7 @@ class ExclusionZoneService(
       .findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    removeExistingDbRows(additionalCondition)
+    removeExistingUploads(additionalCondition)
 
     // Remove the additionalConditionData item for 'outOfBoundFilename'
     val updatedAdditionalConditionData = additionalCondition
@@ -133,7 +133,7 @@ class ExclusionZoneService(
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
   }
 
-  private fun removeExistingDbRows(additionalCondition: AdditionalCondition) {
+  private fun removeExistingUploads(additionalCondition: AdditionalCondition) {
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
       additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
         additionalConditionUploadDetailRepository.delete(detail)
