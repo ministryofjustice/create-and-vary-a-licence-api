@@ -1,0 +1,185 @@
+{
+  "id": "dpd001-active-licences",
+  "name": "Active CVL licences",
+  "description": "Data products for Create and Vary a licence ",
+  "metadata": {
+    "author": "Caija Addai",
+    "owner": "Derrick Malone",
+    "version": "1.0.5",
+    "interactive": "true"
+  },
+  "datasource": [
+    {
+      "id": "cvl",
+      "name": "cvl"
+    }
+  ],
+  "dataset": [
+    {
+      "id": "licence-dataset",
+      "name": "licence-dataset",
+      "datasource": "cvl",
+      "query": "SELECT noms_id, prison_description, prison_code, licence_start_date from licence where status_code = 'ACTIVE'",
+      "schema": {
+        "field": [
+          {
+            "name": "noms_id",
+            "type": "string",
+            "display": ""
+          },
+          {
+            "name": "prison_description",
+            "type": "string",
+            "display": ""
+          },
+          {
+            "name": "prison_code",
+            "type": "date",
+            "display": ""
+          },
+          {
+            "name": "licence_start_date",
+            "type": "date",
+            "display": ""
+          }
+        ]
+      }
+    },
+    {
+      "id": "CVL-active-licences-total-count",
+      "name": "Total active licences",
+      "datasource": "cvl",
+      "query": "SELECT count(distinct(noms_id)) from licence where status_code = 'ACTIVE'",
+      "schema": {
+        "field": [
+          {
+            "name": "TOTAL_ACTIVE_LICENCE",
+            "type": "int",
+            "display": "Total ACTIVE"
+          }
+        ]
+      }
+    }
+  ],
+  "policy": [
+    {
+      "id": "caseload",
+      "type": "row-level",
+      "action": [
+        "(prison_code in (${caseloads})"
+      ],
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "exists": [
+                "${caseload}"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "access",
+      "type": "access",
+      "rule": [
+        {
+          "effect": "permit",
+          "condition": [
+            {
+              "match": [
+                "${role}",
+                "ROLE_PRISONS_REPORTING_USER"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "report": [
+    {
+      "id": "active_licences",
+      "name": "Active licences (Last 3 months)",
+      "description": "Active licences with release date in the last 3 months",
+      "classification": "list",
+      "version": "v1.0",
+      "render": "HTML",
+      "dataset": "$ref:CVL-active-licences-total-count",
+      "summary": [
+        {
+          "id": "Active-Licences-total-count",
+          "template": "page-header",
+          "dataset": "$ref:CVL-active-licences-total-count"
+        }
+      ],
+      "feature": [
+        {
+          "type": "share"
+        },
+        {
+          "type": "save"
+        },
+        {
+          "type": "email"
+        }
+      ],
+      "metadata": {
+        "hints": [
+          "interactive"
+        ]
+      },
+      "specification": {
+        "template": "list",
+        "field": [
+          {
+            "name": "$ref:prison_code",
+            "display": "Prison Code",
+            "formula": "",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:licence_start_date",
+            "display": "Date",
+            "formula": "format_date(${date}, 'dd/MM/yyyy')",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": true,
+            "filter": {
+              "type": "daterange",
+              "default": "today(-3,months) - today()"
+            }
+          },
+          {
+            "name": "$ref:noms_id",
+            "display": "NOMS ID",
+            "formula": "",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:prison_code",
+            "display": "Prison Code",
+            "formula": "",
+            "visible": "false",
+            "sortable": true,
+            "defaultsort": false
+          },
+          {
+            "name": "$ref:prison_description",
+            "display": "Prison Description",
+            "formula": "",
+            "visible": "true",
+            "sortable": true,
+            "defaultsort": false
+          }
+        ]
+      }
+    }
+  ]
+}
