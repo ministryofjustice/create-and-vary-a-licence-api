@@ -15,7 +15,7 @@ SELECT l.id,
 	   UPPER(CASE
 				 WHEN length(full_postcode) > 5 THEN SUBSTRING(cleaned FROM 1 FOR length(cleaned) - 3) || ' ' ||
 													 SUBSTRING(cleaned FROM length(cleaned) - 2 FOR 3)
-				 ELSE coalesce(left_over_1,left_over_2,left_over_3) end
+				 ELSE coalesce(full_postcode,left_over_1,left_over_2,left_over_3) end
 	   ) AS postcode
 FROM licence l
 		 LEFT JOIN LATERAL (
