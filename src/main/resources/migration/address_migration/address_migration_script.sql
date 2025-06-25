@@ -2,6 +2,11 @@
 
 PLEASE DO NOT RUN THIS YET!
 
+-- Info on Lateral joins
+--    You use a LATERAL JOIN when:
+--    The right-hand side of the join needs to refer to columns from the left-hand side.
+--    You want to call a subquery, function, or derived table for each row in the outer query.
+
 -- Stage 1 will :
 --  1. Clean and extract post codes
 --  2. Remove duplicate elements in the string
@@ -182,6 +187,7 @@ SELECT address.*, country.postcode_prefix, country.country
 FROM tmp_stage_1 address
 		 LEFT JOIN tmp_postcode_country AS country ON POSITION(country.postcode_prefix IN address.postcode) = 1
 WHERE LENGTH(country.postcode_prefix) = 2;
+-- The above looks at post codes with a prefix of two SA,CF for SA42..
 
 -- delete processed data from last source table
 DELETE
@@ -194,6 +200,7 @@ SELECT address.*, country.postcode_prefix, country.country
 FROM tmp_stage_1 address
 		 LEFT JOIN tmp_postcode_country AS country ON POSITION(country.postcode_prefix IN address.postcode) = 1
 WHERE LENGTH(country.postcode_prefix) = 1;
+-- The above looks at post codes with a prefix of one S,C for S12
 
 DELETE
 FROM tmp_stage_1 USING tmp_stage_2
