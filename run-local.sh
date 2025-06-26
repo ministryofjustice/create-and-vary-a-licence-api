@@ -71,6 +71,6 @@ fi
 # Run the application with stdout and dev profiles active
 echo "Starting the API locally"
 
-SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun $@
+SPRING_PROFILES_ACTIVE=stdout,dev ./gradlew bootRun
 
 # End
