@@ -13,6 +13,7 @@
       "id": "cvl",
       "name": "cvl"
     }
+
   ],
   "dataset": [
     {
@@ -34,7 +35,7 @@
           },
           {
             "name": "prison_code",
-            "type": "date",
+            "type": "string",
             "display": ""
           },
           {
@@ -46,16 +47,16 @@
       }
     },
     {
-      "id": "CVL-active-licences-total-count",
+      "id": "cvl-active-licences-total-count",
       "name": "Total active licences",
       "datasource": "cvl",
-      "query": "SELECT count(distinct(noms_id)) from licence where status_code = 'ACTIVE'",
+      "query": "SELECT count(distinct(noms_id)) as TOTAL_ACTIVE_LICENCE from licence where status_code = 'ACTIVE'",
       "schema": {
         "field": [
           {
             "name": "TOTAL_ACTIVE_LICENCE",
             "type": "int",
-            "display": "Total ACTIVE"
+            "display": "Total"
           }
         ]
       }
@@ -66,7 +67,7 @@
       "id": "caseload",
       "type": "row-level",
       "action": [
-        "prison_code = '${caseloads}'"
+        "prison_code in (${caseloads})"
       ],
       "rule": [
         {
@@ -108,13 +109,6 @@
       "version": "v1.0",
       "render": "HTML",
       "dataset": "$ref:licence-dataset",
-      "summary": [
-        {
-          "id": "Active-Licences-total-count",
-          "template": "page-header",
-          "dataset": "$ref:CVL-active-licences-total-count"
-        }
-      ],
       "feature": [
         {
           "type": "share"
@@ -137,7 +131,6 @@
           {
             "name": "$ref:prison_code",
             "display": "Prison Code",
-            "formula": "",
             "visible": "true",
             "sortable": true,
             "defaultsort": false
@@ -145,7 +138,7 @@
           {
             "name": "$ref:licence_start_date",
             "display": "Date",
-            "formula": "format_date(${date}, 'dd/MM/yyyy')",
+            "formula": "format_date(${licence_start_date}, 'dd/MM/yyyy')",
             "visible": "true",
             "sortable": true,
             "defaultsort": true,
@@ -157,29 +150,26 @@
           {
             "name": "$ref:noms_id",
             "display": "NOMS ID",
-            "formula": "",
             "visible": "true",
-            "sortable": true,
-            "defaultsort": false
-          },
-          {
-            "name": "$ref:prison_code",
-            "display": "Prison Code",
-            "formula": "",
-            "visible": "false",
             "sortable": true,
             "defaultsort": false
           },
           {
             "name": "$ref:prison_description",
             "display": "Prison Description",
-            "formula": "",
             "visible": "true",
             "sortable": true,
             "defaultsort": false
           }
         ]
-      }
+      },
+      "summary": [
+        {
+          "id": "cvl-active-licences-total-count",
+          "template": "page-header",
+          "dataset": "$ref:cvl-active-licences-total-count"
+        }
+      ]
     }
   ]
 }
