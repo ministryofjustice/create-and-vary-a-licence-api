@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -62,6 +63,7 @@ class HdcVariationLicence(
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
+  licenceAppointmentAddress: Address? = null,
   appointmentContact: String? = null,
   override var spoDiscussion: String? = null,
   override var vloDiscussion: String? = null,
@@ -137,6 +139,7 @@ class HdcVariationLicence(
   appointmentTime = appointmentTime,
   appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
+  licenceAppointmentAddress = licenceAppointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
@@ -199,6 +202,7 @@ class HdcVariationLicence(
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
+    licenceAppointmentAddress: Address? = this.licenceAppointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     spoDiscussion: String? = this.spoDiscussion,
     vloDiscussion: String? = this.vloDiscussion,
@@ -265,6 +269,7 @@ class HdcVariationLicence(
       appointmentTime = appointmentTime,
       appointmentTimeType = appointmentTimeType,
       appointmentAddress = appointmentAddress,
+      licenceAppointmentAddress = licenceAppointmentAddress,
       appointmentContact = appointmentContact,
       spoDiscussion = spoDiscussion,
       vloDiscussion = vloDiscussion,
@@ -345,6 +350,7 @@ class HdcVariationLicence(
     "appointmentTime=$appointmentTime, " +
     "appointmentTimeType=$appointmentTimeType, " +
     "appointmentAddress=$appointmentAddress, " +
+    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
     "appointmentContact=$appointmentContact, " +
     "spoDiscussion=$spoDiscussion, " +
     "vloDiscussion=$vloDiscussion, " +

@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAd
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AppointmentService
 
@@ -158,6 +159,7 @@ class AppointmentController(
     appointmentService.updateContactNumber(licenceId, request)
   }
 
+  @Deprecated("/id/{licenceId}/appointment/address")
   @PutMapping(value = ["/id/{licenceId}/appointment-address"])
   @Operation(
     summary = "Update the address where the initial appointment will take place",
@@ -196,6 +198,48 @@ class AppointmentController(
     @PathVariable("licenceId") licenceId: Long,
     @Valid @RequestBody
     request: AppointmentAddressRequest,
+  ) {
+    appointmentService.updateAppointmentAddress(licenceId, request)
+  }
+
+  @PutMapping(value = ["/id/{licenceId}/appointment/address"])
+  @Operation(
+    summary = "Update the address where the initial appointment will take place",
+    description = "Update the address where the initial appointment will take place. Requires ROLE_CVL_ADMIN.",
+    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Address updated",
+      ),
+      ApiResponse(
+        responseCode = "400",
+        description = "Bad request, request body must be valid",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "401",
+        description = "Unauthorised, requires a valid Oauth2 token",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "Forbidden, requires an appropriate role",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "The licence for this ID was not found.",
+        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
+      ),
+    ],
+  )
+  fun addAppointmentAddress(
+    @PathVariable("licenceId") licenceId: Long,
+    @Valid @RequestBody
+    request: AddAddressRequest,
   ) {
     appointmentService.updateAppointmentAddress(licenceId, request)
   }

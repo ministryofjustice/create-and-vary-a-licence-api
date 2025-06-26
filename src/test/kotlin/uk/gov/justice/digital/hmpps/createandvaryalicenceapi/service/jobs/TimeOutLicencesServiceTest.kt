@@ -10,6 +10,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
@@ -21,13 +22,13 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 class TimeOutLicencesServiceTest {
-  private val licenceRepository = mock<LicenceRepository>()
+  private val crdLicenceRepository = mock<CrdLicenceRepository>()
   private val releaseDateService = mock<ReleaseDateService>()
   private val workingDaysService = mock<WorkingDaysService>()
   private val licenceService = mock<LicenceService>()
 
   private val service = TimeOutLicencesService(
-    licenceRepository,
+    crdLicenceRepository,
     releaseDateService,
     workingDaysService,
     clock,
@@ -44,7 +45,7 @@ class TimeOutLicencesServiceTest {
     SecurityContextHolder.setContext(securityContext)
 
     reset(
-      licenceRepository,
+      crdLicenceRepository,
       releaseDateService,
       workingDaysService,
       licenceService,
@@ -57,25 +58,25 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(licenceRepository, times(0)).getAllLicencesToTimeOut()
+    verify(crdLicenceRepository, times(0)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
   }
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(emptyList())
+    whenever(crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()).thenReturn(emptyList())
 
     service.timeOutLicences()
 
-    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
+    verify(crdLicenceRepository, times(1)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
 
-    verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
+    verify(crdLicenceRepository, times(0)).saveAllAndFlush(emptyList())
   }
 
   @Test
   fun `should update licences status if there are eligible licences`() {
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(
+    whenever(crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()).thenReturn(
       listOf(
         aLicenceEntity,
       ),
@@ -86,7 +87,7 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
+    verify(crdLicenceRepository, times(1)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
 
     verify(licenceService, times(1)).timeout(aLicenceEntity, "due to reaching hard stop")
   }
@@ -99,7 +100,7 @@ class TimeOutLicencesServiceTest {
     )
 
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(licenceRepository.getAllLicencesToTimeOut()).thenReturn(
+    whenever(crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()).thenReturn(
       listOf(
         aLicenceEntity,
         anIneligibleLicence,
@@ -114,7 +115,7 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(licenceRepository, times(1)).getAllLicencesToTimeOut()
+    verify(crdLicenceRepository, times(1)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
 
     verify(licenceService, times(1)).timeout(aLicenceEntity, "due to reaching hard stop")
     verify(licenceService, times(0)).timeout(anIneligibleLicence, "due to reaching hard stop")

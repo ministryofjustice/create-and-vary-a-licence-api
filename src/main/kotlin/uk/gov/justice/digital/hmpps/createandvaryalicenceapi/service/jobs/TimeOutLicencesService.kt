@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -13,7 +13,7 @@ import java.time.LocalDate
 
 @Service
 class TimeOutLicencesService(
-  private val licenceRepository: LicenceRepository,
+  private val crdLicenceRepository: CrdLicenceRepository,
   private val releaseDateService: ReleaseDateService,
   private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
@@ -31,7 +31,7 @@ class TimeOutLicencesService(
     if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
-    val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut().filter {
+    val licencesToTimeOut = crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual().filter {
       releaseDateService.isInHardStopPeriod(it)
     }
     if (licencesToTimeOut.isEmpty()) {

@@ -10,16 +10,16 @@ import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HardStopLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 
 class HardStopLicenceReviewOverdueServiceTest {
-  private val licenceRepository = mock<LicenceRepository>()
+  private val hardStopLicenceRepository = mock<HardStopLicenceRepository>()
   private val notifyService = mock<NotifyService>()
 
   private val service = HardStopLicenceReviewOverdueService(
-    licenceRepository,
+    hardStopLicenceRepository,
     notifyService,
   )
 
@@ -33,24 +33,24 @@ class HardStopLicenceReviewOverdueServiceTest {
     SecurityContextHolder.setContext(securityContext)
 
     reset(
-      licenceRepository,
+      hardStopLicenceRepository,
       notifyService,
     )
   }
 
   @Test
   fun `should not send notifications if there are no eligible licences`() {
-    whenever(licenceRepository.getHardStopLicencesNeedingReview()).thenReturn(emptyList())
+    whenever(hardStopLicenceRepository.findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()).thenReturn(emptyList())
 
     service.sendComReviewEmail()
 
-    verify(licenceRepository, times(1)).getHardStopLicencesNeedingReview()
-    verify(licenceRepository, times(0)).saveAllAndFlush(emptyList())
+    verify(hardStopLicenceRepository, times(1)).findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()
+    verify(hardStopLicenceRepository, times(0)).saveAllAndFlush(emptyList())
   }
 
   @Test
   fun `should send notifications if there are eligible licences`() {
-    whenever(licenceRepository.getHardStopLicencesNeedingReview()).thenReturn(
+    whenever(hardStopLicenceRepository.findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()).thenReturn(
       listOf(
         aHardStopLicenceEntity,
       ),
@@ -58,7 +58,7 @@ class HardStopLicenceReviewOverdueServiceTest {
 
     service.sendComReviewEmail()
 
-    verify(licenceRepository, times(1)).getHardStopLicencesNeedingReview()
+    verify(hardStopLicenceRepository, times(1)).findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()
 
     verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
       aHardStopLicenceEntity.responsibleCom.email,

@@ -6,9 +6,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -22,10 +19,6 @@ interface LicenceRepository :
   fun findAllByNomsIdAndStatusCodeIn(nomsId: String, status: List<LicenceStatus>): List<Licence>
   fun findAllByCrnAndStatusCodeIn(crn: String, status: List<LicenceStatus>): List<Licence>
   fun findByStatusCodeAndProbationAreaCode(statusCode: LicenceStatus, probationAreaCode: String): List<Licence>
-  fun findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
-    bookingId: List<Long>,
-    status: LicenceStatus,
-  ): List<CrdLicence>
 
   fun findAllByBookingIdAndStatusCodeInAndKindIn(
     bookingId: Long,
@@ -48,6 +41,7 @@ interface LicenceRepository :
     status: List<LicenceStatus>,
   ): Set<Long>
 
+  //
   @Query(
     """
     SELECT l
@@ -125,18 +119,6 @@ interface LicenceRepository :
 
   @Query(
     """
-      SELECT *
-        FROM licence
-        WHERE kind = 'CRD'
-        AND status_code = 'IN_PROGRESS' 
-        AND conditional_release_date - (INTERVAL '14' DAY) <= CURRENT_DATE;
-  """,
-    nativeQuery = true,
-  )
-  fun getAllLicencesToTimeOut(): List<CrdLicence>
-
-  @Query(
-    """
     SELECT l
         FROM Licence l
         WHERE l.statusCode != uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.INACTIVE
@@ -161,18 +143,6 @@ interface LicenceRepository :
     """,
   )
   fun getDraftLicencesPassedReleaseDate(): List<Licence>
-
-  @Query(
-    """
-    SELECT *
-        FROM licence
-        WHERE kind = 'HDC'
-        AND status_code IN ('IN_PROGRESS', 'SUBMITTED', 'APPROVED')
-        AND conditional_release_date - (INTERVAL '9' DAY) <= CURRENT_DATE;
-    """,
-    nativeQuery = true,
-  )
-  fun getDraftLicencesIneligibleForHdcRelease(): List<HdcLicence>
 
   @Query(
     """
@@ -216,18 +186,6 @@ interface LicenceRepository :
   """,
   )
   fun getLicencesReadyForApproval(prisonCodes: List<String>): List<Licence>
-
-  @Query(
-    """
-      SELECT *
-        FROM licence
-        WHERE kind = 'HARD_STOP'
-        AND review_date IS NULL
-        AND CAST(licence_activated_date as DATE) + INTERVAL '5' DAY = CURRENT_DATE;
-    """,
-    nativeQuery = true,
-  )
-  fun getHardStopLicencesNeedingReview(): List<HardStopLicence>
 
   @Query(
     """

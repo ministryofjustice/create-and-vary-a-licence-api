@@ -4,12 +4,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HardStopLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.NotifyService
 
 @Service
 class HardStopLicenceReviewOverdueService(
-  private val licenceRepository: LicenceRepository,
+  private val hardStopLicenceRepository: HardStopLicenceRepository,
   private val notifyService: NotifyService,
 ) {
 
@@ -20,7 +20,7 @@ class HardStopLicenceReviewOverdueService(
   @Transactional
   fun sendComReviewEmail() {
     log.info("Job to runHardStopLicenceReviewOverdueJob started")
-    val licencesToReview = licenceRepository.getHardStopLicencesNeedingReview()
+    val licencesToReview = hardStopLicenceRepository.findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()
     if (licencesToReview.isEmpty()) {
       log.info("Job to runHardStopLicenceReviewOverdueJob has no licences that need reviewing")
       return

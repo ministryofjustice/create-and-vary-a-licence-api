@@ -59,6 +59,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -98,6 +99,7 @@ class LicenceServiceTest {
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val bespokeConditionRepository = mock<BespokeConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
+  private val crdLicenceRepository = mock<CrdLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
@@ -113,6 +115,7 @@ class LicenceServiceTest {
   private val service =
     LicenceService(
       licenceRepository,
+      crdLicenceRepository,
       staffRepository,
       standardConditionRepository,
       additionalConditionRepository,
@@ -957,7 +960,7 @@ class LicenceServiceTest {
 
     whenever(licenceRepository.findById(aLicenceEntity.id)).thenReturn(Optional.of(aLicenceEntity))
     whenever(
-      licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+      crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
         listOf(aLicenceEntity.bookingId!!),
         LicenceStatus.TIMED_OUT,
       ),
@@ -1561,7 +1564,7 @@ class LicenceServiceTest {
       versionOfId = approvedLicenceVersion.id,
     )
     whenever(
-      licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+      crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
         listOf(approvedLicenceVersion.bookingId!!),
         LicenceStatus.TIMED_OUT,
       ),

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
@@ -182,6 +183,11 @@ data class CrdLicence(
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
   )
   override val appointmentAddress: String? = null,
+
+  @Schema(
+    description = "The address of initial appointment",
+  )
+  override val licenceAppointmentAddress: AddressResponse? = null,
 
   @Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
