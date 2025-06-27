@@ -1173,18 +1173,18 @@ DROP TABLE IF EXISTS tmp_stage_5;
 DROP TABLE IF EXISTS tmp_stage_6;
 DROP TABLE IF EXISTS tmp_stage_7;
 
-/*
 
+ /**
 -- This will move the data over to the real DB but the flyway creation script needs to be run from the other ticket
 -- https://dsdmoj.atlassian.net/browse/CVSL-353
 
 ALTER TABLE address DISABLE TRIGGER set_address_last_updated_timestamp;
 
 INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode,
-  country, source, created_timestamp, last_updated_timestamp
+   source, created_timestamp, last_updated_timestamp
 ) SELECT
 	  reference, first_line, second_line, town_or_city, county, postcode,
-	  country, source, created_timestamp, last_updated_timestamp
+	   source, created_timestamp, last_updated_timestamp
 	FROM tmp_stage_8;
 
 INSERT INTO licence_appointment_address (licence_id, address_id)
