@@ -1,7 +1,4 @@
 -- This SQL tries to make sense out of the comma delimited string addresses found in the licence
-
--- PLEASE DO NOT RUN THIS YET!
-
 -- Info on Lateral joins
 --    You use a LATERAL JOIN when:
 --    The right-hand side of the join needs to refer to columns from the left-hand side.
