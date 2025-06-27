@@ -26,8 +26,8 @@ class ControllerAdvice {
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
   fun handleMethodArgumentNotValid(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+    log.error("Method argument exception, validation failed: {}", ex.stackTraceToString())
     val message = ex.bindingResult.allErrors.map { it.defaultMessage }.filterNotNull().sorted().joinToString("; ")
-
     return ResponseEntity
       .status(BAD_REQUEST)
       .body(

@@ -40,17 +40,17 @@ class HardStopLicenceReviewOverdueServiceTest {
 
   @Test
   fun `should not send notifications if there are no eligible licences`() {
-    whenever(hardStopLicenceRepository.findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()).thenReturn(emptyList())
+    whenever(hardStopLicenceRepository.getHardStopLicencesNeedingReview()).thenReturn(emptyList())
 
     service.sendComReviewEmail()
 
-    verify(hardStopLicenceRepository, times(1)).findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()
+    verify(hardStopLicenceRepository, times(1)).getHardStopLicencesNeedingReview()
     verify(hardStopLicenceRepository, times(0)).saveAllAndFlush(emptyList())
   }
 
   @Test
   fun `should send notifications if there are eligible licences`() {
-    whenever(hardStopLicenceRepository.findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()).thenReturn(
+    whenever(hardStopLicenceRepository.getHardStopLicencesNeedingReview()).thenReturn(
       listOf(
         aHardStopLicenceEntity,
       ),
@@ -58,7 +58,7 @@ class HardStopLicenceReviewOverdueServiceTest {
 
     service.sendComReviewEmail()
 
-    verify(hardStopLicenceRepository, times(1)).findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()
+    verify(hardStopLicenceRepository, times(1)).getHardStopLicencesNeedingReview()
 
     verify(notifyService, times(1)).sendHardStopLicenceReviewOverdueEmail(
       aHardStopLicenceEntity.responsibleCom.email,

@@ -33,7 +33,7 @@ class DeactivateHdcLicencesService(
   @Transactional
   fun runJob() {
     log.info("Running job to deactivate HDC licences")
-    val licencesToDeactivate = hdcLicenceRepository.findByKindAndStatusCodeInAndConditionalReleaseDateLessThanEqual()
+    val licencesToDeactivate = hdcLicenceRepository.getDraftLicencesIneligibleForHdcRelease()
     if (licencesToDeactivate.isEmpty()) {
       log.info("There are no HDC licences to deactivate")
       return

@@ -57,17 +57,17 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(crdLicenceRepository, times(0)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
+    verify(crdLicenceRepository, times(0)).getAllLicencesToTimeOut()
   }
 
   @Test
   fun `should not update licences status if there are no eligible licences`() {
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()).thenReturn(emptyList())
+    whenever(crdLicenceRepository.getAllLicencesToTimeOut()).thenReturn(emptyList())
 
     service.timeOutLicences()
 
-    verify(crdLicenceRepository, times(1)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
+    verify(crdLicenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verify(crdLicenceRepository, times(0)).saveAllAndFlush(emptyList())
   }
@@ -75,7 +75,7 @@ class TimeOutLicencesServiceTest {
   @Test
   fun `should update licences status if there are eligible licences`() {
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()).thenReturn(
+    whenever(crdLicenceRepository.getAllLicencesToTimeOut()).thenReturn(
       listOf(
         aLicenceEntity,
       ),
@@ -86,7 +86,7 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(crdLicenceRepository, times(1)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
+    verify(crdLicenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verify(licenceService, times(1)).timeout(aLicenceEntity, "due to reaching hard stop")
   }
@@ -99,7 +99,7 @@ class TimeOutLicencesServiceTest {
     )
 
     whenever(workingDaysService.isNonWorkingDay(LocalDate.now(clock))).thenReturn(false)
-    whenever(crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()).thenReturn(
+    whenever(crdLicenceRepository.getAllLicencesToTimeOut()).thenReturn(
       listOf(
         aLicenceEntity,
         anIneligibleLicence,
@@ -114,7 +114,7 @@ class TimeOutLicencesServiceTest {
 
     service.timeOutLicences()
 
-    verify(crdLicenceRepository, times(1)).findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual()
+    verify(crdLicenceRepository, times(1)).getAllLicencesToTimeOut()
 
     verify(licenceService, times(1)).timeout(aLicenceEntity, "due to reaching hard stop")
     verify(licenceService, times(0)).timeout(anIneligibleLicence, "due to reaching hard stop")

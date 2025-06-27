@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
 

@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Coun
 
 @Schema(description = "A response object for a address")
 data class AddressResponse(
-  @Schema(description = "The address's unique property reference number", example = "200010019924", required = true)
+  @Schema(description = "The address's unique reference", example = "f47ac10b-58cc-4372-a567-0e02b2c3d479 or 10023122431", required = true)
   val reference: String,
 
   @Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)

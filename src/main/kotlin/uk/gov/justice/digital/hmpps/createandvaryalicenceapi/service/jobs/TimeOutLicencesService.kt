@@ -31,7 +31,7 @@ class TimeOutLicencesService(
     if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
-    val licencesToTimeOut = crdLicenceRepository.findByKindAndStatusCodeAndConditionalReleaseDateLessThanEqual().filter {
+    val licencesToTimeOut = crdLicenceRepository.getAllLicencesToTimeOut().filter {
       releaseDateService.isInHardStopPeriod(it)
     }
     if (licencesToTimeOut.isEmpty()) {

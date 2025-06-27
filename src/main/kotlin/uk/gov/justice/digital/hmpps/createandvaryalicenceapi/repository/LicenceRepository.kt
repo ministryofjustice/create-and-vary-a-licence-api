@@ -41,7 +41,6 @@ interface LicenceRepository :
     status: List<LicenceStatus>,
   ): Set<Long>
 
-  //
   @Query(
     """
     SELECT l

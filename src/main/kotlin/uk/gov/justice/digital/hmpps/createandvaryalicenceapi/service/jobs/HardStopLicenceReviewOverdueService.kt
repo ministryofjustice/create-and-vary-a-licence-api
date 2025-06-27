@@ -20,7 +20,7 @@ class HardStopLicenceReviewOverdueService(
   @Transactional
   fun sendComReviewEmail() {
     log.info("Job to runHardStopLicenceReviewOverdueJob started")
-    val licencesToReview = hardStopLicenceRepository.findByKindAndReviewDateIsNullAndLicenceActivatedDateBetween()
+    val licencesToReview = hardStopLicenceRepository.getHardStopLicencesNeedingReview()
     if (licencesToReview.isEmpty()) {
       log.info("Job to runHardStopLicenceReviewOverdueJob has no licences that need reviewing")
       return

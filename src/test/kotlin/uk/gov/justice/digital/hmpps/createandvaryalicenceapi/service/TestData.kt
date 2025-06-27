@@ -49,7 +49,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence

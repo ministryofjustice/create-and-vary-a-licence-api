@@ -55,7 +55,7 @@ class DeactivateHdcLicencesServiceTest {
 
   @Test
   fun `return if no licences to deactivate`() {
-    whenever(hdcLicenceRepository.findByKindAndStatusCodeInAndConditionalReleaseDateLessThanEqual()).thenReturn(emptyList())
+    whenever(hdcLicenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(emptyList())
 
     service.runJob()
 
@@ -70,7 +70,7 @@ class DeactivateHdcLicencesServiceTest {
     val licences = listOf(
       aHdcLicence,
     )
-    whenever(hdcLicenceRepository.findByKindAndStatusCodeInAndConditionalReleaseDateLessThanEqual()).thenReturn(licences)
+    whenever(hdcLicenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(licences)
 
     service.runJob()
 
@@ -78,7 +78,7 @@ class DeactivateHdcLicencesServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(hdcLicenceRepository, times(1)).findByKindAndStatusCodeInAndConditionalReleaseDateLessThanEqual()
+    verify(hdcLicenceRepository, times(1)).getDraftLicencesIneligibleForHdcRelease()
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
