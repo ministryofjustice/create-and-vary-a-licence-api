@@ -111,8 +111,8 @@ class CaCaseloadService(
   }
 
   fun searchForOffenderOnPrisonCaseAdminCaseload(body: PrisonUserSearchRequest): PrisonCaseAdminSearchResult {
-    val inPrisonResults = getPrisonOmuCaseload(setOf(body.prisonCaseload), body.query)
-    val onProbationResults = getProbationOmuCaseload(setOf(body.prisonCaseload), body.query)
+    val inPrisonResults = getPrisonOmuCaseload(body.prisonCaseloads, body.query)
+    val onProbationResults = getProbationOmuCaseload(body.prisonCaseloads, body.query)
 
     return PrisonCaseAdminSearchResult(inPrisonResults, onProbationResults)
   }
@@ -175,6 +175,8 @@ class CaCaseloadService(
         probationPractitioner = ProbationPractitioner(
           staffUsername = licence.comUsername,
         ),
+        prisonCode = licence.prisonCode,
+        prisonDescription = licence.prisonDescription,
       )
     }
   }
@@ -308,6 +310,8 @@ class CaCaseloadService(
         staffCode = com?.code,
         name = com?.name?.fullName(),
       ),
+      prisonCode = c.nomisRecord.prisonId,
+      prisonDescription = c.nomisRecord.prisonName,
     )
   }
 
@@ -353,6 +357,8 @@ class CaCaseloadService(
           licence,
         ),
         probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
+        prisonCode = licence.prisonCode,
+        prisonDescription = licence.prisonDescription,
       )
     }.filterNotNull()
   }

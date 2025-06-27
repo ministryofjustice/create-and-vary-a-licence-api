@@ -286,6 +286,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffUsername = "tcom"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         )
@@ -299,6 +301,8 @@ class CaCaseloadServiceTest {
               name = "Person One",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         )
@@ -329,6 +333,8 @@ class CaCaseloadServiceTest {
                 staffIdentifier = null,
                 staffUsername = null,
               ),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
             TestData.caCase().copy(
               licenceId = 2,
@@ -342,6 +348,8 @@ class CaCaseloadServiceTest {
                 staffIdentifier = null,
                 staffUsername = null,
               ),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         )
@@ -506,6 +514,8 @@ class CaCaseloadServiceTest {
             lastWorkedOnBy = "X Y",
             isDueForEarlyRelease = true,
             isInHardStopPeriod = false,
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
         ),
       )
@@ -579,6 +589,8 @@ class CaCaseloadServiceTest {
               staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
           TestData.caCase().copy(
             name = "Person One",
@@ -591,6 +603,8 @@ class CaCaseloadServiceTest {
               staffUsername = null,
             ),
             lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
         ),
       )
@@ -871,6 +885,8 @@ class CaCaseloadServiceTest {
               staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
           TestData.caCase().copy(
             licenceId = 2,
@@ -886,6 +902,8 @@ class CaCaseloadServiceTest {
               staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
           TestData.caCase().copy(
             licenceId = 1,
@@ -901,6 +919,8 @@ class CaCaseloadServiceTest {
               staffUsername = null,
             ),
             lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
           TestData.caCase().copy(
             licenceId = 4,
@@ -916,6 +936,8 @@ class CaCaseloadServiceTest {
               staffUsername = "tcom",
             ),
             lastWorkedOnBy = "X Y",
+            prisonCode = "BAI",
+            prisonDescription = "Moorland (HMP)",
           ),
         ),
       )
@@ -936,6 +958,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
           onProbationResults = emptyList(),
@@ -955,6 +979,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
           onProbationResults = emptyList(),
@@ -974,6 +1000,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
           onProbationResults = emptyList(),
@@ -1007,6 +1035,8 @@ class CaCaseloadServiceTest {
               tabType = null,
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         ),
@@ -1039,6 +1069,8 @@ class CaCaseloadServiceTest {
               tabType = null,
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         ),
@@ -1072,6 +1104,8 @@ class CaCaseloadServiceTest {
               tabType = null,
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         ),
@@ -1101,6 +1135,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
           onProbationResults = listOf(
@@ -1113,6 +1149,8 @@ class CaCaseloadServiceTest {
               tabType = null,
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         ),
@@ -1142,6 +1180,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
             TestData.caCase().copy(
               licenceId = 2,
@@ -1150,6 +1190,8 @@ class CaCaseloadServiceTest {
               nomisLegalStatus = "SENTENCED",
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffUsername = "tcom"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
           onProbationResults = listOf(
@@ -1162,6 +1204,8 @@ class CaCaseloadServiceTest {
               tabType = null,
               lastWorkedOnBy = "X Y",
               probationPractitioner = ProbationPractitioner(staffCode = "AB00001", name = "com user"),
+              prisonCode = "BAI",
+              prisonDescription = "Moorland (HMP)",
             ),
           ),
         ),
@@ -1199,6 +1243,8 @@ class CaCaseloadServiceTest {
           ),
           lastWorkedOnBy = "X Y",
           releaseDateLabel = "HDCAD",
+          prisonCode = "BAI",
+          prisonDescription = "Moorland (HMP)",
         ),
       ),
     )
@@ -1339,7 +1385,7 @@ class CaCaseloadServiceTest {
 
     val aPrisonUserSearchRequest = PrisonUserSearchRequest(
       query = "Person",
-      prisonCaseload = "BAI",
+      prisonCaseloads = setOf("BAI"),
     )
   }
 }

@@ -15,5 +15,5 @@ data class Document(
   val metadata: Map<String, String>,
   val createdTime: LocalDateTime,
   val createdByServiceName: String,
-  val createdByUsername: String,
+  val createdByUsername: String?,
 )

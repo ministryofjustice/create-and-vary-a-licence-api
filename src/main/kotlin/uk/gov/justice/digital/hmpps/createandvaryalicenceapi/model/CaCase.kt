@@ -59,4 +59,10 @@ data class CaCase(
 
   @Schema(description = "Is the licence in the hard stop period? (Within two working days of release)")
   val isInHardStopPeriod: Boolean = false,
+
+  @Schema(description = "The agency code where this offender resides or was released from", example = "MDI")
+  val prisonCode: String? = null,
+
+  @Schema(description = "The agency description of the detaining prison", example = "Leeds (HMP)")
+  val prisonDescription: String? = null,
 )
