@@ -7,12 +7,10 @@ CREATE TABLE address (
 	 town_or_city   TEXT    NOT NULL,  -- Town or city
 	 county         TEXT    NULL,  	   -- County
 	 postcode       TEXT    NOT NULL,  -- Postcode (e.g.CF23 3HS)
-	 country        TEXT    NULL,   -- Country (e.g. Wales)
      source 		TEXT    NOT NULL DEFAULT 'MANUAL',
      created_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 	 last_updated_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-	 CONSTRAINT chk_address_source_valid CHECK (source IN ('MANUAL', 'OS_PLACES')),
-	 CONSTRAINT chk_country_valid CHECK (country IN ('ENGLAND', 'SCOTLAND', 'WALES', 'NORTHERN_IRELAND'))
+	 CONSTRAINT chk_address_source_valid CHECK (source IN ('MANUAL', 'OS_PLACES'))
 );
 
 -- index

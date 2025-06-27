@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Country
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
@@ -285,7 +284,6 @@ object TestData {
     townOrCity: String = "Testville",
     county: String? = "Testshire",
     postcode: String = "TE5 7AA",
-    country: Country? = Country.ENGLAND,
     source: AddressSource = AddressSource.MANUAL,
     created: LocalDateTime = LocalDateTime.now(),
     updated: LocalDateTime = created,
@@ -296,7 +294,6 @@ object TestData {
     townOrCity = townOrCity,
     county = county,
     postcode = postcode,
-    country = country,
     source = source,
     createdTimestamp = created,
     lastUpdatedTimestamp = updated,

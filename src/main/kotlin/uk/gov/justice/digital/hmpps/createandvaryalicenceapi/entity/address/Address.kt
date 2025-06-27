@@ -10,13 +10,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
-enum class Country {
-  ENGLAND,
-  SCOTLAND,
-  WALES,
-  NORTHERN_IRELAND,
-}
-
 enum class AddressSource {
   MANUAL,
   OS_PLACES,
@@ -48,10 +41,6 @@ data class Address(
   val postcode: String,
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "country", nullable = true)
-  val country: Country? = null,
-
-  @Enumerated(EnumType.STRING)
   @Column(name = "source", nullable = false)
   val source: AddressSource,
 
@@ -66,7 +55,6 @@ data class Address(
     townOrCity,
     county.orEmpty(),
     postcode,
-    country?.name.orEmpty(),
     source.name,
   ).joinToString(",")
 }

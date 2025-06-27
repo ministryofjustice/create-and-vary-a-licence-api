@@ -64,8 +64,8 @@ values (
 		'1.0',
 		'123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND');
 
-INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, country, source)
-VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA', 'ENGLAND', 'MANUAL');
+INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
+VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
 
 INSERT INTO licence_appointment_address (licence_id, address_id)
 SELECT (SELECT MAX(id) FROM licence), (SELECT MAX(id) FROM address);

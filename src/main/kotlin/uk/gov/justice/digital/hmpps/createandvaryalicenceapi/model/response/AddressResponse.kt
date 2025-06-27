@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Country
 
 @Schema(description = "A response object for a address")
 data class AddressResponse(
@@ -23,9 +22,6 @@ data class AddressResponse(
 
   @Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
   val postcode: String,
-
-  @Schema(example = "WALES", description = "Country (e.g. ENGLAND, SCOTLAND, WALES, NORTHERN_IRELAND)", required = false)
-  val country: Country? = null,
 
   @Schema(example = "MANUAL", description = "Source of the address")
   val source: AddressSource,

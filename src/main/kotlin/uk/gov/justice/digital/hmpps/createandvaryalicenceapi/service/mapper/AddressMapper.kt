@@ -18,7 +18,6 @@ class AddressMapper {
       townOrCity = request.townOrCity,
       county = request.county,
       postcode = request.postcode,
-      country = request.country,
       source = request.source,
     )
 
@@ -29,7 +28,6 @@ class AddressMapper {
       townOrCity = entity.townOrCity,
       county = entity.county,
       postcode = entity.postcode,
-      country = entity.country,
       source = entity.source,
     )
   }

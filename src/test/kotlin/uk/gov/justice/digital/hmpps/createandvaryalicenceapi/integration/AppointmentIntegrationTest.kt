@@ -18,7 +18,6 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Country
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -293,7 +292,6 @@ class AppointmentIntegrationTest(
       reference = null,
       secondLine = null,
       county = null,
-      country = null,
     )
 
     // When
@@ -305,7 +303,6 @@ class AppointmentIntegrationTest(
     // reference self populates if null, test above tests for this
     assertThat(savedAddress.secondLine).isNull()
     assertThat(savedAddress.county).isNull()
-    assertThat(savedAddress.country).isNull()
   }
 
   @ParameterizedTest
@@ -429,7 +426,6 @@ class AppointmentIntegrationTest(
     townOrCity: String = "London",
     county: String? = "Greater London",
     postcode: String = "NW1 6XE",
-    country: Country? = Country.ENGLAND,
     source: AddressSource = AddressSource.MANUAL,
   ): AddAddressRequest = AddAddressRequest(
     reference = reference,
@@ -438,7 +434,6 @@ class AppointmentIntegrationTest(
     townOrCity = townOrCity,
     county = county,
     postcode = postcode,
-    country = country,
     source = source,
   )
 

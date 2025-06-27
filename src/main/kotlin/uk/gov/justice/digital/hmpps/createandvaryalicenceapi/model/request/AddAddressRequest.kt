@@ -10,7 +10,6 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Country
 import kotlin.reflect.KClass
 
 @ReferenceRequiredForOsPlaces
@@ -49,9 +48,6 @@ data class AddAddressRequest(
   @Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
   val postcode: String,
 
-  @Schema(example = "WALES", description = "Country (e.g. ENGLAND, SCOTLAND, WALES, NORTHERN_IRELAND)", required = false)
-  val country: Country? = null,
-
   @field:NotNull(message = "Source must not be null")
   @Schema(example = "MANUAL", description = "Source of the address", required = true)
   val source: AddressSource,
@@ -64,7 +60,6 @@ data class AddAddressRequest(
     townOrCity,
     county.orEmpty(),
     postcode,
-    country?.name,
     source.name,
   ).joinToString(",")
 }

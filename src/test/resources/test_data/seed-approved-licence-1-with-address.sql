@@ -70,7 +70,7 @@ values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
-INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, country, source)
-VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA', 'ENGLAND', 'MANUAL');
+INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode, source)
+VALUES ('REF-123456', '123 Test Street', 'Apt 4B', 'Testville', 'Testshire', 'TE5 7AA','MANUAL');
 
 INSERT INTO licence_appointment_address(licence_id,address_id) VALUES(1,1);

@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Country
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceEvent
@@ -371,7 +370,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     townOrCity: String = "Testville",
     county: String? = "Testshire",
     postcode: String = "TE5 7AA",
-    country: Country? = Country.ENGLAND,
     source: AddressSource = AddressSource.MANUAL,
   ) {
     assertThat(licence.appointmentAddress).isEqualTo(appointmentAddress)
@@ -384,7 +382,6 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(it.townOrCity).isEqualTo(townOrCity)
       assertThat(it.county).isEqualTo(county)
       assertThat(it.postcode).isEqualTo(postcode)
-      assertThat(it.country).isEqualTo(country)
       assertThat(it.source).isEqualTo(source)
     }
   }
