@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -58,6 +59,7 @@ class CrdLicence(
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
+  licenceAppointmentAddress: Address? = null,
   appointmentContact: String? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
@@ -127,6 +129,7 @@ class CrdLicence(
   appointmentTime = appointmentTime,
   appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
+  licenceAppointmentAddress = licenceAppointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
@@ -185,6 +188,7 @@ class CrdLicence(
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
+    licenceAppointmentAddress: Address? = this.licenceAppointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
@@ -245,6 +249,7 @@ class CrdLicence(
     appointmentTime = appointmentTime,
     appointmentTimeType = appointmentTimeType,
     appointmentAddress = appointmentAddress,
+    licenceAppointmentAddress = licenceAppointmentAddress,
     appointmentContact = appointmentContact,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
@@ -324,6 +329,7 @@ class CrdLicence(
     "appointmentTime=$appointmentTime, " +
     "appointmentTimeType=$appointmentTimeType, " +
     "appointmentAddress=$appointmentAddress, " +
+    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
     "appointmentContact=$appointmentContact, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +

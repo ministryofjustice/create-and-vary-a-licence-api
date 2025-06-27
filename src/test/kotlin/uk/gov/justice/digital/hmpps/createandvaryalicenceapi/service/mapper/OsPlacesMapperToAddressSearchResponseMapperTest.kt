@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AddressSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.DeliveryPointAddress
 import java.time.LocalDate
 

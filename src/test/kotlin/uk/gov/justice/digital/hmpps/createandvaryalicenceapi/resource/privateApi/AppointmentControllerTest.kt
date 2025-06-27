@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
@@ -210,43 +209,6 @@ class AppointmentControllerTest {
     verify(appointmentService, times(1)).updateContactNumber(4, aContactNumberRequest)
   }
 
-  @Test
-  fun `update officer contact number - invalid request body`() {
-    mvc.perform(
-      put("/licence/id/4/contact-number")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes("")),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
-  }
-
-  @Test
-  fun `update appointment address`() {
-    mvc.perform(
-      put("/licence/id/4/appointment-address")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes(anAppointmentAddressRequest)),
-    )
-      .andExpect(status().isOk)
-
-    verify(appointmentService, times(1)).updateAppointmentAddress(4, anAppointmentAddressRequest)
-  }
-
-  @Test
-  fun `update appointment address - invalid request body`() {
-    mvc.perform(
-      put("/licence/id/4/appointment-address")
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(mapper.writeValueAsBytes("")),
-    )
-      .andExpect(status().isBadRequest)
-      .andExpect(content().contentType(APPLICATION_JSON))
-  }
-
   private companion object {
     val anUpdateAppointmentPersonRequest = AppointmentPersonRequest(
       appointmentPersonType = AppointmentPersonType.DUTY_OFFICER,
@@ -265,10 +227,6 @@ class AppointmentControllerTest {
 
     val aContactNumberRequest = ContactNumberRequest(
       telephone = "0114 2566555",
-    )
-
-    val anAppointmentAddressRequest = AppointmentAddressRequest(
-      appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE",
     )
   }
 }

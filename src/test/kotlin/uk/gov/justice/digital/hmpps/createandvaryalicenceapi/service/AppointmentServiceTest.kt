@@ -18,10 +18,10 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.DUTY_OFFICER
@@ -39,8 +39,9 @@ class AppointmentServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
+  private val addressRepository = mock<AddressRepository>()
 
-  private val service = AppointmentService(licenceRepository, auditService, staffRepository)
+  private val service = AppointmentService(licenceRepository, auditService, staffRepository, addressRepository)
 
   @BeforeEach
   fun reset() {
@@ -195,40 +196,6 @@ class AppointmentServiceTest {
 
     val exception = assertThrows<EntityNotFoundException> {
       service.updateContactNumber(1L, ContactNumberRequest(telephone = "0114 2565555"))
-    }
-
-    assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)
-
-    verify(licenceRepository, times(1)).findById(1L)
-    verifyNoInteractions(staffRepository)
-  }
-
-  @Test
-  fun `update appointment address persists the updated entity`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
-
-    service.updateAppointmentAddress(
-      1L,
-      AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"),
-    )
-
-    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
-    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
-
-    assertThat(licenceCaptor.value).extracting("appointmentAddress", "updatedByUsername", "updatedBy")
-      .isEqualTo(listOf("221B Baker Street, London, City of London, NW1 6XE", aCom.username, aCom))
-  }
-
-  @Test
-  fun `update appointment address throws not found exception if licence not found`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.empty())
-
-    val exception = assertThrows<EntityNotFoundException> {
-      service.updateAppointmentAddress(
-        1L,
-        AppointmentAddressRequest(appointmentAddress = "221B Baker Street, London, City of London, NW1 6XE"),
-      )
     }
 
     assertThat(exception).isInstanceOf(EntityNotFoundException::class.java)

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -56,6 +57,7 @@ class HardStopLicence(
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
+  licenceAppointmentAddress: Address? = null,
   appointmentContact: String? = null,
   approvedDate: LocalDateTime? = null,
   approvedByUsername: String? = null,
@@ -124,6 +126,7 @@ class HardStopLicence(
   appointmentTime = appointmentTime,
   appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
+  licenceAppointmentAddress = licenceAppointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
@@ -182,6 +185,7 @@ class HardStopLicence(
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
+    licenceAppointmentAddress: Address? = this.licenceAppointmentAddress,
     appointmentContact: String? = this.appointmentContact,
     approvedDate: LocalDateTime? = this.approvedDate,
     approvedByUsername: String? = this.approvedByUsername,
@@ -242,6 +246,7 @@ class HardStopLicence(
     appointmentTime = appointmentTime,
     appointmentTimeType = appointmentTimeType,
     appointmentAddress = appointmentAddress,
+    licenceAppointmentAddress = licenceAppointmentAddress,
     appointmentContact = appointmentContact,
     approvedDate = approvedDate,
     approvedByUsername = approvedByUsername,
@@ -322,6 +327,7 @@ class HardStopLicence(
     "appointmentTime=$appointmentTime, " +
     "appointmentTimeType=$appointmentTimeType, " +
     "appointmentAddress=$appointmentAddress, " +
+    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
     "appointmentContact=$appointmentContact, " +
     "approvedDate=$approvedDate, " +
     "approvedByUsername=$approvedByUsername, " +
