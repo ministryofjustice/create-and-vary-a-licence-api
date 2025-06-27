@@ -1141,7 +1141,7 @@ DELETE
 FROM tmp_stage_6 USING tmp_stage_7
 WHERE tmp_stage_6.id = tmp_stage_7.id;
 
--- Stage 8 cleans the data and makes sure null in the non nullable CVL data is now an empty string
+-- Stage 8 cleans the data and makes sure a null in the non nullable CVL data is now an empty string
 -- also add's  source and created_timestamp and last_updated_timestamp
 CREATE
 TEMP TABLE tmp_stage_8 AS
