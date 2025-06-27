@@ -1151,8 +1151,8 @@ SELECT  l.id as licence_id,
 		county,
 		country,
 		'MANUAL' as source,
-		coalesce(date_created,CURRENT_TIMESTAMP) as created_timestamp,
-		coalesce(date_last_updated,CURRENT_TIMESTAMP) as last_updated_timestamp
+		coalesce(date_created,date_last_updated,CURRENT_TIMESTAMP) as created_timestamp,
+		coalesce(date_last_updated,date_created,CURRENT_TIMESTAMP) as last_updated_timestamp
 FROM tmp_stage_7 tmp
 		 join licence l on tmp.id = l.id;
 
