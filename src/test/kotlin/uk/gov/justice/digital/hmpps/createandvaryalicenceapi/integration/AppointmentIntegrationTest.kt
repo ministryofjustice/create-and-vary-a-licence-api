@@ -293,6 +293,7 @@ class AppointmentIntegrationTest(
       reference = null,
       secondLine = null,
       county = null,
+      country = null,
     )
 
     // When
@@ -304,6 +305,7 @@ class AppointmentIntegrationTest(
     // reference self populates if null, test above tests for this
     assertThat(savedAddress.secondLine).isNull()
     assertThat(savedAddress.county).isNull()
+    assertThat(savedAddress.country).isNull()
   }
 
   @ParameterizedTest
@@ -319,11 +321,10 @@ class AppointmentIntegrationTest(
 
     // Then
     result.expectStatus().isBadRequest
-      .expectBody()
-      .consumeWith { response ->
-        val responseString = response.responseBody?.toString(Charsets.UTF_8)
-        assertThat(responseString).contains("Validation failed")
-      }
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+    assertThat(errorResponse).isNotNull
+    assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
+    assertThat(errorResponse.developerMessage).contains("must not be blank")
   }
 
   @ParameterizedTest
@@ -370,7 +371,7 @@ class AppointmentIntegrationTest(
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["firstLine", "townOrCity", "postcode", "country", "source"])
+  @ValueSource(strings = ["firstLine", "townOrCity", "postcode", "source"])
   fun `When updating address should return 400 Bad Request if required field is missing`(missingField: String) {
     // Given
     val jsonRequest = createAddressJson(missingField, false)
@@ -381,6 +382,9 @@ class AppointmentIntegrationTest(
 
     // Then
     result.expectStatus().isBadRequest
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+    assertThat(errorResponse).isNotNull
+    assertThat(errorResponse!!.userMessage).contains("Bad request: JSON parse error: Instantiation of")
   }
 
   private fun createAddressJson(excludeField: String, blank: Boolean?): MutableMap<String, Any?> {
@@ -425,7 +429,7 @@ class AppointmentIntegrationTest(
     townOrCity: String = "London",
     county: String? = "Greater London",
     postcode: String = "NW1 6XE",
-    country: Country = Country.ENGLAND,
+    country: Country? = Country.ENGLAND,
     source: AddressSource = AddressSource.MANUAL,
   ): AddAddressRequest = AddAddressRequest(
     reference = reference,

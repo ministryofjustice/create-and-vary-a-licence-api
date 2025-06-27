@@ -3,11 +3,11 @@ CREATE TABLE address (
 	 id 			SERIAL  NOT NULL constraint address_pk PRIMARY KEY,
 	 reference 		TEXT    NOT NULL,
 	 first_line     TEXT    NOT NULL,  -- First line of address
-	 second_line    TEXT,              -- Optional second line
+	 second_line    TEXT    NULL,      -- Optional second line
 	 town_or_city   TEXT    NOT NULL,  -- Town or city
-	 county         TEXT,  			   -- County
+	 county         TEXT    NULL,  	   -- County
 	 postcode       TEXT    NOT NULL,  -- Postcode (e.g.CF23 3HS)
-	 country        TEXT    NOT NULL,   -- Country (e.g. Wales)
+	 country        TEXT    NULL,   -- Country (e.g. Wales)
      source 		TEXT    NOT NULL DEFAULT 'MANUAL',
      created_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 	 last_updated_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

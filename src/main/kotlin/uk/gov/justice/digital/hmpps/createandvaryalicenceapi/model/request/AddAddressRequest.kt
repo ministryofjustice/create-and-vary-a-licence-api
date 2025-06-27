@@ -49,9 +49,8 @@ data class AddAddressRequest(
   @Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
   val postcode: String,
 
-  @field:NotNull(message = "Country must not be null")
-  @Schema(example = "WALES", description = "Country (e.g. ENGLAND, SCOTLAND, WALES, NORTHERN_IRELAND)", required = true)
-  val country: Country,
+  @Schema(example = "WALES", description = "Country (e.g. ENGLAND, SCOTLAND, WALES, NORTHERN_IRELAND)", required = false)
+  val country: Country? = null,
 
   @field:NotNull(message = "Source must not be null")
   @Schema(example = "MANUAL", description = "Source of the address", required = true)
@@ -65,7 +64,7 @@ data class AddAddressRequest(
     townOrCity,
     county.orEmpty(),
     postcode,
-    country.name,
+    country?.name,
     source.name,
   ).joinToString(",")
 }
