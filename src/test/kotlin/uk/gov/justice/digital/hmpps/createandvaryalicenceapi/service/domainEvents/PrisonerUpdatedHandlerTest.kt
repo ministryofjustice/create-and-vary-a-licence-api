@@ -16,10 +16,14 @@ class PrisonerUpdatedHandlerTest {
   private val offenderService = mock<OffenderService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
 
-  private val handler = PrisonerUpdatedHandler(objectMapper, offenderService, prisonerSearchApiClient)
-
   @Test
   fun `should process prisoner updated event`() {
+    val handler = PrisonerUpdatedHandler(
+      objectMapper,
+      offenderService,
+      prisonerSearchApiClient,
+      updateOffenderDetailsHandleEnabled = true,
+    )
     val nomsId = "A1234AA"
 
     val prisoner = prisonerSearchResult()
@@ -47,12 +51,39 @@ class PrisonerUpdatedHandlerTest {
 
   @Test
   fun `should not update prisoner details when categories do not include person details`() {
+    val handler = PrisonerUpdatedHandler(
+      objectMapper,
+      offenderService,
+      prisonerSearchApiClient,
+      updateOffenderDetailsHandleEnabled = true,
+    )
     val nomsId = "A1294AC"
 
     handler.handleEvent(
       aPrisonerUpdatedEventMessage(
         nomsId,
         listOf(DiffCategory.PHYSICAL_DETAILS, DiffCategory.INCENTIVE_LEVEL),
+      ),
+    )
+
+    verifyNoInteractions(prisonerSearchApiClient)
+    verifyNoInteractions(offenderService)
+  }
+
+  @Test
+  fun `should not process prisoner updated event if the feature flag is turned off`() {
+    val handler = PrisonerUpdatedHandler(
+      objectMapper,
+      offenderService,
+      prisonerSearchApiClient,
+      updateOffenderDetailsHandleEnabled = false,
+    )
+    val nomsId = "A1234AA"
+
+    handler.handleEvent(
+      aPrisonerUpdatedEventMessage(
+        nomsId,
+        listOf(DiffCategory.ALERTS, DiffCategory.PERSONAL_DETAILS),
       ),
     )
 
