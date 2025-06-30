@@ -26,6 +26,7 @@ generic-service:
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     DOMAIN_EVENT_LISTENER_ENABLED: false
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
+    FEATURE_TOGGLE_ELECTRONIC_MONITORING_RESPONSE_HANDLING: false
 
   postgresDatabaseRestore:
     enabled: true
