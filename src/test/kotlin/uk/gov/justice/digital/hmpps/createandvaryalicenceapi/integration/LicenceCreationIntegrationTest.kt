@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Creat
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
@@ -32,6 +33,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Standard
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
+import java.time.LocalDate
 
 class LicenceCreationIntegrationTest : IntegrationTestBase() {
 
@@ -53,6 +55,65 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @BeforeEach
   fun reset() {
     govUkApiMockServer.stubGetBankHolidaysForEnglandAndWales()
+  }
+
+  @Test
+  fun `Create a PRRD licence`() {
+    // Given
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = LocalDate.now())
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    // When
+    val result = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = PRRD))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+
+    val licenceCreationResponse = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceCreationResponse::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceCreationResponse?.licenceId).isGreaterThan(0L)
+    assertThat(licenceRepository.count()).isEqualTo(1)
+
+    val licence = licenceRepository.findAll().first()
+    assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
+    assertThat(licence.responsibleCom.username).isEqualTo("AAA")
+    assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+
+    assertThat(standardConditionRepository.count()).isEqualTo(9)
+    assertThat(additionalConditionRepository.count()).isEqualTo(0)
+    assertThat(auditEventRepository.count()).isEqualTo(1)
+  }
+
+  @Test
+  fun `When creating a PRRD licence with no post recall release date, exception should be thrown`() {
+    // Given
+    prisonApiMockServer.stubGetPrison()
+    prisonApiMockServer.stubGetCourtOutcomes()
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = null)
+    deliusMockServer.stubGetProbationCase()
+    deliusMockServer.stubGetOffenderManager()
+
+    // When
+    val result = webTestClient.post()
+      .uri("/licence/create")
+      .bodyValue(CreateLicenceRequest(nomsId = "NOMSID", type = PRRD))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+
+    // Then
+    result.expectStatus().isBadRequest
   }
 
   @Test
