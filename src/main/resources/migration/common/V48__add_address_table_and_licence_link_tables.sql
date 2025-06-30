@@ -18,6 +18,13 @@ CREATE TABLE address (
 ALTER TABLE address ADD CONSTRAINT unique_reference UNIQUE (reference);
 CREATE INDEX idx_address_postcode ON address(postcode);
 CREATE INDEX idx_address_town ON address(town_or_city);
+ALTER TABLE address
+	ADD CONSTRAINT chk_uprn_required_for_os_places
+		CHECK (
+			(source = 'OS_PLACES' AND uprn IS NOT NULL)
+				OR
+			(source != 'OS_PLACES' AND uprn IS NULL)
+			);
 
 -- Step 1: Create the trigger function
 CREATE OR REPLACE FUNCTION address_update_last_updated_timestamp()
