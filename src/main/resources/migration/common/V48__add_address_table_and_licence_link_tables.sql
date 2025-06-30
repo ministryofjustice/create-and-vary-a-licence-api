@@ -1,6 +1,7 @@
 
 CREATE TABLE address (
 	 id 			SERIAL  NOT NULL constraint address_pk PRIMARY KEY,
+	 uprn			TEXT    NULL,
 	 reference 		TEXT    NOT NULL,
 	 first_line     TEXT    NOT NULL,  -- First line of address
 	 second_line    TEXT    NULL,      -- Optional second line

@@ -111,9 +111,9 @@ abstract class Licence(
   var licenceVersion: String? = "1.0",
 
   @OneToOne(
-    cascade = [CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH],
+    cascade = [CascadeType.ALL],
     fetch = FetchType.LAZY,
-    orphanRemoval = false,
+    orphanRemoval = true,
   )
   @JoinTable(
     name = "LICENCE_APPOINTMENT_ADDRESS",

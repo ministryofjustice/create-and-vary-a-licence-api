@@ -12,19 +12,17 @@ import jakarta.validation.constraints.Size
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import kotlin.reflect.KClass
 
-@ReferenceRequiredForOsPlaces
+@AddressWithUprnMustBeFromOsPlaces
 @Schema(description = "A request object to add an address")
 data class AddAddressRequest(
 
   @Schema(
-    description = "The unique reference, e.g. OsPlacesApi uprn, or existing manual reference UUID , " +
-      "if already exists the associated address will re-used, otherwise a new address entity will be created, if source is" +
-      "OS_PLACES then a uprn reference must be given!",
+    description = "Unique Property Reference Number, acquired from OsPlacesApi, post code and address look up",
     example = "200010019924",
-    required = true,
+    required = false,
   )
-  @field:Size(min = 1, max = 36)
-  val reference: String? = null,
+  @field:Size(min = 1, max = 12)
+  val uprn: String? = null,
 
   @field:NotBlank(message = "First line of the address must not be blank")
   @Schema(description = "The first line of the address", example = "12 Cardiff Road", required = true)
@@ -54,7 +52,7 @@ data class AddAddressRequest(
 ) {
 
   override fun toString(): String = listOf(
-    reference,
+    uprn.orEmpty(),
     firstLine,
     secondLine.orEmpty(),
     townOrCity,
@@ -66,21 +64,21 @@ data class AddAddressRequest(
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-@Constraint(validatedBy = [ReferenceRequiredForOsPlacesValidator::class])
+@Constraint(validatedBy = [AddressWithUprnMustBeFromOsPlacesValidator::class])
 @MustBeDocumented
-annotation class ReferenceRequiredForOsPlaces(
-  val message: String = "Reference must be provided when source is OS_PLACES",
+annotation class AddressWithUprnMustBeFromOsPlaces(
+  val message: String = "Unique Property Reference Number must be provided only with source OS_PLACES",
   val groups: Array<KClass<*>> = [],
   val payload: Array<KClass<out Payload>> = [],
 )
 
-class ReferenceRequiredForOsPlacesValidator : ConstraintValidator<ReferenceRequiredForOsPlaces, AddAddressRequest> {
+class AddressWithUprnMustBeFromOsPlacesValidator : ConstraintValidator<AddressWithUprnMustBeFromOsPlaces, AddAddressRequest> {
   override fun isValid(value: AddAddressRequest?, context: ConstraintValidatorContext): Boolean {
     if (value == null) return true
 
-    if (value.source == AddressSource.OS_PLACES) {
-      return !value.reference.isNullOrBlank()
+    if (AddressSource.OS_PLACES == value.source) {
+      return !value.uprn.isNullOrBlank()
     }
-    return true
+    return value.uprn.isNullOrBlank()
   }
 }

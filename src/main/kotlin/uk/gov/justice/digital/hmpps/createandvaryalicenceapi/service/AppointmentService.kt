@@ -6,7 +6,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
@@ -167,7 +166,7 @@ class AppointmentService(
 
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
-    licenceEntity.licenceAppointmentAddress = getAddress(request)
+    licenceEntity.licenceAppointmentAddress = AddressMapper.toEntity(request)
     licenceEntity.appointmentAddress = request.toString()
     licenceEntity.dateLastUpdated = LocalDateTime.now()
     licenceEntity.updatedByUsername = staffMember?.username ?: SYSTEM_USER
@@ -185,8 +184,4 @@ class AppointmentService(
       staffMember,
     )
   }
-
-  private fun getAddress(request: AddAddressRequest): Address = request.reference
-    ?.let { addressRepository.findByReference(it) }
-    ?: AddressMapper.toEntity(request)
 }

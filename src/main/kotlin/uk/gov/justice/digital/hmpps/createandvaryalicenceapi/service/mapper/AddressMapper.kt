@@ -12,7 +12,8 @@ class AddressMapper {
   companion object {
 
     fun toEntity(request: AddAddressRequest): Address = Address(
-      reference = request.reference ?: UUID.randomUUID().toString(),
+      reference = UUID.randomUUID().toString(),
+      uprn = request.uprn,
       firstLine = request.firstLine,
       secondLine = request.secondLine,
       townOrCity = request.townOrCity,

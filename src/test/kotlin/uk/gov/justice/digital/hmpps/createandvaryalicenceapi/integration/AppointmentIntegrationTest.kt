@@ -13,8 +13,10 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
@@ -179,10 +181,10 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Update the address where the initial appointment will take place`() {
+  fun `When adding appointment address manually Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest()
+    val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL)
 
     // When
     val result = putRequest(uri, addAddressRequest)
@@ -192,11 +194,10 @@ class AppointmentIntegrationTest(
 
     val savedAddress = getAddress()
     assertThat(savedAddress.id).isEqualTo(1)
-    assertThat(addAddressRequest)
-      .usingRecursiveComparison()
-      .ignoringFields("id", "lastUpdatedTimestamp", "createdTimestamp")
-      .isEqualTo(savedAddress)
+    assertThat(addAddressRequest).usingRecursiveComparison().isEqualTo(savedAddress)
 
+    assertThat(savedAddress.reference).isNotNull()
+    assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
   }
@@ -205,10 +206,10 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1-with-address.sql",
   )
-  fun `Update the address where the licence already has an appointment address but a new one is given with out reference`() {
+  fun `When updating appointment address manually Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest(reference = null)
+    val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL)
 
     // When
     val result = putRequest(uri, addAddressRequest)
@@ -217,24 +218,22 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
 
     val savedAddress = getAddress()
-    assertThat(addAddressRequest)
-      .usingRecursiveComparison()
-      .ignoringFields("id", "lastUpdatedTimestamp", "createdTimestamp", "reference")
-      .isEqualTo(savedAddress)
-
+    assertThat(savedAddress.id).isEqualTo(2)
+    assertThat(addAddressRequest).usingRecursiveComparison().isEqualTo(savedAddress)
     assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
-    assertThat(savedAddress.id).isEqualTo(2)
+    assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+    assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
   }
 
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-1-with-address.sql",
   )
-  fun `Update the address where the licence already has an appointment address but a new one is given with reference`() {
+  fun `When updating appointment address using look up Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest(reference = "NEW_TEST_REFERENCE")
+    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES)
 
     // When
     val result = putRequest(uri, addAddressRequest)
@@ -243,7 +242,9 @@ class AppointmentIntegrationTest(
     result.expectStatus().isOk
 
     val savedAddress = getAddress()
-    assertThat(savedAddress.reference).isEqualTo("NEW_TEST_REFERENCE")
+    assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
+    assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
+    assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(2)
   }
 
@@ -251,33 +252,36 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1-with-address.sql",
   )
-  fun `Update the address where the licence already has an appointment address but the reference is the same as the existing`() {
+  fun `When updating appointment address manually and uprn is given then exception expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest()
+    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.MANUAL)
 
     // When
     val result = putRequest(uri, addAddressRequest)
 
     // Then
-    result.expectStatus().isOk
-
-    val savedAddress = getAddress()
-    assertThat(savedAddress.reference).isEqualTo("REF-123456")
-    assertThat(savedAddress.id).isEqualTo(1)
+    val errorResponse = getErrorResponse(result)
+    assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
+    assertThat(errorResponse.developerMessage).contains("Unique Property Reference Number must be provided only with source OS_PLACES")
   }
 
   @Test
-  fun `When licence is not found then not found is given`() {
+  @Sql(
+    "classpath:test_data/seed-licence-id-1-with-address.sql",
+  )
+  fun `When updating appointment address using look up and uprn is not given then exception expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val addAddressRequest = buildAddAddressRequest()
+    val addAddressRequest = buildAddAddressRequest(uprn = null, source = AddressSource.OS_PLACES)
 
     // When
     val result = putRequest(uri, addAddressRequest)
 
     // Then
-    result.expectStatus().isNotFound
+    val errorResponse = getErrorResponse(result)
+    assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
+    assertThat(errorResponse.developerMessage).contains("Unique Property Reference Number must be provided only with source OS_PLACES")
   }
 
   @Sql(
@@ -289,7 +293,7 @@ class AppointmentIntegrationTest(
     val uri = "/licence/id/1/appointment/address"
 
     val addAddressRequest = buildAddAddressRequest(
-      reference = null,
+      uprn = null,
       secondLine = null,
       county = null,
     )
@@ -317,9 +321,7 @@ class AppointmentIntegrationTest(
     val result = putRequest(uri, jsonRequest)
 
     // Then
-    result.expectStatus().isBadRequest
-    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
-    assertThat(errorResponse).isNotNull
+    val errorResponse = getErrorResponse(result)
     assertThat(errorResponse!!.userMessage).contains("Validation failed for one or more fields.")
     assertThat(errorResponse.developerMessage).contains("must not be blank")
   }
@@ -349,21 +351,19 @@ class AppointmentIntegrationTest(
   fun `When source is OS_PLACES should return 400 Bad Request if reference is null or blank`(invalidReference: String?) {
     // Given
     val uri = "/licence/id/1/appointment/address"
-    val request = buildAddAddressRequest(source = AddressSource.OS_PLACES, reference = invalidReference)
+    val request = buildAddAddressRequest(source = AddressSource.OS_PLACES, uprn = invalidReference)
 
     // When
     val result = putRequest(uri, request)
 
     // Then
-    result.expectStatus().isBadRequest
-    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
-    assertThat(errorResponse).isNotNull
+    val errorResponse = getErrorResponse(result)
     assertThat(errorResponse!!.userMessage).contains("Validation failed")
-
-    if (invalidReference?.length == 0) {
-      assertThat(errorResponse.developerMessage).contains("Reference must be provided when source is OS_PLACES; size must be between 1 and 36")
-    } else {
-      assertThat(errorResponse.developerMessage).contains("Reference must be provided when source is OS_PLACES")
+    assertThat(errorResponse.developerMessage).contains("Unique Property Reference Number must be provided only with source OS_PLACES")
+    invalidReference?.let {
+      if (it.isEmpty()) {
+        assertThat(errorResponse.developerMessage).contains("size must be between 1 and 12")
+      }
     }
   }
 
@@ -378,9 +378,7 @@ class AppointmentIntegrationTest(
     val result = putRequest(uri, jsonRequest)
 
     // Then
-    result.expectStatus().isBadRequest
-    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
-    assertThat(errorResponse).isNotNull
+    val errorResponse = getErrorResponse(result)
     assertThat(errorResponse!!.userMessage).contains("Bad request: JSON parse error: Instantiation of")
   }
 
@@ -412,6 +410,13 @@ class AppointmentIntegrationTest(
     .accept(MediaType.APPLICATION_JSON)
     .exchange()
 
+  private fun getErrorResponse(result: WebTestClient.ResponseSpec, exceptedStatus: HttpStatusCode = HttpStatusCode.valueOf(400)): ErrorResponse? {
+    result.expectStatus().isEqualTo(exceptedStatus)
+    val errorResponse = result.expectBody(ErrorResponse::class.java).returnResult().responseBody
+    assertThat(errorResponse).isNotNull
+    return errorResponse
+  }
+
   private fun getAddress(id: Long = 1): Address {
     val licence = licenceRepository.findById(id).getOrNull()
     assertThat(licence).isNotNull
@@ -420,15 +425,15 @@ class AppointmentIntegrationTest(
   }
 
   fun buildAddAddressRequest(
-    reference: String? = "REF-123456",
+    source: AddressSource = AddressSource.MANUAL,
+    uprn: String? = null,
     firstLine: String = "221B",
     secondLine: String? = "Baker Street",
     townOrCity: String = "London",
     county: String? = "Greater London",
     postcode: String = "NW1 6XE",
-    source: AddressSource = AddressSource.MANUAL,
   ): AddAddressRequest = AddAddressRequest(
-    reference = reference,
+    uprn = uprn,
     firstLine = firstLine,
     secondLine = secondLine,
     townOrCity = townOrCity,

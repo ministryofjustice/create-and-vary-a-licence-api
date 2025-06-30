@@ -25,6 +25,10 @@ data class Address(
   @Column(nullable = false, unique = true)
   val reference: String,
 
+  // Unique Property Reference Number
+  @Column(nullable = true, unique = false)
+  val uprn: String? = null,
+
   @Column(name = "first_line", nullable = false)
   val firstLine: String,
 
@@ -49,6 +53,7 @@ data class Address(
   val lastUpdatedTimestamp: LocalDateTime = LocalDateTime.now(),
 ) {
   override fun toString(): String = listOf(
+    uprn.orEmpty(),
     reference,
     firstLine,
     secondLine.orEmpty(),
