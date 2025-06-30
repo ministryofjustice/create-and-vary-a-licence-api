@@ -22,17 +22,20 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.anAdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
 import java.util.Optional
 
 class ExclusionZoneServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
   private val additionalConditionRepository = mock<AdditionalConditionRepository>()
   private val additionalConditionUploadDetailRepository = mock<AdditionalConditionUploadDetailRepository>()
+  private val documentService = mock<DocumentService>()
 
   private val service = ExclusionZoneService(
     licenceRepository,
     additionalConditionRepository,
     additionalConditionUploadDetailRepository,
+    documentService,
   )
 
   @BeforeEach
@@ -41,6 +44,7 @@ class ExclusionZoneServiceTest {
       licenceRepository,
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
+      documentService,
     )
   }
 

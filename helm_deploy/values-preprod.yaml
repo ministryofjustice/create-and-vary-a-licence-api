@@ -15,6 +15,7 @@ generic-service:
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://create-and-vary-a-licence-and-delius-preprod.hmpps.service.justice.gov.uk"
     HMPPS_DOCUMENT_API_URL: "https://document-api-preprod.hmpps.service.justice.gov.uk/"
+    HMPPS_DOCUMENT_API_ENABLED: false
     HMPPS_HDC_API_URL: "https://hdc-api-preprod.hmpps.service.justice.gov.uk/"
     HMPPS_MANAGEUSERS_API_URL: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"
     HMPPS_PRISON_API_URL: "https://prison-api-preprod.prison.service.justice.gov.uk/api"
@@ -30,9 +31,14 @@ generic-service:
     sqs-domain-events-queue-secret:
       HMPPS_SQS_QUEUES_DOMAINEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
+  scheduledDowntime:
+    enabled: true
+    businessHoursOnly: true
+
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: cvl-alerts-non-prod
+  businessHoursOnly: true
 
 dataExtractorEnabled: false

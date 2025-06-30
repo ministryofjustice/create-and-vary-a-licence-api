@@ -2,26 +2,19 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
-import org.apache.pdfbox.Loader
-import org.apache.pdfbox.io.RandomAccessReadBuffer
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException
-import org.apache.pdfbox.rendering.PDFRenderer
-import org.apache.pdfbox.text.PDFTextStripper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
-import java.awt.Image
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.DocumentService
+import java.util.UUID
 import javax.imageio.ImageIO
 
 @Service
@@ -29,6 +22,7 @@ class ExclusionZoneService(
   private val licenceRepository: LicenceRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val documentService: DocumentService,
 ) {
 
   init {
@@ -37,62 +31,80 @@ class ExclusionZoneService(
 
   @Transactional
   fun uploadExclusionZoneFile(licenceId: Long, conditionId: Long, file: MultipartFile) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
+    val licenceEntity = licenceRepository.findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
+    val additionalCondition = additionalConditionRepository.findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove any existing upload detail rows manually - intentionally not linked to the additionalCondition entity
-    // There can only be one uploaded exclusion map on this licence/condition
-    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
-      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
-        additionalConditionUploadDetailRepository.delete(detail)
-      }
+    removeExistingUploads(additionalCondition)
+
+    log.info("uploadExclusionZoneFile: Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
+
+    val pdfExtract = ExclusionZonePdfExtract.fromMultipartFile(file)
+
+    if (pdfExtract == null) {
+      val reason = if (file.isEmpty) "Empty file" else "failed to extract the expected image map"
+      throw ValidationException("Exclusion zone upload document - $reason")
     }
 
-    log.info("uploadExclusionZoneFile:  Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
+    logAndUploadExclusionZoneFile(file, pdfExtract, licenceEntity, additionalCondition)
+  }
 
-    if (file.isEmpty) {
-      log.error("uploadExclusion:  Empty file uploaded, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
-      throw ValidationException("Exclusion zone - file was empty.")
-    }
-
-    // Process the MapMaker PDF file to get the fullSizeImage from page 1, descriptive text on page 2 and generate a thumbnail
-    val fullSizeImage = extractFullSizeImageJpeg(file.inputStream)
-    val description = extractDescription(file.inputStream)
-    val thumbnailImage = createThumbnailImageJpeg(fullSizeImage)
-
-    // Validate that we were able to extract meaningful data from the uploaded file
-    if (fullSizeImage == null || thumbnailImage == null) {
-      log.error("uploadExclusion:  Could not extract images from file, Name ${file.name} Type ${file.contentType} Orig. Name ${file.originalFilename}, Size ${file.size}")
-      throw ValidationException("Exclusion zone - failed to extract the expected image map")
-    }
+  fun logAndUploadExclusionZoneFile(
+    originalFile: MultipartFile,
+    pdfExtract: ExclusionZonePdfExtract,
+    licence: Licence,
+    additionalCondition: AdditionalCondition,
+  ) {
+    val (originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid) =
+      uploadDocuments(originalFile, pdfExtract, licence, additionalCondition)
 
     val uploadDetail = AdditionalConditionUploadDetail(
-      licenceId = licenceEntity.id,
+      licenceId = licence.id,
       additionalConditionId = additionalCondition.id,
-      originalData = file.bytes,
-      fullSizeImage = fullSizeImage,
+      originalData = originalFile.bytes,
+      originalDataDsUuid = originalDataDsUuid?.toString(),
+      fullSizeImage = pdfExtract.fullSizeImage,
+      fullSizeImageDsUuid = fullSizeImageDsUuid?.toString(),
     )
 
     val savedDetail = additionalConditionUploadDetailRepository.saveAndFlush(uploadDetail)
 
     val uploadSummary = AdditionalConditionUploadSummary(
       additionalCondition = additionalCondition,
-      filename = file.originalFilename,
-      fileType = file.contentType,
-      fileSize = file.size.toInt(),
-      description = description,
-      thumbnailImage = thumbnailImage,
+      filename = originalFile.originalFilename,
+      fileType = originalFile.contentType,
+      fileSize = originalFile.size.toInt(),
+      description = pdfExtract.description,
+      thumbnailImage = pdfExtract.thumbnailImage,
+      thumbnailImageDsUuid = thumbnailImageDsUuid?.toString(),
       uploadDetailId = savedDetail.id,
     )
 
     val updatedAdditionalCondition = additionalCondition.copy(additionalConditionUploadSummary = listOf(uploadSummary))
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+  }
+
+  private fun uploadDocuments(
+    originalFile: MultipartFile,
+    pdfExtract: ExclusionZonePdfExtract,
+    licence: Licence,
+    additionalCondition: AdditionalCondition,
+  ): Triple<UUID?, UUID?, UUID?> {
+    val metadata = mapOf(
+      "licenceId" to licence.id.toString(),
+      "additionalConditionId" to additionalCondition.id.toString(),
+    )
+
+    val originalDataDsUuid = documentService
+      .uploadDocument(file = originalFile.bytes, metadata = metadata + mapOf("kind" to "pdf"))
+    val fullSizeImageDsUuid = documentService
+      .uploadDocument(file = pdfExtract.fullSizeImage, metadata = metadata + mapOf("kind" to "fullSizeImage"))
+    val thumbnailImageDsUuid = documentService
+      .uploadDocument(file = pdfExtract.thumbnailImage, metadata = metadata + mapOf("kind" to "thumbnail"))
+
+    return Triple(originalDataDsUuid, fullSizeImageDsUuid, thumbnailImageDsUuid)
   }
 
   @Transactional
@@ -105,12 +117,7 @@ class ExclusionZoneService(
       .findById(conditionId)
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    // Remove uploadDetail rows manually - intentionally not linked to the additionalCondition entity
-    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
-      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
-        additionalConditionUploadDetailRepository.delete(detail)
-      }
-    }
+    removeExistingUploads(additionalCondition)
 
     // Remove the additionalConditionData item for 'outOfBoundFilename'
     val updatedAdditionalConditionData = additionalCondition
@@ -124,6 +131,14 @@ class ExclusionZoneService(
     )
 
     additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
+  }
+
+  private fun removeExistingUploads(additionalCondition: AdditionalCondition) {
+    additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
+      additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
+        additionalConditionUploadDetailRepository.delete(detail)
+      }
+    }
   }
 
   fun getExclusionZoneImage(licenceId: Long, conditionId: Long): ByteArray? {
@@ -145,76 +160,6 @@ class ExclusionZoneService(
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
     return upload.fullSizeImage
-  }
-
-  fun extractFullSizeImageJpeg(fileStream: InputStream): ByteArray? {
-    var pdfDoc: PDDocument? = null
-    try {
-      pdfDoc = Loader.loadPDF(RandomAccessReadBuffer(fileStream))
-      val renderer = PDFRenderer(pdfDoc)
-      val firstImage = renderer.renderImage(0)
-      val croppedImage = firstImage.getSubimage(50, 50, firstImage.width - 100, firstImage.height - 100)
-      val baos = ByteArrayOutputStream()
-      ImageIO.write(croppedImage, "jpg", baos)
-
-      // Scale it back up to original size without the borders ?
-
-      return baos.toByteArray()
-    } catch (e: IOException) {
-      log.error("Extracting full size image - IO error ${e.message}")
-    } catch (ipe: InvalidPasswordException) {
-      log.error("Extracting full size image - encrypted error ${ipe.message}")
-    } finally {
-      pdfDoc?.close()
-      fileStream.close()
-    }
-    return null
-  }
-
-  fun extractDescription(fileStream: InputStream): String? {
-    var pdfDoc: PDDocument? = null
-    try {
-      pdfDoc = Loader.loadPDF(RandomAccessReadBuffer(fileStream))
-      val stripper = PDFTextStripper()
-      stripper.sortByPosition = true
-      stripper.startPage = 2
-      return stripper.getText(pdfDoc)
-    } catch (e: IOException) {
-      log.error("Extracting exclusion zone description - IO error ${e.message}")
-    } catch (ipe: InvalidPasswordException) {
-      log.error("Extracting exclusion zone description - encrypted error ${ipe.message}")
-    } finally {
-      pdfDoc?.close()
-      fileStream.close()
-    }
-    return null
-  }
-
-  fun createThumbnailImageJpeg(fullSizeImage: ByteArray?, width: Int = 150, height: Int = 200): ByteArray? {
-    if (fullSizeImage?.isEmpty() == true) {
-      log.error("Creating thumbnail image - full size image was empty.")
-      return ByteArray(0)
-    }
-    try {
-      val inputStream = fullSizeImage!!.inputStream()
-      val original = ImageIO.read(inputStream)
-      val scaled = original.getScaledInstance(width, height, Image.SCALE_DEFAULT)
-      val outputImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-      val ready = outputImage.graphics.drawImage(scaled, 0, 0, null)
-      if (!ready) {
-        // Not seen it get here, but just in case.
-        log.info("Initial image response not ready - waiting 500ms")
-        Thread.sleep(500)
-      }
-      val baos = ByteArrayOutputStream()
-      ImageIO.write(outputImage, "jpg", baos)
-      return baos.toByteArray()
-    } catch (io: IOException) {
-      log.error("Creating thumbnail image - IO error ${io.message}")
-    } catch (iae: IllegalArgumentException) {
-      log.error("Creating thumbnail image (null image) - error ${iae.message}")
-    }
-    return null
   }
 
   companion object {
