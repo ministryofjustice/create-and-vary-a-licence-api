@@ -1,14 +1,22 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
 
 class PrisonerSearchMockServer : WireMockServer(8099) {
+
+  private val mapper = ObjectMapper().registerModule(JavaTimeModule())
+    .registerKotlinModule()
+
   fun stubSearchPrisonersByBookingIds() {
     stubFor(
       post(urlEqualTo("/api/prisoner-search/booking-ids"))
@@ -95,125 +103,111 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
 
   private fun nextWorkingDates(): Sequence<LocalDate> = generateSequence(LocalDate.now()) { it.plusDays(1) }.filterNot { setOf(SATURDAY, SUNDAY).contains(it.dayOfWeek) }
 
-  fun stubSearchPrisonersByNomisIds(prisonerSearchResponse: String? = null) {
-    val json = prisonerSearchResponse ?: """[
-            {
-              "prisonerNumber": "A1234AA",
-              "bookingId": "123",
-              "status": "ACTIVE",
-              "mostSeriousOffence": "Robbery",
-              "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "homeDetentionCurfewEligibilityDate": null,
-              "releaseDate": "${LocalDate.now().plusDays(1)}",
-              "confirmedReleaseDate": "${nextWorkingDate()}",
-              "conditionalReleaseDate": "${nextWorkingDate()}",
-              "paroleEligibilityDate": null,
-              "actualParoleDate" : null,
-              "postRecallReleaseDate": null,
-              "legalStatus": "SENTENCED",
-              "indeterminateSentence": false,
-              "recall": false,
-              "prisonId": "ABC",
-              "bookNumber": "12345A",
-              "firstName": "Test1",
-              "lastName": "Person1",
-              "dateOfBirth": "1985-01-01"
-           },
-           {
-              "prisonerNumber": "A1234AB",
-              "bookingId": "456",
-              "status": "ACTIVE",
-              "mostSeriousOffence": "Robbery",
-              "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "topupSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "homeDetentionCurfewEligibilityDate": null,
-              "releaseDate": null,
-              "confirmedReleaseDate": null,
-              "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
-              "paroleEligibilityDate": null,
-              "actualParoleDate" : null,
-              "postRecallReleaseDate": null,
-              "legalStatus": "SENTENCED",
-              "indeterminateSentence": false,
-              "recall": false,
-              "prisonId": "DEF",
-              "bookNumber": "67890B",
-              "firstName": "Test2",
-              "lastName": "Person2",
-              "dateOfBirth": "1986-01-01"
-           },
-           {
-              "prisonerNumber": "A1234AC",
-              "bookingId": "789",
-              "status": "INACTIVE",
-              "mostSeriousOffence": "Robbery",
-              "licenceExpiryDate": null,
-              "topupSupervisionExpiryDate": null,
-              "homeDetentionCurfewEligibilityDate": null,
-              "releaseDate": null,
-              "confirmedReleaseDate": null,
-              "conditionalReleaseDate": null,
-              "paroleEligibilityDate": null,
-              "actualParoleDate" : null,
-              "postRecallReleaseDate": null,
-              "legalStatus": "SENTENCED",
-              "indeterminateSentence": false,
-              "recall": false,
-              "prisonId": "GHI",
-              "bookNumber": "12345C",
-              "firstName": "Test3",
-              "lastName": "Person3",
-              "dateOfBirth": "1987-01-01"
-           },
-           {
-              "prisonerNumber": "A1234AD",
-              "bookingId": "123",
-              "status": "ACTIVE",
-              "mostSeriousOffence": "Robbery",
-              "licenceExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "homeDetentionCurfewEligibilityDate": null,
-              "releaseDate": "${LocalDate.now().plusDays(1)}",
-              "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
-              "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
-              "paroleEligibilityDate": null,
-              "actualParoleDate" : null,
-              "postRecallReleaseDate": null,
-              "legalStatus": "SENTENCED",
-              "indeterminateSentence": false,
-              "recall": false,
-              "prisonId": "GHI",
-              "bookNumber": "12345C",
-              "firstName": "Test3",
-              "lastName": "Person3",
-              "dateOfBirth": "1987-01-01"
-           },
-           {
-              "prisonerNumber": "A1234AE",
-              "bookingId": "123",
-              "status": "INACTIVE",
-              "mostSeriousOffence": "Robbery",
-              "licenceExpiryDate": "${LocalDate.now().minusYears(1)}",
-              "topUpSupervisionExpiryDate": "${LocalDate.now().plusYears(1)}",
-              "homeDetentionCurfewEligibilityDate": null,
-              "releaseDate": "${LocalDate.now().minusYears(1)}",
-              "confirmedReleaseDate": "${LocalDate.now().plusDays(1)}",
-              "conditionalReleaseDate": "${LocalDate.now().plusDays(1)}",
-              "paroleEligibilityDate": null,
-              "actualParoleDate" : null,
-              "postRecallReleaseDate": null,
-              "legalStatus": "SENTENCED",
-              "indeterminateSentence": false,
-              "recall": false,
-              "prisonId": "GHI",
-              "bookNumber": "12345C",
-              "firstName": "Test3",
-              "lastName": "Person3",
-              "dateOfBirth": "1987-01-01"
-           }
-          ]
-    """.trimIndent()
+  fun stubSearchPrisonersByNomisIds(
+    prisonerSearchResponse: String? = null,
+    postRecallReleaseDate: LocalDate? = null,
+  ) {
+    val jsonString: String
+    if (prisonerSearchResponse == null) {
+      val prisoners = listOf(
+        PrisonerSearchPrisoner(
+          prisonerNumber = "A1234AA",
+          bookingId = "123",
+          status = "ACTIVE",
+          mostSeriousOffence = "Robbery",
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
+          releaseDate = LocalDate.now().plusDays(1),
+          confirmedReleaseDate = nextWorkingDate(),
+          conditionalReleaseDate = nextWorkingDate(),
+          legalStatus = "SENTENCED",
+          indeterminateSentence = false,
+          recall = false,
+          prisonId = "ABC",
+          bookNumber = "12345A",
+          firstName = "Test1",
+          lastName = "Person1",
+          dateOfBirth = LocalDate.parse("1985-01-01"),
+          postRecallReleaseDate = postRecallReleaseDate,
+        ),
+        PrisonerSearchPrisoner(
+          prisonerNumber = "A1234AB",
+          bookingId = "456",
+          status = "ACTIVE",
+          mostSeriousOffence = "Robbery",
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
+          conditionalReleaseDate = LocalDate.now().plusDays(1),
+          legalStatus = "SENTENCED",
+          indeterminateSentence = false,
+          recall = false,
+          prisonId = "DEF",
+          bookNumber = "67890B",
+          firstName = "Test2",
+          lastName = "Person2",
+          dateOfBirth = LocalDate.parse("1986-01-01"),
+          postRecallReleaseDate = postRecallReleaseDate,
+        ),
+        PrisonerSearchPrisoner(
+          prisonerNumber = "A1234AC",
+          bookingId = "789",
+          status = "INACTIVE",
+          mostSeriousOffence = "Robbery",
+          legalStatus = "SENTENCED",
+          indeterminateSentence = false,
+          recall = false,
+          prisonId = "GHI",
+          bookNumber = "12345C",
+          firstName = "Test3",
+          lastName = "Person3",
+          dateOfBirth = LocalDate.parse("1987-01-01"),
+          postRecallReleaseDate = postRecallReleaseDate,
+        ),
+        PrisonerSearchPrisoner(
+          prisonerNumber = "A1234AD",
+          bookingId = "123",
+          status = "ACTIVE",
+          mostSeriousOffence = "Robbery",
+          licenceExpiryDate = LocalDate.now().plusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
+          releaseDate = LocalDate.now().plusDays(1),
+          confirmedReleaseDate = LocalDate.now().plusDays(1),
+          conditionalReleaseDate = LocalDate.now().plusDays(1),
+          legalStatus = "SENTENCED",
+          indeterminateSentence = false,
+          recall = false,
+          prisonId = "GHI",
+          bookNumber = "12345C",
+          firstName = "Test3",
+          lastName = "Person3",
+          dateOfBirth = LocalDate.parse("1987-01-01"),
+          postRecallReleaseDate = postRecallReleaseDate,
+        ),
+        PrisonerSearchPrisoner(
+          prisonerNumber = "A1234AE",
+          bookingId = "123",
+          status = "INACTIVE",
+          mostSeriousOffence = "Robbery",
+          licenceExpiryDate = LocalDate.now().minusYears(1),
+          topupSupervisionExpiryDate = LocalDate.now().plusYears(1),
+          releaseDate = LocalDate.now().minusYears(1),
+          confirmedReleaseDate = LocalDate.now().plusDays(1),
+          conditionalReleaseDate = LocalDate.now().plusDays(1),
+          legalStatus = "SENTENCED",
+          indeterminateSentence = false,
+          recall = false,
+          prisonId = "GHI",
+          bookNumber = "12345C",
+          firstName = "Test3",
+          lastName = "Person3",
+          dateOfBirth = LocalDate.parse("1987-01-01"),
+          postRecallReleaseDate = postRecallReleaseDate,
+        ),
+      )
+      jsonString = mapper.writeValueAsString(prisoners)
+    } else {
+      jsonString = prisonerSearchResponse
+    }
 
     stubFor(
       post(urlEqualTo("/api/prisoner-search/prisoner-numbers"))
@@ -222,7 +216,7 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
             "Content-Type",
             "application/json",
           ).withBody(
-            json,
+            jsonString,
           ).withStatus(200),
         ),
     )

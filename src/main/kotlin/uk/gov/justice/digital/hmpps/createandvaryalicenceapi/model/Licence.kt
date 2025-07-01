@@ -13,6 +13,7 @@ import java.time.LocalDateTime
 
 @Schema(description = "Describes a licence within this service")
 object LicenceKinds {
+  const val PRRD = "PRRD"
   const val CRD = "CRD"
   const val VARIATION = "VARIATION"
   const val HARD_STOP = "HARD_STOP"
@@ -25,6 +26,7 @@ object LicenceKinds {
   oneOf = [CrdLicence::class, VariationLicence::class, HardStopLicence::class, HdcLicence::class, HdcVariationLicence::class],
   discriminatorProperty = "kind",
   discriminatorMapping = [
+    DiscriminatorMapping(value = LicenceKinds.PRRD, schema = PrrdLicenceResponse::class),
     DiscriminatorMapping(value = LicenceKinds.CRD, schema = CrdLicence::class),
     DiscriminatorMapping(value = LicenceKinds.VARIATION, schema = VariationLicence::class),
     DiscriminatorMapping(value = LicenceKinds.HARD_STOP, schema = HardStopLicence::class),
