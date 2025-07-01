@@ -6,6 +6,7 @@ import org.mockito.Mockito.anyMap
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
@@ -39,10 +40,10 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
 
     migration.perform()
 
-    listOf(Triple(1, 1, 2), Triple(2, 1, 2)).forEach { (i, additionalConditionId, licenceId) ->
-      verify(documentService).uploadDocument(fileContents("originalData", i), metadata(licenceId, additionalConditionId, "pdf"))
-      verify(documentService).uploadDocument(fileContents("fullSizeImage", i), metadata(licenceId, additionalConditionId, "fullSizeImage"))
-      verify(documentService).uploadDocument(fileContents("thumbnailImage", i), metadata(licenceId, additionalConditionId, "thumbnail"))
+    listOf(Triple(1, 1, 2), Triple(2, 1, 2)).forEach { (id, additionalConditionId, licenceId) ->
+      verify(documentService).uploadDocument(document("originalData", id), metadata(licenceId, additionalConditionId, "pdf"))
+      verify(documentService).uploadDocument(document("fullSizeImage", id), metadata(licenceId, additionalConditionId, "fullSizeImage"))
+      verify(documentService).uploadDocument(document("thumbnailImage", id), metadata(licenceId, additionalConditionId, "thumbnail"))
     }
   }
 
@@ -59,7 +60,7 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
     )
     uuidsFromDocumentService.entries.forEach { (file, uuids) ->
       uuids.forEachIndexed { i, uuid ->
-        whenever(documentService.uploadDocument(eq(fileContents(file, i + 1)), anyMap())).thenReturn(UUID.fromString(uuid))
+        whenever(documentService.uploadDocument(eq(document(file, i + 1)), anyMap())).thenReturn(UUID.fromString(uuid))
       }
     }
 
@@ -85,7 +86,26 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
     assertThat(secondSummary.thumbnailImageDsUuid).isEqualTo("87632006-6b54-4644-b160-783f42dab505")
   }
 
-  private fun fileContents(of: String, i: Int) = "$of$i".toByteArray()
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/seed-additional-condition-exclusion-zone-uploads.sql",
+  )
+  fun `does not migrate documents with a document service uuid already recorded`() {
+    val migration = ExclusionZoneUploadsMigration(
+      documentService,
+      additionalConditionUploadDetailRepository,
+      additionalConditionUploadSummaryRepository,
+    )
+
+    migration.perform()
+
+    verify(documentService, never()).uploadDocument(document("originalData", 3), metadata(2, 1, "pdf"))
+    verify(documentService, never()).uploadDocument(document("fullSizeImage", 3), metadata(2, 1, "fullSizeImage"))
+    verify(documentService, never()).uploadDocument(document("thumbnailImage", 3), metadata(2, 1, "thumbnail"))
+  }
+
+  private fun document(of: String, id: Int) = "$of$id".toByteArray()
 
   private fun metadata(licenceId: Int, additionalConditionId: Int, kind: String) = mapOf(
     "licenceId" to licenceId.toString(),
