@@ -837,6 +837,18 @@ class ReleaseDateServiceTest {
       assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.HDC)).isEqualTo(LocalDate.of(2021, 10, 10))
     }
 
+    @Test
+    fun `returns PRRD for fixed term recall licences`() {
+      val prrd = LocalDate.of(2021, 11, 10)
+      val nomisRecord = prisonerSearchResult().copy(
+        conditionalReleaseDate = LocalDate.of(2021, 10, 21),
+        confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+        postRecallReleaseDate = prrd,
+      )
+
+      assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrd)
+    }
+
     @Nested
     inner class `Determine licence start date` {
       @Test
