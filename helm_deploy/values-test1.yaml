@@ -28,6 +28,7 @@ generic-service:
     POLICYV3_ENABLED: true
     DOMAIN_EVENT_LISTENER_ENABLED: false
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
+    FEATURE_TOGGLE_ELECTRONICMONITORINGRESPONSEHANDLING: false
 
   scheduledDowntime:
     enabled: true
