@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.applicationinsights.TelemetryClient
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito.reset
@@ -12,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.http.HttpHeaders
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -98,6 +100,9 @@ abstract class IntegrationTestBase {
   @MockitoSpyBean
   protected lateinit var hmppsSqsPropertiesSpy: HmppsSqsProperties
 
+  @Autowired
+  lateinit var jdbcTemplate: JdbcTemplate
+
   fun HmppsSqsProperties.domaineventsTopicConfig() = topics["domainevents"]
     ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
 
@@ -110,6 +115,12 @@ abstract class IntegrationTestBase {
   fun `Clear queues`() {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
     reset(telemetryClient)
+  }
+
+  @AfterEach
+  fun tearDown() {
+    // Avoid memory bloat or leaks in Postgres during long test runs
+    jdbcTemplate.execute("DISCARD ALL")
   }
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? = domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueueUrl).get()
