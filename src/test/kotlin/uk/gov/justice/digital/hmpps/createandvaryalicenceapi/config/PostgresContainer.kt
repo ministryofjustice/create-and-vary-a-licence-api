@@ -34,6 +34,14 @@ object PostgresContainer {
       withUsername(DB_USERNAME)
       withPassword(DB_PASSWORD)
       setWaitStrategy(Wait.forListeningPort())
+      // Postgres tuning for faster startup & better test concurrency
+      withCommand(
+        "postgres",
+        "-c", "max_connections=20",
+        "-c", "fsync=off",
+        "-c", "synchronous_commit=off",
+        "-c", "full_page_writes=off",
+      )
       withReuse(true)
       withTmpFs(mapOf("/var/lib/postgresql/data" to "rw"))
       start()
