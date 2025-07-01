@@ -12,6 +12,14 @@ enum class LicenceKind(
   val activatedDomainEventType: () -> LicenceDomainEventType,
   val inactivatedDomainEventType: () -> LicenceDomainEventType,
 ) {
+  PRRD(
+    { IN_PROGRESS },
+    { LicenceEventType.CREATED },
+    { LicenceEventType.VERSION_CREATED },
+    { LicenceEventType.SUBMITTED },
+    { LicenceDomainEventType.LICENCE_ACTIVATED },
+    { LicenceDomainEventType.LICENCE_INACTIVATED },
+  ),
   CRD(
     { IN_PROGRESS },
     { LicenceEventType.CREATED },

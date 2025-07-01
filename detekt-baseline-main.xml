@@ -2,9 +2,13 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>AvoidReferentialEquality:PolicyFunctions.kt$it.code === condition.code</ID>
     <ID>CyclomaticComplexMethod:LicenceService.kt$LicenceService$private fun updateLicenceStatus(licenceEntity: EntityLicence, request: StatusUpdateRequest)</ID>
+    <ID>DoubleMutabilityForCollection:HdcCase.kt$HdcCase$var curfewTimes: MutableList&lt;HdcCurfewTimes&gt;</ID>
     <ID>ForbiddenComment:HdcService.kt$HdcService.HdcStatuses$* For CA: * Always show started cases regardless of HDC status. * TODO: will need to fix when we start to show prospective HDC cases in caselist * If licence hasn't been started, only show !approved licences.</ID>
     <ID>ForbiddenComment:HdcService.kt$HdcService.HdcStatuses$* For COM: * If licence hasn't been started base on whether licence is approved. * TODO: will need to fix when we start to show prospective HDC cases in caselist * If licence has been started then show when (approved and HDC) or (!approved and !hdc)</ID>
+    <ID>ForbiddenVoid:DeliusApiClient.kt$DeliusApiClient$Void</ID>
+    <ID>HasPlatformType:ExclusionZonePdfExtract.kt$ExclusionZonePdfExtractBuilder.Companion$val log = LoggerFactory.getLogger(this::class.java)</ID>
     <ID>LargeClass:CaseloadController.kt$CaseloadController</ID>
     <ID>LargeClass:LicenceController.kt$LicenceController</ID>
     <ID>LargeClass:LicenceService.kt$LicenceService</ID>
@@ -75,9 +79,14 @@
     <ID>MagicNumber:LicenceActivationService.kt$LicenceActivationService$4</ID>
     <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
     <ID>MagicNumber:SubjectAccessRequestController.kt$SubjectAccessRequestController$209</ID>
+    <ID>MapGetWithNotNullAssertionOperator:AdditionalConditionWithConfig.kt$isLicenceReadyToSubmit(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:ToModelTransformers.kt$conditionSubmissionStatus[it.conditionCode]!!</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>NestedBlockDepth:OsPlacesMapperToAddressSearchResponseMapper.kt$OsPlacesMapperToAddressSearchResponseMapper$private fun getAddressFirstLine(deliveryPointAddress: DeliveryPointAddress): Pair&lt;String, Boolean&gt;</ID>
+    <ID>NoNameShadowing:FormattingHelpers.kt${ it.groupValues[1].trim() }</ID>
+    <ID>NoNameShadowing:LicenceService.kt$LicenceService${ it.copy(id = -1) }</ID>
+    <ID>NoNameShadowing:PromptComListBuilder.kt$PromptComListBuilder$cases</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
     <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:LsdRecalculationService.kt$LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long</ID>
@@ -107,6 +116,102 @@
     <ID>TooManyFunctions:ToModelTransformers.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.publicApi.ToModelTransformers.kt</ID>
     <ID>TooManyFunctions:ToSarModelTransfer.kt$uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.ToSarModelTransfer.kt</ID>
     <ID>TooManyFunctions:WebClientConfiguration.kt$WebClientConfiguration</ID>
+    <ID>UnnecessaryAbstractClass:Staff.kt$Staff$Staff</ID>
+    <ID>UnnecessaryFilter:NotifyService.kt$NotifyService$filter { it.initialPromptCases.isNotEmpty() }</ID>
+    <ID>UnnecessaryFilter:NotifyService.kt$NotifyService$filter { it.urgentPromptCases.isNotEmpty() }</ID>
+    <ID>UnreachableCatchBlock:ExclusionZonePdfExtract.kt$ExclusionZonePdfExtractBuilder$catch (ipe: InvalidPasswordException) { log.error("Invalid password ${ipe.message}") }</ID>
+    <ID>UnsafeCallOnNullableType:AdditionalConditionWithConfig.kt$isLicenceReadyToSubmit(listOf(licenceCondition), policyConditions)[licenceCondition.conditionCode]!!</ID>
+    <ID>UnsafeCallOnNullableType:AdditionalConditionWithConfig.kt$it.config.getConditionInputs()!!</ID>
+    <ID>UnsafeCallOnNullableType:ApproverCaseloadService.kt$ApproverCaseloadService$it.case.nomisId!!</ID>
+    <ID>UnsafeCallOnNullableType:AuditService.kt$AuditService$auditRequest.licenceId!!</ID>
+    <ID>UnsafeCallOnNullableType:AuditService.kt$AuditService$auditRequest.username!!</ID>
+    <ID>UnsafeCallOnNullableType:CaCaseloadService.kt$CaCaseloadService$c.nomisRecord?.prisonerNumber!!</ID>
+    <ID>UnsafeCallOnNullableType:CaCaseloadService.kt$CaCaseloadService$c.probationPractitioner?.staffUsername!!</ID>
+    <ID>UnsafeCallOnNullableType:CaCaseloadService.kt$CaCaseloadService$it.bookingId?.toLong()!!</ID>
+    <ID>UnsafeCallOnNullableType:CaCaseloadService.kt$CaCaseloadService$licence?.nomisId!!</ID>
+    <ID>UnsafeCallOnNullableType:CaseloadController.kt$CaseloadController$criteria.earliestReleaseDate!!</ID>
+    <ID>UnsafeCallOnNullableType:CaseloadController.kt$CaseloadController$criteria.latestReleaseDate!!</ID>
+    <ID>UnsafeCallOnNullableType:CaseloadController.kt$CaseloadController$criteria.prisonIds!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadSearchService.kt$ComCaseloadSearchService$it.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadService.kt$ComCaseloadService$case.licences.find { licence -&gt; licence.licenceStatus !== APPROVED }!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadService.kt$ComCaseloadService$case.nomisRecord!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadService.kt$ComCaseloadService$caseload.find { case -&gt; case.crn == offender.crn }!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadService.kt$ComCaseloadService$it.nomisRecord!!</ID>
+    <ID>UnsafeCallOnNullableType:ComCaseloadService.kt$ComCaseloadService$it.nomisRecord?.bookingId?.toLong()!!</ID>
+    <ID>UnsafeCallOnNullableType:ExclusionZonePdfExtract.kt$ExclusionZonePdfExtractBuilder$description!!</ID>
+    <ID>UnsafeCallOnNullableType:ExclusionZonePdfExtract.kt$ExclusionZonePdfExtractBuilder$fullSizeImage!!</ID>
+    <ID>UnsafeCallOnNullableType:HardStopLicenceReviewOverdueService.kt$HardStopLicenceReviewOverdueService$it.forename!!</ID>
+    <ID>UnsafeCallOnNullableType:HardStopLicenceReviewOverdueService.kt$HardStopLicenceReviewOverdueService$it.surname!!</ID>
+    <ID>UnsafeCallOnNullableType:HdcService.kt$HdcService$licence.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:HdcService.kt$HdcService$licence.curfewAddress!!</ID>
+    <ID>UnsafeCallOnNullableType:HdcService.kt$HdcService$nomisRecord.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:Input.kt$data.first().dataValue!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceActivationService$it.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceActivationService$licence.licenceStartDate!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceActivationService$potentialLicences[it.bookingId?.toLong()]!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceActivationService.kt$LicenceWithPrisoner$licence.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceConditionService.kt$LicenceConditionService$licenceEntity.version!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt$LicenceCreationService$hdcLicenceData!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt$LicenceCreationService$hdcLicenceData!!.curfewAddress!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt$LicenceCreationService$nomisRecord.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceCreationService.kt$LicenceCreationService$nomisRecord.prisonId!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceDetailTransformer.kt$this.statusCode!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceFactory.kt$LicenceFactory$nomisRecord.postRecallReleaseDate!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceFactory.kt$LicenceFactory$this.licenceVersion!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceOverrideService.kt$LicenceOverrideService$licence?.crn!!</ID>
+    <ID>UnsafeCallOnNullableType:LicencePolicyService.kt$LicencePolicyService$licence.version!!</ID>
+    <ID>UnsafeCallOnNullableType:LicencePolicyService.kt$LicencePolicyService$licenceEntity.version!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licence.variationOfId!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licenceEntity.forename!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$licenceEntity.surname!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$this.forename!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$this.surname!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$updatedLicence.crn!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$updatedLicence.forename!!</ID>
+    <ID>UnsafeCallOnNullableType:LicenceService.kt$LicenceService$updatedLicence.surname!!</ID>
+    <ID>UnsafeCallOnNullableType:NotifyService.kt$NotifyService$crn!!</ID>
+    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$inprogressLicence.crn!!</ID>
+    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$newCom.email!!</ID>
+    <ID>UnsafeCallOnNullableType:OffenderService.kt$OffenderService$releaseDate!!</ID>
+    <ID>UnsafeCallOnNullableType:PrisonApproverService.kt$PrisonApproverService$originalLicence.variationOfId!!</ID>
+    <ID>UnsafeCallOnNullableType:PromptComListBuilder.kt$PromptComListBuilder$it.bookingId?.toLong()!!</ID>
+    <ID>UnsafeCallOnNullableType:PromptComListBuilder.kt$PromptComListBuilder$it.case.nomisId!!</ID>
+    <ID>UnsafeCallOnNullableType:PrrdLicence.kt$PrrdLicence$this.postRecallReleaseDate!!</ID>
+    <ID>UnsafeCallOnNullableType:SupportService.kt$SupportService$this.bookingId?.toLong()!!</ID>
+    <ID>UnsafeCallOnNullableType:ToEntityTransformers.kt$licence.version!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$conditionSubmissionStatus[it.conditionCode]!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$licence.nomsId!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$this.dateOfBirth!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$this.firstName!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$this.lastName!!</ID>
+    <ID>UnsafeCallOnNullableType:ToModelTransformers.kt$this.prisonerNumber!!</ID>
+    <ID>UnsafeCallOnNullableType:UpdateSentenceDateService.kt$UpdateSentenceDateService$licence.bookingId!!</ID>
+    <ID>UnsafeCallOnNullableType:UpdateSentenceDateService.kt$UpdateSentenceDateService$licence.nomsId!!</ID>
+    <ID>UnsafeCallOnNullableType:UpdateSentenceDateService.kt$UpdateSentenceDateService$licence?.bookingId!!</ID>
     <ID>UnusedParameter:ConditionController.kt$ConditionController$@PathVariable conditionType: String</ID>
+    <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$licenceEntity.appointmentAddress ?: ""</ID>
+    <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$licenceEntity.appointmentContact ?: ""</ID>
+    <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$licenceEntity.appointmentPerson ?: ""</ID>
+    <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$previousAddress ?: ""</ID>
+    <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$previousContact ?: ""</ID>
+    <ID>UseOrEmpty:AppointmentService.kt$AppointmentService$previousPerson ?: ""</ID>
+    <ID>UseOrEmpty:Batching.kt$Batching$gatherer.gather(batch) ?: emptyList()</ID>
+    <ID>UseOrEmpty:ConditionFormatter.kt$ConditionFormatter$condition.tpl ?: ""</ID>
+    <ID>UseOrEmpty:ControllerAdvice.kt$ControllerAdvice$it.defaultMessage?.toString() ?: ""</ID>
+    <ID>UseOrEmpty:FormattingHelpers.kt$this?.let { "\\{(.*?)}".toRegex().findAll(this) .map { it.groupValues[1].trim() } .toList() } ?: emptyList()</ID>
+    <ID>UseOrEmpty:Input.kt$Input$options?.mapNotNull { it.conditional?.inputs?.map { c -&gt; c.name } }?.flatten() ?: emptyList()</ID>
+    <ID>UseOrEmpty:LicenceFactory.kt$LicenceFactory$nomisRecord.middleNames?.convertToTitleCase() ?: ""</ID>
+    <ID>UseOrEmpty:LicencePolicy.kt$HasInputs$it.options ?: emptyList()</ID>
+    <ID>UseOrEmpty:LicencePolicy.kt$HasInputs$this.getConditionInputs() ?: emptyList()</ID>
+    <ID>UseOrEmpty:LicenceService.kt$LicenceService$licenceEntity.createdBy?.email ?: ""</ID>
+    <ID>UseOrEmpty:LicenceService.kt$LicenceService$licenceEntity.responsibleCom.email ?: ""</ID>
+    <ID>UseOrEmpty:LicenceService.kt$LicenceService$reason ?: ""</ID>
+    <ID>UseOrEmpty:OsPlacesApiClient.kt$OsPlacesApiClient$searchResult?.results?.map { it.dpa } ?: emptyList()</ID>
+    <ID>UseOrEmpty:PolicyFunctions.kt$current.inputs ?: emptyList()</ID>
+    <ID>UseOrEmpty:PolicyFunctions.kt$previous.inputs ?: emptyList()</ID>
+    <ID>UseOrEmpty:Replacements.kt$current.changeHints.find { it.previousCode == condition.code }?.replacements ?: emptyList()</ID>
+    <ID>UseOrEmpty:Replacements.kt$previous?.allAdditionalConditions()?.associateBy { it.code } ?: emptyMap()</ID>
+    <ID>UselessCallOnNotNull:LicenceDetailTransformer.kt$condition.code.orEmpty()</ID>
+    <ID>UselessCallOnNotNull:LicenceDetailTransformer.kt$condition.text.orEmpty()</ID>
   </CurrentIssues>
 </SmellBaseline>
