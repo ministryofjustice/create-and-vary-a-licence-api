@@ -14,8 +14,8 @@ spring:
   datasource:
     hikari:
       pool-name: CVL-CP
-      maximum-pool-size: 4
-      minimum-idle: 0
+      maximum-pool-size: 10
+      minimum-idle: 2
       idle-timeout: 10000           # 10 seconds
       max-lifetime: 30000           # 30 seconds
       connection-timeout: 2000      # 2 seconds
