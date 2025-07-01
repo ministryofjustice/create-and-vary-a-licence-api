@@ -102,6 +102,8 @@ class ReleaseDateService(
     licenceKind: LicenceKind? = LicenceKind.CRD,
   ): LocalDate? = if (licenceKind == LicenceKind.HDC) {
     nomisRecord.homeDetentionCurfewActualDate
+  } else if (licenceKind == LicenceKind.PRRD) {
+    nomisRecord.postRecallReleaseDate
   } else if (
     ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
     iS91DeterminationService.isIS91Case(nomisRecord)
