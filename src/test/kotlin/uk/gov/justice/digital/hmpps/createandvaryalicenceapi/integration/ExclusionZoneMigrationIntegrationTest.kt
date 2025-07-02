@@ -3,11 +3,11 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.anyMap
+import org.mockito.Mockito.atMostOnce
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
@@ -42,8 +42,8 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
     migration.perform()
 
     listOf(
-      Pair(1, times(1)),
-      Pair(2, times(1)),
+      Pair(1, atMostOnce()),
+      Pair(2, atMostOnce()),
       Pair(3, never()),
     ).forEach { (id, invoked) ->
       verify(documentService, invoked).uploadDocument(document("originalData", id), metadata("pdf"))
@@ -107,7 +107,7 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
 
     listOf(
       Pair(1, never()),
-      Pair(2, times(1)),
+      Pair(2, atMostOnce()),
     ).forEach { (id, invoked) ->
       verify(documentService, invoked).uploadDocument(document("originalData", id), metadata("pdf"))
       verify(documentService, invoked).uploadDocument(document("fullSizeImage", id), metadata("fullSizeImage"))
