@@ -9,13 +9,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 interface AdditionalConditionUploadDetailRepository : JpaRepository<AdditionalConditionUploadDetail, Long> {
   @Query(
     """
-    select aud
-    from AdditionalConditionUploadDetail aud
-    where aud.fullSizeImageDsUuid is null
-    and aud.originalDataDsUuid is null
-    order by aud.id desc
-    limit :limit
+    SELECT aud
+    FROM AdditionalConditionUploadDetail aud
+    WHERE aud.fullSizeImageDsUuid IS NULL
+    OR aud.originalDataDsUuid IS NULL
+    ORDER BY aud.id DESC 
+    LIMIT :limit
   """,
   )
-  fun toBeMigrated(limit: Int = 100): List<AdditionalConditionUploadDetail>
+  fun toBeMigrated(limit: Int): List<AdditionalConditionUploadDetail>
 }

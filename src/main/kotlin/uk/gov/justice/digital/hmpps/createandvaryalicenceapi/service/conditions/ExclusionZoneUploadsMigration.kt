@@ -20,22 +20,22 @@ class ExclusionZoneUploadsMigration(
   }
 
   private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
-    val originalData = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
-    val fullSizeImage = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
+    val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
+    val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
 
     additionalConditionUploadDetailRepository.saveAndFlush(
       uploadDetail.copy(
-        originalDataDsUuid = originalData?.toString(),
-        fullSizeImageDsUuid = fullSizeImage?.toString(),
+        originalDataDsUuid = originalDataUuid?.toString(),
+        fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
       ),
     )
   }
 
   private fun migrate(uploadSummary: AdditionalConditionUploadSummary) {
-    val thumbnail = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
+    val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
 
     additionalConditionUploadSummaryRepository.saveAndFlush(
-      uploadSummary.copy(thumbnailImageDsUuid = thumbnail?.toString()),
+      uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid?.toString()),
     )
   }
 

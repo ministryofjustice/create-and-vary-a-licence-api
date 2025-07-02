@@ -9,12 +9,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 interface AdditionalConditionUploadSummaryRepository : JpaRepository<AdditionalConditionUploadSummary, Long> {
   @Query(
     """
-    select aus 
-    from AdditionalConditionUploadSummary aus 
-    where aus.thumbnailImageDsUuid is null
-    order by aus.id desc
-    limit :limit
+    SELECT aus 
+    FROM AdditionalConditionUploadSummary aus 
+    WHERE aus.thumbnailImageDsUuid IS NULL
+    ORDER BY aus.id DESC
+    LIMIT :limit
   """,
   )
-  fun toBeMigrated(limit: Int = 100): List<AdditionalConditionUploadSummary>
+  fun toBeMigrated(limit: Int): List<AdditionalConditionUploadSummary>
 }
