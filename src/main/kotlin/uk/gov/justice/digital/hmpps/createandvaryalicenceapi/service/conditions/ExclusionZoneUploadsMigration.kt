@@ -14,9 +14,9 @@ class ExclusionZoneUploadsMigration(
   private val additionalConditionUploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
 ) {
 
-  fun perform() {
-    additionalConditionUploadDetailRepository.toBeMigrated().forEach(::migrate)
-    additionalConditionUploadSummaryRepository.toBeMigrated().forEach(::migrate)
+  fun perform(limit: Int = 100) {
+    additionalConditionUploadDetailRepository.toBeMigrated(limit).forEach(::migrate)
+    additionalConditionUploadSummaryRepository.toBeMigrated(limit).forEach(::migrate)
   }
 
   private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {

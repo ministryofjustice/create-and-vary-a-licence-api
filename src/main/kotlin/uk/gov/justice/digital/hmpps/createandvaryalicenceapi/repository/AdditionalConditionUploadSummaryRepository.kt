@@ -7,6 +7,14 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCo
 
 @Repository
 interface AdditionalConditionUploadSummaryRepository : JpaRepository<AdditionalConditionUploadSummary, Long> {
-  @Query("select aus from AdditionalConditionUploadSummary aus where aus.thumbnailImageDsUuid is null")
-  fun toBeMigrated(): List<AdditionalConditionUploadSummary>
+  @Query(
+    """
+    select aus 
+    from AdditionalConditionUploadSummary aus 
+    where aus.thumbnailImageDsUuid is null
+    order by aus.id desc
+    limit :limit
+  """,
+  )
+  fun toBeMigrated(limit: Int = 100): List<AdditionalConditionUploadSummary>
 }

@@ -13,7 +13,9 @@ interface AdditionalConditionUploadDetailRepository : JpaRepository<AdditionalCo
     from AdditionalConditionUploadDetail aud
     where aud.fullSizeImageDsUuid is null
     and aud.originalDataDsUuid is null
+    order by aud.id desc
+    limit :limit
   """,
   )
-  fun toBeMigrated(): List<AdditionalConditionUploadDetail>
+  fun toBeMigrated(limit: Int = 100): List<AdditionalConditionUploadDetail>
 }

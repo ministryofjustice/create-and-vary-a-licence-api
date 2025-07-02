@@ -7,6 +7,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
@@ -40,10 +41,10 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
 
     migration.perform()
 
-    listOf(Triple(1, 1, 2), Triple(2, 1, 2)).forEach { (id, additionalConditionId, licenceId) ->
-      verify(documentService).uploadDocument(document("originalData", id), metadata(licenceId, additionalConditionId, "pdf"))
-      verify(documentService).uploadDocument(document("fullSizeImage", id), metadata(licenceId, additionalConditionId, "fullSizeImage"))
-      verify(documentService).uploadDocument(document("thumbnailImage", id), metadata(licenceId, additionalConditionId, "thumbnail"))
+    listOf(1, 2).forEach { id ->
+      verify(documentService).uploadDocument(document("originalData", id), metadata("pdf"))
+      verify(documentService).uploadDocument(document("fullSizeImage", id), metadata("fullSizeImage"))
+      verify(documentService).uploadDocument(document("thumbnailImage", id), metadata("thumbnail"))
     }
   }
 
@@ -100,16 +101,37 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
 
     migration.perform()
 
-    verify(documentService, never()).uploadDocument(document("originalData", 3), metadata(2, 1, "pdf"))
-    verify(documentService, never()).uploadDocument(document("fullSizeImage", 3), metadata(2, 1, "fullSizeImage"))
-    verify(documentService, never()).uploadDocument(document("thumbnailImage", 3), metadata(2, 1, "thumbnail"))
+    verify(documentService, never()).uploadDocument(document("originalData", 3), metadata("pdf"))
+    verify(documentService, never()).uploadDocument(document("fullSizeImage", 3), metadata("fullSizeImage"))
+    verify(documentService, never()).uploadDocument(document("thumbnailImage", 3), metadata("thumbnail"))
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-2.sql",
+    "classpath:test_data/seed-additional-condition-exclusion-zone-uploads.sql",
+  )
+  fun `can migrate a subset of the documents that need migrating ordered by id desc`() {
+    val migration = ExclusionZoneUploadsMigration(
+      documentService,
+      additionalConditionUploadDetailRepository,
+      additionalConditionUploadSummaryRepository,
+    )
+
+    migration.perform(limit = 1)
+
+    listOf(Pair(1, never()), Pair(2, times(1))).forEach { (id, invoked) ->
+      verify(documentService, invoked).uploadDocument(document("originalData", id), metadata("pdf"))
+      verify(documentService, invoked).uploadDocument(document("fullSizeImage", id), metadata("fullSizeImage"))
+      verify(documentService, invoked).uploadDocument(document("thumbnailImage", id), metadata("thumbnail"))
+    }
   }
 
   private fun document(of: String, id: Int) = "$of$id".toByteArray()
 
-  private fun metadata(licenceId: Int, additionalConditionId: Int, kind: String) = mapOf(
-    "licenceId" to licenceId.toString(),
-    "additionalConditionId" to additionalConditionId.toString(),
+  private fun metadata(kind: String) = mapOf(
+    "licenceId" to "2",
+    "additionalConditionId" to "1",
     "kind" to kind,
   )
 }
