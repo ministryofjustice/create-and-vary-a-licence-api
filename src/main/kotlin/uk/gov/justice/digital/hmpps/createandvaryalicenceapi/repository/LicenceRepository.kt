@@ -45,10 +45,7 @@ interface LicenceRepository :
     """
     SELECT l
         FROM Licence l
-        WHERE l.kind IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-        )
+        WHERE l.kind IN ('HDC','CRD','PRRD')
         AND l.versionOfId IN :versionOfId
         AND l.statusCode IN :status
     """,

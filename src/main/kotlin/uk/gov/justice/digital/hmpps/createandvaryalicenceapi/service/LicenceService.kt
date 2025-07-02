@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
@@ -114,6 +115,18 @@ class LicenceService(
     isEligibleForEarlyRelease: Boolean,
     conditionSubmissionStatus: Map<String, Boolean>,
   ): Licence = when (licence) {
+    is PrrdLicence -> toPrrd(
+      licence = licence,
+      earliestReleaseDate = earliestReleaseDate,
+      isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+      isInHardStopPeriod = releaseDateService.isInHardStopPeriod(licence),
+      hardStopDate = releaseDateService.getHardStopDate(licence),
+      hardStopWarningDate = releaseDateService.getHardStopWarningDate(licence),
+      isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(licence),
+      isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(licence),
+      conditionSubmissionStatus = conditionSubmissionStatus,
+    )
+
     is CrdLicence -> toCrd(
       licence = licence,
       earliestReleaseDate = earliestReleaseDate,
@@ -189,6 +202,7 @@ class LicenceService(
         when (licenceEntity) {
           is VariationLicence -> error("Cannot approve a Variation licence: ${licenceEntity.id}")
           is HdcVariationLicence -> error("Cannot approve an HDC Variation licence: ${licenceEntity.id}")
+          is PrrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
           is CrdLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
           is HdcLicence -> deactivatePreviousLicenceVersion(licenceEntity, request.fullName, staffMember)
         }
@@ -348,6 +362,7 @@ class LicenceService(
 
   private fun deactivatePreviousLicenceVersion(licence: EntityLicence, fullName: String?, staffMember: Staff?) {
     val previousVersionId = when (licence) {
+      is PrrdLicence -> licence.versionOfId
       is CrdLicence -> licence.versionOfId
       is HdcLicence -> licence.versionOfId
       else -> null
@@ -368,14 +383,18 @@ class LicenceService(
         statusCode = INACTIVE,
         updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
-
+      is PrrdLicence -> previousLicenceVersion.copy(
+        dateLastUpdated = LocalDateTime.now(),
+        updatedByUsername = staffMember?.username ?: SYSTEM_USER,
+        statusCode = INACTIVE,
+        updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
+      )
       is HdcLicence -> previousLicenceVersion.copy(
         dateLastUpdated = LocalDateTime.now(),
         updatedByUsername = staffMember?.username ?: SYSTEM_USER,
         statusCode = INACTIVE,
         updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
-
       else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
 
@@ -407,6 +426,10 @@ class LicenceService(
       ?: throw ValidationException("Staff with username $username not found")
 
     val updatedLicence = when (licenceEntity) {
+      is PrrdLicence -> {
+        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
+        licenceEntity.submit(submitter as CommunityOffenderManager)
+      }
       is CrdLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
@@ -602,7 +625,7 @@ class LicenceService(
     val licence = licenceRepository
       .findById(licenceId)
       .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (licence !is CrdLicence && licence !is HdcLicence) error("Trying to edit licence for non-crd non-hdc licence: $licenceId")
+    if (isValidLicenceForEdit(licence)) error("Trying to edit licence for non-crd,non-hdc or non-prrd licence: $licenceId")
 
     if (licence.statusCode != APPROVED) {
       throw ValidationException("Can only edit APPROVED licences")
@@ -618,18 +641,22 @@ class LicenceService(
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
-    val copyToEdit = if (licence is HdcLicence) {
-      LicenceFactory.createHdcCopyToEdit(
-        licence,
-        creator,
-      )
-    } else {
-      LicenceFactory.createCrdCopyToEdit(licence as CrdLicence, creator)
+    val copyToEdit = when (licence) {
+      is HdcLicence -> LicenceFactory.createHdcCopyToEdit(licence, creator)
+      is CrdLicence -> LicenceFactory.createCrdCopyToEdit(licence, creator)
+      is PrrdLicence -> LicenceFactory.createPrrdCopyToEdit(licence, creator)
+      else -> throw IllegalArgumentException("Unsupported licence type: ${licence?.javaClass?.simpleName}")
     }
+
     val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
     notifyReApprovalNeeded(licence)
     return licenceCopy.toSummary()
   }
+
+  private fun isValidLicenceForEdit(licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence?): Boolean = licence != null &&
+    licence !is CrdLicence &&
+    licence !is HdcLicence &&
+    licence !is PrrdLicence
 
   @Transactional
   fun updateSpoDiscussion(licenceId: Long, spoDiscussionRequest: UpdateSpoDiscussionRequest) {

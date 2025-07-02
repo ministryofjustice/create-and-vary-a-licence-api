@@ -187,6 +187,19 @@ object LicenceFactory {
     }
   }
 
+  fun createPrrdCopyToEdit(licence: PrrdLicence, creator: CommunityOffenderManager): Licence {
+    with(licence) {
+      return licence.copy(
+        id = -1,
+        dateCreated = LocalDateTime.now(),
+        statusCode = IN_PROGRESS,
+        licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
+        versionOfId = licence.id,
+        createdBy = creator,
+      )
+    }
+  }
+
   fun createHdcCopyToEdit(licence: HdcLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
