@@ -150,7 +150,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Update the status of a licence to approved`() {
+  fun `Approved licence`() {
     webTestClient.put()
       .uri("/licence/id/1/status")
       .bodyValue(aStatusToApprovedUpdateRequest)
@@ -173,6 +173,31 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
     assertThat(result?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
     assertThat(result?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-submitted-prrd-licence-id-1.sql",
+  )
+  fun `Approved PRRD licence`() {
+    // Given
+    val uri = "/licence/id/1/status"
+    val roles = listOf("ROLE_CVL_ADMIN")
+
+    // When
+    val result = webTestClient.put()
+      .uri(uri)
+      .bodyValue(aStatusToApprovedUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = roles))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = licenceRepository.findById(1).getOrNull()
+    assertThat(licence).isNotNull
+    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
   }
 
   @Test
