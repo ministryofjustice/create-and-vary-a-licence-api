@@ -41,6 +41,26 @@ To run start up the application without pulling / restarting local containers:
 ./run-local.sh --skip-docker
 ```
 
+### Running application inside the IDE
+
+This option is needed if you want to trace or debug your code!
+If you want to run the spring application in side your IDE,
+follow the following steps:
+
+* Run in terminal
+```Shell
+./set-vars-to-env-file.sh
+```
+* Then run in terminal
+```Shell
+docker compose up
+```
+* Add the following to your IJ IDE Run/Debug configurations "Environment variables"
+```
+/Users/<<YOUR-USER-DIR>>/env-config/after.env
+```
+<em>The IDE behaves a bit odd here, try and selected the folder and file do not type it in!</em>
+
 ## Running the unit tests
 
 Unit tests mock all external dependencies and can be run with no dependent containers.
