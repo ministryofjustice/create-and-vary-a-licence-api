@@ -270,6 +270,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
     assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
     assertThat(licence.postRecallReleaseDate).isNotNull()
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
   }
 
   @Test
