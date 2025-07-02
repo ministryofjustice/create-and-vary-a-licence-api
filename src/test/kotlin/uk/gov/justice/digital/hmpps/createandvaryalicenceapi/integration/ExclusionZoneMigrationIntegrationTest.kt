@@ -32,7 +32,7 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/seed-additional-condition-exclusion-zone-uploads.sql",
   )
-  fun `migrates the documents stored locally to the remote document service`() {
+  fun `migrates documents stored locally to the remote document service unless we already have their uuid recorded`() {
     val migration = ExclusionZoneUploadsMigration(
       documentService,
       additionalConditionUploadDetailRepository,
@@ -41,10 +41,14 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
 
     migration.perform()
 
-    listOf(1, 2).forEach { id ->
-      verify(documentService).uploadDocument(document("originalData", id), metadata("pdf"))
-      verify(documentService).uploadDocument(document("fullSizeImage", id), metadata("fullSizeImage"))
-      verify(documentService).uploadDocument(document("thumbnailImage", id), metadata("thumbnail"))
+    listOf(
+      Pair(1, times(1)),
+      Pair(2, times(1)),
+      Pair(3, never()),
+    ).forEach { (id, invoked) ->
+      verify(documentService, invoked).uploadDocument(document("originalData", id), metadata("pdf"))
+      verify(documentService, invoked).uploadDocument(document("fullSizeImage", id), metadata("fullSizeImage"))
+      verify(documentService, invoked).uploadDocument(document("thumbnailImage", id), metadata("thumbnail"))
     }
   }
 
@@ -92,25 +96,6 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-licence-id-2.sql",
     "classpath:test_data/seed-additional-condition-exclusion-zone-uploads.sql",
   )
-  fun `does not migrate documents with a document service uuid already recorded`() {
-    val migration = ExclusionZoneUploadsMigration(
-      documentService,
-      additionalConditionUploadDetailRepository,
-      additionalConditionUploadSummaryRepository,
-    )
-
-    migration.perform()
-
-    verify(documentService, never()).uploadDocument(document("originalData", 3), metadata("pdf"))
-    verify(documentService, never()).uploadDocument(document("fullSizeImage", 3), metadata("fullSizeImage"))
-    verify(documentService, never()).uploadDocument(document("thumbnailImage", 3), metadata("thumbnail"))
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-2.sql",
-    "classpath:test_data/seed-additional-condition-exclusion-zone-uploads.sql",
-  )
   fun `can migrate a subset of the documents that need migrating ordered by id desc`() {
     val migration = ExclusionZoneUploadsMigration(
       documentService,
@@ -120,7 +105,10 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
 
     migration.perform(limit = 1)
 
-    listOf(Pair(1, never()), Pair(2, times(1))).forEach { (id, invoked) ->
+    listOf(
+      Pair(1, never()),
+      Pair(2, times(1)),
+    ).forEach { (id, invoked) ->
       verify(documentService, invoked).uploadDocument(document("originalData", id), metadata("pdf"))
       verify(documentService, invoked).uploadDocument(document("fullSizeImage", id), metadata("fullSizeImage"))
       verify(documentService, invoked).uploadDocument(document("thumbnailImage", id), metadata("thumbnail"))
