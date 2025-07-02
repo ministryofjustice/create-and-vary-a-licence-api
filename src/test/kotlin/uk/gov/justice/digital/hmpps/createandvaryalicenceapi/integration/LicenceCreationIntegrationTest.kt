@@ -60,9 +60,10 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
   @Test
   fun `Create a PRRD licence`() {
     // Given
+    val nomisPostRecallReleaseDate = LocalDate.now().plusDays(1)
     prisonApiMockServer.stubGetPrison()
     prisonApiMockServer.stubGetCourtOutcomes()
-    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = LocalDate.now())
+    prisonerSearchMockServer.stubSearchPrisonersByNomisIds(postRecallReleaseDate = nomisPostRecallReleaseDate)
     deliusMockServer.stubGetProbationCase()
     deliusMockServer.stubGetOffenderManager()
 
@@ -89,7 +90,7 @@ class LicenceCreationIntegrationTest : IntegrationTestBase() {
     assertThat(licence.responsibleCom.username).isEqualTo("AAA")
     assertThat(licence.typeCode).isEqualTo(LicenceType.AP)
     assertThat(licence.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-
+    assertThat(licence.postRecallReleaseDate).isEqualTo(nomisPostRecallReleaseDate)
     assertThat(standardConditionRepository.count()).isEqualTo(9)
     assertThat(additionalConditionRepository.count()).isEqualTo(0)
     assertThat(auditEventRepository.count()).isEqualTo(1)
