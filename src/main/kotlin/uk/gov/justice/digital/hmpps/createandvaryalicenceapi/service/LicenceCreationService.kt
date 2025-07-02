@@ -69,7 +69,7 @@ class LicenceCreationService(
     val deliusRecord = deliusApiClient.getProbationCase(prisonNumber)
     val prisonInformation = prisonApiClient.getPrisonInformation(nomisRecord.prisonId!!)
     val currentResponsibleOfficerDetails = getCurrentResponsibleOfficer(deliusRecord, prisonNumber)
-    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.CRD)
+    val licenceStartDate = releaseDateService.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)
 
     val responsibleCom = staffRepository.findByStaffIdentifier(currentResponsibleOfficerDetails.id)
       ?: createCom(currentResponsibleOfficerDetails.id)
