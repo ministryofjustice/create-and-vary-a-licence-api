@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
@@ -14,29 +16,51 @@ class ExclusionZoneUploadsMigration(
   private val additionalConditionUploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
 ) {
 
-  fun perform(limit: Int = 100) {
-    additionalConditionUploadDetailRepository.toBeMigrated(limit).forEach(::migrate)
-    additionalConditionUploadSummaryRepository.toBeMigrated(limit).forEach(::migrate)
+  fun perform(batchSize: Int = 100) {
+    migrateUploadDetails(batchSize)
+    migrateUploadSummaries(batchSize)
   }
 
-  private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
-    val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
-    val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
+  private fun migrateUploadDetails(batchSize: Int) {
+    val all = additionalConditionUploadDetailRepository.totalToBeMigrated()
+    val batch = additionalConditionUploadDetailRepository.toBeMigrated(batchSize)
 
-    additionalConditionUploadDetailRepository.saveAndFlush(
-      uploadDetail.copy(
-        originalDataDsUuid = originalDataUuid?.toString(),
-        fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
-      ),
-    )
+    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, all)
+
+    batch.forEach { uploadDetail ->
+      val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
+      val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
+
+      if (null in listOf(originalDataUuid, fullSizeImageUuid)) {
+        log.info("Unable to migrate AdditionalConditionUploadDetail id={} (originalDataUuid={}, fullSizeImageUuid={})", uploadDetail.id, originalDataUuid, fullSizeImageUuid)
+      } else {
+        additionalConditionUploadDetailRepository.saveAndFlush(
+          uploadDetail.copy(
+            originalDataDsUuid = originalDataUuid?.toString(),
+            fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
+          ),
+        )
+      }
+    }
   }
 
-  private fun migrate(uploadSummary: AdditionalConditionUploadSummary) {
-    val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
+  private fun migrateUploadSummaries(batchSize: Int) {
+    val all = additionalConditionUploadSummaryRepository.totalToBeMigrated()
+    val batch = additionalConditionUploadSummaryRepository.toBeMigrated(batchSize)
 
-    additionalConditionUploadSummaryRepository.saveAndFlush(
-      uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid?.toString()),
-    )
+    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, all)
+
+    batch.forEach { uploadSummary ->
+      val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
+
+      if (thumbnailUuid == null) {
+        log.info("Unable to migrate AdditionalConditionUploadSummary id={} (thumbnailUuid=null)", uploadSummary.id)
+      } else {
+        additionalConditionUploadSummaryRepository.saveAndFlush(
+          uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()),
+        )
+      }
+    }
   }
 
   private fun metadata(uploadDetail: AdditionalConditionUploadDetail, kind: String) = mapOf(
@@ -50,4 +74,8 @@ class ExclusionZoneUploadsMigration(
     "additionalConditionId" to uploadSummary.additionalCondition.id.toString(),
     "kind" to kind,
   )
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 }
