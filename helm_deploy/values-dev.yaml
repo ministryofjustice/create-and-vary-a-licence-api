@@ -26,7 +26,6 @@ generic-service:
     HARDSTOP_ENABLED: false
     DOMAIN_EVENT_LISTENER_ENABLED: true
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
-    FEATURE_TOGGLE_ELECTRONICMONITORINGRESPONSEHANDLING: true
 
   namespace_secrets:
     sqs-domain-events-queue-secret:
