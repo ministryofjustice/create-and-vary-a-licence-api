@@ -12,16 +12,16 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.D
 @Service
 class ExclusionZoneUploadsMigration(
   private val documentService: DocumentService,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
-  private val additionalConditionUploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
+  private val uploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val uploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
 ) {
 
   fun perform(batchSize: Int = 100) {
-    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, additionalConditionUploadDetailRepository.totalToBeMigrated())
-    additionalConditionUploadDetailRepository.toBeMigrated(batchSize).forEach(::migrate)
+    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, uploadDetailRepository.totalToBeMigrated())
+    uploadDetailRepository.toBeMigrated(batchSize).forEach(::migrate)
 
-    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, additionalConditionUploadSummaryRepository.totalToBeMigrated())
-    additionalConditionUploadSummaryRepository.toBeMigrated(batchSize).forEach(::migrate)
+    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, uploadSummaryRepository.totalToBeMigrated())
+    uploadSummaryRepository.toBeMigrated(batchSize).forEach(::migrate)
   }
 
   private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
@@ -31,7 +31,7 @@ class ExclusionZoneUploadsMigration(
     if (null in listOf(originalDataUuid, fullSizeImageUuid)) {
       log.info("Unable to migrate AdditionalConditionUploadDetail id={} (originalDataUuid={}, fullSizeImageUuid={})", uploadDetail.id, originalDataUuid, fullSizeImageUuid)
     } else {
-      additionalConditionUploadDetailRepository.saveAndFlush(
+      uploadDetailRepository.saveAndFlush(
         uploadDetail.copy(
           originalDataDsUuid = originalDataUuid?.toString(),
           fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
@@ -46,7 +46,7 @@ class ExclusionZoneUploadsMigration(
     if (thumbnailUuid == null) {
       log.info("Unable to migrate AdditionalConditionUploadSummary id={} (thumbnailUuid=null)", uploadSummary.id)
     } else {
-      additionalConditionUploadSummaryRepository.saveAndFlush(
+      uploadSummaryRepository.saveAndFlush(
         uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()),
       )
     }
