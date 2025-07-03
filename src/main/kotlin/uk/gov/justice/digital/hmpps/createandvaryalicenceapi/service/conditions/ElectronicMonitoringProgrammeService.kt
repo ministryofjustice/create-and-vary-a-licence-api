@@ -29,7 +29,7 @@ class ElectronicMonitoringProgrammeService(
 
   @Transactional
   fun handleResponseIfEnabled(licence: Licence) {
-    if (electronicMonitoringResponseHandlingEnabled) {
+    if (electronicMonitoringResponseHandlingEnabled && (licence is CrdLicence || licence is HdcLicence)) {
       handleElectronicMonitoringResponseRecords(licence)
     }
   }
