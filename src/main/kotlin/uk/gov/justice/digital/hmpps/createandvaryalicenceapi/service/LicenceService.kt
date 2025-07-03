@@ -602,7 +602,7 @@ class LicenceService(
   @Transactional
   fun editLicence(licenceId: Long): LicenceSummary {
     val licence = getLicence(licenceId)
-    if (isValidLicenceForEdit(licence)) error("Trying to edit licence for non-crd,non-hdc or non-prrd licence: $licenceId")
+    if (isNotValidLicenceForEdit(licence)) error("Trying to edit licence for non-crd,non-hdc or non-prrd licence: $licenceId")
 
     if (licence.statusCode != APPROVED) {
       throw ValidationException("Can only edit APPROVED licences")
@@ -630,7 +630,7 @@ class LicenceService(
     return licenceCopy.toSummary()
   }
 
-  private fun isValidLicenceForEdit(licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence?): Boolean = licence != null &&
+  private fun isNotValidLicenceForEdit(licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence?): Boolean = licence != null &&
     licence !is CrdLicence &&
     licence !is HdcLicence &&
     licence !is PrrdLicence
