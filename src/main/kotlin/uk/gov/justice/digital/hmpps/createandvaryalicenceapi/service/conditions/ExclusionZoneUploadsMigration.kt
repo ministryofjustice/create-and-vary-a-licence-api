@@ -17,49 +17,38 @@ class ExclusionZoneUploadsMigration(
 ) {
 
   fun perform(batchSize: Int = 100) {
-    migrateUploadDetails(batchSize)
-    migrateUploadSummaries(batchSize)
+    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, additionalConditionUploadDetailRepository.totalToBeMigrated())
+    additionalConditionUploadDetailRepository.toBeMigrated(batchSize).forEach(::migrate)
+
+    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, additionalConditionUploadSummaryRepository.totalToBeMigrated())
+    additionalConditionUploadSummaryRepository.toBeMigrated(batchSize).forEach(::migrate)
   }
 
-  private fun migrateUploadDetails(batchSize: Int) {
-    val all = additionalConditionUploadDetailRepository.totalToBeMigrated()
-    val batch = additionalConditionUploadDetailRepository.toBeMigrated(batchSize)
+  private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
+    val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
+    val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
 
-    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, all)
-
-    batch.forEach { uploadDetail ->
-      val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
-      val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
-
-      if (null in listOf(originalDataUuid, fullSizeImageUuid)) {
-        log.info("Unable to migrate AdditionalConditionUploadDetail id={} (originalDataUuid={}, fullSizeImageUuid={})", uploadDetail.id, originalDataUuid, fullSizeImageUuid)
-      } else {
-        additionalConditionUploadDetailRepository.saveAndFlush(
-          uploadDetail.copy(
-            originalDataDsUuid = originalDataUuid?.toString(),
-            fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
-          ),
-        )
-      }
+    if (null in listOf(originalDataUuid, fullSizeImageUuid)) {
+      log.info("Unable to migrate AdditionalConditionUploadDetail id={} (originalDataUuid={}, fullSizeImageUuid={})", uploadDetail.id, originalDataUuid, fullSizeImageUuid)
+    } else {
+      additionalConditionUploadDetailRepository.saveAndFlush(
+        uploadDetail.copy(
+          originalDataDsUuid = originalDataUuid?.toString(),
+          fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
+        ),
+      )
     }
   }
 
-  private fun migrateUploadSummaries(batchSize: Int) {
-    val all = additionalConditionUploadSummaryRepository.totalToBeMigrated()
-    val batch = additionalConditionUploadSummaryRepository.toBeMigrated(batchSize)
+  private fun migrate(uploadSummary: AdditionalConditionUploadSummary) {
+    val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
 
-    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, all)
-
-    batch.forEach { uploadSummary ->
-      val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
-
-      if (thumbnailUuid == null) {
-        log.info("Unable to migrate AdditionalConditionUploadSummary id={} (thumbnailUuid=null)", uploadSummary.id)
-      } else {
-        additionalConditionUploadSummaryRepository.saveAndFlush(
-          uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()),
-        )
-      }
+    if (thumbnailUuid == null) {
+      log.info("Unable to migrate AdditionalConditionUploadSummary id={} (thumbnailUuid=null)", uploadSummary.id)
+    } else {
+      additionalConditionUploadSummaryRepository.saveAndFlush(
+        uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()),
+      )
     }
   }
 
