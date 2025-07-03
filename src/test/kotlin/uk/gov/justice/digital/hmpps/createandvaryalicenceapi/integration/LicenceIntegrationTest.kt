@@ -885,7 +885,8 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       is CrdLicence -> newLicence.versionOfId
       is HdcLicence -> newLicence.versionOfId
       is PrrdLicence -> newLicence.versionOfId
-      else -> null}
+      else -> null
+    }
 
     assertThat(versionOfId).isEqualTo(1)
   }
