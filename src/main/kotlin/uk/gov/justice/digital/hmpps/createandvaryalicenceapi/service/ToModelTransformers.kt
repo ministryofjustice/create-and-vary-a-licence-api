@@ -98,11 +98,7 @@ fun transformToLicenceSummary(
   approvedDate = licence.approvedDate,
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
-  versionOf = when (licence) {
-    is CrdLicence -> licence.versionOfId
-    is HdcLicence -> licence.versionOfId
-    else -> null
-  },
+  versionOf = getVersionOf(licence),
   isReviewNeeded = when (licence) {
     is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
     else -> false
@@ -773,7 +769,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     teamName = team.description,
     releaseDate = licence.licenceStartDate,
     licenceId = licence.id,
-    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    versionOf = getVersionOf(licence),
     licenceType = licence.typeCode,
     licenceStatus = licence.statusCode,
     isOnProbation = licence.statusCode.isOnProbation(),
@@ -898,7 +894,7 @@ fun transformToApprovalLicenceSummary(
   approvedDate = licence.approvedDate,
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
-  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+  versionOf = getVersionOf(licence),
   isReviewNeeded = when (licence) {
     is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
     else -> false
@@ -911,6 +907,13 @@ fun transformToApprovalLicenceSummary(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
 )
+
+fun getVersionOf(licence: Licence): Long? = when (licence) {
+  is CrdLicence -> licence.versionOfId
+  is HdcLicence -> licence.versionOfId
+  is PrrdLicence -> licence.versionOfId
+  else -> null
+}
 
 fun PrisonerSearchPrisoner.toPrisoner() = Prisoner(
   prisonerNumber = this.prisonerNumber,

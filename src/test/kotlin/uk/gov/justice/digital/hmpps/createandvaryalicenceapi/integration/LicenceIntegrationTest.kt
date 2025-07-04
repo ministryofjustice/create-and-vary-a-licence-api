@@ -19,6 +19,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
@@ -333,14 +334,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(licenceRepository.count()).isEqualTo(2)
 
     val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    newLicence?.let {
-      assertThat(it.licenceVersion).isEqualTo("2.0")
-      assertThat(it.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
-      assertThat(it).isInstanceOf(EntityVariationLicence::class.java)
-      assertThat((it as EntityVariationLicence).variationOfId).isEqualTo(1)
-      assertLicenceHasExpectedAddress(it)
-    }
+    assertThat(newLicence!!).isNotNull
+    assertThat(newLicence.licenceVersion).isEqualTo("2.0")
+    assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
+    assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
+    assertThat((newLicence as EntityVariationLicence).variationOfId).isEqualTo(1)
+    assertLicenceHasExpectedAddress(newLicence)
+    assertThat(newLicence.variationOfId).isEqualTo(1)
+    assertThat(newLicence.licenceVersion).isEqualTo("2.0")
   }
 
   @Test
@@ -380,62 +381,83 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-approved-prrd-licence-id-1.sql",
+  )
+  fun `Create PRRD licence variation`() {
+    // Given
+    val uri = "/licence/id/1/create-variation"
+    val roles = listOf("ROLE_CVL_ADMIN")
+
+    // When
+    val result = postRequest(uri, roles)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licence = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(licence).isNotNull
+    assertThat(licence!!.kind).isEqualTo(LicenceKind.VARIATION)
+
+    val persistedLicence = licenceRepository.findById(licence.licenceId).getOrNull()
+    assertThat(persistedLicence).isNotNull
+    assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
+    val persistedVariationLicence = persistedLicence as EntityVariationLicence
+    assertThat(persistedVariationLicence.id).isEqualTo(2)
+    assertThat(persistedVariationLicence.variationOfId).isEqualTo(1)
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-approved-licence-1-with-address.sql",
   )
   fun `Edit an approved licence`() {
     // Given
     val uri = "/licence/id/1/edit"
-
+    val roles = listOf("ROLE_CVL_ADMIN")
     prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
 
     // When
-    val result = postRequest(uri)
+    val result = postRequest(uri, roles)
 
     // Then
-    result.expectStatus().isOk
-
-    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(LicenceSummary::class.java)
-      .returnResult().responseBody
-
-    assertThat(licenceSummary).isNotNull
-    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
-    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
-
-    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
-    assertThat(newLicence).isNotNull
-    newLicence?.let {
-      assertThat(it.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-      assertThat(it.licenceVersion).isEqualTo("1.1")
-      assertLicenceHasExpectedAddress(it)
-    }
+    assertEdit(result, LicenceKind.CRD)
   }
 
-  fun assertLicenceHasExpectedAddress(
-    licence: Licence,
-    appointmentAddress: String = "123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND",
-    reference: String = "REF-123456",
-    firstLine: String = "123 Test Street",
-    secondLine: String? = "Apt 4B",
-    townOrCity: String = "Testville",
-    county: String? = "Testshire",
-    postcode: String = "TE5 7AA",
-    source: AddressSource = AddressSource.MANUAL,
-  ) {
-    assertThat(licence.appointmentAddress).isEqualTo(appointmentAddress)
-    val address = licence.licenceAppointmentAddress
-    assertThat(address).isNotNull
-    address?.let {
-      assertThat(it.reference).isEqualTo(reference)
-      assertThat(it.firstLine).isEqualTo(firstLine)
-      assertThat(it.secondLine).isEqualTo(secondLine)
-      assertThat(it.townOrCity).isEqualTo(townOrCity)
-      assertThat(it.county).isEqualTo(county)
-      assertThat(it.postcode).isEqualTo(postcode)
-      assertThat(it.source).isEqualTo(source)
-    }
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-prrd-licence-id-1.sql",
+  )
+  fun `Edit an approved PRRD licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = postRequest(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.PRRD)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-hdc-licence-id-1.sql",
+  )
+  fun `Edit an approved HDC licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = postRequest(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.HDC)
   }
 
   @Test
@@ -888,14 +910,72 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     }
   }
 
+  private fun assertEdit(result: WebTestClient.ResponseSpec, expectedKind: LicenceKind, noAddress: Boolean = false) {
+    result.expectStatus().isOk
+    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
+    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licenceRepository.count()).isEqualTo(2)
+
+    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
+    assertThat(newLicence).isNotNull
+    assertThat(newLicence!!.kind).isEqualTo(expectedKind)
+    assertThat(newLicence.licenceVersion).isEqualTo("1.1")
+    if (noAddress) {
+      assertLicenceHasExpectedAddress(newLicence)
+      assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
+    }
+
+    val versionOfId = when (newLicence) {
+      is CrdLicence -> newLicence.versionOfId
+      is HdcLicence -> newLicence.versionOfId
+      is PrrdLicence -> newLicence.versionOfId
+      else -> null
+    }
+
+    assertThat(versionOfId).isEqualTo(1)
+  }
+
   private fun postRequest(
     uri: String,
     roles: List<String> = listOf("ROLE_CVL_ADMIN"),
-  ): WebTestClient.ResponseSpec = webTestClient.post()
-    .uri(uri)
-    .accept(MediaType.APPLICATION_JSON)
-    .headers(setAuthorisation(roles = roles))
-    .exchange()
+  ): WebTestClient.ResponseSpec {
+    val result = webTestClient.post()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = roles))
+      .exchange()
+    return result
+  }
+
+  fun assertLicenceHasExpectedAddress(
+    licence: Licence,
+    appointmentAddress: String = "123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND",
+    reference: String = "REF-123456",
+    firstLine: String = "123 Test Street",
+    secondLine: String? = "Apt 4B",
+    townOrCity: String = "Testville",
+    county: String? = "Testshire",
+    postcode: String = "TE5 7AA",
+    source: AddressSource = AddressSource.MANUAL,
+  ) {
+    assertThat(licence.appointmentAddress).isEqualTo(appointmentAddress)
+    val address = licence.licenceAppointmentAddress
+    assertThat(address).isNotNull
+    address?.let {
+      assertThat(it.reference).isEqualTo(reference)
+      assertThat(it.firstLine).isEqualTo(firstLine)
+      assertThat(it.secondLine).isEqualTo(secondLine)
+      assertThat(it.townOrCity).isEqualTo(townOrCity)
+      assertThat(it.county).isEqualTo(county)
+      assertThat(it.postcode).isEqualTo(postcode)
+      assertThat(it.source).isEqualTo(source)
+    }
+  }
 
   private companion object {
     val aStatusToApprovedUpdateRequest =

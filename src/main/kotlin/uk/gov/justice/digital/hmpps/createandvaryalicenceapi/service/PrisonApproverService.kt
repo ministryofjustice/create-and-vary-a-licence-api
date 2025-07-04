@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Variation
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
@@ -66,10 +67,8 @@ class PrisonApproverService(
         .findById(originalLicence.variationOfId!!)
         .orElseThrow { EntityNotFoundException("${originalLicence.variationOfId}") }
       when (licence) {
-        is CrdLicence -> return licence
-        is HardStopLicence -> return licence
+        is CrdLicence, is PrrdLicence, is HardStopLicence, is HdcLicence -> return licence
         is VariationLicence -> originalLicence = licence
-        is HdcLicence -> return licence
         is HdcVariationLicence -> originalLicence = licence
         else -> error("Unknown licence type in hierarchy: ${licence.javaClass}")
       }
