@@ -19,16 +19,23 @@ class SendNeedsApprovalReminderIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/seed-unapproved-licences.sql",
   )
   fun `notifies probation of unapproved licences`() {
-    webTestClient.post()
-      .uri("/jobs/notify-probation-of-unapproved-licences")
+    // Given
+    val uri = "/jobs/notify-probation-of-unapproved-licences"
+
+    // When
+    val result = webTestClient.post()
+      .uri(uri)
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
-      .expectStatus().isOk
+
+    // Then
+    result.expectStatus().isOk
 
     val expectedUnapprovedLicences = listOf(
       UnapprovedLicence("H598679", "Person", "Two", "Com", "DDD", "testDDD@probation.gov.uk"),
       UnapprovedLicence("Z265290", "Person", "Three", "Com", "BBB", "testBBB@probation.gov.uk"),
       UnapprovedLicence("A123456", "Person", "Six", "Com", "BBB", "testBBB@probation.gov.uk"),
+      UnapprovedLicence("A123457", "Person", "Seven", "Com", "BBB", "testBBB@probation.gov.uk"),
     )
     verify(notifyService).sendUnapprovedLicenceEmail(expectedUnapprovedLicences)
   }

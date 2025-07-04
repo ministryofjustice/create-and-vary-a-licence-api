@@ -87,6 +87,30 @@ class PrisonApproverServiceTest {
   }
 
   @Test
+  fun `find recently approved PRRD licence - returns recently approved PRRD licences`() {
+    // Given
+    whenever(licenceRepository.getRecentlyApprovedLicences(any(), any())).thenReturn(
+      listOf(
+        TestData.createPrrdLicence().copy(
+          statusCode = LicenceStatus.APPROVED,
+          submittedDate = LocalDateTime.of(2023, 1, 2, 3, 40),
+          submittedBy = com(),
+          updatedBy = com(),
+        ),
+      ),
+    )
+
+    // When
+    val licenceSummaries = service.findRecentlyApprovedLicences(emptyList())
+
+    // Then
+    assertThat(licenceSummaries).isNotEmpty
+    val licence = licenceSummaries.first()
+    assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
+    assertThat(licence.licenceStatus).isEqualTo(LicenceStatus.APPROVED)
+  }
+
+  @Test
   fun `find recently approved licences matching criteria - returns the original licence for an active variation`() {
     val aRecentlyApprovedLicence = TestData.createCrdLicence().copy(
       id = 1,
