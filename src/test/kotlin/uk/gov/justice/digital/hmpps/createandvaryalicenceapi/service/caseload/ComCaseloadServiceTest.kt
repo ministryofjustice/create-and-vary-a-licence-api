@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
@@ -75,9 +76,6 @@ class ComCaseloadServiceTest {
 
   @Test
   fun `it calls the licence service when Nomis records are found`() {
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf("ABC123" to tenDaysFromNow),
-    )
     val cases = listOf(
       ManagedCase(
         nomisRecord = Prisoner(
@@ -107,9 +105,6 @@ class ComCaseloadServiceTest {
 
   @Test
   fun `it sets not started licences to timed out when in the hard stop period`() {
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf("ABC123" to tenDaysFromNow),
-    )
     val cases = listOf(
       ManagedCase(
         nomisRecord = Prisoner(
@@ -157,15 +152,10 @@ class ComCaseloadServiceTest {
         createCaseloadItem("AB1234E", tenDaysFromNow, bookingId = "1"),
       ),
     )
-
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf(
-        "AB1234E" to tenDaysFromNow,
-      ),
-    )
-
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
+    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -209,17 +199,6 @@ class ComCaseloadServiceTest {
         createProbationCase(id = 9L, nomsNumber = "AB1234P", crn = "X12354"),
         createProbationCase(id = 10L, nomsNumber = "AB1234Q", crn = "X12355"),
         createProbationCase(id = 11L, nomsNumber = "AB1234R", crn = "X12356"),
-      ),
-    )
-
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf(
-        "AB1234E" to nineDaysFromNow,
-        "AB1234L" to nineDaysFromNow,
-        "AB1234M" to tenDaysFromNow,
-        "AB1234P" to nineDaysFromNow,
-        "AB1234Q" to nineDaysFromNow,
-        "AB1234R" to nineDaysFromNow,
       ),
     )
 
@@ -274,6 +253,14 @@ class ComCaseloadServiceTest {
     whenever(eligibilityService.isEligibleForCvl(caseloadItems[9].prisoner.toPrisonerSearchPrisoner())).thenReturn(
       false,
     )
+    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD)))
+      .thenReturn(nineDaysFromNow)
+      .thenReturn(nineDaysFromNow)
+      .thenReturn(tenDaysFromNow)
+      .thenReturn(nineDaysFromNow)
+      .thenReturn(nineDaysFromNow)
+      .thenReturn(nineDaysFromNow)
+    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -541,13 +528,8 @@ class ComCaseloadServiceTest {
         ),
       ),
     )
-
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf(
-        "AB1234E" to tenDaysFromNow,
-        "AB1234H" to tenDaysFromNow,
-      ),
-    )
+    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
+    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
     assertThat(caseload).hasSize(3)
@@ -627,12 +609,8 @@ class ComCaseloadServiceTest {
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf(
-        "AB1234E" to tenDaysFromNow,
-        "AB1234F" to tenDaysFromNow,
-      ),
-    )
+    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
+    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
@@ -712,12 +690,8 @@ class ComCaseloadServiceTest {
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
     whenever(eligibilityService.isEligibleForCvl(caseloadItems[0].prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf(
-        "AB1234E" to tenDaysFromNow,
-      ),
-    )
+    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
+    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 
@@ -776,12 +750,6 @@ class ComCaseloadServiceTest {
     whenever(eligibilityService.isEligibleForCvl(caseloadItems[0].prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(setOf(caseloadItems[0].prisoner.bookingId?.toLong()!!)))
 
-    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
-      mapOf(
-        "AB1234E" to tenDaysFromNow,
-      ),
-    )
-
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 
     verify(deliusApiClient).getManagedOffendersByTeam("team C")
@@ -831,7 +799,11 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
+      ),
     )
   }
 
@@ -886,7 +858,11 @@ class ComCaseloadServiceTest {
       expectedPrisonerNumber = "AB1234E",
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedLicenceType = LicenceType.AP,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
+      ),
     )
   }
 
@@ -939,7 +915,11 @@ class ComCaseloadServiceTest {
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedLicenceType = LicenceType.AP,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
+      ),
       expectedReviewNeeded = true,
     )
   }
@@ -1016,7 +996,11 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.PSS,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X1234", name = "Joe Bloggs", staffUsername = "joebloggs"),
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X1234",
+        name = "Joe Bloggs",
+        staffUsername = "joebloggs",
+      ),
     )
     verifyCase(
       caseload[1],
@@ -1025,7 +1009,11 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.VARIATION_IN_PROGRESS,
       expectedReleaseDate = tenDaysFromNow,
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
+      ),
     )
   }
 
@@ -1079,7 +1067,11 @@ class ComCaseloadServiceTest {
       expectedLicenceType = LicenceType.AP,
       expectedLicenceStatus = LicenceStatus.ACTIVE,
       expectedReleaseDate = LocalDate.now(),
-      expectedProbationPractitioner = ProbationPractitioner(staffCode = "X54321", name = "John Doe", staffUsername = "johndoe"),
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X54321",
+        name = "John Doe",
+        staffUsername = "johndoe",
+      ),
       expectedReviewNeeded = true,
     )
   }

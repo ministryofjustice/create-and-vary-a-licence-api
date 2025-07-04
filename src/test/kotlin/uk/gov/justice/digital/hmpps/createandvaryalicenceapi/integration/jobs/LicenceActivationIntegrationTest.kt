@@ -45,7 +45,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(8)).publishDomainEvent(capture())
+      verify(eventsPublisher, times(9)).publishDomainEvent(capture())
 
       assertThat(allValues)
         .extracting<Tuple> { tuple(it.eventType, it.additionalInformation["licenceId"]) }
@@ -55,6 +55,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "3"),
           tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "7"),
           tuple(LicenceDomainEventType.HDC_LICENCE_ACTIVATED.value, "8"),
+          tuple(LicenceDomainEventType.LICENCE_ACTIVATED.value, "9"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "4"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "5"),
           tuple(LicenceDomainEventType.LICENCE_INACTIVATED.value, "6"),
@@ -70,7 +71,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(activatedLicences?.size).isEqualTo(5)
+    assertThat(activatedLicences?.size).isEqualTo(6)
     assertThat(activatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -81,6 +82,7 @@ class LicenceActivationIntegrationTest : IntegrationTestBase() {
         tuple(3L, ACTIVE),
         tuple(7L, ACTIVE),
         tuple(8L, ACTIVE),
+        tuple(9L, ACTIVE),
       )
 
     val deactivatedLicences = webTestClient.post()

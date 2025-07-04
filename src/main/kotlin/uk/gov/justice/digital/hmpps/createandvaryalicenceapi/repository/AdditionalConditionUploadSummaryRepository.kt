@@ -16,5 +16,14 @@ interface AdditionalConditionUploadSummaryRepository : JpaRepository<AdditionalC
     LIMIT :limit
   """,
   )
-  fun toBeMigrated(limit: Int): List<AdditionalConditionUploadSummary>
+  fun toBeMigrated(limit: Int? = null): List<AdditionalConditionUploadSummary>
+
+  @Query(
+    """
+    SELECT COUNT(aus) 
+    FROM AdditionalConditionUploadSummary aus 
+    WHERE aus.thumbnailImageDsUuid IS NULL
+  """,
+  )
+  fun totalToBeMigrated(): Long
 }
