@@ -13,9 +13,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
@@ -334,38 +336,83 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-approved-licence-1.sql",
+    "classpath:test_data/seed-approved-prrd-licence-id-1.sql",
   )
-  fun `Edit an approved licence`() {
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+  fun `Create PRRD licence variation`() {
+    // Given
+    val uri = "/licence/id/1/create-variation"
+    val roles = listOf("ROLE_CVL_ADMIN")
 
-    val result = webTestClient.post()
-      .uri("/licence/id/1/edit")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licence = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.licenceId).isGreaterThan(1)
-    assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
+    assertThat(licence).isNotNull
+    assertThat(licence!!.kind).isEqualTo(LicenceKind.VARIATION)
 
-    val newLicence = webTestClient.get()
-      .uri("/licence/id/${result?.licenceId}")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+    val persistedLicence = licenceRepository.findById(licence.licenceId).getOrNull()
+    assertThat(persistedLicence).isNotNull
+    assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
+    val persistedVariationLicence = persistedLicence as EntityVariationLicence
+    assertThat(persistedVariationLicence.id).isEqualTo(2)
+    assertThat(persistedVariationLicence.variationOfId).isEqualTo(1)
+  }
 
-    assertThat(newLicence?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(newLicence?.licenceVersion).isEqualTo("1.1")
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-licence-1.sql",
+  )
+  fun `Edit an approved licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.CRD)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-prrd-licence-id-1.sql",
+  )
+  fun `Edit an approved PRRD licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.PRRD)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-hdc-licence-id-1.sql",
+  )
+  fun `Edit an approved HDC licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.HDC)
   }
 
   @Test
@@ -816,6 +863,44 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(licence?.statusCode).isEqualTo(LicenceStatus.APPROVED)
       assertThat(licence?.licenceVersion).isEqualTo("1.0")
     }
+  }
+
+  private fun assertEdit(result: WebTestClient.ResponseSpec, expectedKind: LicenceKind) {
+    result.expectStatus().isOk
+    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
+    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licenceRepository.count()).isEqualTo(2)
+
+    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
+    assertThat(newLicence).isNotNull
+    assertThat(newLicence!!.kind).isEqualTo(expectedKind)
+    assertThat(newLicence.licenceVersion).isEqualTo("1.1")
+
+    val versionOfId = when (newLicence) {
+      is CrdLicence -> newLicence.versionOfId
+      is HdcLicence -> newLicence.versionOfId
+      is PrrdLicence -> newLicence.versionOfId
+      else -> null
+    }
+
+    assertThat(versionOfId).isEqualTo(1)
+  }
+
+  private fun post(
+    uri: String,
+    roles: List<String>,
+  ): WebTestClient.ResponseSpec {
+    val result = webTestClient.post()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = roles))
+      .exchange()
+    return result
   }
 
   private companion object {
