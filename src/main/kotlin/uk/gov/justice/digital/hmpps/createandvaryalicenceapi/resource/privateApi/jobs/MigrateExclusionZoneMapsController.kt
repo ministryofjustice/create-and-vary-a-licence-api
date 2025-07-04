@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.constraints.Min
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -40,5 +41,5 @@ class MigrateExclusionZoneMapsController(
       ),
     ],
   )
-  fun runJob(@RequestParam(required = true) batchSize: Int) = exclusionZoneUploadsMigration.perform(batchSize)
+  fun runJob(@RequestParam @Min(1) batchSize: Int = 1) = exclusionZoneUploadsMigration.perform(batchSize)
 }
