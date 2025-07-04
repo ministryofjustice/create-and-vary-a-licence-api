@@ -430,7 +430,7 @@ class ComCaseloadService(
     return prisonerSearchPrisonersWithoutLicences.associate {
       val licenceKind = caseloadService.determineLicenceKind(it)
       val licenceStartDate = releaseDateService.getLicenceStartDate(it, licenceKind)
-      Pair(it.prisonerNumber, licenceStartDate)
+      it.prisonerNumber to licenceStartDate
     }
   }
 }
