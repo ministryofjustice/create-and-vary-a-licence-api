@@ -17,11 +17,17 @@ class ExclusionZoneUploadsMigration(
 ) {
 
   fun perform(batchSize: Int = 100) {
-    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, uploadDetailRepository.totalToBeMigrated())
-    uploadDetailRepository.toBeMigrated(batchSize).forEach(::migrate)
+    with(uploadDetailRepository) {
+      log.info("Migrating {} of {} total AdditionalConditionUploadDetail record(s)", batchSize, totalToBeMigrated())
+      toBeMigrated(batchSize).forEach(::migrate)
+    }
 
-    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, uploadSummaryRepository.totalToBeMigrated())
-    uploadSummaryRepository.toBeMigrated(batchSize).forEach(::migrate)
+    with(uploadSummaryRepository) {
+      log.info("Migrating {} of {} total AdditionalConditionUploadSummary record(s)", batchSize, totalToBeMigrated())
+      toBeMigrated(batchSize).forEach(::migrate)
+    }
+
+    log.info("Batch completed")
   }
 
   private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
