@@ -228,7 +228,6 @@ object LicenceFactory {
         crn = this.crn,
         pnc = this.pnc,
         cro = this.cro,
-
         prisonCode = this.prisonCode,
         prisonDescription = this.prisonDescription,
         prisonTelephone = this.prisonTelephone,
@@ -258,6 +257,7 @@ object LicenceFactory {
         appointmentTime = this.appointmentTime,
         appointmentTimeType = this.appointmentTimeType,
         appointmentAddress = this.appointmentAddress,
+        licenceAppointmentAddress = this.licenceAppointmentAddress,
         appointmentContact = this.appointmentContact,
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
@@ -364,6 +364,7 @@ object LicenceFactory {
         appointmentTime = this.appointmentTime,
         appointmentTimeType = this.appointmentTimeType,
         appointmentAddress = this.appointmentAddress,
+        licenceAppointmentAddress = this.licenceAppointmentAddress,
         appointmentContact = this.appointmentContact,
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),

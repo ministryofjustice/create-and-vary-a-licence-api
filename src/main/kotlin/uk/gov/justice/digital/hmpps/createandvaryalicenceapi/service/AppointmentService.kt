@@ -5,21 +5,28 @@ import jakarta.validation.ValidationException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Companion.SYSTEM_USER
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentAddressRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentPersonRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTimeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
+import java.time.LocalDateTime
 
 @Service
 class AppointmentService(
   private val licenceRepository: LicenceRepository,
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
+  private val addressRepository: AddressRepository,
 ) {
+
   @Transactional
   fun updateAppointmentPerson(licenceId: Long, request: AppointmentPersonRequest) {
     if (request.appointmentPersonType === AppointmentPersonType.SPECIFIC_PERSON) {
@@ -117,6 +124,7 @@ class AppointmentService(
     )
   }
 
+  @Deprecated(" Use updateAppointmentAddress(licenceId: Long, request: AddAddressRequest) ")
   @Transactional
   fun updateAppointmentAddress(licenceId: Long, request: AppointmentAddressRequest) {
     val licenceEntity = licenceRepository
@@ -141,6 +149,37 @@ class AppointmentService(
         "field" to "appointmentAddress",
         "previousValue" to (previousAddress ?: ""),
         "newValue" to (licenceEntity.appointmentAddress ?: ""),
+      ),
+      staffMember,
+    )
+  }
+
+  @Transactional
+  fun updateAppointmentAddress(licenceId: Long, request: AddAddressRequest) {
+    val licenceEntity = licenceRepository
+      .findById(licenceId)
+      .orElseThrow { EntityNotFoundException("$licenceId") }
+
+    val previousAddress = licenceEntity.licenceAppointmentAddress?.toString()
+
+    val username = SecurityContextHolder.getContext().authentication.name
+
+    val staffMember = staffRepository.findByUsernameIgnoreCase(username)
+
+    licenceEntity.licenceAppointmentAddress = AddressMapper.toEntity(request)
+    licenceEntity.appointmentAddress = request.toString()
+    licenceEntity.dateLastUpdated = LocalDateTime.now()
+    licenceEntity.updatedByUsername = staffMember?.username ?: SYSTEM_USER
+    licenceEntity.updatedBy = staffMember ?: licenceEntity.updatedBy
+
+    licenceRepository.saveAndFlush(licenceEntity)
+
+    auditService.recordAuditEventInitialAppointmentUpdate(
+      licenceEntity,
+      mapOf(
+        "field" to "appointmentAddress",
+        "previousValue" to (previousAddress ?: ""),
+        "newValue" to (request.toString() ?: ""),
       ),
       staffMember,
     )

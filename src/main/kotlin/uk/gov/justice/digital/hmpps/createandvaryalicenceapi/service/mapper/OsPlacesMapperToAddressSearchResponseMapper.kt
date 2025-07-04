@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AddressSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.DeliveryPointAddress
 
 private const val ADDRESS_ITEM_SEPARATOR = ", "

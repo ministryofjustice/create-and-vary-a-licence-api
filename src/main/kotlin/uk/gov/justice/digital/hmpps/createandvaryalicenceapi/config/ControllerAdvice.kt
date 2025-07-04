@@ -25,20 +25,19 @@ class ControllerAdvice {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @ExceptionHandler(HandlerMethodValidationException::class)
-  fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
-    val separator = ","
-    val message = e.allErrors.joinToString(separator) { it.defaultMessage?.toString() ?: "" }
-    val developerMessage = e.allErrors.joinToString(separator) { "${it.defaultMessage} ${it.codes?.joinToString(separator)}" }
+  @ExceptionHandler(MethodArgumentNotValidException::class)
+  fun handleMethodArgumentNotValid(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+    log.error("Method argument exception, validation failed: {}", ex.stackTraceToString())
+    val message = ex.bindingResult.allErrors.map { it.defaultMessage }.filterNotNull().sorted().joinToString("; ")
     return ResponseEntity
       .status(BAD_REQUEST)
       .body(
         ErrorResponse(
-          status = BAD_REQUEST,
-          userMessage = "Validation failure: $message",
-          developerMessage = developerMessage,
+          status = BAD_REQUEST.value(),
+          userMessage = "Validation failed for one or more fields.",
+          developerMessage = message,
         ),
-      ).also { log.info("Validation exception: {}", e.message) }
+      )
   }
 
   @ExceptionHandler(AccessDeniedException::class)
@@ -125,8 +124,8 @@ class ControllerAdvice {
       )
   }
 
-  @ExceptionHandler(ValidationException::class, MethodArgumentNotValidException::class)
-  fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> {
+  @ExceptionHandler(ValidationException::class, HandlerMethodValidationException::class)
+  fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)

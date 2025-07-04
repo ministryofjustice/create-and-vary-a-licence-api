@@ -14,13 +14,17 @@ import jakarta.persistence.Id
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import jakarta.validation.constraints.NotNull
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType.SPECIFIC_PERSON
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -105,6 +109,19 @@ abstract class Licence(
   var dateLastUpdated: LocalDateTime? = null,
   var updatedByUsername: String? = null,
   var licenceVersion: String? = "1.0",
+
+  @OneToOne(
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.LAZY,
+    orphanRemoval = true,
+  )
+  @JoinTable(
+    name = "LICENCE_APPOINTMENT_ADDRESS",
+    joinColumns = [JoinColumn(name = "licence_id")],
+    inverseJoinColumns = [JoinColumn(name = "address_id")],
+    uniqueConstraints = [UniqueConstraint(columnNames = ["licence_id", "address_id"])],
+  )
+  var licenceAppointmentAddress: Address? = null,
 
   @OneToMany(
     mappedBy = "licence",
