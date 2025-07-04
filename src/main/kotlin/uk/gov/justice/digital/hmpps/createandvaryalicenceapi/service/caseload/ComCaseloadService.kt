@@ -276,6 +276,7 @@ class ComCaseloadService(
           name = com.name?.fullName(),
           staffUsername = com.username,
         )
+
         case.staff == null || case.staff.unallocated == true -> case.crn to ProbationPractitioner()
         else -> case.crn to ProbationPractitioner(
           staffCode = case.staff.code,
@@ -361,8 +362,7 @@ class ComCaseloadService(
       }
     }
 
-    if ((timedOutLicence != null && hardStopLicence == null) || hardStopLicence?.licenceStatus === IN_PROGRESS
-    ) {
+    if ((timedOutLicence != null && hardStopLicence == null) || hardStopLicence?.licenceStatus == IN_PROGRESS) {
       if (timedOutLicence != null) {
         return timedOutLicence.copy(licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE)
       }
@@ -427,6 +427,10 @@ class ComCaseloadService(
       licences.isEmpty()
     }.map { (case, _) -> case.nomisRecord!!.toPrisonerSearchPrisoner() }
 
-    return releaseDateService.getLicenceStartDates(prisonerSearchPrisonersWithoutLicences)
+    return prisonerSearchPrisonersWithoutLicences.associate {
+      val licenceKind = caseloadService.determineLicenceKind(it)
+      val licenceStartDate = releaseDateService.getLicenceStartDate(it, licenceKind)
+      it.prisonerNumber to licenceStartDate
+    }
   }
 }

@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -232,5 +233,52 @@ class CaseloadServiceTest {
       LocalDate.of(2023, 1, 4),
       setOf("MDI"),
     )
+  }
+
+  @Test
+  fun `should determine a licence with PRRD in future and after CRD in the past as a recall licence`() {
+    val prisoner =
+      prisonerSearchResult(
+        conditionalReleaseDate = LocalDate.now().minusDays(1),
+        postRecallReleaseDate = LocalDate.now().plusDays(1),
+      )
+
+    val licenceKind = service.determineLicenceKind(prisoner)
+
+    assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
+  }
+
+  @Test
+  fun `should determine a licence with PRRD in future and before CRD as a CRD licence`() {
+    val prisoner =
+      prisonerSearchResult(
+        postRecallReleaseDate = LocalDate.now().plusDays(1),
+        conditionalReleaseDate = LocalDate.now().plusDays(2),
+      )
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+
+    val licenceKind = service.determineLicenceKind(prisoner)
+
+    assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
+  }
+
+  @Test
+  fun `should determine a licence with null PRRD and a hard stop date of today as a hard stop licence`() {
+    val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
+
+    val licenceKind = service.determineLicenceKind(prisoner)
+
+    assertThat(licenceKind).isEqualTo(LicenceKind.HARD_STOP)
+  }
+
+  @Test
+  fun `should determine a licence with null PRRD and hard stop date in future as a CRD licence`() {
+    val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+
+    val licenceKind = service.determineLicenceKind(prisoner)
+
+    assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
   }
 }
