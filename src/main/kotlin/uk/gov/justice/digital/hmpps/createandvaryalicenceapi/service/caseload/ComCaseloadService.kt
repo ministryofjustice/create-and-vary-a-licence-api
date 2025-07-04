@@ -362,7 +362,7 @@ class ComCaseloadService(
       }
     }
 
-    if ((timedOutLicence != null && hardStopLicence == null) || hardStopLicence?.licenceStatus === IN_PROGRESS) {
+    if ((timedOutLicence != null && hardStopLicence == null) || hardStopLicence?.licenceStatus == IN_PROGRESS) {
       if (timedOutLicence != null) {
         return timedOutLicence.copy(licenceCreationType = LicenceCreationType.PRISON_WILL_CREATE_THIS_LICENCE)
       }
