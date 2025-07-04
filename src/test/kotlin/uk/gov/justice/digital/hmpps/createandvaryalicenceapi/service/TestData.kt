@@ -500,7 +500,10 @@ object TestData {
     it.copy(standardConditions = someEntityStandardConditions(it), curfewTimes = mutableListOf())
   }
 
-  fun prisonerSearchResult(postRecallReleaseDate: LocalDate? = null) = PrisonerSearchPrisoner(
+  fun prisonerSearchResult(
+    conditionalReleaseDate: LocalDate? = LocalDate.of(2021, 10, 22),
+    postRecallReleaseDate: LocalDate? = null,
+  ) = PrisonerSearchPrisoner(
     prisonerNumber = "A1234AA",
     bookingId = "123456",
     status = "ACTIVE IN",
@@ -509,7 +512,7 @@ object TestData {
     topupSupervisionExpiryDate = LocalDate.of(2021, 10, 22),
     releaseDate = LocalDate.of(2021, 10, 22),
     confirmedReleaseDate = LocalDate.of(2021, 10, 22),
-    conditionalReleaseDate = LocalDate.of(2021, 10, 22),
+    conditionalReleaseDate = conditionalReleaseDate,
     legalStatus = "SENTENCED",
     indeterminateSentence = false,
     recall = false,

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
@@ -10,33 +12,44 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.D
 @Service
 class ExclusionZoneUploadsMigration(
   private val documentService: DocumentService,
-  private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
-  private val additionalConditionUploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
+  private val uploadDetailRepository: AdditionalConditionUploadDetailRepository,
+  private val uploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
 ) {
 
-  fun perform(limit: Int = 100) {
-    additionalConditionUploadDetailRepository.toBeMigrated(limit).forEach(::migrate)
-    additionalConditionUploadSummaryRepository.toBeMigrated(limit).forEach(::migrate)
+  fun perform(batchSize: Int = 100) {
+    log.info("Migrating AdditionalConditionUploadDetail records (batchSize={}, totalToBeMigrated={})", batchSize, uploadDetailRepository.totalToBeMigrated())
+    uploadDetailRepository.toBeMigrated(batchSize).forEach(::migrate)
+
+    log.info("Migrating AdditionalConditionUploadSummary records (batchSize={}, totalToBeMigrated={})", batchSize, uploadSummaryRepository.totalToBeMigrated())
+    uploadSummaryRepository.toBeMigrated(batchSize).forEach(::migrate)
   }
 
   private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
     val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
     val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
 
-    additionalConditionUploadDetailRepository.saveAndFlush(
-      uploadDetail.copy(
-        originalDataDsUuid = originalDataUuid?.toString(),
-        fullSizeImageDsUuid = fullSizeImageUuid?.toString(),
-      ),
-    )
+    if (originalDataUuid != null && fullSizeImageUuid != null) {
+      uploadDetailRepository.saveAndFlush(
+        uploadDetail.copy(
+          originalDataDsUuid = originalDataUuid.toString(),
+          fullSizeImageDsUuid = fullSizeImageUuid.toString(),
+        ),
+      )
+    } else {
+      log.info("Unable to migrate AdditionalConditionUploadDetail id={} (originalDataUuid={}, fullSizeImageUuid={})", uploadDetail.id, originalDataUuid, fullSizeImageUuid)
+    }
   }
 
   private fun migrate(uploadSummary: AdditionalConditionUploadSummary) {
     val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
 
-    additionalConditionUploadSummaryRepository.saveAndFlush(
-      uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid?.toString()),
-    )
+    if (thumbnailUuid != null) {
+      uploadSummaryRepository.saveAndFlush(
+        uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()),
+      )
+    } else {
+      log.info("Unable to migrate AdditionalConditionUploadSummary id={} (thumbnailUuid=null)", uploadSummary.id)
+    }
   }
 
   private fun metadata(uploadDetail: AdditionalConditionUploadDetail, kind: String) = mapOf(
@@ -50,4 +63,8 @@ class ExclusionZoneUploadsMigration(
     "additionalConditionId" to uploadSummary.additionalCondition.id.toString(),
     "kind" to kind,
   )
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 }
