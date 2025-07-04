@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.AuditService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 
 @Service
 class ElectronicMonitoringProgrammeService(
@@ -28,11 +29,15 @@ class ElectronicMonitoringProgrammeService(
 ) {
 
   @Transactional
-  fun handleResponseIfEnabled(licence: Licence) {
-    if (electronicMonitoringResponseHandlingEnabled && (licence is CrdLicence || licence is HdcLicence)) {
+  fun handleResponseIfEnabled(kind: LicenceKind, conditionCodes: Set<String>) {
+    if (electronicMonitoringResponseHandlingEnabled && (LicenceKind.CRD, Licencekidn || licence is HdcLicence)) {
       handleElectronicMonitoringResponseRecords(licence)
     }
   }
+
+  // if no EM conditions remain, then remove if present
+  fun handleRemovedCondtionsIfEnabled(kind: LicenceKind, toSet: Set<String>) {}
+
 
   @Transactional
   fun updateElectronicMonitoringProgramme(licenceId: Long, request: UpdateElectronicMonitoringProgrammeRequest) {
@@ -102,6 +107,7 @@ class ElectronicMonitoringProgrammeService(
     isToBeTaggedForProgramme = null,
     programmeName = null,
   )
+
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

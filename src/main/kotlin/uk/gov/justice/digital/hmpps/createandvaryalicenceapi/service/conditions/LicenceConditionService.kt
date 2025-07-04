@@ -102,7 +102,7 @@ class LicenceConditionService(
       updatedAdditionalConditions = newConditions,
       staffMember = staffMember,
     )
-    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity.kind, setOf(request.conditionCode))
     licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
@@ -163,7 +163,8 @@ class LicenceConditionService(
       updatedAdditionalConditions = (newConditions + updatedConditions),
       staffMember = staffMember,
     )
-    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    val modifiedConditionCodes = (newConditions + removedConditions).map { it.conditionCode }.toSet()
+    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity.kind, modifiedConditionCodes)
     licenceRepository.saveAndFlush(licenceEntity)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
@@ -307,7 +308,8 @@ class LicenceConditionService(
     auditService.recordAuditEventUpdateAdditionalConditionData(licenceEntity, updatedAdditionalCondition, staffMember)
   }
 
-  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) = conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
+  fun getFormattedText(version: String, conditionCode: String, data: List<AdditionalConditionData>) =
+    conditionFormatter.format(licencePolicyService.getConfigForCondition(version, conditionCode), data)
 
   @Transactional
   fun deleteConditions(
@@ -350,7 +352,10 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    electronicMonitoringProgrammeService.handleRemovedCondtionsIfEnabled(
+      licenceEntity.kind,
+      licenceEntity.additionalConditions.map { it.conditionCode }.toSet(),
+    )
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
