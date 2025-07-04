@@ -103,7 +103,7 @@ class ExclusionZoneMigrationIntegrationTest : IntegrationTestBase() {
       additionalConditionUploadSummaryRepository,
     )
 
-    migration.perform(limit = 1)
+    migration.perform(batchSize = 1)
 
     listOf(
       Pair(1, never()),
