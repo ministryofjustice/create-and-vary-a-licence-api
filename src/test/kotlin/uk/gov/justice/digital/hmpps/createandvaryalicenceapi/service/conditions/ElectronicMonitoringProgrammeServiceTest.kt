@@ -32,6 +32,7 @@ class ElectronicMonitoringProgrammeServiceTest {
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
   private val aLicenceEntity = TestData.createCrdLicence()
+  private val aVariationLicence = TestData.createVariationLicence()
   private val aCom = TestData.com()
   private val serviceWithFeatureEnabled = ElectronicMonitoringProgrammeService(
     licenceRepository,
@@ -111,6 +112,17 @@ class ElectronicMonitoringProgrammeServiceTest {
       serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
 
       verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity)
+    }
+
+    @Test
+    fun `should not handle response when feature toggle is enabled and licence is not of type CRD or HDC`() {
+      val licenceEntity = aVariationLicence
+
+      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
+
+      serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
+
+      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(licenceEntity)
     }
 
     @Test

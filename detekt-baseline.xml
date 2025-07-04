@@ -81,6 +81,7 @@
     <ID>MatchingDeclarationName:LicenceSpecifications.kt$LicenceQueryObject</ID>
     <ID>NestedBlockDepth:OsPlacesMapperToAddressSearchResponseMapper.kt$OsPlacesMapperToAddressSearchResponseMapper$private fun getAddressFirstLine(deliveryPointAddress: DeliveryPointAddress): Pair&lt;String, Boolean&gt;</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
+    <ID>ReturnCount:CaseloadService.kt$CaseloadService$fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind</ID>
     <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:LsdRecalculationService.kt$LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long</ID>
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>

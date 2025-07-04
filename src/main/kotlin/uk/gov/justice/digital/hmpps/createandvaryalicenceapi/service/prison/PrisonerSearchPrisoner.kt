@@ -3,10 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
-data class SearchPaginationResponse(
-  val content: List<PrisonerSearchPrisoner>,
-)
-
 data class PrisonerSearchPrisoner(
   val prisonerNumber: String,
   val pncNumber: String? = null,
