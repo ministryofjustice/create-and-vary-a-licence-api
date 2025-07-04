@@ -635,9 +635,8 @@ class ComCaseloadSearchServiceTest {
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to LocalDate.of(2023, 2, 14)))
-
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
+    whenever(releaseDateService.getHardStopDateForCases(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 2, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
@@ -675,7 +674,7 @@ class ComCaseloadSearchServiceTest {
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 2, 12))
+    whenever(releaseDateService.getHardStopDateForCases(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 2, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 3, 14))
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
     whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)

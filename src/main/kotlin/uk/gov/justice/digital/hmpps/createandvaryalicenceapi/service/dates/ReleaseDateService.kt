@@ -22,9 +22,8 @@ class ReleaseDateService(
   @Value("\${maxNumberOfWorkingDaysToTriggerAllocationWarningEmail:5}") private val maxNumberOfWorkingDaysToTriggerAllocationWarningEmail: Int = 5,
 ) {
   fun isInHardStopPeriod(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): Boolean {
-    val now = overrideClock ?: clock
-    val hardStopDate = getHardStopDate(sentenceDateHolder)
-    val today = LocalDate.now(now)
+    val hardStopDate = getHardStopDate(sentenceDateHolder, overrideClock)
+    val today = getToday(overrideClock)
     if (hardStopDate == null || sentenceDateHolder.licenceStartDate == null) {
       return false
     }
@@ -44,7 +43,7 @@ class ReleaseDateService(
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
     val licenceStartDate = sentenceDateHolder.licenceStartDate ?: return false
-    return LocalDate.now(clock) >= 2.workingDaysBefore(licenceStartDate) && LocalDate.now(clock) <= licenceStartDate
+    return getToday() >= 2.workingDaysBefore(licenceStartDate) && getToday() <= licenceStartDate
   }
 
   fun getEarliestReleaseDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
@@ -61,12 +60,12 @@ class ReleaseDateService(
   }
 
   fun isLateAllocationWarningRequired(releaseDate: LocalDate?): Boolean {
-    if (releaseDate === null || releaseDate.isBefore(LocalDate.now(clock))) return false
+    if (releaseDate === null || releaseDate.isBefore(getToday())) return false
     val warningThreshold = getEarliestDateBefore(
       maxNumberOfWorkingDaysToTriggerAllocationWarningEmail,
       releaseDate,
     )
-    return LocalDate.now(clock) >= warningThreshold
+    return getToday() >= warningThreshold
   }
 
   fun isEligibleForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
@@ -86,15 +85,40 @@ class ReleaseDateService(
     return workingDaysService.isNonWorkingDay(releaseDate)
   }
 
-  fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
+  fun getHardStopDateForCases(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): LocalDate? = createHardStopDate(sentenceDateHolder, overrideClock, true)
+
+  fun getHardStopDate(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null): LocalDate? = createHardStopDate(sentenceDateHolder, overrideClock, false)
+
+  private fun createHardStopDate(sentenceDateHolder: SentenceDateHolder, overrideClock: Clock? = null, checkIfCRDisInPast: Boolean = false): LocalDate? {
     val actualReleaseDate = sentenceDateHolder.actualReleaseDate
     val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
 
-    return when {
-      conditionalReleaseDate == null -> null
-      actualReleaseDate != null && isExcludedFromHardstop(actualReleaseDate, conditionalReleaseDate) -> null
-      else -> calculateHardStopDate(conditionalReleaseDate)
+    if (isExcludedFromHardstop(actualReleaseDate, conditionalReleaseDate, overrideClock, checkIfCRDisInPast)) {
+      return null
     }
+    return calculateHardStopDate(conditionalReleaseDate!!)
+  }
+
+  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate?, conditionalReleaseDate: LocalDate?, overrideClock: Clock? = null, checkIfCRDisInPast: Boolean): Boolean {
+    if (conditionalReleaseDate == null ||
+      (checkIfCRDisInPast && isInPast(conditionalReleaseDate, overrideClock))
+    ) {
+      return true
+    }
+    if (actualReleaseDate == null) {
+      return false
+    }
+    if (conditionalReleaseDate.isNonWorkingDay()) {
+      return actualReleaseDate != 1.workingDaysBefore(conditionalReleaseDate)
+    }
+    return actualReleaseDate != conditionalReleaseDate
+  }
+
+  fun isInPast(date: LocalDate, overrideClock: Clock? = null) = date.isBefore(getToday(overrideClock))
+
+  fun getToday(overrideClock: Clock? = null): LocalDate {
+    val nowClock = overrideClock ?: clock
+    return LocalDate.now(nowClock)
   }
 
   fun getLicenceStartDate(
@@ -130,15 +154,12 @@ class ReleaseDateService(
 
   private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
     val date =
-      if (conditionalReleaseDate.isNonWorkingDay()) 1.workingDaysBefore(conditionalReleaseDate) else conditionalReleaseDate
+      if (conditionalReleaseDate.isNonWorkingDay()) {
+        1.workingDaysBefore(conditionalReleaseDate)
+      } else {
+        conditionalReleaseDate
+      }
     return 2.workingDaysBefore(date)
-  }
-
-  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate, conditionalReleaseDate: LocalDate): Boolean {
-    if (conditionalReleaseDate.isNonWorkingDay()) {
-      return actualReleaseDate != 1.workingDaysBefore(conditionalReleaseDate)
-    }
-    return actualReleaseDate != conditionalReleaseDate
   }
 
   fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {

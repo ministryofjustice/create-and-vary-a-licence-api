@@ -41,7 +41,7 @@ class CaseloadServiceTest {
         anyOrNull(),
       ),
     ).thenReturn(PageImpl(listOf(prisonerSearchResult())))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
+    whenever(releaseDateService.getHardStopDateForCases(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
     whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
     whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
     whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
@@ -255,7 +255,7 @@ class CaseloadServiceTest {
         postRecallReleaseDate = LocalDate.now().plusDays(1),
         conditionalReleaseDate = LocalDate.now().plusDays(2),
       )
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(null)
 
     val licenceKind = service.determineLicenceKind(prisoner)
 
@@ -265,7 +265,7 @@ class CaseloadServiceTest {
   @Test
   fun `should determine a licence with null PRRD and a hard stop date of today as a hard stop licence`() {
     val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.now())
+    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.now())
 
     val licenceKind = service.determineLicenceKind(prisoner)
 
@@ -275,7 +275,7 @@ class CaseloadServiceTest {
   @Test
   fun `should determine a licence with null PRRD and hard stop date in future as a CRD licence`() {
     val prisoner = prisonerSearchResult(conditionalReleaseDate = LocalDate.now().plusDays(2))
-    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+    whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(null)
 
     val licenceKind = service.determineLicenceKind(prisoner)
 

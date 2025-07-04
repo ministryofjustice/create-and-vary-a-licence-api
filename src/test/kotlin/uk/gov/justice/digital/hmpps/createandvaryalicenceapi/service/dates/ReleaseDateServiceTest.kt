@@ -9,8 +9,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
@@ -700,6 +704,8 @@ class ReleaseDateServiceTest {
 
     @Test
     fun `if CRD is on a Easter Monday, then hard stop should be 6 days before`() {
+      val nowClock = createClock("2018-01-10T00:00:00Z")
+
       // first working day before the monday is the thursday (4 days)
       // two days before the first working day is the Tuesday
       val easterMonday = LocalDate.parse("2018-04-02")
@@ -710,8 +716,109 @@ class ReleaseDateServiceTest {
         conditionalReleaseDate = easterMonday,
       )
 
-      val hardStopDate = service.getHardStopDate(licence)
+      val hardStopDate = service.getHardStopDate(licence, nowClock)
       assertThat(hardStopDate).isEqualTo(tuesdayBefore)
+    }
+  }
+
+  @Nested
+  inner class `Exclude Hard stop for PRRD cases` {
+/*
+ *   The hard stop validation logic should not apply to PRRD cases, allowing more flexibility.
+ *
+ *   Always null for null CRDs (not null if CRD is present and past)
+ *   if releaseDateService.getHardStopDate returns null then they aren’t eligible for hardstop
+ *   if CRD is missing or in the past return null - this will capture PRRD licences and make them not eligible for hardstop
+*/
+    @Test
+    fun `if CRD is null, then no hard stop date`() {
+      // Given
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = null,
+      )
+
+      // When
+      val hardStopDate = service.getHardStopDateForCases(licence)
+
+      // Then
+      assertThat(hardStopDate).isNull()
+    }
+
+    @Test
+    fun `if CRD is past then no hard stop date`() {
+      // Given
+      val conditionalReleaseDate = LocalDate.now(clock).minusDays(1)
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = conditionalReleaseDate,
+      )
+      val serviceSpy = spy(service)
+
+      // When
+      val hardStopDate = serviceSpy.getHardStopDateForCases(licence)
+
+      // Then
+      assertThat(hardStopDate).isNull()
+      verify(serviceSpy, times(1)).isInPast(any(), anyOrNull())
+    }
+
+    @Test
+    fun `if CRD is not in the past and no ARD then we get a hard stop date`() {
+      // Given
+      val expectedHardStopDate = LocalDate.of(2023, 11, 8)
+      val conditionalReleaseDate = LocalDate.now(clock)
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = null,
+        conditionalReleaseDate = conditionalReleaseDate,
+      )
+      val serviceSpy = spy(service)
+
+      // When
+      val hardStopDate = serviceSpy.getHardStopDateForCases(licence)
+
+      // Then
+      assertThat(hardStopDate).isEqualTo(expectedHardStopDate)
+    }
+
+    @Test
+    fun `given the date is if Friday 10th Nov 2023 and CRD is in the present and ARD exists hard stop is returned`() {
+      // Given
+      val expectedHardStopDate = LocalDate.of(2023, 11, 8)
+      val actualReleaseDate = LocalDate.now(clock)
+      val conditionalReleaseDate = LocalDate.now(clock)
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = actualReleaseDate,
+        conditionalReleaseDate = conditionalReleaseDate,
+      )
+
+      // When
+      val hardStopDate = service.getHardStopDateForCases(licence)
+
+      // Then
+      assertThat(hardStopDate).isEqualTo(expectedHardStopDate)
+    }
+
+    @Test
+    fun `given the date is if Friday 10th Nov 2023 and CRD is in the future and ARD exists hard stop is returned`() {
+      // Given
+      val expectedHardStopDate = LocalDate.of(2023, 11, 9)
+      val actualReleaseDate = LocalDate.now(clock).plusDays(3)
+      val conditionalReleaseDate = LocalDate.now(clock).plusDays(3)
+
+      val licence = createCrdLicence().copy(
+        actualReleaseDate = actualReleaseDate,
+        conditionalReleaseDate = conditionalReleaseDate,
+      )
+
+      // When
+      val hardStopDate = service.getHardStopDateForCases(licence)
+
+      // Then
+      assertThat(hardStopDate).isEqualTo(expectedHardStopDate)
     }
   }
 
