@@ -184,7 +184,7 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
-        whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
+        whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.of(2023, 10, 12))
         whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
         whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
         whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)

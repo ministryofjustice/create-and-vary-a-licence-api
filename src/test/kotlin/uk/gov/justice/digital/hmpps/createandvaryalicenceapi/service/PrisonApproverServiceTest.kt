@@ -334,7 +334,7 @@ class PrisonApproverServiceTest {
     fun `Derived fields are populated`() {
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
       whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
-      whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2022, 1, 3))
+      whenever(releaseDateService.getHardStopDate(any(), anyOrNull())).thenReturn(LocalDate.of(2022, 1, 3))
       whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2022, 1, 1))
 
       whenever(licenceRepository.getLicencesReadyForApproval(listOf("MDI"))).thenReturn(listOf(aLicenceEntity))

@@ -47,7 +47,7 @@ class CaseloadService(
       prisoner = this.toPrisoner(),
       cvl = CvlFields(
         licenceType = LicenceType.getLicenceType(this),
-        hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+        hardStopDate = releaseDateService.getHardStopDateForCases(sentenceDateHolder),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
         isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
