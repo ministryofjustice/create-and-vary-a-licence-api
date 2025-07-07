@@ -61,6 +61,7 @@
     <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, comName: String, firstName: String, lastName: String, crn: String?, crd: LocalDate?, licenceId: String, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, comName: String, firstName: String, lastName: String, crn: String?, licenceId: String, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, firstName: String, lastName: String, crn: String?, crd: LocalDate?, licenceId: String, )</ID>
+    <ID>LongParameterList:NotifyService.kt$NotifyService$( emailAddress: String?, firstName: String, lastName: String, prisonerNumber: String?, lsd: LocalDate?, crd: LocalDate? = null, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( licenceId: String, emailAddress: String?, comFullName: String, offenderFullName: String, crn: String?, datesChangedDescription: List&lt;String&gt;, )</ID>
     <ID>LongParameterList:NotifyService.kt$NotifyService$( notifyRequest: NotifyRequest, licenceId: String, firstName: String, lastName: String, crn: String, comName: String, )</ID>
     <ID>LongParameterList:PrisonUser.kt$PrisonUser$( id: Long = this.id, username: String = this.username, email: String? = this.email, firstName: String? = this.firstName, lastName: String? = this.lastName, lastUpdatedTimestamp: LocalDateTime? = this.lastUpdatedTimestamp, )</ID>
@@ -96,10 +97,10 @@
     <ID>NoNameShadowing:PromptComListBuilder.kt$PromptComListBuilder$cases</ID>
     <ID>ReturnCount:AddAddressRequest.kt$AddressWithUprnMustBeFromOsPlacesValidator$override fun isValid(value: AddAddressRequest?, context: ConstraintValidatorContext): Boolean</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
+    <ID>ReturnCount:CaseloadService.kt$CaseloadService$fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind</ID>
     <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:LsdRecalculationService.kt$LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long</ID>
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
-    <ID>ReturnCount:PrisonApproverService.kt$PrisonApproverService$private fun findOriginalLicenceForVariation(variationLicence: Variation): Licence</ID>
     <ID>ReturnCount:StaffService.kt$StaffService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
     <ID>SpreadOperator:CreateAndVaryALicenceApi.kt$(*args)</ID>
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
@@ -219,6 +220,7 @@
     <ID>UseOrEmpty:LicenceService.kt$LicenceService$licenceEntity.createdBy?.email ?: ""</ID>
     <ID>UseOrEmpty:LicenceService.kt$LicenceService$licenceEntity.responsibleCom.email ?: ""</ID>
     <ID>UseOrEmpty:LicenceService.kt$LicenceService$reason ?: ""</ID>
+    <ID>UseOrEmpty:NotifyService.kt$NotifyService$crd?.format(dateFormat) ?: ""</ID>
     <ID>UseOrEmpty:OsPlacesApiClient.kt$OsPlacesApiClient$searchResult?.results?.map { it.dpa } ?: emptyList()</ID>
     <ID>UseOrEmpty:PolicyFunctions.kt$current.inputs ?: emptyList()</ID>
     <ID>UseOrEmpty:PolicyFunctions.kt$previous.inputs ?: emptyList()</ID>

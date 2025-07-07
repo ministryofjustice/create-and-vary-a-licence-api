@@ -514,7 +514,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
@@ -579,7 +579,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -668,7 +668,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -753,7 +753,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -822,7 +822,8 @@ class LicenceServiceTest {
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
-      any(),
+      eq(aLicenceEntity.licenceStartDate),
+      anyOrNull(),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
@@ -875,7 +876,8 @@ class LicenceServiceTest {
       eq(aLicenceEntity.forename ?: ""),
       eq(aLicenceEntity.surname ?: ""),
       eq(aLicenceEntity.nomsId),
-      any(),
+      eq(aLicenceEntity.licenceStartDate),
+      anyOrNull(),
     )
   }
 
@@ -1144,7 +1146,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
@@ -1163,7 +1165,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
@@ -2192,6 +2194,7 @@ class LicenceServiceTest {
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
       any(),
+      anyOrNull(),
     )
   }
 
@@ -2308,7 +2311,7 @@ class LicenceServiceTest {
 
     service.editLicence(1L)
 
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
   }
 
   @Test
