@@ -819,7 +819,7 @@ class LicenceServiceTest {
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
-      any(),
+      eq(aLicenceEntity.licenceStartDate),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
@@ -872,7 +872,7 @@ class LicenceServiceTest {
       eq(aLicenceEntity.forename ?: ""),
       eq(aLicenceEntity.surname ?: ""),
       eq(aLicenceEntity.nomsId),
-      any(),
+      eq(aLicenceEntity.licenceStartDate),
     )
   }
 
