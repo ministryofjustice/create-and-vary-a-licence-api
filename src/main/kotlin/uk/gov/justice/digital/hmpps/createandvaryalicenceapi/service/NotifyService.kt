@@ -73,7 +73,7 @@ class NotifyService(
         "prisonerNumber" to (prisonerNumber ?: "unknown"),
         "crd" to (crd?.format(dateFormat) ?: ""),
         "lsd" to lsd.format(dateFormat),
-        )
+      )
       if (sendEmail(variationForReApprovalTemplateId, emailAddress, values)) {
         log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
       }
