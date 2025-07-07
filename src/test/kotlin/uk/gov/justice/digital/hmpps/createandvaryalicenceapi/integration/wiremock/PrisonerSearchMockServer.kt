@@ -91,7 +91,20 @@ class PrisonerSearchMockServer : WireMockServer(8099) {
                   "lastName": "Person5",
                   "dateOfBirth": "1988-01-01",
                   "homeDetentionCurfewEligibilityDate": "${LocalDate.now().plusDays(1)}"
-              }
+              },
+              {
+                  "prisonerNumber": "G6397ZX",
+                  "bookingId": "635",
+                  "status": "INACTIVE",
+                  "legalStatus": "SENTENCED",
+                  "indeterminateSentence": false,
+                  "recall": true,
+                  "prisonId": "ABC",
+                  "bookNumber": "76329K",
+                  "firstName": "Test6",
+                  "lastName": "Person6",
+                  "dateOfBirth": "1962-01-01"
+               }
               ]
             """.trimIndent(),
           ).withStatus(200),
