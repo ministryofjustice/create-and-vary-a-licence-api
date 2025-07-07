@@ -28,9 +28,16 @@ class ElectronicMonitoringProgrammeService(
 ) {
 
   @Transactional
-  fun handleResponseIfEnabled(licence: Licence) {
-    if (electronicMonitoringResponseHandlingEnabled && (licence is CrdLicence || licence is HdcLicence)) {
-      handleElectronicMonitoringResponseRecords(licence)
+  fun handleUpdatedConditionsIfEnabled(licence: Licence, conditionCodes: Set<String>) {
+    if (electronicMonitoringResponseHandlingEnabled) {
+      processUpdatedElectronicMonitoringConditions(licence, conditionCodes)
+    }
+  }
+
+  @Transactional
+  fun handleRemovedConditionsIfEnabled(licence: Licence, removedConditionCodes: Set<String>) {
+    if (electronicMonitoringResponseHandlingEnabled) {
+      processRemovedElectronicMonitoringConditions(licence, removedConditionCodes)
     }
   }
 
@@ -62,11 +69,21 @@ class ElectronicMonitoringProgrammeService(
   }
 
   @Transactional
-  fun handleElectronicMonitoringResponseRecords(licenceEntity: Licence) {
-    val isResponseRequired = licencePolicyService.isElectronicMonitoringResponseRequired(licenceEntity)
+  fun processUpdatedElectronicMonitoringConditions(licenceEntity: Licence, conditionCodes: Set<String>) {
+    val version = requireNotNull(licenceEntity.version) { "Licence version cannot be null" }
+    val isResponseRequired = licencePolicyService.isElectronicMonitoringResponseRequired(conditionCodes, version)
     if (isResponseRequired) {
       createElectronicMonitoringProviderIfNotExists(licenceEntity)
-    } else {
+    }
+  }
+
+  @Transactional
+  fun processRemovedElectronicMonitoringConditions(licenceEntity: Licence, removedConditionCodes: Set<String>) {
+    val version = requireNotNull(licenceEntity.version) { "Licence version cannot be null" }
+    val removedConditionsRequiringEmResponse =
+      licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(version, removedConditionCodes)
+    val currentConditionCodes = licenceEntity.additionalConditions.map { it.conditionCode }.toSet()
+    if (removedConditionsRequiringEmResponse.isNotEmpty() && !licencePolicyService.isElectronicMonitoringResponseRequired(currentConditionCodes, version)) {
       deleteElectronicMonitoringProvider(licenceEntity)
     }
   }

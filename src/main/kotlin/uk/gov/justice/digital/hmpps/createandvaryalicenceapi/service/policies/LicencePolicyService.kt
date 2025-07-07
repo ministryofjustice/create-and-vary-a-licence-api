@@ -104,15 +104,14 @@ class LicencePolicyService(
     .find { it.code == conditionCode }
     ?: error("Condition with code: '$conditionCode' and version: '$version' not found.")
 
-  fun getConditionsRequiringElectronicMonitoringResponse(version: String, conditionCodes: List<String>): List<IAdditionalCondition> = policyByVersion(version)
+  fun getConditionsRequiringElectronicMonitoringResponse(version: String, conditionCodes: Set<String>): List<IAdditionalCondition> = policyByVersion(version)
     .additionalConditions.ap
     .filter { it.requiresElectronicMonitoringResponse && conditionCodes.contains(it.code) }
 
-  fun isElectronicMonitoringResponseRequired(licenceEntity: Licence): Boolean {
-    val additionalApConditions = licenceEntity.additionalConditions.filter { it.conditionType == "AP" }
+  fun isElectronicMonitoringResponseRequired(conditionCodes: Set<String>, version: String): Boolean {
     val conditionsRequiringResponse = getConditionsRequiringElectronicMonitoringResponse(
-      licenceEntity.version!!,
-      additionalApConditions.map { it.conditionCode },
+      version!!,
+      conditionCodes,
     )
     if (conditionsRequiringResponse.isNotEmpty()) {
       log.info("Handling Electronic Monitoring response record for conditions: ${conditionsRequiringResponse.joinToString(",") { it.code }}")
