@@ -253,7 +253,7 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-prrd-licence-id-1-with-address.sql",
   )
-  fun `When updating appointment address for PRRD then everthing is saved as expected`() {
+  fun `When updating appointment address for PRRD then everything is saved as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
     val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES)
