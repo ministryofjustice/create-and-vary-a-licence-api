@@ -103,7 +103,7 @@ class HdcLicence(
   @OneToOne(
     mappedBy = "licence",
     cascade = [CascadeType.ALL],
-    fetch = FetchType.EAGER,
+    fetch = FetchType.LAZY,
     optional = true,
     orphanRemoval = true,
   )
