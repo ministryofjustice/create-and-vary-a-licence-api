@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -51,6 +52,10 @@ class ElectronicMonitoringProgrammeService(
     val staffMember = staffRepository.findByUsernameIgnoreCase(username)
 
     val electronicMonitoringProvider = when (licenceEntity) {
+      is PrrdLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
+        "ElectronicMonitoringProvider is null for PrrdLicence: $licenceId"
+      }
+
       is CrdLicence -> requireNotNull(licenceEntity.electronicMonitoringProvider) {
         "ElectronicMonitoringProvider is null for CrdLicence: $licenceId"
       }
