@@ -1,5 +1,4 @@
-insert into licence (id,
-                     kind,
+insert into licence (kind,
                      type_code,
                      version,
                      status_code,
@@ -29,7 +28,7 @@ insert into licence (id,
                      responsible_com_id,
                      created_by_com_id,
                      licence_version)
-values (1,
+values (
         'CRD',
         'AP',
         '3.0',
@@ -59,7 +58,7 @@ values (1,
         'TEAM1',
         1,
         1,
-        '3.0');
+        '1.0');
 
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'goodBehaviour', 1, 'Be of generally good behaviour', 'AP');
@@ -70,10 +69,13 @@ values (1, 'notBreakLaw', 2, 'Do not break the law', 'AP');
 insert into standard_condition (licence_id, condition_code, condition_sequence, condition_text, condition_type)
 values (1, 'attendMeetings', 3, 'Attend meetings', 'PSS');
 
-insert into additional_condition (licence_id, condition_version, condition_category, condition_code,
+insert into additional_condition (id, licence_id, condition_version, condition_category, condition_code,
                                   condition_sequence, condition_text, condition_type)
-values (1, '3.0', 'Freedom of movement', '9ae2a336-3491-4667-aaed-dd852b09b4b9', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
+values (1,1, '3.0', 'Electronic monitoring', '524f2fd6-ad53-47dd-8edc-2161d3dd2ed4', 1, 'Not to enter exclusion zone [EXCLUSION ZONE DESCRIPTION]',
         'AP');
+
+insert into additional_condition_data (id, additional_condition_id, data_sequence, data_field, data_value)
+values (1, 1, 1, 'Electronic monitoring', 'Town centre');
 
 insert into electronic_monitoring_provider (licence_id, is_to_be_tagged_for_programme, programme_name)
 VALUES (1, true, 'Test Programme');

@@ -171,7 +171,7 @@ class LicencePolicyServiceTest {
     fun `returns empty list when no conditions require electronic monitoring response`() {
       val result = licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(
         version = "2.1",
-        conditionCodes = listOf("condition1", "condition3", "599bdcae-d545-461c-b1a9-02cb3d4ba268"),
+        conditionCodes = setOf("condition1", "condition3", "599bdcae-d545-461c-b1a9-02cb3d4ba268"),
       )
       assertThat(result).isEmpty()
     }

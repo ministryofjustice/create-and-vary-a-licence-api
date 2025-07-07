@@ -183,7 +183,7 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-licence-id-1.sql",
+    "classpath:test_data/seed-licence-id-7.sql",
   )
   fun `clear electronic monitoring provider`() {
     val result = licenceRepository.findById(1).get() as CrdLicence
@@ -192,16 +192,40 @@ class LicenceConditionIntegrationTest : IntegrationTestBase() {
       .extracting("isToBeTaggedForProgramme", "programmeName")
       .containsExactly(true, "Test Programme")
 
-    webTestClient.post()
-      .uri("/licence/id/1/additional-condition/AP")
-      .bodyValue(anAddAdditionalConditionRequest)
+    webTestClient.delete()
+      .uri("/licence/id/1/additional-condition/id/1")
       .accept(MediaType.APPLICATION_JSON)
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
-      .expectStatus().isOk
+      .expectStatus().isNoContent()
 
     val result1 = licenceRepository.findById(1).get() as CrdLicence
     assertThat(result1.electronicMonitoringProvider).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-6.sql",
+  )
+  fun `don't clear electronic monitoring provider`() {
+    val result = licenceRepository.findById(1).get() as CrdLicence
+    assertThat(result.electronicMonitoringProvider)
+      .isNotNull
+      .extracting("isToBeTaggedForProgramme", "programmeName")
+      .containsExactly(true, "Test Programme")
+
+    webTestClient.delete()
+      .uri("/licence/id/1/additional-condition/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isNoContent()
+
+    val result1 = licenceRepository.findById(1).get() as CrdLicence
+    assertThat(result1.electronicMonitoringProvider)
+      .isNotNull
+      .extracting("isToBeTaggedForProgramme", "programmeName")
+      .containsExactly(true, "Test Programme")
   }
 
   @Test
