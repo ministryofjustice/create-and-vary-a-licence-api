@@ -7,6 +7,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91Determi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -99,33 +102,30 @@ class ReleaseDateService(
 
   fun getLicenceStartDate(
     nomisRecord: PrisonerSearchPrisoner,
-    licenceKind: LicenceKind? = LicenceKind.CRD,
-  ): LocalDate? = if (licenceKind == LicenceKind.HDC) {
-    nomisRecord.homeDetentionCurfewActualDate
-  } else if (licenceKind == LicenceKind.PRRD) {
-    nomisRecord.postRecallReleaseDate
-  } else if (
+    licenceKind: LicenceKind? = CRD,
+  ): LocalDate? = when (licenceKind) {
+    HDC -> nomisRecord.homeDetentionCurfewActualDate
+    PRRD -> nomisRecord.postRecallReleaseDate
+    else -> calculateCrdLicenceStartDate(nomisRecord, iS91DeterminationService.isIS91Case(nomisRecord))
+  }
+
+  fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>): Map<String, LocalDate?> {
+    val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
+    return prisoners.associate {
+      it.prisonerNumber to calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
+    }
+  }
+
+  private fun calculateCrdLicenceStartDate(
+    nomisRecord: PrisonerSearchPrisoner,
+    isIs91Case: Boolean,
+  ): LocalDate? = if (
     ALT_OUTCOME_CODES.contains(nomisRecord.legalStatus) ||
-    iS91DeterminationService.isIS91Case(nomisRecord)
+    isIs91Case
   ) {
     nomisRecord.determineAltLicenceStartDate()
   } else {
     nomisRecord.determineLicenceStartDate()
-  }
-
-  fun getLicenceStartDates(records: List<PrisonerSearchPrisoner?>): Map<String, LocalDate?> {
-    val prisoners = records.filterNotNull()
-    val iS91BookingIds: List<Long> = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
-    return prisoners.associate {
-      it.prisonerNumber to if (
-        ALT_OUTCOME_CODES.contains(it.legalStatus) ||
-        iS91BookingIds.contains(it.bookingId?.toLong())
-      ) {
-        it.determineAltLicenceStartDate()
-      } else {
-        it.determineLicenceStartDate()
-      }
-    }
   }
 
   private fun calculateHardStopDate(conditionalReleaseDate: LocalDate): LocalDate {
