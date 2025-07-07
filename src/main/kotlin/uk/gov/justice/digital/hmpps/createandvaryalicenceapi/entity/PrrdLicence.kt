@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -84,7 +85,7 @@ class PrrdLicence(
   var createdBy: CommunityOffenderManager? = null,
 
   @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
-  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
@@ -142,7 +143,8 @@ class PrrdLicence(
   bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
-) {
+),
+  HasElectronicMonitorResponse {
 
   fun copy(
     id: Long = this.id,

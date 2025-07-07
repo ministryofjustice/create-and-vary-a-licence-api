@@ -8,12 +8,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.BespokeCondition
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
@@ -105,7 +104,7 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
 
-    if (licenceEntity is CrdLicence || licenceEntity is HdcLicence) {
+    if (licenceEntity is HasElectronicMonitorResponse) {
       electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, setOf(request.conditionCode))
     }
 
@@ -170,7 +169,7 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
 
-    if (licenceEntity is CrdLicence || licenceEntity is HdcLicence) {
+    if (licenceEntity is HasElectronicMonitorResponse) {
       newConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
         electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, it)
       }
@@ -365,7 +364,7 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    if (licenceEntity is CrdLicence || licenceEntity is HdcLicence) {
+    if (licenceEntity is HasElectronicMonitorResponse) {
       removedAdditionalConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
         electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
       }

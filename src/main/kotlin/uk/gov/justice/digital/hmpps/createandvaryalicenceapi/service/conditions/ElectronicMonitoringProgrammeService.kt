@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMo
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -96,26 +97,21 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
-    when (licenceEntity) {
-      is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
-      is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
+    if (licenceEntity is HasElectronicMonitorResponse) {
+      licenceEntity.electronicMonitoringProvider = null
+    } else {
+      error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponse")
     }
   }
 
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
-    when (licenceEntity) {
-      is CrdLicence -> {
-        if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
-        }
+    if (licenceEntity is HasElectronicMonitorResponse) {
+      if (licenceEntity.electronicMonitoringProvider == null) {
+        licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
       }
-      is HdcLicence -> {
-        if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
-        }
-      }
-      else -> error("ElectronicMonitoringProvider can only be initialized for CrdLicence or HdcLicence")
+    } else {
+      error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponse")
     }
   }
 
