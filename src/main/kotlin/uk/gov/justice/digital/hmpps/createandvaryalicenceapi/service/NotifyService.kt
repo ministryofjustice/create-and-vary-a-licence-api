@@ -63,15 +63,17 @@ class NotifyService(
     firstName: String,
     lastName: String,
     prisonerNumber: String?,
-    date: LocalDate?,
+    crd: LocalDate?,
+    lsd: LocalDate?,
   ) {
-    if (emailAddress != null && date != null) {
+    if (emailAddress != null && lsd != null) {
       val values: Map<String, String> = mapOf(
         "prisonerFirstName" to firstName,
         "prisonerLastName" to lastName,
         "prisonerNumber" to (prisonerNumber ?: "unknown"),
-        "crd" to date.format(dateFormat),
-      )
+        "crd" to (crd?.format(dateFormat) ?: ""),
+        "lsd" to lsd.format(dateFormat),
+        )
       if (sendEmail(variationForReApprovalTemplateId, emailAddress, values)) {
         log.info("Notification sent to OMU $emailAddress VARIATION FOR RE_APPROVAL for OMU PrisonerNumber $prisonerNumber")
       }
