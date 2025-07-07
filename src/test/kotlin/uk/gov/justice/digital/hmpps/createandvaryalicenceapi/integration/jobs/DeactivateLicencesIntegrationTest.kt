@@ -61,7 +61,7 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
       .expectBodyList(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(deactivatedLicences?.size).isEqualTo(4)
+    assertThat(deactivatedLicences?.size).isEqualTo(5)
     assertThat(deactivatedLicences)
       .extracting<Tuple> {
         tuple(it.licenceId, it.licenceStatus)
@@ -71,12 +71,16 @@ class DeactivateLicencesIntegrationTest : IntegrationTestBase() {
         tuple(6L, INACTIVE),
         tuple(7L, INACTIVE),
         tuple(8L, INACTIVE),
+        tuple(10L, INACTIVE),
       )
 
     argumentCaptor<HMPPSDomainEvent>().apply {
-      verify(eventsPublisher, times(4)).publishDomainEvent(capture())
-      assertThat(allValues)
-        .allMatch { it.eventType == DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value }
+      verify(eventsPublisher, times(5)).publishDomainEvent(capture())
+      assertThat(allValues[0].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+      assertThat(allValues[1].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+      assertThat(allValues[2].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+      assertThat(allValues[3].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.LICENCE_INACTIVATED.value)
+      assertThat(allValues[4].eventType).isEqualTo(DomainEventsService.LicenceDomainEventType.PRRD_LICENCE_INACTIVATED.value)
     }
   }
 
