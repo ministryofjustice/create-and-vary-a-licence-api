@@ -71,10 +71,12 @@ class DomainEventsService(
   enum class LicenceDomainEventType(val value: String) {
     LICENCE_ACTIVATED("create-and-vary-a-licence.licence.activated"),
     HDC_LICENCE_ACTIVATED("create-and-vary-a-licence.hdc-licence.activated"),
+    PRRD_LICENCE_ACTIVATED("create-and-vary-a-licence.prrd-licence.activated"),
     LICENCE_VARIATION_ACTIVATED("create-and-vary-a-licence.variation.activated"),
     HDC_LICENCE_VARIATION_ACTIVATED("create-and-vary-a-licence.hdc-variation.activated"),
     LICENCE_INACTIVATED("create-and-vary-a-licence.licence.inactivated"),
     HDC_LICENCE_INACTIVATED("create-and-vary-a-licence.hdc-licence.inactivated"),
+    PRRD_LICENCE_INACTIVATED("create-and-vary-a-licence.prrd-licence.inactivated"),
     LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.variation.inactivated"),
     HDC_LICENCE_VARIATION_INACTIVATED("create-and-vary-a-licence.hdc-variation.inactivated"),
   }
