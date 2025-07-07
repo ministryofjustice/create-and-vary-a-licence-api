@@ -181,7 +181,7 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `When adding appointment address manually Then everything saves as expected`() {
+  fun `When adding appointment address manually entered Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
     val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL)
@@ -206,7 +206,7 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1-with-address.sql",
   )
-  fun `When updating appointment address manually Then everything saves as expected`() {
+  fun `When updating appointment address manually entered Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
     val addAddressRequest = buildAddAddressRequest(source = AddressSource.MANUAL)
@@ -247,6 +247,30 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(2)
   }
+
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-prrd-licence-id-1-with-address.sql",
+  )
+  fun `When updating appointment address for PRRD then everthing is saved as expected`() {
+    // Given
+    val uri = "/licence/id/1/appointment/address"
+    val addAddressRequest = buildAddAddressRequest(uprn = "NEW_UPRN", source = AddressSource.OS_PLACES)
+
+    // When
+    val result = putRequest(uri, addAddressRequest)
+
+    // Then
+    result.expectStatus().isOk
+
+    val savedAddress = getAddress()
+    assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
+    assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
+    assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
+    assertThat(savedAddress.id).isEqualTo(2)
+  }
+
 
   @Test
   @Sql(
