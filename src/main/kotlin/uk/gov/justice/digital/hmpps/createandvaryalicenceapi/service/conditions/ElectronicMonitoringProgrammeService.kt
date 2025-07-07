@@ -8,10 +8,10 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -29,9 +29,16 @@ class ElectronicMonitoringProgrammeService(
 ) {
 
   @Transactional
-  fun handleResponseIfEnabled(licence: Licence) {
-    if (electronicMonitoringResponseHandlingEnabled && (licence is CrdLicence || licence is HdcLicence)) {
-      handleElectronicMonitoringResponseRecords(licence)
+  fun handleUpdatedConditionsIfEnabled(licence: Licence, conditionCodes: Set<String>) {
+    if (electronicMonitoringResponseHandlingEnabled) {
+      processUpdatedElectronicMonitoringConditions(licence, conditionCodes)
+    }
+  }
+
+  @Transactional
+  fun handleRemovedConditionsIfEnabled(licence: Licence, removedConditionCodes: Set<String>) {
+    if (electronicMonitoringResponseHandlingEnabled) {
+      processRemovedElectronicMonitoringConditions(licence, removedConditionCodes)
     }
   }
 
@@ -67,11 +74,21 @@ class ElectronicMonitoringProgrammeService(
   }
 
   @Transactional
-  fun handleElectronicMonitoringResponseRecords(licenceEntity: Licence) {
-    val isResponseRequired = licencePolicyService.isElectronicMonitoringResponseRequired(licenceEntity)
+  fun processUpdatedElectronicMonitoringConditions(licenceEntity: Licence, conditionCodes: Set<String>) {
+    val version = requireNotNull(licenceEntity.version) { "Licence version cannot be null" }
+    val isResponseRequired = licencePolicyService.isElectronicMonitoringResponseRequired(conditionCodes, version)
     if (isResponseRequired) {
       createElectronicMonitoringProviderIfNotExists(licenceEntity)
-    } else {
+    }
+  }
+
+  @Transactional
+  fun processRemovedElectronicMonitoringConditions(licenceEntity: Licence, removedConditionCodes: Set<String>) {
+    val version = requireNotNull(licenceEntity.version) { "Licence version cannot be null" }
+    val removedConditionsRequiringEmResponse =
+      licencePolicyService.getConditionsRequiringElectronicMonitoringResponse(version, removedConditionCodes)
+    val currentConditionCodes = licenceEntity.additionalConditions.map { it.conditionCode }.toSet()
+    if (removedConditionsRequiringEmResponse.isNotEmpty() && !licencePolicyService.isElectronicMonitoringResponseRequired(currentConditionCodes, version)) {
       deleteElectronicMonitoringProvider(licenceEntity)
     }
   }
@@ -79,34 +96,21 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
-    when (licenceEntity) {
-      is CrdLicence -> licenceEntity.electronicMonitoringProvider = null
-      is HdcLicence -> licenceEntity.electronicMonitoringProvider = null
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
+      licenceEntity.electronicMonitoringProvider = null
+    } else {
+      error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponseProvider")
     }
   }
 
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
-    when (licenceEntity) {
-      is CrdLicence -> {
-        if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
-        }
-      }
-      is HdcLicence -> {
-        if (licenceEntity.electronicMonitoringProvider == null) {
-          licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
-        }
-      }
-      else -> error("ElectronicMonitoringProvider can only be initialized for CrdLicence or HdcLicence")
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
+      licenceEntity.ensureElectronicMonitoringProviderExists()
+    } else {
+      error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponseProvider")
     }
   }
-
-  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
-    licence = licenceEntity,
-    isToBeTaggedForProgramme = null,
-    programmeName = null,
-  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

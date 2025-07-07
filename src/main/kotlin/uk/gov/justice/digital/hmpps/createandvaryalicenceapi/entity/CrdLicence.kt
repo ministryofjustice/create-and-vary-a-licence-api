@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -85,8 +86,8 @@ class CrdLicence(
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, optional = true, orphanRemoval = true)
-  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.CRD,
@@ -145,7 +146,8 @@ class CrdLicence(
   bespokeConditions = bespokeConditions.toMutableList(),
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
-) {
+),
+  HasElectronicMonitoringResponseProvider {
 
   fun copy(
     id: Long = this.id,
@@ -284,6 +286,12 @@ class CrdLicence(
     submittedDate = LocalDateTime.now(),
     dateLastUpdated = LocalDateTime.now(),
     updatedBy = submittedBy,
+  )
+
+  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
+    licence = this,
+    isToBeTaggedForProgramme = null,
+    programmeName = null,
   )
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")

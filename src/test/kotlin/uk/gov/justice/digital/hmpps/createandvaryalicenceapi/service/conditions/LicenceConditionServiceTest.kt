@@ -405,6 +405,32 @@ class LicenceConditionServiceTest {
 
       verifyNoInteractions(conditionFormatter)
     }
+
+    @Test
+    fun `handleUpdatedConditionsIfEnabled is called only for CRD and HDC licences`() {
+      val crdLicence = TestData.createCrdLicence()
+      val hdcLicence = TestData.createHdcLicence()
+      val variationLicence = TestData.createVariationLicence()
+
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(crdLicence))
+      whenever(licenceRepository.findById(2L)).thenReturn(Optional.of(hdcLicence))
+      whenever(licenceRepository.findById(3L)).thenReturn(Optional.of(variationLicence))
+
+      val request = AdditionalConditionsRequest(
+        additionalConditions = listOf(
+          AdditionalConditionRequest(code = "code", category = "category", text = "text", sequence = 0),
+        ),
+        conditionType = "AP",
+      )
+
+      service.updateAdditionalConditions(1L, request)
+      service.updateAdditionalConditions(2L, request)
+      service.updateAdditionalConditions(3L, request)
+
+      verify(electronicMonitoringProgrammeService, times(1)).handleUpdatedConditionsIfEnabled(crdLicence, setOf("code"))
+      verify(electronicMonitoringProgrammeService, times(1)).handleUpdatedConditionsIfEnabled(hdcLicence, setOf("code"))
+      verify(electronicMonitoringProgrammeService, times(0)).handleUpdatedConditionsIfEnabled(variationLicence, setOf("code"))
+    }
   }
 
   @Nested

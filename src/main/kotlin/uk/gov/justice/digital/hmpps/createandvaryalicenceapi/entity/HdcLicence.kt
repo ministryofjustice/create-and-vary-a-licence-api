@@ -10,6 +10,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -105,11 +106,11 @@ class HdcLicence(
   @OneToOne(
     mappedBy = "licence",
     cascade = [CascadeType.ALL],
-    fetch = FetchType.LAZY,
+    fetch = FetchType.EAGER,
     optional = true,
     orphanRemoval = true,
   )
-  var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.HDC,
@@ -169,6 +170,7 @@ class HdcLicence(
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
+  HasElectronicMonitoringResponseProvider,
   HdcCase {
 
   fun copy(
@@ -321,6 +323,12 @@ class HdcLicence(
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
+
+  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
+    licence = this,
+    isToBeTaggedForProgramme = null,
+    programmeName = null,
+  )
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 

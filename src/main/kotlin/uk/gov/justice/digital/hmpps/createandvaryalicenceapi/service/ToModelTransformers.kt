@@ -337,6 +337,7 @@ fun toPrrd(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,

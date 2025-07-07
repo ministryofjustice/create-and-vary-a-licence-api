@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
@@ -102,7 +103,11 @@ class LicenceConditionService(
       updatedAdditionalConditions = newConditions,
       staffMember = staffMember,
     )
-    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
+      electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, setOf(request.conditionCode))
+    }
+
     licenceRepository.saveAndFlush(licenceEntity)
 
     // return the newly added condition.
@@ -163,7 +168,16 @@ class LicenceConditionService(
       updatedAdditionalConditions = (newConditions + updatedConditions),
       staffMember = staffMember,
     )
-    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
+      newConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
+        electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, it)
+      }
+      removedConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
+        electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
+      }
+    }
+
     licenceRepository.saveAndFlush(licenceEntity)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
@@ -350,7 +364,11 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    electronicMonitoringProgrammeService.handleResponseIfEnabled(licenceEntity)
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
+      removedAdditionalConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
+        electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
+      }
+    }
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)
