@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
+package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 
