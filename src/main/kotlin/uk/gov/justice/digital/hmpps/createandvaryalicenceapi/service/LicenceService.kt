@@ -91,9 +91,7 @@ class LicenceService(
 
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
-    val entityLicence = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val entityLicence = getLicence(licenceId)
 
     val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
@@ -180,9 +178,7 @@ class LicenceService(
 
   @Transactional
   fun updateLicenceStatus(licenceId: Long, request: StatusUpdateRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     updateLicenceStatus(licenceEntity, request)
   }
 
@@ -359,16 +355,7 @@ class LicenceService(
   }
 
   private fun deactivatePreviousLicenceVersion(licence: EntityLicence, fullName: String?, staffMember: Staff?) {
-    val previousVersionId = when (licence) {
-      is PrrdLicence -> licence.versionOfId
-      is CrdLicence -> licence.versionOfId
-      is HdcLicence -> licence.versionOfId
-      else -> null
-    }
-
-    if (previousVersionId == null) {
-      return
-    }
+    val previousVersionId = getVersionOf(licence) ?: return
 
     val previousLicenceVersion =
       licenceRepository.findById(previousVersionId)
@@ -415,9 +402,7 @@ class LicenceService(
 
   @Transactional
   fun submitLicence(licenceId: Long, notifyRequest: List<NotifyRequest>?) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
     val username = SecurityContextHolder.getContext().authentication.name
     val submitter = staffRepository.findByUsernameIgnoreCase(username)
@@ -432,18 +417,15 @@ class LicenceService(
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
-
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as PrisonUser)
       }
-
       is HdcLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
-
       is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       else -> error("Unexpected licence type: $licenceEntity")
     }
@@ -601,16 +583,14 @@ class LicenceService(
 
   @Transactional
   fun createVariation(licenceId: Long): LicenceSummary {
-    val licence = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licence = getLicence(licenceId)
     val creator = getCommunityOffenderManagerForCurrentUser()
+
     val licenceVariation = when (licence) {
       is HdcLicence -> {
         val licenceCopy = LicenceFactory.createHdcVariation(licence, creator)
         populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
       }
-
       else -> {
         val licenceCopy = LicenceFactory.createVariation(licence, creator)
         populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)
@@ -621,10 +601,8 @@ class LicenceService(
 
   @Transactional
   fun editLicence(licenceId: Long): LicenceSummary {
-    val licence = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-    if (isValidLicenceForEdit(licence)) error("Trying to edit licence for non-crd,non-hdc or non-prrd licence: $licenceId")
+    val licence = getLicence(licenceId)
+    if (isNotValidLicenceForEdit(licence)) error("Trying to edit licence for non-crd,non-hdc or non-prrd licence: $licenceId")
 
     if (licence.statusCode != APPROVED) {
       throw ValidationException("Can only edit APPROVED licences")
@@ -644,7 +622,7 @@ class LicenceService(
       is HdcLicence -> LicenceFactory.createHdcCopyToEdit(licence, creator)
       is CrdLicence -> LicenceFactory.createCrdCopyToEdit(licence, creator)
       is PrrdLicence -> LicenceFactory.createPrrdCopyToEdit(licence, creator)
-      else -> throw IllegalArgumentException("Unsupported licence type: ${licence?.javaClass?.simpleName}")
+      else -> throw IllegalArgumentException("Unsupported licence type: ${licence.javaClass.simpleName}")
     }
 
     val licenceCopy = populateCopyAndAudit(licence.kind, licence, copyToEdit, creator)
@@ -652,16 +630,14 @@ class LicenceService(
     return licenceCopy.toSummary()
   }
 
-  private fun isValidLicenceForEdit(licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence?): Boolean = licence != null &&
+  private fun isNotValidLicenceForEdit(licence: uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence?): Boolean = licence != null &&
     licence !is CrdLicence &&
     licence !is HdcLicence &&
     licence !is PrrdLicence
 
   @Transactional
   fun updateSpoDiscussion(licenceId: Long, spoDiscussionRequest: UpdateSpoDiscussionRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to update spo discussion for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -678,9 +654,7 @@ class LicenceService(
 
   @Transactional
   fun updateVloDiscussion(licenceId: Long, vloDiscussionRequest: UpdateVloDiscussionRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to update vlo discussion for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -697,9 +671,7 @@ class LicenceService(
 
   @Transactional
   fun updateReasonForVariation(licenceId: Long, reasonForVariationRequest: UpdateReasonForVariationRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to update variation reason for non-variation: $licenceId")
 
     val username = SecurityContextHolder.getContext().authentication.name
@@ -724,9 +696,7 @@ class LicenceService(
 
   @Transactional
   fun referLicenceVariation(licenceId: Long, referVariationRequest: ReferVariationRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to reject non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
@@ -768,7 +738,7 @@ class LicenceService(
 
   @Transactional
   fun approveLicenceVariation(licenceId: Long) {
-    val licenceEntity = licenceRepository.findById(licenceId).orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
     if (licenceEntity !is Variation) error("Trying to approve non-variation: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
     val staffMember = this.staffRepository.findByUsernameIgnoreCase(username)
@@ -810,9 +780,7 @@ class LicenceService(
 
   @Transactional
   fun activateVariation(licenceId: Long) {
-    val licence = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licence = getLicence(licenceId)
 
     if (licence !is Variation || licence.statusCode != VARIATION_APPROVED) {
       return
@@ -853,9 +821,7 @@ class LicenceService(
 
   @Transactional
   fun discardLicence(licenceId: Long) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
     val username = SecurityContextHolder.getContext().authentication.name
     val discardedBy = this.staffRepository.findByUsernameIgnoreCase(username)
@@ -875,9 +841,7 @@ class LicenceService(
 
   @Transactional
   fun updatePrisonInformation(licenceId: Long, prisonInformationRequest: UpdatePrisonInformationRequest) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
     val username = SecurityContextHolder.getContext().authentication.name
 
@@ -1045,9 +1009,7 @@ class LicenceService(
 
   @Transactional
   fun reviewWithNoVariationRequired(licenceId: Long) {
-    val licenceEntity = licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
+    val licenceEntity = getLicence(licenceId)
 
     if (licenceEntity !is HardStopLicence) throw ValidationException("Trying to review a ${licenceEntity::class.java.simpleName}: $licenceId")
     val username = SecurityContextHolder.getContext().authentication.name
@@ -1153,6 +1115,10 @@ class LicenceService(
       throw ValidationException("Unable to perform action, licence $licenceId is ineligible for CVL")
     }
   }
+
+  private fun getLicence(licenceId: Long): uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence = licenceRepository
+    .findById(licenceId)
+    .orElseThrow { EntityNotFoundException("$licenceId") }
 
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
