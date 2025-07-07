@@ -63,8 +63,8 @@ class NotifyService(
     firstName: String,
     lastName: String,
     prisonerNumber: String?,
-    crd: LocalDate?,
     lsd: LocalDate?,
+    crd: LocalDate? = null,
   ) {
     if (emailAddress != null && lsd != null) {
       val values: Map<String, String> = mapOf(
