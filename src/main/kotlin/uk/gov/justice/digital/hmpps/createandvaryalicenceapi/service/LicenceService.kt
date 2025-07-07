@@ -339,7 +339,7 @@ class LicenceService(
       licenceEntity.surname ?: "unknown",
       licenceEntity.nomsId,
       lsd = licenceEntity.licenceStartDate,
-      crd = licenceEntity.conditionalReleaseDate
+      crd = licenceEntity.conditionalReleaseDate,
     )
   }
 
