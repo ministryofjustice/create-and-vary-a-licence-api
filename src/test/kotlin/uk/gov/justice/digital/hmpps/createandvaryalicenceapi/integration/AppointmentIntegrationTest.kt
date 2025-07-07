@@ -248,7 +248,6 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.id).isEqualTo(2)
   }
 
-
   @Test
   @Sql(
     "classpath:test_data/seed-prrd-licence-id-1-with-address.sql",
@@ -270,7 +269,6 @@ class AppointmentIntegrationTest(
     assertThat(savedAddress.uprn).isEqualTo("NEW_UPRN")
     assertThat(savedAddress.id).isEqualTo(2)
   }
-
 
   @Test
   @Sql(
