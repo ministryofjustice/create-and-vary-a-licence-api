@@ -371,18 +371,21 @@ class LicenceService(
         statusCode = INACTIVE,
         updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
+
       is PrrdLicence -> previousLicenceVersion.copy(
         dateLastUpdated = LocalDateTime.now(),
         updatedByUsername = staffMember?.username ?: SYSTEM_USER,
         statusCode = INACTIVE,
         updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
+
       is HdcLicence -> previousLicenceVersion.copy(
         dateLastUpdated = LocalDateTime.now(),
         updatedByUsername = staffMember?.username ?: SYSTEM_USER,
         statusCode = INACTIVE,
         updatedBy = staffMember ?: previousLicenceVersion.updatedBy,
       )
+
       else -> error("Trying to inactivate non-crd licence: $previousVersionId")
     }
 
@@ -416,19 +419,23 @@ class LicenceService(
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
+
       is CrdLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
+
       is VariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       is HardStopLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as PrisonUser)
       }
+
       is HdcLicence -> {
         assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
+
       is HdcVariationLicence -> licenceEntity.submit(submitter as CommunityOffenderManager)
       else -> error("Unexpected licence type: $licenceEntity")
     }
@@ -594,6 +601,7 @@ class LicenceService(
         val licenceCopy = LicenceFactory.createHdcVariation(licence, creator)
         populateCopyAndAudit(HDC_VARIATION, licence, licenceCopy, creator)
       }
+
       else -> {
         val licenceCopy = LicenceFactory.createVariation(licence, creator)
         populateCopyAndAudit(VARIATION, licence, licenceCopy, creator)

@@ -17,8 +17,8 @@ enum class LicenceKind(
     { LicenceEventType.CREATED },
     { LicenceEventType.VERSION_CREATED },
     { LicenceEventType.SUBMITTED },
-    { LicenceDomainEventType.LICENCE_ACTIVATED },
-    { LicenceDomainEventType.LICENCE_INACTIVATED },
+    { LicenceDomainEventType.PRRD_LICENCE_ACTIVATED },
+    { LicenceDomainEventType.PRRD_LICENCE_INACTIVATED },
   ),
   CRD(
     { IN_PROGRESS },
@@ -67,7 +67,8 @@ enum class LicenceKind(
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
   ) {
     override fun isHdc() = true
-  }, ;
+  },
+  ;
 
   open fun isHdc(): Boolean = false
 }

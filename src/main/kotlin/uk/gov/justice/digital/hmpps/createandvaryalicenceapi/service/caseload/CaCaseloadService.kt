@@ -96,7 +96,6 @@ class CaCaseloadService(
       LicenceQueryObject(
         statusCodes = statuses,
         prisonCodes = prisonCaseload.toList(),
-        sortBy = "conditionalReleaseDate",
       ),
     )
 
