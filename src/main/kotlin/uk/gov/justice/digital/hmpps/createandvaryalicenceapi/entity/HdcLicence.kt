@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.OrderBy
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -167,7 +167,7 @@ class HdcLicence(
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
-  HasElectronicMonitorResponse,
+  HasElectronicMonitoringResponseProvider,
   HdcCase {
 
   fun copy(
@@ -318,6 +318,12 @@ class HdcLicence(
     this.updatedByUsername = staffMember?.username ?: SYSTEM_USER
     this.updatedBy = staffMember ?: this.updatedBy
   }
+
+  override fun createNewElectronicMonitoringProvider(): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
+    licence = this,
+    isToBeTaggedForProgramme = null,
+    programmeName = null,
+  )
 
   override fun getCreator() = createdBy ?: error("licence: $id has no COM/creator")
 

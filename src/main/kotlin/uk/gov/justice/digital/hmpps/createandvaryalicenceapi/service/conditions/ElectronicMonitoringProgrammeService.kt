@@ -8,11 +8,10 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -97,29 +96,21 @@ class ElectronicMonitoringProgrammeService(
   @Transactional
   fun deleteElectronicMonitoringProvider(licenceEntity: Licence) {
     log.info("Clearing Electronic Monitoring response records for licence: ${licenceEntity.id}")
-    if (licenceEntity is HasElectronicMonitorResponse) {
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       licenceEntity.electronicMonitoringProvider = null
     } else {
-      error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponse")
+      error("ElectronicMonitoringProvider can only be deleted for licences that implement HasElectronicMonitorResponseProvider")
     }
   }
 
   @Transactional
   fun createElectronicMonitoringProviderIfNotExists(licenceEntity: Licence) {
-    if (licenceEntity is HasElectronicMonitorResponse) {
-      if (licenceEntity.electronicMonitoringProvider == null) {
-        licenceEntity.electronicMonitoringProvider = createNewElectronicMonitoringProvider(licenceEntity)
-      }
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
+      licenceEntity.ensureElectronicMonitoringProviderExists()
     } else {
-      error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponse")
+      error("ElectronicMonitoringProvider can only be initialized for licences that implement HasElectronicMonitorResponseProvider")
     }
   }
-
-  private fun createNewElectronicMonitoringProvider(licenceEntity: Licence): ElectronicMonitoringProvider = ElectronicMonitoringProvider(
-    licence = licenceEntity,
-    isToBeTaggedForProgramme = null,
-    programmeName = null,
-  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

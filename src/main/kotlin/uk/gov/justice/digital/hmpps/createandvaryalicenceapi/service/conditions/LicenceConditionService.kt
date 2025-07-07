@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionsRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeConditionRequest
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitorResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HasElectronicMonitoringResponseProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateAdditionalConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateStandardConditionDataRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAdditionalConditionRequest
@@ -104,7 +104,7 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
 
-    if (licenceEntity is HasElectronicMonitorResponse) {
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, setOf(request.conditionCode))
     }
 
@@ -169,7 +169,7 @@ class LicenceConditionService(
       staffMember = staffMember,
     )
 
-    if (licenceEntity is HasElectronicMonitorResponse) {
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       newConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
         electronicMonitoringProgrammeService.handleUpdatedConditionsIfEnabled(licenceEntity, it)
       }
@@ -364,7 +364,7 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
-    if (licenceEntity is HasElectronicMonitorResponse) {
+    if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       removedAdditionalConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
         electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
       }
