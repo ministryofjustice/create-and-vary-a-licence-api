@@ -17,6 +17,9 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.Input
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.InputType.TEXT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateElectronicMonitoringProgrammeRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -104,38 +107,70 @@ class ElectronicMonitoringProgrammeServiceTest {
   inner class `feature toggle electronicMonitoringResponseHandlingEnabled` {
 
     @Test
-    fun `should handle response when feature toggle is enabled`() {
+    fun `should handle updated conditions when feature toggle is enabled`() {
       val licenceEntity = aLicenceEntity
 
-      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
+      whenever(policyService.isElectronicMonitoringResponseRequired(conditionCodes, licenceEntity.version!!)).thenReturn(true)
 
-      serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
+      serviceWithFeatureEnabled.handleUpdatedConditionsIfEnabled(licenceEntity, conditionCodes)
 
-      verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity)
+      verify(policyService, times(1)).isElectronicMonitoringResponseRequired(conditionCodes, licenceEntity.version!!)
     }
 
     @Test
-    fun `should not handle response when feature toggle is enabled and licence is not of type CRD or HDC`() {
-      val licenceEntity = aVariationLicence
+    fun `should not handle updated conditions when feature toggle is disabled`() {
+      val licenceEntity = aLicenceEntity
 
-      whenever(policyService.isElectronicMonitoringResponseRequired(any())).thenReturn(true)
+      service.handleUpdatedConditionsIfEnabled(licenceEntity, conditionCodes)
 
-      serviceWithFeatureEnabled.handleResponseIfEnabled(licenceEntity)
-
-      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(licenceEntity)
+      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any(), any())
     }
 
     @Test
-    fun `should not handle response when feature toggle is disabled`() {
+    fun `should handle removed conditions when feature toggle is enabled`() {
       val licenceEntity = aLicenceEntity
 
-      service.handleResponseIfEnabled(licenceEntity)
+      whenever(policyService.getConditionsRequiringElectronicMonitoringResponse(licenceEntity.version!!, conditionCodes)).thenReturn(
+        listOf(policyApCondition),
+      )
+      whenever(policyService.isElectronicMonitoringResponseRequired(licenceEntity.additionalConditions.map { it.conditionCode }.toSet(), licenceEntity.version!!)).thenReturn(true)
 
-      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any())
+      serviceWithFeatureEnabled.handleRemovedConditionsIfEnabled(licenceEntity, conditionCodes)
+
+      verify(policyService, times(1)).isElectronicMonitoringResponseRequired(licenceEntity.additionalConditions.map { it.conditionCode }.toSet(), licenceEntity.version!!)
+    }
+
+    @Test
+    fun `should not handle removed conditions when feature toggle is disabled`() {
+      val licenceEntity = aLicenceEntity
+
+      whenever(policyService.getConditionsRequiringElectronicMonitoringResponse(licenceEntity.version!!, conditionCodes)).thenReturn(
+        listOf(policyApCondition),
+      )
+      whenever(policyService.isElectronicMonitoringResponseRequired(licenceEntity.additionalConditions.map { it.conditionCode }.toSet(), licenceEntity.version!!)).thenReturn(true)
+
+      service.handleRemovedConditionsIfEnabled(licenceEntity, conditionCodes)
+
+      verify(policyService, times(0)).isElectronicMonitoringResponseRequired(any(), any())
     }
   }
 
   private companion object {
     val CONDITION_CONFIG = POLICY_V2_1.allAdditionalConditions().first()
+    val conditionCodes = setOf("condition1", "condition3", "599bdcae-d545-461c-b1a9-02cb3d4ba268")
+
+    val anInput = Input(
+      type = TEXT,
+      label = "Label",
+      name = "name",
+    )
+
+    val policyApCondition = AdditionalConditionAp(
+      code = "code",
+      category = "599bdcae-d545-461c-b1a9-02cb3d4ba268",
+      text = "text",
+      inputs = listOf(anInput),
+      requiresInput = true,
+    )
   }
 }
