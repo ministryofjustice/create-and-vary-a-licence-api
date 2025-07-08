@@ -100,7 +100,6 @@ class CaCaseloadServiceTest {
   val probationLicenceQueryObject = LicenceQueryObject(
     statusCodes = probationStatuses,
     prisonCodes = listOf("BAI"),
-    sortBy = "conditionalReleaseDate",
   )
 
   @BeforeEach
@@ -1114,6 +1113,8 @@ class CaCaseloadServiceTest {
 
     @Test
     fun `should successfully search and return both prison and probation results`() {
+      // Given
+
       whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
         listOf(
           aLicenceSummary.copy(
@@ -1125,7 +1126,12 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
-      assertThat(service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))).isEqualTo(
+
+      // When
+      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
+
+      // Then
+      assertThat(results).isEqualTo(
         PrisonCaseAdminSearchResult(
           inPrisonResults = listOf(
             TestData.caCase().copy(
@@ -1155,6 +1161,50 @@ class CaCaseloadServiceTest {
           ),
         ),
       )
+    }
+
+    @Test
+    fun `should successfully search probation should return results in LSD order`() {
+      // Given
+
+      whenever(licenceService.findLicencesMatchingCriteria(probationLicenceQueryObject)).thenReturn(
+        listOf(
+          aLicenceSummary.copy(
+            licenceId = 1,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234AC",
+            licenceStartDate = LocalDate.now().minusDays(1),
+            forename = "Last",
+          ),
+          aLicenceSummary.copy(
+            licenceId = 2,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234BC",
+            licenceStartDate = LocalDate.now(),
+            forename = "Second",
+          ),
+          aLicenceSummary.copy(
+            licenceId = 3,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234CC",
+            licenceStartDate = LocalDate.now().plusDays(1),
+            forename = "First",
+          ),
+          aLicenceSummary.copy(
+            licenceId = 4,
+            licenceStatus = ACTIVE,
+            nomisId = "A1234DC",
+            licenceStartDate = LocalDate.now(),
+            forename = "Third",
+          ),
+        ),
+      )
+
+      // When
+      val results = service.searchForOffenderOnPrisonCaseAdminCaseload(aPrisonUserSearchRequest.copy(query = "com"))
+
+      // Then
+      assertThat(results.onProbationResults.map { it.licenceId }).isEqualTo(listOf(3L, 2L, 4L, 1L))
     }
 
     @Test
