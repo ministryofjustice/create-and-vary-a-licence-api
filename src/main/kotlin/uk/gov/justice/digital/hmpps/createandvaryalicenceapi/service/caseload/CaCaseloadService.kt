@@ -241,7 +241,17 @@ class CaCaseloadService(
     }
   }
 
-  private fun applySort(cases: List<CaCase>, view: String): List<CaCase> = if (view == "prison") cases.sortedBy { it.releaseDate } else cases.sortedByDescending { it.releaseDate }
+  private fun applySort(cases: List<CaCase>, view: String): List<CaCase> = when (view) {
+    "prison" -> cases.sortedWith(
+      compareBy<CaCase> { it.releaseDate }
+        .thenBy { it.licenceId },
+    )
+    "probation" -> cases.sortedWith(
+      compareByDescending<CaCase> { it.releaseDate }
+        .thenBy { it.licenceId },
+    )
+    else -> cases
+  }
 
   private fun filterAndFormatExistingLicences(licences: List<LicenceSummary>): List<CaCase> {
     val preReleaseLicences = licences.filter { it.licenceStatus != ACTIVE }
