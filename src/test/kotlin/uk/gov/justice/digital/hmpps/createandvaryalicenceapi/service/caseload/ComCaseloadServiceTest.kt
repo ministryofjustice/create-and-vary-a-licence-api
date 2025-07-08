@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
@@ -152,10 +151,10 @@ class ComCaseloadServiceTest {
         createCaseloadItem("AB1234E", tenDaysFromNow, bookingId = "1"),
       ),
     )
+    val prisonersToLicenceStartDates = mapOf("AB1234E" to tenDaysFromNow)
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
-    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -253,14 +252,10 @@ class ComCaseloadServiceTest {
     whenever(eligibilityService.isEligibleForCvl(caseloadItems[9].prisoner.toPrisonerSearchPrisoner())).thenReturn(
       false,
     )
-    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD)))
-      .thenReturn(nineDaysFromNow)
-      .thenReturn(nineDaysFromNow)
-      .thenReturn(tenDaysFromNow)
-      .thenReturn(nineDaysFromNow)
-      .thenReturn(nineDaysFromNow)
-      .thenReturn(nineDaysFromNow)
-    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    val prisonersToLicenceStartDates = caseloadItems.associate {
+      it.prisoner.prisonerNumber!! to it.prisoner.conditionalReleaseDate
+    }
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -456,50 +451,49 @@ class ComCaseloadServiceTest {
       ),
     )
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
-      listOf(
-        createCaseloadItem(
-          bookingId = "1",
-          prisonerNumber = "AB1234E",
-          conditionalReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          licenceExpiryDate = LocalDate.of(
-            2022,
-            Month.DECEMBER,
-            26,
-          ),
-        ),
-        createCaseloadItem(
-          bookingId = "2",
-          prisonerNumber = "AB1234F",
-          conditionalReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          status = "INACTIVE OUT",
-        ),
-        createCaseloadItem(
-          bookingId = "3",
-          prisonerNumber = "AB1234G",
-          conditionalReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          status = "INACTIVE OUT",
-        ),
-        createCaseloadItem(
-          bookingId = "4",
-          prisonerNumber = "AB1234H",
-          conditionalReleaseDate = tenDaysFromNow,
-          releaseDate = tenDaysFromNow,
-          topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
-        ),
-        createCaseloadItem(
-          bookingId = "5",
-          prisonerNumber = "AB1234I",
-          conditionalReleaseDate = elevenDaysFromNow,
-          releaseDate = elevenDaysFromNow,
-          topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
-          licenceExpiryDate = elevenDaysFromNow,
+    val caseloadItems = listOf(
+      createCaseloadItem(
+        bookingId = "1",
+        prisonerNumber = "AB1234E",
+        conditionalReleaseDate = tenDaysFromNow,
+        releaseDate = tenDaysFromNow,
+        licenceExpiryDate = LocalDate.of(
+          2022,
+          Month.DECEMBER,
+          26,
         ),
       ),
+      createCaseloadItem(
+        bookingId = "2",
+        prisonerNumber = "AB1234F",
+        conditionalReleaseDate = tenDaysFromNow,
+        releaseDate = tenDaysFromNow,
+        status = "INACTIVE OUT",
+      ),
+      createCaseloadItem(
+        bookingId = "3",
+        prisonerNumber = "AB1234G",
+        conditionalReleaseDate = tenDaysFromNow,
+        releaseDate = tenDaysFromNow,
+        status = "INACTIVE OUT",
+      ),
+      createCaseloadItem(
+        bookingId = "4",
+        prisonerNumber = "AB1234H",
+        conditionalReleaseDate = tenDaysFromNow,
+        releaseDate = tenDaysFromNow,
+        topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
+      ),
+      createCaseloadItem(
+        bookingId = "5",
+        prisonerNumber = "AB1234I",
+        conditionalReleaseDate = elevenDaysFromNow,
+        releaseDate = elevenDaysFromNow,
+        topupSupervisionExpiryDate = LocalDate.of(2023, Month.JUNE, 22),
+        licenceExpiryDate = elevenDaysFromNow,
+      ),
     )
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
 
@@ -528,8 +522,11 @@ class ComCaseloadServiceTest {
         ),
       ),
     )
-    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
-    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+
+    val prisonersToLicenceStartDates = caseloadItems.associate {
+      it.prisoner.prisonerNumber!! to it.prisoner.conditionalReleaseDate
+    }
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
     assertThat(caseload).hasSize(3)
@@ -606,11 +603,11 @@ class ComCaseloadServiceTest {
         ),
       ),
     )
+    val prisonersToLicenceStartDates = mapOf("AB1234E" to tenDaysFromNow, "AB1234F" to tenDaysFromNow)
 
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
-    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf(selectedTeam))
 
@@ -687,11 +684,12 @@ class ComCaseloadServiceTest {
         recall = true,
       ),
     )
+
+    val prisonersToLicenceStartDates = mapOf("AB1234E" to tenDaysFromNow, "AB1234F" to tenDaysFromNow)
     whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(caseloadItems)
     whenever(eligibilityService.isEligibleForCvl(caseloadItems[0].prisoner.toPrisonerSearchPrisoner())).thenReturn(true)
     whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
-    whenever(releaseDateService.getLicenceStartDate(any(), eq(LicenceKind.CRD))).thenReturn(tenDaysFromNow)
-    whenever(caseloadService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
 
     val caseload = service.getTeamCreateCaseload(listOf("team A", "team B"), listOf("team C"))
 

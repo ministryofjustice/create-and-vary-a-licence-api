@@ -109,6 +109,20 @@ class ReleaseDateService(
     else -> calculateCrdLicenceStartDate(nomisRecord, iS91DeterminationService.isIS91Case(nomisRecord))
   }
 
+  fun getLicenceStartDates(
+    prisoners: List<PrisonerSearchPrisoner>,
+    prisonersToLicenceKinds: Map<String, LicenceKind>,
+  ): Map<String, LocalDate?> {
+    val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
+    return prisoners.associate {
+      it.prisonerNumber to when (prisonersToLicenceKinds[it.prisonerNumber]) {
+        HDC -> it.homeDetentionCurfewActualDate
+        PRRD -> it.postRecallReleaseDate
+        else -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
+      }
+    }
+  }
+
   fun getLicenceStartDates(prisoners: List<PrisonerSearchPrisoner>): Map<String, LocalDate?> {
     val iS91BookingIds = iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)
     return prisoners.associate {

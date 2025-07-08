@@ -281,4 +281,15 @@ class CaseloadServiceTest {
 
     assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
   }
+
+  @Test
+  fun `should determine a licence with a future PRRD and a null CRD as a PRRD licence`() {
+    val prisoner =
+      prisonerSearchResult(conditionalReleaseDate = null, postRecallReleaseDate = LocalDate.now().plusDays(2))
+    whenever(releaseDateService.getHardStopDate(any())).thenReturn(null)
+
+    val licenceKind = service.determineLicenceKind(prisoner)
+
+    assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
+  }
 }
