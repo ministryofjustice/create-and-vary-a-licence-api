@@ -52,10 +52,7 @@ interface LicenceRepository :
     """
     SELECT l
         FROM Licence l
-        WHERE l.kind IN (
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC,
-            uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
-        )
+        WHERE l.kind IN ('HDC','CRD','PRRD')
         AND l.versionOfId IN :versionOfId
         AND l.statusCode IN :status
     """,
@@ -67,7 +64,7 @@ interface LicenceRepository :
     SELECT l.crn as crn, l.forename as forename, l.surname as surname, s.first_name as comFirstName, s.last_name as comLastName, s.email as comEmail
         FROM licence l
         JOIN staff s ON l.submitted_by_com_id = s.id
-        WHERE l.kind IN ('CRD', 'HDC')
+        WHERE l.kind IN ('CRD', 'HDC', 'PRRD')
         AND l.licence_start_date = CURRENT_DATE
         AND l.status_code = 'SUBMITTED'
         AND (

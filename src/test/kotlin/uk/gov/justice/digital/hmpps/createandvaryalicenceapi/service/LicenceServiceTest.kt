@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -40,8 +41,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence.Comp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.OmuContact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.StatusUpdateRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditionAp
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.policy.AdditionalConditions
@@ -69,6 +72,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -84,6 +88,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent as EntityAuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as EntityLicence
@@ -166,6 +171,25 @@ class LicenceServiceTest {
 
     assertThat(licence).isExactlyInstanceOf(CrdLicenceModel::class.java)
 
+    verify(licenceRepository, times(1)).findById(1L)
+  }
+
+  @Test
+  fun `service returns a PRRD licence by ID`() {
+    // Given
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(createPrrdLicence().copy()),
+    )
+
+    whenever(licencePolicyService.getAllAdditionalConditions()).thenReturn(
+      AllAdditionalConditions(mapOf("2.1" to mapOf("code" to anAdditionalCondition))),
+    )
+
+    // When
+    val licence = service.getLicenceById(1L)
+
+    // Then
+    assertThat(licence).isExactlyInstanceOf(PrrdLicenceResponse::class.java)
     verify(licenceRepository, times(1)).findById(1L)
   }
 
@@ -487,7 +511,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
     assertThat(licenceCaptor.value)
@@ -552,7 +576,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -641,7 +665,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(2)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(2)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(2)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "updatedByUsername", "licenceActivatedDate", "updatedBy")
@@ -726,7 +750,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
 
     assertThat(licenceCaptor.allValues[0])
       .extracting("id", "statusCode", "approvedByUsername", "approvedByName")
@@ -795,7 +819,8 @@ class LicenceServiceTest {
       eq(aLicenceEntity.forename ?: "unknown"),
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
-      any(),
+      eq(aLicenceEntity.licenceStartDate),
+      anyOrNull(),
     )
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
 
@@ -848,7 +873,8 @@ class LicenceServiceTest {
       eq(aLicenceEntity.forename ?: ""),
       eq(aLicenceEntity.surname ?: ""),
       eq(aLicenceEntity.nomsId),
-      any(),
+      eq(aLicenceEntity.licenceStartDate),
+      anyOrNull(),
     )
   }
 
@@ -1117,7 +1143,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
@@ -1136,7 +1162,7 @@ class LicenceServiceTest {
     verify(licenceRepository, times(0)).saveAndFlush(any())
     verify(licenceEventRepository, times(0)).saveAndFlush(any())
     verify(auditEventRepository, times(0)).saveAndFlush(any())
-    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, times(0)).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
     verify(staffRepository, times(1)).findByUsernameIgnoreCase(aCom.username)
   }
 
@@ -1242,6 +1268,30 @@ class LicenceServiceTest {
           "Licence submitted for approval for ${aLicenceEntity.forename} ${aLicenceEntity.surname}",
         ),
       )
+  }
+
+  @Test
+  fun `submit a PRRD licence saves new fields to the licence`() {
+    // Given
+    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createPrrdLicence()))
+    whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
+    // When
+    service.submitLicence(1L, emptyList())
+
+    // Then
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+    verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+    val licence = licenceCaptor.value as PrrdLicence
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+    assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
+    assertThat(licence.submittedBy).isNotNull
+    assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
+    assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+    assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
   }
 
   @Test
@@ -2007,6 +2057,52 @@ class LicenceServiceTest {
   }
 
   @Test
+  fun `editing an approved PRRD licence creates and saves a new licence version`() {
+    // Given
+
+    whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
+      CommunityOffenderManager(
+        -1,
+        1,
+        "user",
+        null,
+        null,
+        null,
+      ),
+    )
+    whenever(licencePolicyService.currentPolicy()).thenReturn(
+      LicencePolicy(
+        "2.1",
+        standardConditions = StandardConditions(emptyList(), emptyList()),
+        additionalConditions = AdditionalConditions(emptyList(), emptyList()),
+        changeHints = emptyList(),
+      ),
+    )
+
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
+    whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
+
+    val approvedLicence = createPrrdLicence().copy(statusCode = LicenceStatus.APPROVED)
+    whenever(licenceRepository.findById(1L)).thenReturn(
+      Optional.of(approvedLicence),
+    )
+    whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
+    val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
+
+    // When
+    service.editLicence(1L)
+
+    // Then
+    verify(licenceRepository, times(1)).save(licenceCaptor.capture())
+    with(licenceCaptor.value as PrrdLicence) {
+      assertThat(version).isEqualTo("2.1")
+      assertThat(statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
+      assertThat(versionOfId).isEqualTo(1)
+      assertThat(licenceVersion).isEqualTo("1.1")
+    }
+  }
+
+  @Test
   fun `editing an approved licence creates and saves a new licence version returns all conditions`() {
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
       CommunityOffenderManager(
@@ -2095,6 +2191,7 @@ class LicenceServiceTest {
       eq(aLicenceEntity.surname ?: "unknown"),
       eq(aLicenceEntity.nomsId),
       any(),
+      anyOrNull(),
     )
   }
 
@@ -2211,7 +2308,7 @@ class LicenceServiceTest {
 
     service.editLicence(1L)
 
-    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any())
+    verify(notifyService, never()).sendVariationForReApprovalEmail(any(), any(), any(), any(), any(), anyOrNull())
   }
 
   @Test

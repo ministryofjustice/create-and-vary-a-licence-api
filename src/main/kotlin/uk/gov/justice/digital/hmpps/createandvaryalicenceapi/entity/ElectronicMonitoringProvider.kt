@@ -26,7 +26,7 @@ data class ElectronicMonitoringProvider(
   @Column(name = "is_to_be_tagged_for_programme")
   var isToBeTaggedForProgramme: Boolean? = null,
 
-  @Column(name = "programme_name", length = 100)
+  @Column(name = "programme_name")
   var programmeName: String? = null,
 
   @Column(name = "date_created", nullable = false, updatable = false)

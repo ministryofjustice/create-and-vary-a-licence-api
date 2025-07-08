@@ -13,9 +13,12 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.PrisonerSearchMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
@@ -32,9 +35,11 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.OutboundEventsPublisher
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
+import kotlin.jvm.optionals.getOrNull
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence as EntityVariationLicence
 
 class LicenceIntegrationTest : IntegrationTestBase() {
@@ -147,7 +152,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Update the status of a licence to approved`() {
+  fun `Approved licence`() {
     webTestClient.put()
       .uri("/licence/id/1/status")
       .bodyValue(aStatusToApprovedUpdateRequest)
@@ -170,6 +175,31 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(result?.updatedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
     assertThat(result?.approvedByUsername).isEqualTo(aStatusToApprovedUpdateRequest.username)
     assertThat(result?.approvedByName).isEqualTo(aStatusToApprovedUpdateRequest.fullName)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-submitted-prrd-licence-id-1.sql",
+  )
+  fun `Approved PRRD licence`() {
+    // Given
+    val uri = "/licence/id/1/status"
+    val roles = listOf("ROLE_CVL_ADMIN")
+
+    // When
+    val result = webTestClient.put()
+      .uri(uri)
+      .bodyValue(aStatusToApprovedUpdateRequest)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = roles))
+      .exchange()
+
+    // Then
+    result.expectStatus().isOk
+    val licence = licenceRepository.findById(1).getOrNull()
+    assertThat(licence).isNotNull
+    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.APPROVED)
   }
 
   @Test
@@ -247,6 +277,31 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
+    "classpath:test_data/seed-prrd-licence-id-1.sql",
+  )
+  fun `Submit PRRD licence`() {
+    // Given
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    webTestClient.put()
+      .uri("/licence/id/1/submit")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    // Then
+    val licence = licenceRepository.findById(1).getOrNull()
+    assertThat(licence).isNotNull
+    assertThat(licence!!).isInstanceOf(PrrdLicence::class.java)
+    assertThat(licence.kind).isEqualTo(LicenceKind.PRRD)
+    assertThat(licence.postRecallReleaseDate).isNotNull()
+    assertThat(licence.statusCode).isEqualTo(LicenceStatus.SUBMITTED)
+  }
+
+  @Test
+  @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
   fun `Create licence variation`() {
@@ -281,38 +336,83 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/seed-approved-licence-1.sql",
+    "classpath:test_data/seed-approved-prrd-licence-id-1.sql",
   )
-  fun `Edit an approved licence`() {
-    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+  fun `Create PRRD licence variation`() {
+    // Given
+    val uri = "/licence/id/1/create-variation"
+    val roles = listOf("ROLE_CVL_ADMIN")
 
-    val result = webTestClient.post()
-      .uri("/licence/id/1/edit")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    result.expectStatus().isOk
+
+    val licence = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(LicenceSummary::class.java)
       .returnResult().responseBody
 
-    assertThat(result?.licenceId).isGreaterThan(1)
-    assertThat(result?.licenceType).isEqualTo(LicenceType.AP)
-    assertThat(result?.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(licenceRepository.count()).isEqualTo(2)
+    assertThat(licence).isNotNull
+    assertThat(licence!!.kind).isEqualTo(LicenceKind.VARIATION)
 
-    val newLicence = webTestClient.get()
-      .uri("/licence/id/${result?.licenceId}")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
+    val persistedLicence = licenceRepository.findById(licence.licenceId).getOrNull()
+    assertThat(persistedLicence).isNotNull
+    assertThat(persistedLicence).isInstanceOf(EntityVariationLicence::class.java)
+    val persistedVariationLicence = persistedLicence as EntityVariationLicence
+    assertThat(persistedVariationLicence.id).isEqualTo(2)
+    assertThat(persistedVariationLicence.variationOfId).isEqualTo(1)
+  }
 
-    assertThat(newLicence?.statusCode).isEqualTo(LicenceStatus.IN_PROGRESS)
-    assertThat(newLicence?.licenceVersion).isEqualTo("1.1")
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-licence-1.sql",
+  )
+  fun `Edit an approved licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.CRD)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-prrd-licence-id-1.sql",
+  )
+  fun `Edit an approved PRRD licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.PRRD)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-approved-hdc-licence-id-1.sql",
+  )
+  fun `Edit an approved HDC licence`() {
+    // Given
+    val uri = "/licence/id/1/edit"
+    val roles = listOf("ROLE_CVL_ADMIN")
+    prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds()
+
+    // When
+    val result = post(uri, roles)
+
+    // Then
+    assertEdit(result, LicenceKind.HDC)
   }
 
   @Test
@@ -763,6 +863,44 @@ class LicenceIntegrationTest : IntegrationTestBase() {
       assertThat(licence?.statusCode).isEqualTo(LicenceStatus.APPROVED)
       assertThat(licence?.licenceVersion).isEqualTo("1.0")
     }
+  }
+
+  private fun assertEdit(result: WebTestClient.ResponseSpec, expectedKind: LicenceKind) {
+    result.expectStatus().isOk
+    val licenceSummary = result.expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(LicenceSummary::class.java)
+      .returnResult().responseBody
+
+    assertThat(licenceSummary!!.licenceId).isGreaterThan(1)
+    assertThat(licenceSummary.licenceType).isEqualTo(LicenceType.AP)
+    assertThat(licenceSummary.licenceStatus).isEqualTo(LicenceStatus.IN_PROGRESS)
+    assertThat(licenceRepository.count()).isEqualTo(2)
+
+    val newLicence = licenceRepository.findById(licenceSummary.licenceId).getOrNull()
+    assertThat(newLicence).isNotNull
+    assertThat(newLicence!!.kind).isEqualTo(expectedKind)
+    assertThat(newLicence.licenceVersion).isEqualTo("1.1")
+
+    val versionOfId = when (newLicence) {
+      is CrdLicence -> newLicence.versionOfId
+      is HdcLicence -> newLicence.versionOfId
+      is PrrdLicence -> newLicence.versionOfId
+      else -> null
+    }
+
+    assertThat(versionOfId).isEqualTo(1)
+  }
+
+  private fun post(
+    uri: String,
+    roles: List<String>,
+  ): WebTestClient.ResponseSpec {
+    val result = webTestClient.post()
+      .uri(uri)
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = roles))
+      .exchange()
+    return result
   }
 
   private companion object {

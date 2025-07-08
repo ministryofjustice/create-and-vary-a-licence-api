@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
@@ -20,6 +21,56 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 object LicenceFactory {
+
+  fun createPrrd(
+    licenceType: LicenceType,
+    nomsId: String,
+    version: String,
+    nomisRecord: PrisonerSearchPrisoner,
+    prisonInformation: Prison,
+    currentResponsibleOfficerDetails: CommunityManager,
+    deliusRecord: ProbationCase,
+    creator: CommunityOffenderManager,
+    responsibleCom: CommunityOffenderManager,
+    licenceStartDate: LocalDate?,
+  ) = PrrdLicence(
+    typeCode = licenceType,
+    version = version,
+    statusCode = IN_PROGRESS,
+    nomsId = nomsId,
+    bookingNo = nomisRecord.bookNumber,
+    bookingId = nomisRecord.bookingId?.toLong(),
+    crn = deliusRecord.crn,
+    pnc = deliusRecord.pncNumber,
+    cro = deliusRecord.croNumber ?: nomisRecord.croNumber,
+    prisonCode = nomisRecord.prisonId,
+    prisonDescription = prisonInformation.description,
+    prisonTelephone = prisonInformation.getPrisonContactNumber(),
+    forename = nomisRecord.firstName.convertToTitleCase(),
+    middleNames = nomisRecord.middleNames?.convertToTitleCase() ?: "",
+    surname = nomisRecord.lastName.convertToTitleCase(),
+    dateOfBirth = nomisRecord.dateOfBirth,
+    conditionalReleaseDate = nomisRecord.conditionalReleaseDateOverrideDate ?: nomisRecord.conditionalReleaseDate,
+    actualReleaseDate = nomisRecord.confirmedReleaseDate,
+    sentenceStartDate = nomisRecord.sentenceStartDate,
+    sentenceEndDate = nomisRecord.sentenceExpiryDate,
+    licenceStartDate = licenceStartDate,
+    licenceExpiryDate = nomisRecord.licenceExpiryDate,
+    topupSupervisionStartDate = nomisRecord.topupSupervisionStartDate,
+    topupSupervisionExpiryDate = nomisRecord.topupSupervisionExpiryDate,
+    postRecallReleaseDate = nomisRecord.postRecallReleaseDate!!,
+    probationAreaCode = currentResponsibleOfficerDetails.provider.code,
+    probationAreaDescription = currentResponsibleOfficerDetails.provider.description,
+    probationPduCode = currentResponsibleOfficerDetails.team.borough.code,
+    probationPduDescription = currentResponsibleOfficerDetails.team.borough.description,
+    probationLauCode = currentResponsibleOfficerDetails.team.district.code,
+    probationLauDescription = currentResponsibleOfficerDetails.team.district.description,
+    probationTeamCode = currentResponsibleOfficerDetails.team.code,
+    probationTeamDescription = currentResponsibleOfficerDetails.team.description,
+    dateCreated = LocalDateTime.now(),
+    responsibleCom = responsibleCom,
+    createdBy = creator,
+  )
 
   fun createCrd(
     licenceType: LicenceType,
@@ -124,6 +175,19 @@ object LicenceFactory {
   )
 
   fun createCrdCopyToEdit(licence: CrdLicence, creator: CommunityOffenderManager): Licence {
+    with(licence) {
+      return licence.copy(
+        id = -1,
+        dateCreated = LocalDateTime.now(),
+        statusCode = IN_PROGRESS,
+        licenceVersion = getNextLicenceVersion(this.licenceVersion!!),
+        versionOfId = licence.id,
+        createdBy = creator,
+      )
+    }
+  }
+
+  fun createPrrdCopyToEdit(licence: PrrdLicence, creator: CommunityOffenderManager): Licence {
     with(licence) {
       return licence.copy(
         id = -1,

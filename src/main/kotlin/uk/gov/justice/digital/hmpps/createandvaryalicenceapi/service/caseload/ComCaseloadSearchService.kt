@@ -62,7 +62,7 @@ class ComCaseloadSearchService(
       )
     }
 
-    val prisonersWithoutLicences = cvlSearchRecords.filter { searchRecord -> searchRecord.licence == null }.map {
+    val prisonersWithoutLicences = cvlSearchRecords.filter { searchRecord -> searchRecord.licence == null }.mapNotNull {
       it.prisonerSearchPrisoner
     }
     val licenceStartDates = releaseDateService.getLicenceStartDates(prisonersWithoutLicences)

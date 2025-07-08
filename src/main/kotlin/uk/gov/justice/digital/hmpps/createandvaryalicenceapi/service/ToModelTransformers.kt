@@ -5,11 +5,13 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ElectronicMonitoringProvider
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -95,11 +97,7 @@ fun transformToLicenceSummary(
   approvedDate = licence.approvedDate,
   submittedDate = licence.submittedDate,
   licenceVersion = licence.licenceVersion,
-  versionOf = when (licence) {
-    is CrdLicence -> licence.versionOfId
-    is HdcLicence -> licence.versionOfId
-    else -> null
-  },
+  versionOf = getVersionOf(licence),
   isReviewNeeded = when (licence) {
     is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
     else -> false
@@ -279,6 +277,95 @@ fun toVariation(
   earliestReleaseDate = earliestReleaseDate,
   isEligibleForEarlyRelease = isEligibleForEarlyRelease,
   submittedByFullName = licence.getSubmittedByFullName(),
+)
+
+fun toPrrd(
+  licence: PrrdLicence,
+  earliestReleaseDate: LocalDate?,
+  isEligibleForEarlyRelease: Boolean,
+  hardStopDate: LocalDate?,
+  hardStopWarningDate: LocalDate?,
+  isInHardStopPeriod: Boolean,
+  isDueForEarlyRelease: Boolean,
+  isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
+  conditionSubmissionStatus: Map<String, Boolean>,
+) = PrrdLicenceResponse(
+  id = licence.id,
+  typeCode = licence.typeCode,
+  version = licence.version,
+  statusCode = licence.statusCode,
+  nomsId = licence.nomsId,
+  bookingNo = licence.bookingNo,
+  bookingId = licence.bookingId,
+  crn = licence.crn,
+  pnc = licence.pnc,
+  cro = licence.cro,
+  prisonCode = licence.prisonCode,
+  prisonDescription = licence.prisonDescription,
+  prisonTelephone = licence.prisonTelephone,
+  forename = licence.forename,
+  middleNames = licence.middleNames,
+  surname = licence.surname,
+  dateOfBirth = licence.dateOfBirth,
+  conditionalReleaseDate = licence.conditionalReleaseDate,
+  actualReleaseDate = licence.actualReleaseDate,
+  sentenceStartDate = licence.sentenceStartDate,
+  sentenceEndDate = licence.sentenceEndDate,
+  licenceStartDate = licence.licenceStartDate,
+  licenceExpiryDate = licence.licenceExpiryDate,
+  topupSupervisionStartDate = licence.topupSupervisionStartDate,
+  topupSupervisionExpiryDate = licence.topupSupervisionExpiryDate,
+  postRecallReleaseDate = licence.postRecallReleaseDate!!,
+  comUsername = licence.responsibleCom.username,
+  comStaffId = licence.responsibleCom.staffIdentifier,
+  comEmail = licence.responsibleCom.email,
+  responsibleComFullName = with(licence.responsibleCom) { "$firstName $lastName" },
+  updatedByFullName = licence.getUpdatedByFullName(),
+  probationAreaCode = licence.probationAreaCode,
+  probationAreaDescription = licence.probationAreaDescription,
+  probationPduCode = licence.probationPduCode,
+  probationPduDescription = licence.probationPduDescription,
+  probationLauCode = licence.probationLauCode,
+  probationLauDescription = licence.probationLauDescription,
+  probationTeamCode = licence.probationTeamCode,
+  probationTeamDescription = licence.probationTeamDescription,
+  appointmentPersonType = licence.appointmentPersonType,
+  appointmentPerson = licence.appointmentPerson,
+  appointmentTime = licence.appointmentTime,
+  appointmentTimeType = licence.appointmentTimeType,
+  appointmentAddress = licence.appointmentAddress,
+  appointmentContact = licence.appointmentContact,
+  approvedDate = licence.approvedDate,
+  approvedByUsername = licence.approvedByUsername,
+  approvedByName = licence.approvedByName,
+  submittedDate = licence.submittedDate,
+  supersededDate = licence.supersededDate,
+  dateCreated = licence.dateCreated,
+  createdByUsername = licence.getCreator().username,
+  dateLastUpdated = licence.dateLastUpdated,
+  updatedByUsername = licence.updatedByUsername,
+  standardLicenceConditions = licence.standardConditions.transformToModelStandard("AP"),
+  standardPssConditions = licence.standardConditions.transformToModelStandard("PSS"),
+  additionalLicenceConditions = licence.additionalConditions.transformToModelAdditional(
+    "AP",
+    conditionSubmissionStatus,
+  ),
+  additionalPssConditions = licence.additionalConditions.transformToModelAdditional("PSS", conditionSubmissionStatus),
+  bespokeConditions = licence.bespokeConditions.transformToModelBespoke(),
+  createdByFullName = with(licence.getCreator()) { "$firstName $lastName" },
+  isInPssPeriod = if (licence.typeCode === LicenceType.PSS) true else licence.isInPssPeriod(),
+  isActivatedInPssPeriod = licence.isActivatedInPssPeriod(),
+  licenceVersion = licence.licenceVersion,
+  earliestReleaseDate = earliestReleaseDate,
+  isEligibleForEarlyRelease = isEligibleForEarlyRelease,
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  submittedByFullName = licence.getSubmittedByFullName(),
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
 fun toCrd(
@@ -676,7 +763,7 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     teamName = team.description,
     releaseDate = licence.licenceStartDate,
     licenceId = licence.id,
-    versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+    versionOf = getVersionOf(licence),
     licenceType = licence.typeCode,
     licenceStatus = licence.statusCode,
     isOnProbation = licence.statusCode.isOnProbation(),
@@ -744,6 +831,7 @@ fun Licence.getUpdatedByFullName(): String? {
 fun Licence.getSubmittedByFullName(): String? {
   val staffMember = when (this) {
     is HardStopLicence -> this.submittedBy
+    is PrrdLicence -> this.submittedBy
     is CrdLicence -> this.submittedBy
     is VariationLicence -> this.submittedBy
     is HdcLicence -> this.submittedBy
@@ -800,7 +888,7 @@ fun transformToApprovalLicenceSummary(
   approvedDate = licence.approvedDate,
   approvedByName = licence.approvedByName,
   licenceVersion = licence.licenceVersion,
-  versionOf = if (licence is CrdLicence) licence.versionOfId else null,
+  versionOf = getVersionOf(licence),
   isReviewNeeded = when (licence) {
     is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
     else -> false
@@ -813,6 +901,13 @@ fun transformToApprovalLicenceSummary(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
 )
+
+fun getVersionOf(licence: Licence): Long? = when (licence) {
+  is CrdLicence -> licence.versionOfId
+  is HdcLicence -> licence.versionOfId
+  is PrrdLicence -> licence.versionOfId
+  else -> null
+}
 
 fun PrisonerSearchPrisoner.toPrisoner() = Prisoner(
   prisonerNumber = this.prisonerNumber,

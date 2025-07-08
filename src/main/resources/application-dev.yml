@@ -66,3 +66,7 @@ update:
     details:
       handler:
         enabled: false
+
+feature:
+  toggle:
+    electronicMonitoringResponseHandling: true

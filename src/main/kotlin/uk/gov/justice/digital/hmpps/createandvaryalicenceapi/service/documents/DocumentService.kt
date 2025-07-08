@@ -11,7 +11,7 @@ class DocumentService(
   private val documentServiceEnabled: Boolean = false,
 ) {
 
-  fun uploadDocument(metadata: Map<String, String> = mapOf(), file: ByteArray): UUID? {
+  fun uploadDocument(file: ByteArray, metadata: Map<String, String> = mapOf()): UUID? {
     if (!documentServiceEnabled) return null
 
     val documentUuid = UUID.randomUUID()

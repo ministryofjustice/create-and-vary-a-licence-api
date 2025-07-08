@@ -92,7 +92,7 @@
             {
               "match": [
                 "${role}",
-                "ROLE_PRISON"
+                "ROLE_NOMIS_BATCHLOAD"
               ]
             }
           ]
@@ -102,29 +102,17 @@
   ],
   "report": [
     {
-      "id": "active_licences",
+      "id": "active-licences",
       "name": "Active licences (Last 3 months)",
       "description": "Active licences with release date in the last 3 months",
-      "classification": "list",
-      "version": "v1.0",
+      "version": "1.0.0",
       "render": "HTML",
       "dataset": "$ref:licence-dataset",
       "feature": [
         {
-          "type": "share"
-        },
-        {
-          "type": "save"
-        },
-        {
-          "type": "email"
+          "type": "print"
         }
       ],
-      "metadata": {
-        "hints": [
-          "interactive"
-        ]
-      },
       "specification": {
         "template": "list",
         "field": [

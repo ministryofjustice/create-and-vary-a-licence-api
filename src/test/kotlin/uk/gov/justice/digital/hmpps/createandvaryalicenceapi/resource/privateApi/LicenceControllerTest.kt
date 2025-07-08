@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Deact
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.HDC
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.LicenceType.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.MatchLicencesRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.NotifyRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ReferVariationRequest
@@ -159,8 +160,27 @@ class LicenceControllerTest {
   }
 
   @Test
+  fun `create a PRRD licence`() {
+    whenever(licenceCreationService.createPrrdLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+
+    val result = mvc.perform(
+      post("/licence/create")
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(aCreateLicenceRequest.copy(type = PRRD))),
+    )
+      .andExpect(status().isOk)
+      .andExpect(content().contentType(APPLICATION_JSON))
+      .andReturn()
+
+    assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
+
+    verify(licenceCreationService, times(1)).createPrrdLicence(aCreateLicenceRequest.nomsId)
+  }
+
+  @Test
   fun `create a CRD licence`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
+    whenever(licenceCreationService.createCrdLicence(aCreateLicenceRequest.nomsId)).thenReturn(LicenceCreationResponse(1))
 
     val result = mvc.perform(
       post("/licence/create")
@@ -174,7 +194,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).isEqualTo((mapper.writeValueAsString(LicenceCreationResponse(1))))
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createCrdLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test
@@ -219,7 +239,7 @@ class LicenceControllerTest {
 
   @Test
   fun `create a licence where another is in progress`() {
-    whenever(licenceCreationService.createLicence(aCreateLicenceRequest.nomsId))
+    whenever(licenceCreationService.createCrdLicence(aCreateLicenceRequest.nomsId))
       .thenThrow(ValidationException("A licence already exists for this person"))
 
     val result = mvc.perform(
@@ -234,7 +254,7 @@ class LicenceControllerTest {
 
     assertThat(result.response.contentAsString).contains("A licence already exists for this person")
 
-    verify(licenceCreationService, times(1)).createLicence(aCreateLicenceRequest.nomsId)
+    verify(licenceCreationService, times(1)).createCrdLicence(aCreateLicenceRequest.nomsId)
   }
 
   @Test

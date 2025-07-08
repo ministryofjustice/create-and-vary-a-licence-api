@@ -12,6 +12,14 @@ enum class LicenceKind(
   val activatedDomainEventType: () -> LicenceDomainEventType,
   val inactivatedDomainEventType: () -> LicenceDomainEventType,
 ) {
+  PRRD(
+    { IN_PROGRESS },
+    { LicenceEventType.CREATED },
+    { LicenceEventType.VERSION_CREATED },
+    { LicenceEventType.SUBMITTED },
+    { LicenceDomainEventType.PRRD_LICENCE_ACTIVATED },
+    { LicenceDomainEventType.PRRD_LICENCE_INACTIVATED },
+  ),
   CRD(
     { IN_PROGRESS },
     { LicenceEventType.CREATED },
@@ -59,7 +67,8 @@ enum class LicenceKind(
     { LicenceDomainEventType.HDC_LICENCE_VARIATION_INACTIVATED },
   ) {
     override fun isHdc() = true
-  }, ;
+  },
+  ;
 
   open fun isHdc(): Boolean = false
 }
