@@ -64,7 +64,7 @@ class CaseloadService(
   fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind {
     val today = LocalDate.now()
     val prrd = nomisRecord.postRecallReleaseDate
-    if (prrd?.isAfter(today) == true && prrd.isAfter(nomisRecord.conditionalReleaseDate)) {
+    if (prrd?.isAfter(today) == true && (nomisRecord.conditionalReleaseDate == null || prrd.isAfter(nomisRecord.conditionalReleaseDate))) {
       return LicenceKind.PRRD
     }
 
