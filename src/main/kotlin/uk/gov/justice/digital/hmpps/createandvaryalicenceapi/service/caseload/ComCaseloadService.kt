@@ -427,10 +427,9 @@ class ComCaseloadService(
       licences.isEmpty()
     }.map { (case, _) -> case.nomisRecord!!.toPrisonerSearchPrisoner() }
 
-    return prisonerSearchPrisonersWithoutLicences.associate {
-      val licenceKind = caseloadService.determineLicenceKind(it)
-      val licenceStartDate = releaseDateService.getLicenceStartDate(it, licenceKind)
-      it.prisonerNumber to licenceStartDate
+    val prisonersToLicenceKinds = prisonerSearchPrisonersWithoutLicences.associate {
+      it.prisonerNumber to caseloadService.determineLicenceKind(it)
     }
+    return releaseDateService.getLicenceStartDates(prisonerSearchPrisonersWithoutLicences, prisonersToLicenceKinds)
   }
 }
