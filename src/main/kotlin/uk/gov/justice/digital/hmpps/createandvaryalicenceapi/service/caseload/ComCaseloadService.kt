@@ -146,39 +146,22 @@ class ComCaseloadService(
           licenceStatus = TIMED_OUT
         }
 
-        if (case.nomisRecord.conditionalReleaseDate == null) {
-          updatedCase = case.copy(
-            licences = listOf(
-              CaseLoadLicenceSummary(
-                licenceStatus = licenceStatus,
-                licenceType = licenceType,
-                crn = case.deliusRecord?.managedOffenderCrn?.crn,
-                nomisId = case.nomisRecord.prisonerNumber,
-                name = name,
-                releaseDate = licenceStartDates[case.nomisRecord.prisonerNumber],
-                kind = licenceKind,
-              ),
+        updatedCase = case.copy(
+          licences = listOf(
+            CaseLoadLicenceSummary(
+              licenceStatus = licenceStatus,
+              licenceType = licenceType,
+              crn = case.deliusRecord?.managedOffenderCrn?.crn,
+              nomisId = case.nomisRecord.prisonerNumber,
+              name = name,
+              releaseDate = licenceStartDates[case.nomisRecord.prisonerNumber],
+              kind = licenceKind,
+              hardStopDate = case.cvlFields.hardStopDate,
+              hardStopWarningDate = case.cvlFields.hardStopWarningDate,
+              isDueToBeReleasedInTheNextTwoWorkingDays = case.cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays,
             ),
-          )
-        } else {
-          updatedCase = case.copy(
-            licences = listOf(
-              CaseLoadLicenceSummary(
-                licenceStatus = licenceStatus,
-                licenceType = licenceType,
-                crn = case.deliusRecord?.managedOffenderCrn?.crn,
-                nomisId = case.nomisRecord.prisonerNumber,
-                name = name,
-                hardStopDate = case.cvlFields.hardStopDate,
-                hardStopWarningDate = case.cvlFields.hardStopWarningDate,
-                isDueToBeReleasedInTheNextTwoWorkingDays = case.cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays,
-                releaseDate = licenceStartDates[case.nomisRecord.prisonerNumber],
-                isReviewNeeded = false,
-                kind = licenceKind,
-              ),
-            ),
-          )
-        }
+          ),
+        )
       }
       updatedCase
     }

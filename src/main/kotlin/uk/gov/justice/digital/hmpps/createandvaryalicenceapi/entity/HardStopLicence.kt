@@ -350,6 +350,4 @@ class HardStopLicence(
     if (!super.equals(other)) return false
     return true
   }
-
-  override fun hashCode(): Int = super.hashCode()
 }
