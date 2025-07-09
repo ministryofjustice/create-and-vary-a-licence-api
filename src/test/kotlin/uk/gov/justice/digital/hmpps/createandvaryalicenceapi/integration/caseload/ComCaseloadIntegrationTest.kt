@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.TeamCaseloadRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.text.Charsets.UTF_8
@@ -120,6 +121,7 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `Successfully retrieve team create caseload`() {
+      // Given
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
       deliusMockServer.stubGetProbationCases(readFile("com-case-load-offenders"))
@@ -132,18 +134,23 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       )
       prisonApiMockServer.stubGetCourtOutcomes()
 
-      val caseload = webTestClient.post()
+      // When
+      val result = webTestClient.post()
         .uri(GET_TEAM_CREATE_CASELOAD)
         .bodyValue(TeamCaseloadRequest(listOf("teamA", "teamB"), listOf("teamC")))
         .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
         .exchange()
-        .expectStatus().isEqualTo(OK.value())
-        .expectHeader().contentType(APPLICATION_JSON)
+
+      // Then
+      result.expectStatus().isEqualTo(OK.value())
+
+      val caseload = result.expectHeader().contentType(APPLICATION_JSON)
         .expectBody(typeReference<List<ComCase>>())
         .returnResult().responseBody!!
 
       assertThat(caseload).hasSize(2)
       with(caseload.first()) {
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
         assertThat(crnNumber).isEqualTo("X12348")
         assertThat(prisonerNumber).isEqualTo("AB1234E")
       }
