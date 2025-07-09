@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.Eligibility
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
@@ -26,7 +27,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -246,10 +246,12 @@ class CaCaseloadService(
       compareBy<CaCase> { it.releaseDate }
         .thenBy { it.licenceId },
     )
+
     "probation" -> cases.sortedWith(
       compareByDescending<CaCase> { it.releaseDate }
         .thenBy { it.licenceId },
     )
+
     else -> cases
   }
 
@@ -314,7 +316,7 @@ class CaCaseloadService(
       nomisLegalStatus = c.nomisRecord.legalStatus,
       isDueForEarlyRelease = c.cvlFields.isDueForEarlyRelease,
       isInHardStopPeriod = c.cvlFields.isInHardStopPeriod,
-      tabType = determineCaViewCasesTab(c.cvlFields, releaseDate, licence = null),
+      tabType = Tabs.determineCaViewCasesTab(c.cvlFields, releaseDate, licence = null, clock),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
         name = com?.name?.fullName(),
@@ -360,58 +362,17 @@ class CaCaseloadService(
         lastWorkedOnBy = licence.updatedByFullName,
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
         isInHardStopPeriod = licence.isInHardStopPeriod,
-        tabType = determineCaViewCasesTab(
+        tabType = Tabs.determineCaViewCasesTab(
           p.cvl,
           releaseDate,
           licence,
+          clock,
         ),
         probationPractitioner = ProbationPractitioner(staffUsername = licence.comUsername),
         prisonCode = licence.prisonCode,
         prisonDescription = licence.prisonDescription,
       )
     }.filterNotNull()
-  }
-
-  private fun determineCaViewCasesTab(
-    cvlFields: CvlFields,
-    releaseDate: LocalDate?,
-    licence: LicenceSummary?,
-  ): CaViewCasesTab {
-    if (licence != null &&
-      isAttentionNeeded(
-        licence.licenceStatus,
-        releaseDate,
-      )
-    ) {
-      return CaViewCasesTab.ATTENTION_NEEDED
-    }
-    val isDueToBeReleasedInTheNextTwoWorkingDays =
-      licence?.isDueToBeReleasedInTheNextTwoWorkingDays ?: cvlFields.isDueToBeReleasedInTheNextTwoWorkingDays
-
-    return when {
-      isDueToBeReleasedInTheNextTwoWorkingDays -> CaViewCasesTab.RELEASES_IN_NEXT_TWO_WORKING_DAYS
-      else -> CaViewCasesTab.FUTURE_RELEASES
-    }
-  }
-
-  private fun isAttentionNeeded(
-    status: LicenceStatus,
-    releaseDate: LocalDate?,
-    overrideClock: Clock? = null,
-  ): Boolean {
-    val now = overrideClock ?: clock
-    val today = LocalDate.now(now)
-
-    val missingDates = listOf(
-      IN_PROGRESS,
-      SUBMITTED,
-      APPROVED,
-      NOT_STARTED,
-    ).contains(status) &&
-      releaseDate == null
-    val startDateInPast = releaseDate != null && status == APPROVED && releaseDate.isBefore(today)
-
-    return missingDates || startDateInPast
   }
 
   private fun getPrisonersApproachingRelease(
