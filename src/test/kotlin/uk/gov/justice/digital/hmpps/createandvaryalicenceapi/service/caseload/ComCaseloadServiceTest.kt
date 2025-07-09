@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
@@ -641,6 +642,65 @@ class ComCaseloadServiceTest {
   }
 
   @Test
+  fun `PRRD licences will be mapped to offenders and caseloads for team will be created`() {
+    // Given
+    val selectedTeam = "team c"
+    val prisonerNumber = "AB1234E"
+    val managedOffender = TestData.managedOffenderCrn()
+    val managedOffenders = listOf(managedOffender)
+    val probationCase = createProbationCase(nomsNumber = prisonerNumber, crn = managedOffender.crn!!)
+    val caseLoadItem = createCaseloadItem(
+      bookingId = "1",
+      prisonerNumber = prisonerNumber,
+      conditionalReleaseDate = null,
+      postRecallReleaseDate = LocalDate.now(),
+    )
+    val prisonersToLicenceStartDates = mapOf(prisonerNumber to tenDaysFromNow, prisonerNumber to tenDaysFromNow)
+
+    whenever(deliusApiClient.getManagedOffendersByTeam(selectedTeam)).thenReturn(managedOffenders)
+    whenever(deliusApiClient.getProbationCases(managedOffenders.map { it.crn!! })).thenReturn(listOf(probationCase))
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
+
+    // When
+    val caseload = service.getTeamCreateCaseload(listOf(), listOf(selectedTeam))
+
+    // Then
+    assertThat(caseload).hasSize(1)
+  }
+
+  @Test
+  fun `PRRD licences will be mapped to offenders and caseloads for staff will be created`() {
+    // Given
+    val prisonerNumber = "AB1234E"
+    val managedOffender = TestData.managedOffenderCrn()
+    val managedOffenders = listOf(managedOffender)
+    val probationCase = createProbationCase(nomsNumber = prisonerNumber, crn = managedOffender.crn!!)
+    val caseLoadItem = createCaseloadItem(
+      bookingId = "1",
+      prisonerNumber = prisonerNumber,
+      conditionalReleaseDate = null,
+      postRecallReleaseDate = LocalDate.now(),
+    )
+    val prisonersToLicenceStartDates = mapOf(prisonerNumber to tenDaysFromNow, prisonerNumber to tenDaysFromNow)
+
+    whenever(deliusApiClient.getManagedOffenders(deliusStaffIdentifier)).thenReturn(managedOffenders)
+    whenever(deliusApiClient.getProbationCases(managedOffenders.mapNotNull { it.crn })).thenReturn(listOf(probationCase))
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(caseLoadItem))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(releaseDateService.getLicenceStartDates(any(), any())).thenReturn(prisonersToLicenceStartDates)
+
+    // When
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    // Then
+    assertThat(caseload).hasSize(1)
+  }
+
+  @Test
   fun `it filters recalls and breach of supervision on team create caseload`() {
     val selectedTeam = "team C"
 
@@ -1133,7 +1193,7 @@ class ComCaseloadServiceTest {
     }
   }
 
-  private fun createProbationCase(id: Long, crn: String, nomsNumber: String? = null) = ProbationCase(
+  private fun createProbationCase(id: Long = 1, crn: String, nomsNumber: String? = null) = ProbationCase(
     nomisId = nomsNumber,
     crn = crn,
   )
