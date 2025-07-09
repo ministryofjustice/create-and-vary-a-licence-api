@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import java.time.Clock
@@ -14,43 +15,80 @@ infix fun EligibilityCheck.describedAs(message: String): Pair<EligibilityCheck, 
 @Service
 class EligibilityService(
   private val clock: Clock,
+  @Value("\${recall.enabled}")private val recallEnabled: Boolean = false,
 ) {
 
-  val checks = listOf(
+  val genericChecks = listOf(
     !isPersonParoleEligible() describedAs "is eligible for parole",
     isNotDead() describedAs "has died",
     !isOnIndeterminateSentence() describedAs "is on indeterminate sentence",
-    hasConditionalReleaseDate() describedAs "has no conditional release date",
-    isEligibleIfOnAnExtendedDeterminateSentence() describedAs "is on non-eligible EDS",
     hasActivePrisonStatus() describedAs "is not active in prison",
-    hasReleaseDateInTheFuture() describedAs "release date in past",
-    !isRecallCase() describedAs "is a recall case",
     !isBreachOfTopUpSupervision() describedAs "is breach of top up supervision case",
+  )
+
+  val crdChecks = listOf(
+    hasConditionalReleaseDate() describedAs "has no conditional release date",
+    hasCrdTodayOrInTheFuture() describedAs "CRD in the past",
+    isEligibleIfOnAnExtendedDeterminateSentence() describedAs "is on non-eligible EDS",
+    !isRecallCase() describedAs "is a recall case",
+
+  )
+
+  val recallChecks = listOf(
+    hasPostRecallReleaseDate() describedAs "has no post recall release date",
+    hasPrrdTodayOrInTheFuture() describedAs "post recall release date is in the past",
+    prrdIsBeforeSled() describedAs "post recall release date is not before SLED",
   )
 
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean = getIneligibilityReasons(prisoner).isEmpty()
 
-  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> = checks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+  fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
+    val genericIneligibilityReasons = genericChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
 
-  private fun isPersonParoleEligible(): EligibilityCheck = early@{
-    if (it.paroleEligibilityDate != null) {
-      if (it.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
-        return@early true
+    val crdIneligibilityReasons = crdChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+    // If eligible for CRD licence, return as eligible
+    if (genericIneligibilityReasons.isEmpty() && crdIneligibilityReasons.isEmpty()) {
+      return emptyList()
+    }
+
+    var recallIneligibilityReasons = emptyList<String>()
+    if (recallEnabled) {
+      recallIneligibilityReasons = recallChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+      // If eligible for PRRD licence, return as eligible
+      if (genericIneligibilityReasons.isEmpty() && recallIneligibilityReasons.isEmpty()) {
+        return emptyList()
       }
     }
-    return@early false
+
+    // If not eligible for either, return combined list of reasons
+    return (genericIneligibilityReasons + crdIneligibilityReasons + recallIneligibilityReasons).distinct()
   }
 
-  private fun isNotDead(): EligibilityCheck = { it.legalStatus != "DEAD" }
-
-  private fun isOnIndeterminateSentence(): EligibilityCheck = {
-    if (it.indeterminateSentence == null) {
-      log.warn("${it.prisonerNumber} missing indeterminateSentence")
-    }
-    it.indeterminateSentence ?: false
-  }
-
+  // CRD-specific eligibility rules
   private fun hasConditionalReleaseDate(): EligibilityCheck = { it.conditionalReleaseDate != null }
+
+  private fun hasCrdTodayOrInTheFuture(): EligibilityCheck = early@{
+    val releaseDate = it.conditionalReleaseDate ?: return@early true
+    releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
+  }
+
+  private fun isRecallCase(): EligibilityCheck = early@{
+    // If a CRD but no PRRD it should NOT be treated as a recall
+    if (it.conditionalReleaseDate != null && it.postRecallReleaseDate == null) {
+      return@early false
+    }
+
+    if (it.conditionalReleaseDate != null && it.postRecallReleaseDate != null) {
+      // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
+      return@early it.postRecallReleaseDate.isAfter(it.conditionalReleaseDate)
+    }
+
+    // Trust the Nomis recall flag as a fallback position - the above rules should always override
+    if (it.recall == null) {
+      log.warn("${it.prisonerNumber} missing recall flag")
+    }
+    return@early it.recall ?: false
+  }
 
   private fun isEligibleIfOnAnExtendedDeterminateSentence(): EligibilityCheck = early@{
     // If you don’t have a PED, you automatically pass this check as you’re not an EDS case
@@ -74,37 +112,53 @@ class EligibilityService(
     return@early true
   }
 
+  // PRRD-specific eligibility rules
+  private fun hasPostRecallReleaseDate(): EligibilityCheck = { it.postRecallReleaseDate != null }
+
+  private fun hasPrrdTodayOrInTheFuture(): EligibilityCheck = early@{
+    if (it.postRecallReleaseDate == null) return@early true
+
+    dateIsTodayOrFuture(it.postRecallReleaseDate)
+  }
+
+  private fun prrdIsBeforeSled(): EligibilityCheck = early@{
+    if (it.postRecallReleaseDate == null) return@early true
+
+    it.postRecallReleaseDate.isBefore(it.licenceExpiryDate) && it.postRecallReleaseDate.isBefore(it.sentenceExpiryDate)
+  }
+
+  // Shared eligibility rules
+  private fun isPersonParoleEligible(): EligibilityCheck = early@{
+    if (it.paroleEligibilityDate != null) {
+      if (it.paroleEligibilityDate.isAfter(LocalDate.now(clock))) {
+        return@early true
+      }
+    }
+    return@early false
+  }
+
+  private fun isNotDead(): EligibilityCheck = { it.legalStatus != "DEAD" }
+
+  private fun isOnIndeterminateSentence(): EligibilityCheck = {
+    if (it.indeterminateSentence == null) {
+      log.warn("${it.prisonerNumber} missing indeterminateSentence")
+    }
+    it.indeterminateSentence ?: false
+  }
+
   private fun hasActivePrisonStatus(): EligibilityCheck = { prisoner ->
     prisoner.status?.let {
       it.startsWith("ACTIVE") || it == "INACTIVE TRN"
     } ?: false
   }
 
-  private fun hasReleaseDateInTheFuture(): EligibilityCheck = early@{
-    val releaseDate = it.conditionalReleaseDate ?: return@early true
-    releaseDate.isEqual(LocalDate.now(clock)) || releaseDate.isAfter(LocalDate.now(clock))
-  }
-
-  private fun isRecallCase(): EligibilityCheck = early@{
-    // If a CRD but no PRRD it should NOT be treated as a recall
-    if (it.conditionalReleaseDate != null && it.postRecallReleaseDate == null) {
-      return@early false
-    }
-
-    if (it.conditionalReleaseDate != null && it.postRecallReleaseDate != null) {
-      // If the PRRD > CRD - it should be treated as a recall otherwise it is not treated as a recall
-      return@early it.postRecallReleaseDate.isAfter(it.conditionalReleaseDate)
-    }
-
-    // Trust the Nomis recall flag as a fallback position - the above rules should always override
-    if (it.recall == null) {
-      log.warn("${it.prisonerNumber} missing recall flag")
-    }
-    return@early it.recall ?: false
-  }
-
   private fun isBreachOfTopUpSupervision(): EligibilityCheck = early@{
     it.imprisonmentStatus == "BOTUS"
+  }
+
+  private fun dateIsTodayOrFuture(date: LocalDate?): Boolean {
+    if (date == null) return false
+    return date.isEqual(LocalDate.now(clock)) || date.isAfter(LocalDate.now(clock))
   }
 
   companion object {
