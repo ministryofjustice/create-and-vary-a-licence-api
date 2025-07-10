@@ -112,12 +112,36 @@ class LicenceActivationServiceTest {
   }
 
   @Test
-  fun `licence activation job calls for non-HDC, IS91 licences to be activated on CRD`() {
+  fun `licence activation job calls for non-HDC, IS91 licences to be activated on Licence Start Date`() {
     whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
       listOf(
         aLicenceEntity.copy(
-          conditionalReleaseDate = LocalDate.now(),
-          actualReleaseDate = LocalDate.now().plusDays(10),
+          licenceStartDate = LocalDate.now(),
+        ),
+      ),
+    )
+    val prisoners = listOf(aPrisonerSearchPrisoner)
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(aLicenceEntity.bookingId!!)))
+      .thenReturn(prisoners)
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners))
+      .thenReturn(listOf(aLicenceEntity.bookingId!!))
+    whenever(
+      hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any()),
+    ).thenReturn(HdcStatuses(emptySet()))
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(listOf(aLicenceEntity), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
+  fun `licence activation job calls for non-HDC, IS91 licences to be activated if Licence Start Date is in the past`() {
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
+      listOf(
+        aLicenceEntity.copy(
+          licenceStartDate = LocalDate.now().minusDays(10),
         ),
       ),
     )
@@ -251,6 +275,34 @@ class LicenceActivationServiceTest {
       listOf(
         nonHdcLicence.copy(
           licenceStartDate = null,
+        ),
+      ),
+    )
+
+    whenever(iS91DeterminationService.getIS91AndExtraditionBookingIds(prisoners)).thenReturn(listOf(54321))
+    whenever(hdcService.getHdcStatus<LicenceWithPrisoner>(any(), any(), any())).thenReturn(
+      HdcStatuses(emptySet()),
+    )
+
+    service.licenceActivation()
+
+    verify(licenceService, times(1)).activateLicences(emptyList(), IS91_LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).activateLicences(emptyList(), LICENCE_ACTIVATION)
+    verify(licenceService, times(1)).inactivateLicences(emptyList(), LICENCE_DEACTIVATION)
+  }
+
+  @Test
+  fun `licence activation job does not call for IS91 licences to be activated if the Licence Start Date is in the future`() {
+    val prisoners = listOf(
+      nonHdcPrisoner,
+    )
+    whenever(prisonerSearchApiClient.searchPrisonersByBookingIds(setOf(nonHdcLicence.bookingId!!))).thenReturn(
+      prisoners,
+    )
+    whenever(licenceRepository.getApprovedLicencesOnOrPassedReleaseDate()).thenReturn(
+      listOf(
+        nonHdcLicence.copy(
+          licenceStartDate = LocalDate.now().plusDays(10),
         ),
       ),
     )
