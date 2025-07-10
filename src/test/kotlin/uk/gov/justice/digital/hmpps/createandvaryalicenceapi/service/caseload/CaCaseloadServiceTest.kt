@@ -609,6 +609,46 @@ class CaCaseloadServiceTest {
       )
     }
 
+    @Test
+    fun `should have correct releaseDateLabel when actualReleaseDate is the same as licenceStartDate`() {
+      // Given
+      val licenceSummary = aLicenceSummary.copy(
+        actualReleaseDate = twoDaysFromNow,
+        licenceStartDate = twoDaysFromNow,
+      )
+
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
+      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
+      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
+
+      // When
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+      // Then
+      assertThat(prisonOmuCaseload).hasSize(1)
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Confirmed release date")
+    }
+
+    @Test
+    fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
+      // Given
+      val licenceSummary = aLicenceSummary.copy(
+        licenceStartDate = tenDaysFromNow,
+        postRecallReleaseDate = tenDaysFromNow,
+      )
+
+      whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(listOf(licenceSummary))
+      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
+      whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(TestData.caseLoadItem()))
+
+      // When
+      val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
+
+      // Then
+      assertThat(prisonOmuCaseload).hasSize(1)
+      assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+    }
+
     @Nested
     inner class `filtering rules` {
       @Test
@@ -941,6 +981,23 @@ class CaCaseloadServiceTest {
         ),
       )
     }
+  }
+
+  @Test
+  fun `should have correct releaseDateLabel when postRecallReleaseDate is the same as licenceStartDate`() {
+    // Given
+    val licenceSummary = aLicenceSummary.copy(
+      licenceStartDate = tenDaysFromNow,
+      postRecallReleaseDate = tenDaysFromNow,
+    )
+    whenever(licenceService.findLicencesMatchingCriteria(any())).thenReturn(listOf(licenceSummary))
+
+    // When
+    val prisonOmuCaseload = service.getProbationOmuCaseload(setOf("BAI"), "")
+
+    // Then
+    assertThat(prisonOmuCaseload).hasSize(1)
+    assertThat(prisonOmuCaseload[0].releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
   }
 
   @Nested
