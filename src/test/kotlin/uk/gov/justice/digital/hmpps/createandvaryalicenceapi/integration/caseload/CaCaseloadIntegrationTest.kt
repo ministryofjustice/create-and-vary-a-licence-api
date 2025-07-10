@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.Duration
 import kotlin.collections.first
@@ -102,6 +103,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(licenceStatus).isEqualTo(LicenceStatus.SUBMITTED)
         assertThat(tabType).isEqualTo(CaViewCasesTab.FUTURE_RELEASES)
         assertThat(isInHardStopPeriod).isFalse()
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
       }
     }
   }
@@ -162,6 +164,7 @@ class CaCaseloadIntegrationTest : IntegrationTestBase() {
         assertThat(licenceStatus).isEqualTo(LicenceStatus.ACTIVE)
         assertThat(tabType).isNull()
         assertThat(isInHardStopPeriod).isFalse()
+        assertThat(kind).isEqualTo(LicenceKind.CRD)
       }
     }
   }
