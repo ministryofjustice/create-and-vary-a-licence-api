@@ -74,7 +74,7 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
     ],
   )
   fun searchForAddresses(
-    @Size(min = 5, max = 100)
+    @Size(min = 4, max = 100, message = "Search query must be more than 3 and no more than 100")
     @PathVariable(name = "searchQuery")
     searchQuery: String,
     @RequestParam(value = "page", required = false)
@@ -136,7 +136,7 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
     ],
   )
   fun searchForAddressesByPostcode(
-    @Size(min = 5, max = 10)
+    @Size(min = 5, max = 10, message = "Postcode must be more than 4 and no more than 10 in length")
     @PathVariable(name = "postcode")
     postcode: String,
     @RequestParam(value = "page", required = false)
