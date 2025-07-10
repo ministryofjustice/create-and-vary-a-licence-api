@@ -26,8 +26,12 @@ generic-service:
     SELF_API_LINK: "https://create-and-vary-a-licence-api-test2.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
     POLICYV3_ENABLED: true
-    DOMAIN_EVENT_LISTENER_ENABLED: false
+    DOMAIN_EVENT_LISTENER_ENABLED: true
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
+
+  namespace_secrets:
+    sqs-domain-events-queue-secret:
+      HMPPS_SQS_QUEUES_DOMAINEVENTSQUEUE_QUEUE_NAME: "sqs_queue_name"
 
   scheduledDowntime:
     enabled: true

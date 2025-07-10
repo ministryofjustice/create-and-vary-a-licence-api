@@ -39,4 +39,24 @@ class DateFunctionsTest {
     val date2 = null
     assertThat(date1.hasChanged(date2)).isFalse
   }
+
+  @Test
+  fun `null is not today or in the future`() {
+    assertThat(null.isTodayOrInTheFuture()).isFalse
+  }
+
+  @Test
+  fun `yesterday is not today or in the future`() {
+    assertThat(LocalDate.now().minusDays(1).isTodayOrInTheFuture()).isFalse
+  }
+
+  @Test
+  fun `today is today or in the future`() {
+    assertThat(LocalDate.now().isTodayOrInTheFuture()).isTrue
+  }
+
+  @Test
+  fun `tomorrow is today or in the future`() {
+    assertThat(LocalDate.now().plusDays(1).isTodayOrInTheFuture()).isTrue
+  }
 }
