@@ -26,6 +26,18 @@ interface LicenceRepository :
     kind: List<LicenceKind>,
   ): List<Licence>
 
+  @Query(
+    """
+  SELECT l FROM Licence l
+    WHERE l.kind IN ('CRD')  
+      AND l.statusCode = 'IN_PROGRESS'
+      AND l.conditionalReleaseDate <= :cutoffDate
+""",
+  )
+  fun getAllLicencesToTimeOut(
+    cutoffDate: LocalDate = LocalDate.now().plusDays(14),
+  ): List<Licence>
+
   fun findAllByCrnInAndStatusCodeIn(crn: List<String>, status: List<LicenceStatus>): List<Licence>
 
   @Query(

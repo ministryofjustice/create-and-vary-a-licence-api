@@ -4,7 +4,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -13,7 +14,7 @@ import java.time.LocalDate
 
 @Service
 class TimeOutLicencesService(
-  private val crdLicenceRepository: CrdLicenceRepository,
+  private val licenceRepository: LicenceRepository,
   private val releaseDateService: ReleaseDateService,
   private val workingDaysService: WorkingDaysService,
   private val clock: Clock,
@@ -31,7 +32,7 @@ class TimeOutLicencesService(
     if (workingDaysService.isNonWorkingDay(jobExecutionDate)) {
       return
     }
-    val licencesToTimeOut = crdLicenceRepository.getAllLicencesToTimeOut().filter {
+    val licencesToTimeOut = licenceRepository.getAllLicencesToTimeOut().filter {
       releaseDateService.isInHardStopPeriod(it)
     }
     if (licencesToTimeOut.isEmpty()) {
@@ -43,7 +44,7 @@ class TimeOutLicencesService(
     log.info("TimeOutLicencesServiceJob updated status TIMED_OUT on ${licencesToTimeOut.size} licences")
   }
 
-  private fun updateLicencesStatus(licences: List<CrdLicence>) {
-    licences.map { licence -> licenceService.timeout(licence, "due to reaching hard stop") }
+  private fun updateLicencesStatus(licences: List<Licence>) {
+    licences.map { licence -> licenceService.timeout(licence as CrdLicence, "due to reaching hard stop") }
   }
 }
