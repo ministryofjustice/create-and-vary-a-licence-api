@@ -10,6 +10,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CONFIRMED_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CRD_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_HDC_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_PRRD_RELEASE_DATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -156,12 +160,18 @@ class ComCaseloadSearchService(
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),
-      releaseDateLabel = when (licenceStartDate) {
-        prisonOffender.homeDetentionCurfewActualDate -> "HDCAD"
-        prisonOffender.confirmedReleaseDate -> "Confirmed release date"
-        else -> "CRD"
-      },
+      releaseDateLabel = getReleaseDateLable(licenceStartDate, prisonOffender),
     )
+  }
+
+  private fun getReleaseDateLable(
+    licenceStartDate: LocalDate?,
+    prisonOffender: PrisonerSearchPrisoner,
+  ) = when (licenceStartDate) {
+    prisonOffender.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
+    prisonOffender.confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
+    prisonOffender.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
+    else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 
   private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(
