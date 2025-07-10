@@ -40,14 +40,12 @@ class ExclusionZoneService(
 
     log.info("uploadExclusionZoneFile: Name ${file.name} Type ${file.contentType} Original ${file.originalFilename}, Size ${file.size}")
 
-    val pdfExtract = ExclusionZonePdfExtract.fromMultipartFile(file)
-
-    if (pdfExtract == null) {
-      val reason = if (file.isEmpty) "Empty file" else "failed to extract the expected image map"
-      throw ValidationException("Exclusion zone upload document - $reason")
+    try {
+      val pdfExtract = ExclusionZonePdfExtract.fromMultipartFile(file)
+      logAndUploadExclusionZoneFile(file, pdfExtract, licenceEntity, additionalCondition)
+    } catch (e: ExclusionZonePdfExtractionError) {
+      throw ValidationException(e)
     }
-
-    logAndUploadExclusionZoneFile(file, pdfExtract, licenceEntity, additionalCondition)
   }
 
   fun logAndUploadExclusionZoneFile(
