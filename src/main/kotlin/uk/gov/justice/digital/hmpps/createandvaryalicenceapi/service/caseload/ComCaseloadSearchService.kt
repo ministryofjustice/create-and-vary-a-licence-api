@@ -168,9 +168,9 @@ class ComCaseloadSearchService(
     licenceStartDate: LocalDate?,
     prisonOffender: PrisonerSearchPrisoner,
   ) = when (licenceStartDate) {
-    prisonOffender.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
     prisonOffender.confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
     prisonOffender.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
+    prisonOffender.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
     else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 

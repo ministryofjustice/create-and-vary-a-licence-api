@@ -345,7 +345,7 @@ class CaCaseloadService(
         name = licence.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licence?.nomisId!!,
         releaseDate = releaseDate,
-        releaseDateLabel = getReleaseDateLabel(licence, caseloadItem),
+        releaseDateLabel = getReleaseDateLabel(licence),
         licenceStatus = licence.licenceStatus,
         nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
@@ -366,20 +366,11 @@ class CaCaseloadService(
 
   private fun getReleaseDateLabel(
     licence: LicenceSummary,
-    caseLoadItem: CaseloadItem,
   ): String = when (licence.licenceStartDate) {
     null -> LABEL_FOR_CRD_RELEASE_DATE
     licence.actualReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
     licence.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
-    caseLoadItem.prisoner.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
-    else -> LABEL_FOR_CRD_RELEASE_DATE
-  }
-
-  private fun getReleaseDateLabel(licence: LicenceSummary): String = when (licence.licenceStartDate) {
-    null -> LABEL_FOR_CRD_RELEASE_DATE
     licence.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
-    licence.actualReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-    licence.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
     else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 
@@ -389,8 +380,8 @@ class CaCaseloadService(
   ): String = when (releaseDate) {
     null -> LABEL_FOR_CRD_RELEASE_DATE
     nomisRecord.confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-    nomisRecord.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
     nomisRecord.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
+    nomisRecord.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
     else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 
