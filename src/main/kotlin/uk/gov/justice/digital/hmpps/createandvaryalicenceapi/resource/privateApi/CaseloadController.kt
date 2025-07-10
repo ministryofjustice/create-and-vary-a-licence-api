@@ -36,7 +36,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.Tags
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.model.request.CaCaseloadSearch
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.request.VaryApproverCaseloadSearchRequest
@@ -51,7 +52,8 @@ class CaseloadController(
   val caseloadService: CaseloadService,
   val approverCaseloadService: ApproverCaseloadService,
   val caCaseloadService: CaCaseloadService,
-  val comCaseloadService: ComCaseloadService,
+  val comCreateCaseloadService: ComCreateCaseloadService,
+  val comVaryCaseloadService: ComVaryCaseloadService,
   val varyApproverCaseloadService: VaryApproverCaseloadService,
 ) {
 
@@ -527,7 +529,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
+  fun getStaffCreateCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCreateCaseloadService.getStaffCreateCaseload(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/create-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -570,7 +572,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamCreateCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCreateCaseloadService.getTeamCreateCaseload(request.probationTeamCodes, request.teamSelected)
 
   @GetMapping("/caseload/com/staff/{deliusStaffIdentifier}/vary-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -613,7 +615,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getStaffVaryCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comCaseloadService.getStaffVaryCaseload(deliusStaffIdentifier)
+  fun getStaffVaryCaseload(@Parameter(required = true) @PathVariable deliusStaffIdentifier: Long) = comVaryCaseloadService.getStaffVaryCaseload(deliusStaffIdentifier)
 
   @PostMapping("/caseload/com/team/vary-case-load")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")
@@ -656,7 +658,7 @@ class CaseloadController(
       ),
     ],
   )
-  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
+  fun getTeamVaryCaseload(@Parameter(required = true) @Valid @RequestBody request: TeamCaseloadRequest): List<ComCase> = comVaryCaseloadService.getTeamVaryCaseload(request.probationTeamCodes, request.teamSelected)
 
   @PostMapping("/caseload/vary-approver")
   @PreAuthorize("hasAnyRole('CVL_ADMIN')")

@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Sent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Detail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
@@ -555,6 +556,10 @@ object TestData {
     comStaffCode = "B1234",
     comName = "John Doe",
     comAllocationDate = LocalDate.parse("2025-01-27"),
+  )
+  fun managedOffenderCrn() = ManagedOffenderCrn(
+    crn = "X12348",
+    staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
   )
 
   fun offenderManager() = CommunityManager(

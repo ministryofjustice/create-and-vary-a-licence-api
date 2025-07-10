@@ -53,7 +53,7 @@ class ComAllocatedHandler(
         staffUsername = offenderManager.username,
         staffEmail = offenderManager.email,
         firstName = offenderManager.name.forename,
-        lastName = offenderManager.name.forename,
+        lastName = offenderManager.name.surname,
       ),
     )
 

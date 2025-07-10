@@ -39,10 +39,10 @@ class ComAllocatedHandlerTest {
     verify(staffService).updateComDetails(
       UpdateComRequest(
         staffIdentifier = offenderManager.id,
-        staffUsername = offenderManager.username!!,
+        staffUsername = offenderManager.username,
         staffEmail = offenderManager.email,
         firstName = offenderManager.name.forename,
-        lastName = offenderManager.name.forename,
+        lastName = offenderManager.name.surname,
       ),
     )
 

@@ -78,7 +78,6 @@
     <ID>MagicNumber:EligibilityService.kt$EligibilityService$4</ID>
     <ID>MagicNumber:HardStopLicenceRepository.kt$HardStopLicenceRepository$5</ID>
     <ID>MagicNumber:HdcLicenceRepository.kt$HdcLicenceRepository$9</ID>
-    <ID>MagicNumber:LicenceActivationService.kt$LicenceActivationService$4</ID>
     <ID>MagicNumber:PromptComService.kt$PromptComService.Companion$4</ID>
     <ID>MagicNumber:SubjectAccessRequestController.kt$SubjectAccessRequestController$209</ID>
     <ID>MatchingDeclarationName:EventSpecifications.kt$EventQueryObject</ID>
@@ -87,7 +86,7 @@
     <ID>ReturnCount:AddAddressRequest.kt$AddressWithUprnMustBeFromOsPlacesValidator$override fun isValid(value: AddAddressRequest?, context: ConstraintValidatorContext): Boolean</ID>
     <ID>ReturnCount:CaCaseloadService.kt$CaCaseloadService$fun findLatestLicenceSummary(licences: List&lt;LicenceSummary&gt;): LicenceSummary?</ID>
     <ID>ReturnCount:CaseloadService.kt$CaseloadService$fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind</ID>
-    <ID>ReturnCount:ComCaseloadService.kt$ComCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
+    <ID>ReturnCount:ComCreateCaseloadService.kt$ComCreateCaseloadService$private fun findLicenceToDisplay(case: ManagedCase): CaseLoadLicenceSummary</ID>
     <ID>ReturnCount:LsdRecalculationService.kt$LsdRecalculationService$@Transactional fun batchUpdateLicenceStartDate(numberOfLicences: Long, lastUpdatedLicenceId: Long = 0): Long</ID>
     <ID>ReturnCount:NotifyService.kt$NotifyService$private fun sendEmail( templateId: String, emailAddress: String, values: Map&lt;String, Any&gt;, ): Boolean</ID>
     <ID>ReturnCount:StaffService.kt$StaffService$@Transactional fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager</ID>
@@ -95,7 +94,7 @@
     <ID>TooManyFunctions:AuditService.kt$AuditService</ID>
     <ID>TooManyFunctions:CaCaseloadService.kt$CaCaseloadService</ID>
     <ID>TooManyFunctions:CaseloadController.kt$CaseloadController</ID>
-    <ID>TooManyFunctions:ComCaseloadService.kt$ComCaseloadService</ID>
+    <ID>TooManyFunctions:ComCreateCaseloadService.kt$ComCreateCaseloadService</ID>
     <ID>TooManyFunctions:ControllerAdvice.kt$ControllerAdvice</ID>
     <ID>TooManyFunctions:DeliusApiClient.kt$DeliusApiClient</ID>
     <ID>TooManyFunctions:EligibilityService.kt$EligibilityService</ID>
