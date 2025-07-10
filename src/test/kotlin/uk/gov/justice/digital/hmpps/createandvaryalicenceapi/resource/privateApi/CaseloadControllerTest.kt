@@ -31,7 +31,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ApproverCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.CaCaseloadService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComCreateCaseloadService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ComVaryCaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.VaryApproverCaseloadService
 
 @ExtendWith(SpringExtension::class)
@@ -52,7 +53,10 @@ class CaseloadControllerTest {
   private lateinit var caCaseloadService: CaCaseloadService
 
   @MockitoBean
-  private lateinit var comCaseloadService: ComCaseloadService
+  private lateinit var comCreateCaseloadService: ComCreateCaseloadService
+
+  @MockitoBean
+  private lateinit var comVaryCaseloadService: ComVaryCaseloadService
 
   @MockitoBean
   private lateinit var varyApproverCaseloadService: VaryApproverCaseloadService
@@ -73,7 +77,8 @@ class CaseloadControllerTest {
           caseloadService,
           approverCaseloadService,
           caCaseloadService,
-          comCaseloadService,
+          comCreateCaseloadService,
+          comVaryCaseloadService,
           varyApproverCaseloadService,
         ),
       )
