@@ -110,7 +110,7 @@ class LicencePolicyService(
 
   fun isElectronicMonitoringResponseRequired(conditionCodes: Set<String>, version: String): Boolean {
     val conditionsRequiringResponse = getConditionsRequiringElectronicMonitoringResponse(
-      version!!,
+      version,
       conditionCodes,
     )
     if (conditionsRequiringResponse.isNotEmpty()) {
