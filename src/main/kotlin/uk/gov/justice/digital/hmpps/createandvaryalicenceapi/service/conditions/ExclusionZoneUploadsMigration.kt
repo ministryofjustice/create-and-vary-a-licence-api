@@ -40,14 +40,14 @@ class ExclusionZoneUploadsMigration(
           fullSizeImageDsUuid = fullSizeImageUuid.toString(),
         ),
       )
-    }.onFailure { log.error("Unable to migrate AdditionalConditionUploadDetail id={}", uploadDetail.id, it) }
+    }.onFailure { log.error("Unable to migrate AdditionalConditionUploadDetail id={}, {}", uploadDetail.id, it) }
   }
 
   private fun migrate(uploadSummary: AdditionalConditionUploadSummary) {
     runCatching {
       val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
       uploadSummaryRepository.saveAndFlush(uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()))
-    }.onFailure { log.error("Unable to migrate AdditionalConditionUploadSummary id={}", uploadSummary.id, it) }
+    }.onFailure { log.error("Unable to migrate AdditionalConditionUploadSummary id={}, {}", uploadSummary.id, it) }
   }
 
   private fun metadata(uploadDetail: AdditionalConditionUploadDetail, kind: String) = mapOf(
