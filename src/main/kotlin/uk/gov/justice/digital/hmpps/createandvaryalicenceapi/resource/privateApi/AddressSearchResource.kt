@@ -74,7 +74,7 @@ class AddressSearchResource(private val addressSearchService: AddressSearchServi
     ],
   )
   fun searchForAddresses(
-    @Size(min = 1, max = 100, message = "Search query must be more than 1 and no more than 100")
+    @Size(min = 1, max = 100, message = "Search query must be more than 0 and no more than 100")
     @PathVariable(name = "searchQuery")
     searchQuery: String,
     @RequestParam(value = "page", required = false)
