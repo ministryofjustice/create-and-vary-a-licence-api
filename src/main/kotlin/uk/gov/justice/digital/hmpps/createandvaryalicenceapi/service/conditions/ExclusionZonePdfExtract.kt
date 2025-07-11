@@ -28,12 +28,12 @@ data class ExclusionZonePdfExtract(
 
 class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
 
-  fun build(): ExclusionZonePdfExtract = runCatching {
+  fun build(): ExclusionZonePdfExtract {
     val fullSizeImage = fullSizeImage()
     val thumbnailImage = thumbnailImage(fullSizeImage)
 
-    ExclusionZonePdfExtract(description(), fullSizeImage, thumbnailImage)
-  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract exclusion zone pdf details", it) }
+    return ExclusionZonePdfExtract(description(), fullSizeImage, thumbnailImage)
+  }
 
   private fun description(): String = runCatching {
     with(PDFTextStripper()) {
@@ -41,7 +41,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
       startPage = 2
       getText(pdfDoc)
     }
-  }.onFailure { log.error("Failed to extract description", it) }.getOrThrow()
+  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract description", it) }
 
   private fun fullSizeImage(): ByteArray = runCatching {
     with(PDFRenderer(pdfDoc)) {
@@ -60,7 +60,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
         bytes
       }
     }
-  }.onFailure { log.error("Failed to extract map image", it) }.getOrThrow()
+  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract full size image details", it) }
 
   private fun thumbnailImage(fullSizeImage: ByteArray): ByteArray = runCatching {
     val inputStream = fullSizeImage.inputStream()
@@ -73,7 +73,7 @@ class ExclusionZonePdfExtractBuilder(private var pdfDoc: PDDocument) {
       ImageIO.write(outputImage, "jpg", this)
       toByteArray()
     }
-  }.onFailure { log.error("Failed to extract thumbnail image", it) }.getOrThrow()
+  }.getOrElse { throw ExclusionZonePdfExtractionException("Unable to extract thumbnail image details", it) }
 
   companion object {
     val log = LoggerFactory.getLogger(this::class.java)
