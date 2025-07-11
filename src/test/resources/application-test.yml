@@ -92,6 +92,9 @@ notify:
 policyv3:
   enabled: true
 
+recall:
+  enabled: true
+
 oauth:
   client:
     id: client-id
