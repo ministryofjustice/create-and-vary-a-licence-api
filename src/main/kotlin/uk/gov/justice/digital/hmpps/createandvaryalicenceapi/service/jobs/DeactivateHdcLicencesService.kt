@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -18,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 @Service
 class DeactivateHdcLicencesService(
   private val licenceRepository: LicenceRepository,
+  private val hdcLicenceRepository: HdcLicenceRepository,
   private val auditEventRepository: AuditEventRepository,
   private val licenceEventRepository: LicenceEventRepository,
   private val domainEventsService: DomainEventsService,
@@ -31,7 +33,7 @@ class DeactivateHdcLicencesService(
   @Transactional
   fun runJob() {
     log.info("Running job to deactivate HDC licences")
-    val licencesToDeactivate = licenceRepository.getDraftLicencesIneligibleForHdcRelease()
+    val licencesToDeactivate = hdcLicenceRepository.getDraftLicencesIneligibleForHdcRelease()
     if (licencesToDeactivate.isEmpty()) {
       log.info("There are no HDC licences to deactivate")
       return

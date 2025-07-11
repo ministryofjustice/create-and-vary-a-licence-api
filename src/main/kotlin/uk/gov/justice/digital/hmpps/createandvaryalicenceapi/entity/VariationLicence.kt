@@ -5,6 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
@@ -56,6 +58,7 @@ class VariationLicence(
   appointmentTime: LocalDateTime? = null,
   appointmentTimeType: AppointmentTimeType? = null,
   appointmentAddress: String? = null,
+  licenceAppointmentAddress: Address? = null,
   appointmentContact: String? = null,
   override var spoDiscussion: String? = null,
   override var vloDiscussion: String? = null,
@@ -124,6 +127,7 @@ class VariationLicence(
   appointmentTime = appointmentTime,
   appointmentTimeType = appointmentTimeType,
   appointmentAddress = appointmentAddress,
+  licenceAppointmentAddress = licenceAppointmentAddress,
   appointmentContact = appointmentContact,
   approvedDate = approvedDate,
   approvedByUsername = approvedByUsername,
@@ -183,6 +187,7 @@ class VariationLicence(
     appointmentTime: LocalDateTime? = this.appointmentTime,
     appointmentTimeType: AppointmentTimeType? = this.appointmentTimeType,
     appointmentAddress: String? = this.appointmentAddress,
+    licenceAppointmentAddress: Address? = AddressMapper.copy(this.licenceAppointmentAddress),
     appointmentContact: String? = this.appointmentContact,
     spoDiscussion: String? = this.spoDiscussion,
     vloDiscussion: String? = this.vloDiscussion,
@@ -245,6 +250,7 @@ class VariationLicence(
       appointmentTime = appointmentTime,
       appointmentTimeType = appointmentTimeType,
       appointmentAddress = appointmentAddress,
+      licenceAppointmentAddress = licenceAppointmentAddress,
       appointmentContact = appointmentContact,
       spoDiscussion = spoDiscussion,
       vloDiscussion = vloDiscussion,
@@ -321,6 +327,7 @@ class VariationLicence(
     "appointmentTime=$appointmentTime, " +
     "appointmentTimeType=$appointmentTimeType, " +
     "appointmentAddress=$appointmentAddress, " +
+    "licenceAppointmentAddress=$licenceAppointmentAddress, " +
     "appointmentContact=$appointmentContact, " +
     "spoDiscussion=$spoDiscussion, " +
     "vloDiscussion=$vloDiscussion, " +

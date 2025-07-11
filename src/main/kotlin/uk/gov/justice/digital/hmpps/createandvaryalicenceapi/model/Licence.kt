@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
@@ -199,6 +200,11 @@ sealed interface Licence {
     example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
   )
   val appointmentAddress: String?
+
+  @get:Schema(
+    description = "The address of initial appointment",
+  )
+  val licenceAppointmentAddress: AddressResponse?
 
   @get:Schema(
     description = "The UK telephone number to contact the person the offender should meet for their initial meeting",

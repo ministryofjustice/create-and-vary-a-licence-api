@@ -35,6 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.Addition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.BespokeConditionRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -73,6 +74,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 @Service
 class LicenceService(
   private val licenceRepository: LicenceRepository,
+  private val crdLicenceRepository: CrdLicenceRepository,
   private val staffRepository: StaffRepository,
   private val standardConditionRepository: StandardConditionRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
@@ -1009,7 +1011,7 @@ class LicenceService(
   fun inactivateTimedOutLicenceVersions(licences: List<EntityLicence>, reason: String? = null) {
     val bookingIds = licences.mapNotNull { it.bookingId }
     val licencesToDeactivate =
-      licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(bookingIds, TIMED_OUT)
+      crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(bookingIds, TIMED_OUT)
     if (licencesToDeactivate.isNotEmpty()) {
       log.info("deactivating timeout licences: ${licencesToDeactivate.map { it.id }}")
       inactivateLicences(licencesToDeactivate, reason, deactivateInProgressVersions = false)

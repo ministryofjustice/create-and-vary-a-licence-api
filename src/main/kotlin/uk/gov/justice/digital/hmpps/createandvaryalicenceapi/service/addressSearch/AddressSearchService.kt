@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSea
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AddressSearchResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesMapperToAddressSearchResponseMapper
 
 @Service
@@ -13,6 +13,10 @@ class AddressSearchService(
 ) {
 
   fun searchForAddressesByText(searchQuery: String, page: Int, pageSize: Int): List<AddressSearchResponse> {
+    if (searchQuery.length < 3) {
+      // Prevent silly queries
+      return listOf()
+    }
     val pageable = PageRequest.of(page, pageSize)
     return osPlacesApiClient.searchForAddressesByText(pageable, searchQuery).map { mapper.map(it) }
   }
