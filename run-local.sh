@@ -63,6 +63,7 @@ export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'
 
 # Add policy v3 enabled flag
 export POLICYV3_ENABLED=true
+export RECALL_ENABLED=true
 
 if [[ $1 != "--skip-docker" ]]; then
   restart_docker
