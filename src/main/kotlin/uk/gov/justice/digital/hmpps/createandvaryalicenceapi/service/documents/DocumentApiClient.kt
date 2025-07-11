@@ -30,8 +30,8 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .onStatus(HttpStatusCode::isError) { response ->
-      response.bodyToMono<Map<String, String>>().map { json ->
-        error("Error during uploading document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$json)")
+      response.bodyToMono<String>().map { body ->
+        error("Error during uploading document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$body)")
       }
     }
     .bodyToMono(Document::class.java)

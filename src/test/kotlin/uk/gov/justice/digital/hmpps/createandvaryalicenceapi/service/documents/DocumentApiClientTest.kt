@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -69,7 +68,7 @@ class DocumentApiClientTest {
       "Error during uploading document (UUID=%s, StatusCode=%d, Response=%s)".format(
         "e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1",
         responseStatusCode,
-        JSONObject(errorResponse).toMap().toString(),
+        errorResponse,
       ),
       exception.message,
     )
