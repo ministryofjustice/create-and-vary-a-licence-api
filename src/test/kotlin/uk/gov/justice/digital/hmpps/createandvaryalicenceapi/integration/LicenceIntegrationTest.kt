@@ -339,7 +339,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
     assertThat(newLicence).isInstanceOf(EntityVariationLicence::class.java)
     assertThat((newLicence as EntityVariationLicence).variationOfId).isEqualTo(1)
-    assertLicenceHasExpectedAddress(newLicence)
+    assertLicenceHasExpectedAddress(newLicence, newAddress = true)
     assertThat(newLicence.variationOfId).isEqualTo(1)
     assertThat(newLicence.licenceVersion).isEqualTo("2.0")
   }
@@ -926,7 +926,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     assertThat(newLicence!!.kind).isEqualTo(expectedKind)
     assertThat(newLicence.licenceVersion).isEqualTo("1.1")
     if (noAddress) {
-      assertLicenceHasExpectedAddress(newLicence)
+      assertLicenceHasExpectedAddress(newLicence, newAddress = true)
       assertThat(newLicence.appointmentAddress).isEqualTo("123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,ENGLAND")
     }
 
@@ -962,12 +962,18 @@ class LicenceIntegrationTest : IntegrationTestBase() {
     county: String? = "Testshire",
     postcode: String = "TE5 7AA",
     source: AddressSource = AddressSource.MANUAL,
+    newAddress: Boolean = true,
   ) {
     assertThat(licence.appointmentAddress).isEqualTo(appointmentAddress)
     val address = licence.licenceAppointmentAddress
     assertThat(address).isNotNull
     address?.let {
-      assertThat(it.reference).isEqualTo(reference)
+      if (newAddress) {
+        assertThat(it.reference).isNotNull()
+        assertThat(it.reference).isNotEqualTo(reference)
+      } else {
+        assertThat(it.reference).isEqualTo(reference)
+      }
       assertThat(it.firstLine).isEqualTo(firstLine)
       assertThat(it.secondLine).isEqualTo(secondLine)
       assertThat(it.townOrCity).isEqualTo(townOrCity)

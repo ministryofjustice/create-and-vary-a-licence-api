@@ -13,6 +13,10 @@ class AddressSearchService(
 ) {
 
   fun searchForAddressesByText(searchQuery: String, page: Int, pageSize: Int): List<AddressSearchResponse> {
+    if (searchQuery.length < 3) {
+      // Prevent silly queries
+      return listOf()
+    }
     val pageable = PageRequest.of(page, pageSize)
     return osPlacesApiClient.searchForAddressesByText(pageable, searchQuery).map { mapper.map(it) }
   }

@@ -8,7 +8,4 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Addr
 @Repository
 interface AddressRepository :
   JpaRepository<Address, Long>,
-  JpaSpecificationExecutor<Address> {
-
-  fun findByReference(reference: String): Address?
-}
+  JpaSpecificationExecutor<Address>

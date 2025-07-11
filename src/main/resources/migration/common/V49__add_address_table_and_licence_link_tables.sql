@@ -42,11 +42,12 @@ CREATE TRIGGER set_address_last_updated_timestamp
 	EXECUTE FUNCTION address_update_last_updated_timestamp();
 
 CREATE TABLE licence_appointment_address (
-	 licence_id INTEGER NOT NULL UNIQUE,   -- One licence only
-	 address_id INTEGER NOT NULL,   -- Address can be used by more than one licence
+	 licence_id INTEGER NOT NULL,
+	 address_id INTEGER NOT NULL,
+
+	 CONSTRAINT pk_licence PRIMARY KEY (licence_id),        -- Each licence once
+	 CONSTRAINT uq_address UNIQUE (address_id),             -- Each address once
 
 	 CONSTRAINT fk_licence FOREIGN KEY (licence_id) REFERENCES licence(id) ON DELETE CASCADE,
-	 CONSTRAINT fk_address FOREIGN KEY (address_id) REFERENCES address(id) ON DELETE CASCADE,
-
-	 CONSTRAINT licence_appointment_address_pk PRIMARY KEY (licence_id, address_id)
+	 CONSTRAINT fk_address FOREIGN KEY (address_id) REFERENCES address(id) ON DELETE CASCADE
 );

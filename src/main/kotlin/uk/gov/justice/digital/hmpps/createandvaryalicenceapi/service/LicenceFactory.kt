@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Prison
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -257,7 +258,7 @@ object LicenceFactory {
         appointmentTime = this.appointmentTime,
         appointmentTimeType = this.appointmentTimeType,
         appointmentAddress = this.appointmentAddress,
-        licenceAppointmentAddress = this.licenceAppointmentAddress,
+        licenceAppointmentAddress = AddressMapper.copy(this.licenceAppointmentAddress),
         appointmentContact = this.appointmentContact,
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),
@@ -364,7 +365,7 @@ object LicenceFactory {
         appointmentTime = this.appointmentTime,
         appointmentTimeType = this.appointmentTimeType,
         appointmentAddress = this.appointmentAddress,
-        licenceAppointmentAddress = this.licenceAppointmentAddress,
+        licenceAppointmentAddress = AddressMapper.copy(this.licenceAppointmentAddress),
         appointmentContact = this.appointmentContact,
         responsibleCom = this.responsibleCom,
         dateCreated = LocalDateTime.now(),

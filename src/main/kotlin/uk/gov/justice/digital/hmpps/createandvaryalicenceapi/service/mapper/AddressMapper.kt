@@ -11,6 +11,11 @@ class AddressMapper {
 
   companion object {
 
+    fun copy(entity: Address?): Address? = entity?.copy(
+      id = -1,
+      reference = UUID.randomUUID().toString(),
+    )
+
     fun toEntity(request: AddAddressRequest): Address = Address(
       reference = UUID.randomUUID().toString(),
       uprn = request.uprn,

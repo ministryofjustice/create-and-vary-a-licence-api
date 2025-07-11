@@ -51,10 +51,10 @@ class ControllerAdvice {
     log.info("Handler method validation failed: {}", messages)
 
     return ResponseEntity
-      .status(HttpStatus.BAD_REQUEST)
+      .status(BAD_REQUEST)
       .body(
         ErrorResponse(
-          status = HttpStatus.BAD_REQUEST.value(),
+          status = BAD_REQUEST.value(),
           userMessage = "Validation failed, One or more request fields are invalid",
           developerMessage = messages.joinToString("; "),
         ),
@@ -146,7 +146,7 @@ class ControllerAdvice {
   }
 
   @ExceptionHandler(ValidationException::class)
-  fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
+  fun handleValidationException(e: ValidationException): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
     return ResponseEntity
       .status(BAD_REQUEST)
