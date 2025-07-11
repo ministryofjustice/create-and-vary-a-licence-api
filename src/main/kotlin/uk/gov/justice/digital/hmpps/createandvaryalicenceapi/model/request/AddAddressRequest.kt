@@ -74,11 +74,10 @@ annotation class AddressWithUprnMustBeFromOsPlaces(
 
 class AddressWithUprnMustBeFromOsPlacesValidator : ConstraintValidator<AddressWithUprnMustBeFromOsPlaces, AddAddressRequest> {
   override fun isValid(value: AddAddressRequest?, context: ConstraintValidatorContext): Boolean {
-    if (value == null) return true
-
-    if (AddressSource.OS_PLACES == value.source) {
-      return !value.uprn.isNullOrBlank()
+    return when (value?.source) {
+      null                     -> true  // Or false, depending on what you want
+      AddressSource.OS_PLACES -> !value.uprn.isNullOrBlank()
+      AddressSource.MANUAL     -> value.uprn.isNullOrBlank()
     }
-    return value.uprn.isNullOrBlank()
   }
 }
