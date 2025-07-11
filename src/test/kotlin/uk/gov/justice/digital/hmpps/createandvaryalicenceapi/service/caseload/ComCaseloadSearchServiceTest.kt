@@ -769,6 +769,30 @@ class ComCaseloadSearchServiceTest {
   }
 
   @Test
+  fun `Release date label reads 'Post-recall release date (PRRD)' when licence start date matches PRRD`() {
+    // Given
+
+    val licenceStartDate = LocalDate.of(2023, 9, 14)
+
+    val prisoner = aPrisonerSearchResult.copy(
+      confirmedReleaseDate = null,
+      postRecallReleaseDate = licenceStartDate,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+
+    // When
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    // Then
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+  }
+
+  @Test
   fun `Release date label reads 'Confirmed release date' when licence start date matches ARD`() {
     val prisoner = aPrisonerSearchResult.copy(
       confirmedReleaseDate = LocalDate.of(2023, 9, 14),
@@ -787,7 +811,7 @@ class ComCaseloadSearchServiceTest {
   }
 
   @Test
-  fun `Release date label reads 'CRD' when licence start date does not match either ARD or CRD`() {
+  fun `Release date label reads 'CRD' when licence start date does not match either ARD or CRD or PRRD`() {
     val prisoner = aPrisonerSearchResult.copy(
       confirmedReleaseDate = LocalDate.of(2023, 9, 14),
       conditionalReleaseDate = LocalDate.of(2023, 9, 15),

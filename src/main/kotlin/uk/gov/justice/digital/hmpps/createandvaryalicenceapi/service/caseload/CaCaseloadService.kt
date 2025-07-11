@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -14,6 +15,10 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CONFIRMED_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CRD_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_HDC_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_PRRD_RELEASE_DATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
@@ -160,13 +165,7 @@ class CaCaseloadService(
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
         releaseDate = licence.licenceStartDate,
-        releaseDateLabel =
-        when (licence.licenceStartDate) {
-          null -> "CRD"
-          licence.homeDetentionCurfewActualDate -> "HDCAD"
-          licence.actualReleaseDate -> "Confirmed release date"
-          else -> "CRD"
-        },
+        releaseDateLabel = getReleaseDateLabel(licence),
         licenceStatus = licence.licenceStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
@@ -289,40 +288,35 @@ class CaCaseloadService(
   private fun createNotStartedLicenceForCase(
     cases: List<ManagedCase>,
     licenceStartDates: Map<String, LocalDate?>,
-  ): List<CaCase> = cases.map { c ->
+  ): List<CaCase> = cases.map { case ->
 
     // Default status (if not overridden below) will show the case as clickable on case lists
     var licenceStatus = NOT_STARTED
 
-    if (c.cvlFields.isInHardStopPeriod) {
+    if (case.cvlFields.isInHardStopPeriod) {
       licenceStatus = TIMED_OUT
     }
 
-    val com = c.deliusRecord?.managedOffenderCrn?.staff
+    val com = case.deliusRecord?.managedOffenderCrn?.staff
 
-    val releaseDate = licenceStartDates[c.nomisRecord?.prisonerNumber]
+    val releaseDate = licenceStartDates[case.nomisRecord?.prisonerNumber]
 
     CaCase(
-      name = c.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
-      prisonerNumber = c.nomisRecord?.prisonerNumber!!,
+      name = case.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
+      prisonerNumber = case.nomisRecord?.prisonerNumber!!,
       releaseDate = releaseDate,
-      releaseDateLabel = when (releaseDate) {
-        null -> "CRD"
-        c.nomisRecord.confirmedReleaseDate -> "Confirmed release date"
-        c.nomisRecord.homeDetentionCurfewActualDate -> "HDCAD"
-        else -> "CRD"
-      },
+      releaseDateLabel = getReleaseDateLabel(releaseDate, case.nomisRecord),
       licenceStatus = licenceStatus,
-      nomisLegalStatus = c.nomisRecord.legalStatus,
-      isDueForEarlyRelease = c.cvlFields.isDueForEarlyRelease,
-      isInHardStopPeriod = c.cvlFields.isInHardStopPeriod,
-      tabType = Tabs.determineCaViewCasesTab(c.cvlFields, releaseDate, licence = null, clock),
+      nomisLegalStatus = case.nomisRecord.legalStatus,
+      isDueForEarlyRelease = case.cvlFields.isDueForEarlyRelease,
+      isInHardStopPeriod = case.cvlFields.isInHardStopPeriod,
+      tabType = Tabs.determineCaViewCasesTab(case.cvlFields, releaseDate, licence = null, clock),
       probationPractitioner = ProbationPractitioner(
         staffCode = com?.code,
         name = com?.name?.fullName(),
       ),
-      prisonCode = c.nomisRecord.prisonId,
-      prisonDescription = c.nomisRecord.prisonName,
+      prisonCode = case.nomisRecord.prisonId,
+      prisonDescription = case.nomisRecord.prisonName,
     )
   }
 
@@ -338,9 +332,9 @@ class CaCaseloadService(
 
   private fun filterExistingLicencesForEligibility(licences: List<CaCase>): List<CaCase> = licences.filter { l -> l.nomisLegalStatus != "DEAD" }
 
-  private fun enrichWithNomisData(licences: List<LicenceSummary>, prisoners: List<CaseloadItem>): List<CaCase> {
-    return prisoners.map { p ->
-      val licencesForOffender = licences.filter { l -> l.nomisId == p.prisoner.prisonerNumber }
+  private fun enrichWithNomisData(licences: List<LicenceSummary>, caseloadItems: List<CaseloadItem>): List<CaCase> {
+    return caseloadItems.map { caseloadItem ->
+      val licencesForOffender = licences.filter { l -> l.nomisId == caseloadItem.prisoner.prisonerNumber }
       if (licencesForOffender.isEmpty()) return@map null
       val licence = findLatestLicenceSummary(licencesForOffender)
       val releaseDate = licence?.licenceStartDate
@@ -351,19 +345,14 @@ class CaCaseloadService(
         name = licence.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licence?.nomisId!!,
         releaseDate = releaseDate,
-        releaseDateLabel = when (releaseDate) {
-          null -> "CRD"
-          licence.actualReleaseDate -> "Confirmed release date"
-          p.prisoner.homeDetentionCurfewActualDate -> "HDCAD"
-          else -> "CRD"
-        },
+        releaseDateLabel = getReleaseDateLabel(licence),
         licenceStatus = licence.licenceStatus,
-        nomisLegalStatus = p.prisoner.legalStatus,
+        nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
         isInHardStopPeriod = licence.isInHardStopPeriod,
         tabType = Tabs.determineCaViewCasesTab(
-          p.cvl,
+          caseloadItem.cvl,
           releaseDate,
           licence,
           clock,
@@ -373,6 +362,27 @@ class CaCaseloadService(
         prisonDescription = licence.prisonDescription,
       )
     }.filterNotNull()
+  }
+
+  private fun getReleaseDateLabel(
+    licence: LicenceSummary,
+  ): String = when (licence.licenceStartDate) {
+    null -> LABEL_FOR_CRD_RELEASE_DATE
+    licence.actualReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
+    licence.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
+    licence.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
+    else -> LABEL_FOR_CRD_RELEASE_DATE
+  }
+
+  private fun getReleaseDateLabel(
+    releaseDate: LocalDate?,
+    nomisRecord: Prisoner,
+  ): String = when (releaseDate) {
+    null -> LABEL_FOR_CRD_RELEASE_DATE
+    nomisRecord.confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
+    nomisRecord.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
+    nomisRecord.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
+    else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 
   private fun getPrisonersApproachingRelease(
