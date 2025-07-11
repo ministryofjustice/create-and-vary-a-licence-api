@@ -23,6 +23,7 @@ class VariationLicenceTest {
     val supersededDate = LocalDateTime.now().plusDays(5)
     val aCom = TestData.com()
     val postRecallReleaseDate = LocalDate.now()
+    val address = TestData.createAddress()
 
     val variationLicence = TestData.createVariationLicence()
       .copy(
@@ -31,7 +32,8 @@ class VariationLicenceTest {
         submittedDate = submittedDate,
         variationOfId = 1L,
         vloDiscussion = "Yes 2",
-        appointmentAddress = "some address",
+        licenceAppointmentAddress = address,
+        appointmentAddress = address.toString(),
         appointmentTime = appointmentTime,
         appointmentTimeType = appointmentTimeType,
         submittedBy = aCom,
@@ -61,9 +63,11 @@ class VariationLicenceTest {
     val copy = variationLicence.copy()
 
     val incorrectlyCopiedItems = VariationLicence::class.memberProperties
-      .filter { it.get(variationLicence) != it.get(copy) }
+      .filter { it.get(variationLicence) != it.get(copy) && it.name != "licenceAppointmentAddress" }
       .map { it.name }
 
     assertThat(incorrectlyCopiedItems).isEmpty()
+    assertThat(copy.licenceAppointmentAddress).isNotNull
+    assertThat(copy.licenceAppointmentAddress!!.reference).isNotEqualTo(variationLicence.licenceAppointmentAddress!!.reference)
   }
 }

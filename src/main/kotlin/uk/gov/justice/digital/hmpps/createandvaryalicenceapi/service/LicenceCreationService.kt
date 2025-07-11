@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceCreationResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -40,6 +41,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 @Service
 class LicenceCreationService(
   private val licenceRepository: LicenceRepository,
+  private val crdLicenceRepository: CrdLicenceRepository,
   private val staffRepository: StaffRepository,
   private val standardConditionRepository: StandardConditionRepository,
   private val additionalConditionRepository: AdditionalConditionRepository,
@@ -159,7 +161,7 @@ class LicenceCreationService(
     val createdBy = staffRepository.findByUsernameIgnoreCase(username) as PrisonUser?
       ?: error("Staff with username $username not found")
 
-    val timedOutLicence: CrdLicence? = licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+    val timedOutLicence: CrdLicence? = crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
       listOf(nomisRecord.bookingId!!.toLong()),
       TIMED_OUT,
     ).firstOrNull()

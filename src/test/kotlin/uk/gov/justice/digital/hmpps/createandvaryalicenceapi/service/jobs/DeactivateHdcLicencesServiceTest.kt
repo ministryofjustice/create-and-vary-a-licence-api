@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 
 class DeactivateHdcLicencesServiceTest {
   private val licenceRepository = mock<LicenceRepository>()
+  private val hdcLicenceRepository = mock<HdcLicenceRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val domainEventsService = mock<DomainEventsService>()
@@ -35,6 +37,7 @@ class DeactivateHdcLicencesServiceTest {
 
   private val service = DeactivateHdcLicencesService(
     licenceRepository,
+    hdcLicenceRepository,
     auditEventRepository,
     licenceEventRepository,
     domainEventsService,
@@ -52,7 +55,7 @@ class DeactivateHdcLicencesServiceTest {
 
   @Test
   fun `return if no licences to deactivate`() {
-    whenever(licenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(emptyList())
+    whenever(hdcLicenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(emptyList())
 
     service.runJob()
 
@@ -67,7 +70,7 @@ class DeactivateHdcLicencesServiceTest {
     val licences = listOf(
       aHdcLicence,
     )
-    whenever(licenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(licences)
+    whenever(hdcLicenceRepository.getDraftLicencesIneligibleForHdcRelease()).thenReturn(licences)
 
     service.runJob()
 
@@ -75,7 +78,7 @@ class DeactivateHdcLicencesServiceTest {
     val auditCaptor = ArgumentCaptor.forClass(AuditEvent::class.java)
     val eventCaptor = ArgumentCaptor.forClass(LicenceEvent::class.java)
 
-    verify(licenceRepository, times(1)).getDraftLicencesIneligibleForHdcRelease()
+    verify(hdcLicenceRepository, times(1)).getDraftLicencesIneligibleForHdcRelease()
     verify(licenceRepository, times(1)).saveAllAndFlush(licenceCaptor.capture())
     verify(auditEventRepository, times(1)).saveAndFlush(auditCaptor.capture())
     verify(licenceEventRepository, times(1)).saveAndFlush(eventCaptor.capture())

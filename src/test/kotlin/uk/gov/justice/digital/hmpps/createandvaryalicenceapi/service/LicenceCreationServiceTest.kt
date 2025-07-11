@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCond
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcCurfewAddress
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.CrdLicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.HdcCurfewAddressRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
@@ -73,6 +74,7 @@ class LicenceCreationServiceTest {
   private val hdcCurfewAddressRepository = mock<HdcCurfewAddressRepository>()
   private val standardConditionRepository = mock<StandardConditionRepository>()
   private val licenceRepository = mock<LicenceRepository>()
+  private val crdLicenceRepository = mock<CrdLicenceRepository>()
   private val staffRepository = mock<StaffRepository>()
   private val licenceEventRepository = mock<LicenceEventRepository>()
   private val auditEventRepository = mock<AuditEventRepository>()
@@ -84,6 +86,7 @@ class LicenceCreationServiceTest {
 
   private val service = LicenceCreationService(
     licenceRepository,
+    crdLicenceRepository,
     staffRepository,
     standardConditionRepository,
     additionalConditionRepository,
@@ -1238,7 +1241,7 @@ class LicenceCreationServiceTest {
       val previousLicence = TestData.createCrdLicence().copy(id = 1234L)
 
       whenever(
-        licenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
+        crdLicenceRepository.findAllByBookingIdInAndStatusCodeOrderByDateCreatedDesc(
           listOf(aPrisonerSearchResult.bookingId!!.toLong()),
           TIMED_OUT,
         ),

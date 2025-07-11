@@ -11,6 +11,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.StandardCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
@@ -49,6 +51,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalCondition as ModelAdditionalCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CrdLicence as ModelCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.HdcVariationLicence as ModelHdcVariationLicence
@@ -329,6 +332,28 @@ object TestData {
   ).let {
     it.copy(standardConditions = someEntityStandardConditions(it))
   }
+
+  fun createAddress(
+    reference: String = "REF-${UUID.randomUUID()}",
+    firstLine: String = "123 Test Street",
+    secondLine: String? = null,
+    townOrCity: String = "Testville",
+    county: String? = "Testshire",
+    postcode: String = "TE5 7AA",
+    source: AddressSource = AddressSource.MANUAL,
+    created: LocalDateTime = LocalDateTime.now(),
+    updated: LocalDateTime = created,
+  ): Address = Address(
+    reference = reference,
+    firstLine = firstLine,
+    secondLine = secondLine,
+    townOrCity = townOrCity,
+    county = county,
+    postcode = postcode,
+    source = source,
+    createdTimestamp = created,
+    lastUpdatedTimestamp = updated,
+  )
 
   fun createHdcLicence() = HdcLicence(
     id = 1,

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummar
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrrdLicenceResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.AddressMapper
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
@@ -166,6 +167,7 @@ fun toHardstop(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   reviewDate = licence.reviewDate,
   approvedDate = licence.approvedDate,
@@ -249,6 +251,7 @@ fun toVariation(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   spoDiscussion = licence.spoDiscussion,
   vloDiscussion = licence.vloDiscussion,
@@ -334,6 +337,7 @@ fun toPrrd(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
@@ -423,6 +427,7 @@ fun toCrd(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
@@ -514,6 +519,7 @@ fun toHdc(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   approvedDate = licence.approvedDate,
   approvedByUsername = licence.approvedByUsername,
@@ -602,6 +608,7 @@ fun toHdcVariation(
   appointmentTime = licence.appointmentTime,
   appointmentTimeType = licence.appointmentTimeType,
   appointmentAddress = licence.appointmentAddress,
+  licenceAppointmentAddress = licence.licenceAppointmentAddress?.let { AddressMapper.toResponse(it) },
   appointmentContact = licence.appointmentContact,
   spoDiscussion = licence.spoDiscussion,
   vloDiscussion = licence.vloDiscussion,
