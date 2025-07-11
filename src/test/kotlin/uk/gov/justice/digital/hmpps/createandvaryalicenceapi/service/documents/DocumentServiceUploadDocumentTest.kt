@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -25,8 +25,8 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient, times(3))
         .uploadDocument(documentUuid = capture(), documentType = anyOrNull(), file = anyOrNull(), metadata = anyOrNull())
 
-      assertEquals(3, allValues.size)
-      assertEquals(allValues.distinct(), allValues)
+      assertThat(allValues).hasSize(3)
+      assertThat(allValues).isEqualTo(allValues.distinct())
     }
   }
 
@@ -41,7 +41,7 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = capture(), documentType = anyOrNull(), file = anyOrNull(), metadata = anyOrNull())
 
-      assertEquals(firstValue, documentUuid)
+      assertThat(firstValue).isEqualTo(documentUuid)
     }
   }
 
@@ -56,7 +56,7 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = anyOrNull(), documentType = capture(), file = anyOrNull(), metadata = anyOrNull())
 
-      assertEquals(DocumentType.EXCLUSION_ZONE_MAP, firstValue)
+      assertThat(firstValue).isEqualTo(DocumentType.EXCLUSION_ZONE_MAP)
     }
   }
 
@@ -72,7 +72,7 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = anyOrNull(), documentType = anyOrNull(), file = anyOrNull(), metadata = capture())
 
-      assertEquals(givenMetadata, firstValue)
+      assertThat(firstValue).isEqualTo(givenMetadata)
     }
   }
 
@@ -87,7 +87,7 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = anyOrNull(), documentType = anyOrNull(), file = capture(), metadata = anyOrNull())
 
-      assertEquals(file, firstValue)
+      assertThat(firstValue).isEqualTo(file)
     }
   }
 }
