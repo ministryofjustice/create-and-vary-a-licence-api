@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceServ
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
@@ -126,7 +127,10 @@ class ComCreateCaseloadService(
       } else {
         // No licences present for this offender - determine how to show them in case lists
         val licenceType = LicenceType.getLicenceType(case.nomisRecord!!)
-        val licenceKind = caseloadService.determineLicenceKind(case.nomisRecord.toPrisonerSearchPrisoner())
+        val licenceKind =
+          releaseDateService.determineLicenceKind(
+            case.nomisRecord.toPrisonerSearchPrisoner().toSentenceDateHolder(null),
+          )
         val name = "${case.nomisRecord.firstName} ${case.nomisRecord.lastName}".trim().convertToTitleCase()
 
         var licenceStatus = NOT_STARTED
@@ -345,7 +349,7 @@ class ComCreateCaseloadService(
     }.map { (case, _) -> case.nomisRecord!!.toPrisonerSearchPrisoner() }
 
     val prisonersToLicenceKinds = prisonerSearchPrisonersWithoutLicences.associate {
-      it.prisonerNumber to caseloadService.determineLicenceKind(it)
+      it.prisonerNumber to releaseDateService.determineLicenceKind(it.toSentenceDateHolder(null))
     }
     return releaseDateService.getLicenceStartDates(prisonerSearchPrisonersWithoutLicences, prisonersToLicenceKinds)
   }

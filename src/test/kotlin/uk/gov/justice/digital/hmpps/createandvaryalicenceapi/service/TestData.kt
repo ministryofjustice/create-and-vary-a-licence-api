@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Offe
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerHdcStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.SentenceDateHolderImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
@@ -532,6 +533,7 @@ object TestData {
     comName = "John Doe",
     comAllocationDate = LocalDate.parse("2025-01-27"),
   )
+
   fun managedOffenderCrn() = ManagedOffenderCrn(
     crn = "X12348",
     staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
@@ -888,5 +890,19 @@ object TestData {
     username = "joebloggs",
     code = "X1234",
     name = Name(forename = "Delius", surname = "User"),
+  )
+
+  fun aSentenceDateHolder(
+    conditionalReleaseDate: LocalDate? = null,
+    licenceStartDate: LocalDate? = null,
+    homeDetentionCurfewActualDate: LocalDate? = null,
+    actualReleaseDate: LocalDate? = null,
+    postRecallReleaseDate: LocalDate? = null,
+  ) = SentenceDateHolderImpl(
+    conditionalReleaseDate = conditionalReleaseDate,
+    licenceStartDate = licenceStartDate,
+    homeDetentionCurfewActualDate = homeDetentionCurfewActualDate,
+    actualReleaseDate = actualReleaseDate,
+    postRecallReleaseDate = postRecallReleaseDate,
   )
 }

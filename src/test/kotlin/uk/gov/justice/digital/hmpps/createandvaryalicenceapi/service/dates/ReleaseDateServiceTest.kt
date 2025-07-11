@@ -14,6 +14,7 @@ import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
@@ -51,6 +52,7 @@ class ReleaseDateServiceTest {
       override val conditionalReleaseDate: LocalDate? = null
       override val actualReleaseDate: LocalDate? = null
       override val homeDetentionCurfewActualDate: LocalDate? = homeDetentionCurfewActualDate
+      override val postRecallReleaseDate: LocalDate? = null
     },
   )
 
@@ -1181,6 +1183,61 @@ class ReleaseDateServiceTest {
         )
         assertThat(service.getLicenceStartDates(cases)).isEqualTo(expectedResponse)
       }
+    }
+  }
+
+  @Nested
+  inner class `Determine licence kind` {
+    @Test
+    fun `should determine a licence with PRRD in future and after CRD in the past as a recall licence`() {
+      val sentenceDateHolder = aSentenceDateHolder(
+        conditionalReleaseDate = LocalDate.now().minusDays(1),
+        postRecallReleaseDate = LocalDate.now().plusDays(1),
+      )
+
+      val licenceKind = service.determineLicenceKind(sentenceDateHolder)
+
+      assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
+    }
+
+    @Test
+    fun `should determine a licence with PRRD in future and before CRD as a CRD licence`() {
+      val today = LocalDate.now(clock)
+      val sentenceDateHolder = aSentenceDateHolder(
+        postRecallReleaseDate = today.plusDays(10),
+        conditionalReleaseDate = today.plusDays(13),
+      )
+
+      val licenceKind = service.determineLicenceKind(sentenceDateHolder)
+
+      assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
+    }
+
+    @Test
+    fun `should determine a licence with null PRRD and a hard stop date of today as a hard stop licence`() {
+      val sentenceDateHolder = aSentenceDateHolder(conditionalReleaseDate = LocalDate.now(clock).plusDays(3))
+
+      val licenceKind = service.determineLicenceKind(sentenceDateHolder)
+
+      assertThat(licenceKind).isEqualTo(LicenceKind.HARD_STOP)
+    }
+
+    @Test
+    fun `should determine a licence with null PRRD and hard stop date in future as a CRD licence`() {
+      val sentenceDateHolder = aSentenceDateHolder(conditionalReleaseDate = LocalDate.now().plusDays(2))
+
+      val licenceKind = service.determineLicenceKind(sentenceDateHolder)
+
+      assertThat(licenceKind).isEqualTo(LicenceKind.CRD)
+    }
+
+    @Test
+    fun `should determine a licence with a future PRRD and a null CRD as a PRRD licence`() {
+      val sentenceDateHolder = aSentenceDateHolder(postRecallReleaseDate = LocalDate.now().plusDays(2))
+
+      val licenceKind = service.determineLicenceKind(sentenceDateHolder)
+
+      assertThat(licenceKind).isEqualTo(LicenceKind.PRRD)
     }
   }
 

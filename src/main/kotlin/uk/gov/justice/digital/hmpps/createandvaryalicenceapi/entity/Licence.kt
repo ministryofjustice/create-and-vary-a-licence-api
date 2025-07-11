@@ -78,7 +78,7 @@ abstract class Licence(
   var licenceActivatedDate: LocalDateTime? = null,
   var topupSupervisionStartDate: LocalDate? = null,
   var topupSupervisionExpiryDate: LocalDate? = null,
-  var postRecallReleaseDate: LocalDate? = null,
+  override var postRecallReleaseDate: LocalDate? = null,
   var probationAreaCode: String? = null,
   var probationAreaDescription: String? = null,
   var probationPduCode: String? = null,

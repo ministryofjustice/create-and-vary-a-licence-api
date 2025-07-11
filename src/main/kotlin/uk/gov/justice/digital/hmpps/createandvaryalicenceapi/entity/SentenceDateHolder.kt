@@ -6,6 +6,7 @@ interface SentenceDateHolder {
   val licenceStartDate: LocalDate?
   val conditionalReleaseDate: LocalDate?
   val actualReleaseDate: LocalDate?
+  val postRecallReleaseDate: LocalDate?
   val homeDetentionCurfewActualDate: LocalDate?
     get() = null
 }

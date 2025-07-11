@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
@@ -27,7 +26,7 @@ class CaseloadService(
   fun getPrisonersByNumber(nomisIds: List<String>): List<CaseloadItem> {
     val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
     val licenceStartDates = releaseDateService.getLicenceStartDates(prisoners)
-    return prisoners.map { it.toCaseloadItem(licenceStartDates[it.prisonerNumber]) }
+    return prisoners.map { toCaseloadItem(it, licenceStartDates[it.prisonerNumber]) }
   }
 
   fun getPrisonersByReleaseDate(
@@ -41,18 +40,18 @@ class CaseloadService(
     val licenceStartDates = releaseDateService.getLicenceStartDates(prisoners.mapNotNull { it })
     return prisoners.map {
       val licenceStartDate = licenceStartDates[it.prisonerNumber]
-      it.toCaseloadItem(licenceStartDate)
+      toCaseloadItem(it, licenceStartDate)
     }
   }
 
   fun getPrisoner(nomisId: String) = getPrisonersByNumber(listOf(nomisId)).firstOrNull() ?: throw EntityNotFoundException(nomisId)
 
-  private fun PrisonerSearchPrisoner.toCaseloadItem(licenceStartDate: LocalDate?): CaseloadItem {
-    val sentenceDateHolder = this.toSentenceDateHolder(licenceStartDate)
+  fun toCaseloadItem(prisonerSearchPrisoner: PrisonerSearchPrisoner, licenceStartDate: LocalDate?): CaseloadItem {
+    val sentenceDateHolder = prisonerSearchPrisoner.toSentenceDateHolder(licenceStartDate)
     return CaseloadItem(
-      prisoner = this.toPrisoner(),
+      prisoner = prisonerSearchPrisoner.toPrisoner(),
       cvl = CvlFields(
-        licenceType = LicenceType.getLicenceType(this),
+        licenceType = LicenceType.getLicenceType(prisonerSearchPrisoner),
         hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
         hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
         isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
@@ -64,20 +63,5 @@ class CaseloadService(
         licenceStartDate = sentenceDateHolder.licenceStartDate,
       ),
     )
-  }
-
-  fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind {
-    val today = LocalDate.now()
-    val prrd = nomisRecord.postRecallReleaseDate
-    if (prrd?.isAfter(today) == true && (nomisRecord.conditionalReleaseDate == null || prrd.isAfter(nomisRecord.conditionalReleaseDate))) {
-      return LicenceKind.PRRD
-    }
-
-    val hardstopDate = releaseDateService.getHardStopDate(nomisRecord.toSentenceDateHolder(null))
-    if (hardstopDate != null && hardstopDate <= today) {
-      return LicenceKind.HARD_STOP
-    }
-
-    return LicenceKind.CRD
   }
 }
