@@ -288,7 +288,10 @@ class EligibilityServiceTest {
           licenceExpiryDate = LocalDate.now(clock),
         ),
       )
-      assertThat(result).containsExactly("has no conditional release date", "post recall release date is not before SLED")
+      assertThat(result).containsExactly(
+        "has no conditional release date",
+        "post recall release date is not before SLED",
+      )
     }
 
     @Test
@@ -299,7 +302,10 @@ class EligibilityServiceTest {
           sentenceExpiryDate = LocalDate.now(clock),
         ),
       )
-      assertThat(result).containsExactly("has no conditional release date", "post recall release date is not before SLED")
+      assertThat(result).containsExactly(
+        "has no conditional release date",
+        "post recall release date is not before SLED",
+      )
     }
 
     @Test

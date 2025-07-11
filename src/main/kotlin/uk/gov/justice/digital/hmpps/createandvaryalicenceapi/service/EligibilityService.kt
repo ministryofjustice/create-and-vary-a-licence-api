@@ -8,14 +8,17 @@ import java.time.Clock
 import java.time.LocalDate
 
 typealias EligibilityCheck = (PrisonerSearchPrisoner) -> Boolean
+typealias EligibilityCheckAndReason = Pair<EligibilityCheck, String>
 
 operator fun EligibilityCheck.not(): EligibilityCheck = { !this(it) }
-infix fun EligibilityCheck.describedAs(message: String): Pair<EligibilityCheck, String> = this to message
+infix fun EligibilityCheck.describedAs(message: String): EligibilityCheckAndReason = this to message
+
+fun Collection<EligibilityCheckAndReason>.getIneligibilityReasons(prisoner: PrisonerSearchPrisoner) = mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
 
 @Service
 class EligibilityService(
   private val clock: Clock,
-  @Value("\${recall.enabled}")private val recallEnabled: Boolean = false,
+  @Value("\${recall.enabled}") private val recallEnabled: Boolean = false,
 ) {
 
   val genericChecks = listOf(
@@ -31,7 +34,6 @@ class EligibilityService(
     hasCrdTodayOrInTheFuture() describedAs "CRD in the past",
     isEligibleIfOnAnExtendedDeterminateSentence() describedAs "is on non-eligible EDS",
     !isRecallCase() describedAs "is a recall case",
-
   )
 
   val recallChecks = listOf(
@@ -43,24 +45,25 @@ class EligibilityService(
   fun isEligibleForCvl(prisoner: PrisonerSearchPrisoner): Boolean = getIneligibilityReasons(prisoner).isEmpty()
 
   fun getIneligibilityReasons(prisoner: PrisonerSearchPrisoner): List<String> {
-    val genericIneligibilityReasons = genericChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+    val genericIneligibilityReasons = genericChecks.getIneligibilityReasons(prisoner)
+    val crdIneligibilityReasons = crdChecks.getIneligibilityReasons(prisoner)
 
-    val crdIneligibilityReasons = crdChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
     // If eligible for CRD licence, return as eligible
     if (genericIneligibilityReasons.isEmpty() && crdIneligibilityReasons.isEmpty()) {
       return emptyList()
     }
 
     var recallIneligibilityReasons = emptyList<String>()
+
     if (recallEnabled) {
-      recallIneligibilityReasons = recallChecks.mapNotNull { (test, message) -> if (!test(prisoner)) message else null }
+      recallIneligibilityReasons = recallChecks.getIneligibilityReasons(prisoner)
       // If eligible for PRRD licence, return as eligible
       if (genericIneligibilityReasons.isEmpty() && recallIneligibilityReasons.isEmpty()) {
         return emptyList()
       }
     }
 
-    // If not eligible for either, return combined list of reasons
+    // If not eligible for either, return the combined list of reasons
     return (genericIneligibilityReasons + crdIneligibilityReasons + recallIneligibilityReasons).distinct()
   }
 
