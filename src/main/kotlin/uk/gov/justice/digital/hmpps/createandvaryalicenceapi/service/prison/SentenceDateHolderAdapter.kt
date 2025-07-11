@@ -9,6 +9,7 @@ object SentenceDateHolderAdapter {
     override val actualReleaseDate = confirmedReleaseDate
     override val licenceStartDate = licenceStartDate
     override val homeDetentionCurfewActualDate = this@toSentenceDateHolder.homeDetentionCurfewActualDate
+    override val postRecallReleaseDate: LocalDate? = this@toSentenceDateHolder.postRecallReleaseDate
   }
 
   fun SentenceDateHolder.reifySentenceDates() = SentenceDateHolderImpl(
@@ -16,6 +17,7 @@ object SentenceDateHolderAdapter {
     actualReleaseDate = this.actualReleaseDate,
     licenceStartDate = licenceStartDate,
     homeDetentionCurfewActualDate = this.homeDetentionCurfewActualDate,
+    postRecallReleaseDate = this.postRecallReleaseDate,
   )
 
   data class SentenceDateHolderImpl(
@@ -23,5 +25,6 @@ object SentenceDateHolderAdapter {
     override val conditionalReleaseDate: LocalDate?,
     override val actualReleaseDate: LocalDate?,
     override val homeDetentionCurfewActualDate: LocalDate?,
+    override val postRecallReleaseDate: LocalDate?,
   ) : SentenceDateHolder
 }

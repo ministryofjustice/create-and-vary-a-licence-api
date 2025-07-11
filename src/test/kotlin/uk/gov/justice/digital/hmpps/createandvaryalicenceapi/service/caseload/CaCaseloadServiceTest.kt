@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
@@ -37,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -171,15 +173,23 @@ class CaCaseloadServiceTest {
           emptyList(),
         )
         whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+        val prisoner = aPrisonerSearchPrisoner.copy(
+          bookingId = "1",
+          prisonerNumber = aLicenceSummary.nomisId,
+          confirmedReleaseDate = twoMonthsFromNow,
+          conditionalReleaseDate = twoDaysFromNow,
+        )
+        val cvlFields = CvlFields(
+          licenceType = aLicenceSummary.licenceType,
+          isDueForEarlyRelease = true,
+          isInHardStopPeriod = true,
+          isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        )
+
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(
             listOf(
-              aPrisonerSearchPrisoner.copy(
-                bookingId = "1",
-                prisonerNumber = aLicenceSummary.nomisId,
-                confirmedReleaseDate = twoMonthsFromNow,
-                conditionalReleaseDate = twoDaysFromNow,
-              ),
+              prisoner,
             ),
           ),
         )
@@ -189,7 +199,19 @@ class CaCaseloadServiceTest {
         whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
         whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
         whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
+        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(
+          mapOf(
+            prisoner.prisonerNumber to
+              LocalDate.of(2023, 10, 14),
+          ),
+        )
         whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+        whenever(caseloadService.toCaseloadItem(any(), any())).thenReturn(
+          CaseloadItem(
+            prisoner.toPrisoner(),
+            cvlFields,
+          ),
+        )
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
 
@@ -800,6 +822,13 @@ class CaCaseloadServiceTest {
           homeDetentionCurfewEligibilityDate = twoDaysFromNow,
           bookingId = "1234",
         )
+        val cvlFields = CvlFields(
+          licenceType = aLicenceSummary.licenceType,
+          isDueForEarlyRelease = false,
+          isInHardStopPeriod = false,
+          isDueToBeReleasedInTheNextTwoWorkingDays = false,
+        )
+
         whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
           PageImpl(listOf(prisoner)),
         )
@@ -807,6 +836,13 @@ class CaCaseloadServiceTest {
         whenever(hdcService.getHdcStatus(listOf(prisoner))).thenReturn(HdcStatuses(emptySet()))
 
         whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
+
+        whenever(caseloadService.toCaseloadItem(any(), any())).thenReturn(
+          CaseloadItem(
+            prisoner.toPrisoner(),
+            cvlFields,
+          ),
+        )
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
         assertThat(prisonOmuCaseload).isEqualTo(

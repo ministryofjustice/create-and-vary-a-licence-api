@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HARD_STOP
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import java.time.Clock
@@ -36,6 +37,12 @@ class ReleaseDateService(
   }
 
   fun isDueForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
+    val licenceKind = determineLicenceKind(sentenceDateHolder)
+
+    if (licenceKind == PRRD) {
+      return false
+    }
+
     val actualReleaseDate = sentenceDateHolder.actualReleaseDate
     val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
 
@@ -128,6 +135,28 @@ class ReleaseDateService(
     return prisoners.associate {
       it.prisonerNumber to calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
     }
+  }
+
+  fun determineLicenceKind(sentenceDateHolder: SentenceDateHolder): LicenceKind {
+    val today = LocalDate.now(clock)
+    val prrd = sentenceDateHolder.postRecallReleaseDate
+    if (prrd?.isAfter(today) == true &&
+      (
+        sentenceDateHolder.conditionalReleaseDate == null ||
+          prrd.isAfter(
+            sentenceDateHolder.conditionalReleaseDate,
+          )
+        )
+    ) {
+      return PRRD
+    }
+
+    val hardstopDate = getHardStopDate(sentenceDateHolder)
+    if (hardstopDate != null && hardstopDate <= today) {
+      return HARD_STOP
+    }
+
+    return CRD
   }
 
   private fun calculateCrdLicenceStartDate(
