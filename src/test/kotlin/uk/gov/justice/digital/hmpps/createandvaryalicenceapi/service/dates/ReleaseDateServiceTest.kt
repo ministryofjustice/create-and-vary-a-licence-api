@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.aSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -555,6 +556,13 @@ class ReleaseDateServiceTest {
         actualReleaseDate = date,
         conditionalReleaseDate = date.minusDays(3),
       )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `is a PRRD licence`() {
+      val licence = createPrrdLicence()
 
       assertThat(service.isDueForEarlyRelease(licence)).isFalse
     }
