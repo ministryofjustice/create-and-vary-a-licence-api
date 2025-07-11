@@ -35,6 +35,8 @@ export NOTIFY_API_KEY=$(kubectl -n create-and-vary-a-licence-api-dev get secrets
 
 # --- Booleans / Flags ---
 export POLICYV3_ENABLED=true
+export RECALL_ENABLED=true
+
 
 # --- Write to .env file ---
 fileDir=~/env-config/
