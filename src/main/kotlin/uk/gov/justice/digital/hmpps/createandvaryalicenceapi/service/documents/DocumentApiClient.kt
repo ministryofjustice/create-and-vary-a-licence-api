@@ -18,7 +18,7 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     documentType: DocumentType,
     file: ByteArray,
     metadata: Map<String, String> = mapOf(),
-  ): Document? = documentApiClient.post()
+  ): Document = documentApiClient.post()
     .uri("/documents/$documentType/$documentUuid")
     .header("Service-Name", "create-and-vary-a-licence-api")
     .bodyValue(
@@ -30,9 +30,10 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .onStatus(HttpStatusCode::isError) { response ->
-      val errorResponse = response.bodyToMono<Map<String, String>>()
-      error("Error during uploading document (status=${response.statusCode()}, body=$errorResponse)")
+      response.bodyToMono<Map<String, String>>().map { json ->
+        error("Error during uploading document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$json)")
+      }
     }
     .bodyToMono(Document::class.java)
-    .block()
+    .block() ?: error("Error during uploading document (UUID=$documentUuid) - Null response")
 }

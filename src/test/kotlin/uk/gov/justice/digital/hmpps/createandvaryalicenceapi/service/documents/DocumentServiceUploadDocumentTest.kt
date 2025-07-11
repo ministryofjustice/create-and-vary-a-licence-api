@@ -14,7 +14,7 @@ class DocumentServiceUploadDocumentTest {
 
   @Test
   fun `generates a new document UUID each time it is called`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     documentService.uploadDocument(file = file)
@@ -32,7 +32,7 @@ class DocumentServiceUploadDocumentTest {
 
   @Test
   fun `returns the generated UUID when the upload is a success`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     val documentUuid = documentService.uploadDocument(file = file)
@@ -47,7 +47,7 @@ class DocumentServiceUploadDocumentTest {
 
   @Test
   fun `uploads the document as a EXCLUSION_ZONE_MAP document type`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     documentService.uploadDocument(file = file)
@@ -62,7 +62,7 @@ class DocumentServiceUploadDocumentTest {
 
   @Test
   fun `uploads the document with provided metadata`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
     val givenMetadata = mapOf("any" to "metadata", "will" to "be saved", "on" to "upload")
 
@@ -78,7 +78,7 @@ class DocumentServiceUploadDocumentTest {
 
   @Test
   fun `uploads the given file bytes to the remote document service`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     documentService.uploadDocument(file = file)
@@ -89,20 +89,5 @@ class DocumentServiceUploadDocumentTest {
 
       assertEquals(file, firstValue)
     }
-  }
-
-  @Test
-  fun `does not attempt to upload the document when the service is disabled`() {
-    val documentService = DocumentService(documentApiClient, false)
-    val file = byteArrayOf(1, 2, 3)
-
-    val result = documentService.uploadDocument(file = file)
-
-    with(argumentCaptor<ByteArray>()) {
-      verify(documentApiClient, times(0))
-        .uploadDocument(documentUuid = anyOrNull(), documentType = anyOrNull(), file = anyOrNull(), metadata = anyOrNull())
-    }
-
-    assertEquals(null, result)
   }
 }
