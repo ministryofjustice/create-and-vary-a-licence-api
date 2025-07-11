@@ -9,11 +9,11 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
-import org.junit.Assert.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -53,8 +53,9 @@ class DocumentApiClientTest {
 
     val result = uploadDocument()
 
-    assertEquals(result.documentUuid, UUID.fromString("e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1"))
-    assertEquals(result.documentType, DocumentType.EXCLUSION_ZONE_MAP)
+    assertThat(result)
+      .extracting("documentUuid", "documentType")
+      .isEqualTo(listOf(UUID.fromString("e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1"), DocumentType.EXCLUSION_ZONE_MAP))
   }
 
   @ParameterizedTest
@@ -62,25 +63,24 @@ class DocumentApiClientTest {
   fun `Throws an exception when the request is not successful`(responseStatusCode: Int) {
     givenDocumentApiRespondsWith(status = responseStatusCode, responseBody = errorResponse)
 
-    val exception = assertThrows<IllegalStateException> { uploadDocument() }
-
-    assertEquals(
-      "Error during uploading document (UUID=%s, StatusCode=%d, Response=%s)".format(
-        "e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1",
-        responseStatusCode,
-        errorResponse,
-      ),
-      exception.message,
-    )
+    assertThatThrownBy { uploadDocument() }
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessageContaining(
+        "Error during uploading document (UUID=%s, StatusCode=%d, Response=%s)".format(
+          "e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1",
+          responseStatusCode,
+          errorResponse,
+        ),
+      )
   }
 
   @Test
   fun `Throws an exception when the document is not successful and no response could be parsed`() {
     givenDocumentApiRespondsWith(status = 401, responseBody = "")
 
-    val exception = assertThrows<IllegalStateException> { uploadDocument() }
-
-    assertEquals("Error during uploading document (UUID=e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1) - Null response", exception.message)
+    assertThatThrownBy { uploadDocument() }
+      .isInstanceOf(IllegalStateException::class.java)
+      .hasMessageContaining("Error during uploading document (UUID=e2487a03-7cf9-4a9c-85e4-1d51efd7b3f1) - Null response")
   }
 
   private fun uploadDocument() = documentApiClient.uploadDocument(
