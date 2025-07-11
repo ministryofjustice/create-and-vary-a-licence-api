@@ -40,6 +40,27 @@ class ControllerAdvice {
       )
   }
 
+  @ExceptionHandler(HandlerMethodValidationException::class)
+  fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+    val messages = e.parameterValidationResults
+      .flatMap { it.resolvableErrors }
+      .map { error ->
+        val field = error.codes?.firstOrNull()?.substringAfterLast('.') ?: "unknown"
+        "$field: ${error.defaultMessage}"
+      }
+    log.info("Handler method validation failed: {}", messages)
+
+    return ResponseEntity
+      .status(HttpStatus.BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.BAD_REQUEST.value(),
+          userMessage = "Validation failed, One or more request fields are invalid",
+          developerMessage = messages.joinToString("; "),
+        ),
+      )
+  }
+
   @ExceptionHandler(AccessDeniedException::class)
   fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
     log.info("Access denied exception: {}", e.message)
@@ -124,7 +145,7 @@ class ControllerAdvice {
       )
   }
 
-  @ExceptionHandler(ValidationException::class, HandlerMethodValidationException::class)
+  @ExceptionHandler(ValidationException::class)
   fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
     return ResponseEntity
