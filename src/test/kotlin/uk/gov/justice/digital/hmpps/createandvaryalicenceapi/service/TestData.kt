@@ -143,7 +143,7 @@ object TestData {
     surname = "Smith",
     dateOfBirth = LocalDate.of(1985, 12, 28),
     conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-    actualReleaseDate = LocalDate.of(2021, 10, 22),
+    actualReleaseDate = LocalDate.of(2021, 9, 22),
     sentenceStartDate = LocalDate.of(2018, 10, 22),
     sentenceEndDate = LocalDate.of(2021, 10, 22),
     licenceStartDate = LocalDate.of(2021, 10, 22),

@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
@@ -121,10 +122,10 @@ class ComCaseloadSearchService(
     licence: Licence,
     prisonOffender: PrisonerSearchPrisoner?,
   ): FoundProbationRecord? = when {
-    licence.statusCode.isOnProbation() ->
-      deliusOffender.toStartedRecord(licence)
+    licence.statusCode.isOnProbation() -> deliusOffender.toStartedRecord(licence)
 
-    prisonOffender != null && eligibilityService.isEligibleForCvl(prisonOffender) ->
+    prisonOffender != null &&
+      (licence.kind == LicenceKind.PRRD || eligibilityService.isEligibleForCvl(prisonOffender)) ->
       deliusOffender.toStartedRecord(licence)
 
     else -> null

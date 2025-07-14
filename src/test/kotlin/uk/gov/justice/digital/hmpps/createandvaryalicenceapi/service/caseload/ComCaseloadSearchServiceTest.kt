@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.ca
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHardStopLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResponse
@@ -790,6 +792,63 @@ class ComCaseloadSearchServiceTest {
 
     // Then
     assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+    verify(eligibilityService).isEligibleForCvl(any())
+  }
+
+  @Test
+  fun `for offenders in prison with a PRRD licence the release date label reads 'Post-recall release date (PRRD)' when licence start date matches PRRD`() {
+    // Given
+
+    val licenceStartDate = LocalDate.of(2023, 9, 14)
+    val prrdLicence = createPrrdLicence().copy(
+      versionOfId = 2L,
+      licenceStartDate = licenceStartDate,
+      postRecallReleaseDate = licenceStartDate,
+    )
+    val prisoner = aPrisonerSearchResult.copy(
+      confirmedReleaseDate = null,
+      postRecallReleaseDate = licenceStartDate,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
+
+    // When
+    val result = service.searchForOffenderOnStaffCaseload(request)
+
+    // Then
+    assertThat(result.results.first().releaseDateLabel).isEqualTo("Post-recall release date (PRRD)")
+  }
+
+  @Test
+  fun `Ensures search for offenders in prison with a PRRD licence do not check eligibility for Cvl if new PRRD licence`() {
+    // Given
+
+    val licenceStartDate = LocalDate.of(2023, 9, 14)
+    val prrdLicence = createPrrdLicence().copy(
+      versionOfId = 2L,
+    )
+    val prisoner = aPrisonerSearchResult.copy(
+      confirmedReleaseDate = null,
+      postRecallReleaseDate = licenceStartDate,
+    )
+
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(emptyList())
+    whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(prisoner))
+    whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to licenceStartDate))
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(licenceRepository.findAllByCrnAndStatusCodeIn(any(), any())).thenReturn(listOf(prrdLicence))
+
+    // When
+    service.searchForOffenderOnStaffCaseload(request)
+
+    // Then
+    verify(eligibilityService, never()).isEligibleForCvl(any())
   }
 
   @Test

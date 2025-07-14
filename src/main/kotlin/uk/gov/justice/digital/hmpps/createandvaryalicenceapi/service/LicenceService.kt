@@ -52,6 +52,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC_VARIATION
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.VARIATION
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -416,7 +417,6 @@ class LicenceService(
 
     val updatedLicence = when (licenceEntity) {
       is PrrdLicence -> {
-        assertCaseIsEligible(licenceEntity.id, licenceEntity.nomsId)
         licenceEntity.submit(submitter as CommunityOffenderManager)
       }
 
@@ -625,7 +625,9 @@ class LicenceService(
       return inProgressVersions[0].toSummary()
     }
 
-    assertCaseIsEligible(licence.id, licence.nomsId)
+    if (licence.kind != PRRD) {
+      assertCaseIsEligible(licence.id, licence.nomsId)
+    }
 
     val creator = getCommunityOffenderManagerForCurrentUser()
 
@@ -1116,7 +1118,7 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  private fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
+  internal fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
     if (nomisId == null) {
       throw ValidationException("Unable to perform action, licence $licenceId is missing NOMS ID")
     }

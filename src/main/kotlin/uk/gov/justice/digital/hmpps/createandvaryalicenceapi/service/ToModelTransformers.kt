@@ -780,10 +780,11 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
     isDueForEarlyRelease = isDueForEarlyRelease,
     isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
     releaseDateLabel = when (licence.licenceStartDate) {
-      null -> "CRD"
-      licence.actualReleaseDate -> "Confirmed release date"
-      hdcad -> "HDCAD"
-      else -> "CRD"
+      null -> LABEL_FOR_CRD_RELEASE_DATE
+      licence.actualReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
+      licence.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
+      hdcad -> LABEL_FOR_HDC_RELEASE_DATE
+      else -> LABEL_FOR_CRD_RELEASE_DATE
     },
     isReviewNeeded = when (licence) {
       is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)

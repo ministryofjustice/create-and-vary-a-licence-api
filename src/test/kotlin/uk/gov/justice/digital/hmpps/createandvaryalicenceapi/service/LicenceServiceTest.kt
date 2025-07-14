@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
@@ -1274,15 +1275,17 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `submit a PRRD licence saves new fields to the licence`() {
+  fun `submit a PRRD licence saves new fields to the licence and do not check eligibility`() {
     // Given
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createPrrdLicence()))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
+    val toTestSpyService = spy(service)
+
     // When
-    service.submitLicence(1L, emptyList())
+    toTestSpyService.submitLicence(1L, emptyList())
 
     // Then
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1295,6 +1298,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+    verify(toTestSpyService, never()).assertCaseIsEligible(any(), any())
   }
 
   @Test
@@ -2060,7 +2064,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `editing an approved PRRD licence creates and saves a new licence version`() {
+  fun `editing an approved PRRD licence creates and saves a new licence version and do not check eligibility`() {
     // Given
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
@@ -2092,8 +2096,10 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
+    val toTestSpyService = spy(service)
+
     // When
-    service.editLicence(1L)
+    toTestSpyService.editLicence(1L)
 
     // Then
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
@@ -2103,6 +2109,7 @@ class LicenceServiceTest {
       assertThat(versionOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.1")
     }
+    verify(toTestSpyService, never()).assertCaseIsEligible(any(), any())
   }
 
   @Test
