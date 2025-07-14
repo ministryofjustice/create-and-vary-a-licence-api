@@ -64,6 +64,7 @@ cat > "$fileToAddVars" <<EOF
 
 # --- Flags ---
   POLICYV3_ENABLED=${POLICYV3_ENABLED}
+  RECALL_ENABLED=${RECALL_ENABLED}
 EOF
 
 echo "✅ Done. Environment variables saved to: $fileDir$fileToAddVars"
