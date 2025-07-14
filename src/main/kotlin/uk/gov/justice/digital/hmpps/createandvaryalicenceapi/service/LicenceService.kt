@@ -1118,7 +1118,7 @@ class LicenceService(
     isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(this),
   )
 
-  internal fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
+  private fun assertCaseIsEligible(licenceId: Long, nomisId: String?) {
     if (nomisId == null) {
       throw ValidationException("Unable to perform action, licence $licenceId is missing NOMS ID")
     }

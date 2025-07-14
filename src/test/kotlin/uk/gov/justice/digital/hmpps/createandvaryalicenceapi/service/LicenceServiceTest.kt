@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
@@ -1282,10 +1281,8 @@ class LicenceServiceTest {
     whenever(prisonerSearchApiClient.searchPrisonersByNomisIds(any())).thenReturn(listOf(aPrisonerSearchPrisoner))
     whenever(eligibilityService.isEligibleForCvl(aPrisonerSearchPrisoner)).thenReturn(true)
 
-    val toTestSpyService = spy(service)
-
     // When
-    toTestSpyService.submitLicence(1L, emptyList())
+    service.submitLicence(1L, emptyList())
 
     // Then
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
@@ -1298,7 +1295,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
-    verify(toTestSpyService, never()).assertCaseIsEligible(any(), any())
+    verify(eligibilityService, never()).isEligibleForCvl(any())
   }
 
   @Test
@@ -2096,10 +2093,8 @@ class LicenceServiceTest {
     whenever(licenceRepository.save(any())).thenReturn(aLicenceEntity)
     val licenceCaptor = ArgumentCaptor.forClass(EntityLicence::class.java)
 
-    val toTestSpyService = spy(service)
-
     // When
-    toTestSpyService.editLicence(1L)
+    service.editLicence(1L)
 
     // Then
     verify(licenceRepository, times(1)).save(licenceCaptor.capture())
@@ -2109,7 +2104,8 @@ class LicenceServiceTest {
       assertThat(versionOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.1")
     }
-    verify(toTestSpyService, never()).assertCaseIsEligible(any(), any())
+
+    verify(eligibilityService, never()).isEligibleForCvl(any())
   }
 
   @Test
