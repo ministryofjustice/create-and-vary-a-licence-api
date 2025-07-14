@@ -1274,7 +1274,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `submit a PRRD licence saves new fields to the licence`() {
+  fun `submit a PRRD licence saves new fields to the licence and do not check eligibility`() {
     // Given
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(createPrrdLicence()))
     whenever(staffRepository.findByUsernameIgnoreCase("tcom")).thenReturn(aCom)
@@ -1295,6 +1295,7 @@ class LicenceServiceTest {
     assertThat(licence.submittedBy!!.username).isEqualTo("tcom")
     assertThat(licence.submittedDate).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(licence.dateLastUpdated).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+    verify(eligibilityService, never()).isEligibleForCvl(any())
   }
 
   @Test
@@ -2060,7 +2061,7 @@ class LicenceServiceTest {
   }
 
   @Test
-  fun `editing an approved PRRD licence creates and saves a new licence version`() {
+  fun `editing an approved PRRD licence creates and saves a new licence version and do not check eligibility`() {
     // Given
 
     whenever(staffRepository.findByUsernameIgnoreCase(any())).thenReturn(
@@ -2103,6 +2104,8 @@ class LicenceServiceTest {
       assertThat(versionOfId).isEqualTo(1)
       assertThat(licenceVersion).isEqualTo("1.1")
     }
+
+    verify(eligibilityService, never()).isEligibleForCvl(any())
   }
 
   @Test
