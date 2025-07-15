@@ -12,6 +12,21 @@ import java.util.UUID
 
 @Service
 class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClient: WebClient) {
+
+  // Swagger documentation: https://document-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html#/document-controller/downloadDocumentFile
+  fun downloadDocumentFile(documentUuid: UUID): ByteArray = documentApiClient.get()
+    .uri("/documents/$documentUuid/file")
+    .header("Service-Name", "create-and-vary-a-licence-api")
+    .accept(MediaType.APPLICATION_PDF)
+    .retrieve()
+    .onStatus(HttpStatusCode::isError) { response ->
+      response.bodyToMono<String>().map { body ->
+        error("Error downloading document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$body)")
+      }
+    }
+    .bodyToMono(ByteArray::class.java)
+    .block() ?: error("Error downloading document (UUID=$documentUuid)")
+
   // Swagger documentation: https://document-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html#/document-controller/uploadDocument
   fun uploadDocument(
     documentUuid: UUID,
@@ -35,5 +50,5 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
       }
     }
     .bodyToMono(Document::class.java)
-    .block() ?: error("Error during uploading document (UUID=$documentUuid) - Null response")
+    .block() ?: error("Error during uploading document (UUID=$documentUuid)")
 }
