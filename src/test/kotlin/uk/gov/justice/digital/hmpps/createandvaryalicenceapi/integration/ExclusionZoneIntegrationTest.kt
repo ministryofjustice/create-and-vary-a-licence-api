@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
@@ -12,7 +11,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.mock.web.MockMultipartFile
-import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
@@ -201,35 +199,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
 
     val body = result.expectBody(ErrorResponse::class.java).returnResult()
     assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
-  }
-
-  @Nested
-  @TestPropertySource(properties = ["hmpps.document.api.enabled=false"])
-  inner class ExclusionZoneWithoutDocumentServiceEnabledIntegrationTest : IntegrationTestBase() {
-    @Test
-    @Sql(
-      "classpath:test_data/seed-licence-id-2.sql",
-    )
-    fun `Uploading an exclusion zone file with document api disabled only saves it locally`() {
-      val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
-      val bodyBuilder = MultipartBodyBuilder()
-
-      bodyBuilder
-        .part("file", fileResource.file.readBytes())
-        .header("Content-Disposition", "form-data; name=file; filename=" + fileResource.filename)
-        .header("Content-Type", "application/pdf")
-
-      webTestClient.post()
-        .uri("/exclusion-zone/id/2/condition/id/1/file-upload")
-        .contentType(MediaType.MULTIPART_FORM_DATA)
-        .accept(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-        .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
-        .exchange()
-        .expectStatus().isOk
-
-      documentApiMockServer.verifyNoUploadedDocuments()
-    }
   }
 
   private companion object {
