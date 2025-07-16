@@ -25,6 +25,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
@@ -36,6 +38,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.Companion.getLicenceType
+import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.LicenceEvent as EntityLicenceEvent
 
 @Service
@@ -241,6 +244,26 @@ class LicenceCreationService(
     recordLicenceCreation(createdBy, createdLicence)
 
     return LicenceCreationResponse(createdLicence.id)
+  }
+
+  fun determineLicenceKind(nomisRecord: PrisonerSearchPrisoner): LicenceKind {
+    val today = LocalDate.now()
+    val prrd = nomisRecord.postRecallReleaseDate
+
+    var kind: LicenceKind
+
+    if (prrd?.isAfter(today) == true && (nomisRecord.conditionalReleaseDate == null || prrd.isAfter(nomisRecord.conditionalReleaseDate))) {
+      kind = LicenceKind.PRRD
+    } else {
+      kind = LicenceKind.CRD
+    }
+
+    val hardstopDate = releaseDateService.getHardStopDate(nomisRecord.toSentenceDateHolder(null, kind))
+    if (hardstopDate != null && hardstopDate <= today) {
+      kind = LicenceKind.HARD_STOP
+    }
+
+    return kind
   }
 
   private fun recordLicenceCreation(
