@@ -19,4 +19,6 @@ class DocumentService(
 
     return documentUuid
   }
+
+  fun downloadDocument(uuid: UUID): ByteArray = apiClient.downloadDocumentFile(uuid)
 }
