@@ -12,11 +12,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Sent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.LocalDate
 
-const val LABEL_FOR_CRD_RELEASE_DATE = "CRD"
-const val LABEL_FOR_CONFIRMED_RELEASE_DATE = "Confirmed release date"
-const val LABEL_FOR_HDC_RELEASE_DATE = "HDCAD"
-const val LABEL_FOR_PRRD_RELEASE_DATE = "Post-recall release date (PRRD)"
-
 @Service
 class CaseloadService(
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
