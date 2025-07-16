@@ -174,7 +174,7 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(caseloadService.prisonerToCaseloadItem(any(), any())).thenReturn(
+        whenever(caseloadService.prisonerToCaseloadItem(any(), anyOrNull())).thenReturn(
           TestData.caseLoadItem().copy(
             TestData.caseLoadItem().prisoner,
             TestData.someCvlFields(AP).copy(isInHardStopPeriod = true, isDueToBeReleasedInTheNextTwoWorkingDays = true),
@@ -398,7 +398,7 @@ class CaCaseloadServiceTest {
               mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
-              licenceType = LicenceType.AP,
+              licenceType = AP,
               isDueForEarlyRelease = true,
               isInHardStopPeriod = false,
               isDueToBeReleasedInTheNextTwoWorkingDays = false,
@@ -475,7 +475,7 @@ class CaCaseloadServiceTest {
               mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
-              licenceType = LicenceType.AP,
+              licenceType = AP,
               isDueForEarlyRelease = true,
               isInHardStopPeriod = false,
               isDueToBeReleasedInTheNextTwoWorkingDays = false,
@@ -1456,7 +1456,7 @@ class CaCaseloadServiceTest {
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,
       licenceId = 1,
-      licenceType = LicenceType.AP,
+      licenceType = AP,
       licenceStatus = IN_PROGRESS,
       nomisId = "A1234AA",
       forename = "Person",
