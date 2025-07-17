@@ -174,7 +174,8 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(caseloadService.prisonerToCaseloadItem(any(), anyOrNull())).thenReturn(
+        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
+        whenever(caseloadService.prisonerToCaseloadItem(any(), any())).thenReturn(
           TestData.caseLoadItem().copy(
             TestData.caseLoadItem().prisoner,
             TestData.someCvlFields(AP).copy(isInHardStopPeriod = true, isDueToBeReleasedInTheNextTwoWorkingDays = true),
