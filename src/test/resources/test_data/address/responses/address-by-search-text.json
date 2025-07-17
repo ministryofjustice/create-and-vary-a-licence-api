@@ -1,7 +1,7 @@
 [
   {
     "reference": "23456789",
-    "firstLine": "10, THE FAKE AV",
+    "firstLine": "10 THE FAKE AV",
     "secondLine": "FAKETON",
     "townOrCity": "FAKESVILLE",
     "county": "FAKESHIRE",
@@ -10,7 +10,7 @@
   },
   {
     "reference": "234567891",
-    "firstLine": "12, THE FAKE AV",
+    "firstLine": "12 THE FAKE AV",
     "secondLine": "FAKETON",
     "townOrCity": "FAKESVILLE",
     "county": "FAKESHIRE",
