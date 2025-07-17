@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Response object which describes an result from a address search")
 data class AddressSearchResponse(
   @Schema(description = "The address's Unique Property Reference Number", example = "200010019924", required = true)
-  val reference: String,
+  val uprn: String,
 
   @Schema(description = "The address's first line", example = "34 Maryport Street", required = true)
   val firstLine: String,
