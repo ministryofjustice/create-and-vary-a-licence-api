@@ -22,7 +22,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         locality = null,
         subBuildingName = null,
         organisationName = null,
-        buildingName = null
+        buildingName = null,
       )
 
       // When
@@ -43,7 +43,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         buildingNumber = "10",
         thoroughfareName = "Downing Street",
         locality = null,
-        countryDescription = "Scotland"
+        countryDescription = "Scotland",
       )
 
       // When
@@ -65,7 +65,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         buildingNumber = "5",
         thoroughfareName = "Elm Street",
         locality = "North Industrial Zone",
-        countryDescription = "Wales"
+        countryDescription = "Wales",
       )
 
       // When
@@ -85,7 +85,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         buildingNumber = "42",
         thoroughfareName = null,
         locality = null,
-        countryDescription = "Northern Ireland"
+        countryDescription = "Northern Ireland",
       )
 
       // When
@@ -104,7 +104,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         uprn = "1004",
         thoroughfareName = "Kingfisher Way",
         locality = "Greenfields",
-        countryDescription = "Atlantis"
+        countryDescription = "Atlantis",
       )
 
       // When
@@ -125,7 +125,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
         buildingNumber = null,
         thoroughfareName = null,
         locality = null,
-        countryDescription = ""
+        countryDescription = "",
       )
 
       // When
@@ -156,24 +156,22 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
     countryDescription: String = "England",
     xCoordinate: Double = Double.MAX_VALUE,
     yCoordinate: Double = Double.MIN_VALUE,
-    lastUpdateDate: LocalDate = LocalDate.now()
-  ): DeliveryPointAddress {
-    return DeliveryPointAddress(
-      uprn = uprn,
-      address = address,
-      subBuildingName = subBuildingName,
-      organisationName = organisationName,
-      buildingName = buildingName,
-      buildingNumber = buildingNumber,
-      thoroughfareName = thoroughfareName,
-      locality = locality,
-      postTown = postTown,
-      county = county,
-      postcode = postcode,
-      countryDescription = countryDescription,
-      xCoordinate = xCoordinate,
-      yCoordinate = yCoordinate,
-      lastUpdateDate = lastUpdateDate
-    )
-  }
+    lastUpdateDate: LocalDate = LocalDate.now(),
+  ): DeliveryPointAddress = DeliveryPointAddress(
+    uprn = uprn,
+    address = address,
+    subBuildingName = subBuildingName,
+    organisationName = organisationName,
+    buildingName = buildingName,
+    buildingNumber = buildingNumber,
+    thoroughfareName = thoroughfareName,
+    locality = locality,
+    postTown = postTown,
+    county = county,
+    postcode = postcode,
+    countryDescription = countryDescription,
+    xCoordinate = xCoordinate,
+    yCoordinate = yCoordinate,
+    lastUpdateDate = lastUpdateDate,
+  )
 }

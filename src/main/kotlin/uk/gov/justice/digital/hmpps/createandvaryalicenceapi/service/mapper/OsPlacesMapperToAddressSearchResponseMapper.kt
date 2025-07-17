@@ -46,12 +46,10 @@ class OsPlacesMapperToAddressSearchResponseMapper {
     getBuildingNumberOrThoroughfare(dpa, excludeThoroughfare),
   ).joinToString(ADDRESS_ITEM_SEPARATOR)
 
-  private fun buildSecondLine(dpa: DeliveryPointAddress, firstLine: String, useThoroughfare: Boolean): String? {
-    return when {
-      useThoroughfare && firstLine.isNotBlank() -> getThoroughfareWithNumber(dpa)
-      dpa.locality != null -> dpa.locality
-      else -> null
-    }
+  private fun buildSecondLine(dpa: DeliveryPointAddress, firstLine: String, useThoroughfare: Boolean): String? = when {
+    useThoroughfare && firstLine.isNotBlank() -> getThoroughfareWithNumber(dpa)
+    dpa.locality != null -> dpa.locality
+    else -> null
   }
 
   private fun getBuildingNumberOrThoroughfare(dpa: DeliveryPointAddress, excludeThoroughfare: Boolean): String? = when {
