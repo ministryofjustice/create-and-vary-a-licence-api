@@ -5,17 +5,27 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.Addr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.DeliveryPointAddress
 
 private const val ADDRESS_ITEM_SEPARATOR = ", "
+private val KNOWN_COUNTRIES = listOf("England", "Scotland", "Wales", "Northern Ireland", "Ireland")
 
 @Component
 class OsPlacesMapperToAddressSearchResponseMapper {
 
   fun map(deliveryPointAddress: DeliveryPointAddress): AddressSearchResponse {
-    val firstLineDetails = getAddressFirstLine(deliveryPointAddress)
+    var useThoroughfareInSecondLine = deliveryPointAddress.locality == null
+
+    var firstLine = buildFirstLine(deliveryPointAddress, excludeThoroughfare = useThoroughfareInSecondLine)
+
+    if (useThoroughfareInSecondLine && firstLine.isBlank()) {
+      firstLine = buildFirstLine(deliveryPointAddress, excludeThoroughfare = false)
+      useThoroughfareInSecondLine = false
+    }
+
+    val secondLine = buildSecondLine(deliveryPointAddress, firstLine, useThoroughfareInSecondLine)
 
     return AddressSearchResponse(
       reference = deliveryPointAddress.uprn,
-      firstLine = firstLineDetails.first,
-      secondLine = deliveryPointAddress.locality?.let { getSecondLine(firstLineDetails.second, it) },
+      firstLine = firstLine,
+      secondLine = secondLine,
       townOrCity = deliveryPointAddress.postTown,
       county = deliveryPointAddress.county,
       postcode = deliveryPointAddress.postcode,
@@ -23,37 +33,36 @@ class OsPlacesMapperToAddressSearchResponseMapper {
     )
   }
 
-  private fun getCountry(deliveryPointAddress: DeliveryPointAddress) = deliveryPointAddress.countryDescription.split("\\s+".toRegex()).last()
+  private fun getThoroughfareWithNumber(dpa: DeliveryPointAddress): String? = if (!dpa.thoroughfareName.isNullOrBlank()) {
+    listOfNotNull(dpa.buildingNumber, dpa.thoroughfareName).joinToString(" ")
+  } else {
+    null
+  }
 
-  private fun getAddressFirstLine(deliveryPointAddress: DeliveryPointAddress): Pair<String, Boolean> {
-    var addedLocalityToFirstLine = false
-    with(deliveryPointAddress) {
-      val firstLineBuilder = StringBuilder()
-      val appendWithDelimiter = { value: Any -> firstLineBuilder.append(value).append(ADDRESS_ITEM_SEPARATOR) }
-      organisationName?.let { appendWithDelimiter(it) }
-      subBuildingName?.let { appendWithDelimiter(it) }
-      buildingName?.let { appendWithDelimiter(it) }
+  private fun buildFirstLine(dpa: DeliveryPointAddress, excludeThoroughfare: Boolean): String = listOfNotNull(
+    dpa.subBuildingName,
+    dpa.organisationName,
+    dpa.buildingName,
+    getBuildingNumberOrThoroughfare(dpa, excludeThoroughfare),
+  ).joinToString(ADDRESS_ITEM_SEPARATOR)
 
-      if (thoroughfareName.isNullOrEmpty()) {
-        buildingNumber?.let { firstLineBuilder.append(it) }
-        locality?.let {
-          buildingNumber?.let { firstLineBuilder.append(ADDRESS_ITEM_SEPARATOR) }
-          firstLineBuilder.append(it)
-          addedLocalityToFirstLine = true
-        }
-      } else {
-        buildingNumber?.let { firstLineBuilder.append(it).append(ADDRESS_ITEM_SEPARATOR) }
-        firstLineBuilder.append(thoroughfareName)
-      }
-
-      return Pair(firstLineBuilder.toString(), addedLocalityToFirstLine)
+  private fun buildSecondLine(dpa: DeliveryPointAddress, firstLine: String, useThoroughfare: Boolean): String? {
+    return when {
+      useThoroughfare && firstLine.isNotBlank() -> getThoroughfareWithNumber(dpa)
+      dpa.locality != null -> dpa.locality
+      else -> null
     }
   }
 
-  private fun getSecondLine(addedLocalityToFirstLine: Boolean, locality: String): String? {
-    if (addedLocalityToFirstLine) {
-      return null
-    }
-    return locality
+  private fun getBuildingNumberOrThoroughfare(dpa: DeliveryPointAddress, excludeThoroughfare: Boolean): String? = when {
+    excludeThoroughfare && dpa.thoroughfareName == null -> dpa.buildingNumber
+    excludeThoroughfare -> null
+    dpa.thoroughfareName == null -> dpa.buildingNumber
+    else -> getThoroughfareWithNumber(dpa)
+  }
+
+  private fun getCountry(dpa: DeliveryPointAddress): String {
+    val desc = dpa.countryDescription.trim()
+    return KNOWN_COUNTRIES.firstOrNull { desc.contains(it, ignoreCase = true) } ?: ""
   }
 }

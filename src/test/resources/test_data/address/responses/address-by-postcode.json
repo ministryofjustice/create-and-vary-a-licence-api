@@ -1,7 +1,7 @@
 [
   {
     "reference": "1234567",
-    "firstLine": "1, THE ROAD",
+    "firstLine": "1 THE ROAD",
     "secondLine": "Fakeline",
     "townOrCity": "Faketon",
     "county": "Fakeshire",
@@ -10,7 +10,7 @@
   },
   {
     "reference": "12345678",
-    "firstLine": "2, A ROAD",
+    "firstLine": "2 A ROAD",
     "secondLine": "Fakeline",
     "townOrCity": "Faketon",
     "county": "Fakeshire",
@@ -19,7 +19,7 @@
   },
   {
     "reference": "123456789",
-    "firstLine": "3, A ROAD",
+    "firstLine": "3 A ROAD",
     "secondLine": "Fakeline",
     "townOrCity": "Faketon",
     "county": "Fakeshire",

@@ -1,136 +1,164 @@
-package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper
-
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.AddressSearchResponse
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.addressSearch.DeliveryPointAddress
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.mapper.OsPlacesMapperToAddressSearchResponseMapper
 import java.time.LocalDate
 
-/**
- * This unit test is to cover logic not covered in
- * @see uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.AddressSearchResourceIntegrationTest
- */
 class OsPlacesMapperToAddressSearchResponseMapperTest {
 
-  private val toTest: OsPlacesMapperToAddressSearchResponseMapper = OsPlacesMapperToAddressSearchResponseMapper()
+  private val mapper = OsPlacesMapperToAddressSearchResponseMapper()
 
-  private companion object {
-    @JvmStatic
-    fun testMappingData(): List<Pair<DeliveryPointAddress, AddressSearchResponse>> {
-      val testData = buildList {
-        add(
-          createMapFromAddress() to createExpectedMapTo(),
-        )
-        add(
-          createMapFromAddress(organisationName = null)
-            to
-            createExpectedMapTo(firstLine = "ORDNANCE SUB, ORDNANCE HOUSE, 10, FAKE DRIVE"),
-        )
-        add(
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "ORDNANCE HOUSE, 10, FAKE DRIVE",
-            ),
-        )
-        add(
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-            buildingName = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "10, FAKE DRIVE",
-            ),
-        )
-        add(
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-            buildingName = null,
-            buildingNumber = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "FAKE DRIVE",
-            ),
-        )
-        add(
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-            buildingName = null,
-            buildingNumber = null,
-            locality = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "FAKE DRIVE",
-              secondLine = null,
-            ),
-        )
-        add(
+  @Nested
+  inner class MapTests {
 
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-            buildingName = null,
-            buildingNumber = null,
-            locality = null,
-            thoroughfareName = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "",
-              secondLine = null,
-            ),
-        )
-        add(
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-            buildingName = null,
-            thoroughfareName = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "10, FAKEALITY",
-              secondLine = null,
-            ),
-        )
-        add(
-          createMapFromAddress(
-            organisationName = null,
-            subBuildingName = null,
-            buildingName = null,
-            buildingNumber = null,
-            thoroughfareName = null,
-          ) to
-            createExpectedMapTo(
-              firstLine = "FAKEALITY",
-              secondLine = null,
-            ),
-        )
-      }
-      return testData
+    @Test
+    fun `given empty first line and locality is null when map then thoroughfare is on first line and second is null`() {
+      // Given
+      val dpa = createAddress(
+        uprn = "1000",
+        buildingNumber = "221B",
+        thoroughfareName = "Baker Street",
+        locality = null,
+        subBuildingName = null,
+        organisationName = null,
+        buildingName = null
+      )
+
+      // When
+      val result = mapper.map(dpa)
+
+      // Then
+      assertThat(result.firstLine).isEqualTo("221B Baker Street")
+      assertThat(result.secondLine).isNull()
+      assertThat(result.country).isEqualTo("England")
     }
 
-    private fun createMapFromAddress(
-      uprn: String = "100120991537",
-      address: String = "10, THE STREET, FAKEALITY, FAKETON, FA1 1KE",
-      subBuildingName: String? = "ORDNANCE SUB",
-      organisationName: String? = "ORDNANCE SURVEY",
-      buildingName: String? = "ORDNANCE HOUSE",
-      buildingNumber: String? = "10",
-      thoroughfareName: String? = "FAKE DRIVE",
-      locality: String? = "FAKEALITY",
-      postTown: String = "FAKETON",
-      county: String = "FAKESHIRE",
-      postcode: String = "FA11KE",
-      countryDescription: String = "This record is within England",
-      xCoordinate: Double = Double.MIN_VALUE,
-      yCoordinate: Double = Double.MAX_VALUE,
-      lastUpdateDate: LocalDate = LocalDate.now(),
-    ) = DeliveryPointAddress(
+    @Test
+    fun `given non-empty first line and no locality when map then thoroughfare is on second line`() {
+      // Given
+      val dpa = createAddress(
+        uprn = "1001",
+        subBuildingName = "Flat 3B",
+        buildingNumber = "10",
+        thoroughfareName = "Downing Street",
+        locality = null,
+        countryDescription = "Scotland"
+      )
+
+      // When
+      val result = mapper.map(dpa)
+
+      // Then
+      assertThat(result.firstLine).isEqualTo("Flat 3B")
+      assertThat(result.secondLine).isEqualTo("10 Downing Street")
+      assertThat(result.country).isEqualTo("Scotland")
+    }
+
+    @Test
+    fun `given locality is present when map then thoroughfare in first line and locality in second line`() {
+      // Given
+      val dpa = createAddress(
+        uprn = "1002",
+        organisationName = "Globex Corp",
+        buildingName = "Innovation Tower",
+        buildingNumber = "5",
+        thoroughfareName = "Elm Street",
+        locality = "North Industrial Zone",
+        countryDescription = "Wales"
+      )
+
+      // When
+      val result = mapper.map(dpa)
+
+      // Then
+      assertThat(result.firstLine).isEqualTo("Globex Corp, Innovation Tower, 5 Elm Street")
+      assertThat(result.secondLine).isEqualTo("North Industrial Zone")
+      assertThat(result.country).isEqualTo("Wales")
+    }
+
+    @Test
+    fun `given thoroughfareName and locality are null when map then only building number in first line`() {
+      // Given
+      val dpa = createAddress(
+        uprn = "1003",
+        buildingNumber = "42",
+        thoroughfareName = null,
+        locality = null,
+        countryDescription = "Northern Ireland"
+      )
+
+      // When
+      val result = mapper.map(dpa)
+
+      // Then
+      assertThat(result.firstLine).isEqualTo("42")
+      assertThat(result.secondLine).isNull()
+      assertThat(result.country).isEqualTo("Northern Ireland")
+    }
+
+    @Test
+    fun `given country is not recognised when map then country is empty`() {
+      // Given
+      val dpa = createAddress(
+        uprn = "1004",
+        thoroughfareName = "Kingfisher Way",
+        locality = "Greenfields",
+        countryDescription = "Atlantis"
+      )
+
+      // When
+      val result = mapper.map(dpa)
+
+      // Then
+      assertThat(result.country).isEmpty()
+    }
+
+    @Test
+    fun `given all optional fields null when map then result still has default town county postcode`() {
+      // Given
+      val dpa = createAddress(
+        uprn = "1005",
+        subBuildingName = null,
+        organisationName = null,
+        buildingName = null,
+        buildingNumber = null,
+        thoroughfareName = null,
+        locality = null,
+        countryDescription = ""
+      )
+
+      // When
+      val result = mapper.map(dpa)
+
+      // Then
+      assertThat(result.firstLine).isEmpty()
+      assertThat(result.secondLine).isNull()
+      assertThat(result.townOrCity).isEqualTo("Faketown")
+      assertThat(result.county).isEqualTo("Westshire")
+      assertThat(result.postcode).isEqualTo("FK1 2ZZ")
+      assertThat(result.country).isEmpty()
+    }
+  }
+
+  private fun createAddress(
+    uprn: String,
+    address: String = "1 Some Street",
+    subBuildingName: String? = null,
+    organisationName: String? = null,
+    buildingName: String? = null,
+    buildingNumber: String? = null,
+    thoroughfareName: String? = "Mock Road",
+    locality: String? = null,
+    postTown: String = "Faketown",
+    county: String = "Westshire",
+    postcode: String = "FK1 2ZZ",
+    countryDescription: String = "England",
+    xCoordinate: Double = Double.MAX_VALUE,
+    yCoordinate: Double = Double.MIN_VALUE,
+    lastUpdateDate: LocalDate = LocalDate.now()
+  ): DeliveryPointAddress {
+    return DeliveryPointAddress(
       uprn = uprn,
       address = address,
       subBuildingName = subBuildingName,
@@ -145,35 +173,7 @@ class OsPlacesMapperToAddressSearchResponseMapperTest {
       countryDescription = countryDescription,
       xCoordinate = xCoordinate,
       yCoordinate = yCoordinate,
-      lastUpdateDate = lastUpdateDate,
+      lastUpdateDate = lastUpdateDate
     )
-
-    private fun createExpectedMapTo(
-      reference: String = "100120991537",
-      firstLine: String = "ORDNANCE SURVEY, ORDNANCE SUB, ORDNANCE HOUSE, 10, FAKE DRIVE",
-      secondLine: String? = "FAKEALITY",
-      townOrCity: String = "FAKETON",
-      county: String = "FAKESHIRE",
-      postcode: String = "FA11KE",
-      country: String = "England",
-    ) = AddressSearchResponse(
-      reference = reference,
-      firstLine = firstLine,
-      secondLine = secondLine,
-      townOrCity = townOrCity,
-      county = county,
-      postcode = postcode,
-      country = country,
-    )
-  }
-
-  @ParameterizedTest
-  @MethodSource("testMappingData")
-  fun `should map search address`(testData: Pair<DeliveryPointAddress, AddressSearchResponse>) {
-    // When
-    val result = toTest.map(testData.first)
-
-    // Then
-    assertThat(result).isEqualTo(testData.second)
   }
 }
