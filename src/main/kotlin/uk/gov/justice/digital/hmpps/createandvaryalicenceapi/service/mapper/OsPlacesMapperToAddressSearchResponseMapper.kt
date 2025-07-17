@@ -23,7 +23,7 @@ class OsPlacesMapperToAddressSearchResponseMapper {
     val secondLine = buildSecondLine(deliveryPointAddress, firstLine, useThoroughfareInSecondLine)
 
     return AddressSearchResponse(
-      reference = deliveryPointAddress.uprn,
+      uprn = deliveryPointAddress.uprn,
       firstLine = firstLine,
       secondLine = secondLine,
       townOrCity = deliveryPointAddress.postTown,
