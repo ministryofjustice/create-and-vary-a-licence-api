@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.publicApi
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple.tuple
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -45,18 +46,26 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     val result = resultList?.first()
 
-    assertThat(result?.content?.licences?.first()).extracting(
+    assertThat(result?.content?.licences).extracting(
       "id",
       "nomsId",
       "bookingId",
       "createdByUsername",
     )
-      .isEqualTo(
+      .containsAll(
         listOf(
-          1L,
-          "A1234AA",
-          12345L,
-          "test-client",
+          tuple(
+            1L,
+            "A1234AA",
+            12345L,
+            "test-client",
+          ),
+          tuple(
+            2L,
+            "A1234AA",
+            123456L,
+            "test-client",
+          ),
         ),
       )
 
