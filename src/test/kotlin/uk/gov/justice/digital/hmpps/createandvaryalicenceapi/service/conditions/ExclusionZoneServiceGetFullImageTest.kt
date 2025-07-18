@@ -31,7 +31,7 @@ class ExclusionZoneServiceGetFullImageTest {
   private val uuid = UUID.fromString("fcc03409-b1a0-4c60-8662-ad9e441bc54d")
 
   @Test
-  fun `with document service enabled image is returned from the document service`() {
+  fun `when there is no document service uuid recorded then the image is returned from the document service`() {
     givenUploadDetailHas(fullSizeImage = fileStoredInDatabase, fullSizeImageUUID = uuid)
 
     val exclusionZoneService = ExclusionZoneService(
@@ -39,7 +39,6 @@ class ExclusionZoneServiceGetFullImageTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
-      readDocumentsFromRemoteService = true,
     )
 
     assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
@@ -47,7 +46,7 @@ class ExclusionZoneServiceGetFullImageTest {
   }
 
   @Test
-  fun `with document service enabled when there is no document service uuid recorded image is returned from the database`() {
+  fun `when there is no document service uuid recorded then the image is returned from the database`() {
     givenUploadDetailHas(fullSizeImage = fileStoredInDatabase, fullSizeImageUUID = null)
 
     val exclusionZoneService = ExclusionZoneService(
@@ -55,23 +54,6 @@ class ExclusionZoneServiceGetFullImageTest {
       additionalConditionRepository,
       additionalConditionUploadDetailRepository,
       documentService,
-      readDocumentsFromRemoteService = true,
-    )
-
-    assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
-      .isEqualTo(fileStoredInDatabase)
-  }
-
-  @Test
-  fun `with document service disabled image is returned from the database`() {
-    givenUploadDetailHas(fullSizeImage = fileStoredInDatabase, fullSizeImageUUID = uuid)
-
-    val exclusionZoneService = ExclusionZoneService(
-      licenceRepository,
-      additionalConditionRepository,
-      additionalConditionUploadDetailRepository,
-      documentService,
-      readDocumentsFromRemoteService = false,
     )
 
     assertThat(exclusionZoneService.getExclusionZoneImage(licenceId, additionalConditionId))
