@@ -15,7 +15,6 @@ generic-service:
     HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://create-and-vary-a-licence-and-delius.hmpps.service.justice.gov.uk"
     HMPPS_DOCUMENT_API_URL: "https://document-api.hmpps.service.justice.gov.uk/"
-    HMPPS_DOCUMENT_API_ENABLED: false
     HMPPS_HDC_API_URL: "https://hdc-api.hmpps.service.justice.gov.uk/"
     HMPPS_MANAGEUSERS_API_URL: "https://manage-users-api.hmpps.service.justice.gov.uk"
     HMPPS_PRISON_API_URL: "https://prison-api.prison.service.justice.gov.uk/api"
