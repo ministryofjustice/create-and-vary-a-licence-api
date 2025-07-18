@@ -40,7 +40,7 @@ data class AddAddressRequest(
 
   @field:NotBlank(message = "Postcode must not be blank")
   @field:Pattern(
-    regexp = "^[A-Z]{1,2}[0-9][0-9A-Z]? [0-9][A-Z]{2}\$",
+    regexp = "^[A-Z]{1,2}[0-9][0-9A-Z]?[ ]?[0-9][A-Z]{2}\$",
     message = "Postcode must be in a valid UK format",
   )
   @Schema(description = "The postcode of the address", example = "CF64 1AB", required = true)
