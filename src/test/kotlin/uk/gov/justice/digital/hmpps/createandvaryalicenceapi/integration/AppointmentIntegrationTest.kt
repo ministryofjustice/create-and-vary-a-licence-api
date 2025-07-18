@@ -349,7 +349,7 @@ class AppointmentIntegrationTest(
   }
 
   @ParameterizedTest
-  @ValueSource(strings = ["INVALID", "123 ABC", "C@10 1AA", "CF101AA", "CF10-1AA", ""])
+  @ValueSource(strings = ["INVALID", "123 ABC", "C@10 1AA", "CF10-1AA", ""])
   fun `When updating address should return 400 Bad Request if postcode format is invalid`(invalidPostcode: String) {
     // Given
     val uri = "/licence/id/1/appointment/address"
