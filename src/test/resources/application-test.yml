@@ -70,7 +70,8 @@ hmpps:
   document:
     api:
       url: http://localhost:8097
-      enabled: true
+      read:
+        enabled: true
   hdc:
     api:
       url: http://localhost:8100
