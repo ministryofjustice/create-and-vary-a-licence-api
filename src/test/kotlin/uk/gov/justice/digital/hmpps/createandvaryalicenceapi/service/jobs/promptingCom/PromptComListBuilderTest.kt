@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.offenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.promptCase
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.Relea
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffEmail
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import java.time.LocalDate
 
@@ -33,6 +35,7 @@ class PromptComListBuilderTest {
   private val releaseDateService = mock<ReleaseDateService>()
   private val hdcService = mock<HdcService>()
   private val deliusApiClient = mock<DeliusApiClient>()
+  private val licenceCreationService = mock<LicenceCreationService>()
 
   private val promptComListBuilder = PromptComListBuilder(
     licenceRepository,
@@ -40,16 +43,22 @@ class PromptComListBuilderTest {
     releaseDateService,
     hdcService,
     deliusApiClient,
+    licenceCreationService,
   )
 
   @BeforeEach
-  fun reset() = reset(
-    licenceRepository,
-    eligibilityService,
-    releaseDateService,
-    hdcService,
-    deliusApiClient,
-  )
+  fun reset() {
+    reset(
+      licenceRepository,
+      eligibilityService,
+      releaseDateService,
+      hdcService,
+      deliusApiClient,
+      licenceCreationService,
+    )
+
+    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
+  }
 
   @Nested
   inner class ExcludeIneligibleCases {

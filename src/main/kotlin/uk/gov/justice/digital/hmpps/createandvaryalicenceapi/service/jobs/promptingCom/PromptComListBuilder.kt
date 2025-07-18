@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Case
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
@@ -20,6 +21,7 @@ class PromptComListBuilder(
   private val releaseDateService: ReleaseDateService,
   private val hdcService: HdcService,
   private val deliusApiClient: DeliusApiClient,
+  private val licenceCreationService: LicenceCreationService,
 ) {
 
   fun excludeIneligibleCases(candidates: List<PrisonerSearchPrisoner>): List<PrisonerSearchPrisoner> = candidates.filter(eligibilityService::isEligibleForCvl)
@@ -83,7 +85,10 @@ class PromptComListBuilder(
     }
   }
 
-  fun CaseWithEmailAndStartDate.isNotInHardStop(): Boolean = !releaseDateService.isInHardStopPeriod(this.first.prisoner.toSentenceDateHolder(this.third))
+  fun CaseWithEmailAndStartDate.isNotInHardStop(): Boolean {
+    val kind = licenceCreationService.determineLicenceKind(this.first.prisoner)
+    return !releaseDateService.isInHardStopPeriod(this.first.prisoner.toSentenceDateHolder(this.third, kind))
+  }
 
   fun excludeInHardStop(cases: List<CaseWithEmailAndStartDate>) = cases.filter { it.isNotInHardStop() }
 
