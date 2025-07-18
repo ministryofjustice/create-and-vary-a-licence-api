@@ -166,19 +166,6 @@ class ExclusionZoneServiceTest {
       additionalConditionUploadSummary = listOf(someUploadSummaryData),
     )
 
-    val anAdditionalConditionEntityWithRemoteUpload = AdditionalCondition(
-      id = 1,
-      conditionVersion = "1.0",
-      licence = aLicenceEntity,
-      conditionCode = "outOfBounds",
-      conditionCategory = "Freedom of movement",
-      conditionSequence = 1,
-      conditionText = "text",
-      conditionType = "AP",
-      additionalConditionData = someAdditionalConditionData,
-      additionalConditionUploadSummary = listOf(someUploadSummaryData),
-    )
-
     val anAdditionalConditionUploadDetailEntity = AdditionalConditionUploadDetail(
       id = 1,
       licenceId = 1,
