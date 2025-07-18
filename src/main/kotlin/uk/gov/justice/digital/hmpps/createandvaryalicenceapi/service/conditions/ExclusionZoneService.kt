@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -23,6 +24,7 @@ class ExclusionZoneService(
   private val additionalConditionRepository: AdditionalConditionRepository,
   private val additionalConditionUploadDetailRepository: AdditionalConditionUploadDetailRepository,
   private val documentService: DocumentService,
+  @Value("\${hmpps.document.api.read.enabled:false}") private val readDocumentsFromRemoteService: Boolean = false,
 ) {
 
   init {
@@ -154,7 +156,11 @@ class ExclusionZoneService(
       .findById(uploadIds.first())
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    return upload.fullSizeImage
+    return if (readDocumentsFromRemoteService && upload.fullSizeImageDsUuid != null) {
+      documentService.downloadDocument(UUID.fromString(upload.fullSizeImageDsUuid))
+    } else {
+      upload.fullSizeImage
+    }
   }
 
   companion object {
