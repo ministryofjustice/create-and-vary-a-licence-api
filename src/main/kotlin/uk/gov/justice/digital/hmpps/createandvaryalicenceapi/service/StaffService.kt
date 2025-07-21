@@ -43,7 +43,6 @@ class StaffService(
       log.info("Saving new COM record, $comDetails")
       return this.staffRepository.saveAndFlush(
         CommunityOffenderManager(
-          id = -1,
           username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
           email = comDetails.staffEmail,
