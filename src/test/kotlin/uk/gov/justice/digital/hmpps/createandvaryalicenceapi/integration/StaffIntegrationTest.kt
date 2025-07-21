@@ -11,48 +11,83 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DeliusMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.StaffKind
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 class StaffIntegrationTest : IntegrationTestBase() {
+
   @Autowired
   lateinit var staffRepository: StaffRepository
 
   @Test
+  fun `Add a COM record`() {
+    // Given
+    val request = UpdateComRequest(
+      staffIdentifier = 2001L,
+      staffUsername = "newbloggs",
+      staffEmail = "newbloggs@probation.gov.uk",
+      firstName = "New",
+      lastName = "NewBloggs",
+    )
+
+    // When
+    doUpdate("/com/update", request)
+
+    // Then
+    val staff = staffRepository.findById(9)
+    assertThat(staff.isPresent).isTrue()
+    assertComDetails(staff.get(), request)
+  }
+
+  @Test
+  fun `Update a COM record`() {
+    // Given
+    val request = UpdateComRequest(
+      staffIdentifier = 2000L,
+      staffUsername = "upatebloggs",
+      staffEmail = "updatebloggs@probation.gov.uk",
+      firstName = "Updated",
+      lastName = "Bloggs",
+    )
+
+    // When
+    doUpdate("/com/update", request)
+
+    // Then
+    val staff = staffRepository.findById(1)
+    assertThat(staff.isPresent).isTrue()
+    assertComDetails(staff.get(), request)
+  }
+
+  @Test
   @Sql(
-    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/seed-community-offender-manager-with-duplicates.sql",
   )
-  fun `Add and update a COM record`() {
-    doUpdate("/com/update", updateCom)
+  fun `Update correct COM when multiple staff (PRISON_USER,COMMUNITY_OFFENDER_MANAGER) records are found with same staffIdentifier`() {
+    // Given
+    val request = UpdateComRequest(
+      staffIdentifier = 2001L,
+      staffUsername = "upatebloggs",
+      staffEmail = "updatebloggs@probation.gov.uk",
+      firstName = "Updated",
+      lastName = "Bloggs",
+    )
 
-    assertThat(staffRepository.count()).isEqualTo(1)
+    // When
+    doUpdate("/com/update", request)
 
-    with(staffRepository.findAll().first() as CommunityOffenderManager) {
-      assertThat(staffIdentifier).isEqualTo(updateCom.staffIdentifier)
-      assertThat(username).isEqualTo(updateCom.staffUsername.uppercase())
-      assertThat(email).isEqualTo(updateCom.staffEmail)
-      assertThat(firstName).isEqualTo(updateCom.firstName)
-      assertThat(lastName).isEqualTo(updateCom.lastName)
-    }
-
-    doUpdate("/com/update", updateCom.copy(firstName = "NEW NAME"))
-
-    assertThat(staffRepository.count()).isEqualTo(1)
-
-    with(staffRepository.findAll().first() as CommunityOffenderManager) {
-      assertThat(staffIdentifier).isEqualTo(updateCom.staffIdentifier)
-      assertThat(username).isEqualTo(updateCom.staffUsername.uppercase())
-      assertThat(email).isEqualTo(updateCom.staffEmail)
-      assertThat(firstName).isEqualTo("NEW NAME")
-      assertThat(lastName).isEqualTo(updateCom.lastName)
-    }
+    // Then
+    val staff = staffRepository.findById(10).get()
+    assertComDetails(staff, request)
   }
 
   // This will fail randomly due more than one thread finding no existing COM and so
@@ -60,9 +95,6 @@ class StaffIntegrationTest : IntegrationTestBase() {
   // will cause a Unique index or primary key violation
   @Disabled
   @Test
-  @Sql(
-    "classpath:test_data/clear-all-data.sql",
-  )
   fun `Test adding the same COM in multiple threads`() {
     val numberOfThreads = 5
     val executor = Executors.newFixedThreadPool(numberOfThreads)
@@ -184,6 +216,20 @@ class StaffIntegrationTest : IntegrationTestBase() {
       .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
       .exchange()
       .expectStatus().isOk
+  }
+
+  private fun assertComDetails(
+    staff: Staff,
+    request: UpdateComRequest,
+  ) {
+    assertThat(staff).isInstanceOf(CommunityOffenderManager::class.java)
+    val com = staff as CommunityOffenderManager
+    assertThat(com.kind).isEqualTo(StaffKind.COMMUNITY_OFFENDER_MANAGER)
+    assertThat(com.staffIdentifier).isEqualTo(request.staffIdentifier)
+    assertThat(com.username).isEqualTo(request.staffUsername.uppercase())
+    assertThat(com.email).isEqualTo(request.staffEmail)
+    assertThat(com.firstName).isEqualTo(request.firstName)
+    assertThat(com.lastName).isEqualTo(request.lastName)
   }
 
   private companion object {

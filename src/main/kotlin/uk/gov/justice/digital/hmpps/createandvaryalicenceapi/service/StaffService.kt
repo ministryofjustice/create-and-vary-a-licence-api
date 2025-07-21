@@ -34,15 +34,16 @@ class StaffService(
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
     log.info("Updating COM details, $comDetails")
-    val comResult = this.staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+    val comResult = this.staffRepository.findCommunityOffenderManager(
       comDetails.staffIdentifier,
       comDetails.staffUsername,
     )
 
-    if (comResult.isNullOrEmpty()) {
+    if (comResult.isEmpty()) {
       log.info("Saving new COM record, $comDetails")
       return this.staffRepository.saveAndFlush(
         CommunityOffenderManager(
+          id = -1,
           username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
           email = comDetails.staffEmail,
