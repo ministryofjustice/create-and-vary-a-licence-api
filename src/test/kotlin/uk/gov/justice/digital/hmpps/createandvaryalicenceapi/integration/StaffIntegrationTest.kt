@@ -72,11 +72,12 @@ class StaffIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-community-offender-manager-with-duplicates.sql",
   )
-  fun `Update correct COM when multiple staff (PRISON_USER,COMMUNITY_OFFENDER_MANAGER) records are found with same staffIdentifier`() {
+  fun `Update latest COM when multiple staff records are found with same user name and unknown staffIdentifier in different cases`() {
     // Given
+    val unknownStaffIdentifier = 1001L
     val request = UpdateComRequest(
-      staffIdentifier = 2001L,
-      staffUsername = "upatebloggs",
+      staffIdentifier = unknownStaffIdentifier,
+      staffUsername = "test-client-1",
       staffEmail = "updatebloggs@probation.gov.uk",
       firstName = "Updated",
       lastName = "Bloggs",
@@ -86,8 +87,9 @@ class StaffIntegrationTest : IntegrationTestBase() {
     doUpdate("/com/update", request)
 
     // Then
-    val staff = staffRepository.findById(10).get()
-    assertComDetails(staff, request)
+    val staff = staffRepository.findById(11)
+    assertThat(staff.isPresent).isTrue()
+    assertComDetails(staff.get(), request)
   }
 
   // This will fail randomly due more than one thread finding no existing COM and so
