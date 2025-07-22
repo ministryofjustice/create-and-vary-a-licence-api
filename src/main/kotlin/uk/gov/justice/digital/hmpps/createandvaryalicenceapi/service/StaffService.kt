@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
@@ -80,13 +79,22 @@ class StaffService(
   }
 
   @Transactional
-  fun updatePrisonUser(request: UpdatePrisonUserRequest): Staff {
-    val found = staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
+  fun updatePrisonUser(request: UpdatePrisonUserRequest) {
+    log.info("Updating prison user with username=${request.staffUsername}")
 
-    return when {
-      found == null -> staffRepository.saveAndFlush(request.toEntity())
-      found.isUpdate(request) -> this.staffRepository.saveAndFlush(found.updatedWith(request))
-      else -> found
+    val found = staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
+    when {
+      found == null -> {
+        log.info("No existing prison user found — creating new record")
+        staffRepository.saveAndFlush(request.toEntity())
+      }
+      found.isUpdate(request) -> {
+        log.info("Prison user found — applying updates")
+        found.updatedWith(request)
+      }
+      else -> {
+        log.info("No update needed for prison user with username=${request.staffUsername}")
+      }
     }
   }
 
@@ -108,13 +116,14 @@ class StaffService(
 
   private fun PrisonUser.updatedWith(
     updatedDetails: UpdatePrisonUserRequest,
-  ) = copy(
-    username = updatedDetails.staffUsername.uppercase(),
-    email = updatedDetails.staffEmail,
-    firstName = updatedDetails.firstName,
-    lastName = updatedDetails.lastName,
-    lastUpdatedTimestamp = LocalDateTime.now(),
-  )
+  ): PrisonUser {
+    username = updatedDetails.staffUsername.uppercase()
+    email = updatedDetails.staffEmail
+    firstName = updatedDetails.firstName
+    lastName = updatedDetails.lastName
+    lastUpdatedTimestamp = LocalDateTime.now()
+    return this
+  }
 
   private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) = (comDetails.firstName != this.firstName) ||
     (comDetails.lastName != this.lastName) ||
