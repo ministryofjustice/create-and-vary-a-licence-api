@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
@@ -61,6 +62,40 @@ class ComCreateCaseloadServiceTest {
   @BeforeEach
   fun reset() {
     reset(deliusApiClient, licenceService, hdcService, eligibilityService)
+  }
+
+  @Test
+  fun `it filters out cases with no NOMIS record`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E"),
+    )
+    whenever(
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
+    ).thenReturn(managedOffenders)
+
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(emptyList())
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(0)
+    verify(eligibilityService, never()).isEligibleForCvl(any())
+  }
+
+  @Test
+  fun `it filters out cases with no NOMIS ID on their Delius records`() {
+    val managedOffenders = listOf(
+      ManagedOffenderCrn(crn = "X12348", nomisId = null),
+    )
+    whenever(
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
+    ).thenReturn(managedOffenders)
+
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(emptyList())
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(0)
+    verify(caseloadService, never()).getPrisonersByNumber(any())
   }
 
   @Test

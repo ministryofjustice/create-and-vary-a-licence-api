@@ -73,6 +73,9 @@ class ComCreateCaseloadService(
 
   private fun pairDeliusRecordsWithNomis(managedOffenders: List<ManagedOffenderCrn>): Map<ManagedOffenderCrn, CaseloadItem> {
     val caseloadNomisIds = managedOffenders.mapNotNull { offender -> offender.nomisId }
+    if (caseloadNomisIds.isEmpty()) {
+      return emptyMap()
+    }
     val nomisRecords = caseloadService.getPrisonersByNumber(caseloadNomisIds)
 
     return managedOffenders.mapNotNull { deliusRecord ->
