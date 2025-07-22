@@ -20,6 +20,8 @@ class PublicLicenceService(
   private val licenceService: LicenceService,
 ) {
 
+  fun getLicenceById(id: Long): Licence = licenceService.getLicenceById(id).transformToPublicLicence()
+
   @Transactional
   fun getAllLicencesByCrn(crn: String): List<LicenceSummary> {
     val licences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, LicenceStatus.IN_FLIGHT_LICENCES)
@@ -55,6 +57,4 @@ class PublicLicenceService(
 
     return upload.fullSizeImage
   }
-
-  fun getLicenceById(id: Long): Licence = licenceService.getLicenceById(id).transformToPublicLicence()
 }

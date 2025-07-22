@@ -52,8 +52,7 @@ fun ModelLicence.transformToPublicLicence(): Licence {
     approvedByUsername = this.approvedByUsername,
     approvedDateTime = this.approvedDate,
     createdByUsername = this.createdByUsername.orEmpty(),
-    createdDateTime = this.dateCreated
-      ?: error("Licence creation date should not be null for licence id:" + this.id),
+    createdDateTime = this.dateCreated,
     updatedByUsername = this.updatedByUsername,
     updatedDateTime = this.dateLastUpdated,
     licenceStartDate = this.licenceStartDate,
