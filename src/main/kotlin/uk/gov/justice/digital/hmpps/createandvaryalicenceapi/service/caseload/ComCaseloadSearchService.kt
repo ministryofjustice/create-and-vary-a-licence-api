@@ -52,8 +52,7 @@ class ComCaseloadSearchService(
       ),
     )
 
-    val deliusRecordsWithLicences: List<Pair<CaseloadResult, Licence?>> =
-      teamCaseloadResult.content.map { it to getLicence(it.crn) }
+    val deliusRecordsWithLicences = teamCaseloadResult.content.map { it to getLicence(it.crn) }
 
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsWithLicences)
 
