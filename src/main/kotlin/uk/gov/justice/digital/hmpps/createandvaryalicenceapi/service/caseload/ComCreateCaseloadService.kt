@@ -39,18 +39,16 @@ class ComCreateCaseloadService(
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
     val managedOffenders = deliusApiClient.getManagedOffenders(deliusStaffIdentifier)
-    val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
-    val crnsToLicenceLists = mapCasesToLicences(deliusAndNomisRecords)
-    val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, crnsToLicenceLists)
-    val crnsToDisplayLicences = findRelevantLicencePerCase(eligibleCases, crnsToLicenceLists)
-    val filteredCases = filterHdcAndFutureReleases(eligibleCases, crnsToDisplayLicences)
-    val crnsToComs = getResponsibleComs(filteredCases.map { (deliusRecord, _) -> deliusRecord }, crnsToDisplayLicences)
-    return transformToCreateCaseload(filteredCases, crnsToDisplayLicences, crnsToComs)
+    return buildCreateCaseload(managedOffenders)
   }
 
   fun getTeamCreateCaseload(probationTeamCodes: List<String>, teamSelected: List<String>): List<ComCase> {
     val teamCode = getTeamCode(probationTeamCodes, teamSelected)
     val managedOffenders = deliusApiClient.getManagedOffendersByTeam(teamCode)
+    return buildCreateCaseload(managedOffenders)
+  }
+
+  private fun buildCreateCaseload(managedOffenders: List<ManagedOffenderCrn>): List<ComCase> {
     val deliusAndNomisRecords = pairDeliusRecordsWithNomis(managedOffenders)
     val crnsToLicenceLists = mapCasesToLicences(deliusAndNomisRecords)
     val eligibleCases = filterCasesEligibleForCvl(deliusAndNomisRecords, crnsToLicenceLists)
