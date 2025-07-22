@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
+import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
@@ -62,6 +63,7 @@ class ComCreateCaseloadServiceTest {
   @BeforeEach
   fun reset() {
     reset(deliusApiClient, licenceService, hdcService, eligibilityService)
+    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test
@@ -727,6 +729,78 @@ class ComCreateCaseloadServiceTest {
     assertThat(caseload).isEmpty()
   }
 
+  @Test
+  fun `it filters out NOT_STARTED PRRD licences`() {
+    whenever(
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
+    ).thenReturn(listOf(ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E")))
+
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(
+      createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
+    ))
+
+    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(false)
+
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(0)
+    verify(eligibilityService, times(1)).isEligibleForCvl(any())
+  }
+
+  @Test
+  fun `it bypasses eligibility checks for existing PRRD licences`() {
+    whenever(
+      deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
+    ).thenReturn(listOf(ManagedOffenderCrn(
+      crn = "X12348",
+      nomisId = "AB1234E",
+      staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234")
+      ))
+    )
+
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(
+      createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
+    ))
+
+    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
+    whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(false)
+    whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
+    whenever(licenceService.findLicencesForCrnsAndStatuses(any(), any())).thenReturn(
+      listOf(
+        createLicenceSummary(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          kind = LicenceKind.PRRD,
+          licenceType = LicenceType.AP_PSS,
+          licenceStatus = LicenceStatus.SUBMITTED,
+          licenceExpiryDate = elevenDaysFromNow,
+          comUsername = "johndoe",
+          licenceStartDate = tenDaysFromNow,
+        ),
+      )
+    )
+
+    val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
+
+    assertThat(caseload).hasSize(1)
+    verifyCase(
+      case = caseload[0],
+      expectedCrn = "X12348",
+      expectedPrisonerNumber = "AB1234E",
+      expectedLicenceStatus = LicenceStatus.SUBMITTED,
+      expectedLicenceType = LicenceType.AP_PSS,
+      expectedReleaseDate = tenDaysFromNow,
+      expectedProbationPractitioner = ProbationPractitioner(
+        staffCode = "X1234",
+        name = "Joe Bloggs",
+      ),
+      expectedLicenceKind = LicenceKind.PRRD
+    )
+    verify(eligibilityService, never()).isEligibleForCvl(any())
+  }
+
   private fun createCaseloadItem(
     prisonerNumber: String,
     conditionalReleaseDate: LocalDate?,
@@ -775,6 +849,7 @@ class ComCreateCaseloadServiceTest {
     expectedReleaseDate: LocalDate? = null,
     expectedProbationPractitioner: ProbationPractitioner? = null,
     expectedReviewNeeded: Boolean = false,
+    expectedLicenceKind: LicenceKind = LicenceKind.CRD,
   ) {
     with(case) {
       assertThat(crnNumber).isEqualTo(expectedCrn)
@@ -784,6 +859,7 @@ class ComCreateCaseloadServiceTest {
       expectedReleaseDate.let { assertThat(releaseDate).isEqualTo(expectedReleaseDate) }
       expectedProbationPractitioner.let { assertThat(probationPractitioner).isEqualTo(expectedProbationPractitioner) }
       assertThat(isReviewNeeded).isEqualTo(expectedReviewNeeded)
+      assertThat(kind).isEqualTo(expectedLicenceKind)
     }
   }
 
