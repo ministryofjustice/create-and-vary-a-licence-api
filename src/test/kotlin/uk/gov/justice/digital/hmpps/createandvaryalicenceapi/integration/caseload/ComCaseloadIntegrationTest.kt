@@ -123,7 +123,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
       // Given
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffendersByTeam("teamC")
-      deliusMockServer.stubGetProbationCases(readFile("com-case-load-offenders"))
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("team-create-case-load-prisoners").replace(
