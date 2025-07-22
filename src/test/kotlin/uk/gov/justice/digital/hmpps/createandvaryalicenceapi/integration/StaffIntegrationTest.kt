@@ -139,9 +139,12 @@ class StaffIntegrationTest : IntegrationTestBase() {
     "classpath:test_data/clear-all-data.sql",
   )
   fun `Add and update a Prison Case Administrator record`() {
-
-    doUpdate("/prison-user/update", updatePrison.copy(
-      staffUsername = updatePrison.staffUsername.lowercase()))
+    doUpdate(
+      "/prison-user/update",
+      updatePrison.copy(
+        staffUsername = updatePrison.staffUsername.lowercase(),
+      ),
+    )
 
     assertThat(staffRepository.count()).isEqualTo(1)
 
@@ -152,9 +155,13 @@ class StaffIntegrationTest : IntegrationTestBase() {
       assertThat(lastName).isEqualTo(updatePrison.lastName)
     }
 
-    doUpdate("/prison-user/update", updatePrison.copy(
-      firstName = "NEW NAME" ,
-      staffUsername = updatePrison.staffUsername.lowercase()))
+    doUpdate(
+      "/prison-user/update",
+      updatePrison.copy(
+        firstName = "NEW NAME",
+        staffUsername = updatePrison.staffUsername.lowercase(),
+      ),
+    )
 
     assertThat(staffRepository.count()).isEqualTo(1)
 
