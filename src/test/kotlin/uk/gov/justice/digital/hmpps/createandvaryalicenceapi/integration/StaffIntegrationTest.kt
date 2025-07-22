@@ -43,9 +43,9 @@ class StaffIntegrationTest : IntegrationTestBase() {
     doUpdate("/com/update", request)
 
     // Then
-    val staff = staffRepository.findById(9)
-    assertThat(staff.isPresent).isTrue()
-    assertComDetails(staff.get(), request)
+    val staff = staffRepository.findByStaffIdentifier(2001)
+    assertThat(staff).isNotNull
+    assertComDetails(staff!!, request)
   }
 
   @Test
@@ -63,9 +63,9 @@ class StaffIntegrationTest : IntegrationTestBase() {
     doUpdate("/com/update", request)
 
     // Then
-    val staff = staffRepository.findById(1)
-    assertThat(staff.isPresent).isTrue()
-    assertComDetails(staff.get(), request)
+    val staff = staffRepository.findByStaffIdentifier(2000)
+    assertThat(staff).isNotNull
+    assertComDetails(staff!!, request)
   }
 
   @Test
@@ -87,9 +87,9 @@ class StaffIntegrationTest : IntegrationTestBase() {
     doUpdate("/com/update", request)
 
     // Then
-    val staff = staffRepository.findById(11)
-    assertThat(staff.isPresent).isTrue()
-    assertComDetails(staff.get(), request)
+    val staff = staffRepository.findByStaffIdentifier(unknownStaffIdentifier)
+    assertThat(staff).isNotNull
+    assertComDetails(staff!!, request)
   }
 
   // This will fail randomly due more than one thread finding no existing COM and so
