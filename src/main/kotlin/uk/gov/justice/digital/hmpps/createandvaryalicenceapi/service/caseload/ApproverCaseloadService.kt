@@ -46,11 +46,11 @@ class ApproverCaseloadService(
       }
 
     val comUsernames = prisonerRecord.mapNotNull { (_, licenceSummary) -> licenceSummary?.comUsername }
-    val deliusStaffNames = deliusApiClient.getStaffDetailsByUsername(comUsernames)
+    val deliusStaff = deliusApiClient.getStaffDetailsByUsername(comUsernames)
 
     return prisonerRecord.map { (activeCom, licenceSummary) ->
       ApprovalCase(
-        probationPractitioner = findProbationPractitioner(licenceSummary?.comUsername, deliusStaffNames, activeCom),
+        probationPractitioner = findProbationPractitioner(licenceSummary?.comUsername, deliusStaff, activeCom),
         licenceId = licenceSummary?.licenceId,
         name = "${licenceSummary?.forename} ${licenceSummary?.surname}".convertToTitleCase(),
         prisonerNumber = licenceSummary?.nomisId,
@@ -76,19 +76,15 @@ class ApproverCaseloadService(
     activeCom: CommunityManager,
   ): ProbationPractitioner? {
     val responsibleCom = deliusStaffNames.find { com -> com.username?.lowercase() == comUsernameOnLicence?.lowercase() }
-    return if (responsibleCom != null) {
-      ProbationPractitioner(
+    return when {
+      responsibleCom != null -> ProbationPractitioner(
         staffCode = responsibleCom.code,
         name = responsibleCom.name?.fullName()?.convertToTitleCase(),
       )
-    } else {
-      if (activeCom.unallocated) {
-        return null
-      }
-      ProbationPractitioner(
-        staffCode = activeCom.code,
-        name = activeCom.name.fullName(),
-      )
+
+      activeCom.unallocated -> null
+
+      else -> ProbationPractitioner(staffCode = activeCom.code, name = activeCom.name.fullName())
     }
   }
 }
