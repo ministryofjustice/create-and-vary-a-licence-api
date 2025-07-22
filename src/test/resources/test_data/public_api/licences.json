@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "kind": "CRD",
+    "licenceType": "AP",
+    "policyVersion": "V2_0",
+    "version": "1.4",
+    "statusCode": "IN_PROGRESS",
+    "prisonNumber": "A1234AA",
+    "bookingId": 987654,
+    "crn": "A12345",
+    "approvedByUsername": "TestApprover",
+    "approvedDateTime": "2023-10-11T12:00:00",
+    "createdByUsername": "TestCreator",
+    "createdDateTime": "2023-10-11T11:00:00",
+    "updatedByUsername": "TestUpdater",
+    "updatedDateTime": "2023-10-11T11:30:00",
+    "isInPssPeriod": false
+  }
+]
