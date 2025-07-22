@@ -91,12 +91,12 @@ class ReleaseDateService(
 
   fun getHardStopDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
     val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
+    val latestReleaseDate = sentenceDateHolder.latestReleaseDate
 
     return when {
-      conditionalReleaseDate == null -> null
-      actualReleaseDate != null && isExcludedFromHardstop(actualReleaseDate, conditionalReleaseDate) -> null
-      else -> calculateHardStopDate(conditionalReleaseDate)
+      latestReleaseDate == null -> null
+      actualReleaseDate != null && isExcludedFromHardstop(actualReleaseDate, latestReleaseDate) -> null
+      else -> calculateHardStopDate(latestReleaseDate)
     }
   }
 
@@ -148,11 +148,11 @@ class ReleaseDateService(
     return 2.workingDaysBefore(date)
   }
 
-  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate, conditionalReleaseDate: LocalDate): Boolean {
-    if (conditionalReleaseDate.isNonWorkingDay()) {
-      return actualReleaseDate != 1.workingDaysBefore(conditionalReleaseDate)
+  private fun isExcludedFromHardstop(actualReleaseDate: LocalDate, latestReleaseDate: LocalDate): Boolean {
+    if (latestReleaseDate.isNonWorkingDay()) {
+      return actualReleaseDate != 1.workingDaysBefore(latestReleaseDate)
     }
-    return actualReleaseDate != conditionalReleaseDate
+    return actualReleaseDate != latestReleaseDate
   }
 
   fun getHardStopWarningDate(sentenceDateHolder: SentenceDateHolder): LocalDate? {
