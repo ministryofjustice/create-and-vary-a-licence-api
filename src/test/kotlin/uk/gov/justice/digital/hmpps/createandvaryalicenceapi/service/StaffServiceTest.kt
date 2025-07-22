@@ -53,7 +53,7 @@ class StaffServiceTest {
         lastName = "Y",
       )
 
-      whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+      whenever(staffRepository.findCommunityOffenderManager(any(), any()))
         .thenReturn(
           listOf(
             CommunityOffenderManager(
@@ -77,7 +77,7 @@ class StaffServiceTest {
       service.updateComDetails(comDetails)
 
       argumentCaptor<CommunityOffenderManager>().apply {
-        verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+        verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
         verify(staffRepository, times(1)).saveAndFlush(capture())
 
         assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")
@@ -87,7 +87,7 @@ class StaffServiceTest {
 
     @Test
     fun `does not update COM with same details`() {
-      whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+      whenever(staffRepository.findCommunityOffenderManager(any(), any()))
         .thenReturn(
           listOf(
             CommunityOffenderManager(
@@ -110,7 +110,7 @@ class StaffServiceTest {
 
       service.updateComDetails(comDetails)
 
-      verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2000, "JOEBLOGGS")
+      verify(staffRepository, times(1)).findCommunityOffenderManager(2000, "JOEBLOGGS")
       verify(staffRepository, times(0)).saveAndFlush(any())
     }
 
@@ -125,11 +125,11 @@ class StaffServiceTest {
       )
 
       whenever(
-        staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+        staffRepository.findCommunityOffenderManager(
           any(),
           any(),
         ),
-      ).thenReturn(null)
+      ).thenReturn(listOf())
 
       val comDetails = UpdateComRequest(
         staffIdentifier = 3000,
@@ -141,7 +141,7 @@ class StaffServiceTest {
 
       service.updateComDetails(comDetails)
 
-      verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(3000, "jbloggs")
+      verify(staffRepository, times(1)).findCommunityOffenderManager(3000, "jbloggs")
       verify(staffRepository, times(1)).saveAndFlush(expectedCom)
     }
 
@@ -155,7 +155,7 @@ class StaffServiceTest {
         lastName = "Y",
       )
 
-      whenever(staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(any(), any()))
+      whenever(staffRepository.findCommunityOffenderManager(any(), any()))
         .thenReturn(
           listOf(
             CommunityOffenderManager(
@@ -179,7 +179,7 @@ class StaffServiceTest {
       service.updateComDetails(comDetails)
 
       argumentCaptor<CommunityOffenderManager>().apply {
-        verify(staffRepository, times(1)).findByStaffIdentifierOrUsernameIgnoreCase(2001, "JOEBLOGGS")
+        verify(staffRepository, times(1)).findCommunityOffenderManager(2001, "JOEBLOGGS")
         verify(staffRepository, times(1)).saveAndFlush(capture())
 
         assertThat(firstValue).usingRecursiveComparison().ignoringFields("lastUpdatedTimestamp")
