@@ -735,13 +735,14 @@ class ComCreateCaseloadServiceTest {
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
     ).thenReturn(listOf(ManagedOffenderCrn(crn = "X12348", nomisId = "AB1234E")))
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(
-      createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
-    ))
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      listOf(
+        createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
+      ),
+    )
 
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(false)
-
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
 
@@ -753,16 +754,21 @@ class ComCreateCaseloadServiceTest {
   fun `it bypasses eligibility checks for existing PRRD licences`() {
     whenever(
       deliusApiClient.getManagedOffenders(deliusStaffIdentifier),
-    ).thenReturn(listOf(ManagedOffenderCrn(
-      crn = "X12348",
-      nomisId = "AB1234E",
-      staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234")
-      ))
+    ).thenReturn(
+      listOf(
+        ManagedOffenderCrn(
+          crn = "X12348",
+          nomisId = "AB1234E",
+          staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
+        ),
+      ),
     )
 
-    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(listOf(
-      createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
-    ))
+    whenever(caseloadService.getPrisonersByNumber(any())).thenReturn(
+      listOf(
+        createCaseloadItem("AB1234E", yesterday, bookingId = "5", postRecallReleaseDate = tenDaysFromNow, licenceStartDate = tenDaysFromNow),
+      ),
+    )
 
     whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.PRRD)
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(false)
@@ -779,7 +785,7 @@ class ComCreateCaseloadServiceTest {
           comUsername = "johndoe",
           licenceStartDate = tenDaysFromNow,
         ),
-      )
+      ),
     )
 
     val caseload = service.getStaffCreateCaseload(deliusStaffIdentifier)
@@ -796,7 +802,7 @@ class ComCreateCaseloadServiceTest {
         staffCode = "X1234",
         name = "Joe Bloggs",
       ),
-      expectedLicenceKind = LicenceKind.PRRD
+      expectedLicenceKind = LicenceKind.PRRD,
     )
     verify(eligibilityService, never()).isEligibleForCvl(any())
   }
