@@ -65,7 +65,6 @@ class ComCaseloadIntegrationTest : IntegrationTestBase() {
     fun `Successfully retrieve staff create caseload`() {
       deliusMockServer.stubGetStaffDetailsByUsername()
       deliusMockServer.stubGetManagedOffenders(DELIUS_STAFF_IDENTIFIER)
-      deliusMockServer.stubGetProbationCases()
       val releaseDate = LocalDate.now().plusDays(10).format(DateTimeFormatter.ISO_DATE)
       prisonerSearchApiMockServer.stubSearchPrisonersByNomisIds(
         readFile("staff-create-case-load-prisoners").replace(

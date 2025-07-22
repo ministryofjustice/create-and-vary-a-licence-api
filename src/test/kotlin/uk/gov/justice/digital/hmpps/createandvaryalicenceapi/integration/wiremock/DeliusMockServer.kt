@@ -280,6 +280,7 @@ class DeliusMockServer : WireMockServer(8093) {
             [
               {
                 "crn": "X12348",
+                "nomisId": "AB1234E",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
@@ -295,6 +296,7 @@ class DeliusMockServer : WireMockServer(8093) {
               },
               {
                 "crn": "X12349",
+                "nomisId": "AB1234F",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
@@ -310,6 +312,7 @@ class DeliusMockServer : WireMockServer(8093) {
               },
               {
                 "crn": "X12350",
+                "nomisId": "AB1234G",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
@@ -325,6 +328,7 @@ class DeliusMockServer : WireMockServer(8093) {
               },
               {
                 "crn": "X12351",
+                "nomisId": "AB1234H",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
@@ -340,6 +344,7 @@ class DeliusMockServer : WireMockServer(8093) {
               },
               {
                 "crn": "X12352",
+                "nomisId": "AB1234I",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
@@ -368,6 +373,7 @@ class DeliusMockServer : WireMockServer(8093) {
             [
               {
                 "crn": "X12348",
+                "nomisId": "AB1234E",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
@@ -383,6 +389,7 @@ class DeliusMockServer : WireMockServer(8093) {
               },
               {
                 "crn": "X12349",
+                "nomisId": "AB1234F",
                 "allocationDate": null,
                 "staff": {
                   "id": null,
