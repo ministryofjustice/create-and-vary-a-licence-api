@@ -12,6 +12,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
@@ -48,7 +49,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_IN_PROGRESS
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.VARIATION_SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType.AP
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -141,13 +141,6 @@ class CaCaseloadServiceTest {
         ),
       ),
     )
-
-    whenever(caseloadService.prisonerToCaseloadItem(any(), any())).thenReturn(
-      TestData.caseLoadItem().copy(
-        TestData.caseLoadItem().prisoner,
-        TestData.someCvlFields(AP),
-      ),
-    )
     whenever(prisonerSearchApiClient.searchPrisonersByReleaseDate(any(), any(), any(), anyOrNull())).thenReturn(
       PageImpl(
         listOf(
@@ -174,13 +167,6 @@ class CaCaseloadServiceTest {
     inner class `in the hard stop period` {
       @Test
       fun `Sets NOT_STARTED licences to TIMED_OUT when in the hard stop period`() {
-        whenever(releaseDateService.getLicenceStartDates(any())).thenReturn(mapOf("A1234AA" to twoDaysFromNow))
-        whenever(caseloadService.prisonerToCaseloadItem(any(), any())).thenReturn(
-          TestData.caseLoadItem().copy(
-            TestData.caseLoadItem().prisoner,
-            TestData.someCvlFields(AP).copy(isInHardStopPeriod = true, isDueToBeReleasedInTheNextTwoWorkingDays = true),
-          ),
-        )
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
@@ -197,7 +183,12 @@ class CaCaseloadServiceTest {
             ),
           ),
         )
-
+        whenever(releaseDateService.getHardStopDate(any())).thenReturn(LocalDate.of(2023, 10, 12))
+        whenever(releaseDateService.getHardStopWarningDate(any())).thenReturn(LocalDate.of(2023, 10, 11))
+        whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(true)
+        whenever(releaseDateService.isDueForEarlyRelease(any())).thenReturn(true)
+        whenever(releaseDateService.isEligibleForEarlyRelease(any<SentenceDateHolder>())).thenReturn(true)
+        whenever(releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(any())).thenReturn(true)
         whenever(hdcService.getHdcStatus(any())).thenReturn(HdcStatuses(emptySet()))
 
         val prisonOmuCaseload = service.getPrisonOmuCaseload(setOf("BAI"), "")
@@ -399,7 +390,7 @@ class CaCaseloadServiceTest {
               mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
-              licenceType = AP,
+              licenceType = LicenceType.AP,
               isDueForEarlyRelease = true,
               isInHardStopPeriod = false,
               isDueToBeReleasedInTheNextTwoWorkingDays = false,
@@ -476,7 +467,7 @@ class CaCaseloadServiceTest {
               mostSeriousOffence = "Robbery",
             ),
             cvl = CvlFields(
-              licenceType = AP,
+              licenceType = LicenceType.AP,
               isDueForEarlyRelease = true,
               isInHardStopPeriod = false,
               isDueToBeReleasedInTheNextTwoWorkingDays = false,
@@ -768,8 +759,6 @@ class CaCaseloadServiceTest {
         whenever(licenceService.findLicencesMatchingCriteria(prisonLicenceQueryObject)).thenReturn(
           emptyList(),
         )
-        whenever(caseloadService.prisonerToCaseloadItem(any(), any())).thenReturn(TestData.caseLoadItem())
-
         val prisoner = aPrisonerSearchPrisoner.copy(
           prisonerNumber = "A1234AC",
           actualParoleDate = null,
@@ -1457,7 +1446,7 @@ class CaCaseloadServiceTest {
     val aLicenceSummary = LicenceSummary(
       kind = LicenceKind.CRD,
       licenceId = 1,
-      licenceType = AP,
+      licenceType = LicenceType.AP,
       licenceStatus = IN_PROGRESS,
       nomisId = "A1234AA",
       forename = "Person",
