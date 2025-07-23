@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AppointmentTi
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ContactNumberRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.AddAddressRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentTimeType
@@ -34,6 +35,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrNull
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence as LicenceEntity
 
 @SpringBootTest(
   webEnvironment = RANDOM_PORT,
@@ -42,6 +44,9 @@ import kotlin.jvm.optionals.getOrNull
 class AppointmentIntegrationTest(
   @Autowired private val licenceRepository: LicenceRepository,
 ) : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var auditEventRepository: AuditEventRepository
 
   @BeforeEach
   fun reset() {
@@ -192,7 +197,8 @@ class AppointmentIntegrationTest(
     // Then
     result.expectStatus().isOk
 
-    val savedAddress = getAddress()
+    val licence = getLicence()
+    val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(1)
     assertThat(addAddressRequest).usingRecursiveComparison().isEqualTo(savedAddress)
 
@@ -200,6 +206,11 @@ class AppointmentIntegrationTest(
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(1)).last()
+    assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
+    assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo("")
+    assertThat(auditEvent.changes!!["newValue"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
   }
 
   @Test
@@ -217,13 +228,19 @@ class AppointmentIntegrationTest(
     // Then
     result.expectStatus().isOk
 
-    val savedAddress = getAddress()
+    val licence = getLicence()
+    val savedAddress = getAddress(licence)
     assertThat(savedAddress.id).isEqualTo(2)
     assertThat(addAddressRequest).usingRecursiveComparison().isEqualTo(savedAddress)
     assertThat(savedAddress.reference).isNotEqualTo("REF-123456")
     assertThatCode { UUID.fromString(savedAddress.reference) }.doesNotThrowAnyException()
     assertThat(savedAddress.createdTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
     assertThat(savedAddress.lastUpdatedTimestamp).isCloseTo(LocalDateTime.now(), within(20, ChronoUnit.SECONDS))
+
+    val auditEvent = auditEventRepository.findAllByLicenceIdIn(listOf(licence.id)).last()
+    assertThat(auditEvent.summary).isEqualTo("Updated initial appointment details for Person One")
+    assertThat(auditEvent.changes!!["previousValue"] as String).isEqualTo(",REF-123456,123 Test Street,Apt 4B,Testville,Testshire,TE5 7AA,MANUAL")
+    assertThat(auditEvent.changes!!["newValue"] as String).isEqualTo("221B,Baker Street,London,Greater London,NW1 6XE")
   }
 
   @Test
@@ -439,10 +456,14 @@ class AppointmentIntegrationTest(
     return errorResponse
   }
 
-  private fun getAddress(id: Long = 1): Address {
+  private fun getLicence(id: Long = 1): LicenceEntity {
     val licence = licenceRepository.findById(id).getOrNull()
     assertThat(licence).isNotNull
-    assertThat(licence!!.licenceAppointmentAddress).isNotNull
+    return licence!!
+  }
+
+  private fun getAddress(licence: LicenceEntity = getLicence()): Address {
+    assertThat(licence.licenceAppointmentAddress).isNotNull
     assertThat(licence.appointmentAddress).isNotNull
     val licenceAppointmentAddress = licence.licenceAppointmentAddress!!
 
@@ -456,7 +477,6 @@ class AppointmentIntegrationTest(
       ).joinToString(",")
     }
     assertThat(licence.appointmentAddress).isEqualTo(expectedAppointmentAddress)
-
     return licenceAppointmentAddress
   }
 
