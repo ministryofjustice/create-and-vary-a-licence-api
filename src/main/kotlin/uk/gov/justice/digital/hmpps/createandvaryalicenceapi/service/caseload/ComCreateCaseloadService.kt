@@ -91,9 +91,11 @@ class ComCreateCaseloadService(
   private fun filterCasesEligibleForCvl(cases: Map<ManagedOffenderCrn, CaseloadItem>, crnsToLicences: Map<String, List<CaseLoadLicenceSummary>>): Map<ManagedOffenderCrn, CaseloadItem> = cases.filter { (deliusRecord, nomisRecord) ->
     val prisoner = nomisRecord.prisoner.toPrisonerSearchPrisoner()
     val licences = crnsToLicences[deliusRecord.crn]!!
+    val prrdLicence = licences.find { licence -> licence.kind == LicenceKind.PRRD }
     when {
       prisoner.bookingId == null -> false
       licences.any { it.licenceStatus == ACTIVE } -> false
+      prrdLicence != null && prrdLicence.licenceStatus != NOT_STARTED -> true
       !eligibilityService.isEligibleForCvl(prisoner) -> false
       else -> true
     }
