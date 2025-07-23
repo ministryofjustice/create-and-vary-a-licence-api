@@ -1,3 +1,7 @@
+-- You may need to run these if running a second time
+-- TRUNCATE TABLE address RESTART IDENTITY CASCADE;
+-- TRUNCATE TABLE licence_appointment_address RESTART IDENTITY CASCADE;
+--
 -- This SQL tries to make sense out of the comma delimited string addresses found in the licence
 -- Info on Lateral joins
 --    You use a LATERAL JOIN when:
@@ -1177,21 +1181,39 @@ DROP TABLE IF EXISTS tmp_stage_7;
 
 ALTER TABLE address DISABLE TRIGGER set_address_last_updated_timestamp;
 
-INSERT INTO address (reference, first_line, second_line, town_or_city, county, postcode,
+INSERT INTO address (id,reference, first_line, second_line, town_or_city, county, postcode,
    source, created_timestamp, last_updated_timestamp
 ) SELECT
-	  reference, first_line, second_line, town_or_city, county, postcode,
+	  licence_id,reference::text as reference, first_line, second_line, town_or_city, county, postcode,
 	   source, created_timestamp, last_updated_timestamp
-	FROM tmp_stage_8;
+	FROM tmp_stage_8 order by licence_id;
 
 INSERT INTO licence_appointment_address (licence_id, address_id)
 	SELECT
-	  s.licence_id,
+	  tmp.licence_id,
 	  a.id
 	FROM tmp_stage_8 tmp
-	JOIN address a ON a.reference = tmp.reference;
+	JOIN address a ON a.reference = tmp.reference::text
+    order by tmp.licence_id;
 
 ALTER TABLE address ENABLE TRIGGER set_address_last_updated_timestamp;
 
 DROP TABLE IF EXISTS tmp_stage_8;
+
+--
+-- sql to allow us to check migrated data
+--
+--		SELECT l.id as licence_table_id,laa.licence_id,laa.address_id,a.id as address_table_ID,
+--			l.appointment_address,
+--			CONCAT_WS(', ',
+--			NULLIF(TRIM(a.first_line), ''),
+--			NULLIF(TRIM(a.second_line), ''),
+--			NULLIF(TRIM(a.town_or_city), ''),
+--			NULLIF(TRIM(a.county), ''),
+--			NULLIF(TRIM(a.postcode), '')
+--		  ) AS full_address_mirgated
+--			FROM licence l
+--			JOIN licence_appointment_address laa ON laa.licence_id = l.id
+--			JOIN address a ON laa.address_id = a.id;
+--
 */
