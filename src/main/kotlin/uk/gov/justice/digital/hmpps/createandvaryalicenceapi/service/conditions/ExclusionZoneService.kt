@@ -154,7 +154,11 @@ class ExclusionZoneService(
       .findById(uploadIds.first())
       .orElseThrow { EntityNotFoundException("$conditionId") }
 
-    return upload.fullSizeImage
+    return if (upload.fullSizeImageDsUuid != null) {
+      documentService.downloadDocument(UUID.fromString(upload.fullSizeImageDsUuid))
+    } else {
+      upload.fullSizeImage
+    }
   }
 
   companion object {
