@@ -24,5 +24,13 @@ interface StaffRepository : JpaRepository<Staff, Long> {
   ): List<CommunityOffenderManager>
 
   fun findByUsernameIgnoreCase(username: String): Staff?
+
+  @Query(
+    """
+      SELECT s FROM PrisonUser s 
+        WHERE UPPER(s.username) = UPPER(:username) 
+        ORDER BY s.lastUpdatedTimestamp DESC LIMIT 1
+    """,
+  )
   fun findPrisonUserByUsernameIgnoreCase(username: String): PrisonUser?
 }
