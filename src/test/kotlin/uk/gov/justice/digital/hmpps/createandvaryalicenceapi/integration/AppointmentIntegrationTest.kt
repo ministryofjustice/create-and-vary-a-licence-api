@@ -443,7 +443,19 @@ class AppointmentIntegrationTest(
     val licence = licenceRepository.findById(id).getOrNull()
     assertThat(licence).isNotNull
     assertThat(licence!!.licenceAppointmentAddress).isNotNull
-    return licence.licenceAppointmentAddress!!
+    assertThat(licence.appointmentAddress).isNotNull
+    val licenceAppointmentAddress = licence.licenceAppointmentAddress!!
+
+    val expectedAppointmentAddress = with(licenceAppointmentAddress) { listOf(
+      firstLine,
+      secondLine.orEmpty(),
+      townOrCity,
+      county.orEmpty(),
+      postcode,
+    ).joinToString(",")}
+    assertThat(licence.appointmentAddress).isEqualTo(expectedAppointmentAddress)
+
+    return licenceAppointmentAddress
   }
 
   fun buildAddAddressRequest(
