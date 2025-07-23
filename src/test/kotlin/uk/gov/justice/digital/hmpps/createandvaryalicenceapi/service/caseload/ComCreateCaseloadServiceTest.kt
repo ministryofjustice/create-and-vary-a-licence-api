@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
@@ -44,6 +45,7 @@ class ComCreateCaseloadServiceTest {
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
+  private val licenceCreationService = mock<LicenceCreationService>()
 
   private val service = ComCreateCaseloadService(
     caseloadService,
@@ -52,6 +54,7 @@ class ComCreateCaseloadServiceTest {
     eligibilityService,
     hdcService,
     releaseDateService,
+    licenceCreationService,
   )
 
   private val elevenDaysFromNow = LocalDate.now().plusDays(11)
