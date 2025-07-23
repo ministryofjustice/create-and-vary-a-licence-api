@@ -48,7 +48,7 @@ abstract class Licence(
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "kind", insertable = false, updatable = false)
-  override var kind: LicenceKind,
+  var kind: LicenceKind,
 
   @NotNull
   @Enumerated(EnumType.STRING)
@@ -82,7 +82,7 @@ abstract class Licence(
   var licenceActivatedDate: LocalDateTime? = null,
   var topupSupervisionStartDate: LocalDate? = null,
   var topupSupervisionExpiryDate: LocalDate? = null,
-  override var postRecallReleaseDate: LocalDate? = null,
+  var postRecallReleaseDate: LocalDate? = null,
   var probationAreaCode: String? = null,
   var probationAreaDescription: String? = null,
   var probationPduCode: String? = null,

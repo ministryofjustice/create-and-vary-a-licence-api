@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
@@ -43,7 +42,6 @@ class ComCreateCaseloadService(
   private val eligibilityService: EligibilityService,
   private val hdcService: HdcService,
   private val releaseDateService: ReleaseDateService,
-  private val licenceCreationService: LicenceCreationService,
 ) {
 
   fun getStaffCreateCaseload(deliusStaffIdentifier: Long): List<ComCase> {
@@ -128,7 +126,7 @@ class ComCreateCaseloadService(
       } else {
         // No licences present for this offender - determine how to show them in case lists
         val licenceType = LicenceType.getLicenceType(case.nomisRecord!!)
-        val licenceKind = licenceCreationService.determineLicenceKind(case.nomisRecord.toPrisonerSearchPrisoner())
+        val licenceKind = caseloadService.determineLicenceKind(case.nomisRecord.toPrisonerSearchPrisoner())
         val name = "${case.nomisRecord.firstName} ${case.nomisRecord.lastName}".trim().convertToTitleCase()
 
         var licenceStatus = NOT_STARTED
@@ -347,7 +345,7 @@ class ComCreateCaseloadService(
     }.map { (case, _) -> case.nomisRecord!!.toPrisonerSearchPrisoner() }
 
     val prisonersToLicenceKinds = prisonerSearchPrisonersWithoutLicences.associate {
-      it.prisonerNumber to licenceCreationService.determineLicenceKind(it)
+      it.prisonerNumber to caseloadService.determineLicenceKind(it)
     }
     return releaseDateService.getLicenceStartDates(prisonerSearchPrisonersWithoutLicences, prisonersToLicenceKinds)
   }

@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceR
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService.HdcStatuses
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.caseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
@@ -50,7 +49,6 @@ class ComCaseloadSearchServiceTest {
   private val hdcService = mock<HdcService>()
   private val eligibilityService = mock<EligibilityService>()
   private val releaseDateService = mock<ReleaseDateService>()
-  private val licenceCreationService = mock<LicenceCreationService>()
 
   private val service = ComCaseloadSearchService(
     licenceRepository,
@@ -59,7 +57,6 @@ class ComCaseloadSearchServiceTest {
     hdcService,
     eligibilityService,
     releaseDateService,
-    licenceCreationService,
     clock,
   )
 
@@ -72,12 +69,10 @@ class ComCaseloadSearchServiceTest {
       hdcService,
       eligibilityService,
       releaseDateService,
-      licenceCreationService,
     )
 
     whenever(deliusApiClient.getTeamManagedOffenders(2000, "Test"))
       .thenReturn(CaseloadResponse(listOf(caseloadResult())))
-    whenever(licenceCreationService.determineLicenceKind(any())).thenReturn(LicenceKind.CRD)
   }
 
   @Test
