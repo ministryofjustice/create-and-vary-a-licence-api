@@ -52,13 +52,11 @@ data class AddAddressRequest(
 ) {
 
   override fun toString(): String = listOf(
-    uprn.orEmpty(),
     firstLine,
     secondLine.orEmpty(),
     townOrCity,
     county.orEmpty(),
     postcode,
-    source.name,
   ).joinToString(",")
 }
 

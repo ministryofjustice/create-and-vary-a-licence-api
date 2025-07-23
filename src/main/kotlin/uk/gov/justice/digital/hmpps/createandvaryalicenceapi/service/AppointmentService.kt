@@ -161,6 +161,7 @@ class AppointmentService(
       .orElseThrow { EntityNotFoundException("$licenceId") }
 
     val previousAddress = licenceEntity.licenceAppointmentAddress?.toString()
+      ?: licenceEntity.appointmentAddress
 
     val username = SecurityContextHolder.getContext().authentication.name
 

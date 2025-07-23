@@ -15,7 +15,6 @@ generic-service:
     HMPPS_AUTH_TOKEN_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://create-and-vary-a-licence-and-delius.hmpps.service.justice.gov.uk"
     HMPPS_DOCUMENT_API_URL: "https://document-api.hmpps.service.justice.gov.uk/"
-    HMPPS_DOCUMENT_API_ENABLED: false
     HMPPS_HDC_API_URL: "https://hdc-api.hmpps.service.justice.gov.uk/"
     HMPPS_MANAGEUSERS_API_URL: "https://manage-users-api.hmpps.service.justice.gov.uk"
     HMPPS_PRISON_API_URL: "https://prison-api.prison.service.justice.gov.uk/api"
@@ -24,7 +23,7 @@ generic-service:
     SELF_LINK: "https://create-and-vary-a-licence.hmpps.service.justice.gov.uk"
     SELF_API_LINK: "https://create-and-vary-a-licence-api.hmpps.service.justice.gov.uk"
     OS_PLACES_API_URL: "https://api.os.uk/search/places/v1"
-    DOMAIN_EVENT_LISTENER_ENABLED: true
+    DOMAIN_EVENT_LISTENER_ENABLED: false
     UPDATE_OFFENDER_DETAILS_HANDLER_ENABLED: false
 
   namespace_secrets:
