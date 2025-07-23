@@ -33,7 +33,7 @@ OffenderService(
 
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
-    log.info("Updating responsible COM for CRN={} to {} {} (email={})", crn, newCom.firstName, newCom.lastName, newCom.email)
+    log.info("Updating responsible COM for CRN={} to {} {} (email={})", crn, newCom.username, newCom.staffIdentifier, newCom.email)
 
     val offenderLicences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
