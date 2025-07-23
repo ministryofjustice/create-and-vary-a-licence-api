@@ -446,13 +446,15 @@ class AppointmentIntegrationTest(
     assertThat(licence.appointmentAddress).isNotNull
     val licenceAppointmentAddress = licence.licenceAppointmentAddress!!
 
-    val expectedAppointmentAddress = with(licenceAppointmentAddress) { listOf(
-      firstLine,
-      secondLine.orEmpty(),
-      townOrCity,
-      county.orEmpty(),
-      postcode,
-    ).joinToString(",")}
+    val expectedAppointmentAddress = with(licenceAppointmentAddress) {
+      listOf(
+        firstLine,
+        secondLine.orEmpty(),
+        townOrCity,
+        county.orEmpty(),
+        postcode,
+      ).joinToString(",")
+    }
     assertThat(licence.appointmentAddress).isEqualTo(expectedAppointmentAddress)
 
     return licenceAppointmentAddress
