@@ -161,6 +161,13 @@ class ExclusionZoneService(
     }
   }
 
+  fun preloadThumbnailsFor(licence: Licence) {
+    licence.additionalConditions
+      .flatMap { it.additionalConditionUploadSummary }
+      .filterNot { it.thumbnailImageDsUuid == null }
+      .forEach { it.preloadedThumbnailImage = documentService.downloadDocument(UUID.fromString(it.thumbnailImageDsUuid)) }
+  }
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
