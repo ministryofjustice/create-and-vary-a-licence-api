@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
@@ -33,6 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.LocalDate
 
@@ -375,6 +378,25 @@ class CaCaseloadService(
     }
   }
 
+  private fun PrisonerSearchPrisoner.toCaseloadItem(licenceStartDate: LocalDate?): CaseloadItem {
+    val sentenceDateHolder = this.toSentenceDateHolder(licenceStartDate)
+    return CaseloadItem(
+      prisoner = this.toPrisoner(),
+      cvl = CvlFields(
+        licenceType = LicenceType.getLicenceType(this),
+        hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
+        hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
+        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
+        isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
+        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
+        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
+          sentenceDateHolder,
+        ),
+        licenceStartDate = sentenceDateHolder.licenceStartDate,
+      ),
+    )
+  }
+
   private fun pairNomisRecordsWithDelius(
     prisoners: List<PrisonerSearchPrisoner>,
     licenceStartDates: Map<String, LocalDate?>,
@@ -391,7 +413,7 @@ class CaCaseloadService(
         if (com != null) {
           ManagedCase(
             nomisRecord = prisoner.toPrisoner(),
-            cvlFields = caseloadService.prisonerToCaseloadItem(prisoner, licenceStartDate).cvl,
+            cvlFields = prisoner.toCaseloadItem(licenceStartDate).cvl,
             deliusRecord = DeliusRecord(
               com.case,
               ManagedOffenderCrn(
