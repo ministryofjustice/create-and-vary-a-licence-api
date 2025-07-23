@@ -32,15 +32,24 @@ class StaffService(
    */
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    log.info("Updating COM details, $comDetails")
-    val comResult = this.staffRepository.findCommunityOffenderManager(
+    log.info(
+      "Attempting to update COM details for staffIdentifier={} username={}",
+      comDetails.staffIdentifier,
+      comDetails.staffUsername,
+    )
+
+    val comResult = staffRepository.findCommunityOffenderManager(
       comDetails.staffIdentifier,
       comDetails.staffUsername,
     )
 
     if (comResult.isEmpty()) {
-      log.info("Saving new COM record, $comDetails")
-      return this.staffRepository.saveAndFlush(
+      log.info(
+        "No existing COM found. Creating new record for staffIdentifier={} username={}",
+        comDetails.staffIdentifier,
+        comDetails.staffUsername,
+      )
+      return staffRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
@@ -53,7 +62,7 @@ class StaffService(
 
     if (comResult.count() > 1) {
       log.warn(
-        "More then one COM record found for staffId {} username {}",
+        "Multiple COM records found for staffIdentifier={} username={}. Using the first match.",
         comDetails.staffIdentifier,
         comDetails.staffUsername,
       )
@@ -61,9 +70,14 @@ class StaffService(
 
     val com = comResult.first()
 
-    // only update entity if data is different
-    if (com.isUpdate(comDetails)) {
-      return this.staffRepository.saveAndFlush(
+    return if (com.isUpdate(comDetails)) {
+      log.info(
+        "Updating COM record (id={}) for staffIdentifier={} username={}",
+        com.id,
+        comDetails.staffIdentifier,
+        comDetails.staffUsername,
+      )
+      staffRepository.saveAndFlush(
         com.copy(
           staffIdentifier = comDetails.staffIdentifier,
           username = comDetails.staffUsername.uppercase(),
@@ -73,9 +87,15 @@ class StaffService(
           lastUpdatedTimestamp = LocalDateTime.now(),
         ),
       )
+    } else {
+      log.info(
+        "No changes detected for COM record (id={}) - skipping update for staffIdentifier={} username={}",
+        com.id,
+        comDetails.staffIdentifier,
+        comDetails.staffUsername,
+      )
+      com
     }
-
-    return com
   }
 
   @Transactional
