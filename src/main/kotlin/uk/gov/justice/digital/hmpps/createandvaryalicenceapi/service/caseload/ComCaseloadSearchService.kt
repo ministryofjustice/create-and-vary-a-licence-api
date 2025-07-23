@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -37,6 +38,7 @@ class ComCaseloadSearchService(
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  private val licenceCreationService: LicenceCreationService,
   private val clock: Clock,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
@@ -142,7 +144,8 @@ class ComCaseloadSearchService(
     prisonOffender: PrisonerSearchPrisoner,
     licenceStartDate: LocalDate?,
   ): FoundProbationRecord {
-    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
+    val kind = licenceCreationService.determineLicenceKind(prisonOffender)
+    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate, kind)
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(
