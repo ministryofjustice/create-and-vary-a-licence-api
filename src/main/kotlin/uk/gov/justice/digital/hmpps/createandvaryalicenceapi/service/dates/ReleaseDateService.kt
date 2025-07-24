@@ -37,12 +37,12 @@ class ReleaseDateService(
 
   fun isDueForEarlyRelease(sentenceDateHolder: SentenceDateHolder): Boolean {
     val actualReleaseDate = sentenceDateHolder.actualReleaseDate
-    val conditionalReleaseDate = sentenceDateHolder.conditionalReleaseDate
+    val latestReleaseDate = sentenceDateHolder.latestReleaseDate
 
-    if (actualReleaseDate == null || conditionalReleaseDate == null) {
+    if (actualReleaseDate == null || latestReleaseDate == null) {
       return false
     }
-    return actualReleaseDate < 1.workingDaysBefore(conditionalReleaseDate)
+    return actualReleaseDate < 1.workingDaysBefore(latestReleaseDate)
   }
 
   fun isDueToBeReleasedInTheNextTwoWorkingDays(sentenceDateHolder: SentenceDateHolder): Boolean {
