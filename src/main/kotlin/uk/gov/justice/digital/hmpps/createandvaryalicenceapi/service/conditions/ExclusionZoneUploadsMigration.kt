@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
@@ -16,6 +17,7 @@ class ExclusionZoneUploadsMigration(
   private val uploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
 ) {
 
+  @Async
   fun perform(batchSize: Int = 100) {
     with(uploadDetailRepository) {
       log.info("Migrating {} of {} total AdditionalConditionUploadDetail record(s)", batchSize, totalToBeMigrated())
