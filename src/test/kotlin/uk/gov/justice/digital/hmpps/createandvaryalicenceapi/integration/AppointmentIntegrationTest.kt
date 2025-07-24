@@ -186,6 +186,32 @@ class AppointmentIntegrationTest(
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
+  fun `Update the largest contact number for the officer on a licence`() {
+    webTestClient.put()
+      .uri("/licence/id/1/contact-number")
+      .bodyValue(aContactNumberRequest.copy(telephone = "+44 20 7946 0958 #98765"))
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+
+    val result = webTestClient.get()
+      .uri("/licence/id/1")
+      .accept(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(Licence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result?.appointmentContact).isEqualTo("+44 20 7946 0958 #98765")
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/seed-licence-id-1.sql",
+  )
   fun `When adding appointment address manually entered Then everything saves as expected`() {
     // Given
     val uri = "/licence/id/1/appointment/address"
