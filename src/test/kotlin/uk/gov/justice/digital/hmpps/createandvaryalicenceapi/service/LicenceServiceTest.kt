@@ -75,6 +75,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.cr
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createHdcVariationLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createVariationLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.policies.LicencePolicyService
@@ -116,6 +117,7 @@ class LicenceServiceTest {
   private val domainEventsService = mock<DomainEventsService>()
   private val prisonerSearchApiClient = mock<PrisonerSearchApiClient>()
   private val eligibilityService = mock<EligibilityService>()
+  private val exclusionZoneService = mock<ExclusionZoneService>()
 
   private val service =
     LicenceService(
@@ -135,6 +137,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       eligibilityService,
+      exclusionZoneService,
     )
 
   @BeforeEach
@@ -160,6 +163,7 @@ class LicenceServiceTest {
       domainEventsService,
       prisonerSearchApiClient,
       eligibilityService,
+      exclusionZoneService,
     )
   }
 

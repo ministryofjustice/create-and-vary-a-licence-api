@@ -43,6 +43,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRep
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StandardConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.getSort
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.toSpecification
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZoneService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.isLicenceReadyToSubmit
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.DomainEventsService
@@ -90,11 +91,14 @@ class LicenceService(
   private val domainEventsService: DomainEventsService,
   private val prisonerSearchApiClient: PrisonerSearchApiClient,
   private val eligibilityService: EligibilityService,
+  private val exclusionZoneService: ExclusionZoneService,
 ) {
 
   @Transactional
   fun getLicenceById(licenceId: Long): Licence {
     val entityLicence = getLicence(licenceId)
+
+    exclusionZoneService.preloadThumbnailsFor(entityLicence)
 
     val isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(entityLicence)
     val earliestReleaseDate = releaseDateService.getEarliestReleaseDate(entityLicence)
