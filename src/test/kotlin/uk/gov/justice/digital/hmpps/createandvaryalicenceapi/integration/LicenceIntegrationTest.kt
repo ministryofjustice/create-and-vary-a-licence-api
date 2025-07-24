@@ -560,14 +560,14 @@ class LicenceIntegrationTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/seed-licence-id-1.sql",
   )
-  fun `Update prison information`() {
+  fun `Update prison information with large prison telephone number`() {
     webTestClient.put()
       .uri("/licence/id/1/prison-information")
       .bodyValue(
         UpdatePrisonInformationRequest(
           prisonCode = "PVI",
           prisonDescription = "Pentonville (HMP)",
-          prisonTelephone = "+44 276 54545",
+          prisonTelephone = "+44 20 7946 0958 #98765",
         ),
       )
       .accept(MediaType.APPLICATION_JSON)
@@ -587,7 +587,7 @@ class LicenceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.prisonCode).isEqualTo("PVI")
     assertThat(result?.prisonDescription).isEqualTo("Pentonville (HMP)")
-    assertThat(result?.prisonTelephone).isEqualTo("+44 276 54545")
+    assertThat(result?.prisonTelephone).isEqualTo("+44 20 7946 0958 #98765")
   }
 
   @Test
