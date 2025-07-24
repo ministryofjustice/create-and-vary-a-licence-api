@@ -177,7 +177,11 @@ class ComCreateCaseloadService(
       licences.first()
     }
 
-    return licence.copy(licenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS)
+    return if (licence.licenceId == null) {
+      licence.copy(licenceCreationType = LicenceCreationType.LICENCE_NOT_STARTED)
+    } else {
+      licence.copy(licenceCreationType = LicenceCreationType.LICENCE_IN_PROGRESS)
+    }
   }
 
   private fun getResponsibleComs(
