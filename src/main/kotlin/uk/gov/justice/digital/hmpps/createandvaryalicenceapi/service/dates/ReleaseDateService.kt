@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.CRD
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.HDC
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind.PRRD
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.isOnOrBefore
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -105,7 +106,7 @@ class ReleaseDateService(
     licenceKind: LicenceKind? = CRD,
   ): LocalDate? = when (licenceKind) {
     HDC -> nomisRecord.homeDetentionCurfewActualDate
-    PRRD -> nomisRecord.postRecallReleaseDate
+    PRRD -> nomisRecord.calculatePrrdLicenceStartDate()
     else -> calculateCrdLicenceStartDate(nomisRecord, iS91DeterminationService.isIS91Case(nomisRecord))
   }
 
@@ -117,7 +118,7 @@ class ReleaseDateService(
     return prisoners.associate {
       it.prisonerNumber to when (prisonersToLicenceKinds[it.prisonerNumber]) {
         HDC -> it.homeDetentionCurfewActualDate
-        PRRD -> it.postRecallReleaseDate
+        PRRD -> it.calculatePrrdLicenceStartDate()
         else -> calculateCrdLicenceStartDate(it, iS91BookingIds.contains(it.bookingId?.toLong()))
       }
     }
@@ -175,7 +176,7 @@ class ReleaseDateService(
   private fun PrisonerSearchPrisoner.determineAltLicenceStartDate(): LocalDate? {
     if (conditionalReleaseDate == null) return null
 
-    val workingDayCrd = getWorkingDayCrd()
+    val workingDayCrd = getLastWorkingDay(conditionalReleaseDate)
 
     return if (
       confirmedReleaseDate == null ||
@@ -192,19 +193,30 @@ class ReleaseDateService(
     if (conditionalReleaseDate == null) return null
 
     return if (confirmedReleaseDate == null || confirmedReleaseDate.isAfter(conditionalReleaseDate)) {
-      getWorkingDayCrd()
+      getLastWorkingDay(conditionalReleaseDate)
     } else {
       confirmedReleaseDate
     }
   }
 
-  private fun PrisonerSearchPrisoner.getWorkingDayCrd(): LocalDate? {
-    if (conditionalReleaseDate == null) return null
+  private fun PrisonerSearchPrisoner.calculatePrrdLicenceStartDate(): LocalDate? {
+    if (postRecallReleaseDate == null) return null
 
-    return if (conditionalReleaseDate.isNonWorkingDay()) {
-      1.workingDaysBefore(conditionalReleaseDate)
+    return when {
+      confirmedReleaseDate == null -> getLastWorkingDay(postRecallReleaseDate)
+      confirmedReleaseDate.isAfter(postRecallReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
+      confirmedReleaseDate.isOnOrBefore(conditionalReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
+      else -> confirmedReleaseDate
+    }
+  }
+
+  private fun getLastWorkingDay(date: LocalDate?): LocalDate? {
+    if (date == null) return null
+
+    return if (date.isNonWorkingDay()) {
+      1.workingDaysBefore(date)
     } else {
-      conditionalReleaseDate
+      date
     }
   }
 }

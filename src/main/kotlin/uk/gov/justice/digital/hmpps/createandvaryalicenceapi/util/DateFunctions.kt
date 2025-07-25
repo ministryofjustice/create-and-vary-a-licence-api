@@ -12,3 +12,14 @@ fun LocalDate?.hasChanged(otherDate: LocalDate?): Boolean = this?.let { it != ot
  * Safely check if date is today or in the future
  */
 fun LocalDate?.isTodayOrInTheFuture() = this == LocalDate.now() || this?.isAfter(LocalDate.now()) ?: false
+
+/**
+ * Safely check if a date is before or equal to another date
+ */
+fun LocalDate.isOnOrBefore(other: LocalDate?): Boolean {
+  if (other == null) {
+    return false
+  }
+
+  return this.isBefore(other) || this == other
+}
