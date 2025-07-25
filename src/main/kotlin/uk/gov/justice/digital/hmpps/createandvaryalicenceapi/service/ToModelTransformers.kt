@@ -369,7 +369,11 @@ fun toPrrd(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
-  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
+    transformToModelElectronicMonitoringProvider(
+      it,
+    )
+  },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
@@ -459,7 +463,11 @@ fun toCrd(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
-  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
+    transformToModelElectronicMonitoringProvider(
+      it,
+    )
+  },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
@@ -553,7 +561,11 @@ fun toHdc(
   submittedByFullName = licence.getSubmittedByFullName(),
   curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
-  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
+    transformToModelElectronicMonitoringProvider(
+      it,
+    )
+  },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
@@ -1002,6 +1014,8 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
     ?: this.sentenceDetail.topupSupervisionExpiryDate,
   paroleEligibilityDate = this.sentenceDetail.paroleEligibilityOverrideDate
     ?: this.sentenceDetail.paroleEligibilityDate,
+  postRecallReleaseDate = this.sentenceDetail.postRecallReleaseOverrideDate
+    ?: this.sentenceDetail.postRecallReleaseDate,
 )
 
 fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCurfewAddress = ModelHdcCurfewAddress(
