@@ -15,6 +15,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.IS91DeterminationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createPrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.prisonerSearchResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.BankHolidayService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.workingDays.WorkingDaysService
@@ -554,6 +555,47 @@ class ReleaseDateServiceTest {
       val licence = createCrdLicence().copy(
         actualReleaseDate = date,
         conditionalReleaseDate = date.minusDays(3),
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `ard is one day before prrd`() {
+      val licence = createPrrdLicence().copy(
+        actualReleaseDate = date.minusDays(1),
+        postRecallReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `ard is two days before prrd`() {
+      val licence = createPrrdLicence().copy(
+        actualReleaseDate = date.minusDays(2),
+        postRecallReleaseDate = date,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isTrue
+    }
+
+    @Test
+    fun `ard is two days before prrd when one is a non working day`() {
+      val sunday = LocalDate.of(2024, 4, 7)
+      val licence = createPrrdLicence().copy(
+        actualReleaseDate = sunday.minusDays(2),
+        postRecallReleaseDate = sunday,
+      )
+
+      assertThat(service.isDueForEarlyRelease(licence)).isFalse
+    }
+
+    @Test
+    fun `prrd is one day before ard`() {
+      val licence = createPrrdLicence().copy(
+        actualReleaseDate = date,
+        postRecallReleaseDate = date.minusDays(1),
       )
 
       assertThat(service.isDueForEarlyRelease(licence)).isFalse
