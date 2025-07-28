@@ -526,8 +526,8 @@ class LicenceCreationServiceTest {
         assertThat(firstValue.staffIdentifier).isEqualTo(comUser.id)
         assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
         assertThat(firstValue.email).isEqualTo(comUser.email)
-        assertThat(firstValue.firstName).isEqualTo(comUser.name!!.forename)
-        assertThat(firstValue.lastName).isEqualTo(comUser.name!!.surname)
+        assertThat(firstValue.firstName).isEqualTo(comUser.name.forename)
+        assertThat(firstValue.lastName).isEqualTo(comUser.name.surname)
       }
 
       argumentCaptor<CrdLicence>().apply {
@@ -1001,8 +1001,8 @@ class LicenceCreationServiceTest {
         assertThat(firstValue.staffIdentifier).isEqualTo(comUser.id)
         assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
         assertThat(firstValue.email).isEqualTo(comUser.email)
-        assertThat(firstValue.firstName).isEqualTo(comUser.name!!.forename)
-        assertThat(firstValue.lastName).isEqualTo(comUser.name!!.surname)
+        assertThat(firstValue.firstName).isEqualTo(comUser.name.forename)
+        assertThat(firstValue.lastName).isEqualTo(comUser.name.surname)
       }
 
       argumentCaptor<PrrdLicence>().apply {
@@ -1499,8 +1499,8 @@ class LicenceCreationServiceTest {
         assertThat(firstValue.staffIdentifier).isEqualTo(comUser.id)
         assertThat(firstValue.username).isEqualTo(comUser.username!!.uppercase())
         assertThat(firstValue.email).isEqualTo(comUser.email)
-        assertThat(firstValue.firstName).isEqualTo(comUser.name!!.forename)
-        assertThat(firstValue.lastName).isEqualTo(comUser.name!!.surname)
+        assertThat(firstValue.firstName).isEqualTo(comUser.name.forename)
+        assertThat(firstValue.lastName).isEqualTo(comUser.name.surname)
       }
 
       argumentCaptor<HardStopLicence>().apply {
@@ -1837,6 +1837,8 @@ class LicenceCreationServiceTest {
       ),
       teams = emptyList(),
       code = "AB00001",
+      provider = Detail(code = "", description = null),
+      unallocated = true,
     )
 
     val newCom = CommunityOffenderManager(

@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -50,7 +50,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
         whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
         val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
 
@@ -124,16 +124,14 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aUser,
-            aUser.copy(
+            aStaffNameResponse,
+            aStaffNameResponse.copy(
               id = 3000,
               username = "jdoe",
-              email = "testemail2@probation.gov.uk",
               name = Name(
                 forename = "Test2",
                 surname = "Test2",
               ),
-              teams = emptyList(),
               code = "DE012F",
             ),
           ),
@@ -231,16 +229,14 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aUser,
-            aUser.copy(
+            aStaffNameResponse,
+            aStaffNameResponse.copy(
               id = 3000,
               username = "jdoe",
-              email = "testemail2@probation.gov.uk",
               name = Name(
                 forename = "Test2",
                 surname = "Test2",
               ),
-              teams = emptyList(),
               code = "DE012F",
             ),
           ),
@@ -316,19 +312,17 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aUser,
-            aUser.copy(
+            aStaffNameResponse,
+            aStaffNameResponse.copy(
               id = 3000,
               username = "jdoe",
-              email = "testemail2@probation.gov.uk",
               name = Name(
                 forename = "Test2",
                 surname = "Test2",
               ),
-              teams = emptyList(),
               code = "DE012F",
             ),
-            aUser,
+            aStaffNameResponse,
           ),
         )
 
@@ -383,7 +377,7 @@ class ApproverCaseloadServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
       val approvalCases = service.getApprovalNeeded(aListOfPrisonCodes)
 
@@ -420,7 +414,7 @@ class ApproverCaseloadServiceTest {
           ),
         )
         whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+        whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
         val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -505,18 +499,16 @@ class ApproverCaseloadServiceTest {
 
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aUser.copy(
+            aStaffNameResponse.copy(
               id = 3000,
               username = "jdoe",
-              email = "testemail2@probation.gov.uk",
               name = Name(
                 forename = "Test2",
                 surname = "Test2",
               ),
-              teams = emptyList(),
               code = "DE012F",
             ),
-            aUser,
+            aStaffNameResponse,
           ),
         )
 
@@ -619,18 +611,16 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aUser.copy(
+            aStaffNameResponse.copy(
               id = 3000,
               username = "jdoe",
-              email = "testemail2@probation.gov.uk",
               name = Name(
                 forename = "Test2",
                 surname = "Test2",
               ),
-              teams = emptyList(),
               code = "DE012F",
             ),
-            aUser,
+            aStaffNameResponse,
           ),
         )
 
@@ -704,19 +694,17 @@ class ApproverCaseloadServiceTest {
         )
         whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(
           listOf(
-            aUser,
-            aUser.copy(
+            aStaffNameResponse,
+            aStaffNameResponse.copy(
               id = 3000,
               username = "jdoe",
-              email = "testemail2@probation.gov.uk",
               name = Name(
                 forename = "Test2",
                 surname = "Test2",
               ),
-              teams = emptyList(),
               code = "DE012F",
             ),
-            aUser,
+            aStaffNameResponse,
           ),
         )
 
@@ -751,7 +739,7 @@ class ApproverCaseloadServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -779,7 +767,7 @@ class ApproverCaseloadServiceTest {
         ),
       )
       whenever(deliusApiClient.getOffenderManagers(listOf(nomisId))).thenReturn(listOf(aCommunityManager))
-      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aUser))
+      whenever(deliusApiClient.getStaffDetailsByUsername(comUsernames)).thenReturn(listOf(aStaffNameResponse))
 
       val approvalCases = service.getRecentlyApproved(aListOfPrisonCodes)
 
@@ -800,16 +788,14 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `The correct com is retrieved`() {
       val users = listOf(
-        aUser,
-        aUser.copy(
+        aStaffNameResponse,
+        aStaffNameResponse.copy(
           id = 1000,
           username = "jdoe",
-          email = "testemail2@probation.gov.uk",
           name = Name(
             forename = "Test2",
             surname = "Test2",
           ),
-          teams = emptyList(),
           code = "CD012E",
         ),
       )
@@ -823,7 +809,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `If the com is not found in the list of coms, the delius record details are used instead`() {
       val users = listOf(
-        aUser.copy(
+        aStaffNameResponse.copy(
           username = "test1",
           code = "test1",
           name = Name(
@@ -831,7 +817,7 @@ class ApproverCaseloadServiceTest {
             surname = "Test1",
           ),
         ),
-        aUser.copy(
+        aStaffNameResponse.copy(
           username = "test2",
           code = "test2",
           name = Name(
@@ -850,7 +836,7 @@ class ApproverCaseloadServiceTest {
     @Test
     fun `return null if com is unallocated`() {
       val users = listOf(
-        aUser.copy(
+        aStaffNameResponse.copy(
           username = "test1",
           code = "test1",
           name = Name(
@@ -858,7 +844,7 @@ class ApproverCaseloadServiceTest {
             surname = "Test1",
           ),
         ),
-        aUser.copy(
+        aStaffNameResponse.copy(
           username = "test2",
           code = "test2",
           name = Name(
@@ -926,15 +912,13 @@ class ApproverCaseloadServiceTest {
       nomisId = "A1234AA",
     )
 
-    val aUser = User(
+    val aStaffNameResponse = StaffNameResponse(
       id = 2000,
       username = "tcom",
-      email = "testemail@probation.gov.uk",
       name = Name(
         forename = "Test",
         surname = "Test",
       ),
-      teams = emptyList(),
       code = "AB012C",
     )
   }

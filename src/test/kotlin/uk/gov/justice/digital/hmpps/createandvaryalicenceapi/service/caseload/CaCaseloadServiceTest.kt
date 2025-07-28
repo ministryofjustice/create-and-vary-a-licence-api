@@ -35,7 +35,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
@@ -1498,15 +1498,13 @@ class CaCaseloadServiceTest {
     val probationCase = ProbationCase(crn = "X12347", nomisId = "A1234AA")
 
     val aProbationPractitioner = ProbationPractitioner(staffCode = "DEF456")
-    val comUser = User(
+    val comUser = StaffNameResponse(
       id = 2000L,
       username = "com-user",
-      email = "comuser@probation.gov.uk",
       name = Name(
         forename = "com",
         surname = "user",
       ),
-      teams = null,
       code = "AB00001",
     )
 

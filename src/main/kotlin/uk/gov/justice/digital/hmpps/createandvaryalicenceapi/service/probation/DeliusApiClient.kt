@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Component
@@ -50,12 +51,26 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
       ?: error("Unexpected null response from API")
   }
 
+  fun getStaffByCode(staffCode: String): User? = deliusApiWebClient
+    .get()
+    .uri("/staff/bycode/{code}", staffCode)
+    .accept(MediaType.APPLICATION_JSON)
+    .retrieve()
+    .bodyToMono(User::class.java)
+    .onErrorResume {
+      processErrors(it)
+    }
+    .block()
+
   fun getStaffByIdentifier(staffIdentifier: Long): User? = deliusApiWebClient
     .get()
     .uri("/staff/byid/{staffIdentifier}", staffIdentifier)
     .accept(MediaType.APPLICATION_JSON)
     .retrieve()
     .bodyToMono(User::class.java)
+    .onErrorResume {
+      processErrors(it)
+    }
     .block()
 
   fun getOffenderManager(crnOrNomisId: String): CommunityManager? = deliusApiWebClient
@@ -69,7 +84,6 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
         it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
           Mono.empty()
         }
-
         else -> Mono.error(it)
       }
     }
@@ -100,14 +114,14 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
       .block()
   }
 
-  fun getStaffDetailsByUsername(usernames: List<String>): List<User> = batchRequests(STAFF_USERNAME_BATCH, usernames) { batch ->
+  fun getStaffDetailsByUsername(usernames: List<String>): List<StaffNameResponse> = batchRequests(STAFF_USERNAME_BATCH, usernames) { batch ->
     deliusApiWebClient
       .post()
       .uri("/staff")
       .accept(MediaType.APPLICATION_JSON)
       .bodyValue(batch)
       .retrieve()
-      .bodyToMono(typeReference<List<User>>())
+      .bodyToMono(typeReference<List<StaffNameResponse>>())
       .block()
   }
 
@@ -156,4 +170,11 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .toBodilessEntity()
     .block() ?: error("Unexpected response while assigning delius role for user: $username")
+
+  private fun <T> processErrors(it: Throwable): Mono<T> = when {
+    it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
+      Mono.empty()
+    }
+    else -> Mono.error(it)
+  }
 }

@@ -4,66 +4,141 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 
 class DeliusMockServer : WireMockServer(8093) {
 
-  fun stubGetTeamCodesForUser(staffIdentifier: Long = 1L) {
+  fun stubAssignDeliusRole(userName: String) {
     stubFor(
-      get(urlEqualTo("/staff/byid/$staffIdentifier")).willReturn(
+      put(urlEqualTo("/users/$userName/roles")).willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetStaffByCode(staffCode: String, userName: String = "userName", teamCode: String = "teamCode") {
+    stubFor(
+      get(urlEqualTo("/staff/bycode/$staffCode")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
-                  "username": "Test User",
-                  "email": "testUser@test.justice.gov.uk",
-                  "code": "AB00001",
-                  "id": 123456,
-                  "name": {
-                    "forename": "Test",
-                    "surname": "User"
-                  },
-                  "teams": [
-                    {
-                      "code": "A01B02",
-                      "description": "description",
-                      "telephone": "0123456789",
-                      "emailAddress": "first.last@digital.justice.gov.uk",
-                      "localDeliveryUnit": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "teamType": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "district": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "borough": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "startDate": "2023-05-18",
-                      "endDate": "2023-05-18"
-                    }
-                  ]
-               }""",
+          "id": 123456,
+          "code": "AB00001",
+          "name": {
+            "forename": "Test",
+            "surname": "User"
+          },
+          "teams": [
+            {
+              "code": "$teamCode",
+              "description": "Team description",
+              "telephone": "0123456789",
+              "emailAddress": "first.last@digital.justice.gov.uk",
+              "localDeliveryUnit": {
+                "code": "LBC123",
+                "description": "local description"
+              },
+              "teamType": {
+                "code": "TT123",
+                "description": "Type description"
+              },
+              "district": {
+                "code": "DBC123",
+                "description": "District description"
+              },
+              "borough": {
+                "code": "BC123",
+                "description": "Borough description"
+              },
+              "startDate": "2023-05-18",
+              "endDate": "2023-05-18"
+            }
+          ],
+          "provider": {
+            "code": "PBC123",
+            "description": "Some Provider"
+          },
+          "username": "$userName",
+          "email": "testUser@test.justice.gov.uk",
+          "telephoneNumber": "0123456789",
+          "unallocated": false
+        }""",
         ).withStatus(200),
       ),
     )
   }
 
-  fun stubGetOffenderManager(crn: String = "X12345") {
+  fun stubGetTeamCodesForUser(staffIdentifier: Long = 1L, userName: String = "Test User") {
+    stubFor(
+      get(urlEqualTo("/staff/byid/$staffIdentifier")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """{
+          "id": 123456,
+          "code": "AB00001",
+          "name": {
+            "forename": "Test",
+            "surname": "User"
+          },
+          "teams": [
+            {
+              "code": "A01B02",
+              "description": "Team description",
+              "telephone": "0123456789",
+              "emailAddress": "first.last@digital.justice.gov.uk",
+              "localDeliveryUnit": {
+                "code": "LBC123",
+                "description": "local description"
+              },
+              "teamType": {
+                "code": "TT123",
+                "description": "Type description"
+              },
+              "district": {
+                "code": "DBC123",
+                "description": "District description"
+              },
+              "borough": {
+                "code": "BC123",
+                "description": "Borough description"
+              },
+              "startDate": "2023-05-18",
+              "endDate": "2023-05-18"
+            }
+          ],
+          "provider": {
+            "code": "PBC123",
+            "description": "Some Provider"
+          },
+          "username": "$userName",
+          "email": "testUser@test.justice.gov.uk",
+          "telephoneNumber": "0123456789",
+          "unallocated": false
+        }""",
+        ).withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetOffenderManager(
+    crn: String = "X12345",
+    userName: String = "AZ12345",
+    emailAddress: String = "user@test.com",
+    staffIdentifier: Long = 125,
+    forename: String = "TestForename",
+    surname: String = "TestSurname",
+  ) {
     stubFor(
       get(urlEqualTo("/probation-case/$crn/responsible-community-manager")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           // language=json
           """{
             "code": "staff-code-1",
-            "id": 125,
+            "id": $staffIdentifier,
             "case": { "crn": "$crn" },
-            "name": { "forename": "Test", "surname": "Test" },
+            "name": { "forename": "$forename", "surname": "$surname" },
             "allocationDate": "2022-01-02",
             "team": {
               "code": "team-code-1",
@@ -75,7 +150,8 @@ class DeliusMockServer : WireMockServer(8093) {
               "code": "probationArea-code-1", 
               "description": "probationArea-description-1"
             },
-            "email": "user@test.com"
+            "email": "$emailAddress",
+            "username" : "$userName"
           }""",
         ).withStatus(200),
       ),
