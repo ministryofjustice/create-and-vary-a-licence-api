@@ -20,17 +20,20 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetStaffByCode(staffCode: String, userName: String = "userName", teamCode: String = "teamCode") {
+  fun stubGetStaffByCode(
+    staffCode: String,
+    userName: String = "userName",
+    teamCode: String = "teamCode",
+    firstName: String = "firstName",
+    lastName: String = "lastName",
+  ) {
     stubFor(
       get(urlEqualTo("/staff/bycode/$staffCode")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
           "id": 123456,
           "code": "AB00001",
-          "name": {
-            "forename": "Test",
-            "surname": "User"
-          },
+          "name": { "forename": "$firstName", "surname": "$lastName" },
           "teams": [
             {
               "code": "$teamCode",
@@ -71,17 +74,19 @@ class DeliusMockServer : WireMockServer(8093) {
     )
   }
 
-  fun stubGetTeamCodesForUser(staffIdentifier: Long = 1L, userName: String = "Test User") {
+  fun stubGetTeamCodesForUser(
+    staffIdentifier: Long = 1L,
+    userName: String = "Test User",
+    firstName: String = "firstName",
+    lastName: String = "lastName",
+  ) {
     stubFor(
       get(urlEqualTo("/staff/byid/$staffIdentifier")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
           "id": 123456,
           "code": "AB00001",
-          "name": {
-            "forename": "Test",
-            "surname": "User"
-          },
+          "name": { "forename": "$firstName", "surname": "$lastName" },
           "teams": [
             {
               "code": "A01B02",
@@ -127,8 +132,8 @@ class DeliusMockServer : WireMockServer(8093) {
     userName: String = "AZ12345",
     emailAddress: String = "user@test.com",
     staffIdentifier: Long = 125,
-    forename: String = "TestForename",
-    surname: String = "TestSurname",
+    firstName: String = "firstName",
+    lastName: String = "lastName",
   ) {
     stubFor(
       get(urlEqualTo("/probation-case/$crn/responsible-community-manager")).willReturn(
@@ -138,7 +143,7 @@ class DeliusMockServer : WireMockServer(8093) {
             "code": "staff-code-1",
             "id": $staffIdentifier,
             "case": { "crn": "$crn" },
-            "name": { "forename": "$forename", "surname": "$surname" },
+            "name": { "forename": "$firstName", "surname": "$lastName" },
             "allocationDate": "2022-01-02",
             "team": {
               "code": "team-code-1",

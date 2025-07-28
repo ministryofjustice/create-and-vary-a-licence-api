@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremoc
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.WorkFlowMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.UpdateProbationTeamRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.OffenderService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.StaffService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.domainEvents.AdditionalInformationPrisonerUpdated
@@ -53,6 +55,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   @MockitoSpyBean
   lateinit var staffService: StaffService
 
+  @Autowired
+  lateinit var staffRepository: StaffRepository
+
   private val awaitAtMost30Secs
     get() = await.atMost(Duration.ofSeconds(30))
 
@@ -71,8 +76,8 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       userName = userName,
       emailAddress,
       staffIdentifier,
-      forename = firstName,
-      surname = lastName,
+      firstName = firstName,
+      lastName = lastName,
     )
     deliusMockServer.stubAssignDeliusRole(userName = userName)
     val event = buildComAllocatedEventJson(crn = crn, personUuid = null)
@@ -83,9 +88,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Then
     verifyUpdateComDetails(
+      staffIdentifier,
       userName,
       emailAddress,
-      staffIdentifier,
       firstName = firstName,
       lastName = lastName,
     )
@@ -109,6 +114,8 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       districtCode = "district-code-1",
       districtDescription = "district-description-1",
     )
+
+    assertComExistsInDb(staffIdentifier, userName, emailAddress, firstName, lastName)
   }
 
   @Test
@@ -120,10 +127,13 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val emailAddress = "testUser@test.justice.gov.uk"
     val personUuid = "1d9ab4b2-7b80-4784-8104-f9a77fd93a31"
     val teamCode = "teamCode"
+    val staffIdentifier = 123456L
+    val firstName = "forename"
+    val lastName = "surname"
 
     val event = buildComAllocatedEventJson(crn = crn, personUuid = personUuid)
     workFlowMockServer.stubGetStaffDetails(personUuid, crn, staffCode, teamCode)
-    deliusMockServer.stubGetStaffByCode(staffCode, userName, teamCode)
+    deliusMockServer.stubGetStaffByCode(staffCode, userName, teamCode, firstName, lastName)
     deliusMockServer.stubAssignDeliusRole(userName = userName)
     val message = mapper.writeValueAsString(event)
 
@@ -132,11 +142,11 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
 
     // Then
     verify(comAllocatedHandler).handleEvent(message)
-    verifyUpdateComDetails(userName, emailAddress)
+    verifyUpdateComDetails(staffIdentifier, userName, emailAddress, firstName, lastName)
     verifyUpdateOffenderWithResponsibleCom(
       crn = crn,
       id = 9,
-      staffIdentifier = 123456,
+      staffIdentifier = staffIdentifier,
       username = userName,
       email = emailAddress,
     )
@@ -151,6 +161,8 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       districtCode = "DBC123",
       districtDescription = "District description",
     )
+
+    assertComExistsInDb(staffIdentifier, userName, emailAddress, firstName, lastName)
   }
 
   @Test
@@ -196,6 +208,21 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
   }
 
+  private fun assertComExistsInDb(
+    staffIdentifier: Long,
+    userName: String,
+    emailAddress: String,
+    firstName: String = "Test",
+    lastName: String = "Test",
+  ) {
+    val persisted = staffRepository.findByStaffIdentifier(staffIdentifier)
+    assertThat(persisted).isNotNull
+    assertThat(persisted!!.username).isEqualTo(userName.uppercase())
+    assertThat(persisted.email).isEqualTo(emailAddress)
+    assertThat(persisted.firstName).isEqualTo(firstName)
+    assertThat(persisted.lastName).isEqualTo(lastName)
+  }
+
   fun buildComAllocatedEventJson(
     crn: String,
     allocationId: String = "1d9ab4b2-7b80-4784-8104-f9a77fd93a31",
@@ -217,9 +244,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   )
 
   private fun verifyUpdateComDetails(
+    staffIdentifier: Long = 123456,
     userName: String,
     email: String,
-    staffIdentifier: Long = 123456,
     firstName: String = "Test",
     lastName: String = "User",
   ) {
