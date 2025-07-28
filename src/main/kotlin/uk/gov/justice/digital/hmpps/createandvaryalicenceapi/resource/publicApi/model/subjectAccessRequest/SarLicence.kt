@@ -20,7 +20,7 @@ data class SarLicence(
   val statusCode: SarLicenceStatus?,
 
   @Schema(description = "The prison identifier for the person on this licence", example = "A9999AA")
-  val nomsId: String?,
+  val prisonNumber: String?,
 
   @Schema(description = "The prison internal booking ID for the person on this licence", example = "989898")
   val bookingId: Long?,
@@ -35,10 +35,16 @@ data class SarLicence(
   @Schema(description = "The type of appointment time of the initial appointment", example = "Specific date time")
   val appointmentTimeType: SarAppointmentTimeType?,
 
-  @Schema(description = "The address of initial appointment", example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN")
+  @Schema(
+    description = "The address of initial appointment",
+    example = "Manchester Probation Service, Unit 4, Smith Street, Stockport, SP1 3DN",
+  )
   val appointmentAddress: String?,
 
-  @Schema(description = "The UK telephone number to contact the person the offender should meet for their initial meeting", example = "0114 2557665")
+  @Schema(
+    description = "The UK telephone number to contact the person the offender should meet for their initial meeting",
+    example = "0114 2557665",
+  )
   val appointmentContact: String?,
 
   @Schema(description = "The date and time that this prison approved this licence", example = "24/08/2022 11:30:33")
@@ -48,14 +54,23 @@ data class SarLicence(
   @Schema(description = "The username who approved the licence on behalf of the prison governor", example = "X33221")
   val approvedByUsername: String?,
 
-  @Schema(description = "The date and time that this licence was submitted for approval", example = "24/08/2022 11:30:33")
+  @Schema(
+    description = "The date and time that this licence was submitted for approval",
+    example = "24/08/2022 11:30:33",
+  )
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val submittedDate: LocalDateTime?,
 
-  @Schema(description = "The full name of the person who approved the licence on behalf of the prison governor", example = "John Smith")
+  @Schema(
+    description = "The full name of the person who approved the licence on behalf of the prison governor",
+    example = "John Smith",
+  )
   val approvedByName: String?,
 
-  @Schema(description = "The date and time that this licence was superseded by a new variant", example = "24/08/2022 11:30:33")
+  @Schema(
+    description = "The date and time that this licence was superseded by a new variant",
+    example = "24/08/2022 11:30:33",
+  )
   @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
   val supersededDate: LocalDateTime?,
 

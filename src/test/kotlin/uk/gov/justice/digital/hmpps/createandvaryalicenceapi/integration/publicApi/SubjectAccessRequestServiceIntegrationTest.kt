@@ -48,7 +48,7 @@ class SubjectAccessRequestServiceIntegrationTest : IntegrationTestBase() {
 
     assertThat(result?.content?.licences).extracting(
       "id",
-      "nomsId",
+      "prisonNumber",
       "bookingId",
       "createdByUsername",
     )

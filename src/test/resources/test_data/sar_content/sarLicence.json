@@ -6,7 +6,7 @@
         "kind": "CRD",
         "typeCode": "All purpose",
         "statusCode": "In progress",
-        "nomsId": "A1234AA",
+        "prisonNumber": "A1234AA",
         "bookingId": 54321,
         "appointmentPerson": null,
         "appointmentTime": null,
@@ -51,8 +51,8 @@
         "username": "USER",
         "fullName": "First Last",
         "eventType": "User event",
-        "summary":"Summary1",
-        "detail":"Detail1"
+        "summary": "Summary1",
+        "detail": "Detail1"
       },
       {
         "licenceId": 1,
@@ -60,8 +60,8 @@
         "username": "USER",
         "fullName": "First Last",
         "eventType": "User event",
-        "summary":"Summary2",
-        "detail":"Detail2"
+        "summary": "Summary2",
+        "detail": "Detail2"
       },
       {
         "licenceId": 1,
@@ -69,8 +69,18 @@
         "username": "CUSER",
         "fullName": "First Last",
         "eventType": "System event",
-        "summary":"Summary3",
-        "detail":"Detail3"
+        "summary": "Summary3",
+        "detail": "Detail3"
+      }
+    ],
+    "attachments": [
+      {
+        "attachmentNumber": 1,
+        "name": "a file",
+        "contentType": "application/pdf",
+        "url": "http://localhost:8080/licence/G4169UO",
+        "filename": "G4169UO.pdf",
+        "filesize": 12344
       }
     ]
   }
