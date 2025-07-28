@@ -199,24 +199,17 @@ class ReleaseDateService(
     }
   }
 
-  private fun PrisonerSearchPrisoner.calculatePrrdLicenceStartDate(): LocalDate? {
-    if (postRecallReleaseDate == null) return null
-
-    return when {
-      confirmedReleaseDate == null -> getLastWorkingDay(postRecallReleaseDate)
-      confirmedReleaseDate.isAfter(postRecallReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
-      confirmedReleaseDate.isOnOrBefore(conditionalReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
-      else -> confirmedReleaseDate
-    }
+  private fun PrisonerSearchPrisoner.calculatePrrdLicenceStartDate(): LocalDate? = when {
+    postRecallReleaseDate == null -> null
+    confirmedReleaseDate == null -> getLastWorkingDay(postRecallReleaseDate)
+    confirmedReleaseDate.isAfter(postRecallReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
+    confirmedReleaseDate.isOnOrBefore(conditionalReleaseDate) -> getLastWorkingDay(postRecallReleaseDate)
+    else -> confirmedReleaseDate
   }
 
-  private fun getLastWorkingDay(date: LocalDate?): LocalDate? {
-    if (date == null) return null
-
-    return if (date.isNonWorkingDay()) {
-      1.workingDaysBefore(date)
-    } else {
-      date
-    }
+  private fun getLastWorkingDay(date: LocalDate?): LocalDate? = when {
+    date == null -> null
+    date.isNonWorkingDay() -> 1.workingDaysBefore(date)
+    else -> date
   }
 }

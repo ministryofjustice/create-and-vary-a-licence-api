@@ -1130,87 +1130,122 @@ class ReleaseDateServiceTest {
 
       @Test
       fun `returns PRRD if ARD is null and PRRD is a working day`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+
         val nomisRecord = prisonerSearchResult().copy(
-          postRecallReleaseDate = LocalDate.of(2024, 10, 22),
+          postRecallReleaseDate = prrd,
           confirmedReleaseDate = null,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2024, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrd)
       }
 
       @Test
       fun `returns the ARD if it is before the PRRD and after the CRD`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+        val ard = prrd.minusDays(2)
+
         val nomisRecord = prisonerSearchResult().copy(
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2024, 10, 20),
-          postRecallReleaseDate = LocalDate.of(2024, 10, 22),
+          conditionalReleaseDate = prrd.minusYears(3),
+          confirmedReleaseDate = ard,
+          postRecallReleaseDate = prrd,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2024, 10, 20))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(ard)
+      }
+
+      @Test
+      fun `returns the ARD if it is before the PRRD and the CRD is null`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+        val ard = prrd.minusDays(2)
+
+        val nomisRecord = prisonerSearchResult().copy(
+          conditionalReleaseDate = null,
+          confirmedReleaseDate = ard,
+          postRecallReleaseDate = prrd,
+        )
+
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(ard)
       }
 
       @Test
       fun `returns the ARD if the ARD is equal to the PRRD`() {
+        val prrdAndArd = LocalDate.of(2024, 10, 22)
+
         val nomisRecord = prisonerSearchResult().copy(
-          postRecallReleaseDate = LocalDate.of(2024, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2024, 10, 22),
+          postRecallReleaseDate = prrdAndArd,
+          confirmedReleaseDate = prrdAndArd,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2024, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrdAndArd)
       }
 
       @Test
       fun `returns the PRRD if the ARD is after PRRD`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+
         val nomisRecord = prisonerSearchResult().copy(
-          postRecallReleaseDate = LocalDate.of(2024, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2024, 10, 23),
+          postRecallReleaseDate = prrd,
+          confirmedReleaseDate = prrd.plusDays(1),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2024, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrd)
       }
 
       @Test
-      fun `returns last working day before PRRD if the ARD is invalid and PRRD is a bank holiday or weekend`() {
+      fun `returns last working day before PRRD if the ARD is after PRRD and PRRD is a bank holiday or weekend`() {
+        val prrd = LocalDate.of(2018, 12, 4)
+        val lastWorkingDayBeforePrrd = LocalDate.of(2018, 11, 30)
+
         val nomisRecord = prisonerSearchResult().copy(
-          postRecallReleaseDate = LocalDate.of(2018, 12, 4),
-          confirmedReleaseDate = LocalDate.of(2021, 10, 23),
+          postRecallReleaseDate = prrd,
+          confirmedReleaseDate = prrd.plusDays(10),
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2018, 11, 30))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(lastWorkingDayBeforePrrd)
       }
 
       // Check to make sure it doesn't return last working day
       @Test
       fun `returns the ARD when ARD and PRRD are both the same non-working day`() {
+        val prrdAndArd = LocalDate.of(2018, 12, 4)
+
         val nomisRecord = prisonerSearchResult().copy(
           conditionalReleaseDate = null,
-          postRecallReleaseDate = LocalDate.of(2018, 12, 4),
-          confirmedReleaseDate = LocalDate.of(2018, 12, 4),
+          postRecallReleaseDate = prrdAndArd,
+          confirmedReleaseDate = prrdAndArd,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2018, 12, 4))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrdAndArd)
       }
 
       @Test
       fun `returns the PRRD if the ARD is before the CRD`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+        val crd = prrd.minusYears(3)
+        val ard = crd.minusDays(1)
+
         val nomisRecord = prisonerSearchResult().copy(
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          postRecallReleaseDate = LocalDate.of(2024, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2021, 10, 21),
+          conditionalReleaseDate = crd,
+          postRecallReleaseDate = prrd,
+          confirmedReleaseDate = ard,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2024, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrd)
       }
 
       @Test
       fun `returns the PRRD if the ARD is equal to the CRD`() {
+        val prrd = LocalDate.of(2024, 10, 22)
+        val crdAndArd = prrd.minusYears(3)
+
         val nomisRecord = prisonerSearchResult().copy(
-          conditionalReleaseDate = LocalDate.of(2021, 10, 22),
-          postRecallReleaseDate = LocalDate.of(2024, 10, 22),
-          confirmedReleaseDate = LocalDate.of(2021, 10, 22),
+          conditionalReleaseDate = crdAndArd,
+          postRecallReleaseDate = prrd,
+          confirmedReleaseDate = crdAndArd,
         )
 
-        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(LocalDate.of(2024, 10, 22))
+        assertThat(service.getLicenceStartDate(nomisRecord, LicenceKind.PRRD)).isEqualTo(prrd)
       }
     }
 
