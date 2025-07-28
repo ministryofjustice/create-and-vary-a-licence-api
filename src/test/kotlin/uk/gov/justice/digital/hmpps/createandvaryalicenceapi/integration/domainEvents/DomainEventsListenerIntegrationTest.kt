@@ -91,11 +91,12 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     )
     verifyUpdateOffenderWithResponsibleCom(
       crn = crn,
-      id = 2,
+      id = 9,
       staffIdentifier = staffIdentifier,
       username = userName,
       email = emailAddress,
-      lastUpdated = true,
+      firstName = firstName,
+      lastName = lastName,
     )
     verifyUpdateProbationTeam(
       crn = crn,
@@ -138,7 +139,6 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       staffIdentifier = 123456,
       username = userName,
       email = emailAddress,
-      lastUpdated = false,
     )
     verifyUpdateProbationTeam(
       crn = crn,
@@ -240,7 +240,8 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     staffIdentifier: Long,
     username: String,
     email: String,
-    lastUpdated: Boolean,
+    firstName: String = "Test",
+    lastName: String = "User",
   ) {
     verify(offenderService).updateOffenderWithResponsibleCom(
       crn,
@@ -249,9 +250,9 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
         staffIdentifier = staffIdentifier,
         username = username.uppercase(),
         email = email,
-        firstName = "Test",
-        lastName = "User",
-        lastUpdatedTimestamp = if (lastUpdated) any() else null,
+        firstName = firstName,
+        lastName = lastName,
+        lastUpdatedTimestamp = null,
       ),
     )
   }
