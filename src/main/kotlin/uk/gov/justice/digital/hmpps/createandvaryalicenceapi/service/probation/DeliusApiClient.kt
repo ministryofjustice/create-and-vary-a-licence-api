@@ -56,7 +56,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(User::class.java)
     .onErrorResume {
-      ResponseUtils.processErrors(it)
+      ResponseUtils.coerce404ToEmptyOrThrow(it)
     }
     .block()
 
@@ -67,7 +67,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(User::class.java)
     .onErrorResume {
-      ResponseUtils.processErrors(it)
+      ResponseUtils.coerce404ToEmptyOrThrow(it)
     }
     .block()
 
@@ -78,7 +78,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(typeReference<CommunityManager>())
     .onErrorResume {
-      ResponseUtils.processErrors(it)
+      ResponseUtils.coerce404ToEmptyOrThrow(it)
     }
     .block()
 

@@ -11,9 +11,10 @@ class ResponseUtils {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @JvmStatic
-    fun <T> processErrors(it: Throwable): Mono<T> = when {
+    fun <T> coerce404ToEmptyOrThrow(it: Throwable): Mono<T> = when {
       it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
-        log.info("No resource found ${it.message}")
+        val uri = it.request?.uri?.toString() ?: "Unknown"
+        log.info("No resource found for URI: $uri")
         Mono.empty()
       }
       else -> Mono.error(it)

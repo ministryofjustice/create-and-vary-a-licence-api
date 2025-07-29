@@ -17,7 +17,7 @@ class WorkLoadApiClient(@Qualifier("oauthWorkLoadApiClient") val workLoadApiClie
     .retrieve()
     .bodyToMono(WorkLoadAllocationResponse::class.java)
     .onErrorResume {
-      ResponseUtils.processErrors(it)
+      ResponseUtils.coerce404ToEmptyOrThrow(it)
     }
     .block()!!
 }
