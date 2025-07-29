@@ -98,16 +98,6 @@ class ExclusionZoneControllerTest {
   }
 
   @Test
-  fun `remove an exclusion zone upload associated with an additional condition`() {
-    mvc.perform(
-      MockMvcRequestBuilders.put("/exclusion-zone/id/4/condition/id/1/remove-upload"),
-    )
-      .andExpect(MockMvcResultMatchers.status().isOk)
-
-    verify(exclusionZoneService, times(1)).removeExclusionZoneFile(4, 1)
-  }
-
-  @Test
   fun `get a full-size image for an exclusion zone`() {
     mvc.perform(
       MockMvcRequestBuilders.get("/exclusion-zone/id/4/condition/id/1/full-size-image"),

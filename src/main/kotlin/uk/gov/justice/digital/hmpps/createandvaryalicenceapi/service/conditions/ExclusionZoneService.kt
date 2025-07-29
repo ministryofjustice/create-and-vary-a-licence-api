@@ -102,32 +102,6 @@ class ExclusionZoneService(
     }
   }
 
-  @Transactional
-  fun removeExclusionZoneFile(licenceId: Long, conditionId: Long) {
-    licenceRepository
-      .findById(licenceId)
-      .orElseThrow { EntityNotFoundException("$licenceId") }
-
-    val additionalCondition = additionalConditionRepository
-      .findById(conditionId)
-      .orElseThrow { EntityNotFoundException("$conditionId") }
-
-    removeExistingUploads(additionalCondition)
-
-    // Remove the additionalConditionData item for 'outOfBoundFilename'
-    val updatedAdditionalConditionData = additionalCondition
-      .additionalConditionData
-      .filter { !it.dataField.equals("outOfBoundFilename") }
-
-    // Update summary and data via the additionalCondition lists
-    val updatedAdditionalCondition = additionalCondition.copy(
-      additionalConditionData = updatedAdditionalConditionData,
-      additionalConditionUploadSummary = emptyList(),
-    )
-
-    additionalConditionRepository.saveAndFlush(updatedAdditionalCondition)
-  }
-
   private fun removeExistingUploads(additionalCondition: AdditionalCondition) {
     additionalCondition.additionalConditionUploadSummary.map { it.uploadDetailId }.forEach {
       additionalConditionUploadDetailRepository.findById(it).ifPresent { detail ->
