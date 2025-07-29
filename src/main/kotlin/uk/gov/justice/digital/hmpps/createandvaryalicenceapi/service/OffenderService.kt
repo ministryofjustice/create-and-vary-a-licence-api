@@ -87,6 +87,7 @@ OffenderService(
 
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
+    log.debug("Request : {}", request)
     val offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
     var probationTeamChanged = false

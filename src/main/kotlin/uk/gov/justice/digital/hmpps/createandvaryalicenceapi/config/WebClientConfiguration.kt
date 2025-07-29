@@ -20,6 +20,7 @@ class WebClientConfiguration(
   @Value("\${hmpps.prison.api.url}") private val prisonApiUrl: String,
   @Value("\${hmpps.prisonregister.api.url}") private val prisonRegisterApiUrl: String,
   @Value("\${hmpps.delius.api.url}") private val deliusApiUrl: String,
+  @Value("\${hmpps.workload.api.url}") private val workLoadApiUrl: String,
   @Value("\${hmpps.prisonersearch.api.url}") private val prisonerSearchApiUrl: String,
   @Value("\${hmpps.document.api.url}") private val documentApiUrl: String,
   @Value("\${hmpps.govuk.api.url}") private val govUkApiUrl: String,
@@ -66,6 +67,12 @@ class WebClientConfiguration(
   fun oauthDeliusApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = getOAuthClient(authorizedClientManager)
     return getWebClient(deliusApiUrl, oauth2Client)
+  }
+
+  @Bean
+  fun oauthWorkLoadApiClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val oauth2Client = getOAuthClient(authorizedClientManager)
+    return getWebClient(workLoadApiUrl, oauth2Client)
   }
 
   @Bean

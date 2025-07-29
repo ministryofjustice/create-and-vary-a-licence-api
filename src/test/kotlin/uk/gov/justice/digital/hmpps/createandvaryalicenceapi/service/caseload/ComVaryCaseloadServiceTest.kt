@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -64,11 +64,11 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -123,11 +123,11 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -178,11 +178,11 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -252,17 +252,17 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
-        User(
+        StaffNameResponse(
           username = "joebloggs",
           code = "X1234",
           name = Name(forename = "Joe", surname = "Bloggs"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -330,11 +330,11 @@ class ComVaryCaseloadServiceTest {
 
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
