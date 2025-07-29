@@ -1,6 +1,6 @@
 {
-  "reference": "2345678",
-  "firstLine": "ORDNANCE SURVEY, 4, FAKE DRIVE",
+  "uprn": "2345678",
+  "firstLine": "ORDNANCE SURVEY, 4 FAKE DRIVE",
   "secondLine": "FAKELINE",
   "townOrCity": "FAKESVILLE",
   "county": "FAKEHAM",

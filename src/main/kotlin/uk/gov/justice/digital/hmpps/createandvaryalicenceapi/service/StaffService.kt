@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrisonUser
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Staff
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ComReviewCount
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdateComRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.UpdatePrisonUserRequest
@@ -33,15 +32,24 @@ class StaffService(
    */
   @Transactional
   fun updateComDetails(comDetails: UpdateComRequest): CommunityOffenderManager {
-    log.info("Updating COM details, $comDetails")
-    val comResult = this.staffRepository.findByStaffIdentifierOrUsernameIgnoreCase(
+    log.info(
+      "Attempting to update COM details for staffIdentifier={} username={}",
       comDetails.staffIdentifier,
       comDetails.staffUsername,
     )
 
-    if (comResult.isNullOrEmpty()) {
-      log.info("Saving new COM record, $comDetails")
-      return this.staffRepository.saveAndFlush(
+    val comResult = staffRepository.findCommunityOffenderManager(
+      comDetails.staffIdentifier,
+      comDetails.staffUsername,
+    )
+
+    if (comResult.isEmpty()) {
+      log.info(
+        "No existing COM found. Creating new record for staffIdentifier={} username={}",
+        comDetails.staffIdentifier,
+        comDetails.staffUsername,
+      )
+      return staffRepository.saveAndFlush(
         CommunityOffenderManager(
           username = comDetails.staffUsername.uppercase(),
           staffIdentifier = comDetails.staffIdentifier,
@@ -54,7 +62,7 @@ class StaffService(
 
     if (comResult.count() > 1) {
       log.warn(
-        "More then one COM record found for staffId {} username {}",
+        "Multiple COM records found for staffIdentifier={} username={}. Using the first match.",
         comDetails.staffIdentifier,
         comDetails.staffUsername,
       )
@@ -62,9 +70,14 @@ class StaffService(
 
     val com = comResult.first()
 
-    // only update entity if data is different
-    if (com.isUpdate(comDetails)) {
-      return this.staffRepository.saveAndFlush(
+    return if (com.isUpdate(comDetails)) {
+      log.info(
+        "Updating COM record (id={}) for staffIdentifier={} username={}",
+        com.id,
+        comDetails.staffIdentifier,
+        comDetails.staffUsername,
+      )
+      staffRepository.saveAndFlush(
         com.copy(
           staffIdentifier = comDetails.staffIdentifier,
           username = comDetails.staffUsername.uppercase(),
@@ -74,19 +87,34 @@ class StaffService(
           lastUpdatedTimestamp = LocalDateTime.now(),
         ),
       )
+    } else {
+      log.info(
+        "No changes detected for COM record (id={}) - skipping update for staffIdentifier={} username={}",
+        com.id,
+        comDetails.staffIdentifier,
+        comDetails.staffUsername,
+      )
+      com
     }
-
-    return com
   }
 
   @Transactional
-  fun updatePrisonUser(request: UpdatePrisonUserRequest): Staff {
-    val found = staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
+  fun updatePrisonUser(request: UpdatePrisonUserRequest) {
+    log.info("Updating prison user with username=${request.staffUsername}")
 
-    return when {
-      found == null -> staffRepository.saveAndFlush(request.toEntity())
-      found.isUpdate(request) -> this.staffRepository.saveAndFlush(found.updatedWith(request))
-      else -> found
+    val found = staffRepository.findPrisonUserByUsernameIgnoreCase(request.staffUsername)
+    when {
+      found == null -> {
+        log.info("No existing prison user found — creating new record")
+        staffRepository.saveAndFlush(request.toEntity())
+      }
+      found.isUpdate(request) -> {
+        log.info("Prison user found — applying updates")
+        found.updatedWith(request)
+      }
+      else -> {
+        log.info("No update needed for prison user with username=${request.staffUsername}")
+      }
     }
   }
 
@@ -108,13 +136,14 @@ class StaffService(
 
   private fun PrisonUser.updatedWith(
     updatedDetails: UpdatePrisonUserRequest,
-  ) = copy(
-    username = updatedDetails.staffUsername.uppercase(),
-    email = updatedDetails.staffEmail,
-    firstName = updatedDetails.firstName,
-    lastName = updatedDetails.lastName,
-    lastUpdatedTimestamp = LocalDateTime.now(),
-  )
+  ): PrisonUser {
+    username = updatedDetails.staffUsername.uppercase()
+    email = updatedDetails.staffEmail
+    firstName = updatedDetails.firstName
+    lastName = updatedDetails.lastName
+    lastUpdatedTimestamp = LocalDateTime.now()
+    return this
+  }
 
   private fun CommunityOffenderManager.isUpdate(comDetails: UpdateComRequest) = (comDetails.firstName != this.firstName) ||
     (comDetails.lastName != this.lastName) ||

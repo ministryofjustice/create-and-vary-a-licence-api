@@ -10,10 +10,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.Proba
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CONFIRMED_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CRD_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_HDC_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_PRRD_RELEASE_DATE
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceCreationService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
@@ -23,6 +20,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.D
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient.Companion.CASELOAD_PAGE_SIZE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToModelFoundProbationRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.transformToUnstartedRecord
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.IN_FLIGHT_LICENCES
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.Companion.PRE_RELEASE_STATUSES
@@ -40,6 +38,7 @@ class ComCaseloadSearchService(
   private val hdcService: HdcService,
   private val eligibilityService: EligibilityService,
   private val releaseDateService: ReleaseDateService,
+  private val licenceCreationService: LicenceCreationService,
   private val clock: Clock,
 ) {
   fun searchForOffenderOnStaffCaseload(body: ProbationUserSearchRequest): ProbationSearchResult {
@@ -53,8 +52,7 @@ class ComCaseloadSearchService(
       ),
     )
 
-    val deliusRecordsWithLicences: List<Pair<CaseloadResult, Licence?>> =
-      teamCaseloadResult.content.map { it to getLicence(it.crn) }
+    val deliusRecordsWithLicences = teamCaseloadResult.content.map { it to getLicence(it.crn) }
 
     val prisonerRecords = findPrisonersForRelevantRecords(deliusRecordsWithLicences)
 
@@ -146,7 +144,8 @@ class ComCaseloadSearchService(
     prisonOffender: PrisonerSearchPrisoner,
     licenceStartDate: LocalDate?,
   ): FoundProbationRecord {
-    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate)
+    val kind = licenceCreationService.determineLicenceKind(prisonOffender)
+    val sentenceDateHolder = prisonOffender.toSentenceDateHolder(licenceStartDate, kind)
     val inHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder)
 
     return this.transformToUnstartedRecord(
@@ -161,18 +160,8 @@ class ComCaseloadSearchService(
       isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
         sentenceDateHolder,
       ),
-      releaseDateLabel = getReleaseDateLable(licenceStartDate, prisonOffender),
+      releaseDateLabel = ReleaseDateLabelFactory.fromPrisonerSearch(licenceStartDate, prisonOffender),
     )
-  }
-
-  private fun getReleaseDateLable(
-    licenceStartDate: LocalDate?,
-    prisonOffender: PrisonerSearchPrisoner,
-  ) = when (licenceStartDate) {
-    prisonOffender.confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-    prisonOffender.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
-    prisonOffender.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
-    else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 
   private fun CaseloadResult.toStartedRecord(licence: Licence) = this.transformToModelFoundProbationRecord(

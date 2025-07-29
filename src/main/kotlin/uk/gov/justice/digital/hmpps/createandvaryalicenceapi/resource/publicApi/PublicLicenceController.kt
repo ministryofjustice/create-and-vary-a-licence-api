@@ -65,7 +65,7 @@ class PublicLicenceController(private val publicLicenceService: PublicLicenceSer
     @Parameter(name = "licenceId", description = "This is the identifier for a licence")
     @Min(1)
     licenceId: Long,
-  ): Licence? = publicLicenceService.getLicenceById(licenceId)
+  ): Licence = publicLicenceService.getLicenceById(licenceId)
 
   @GetMapping(value = ["/licence-summaries/prison-number/{prisonNumber}"])
   @ResponseBody

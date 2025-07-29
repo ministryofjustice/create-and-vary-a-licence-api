@@ -1,7 +1,7 @@
 [
   {
-    "reference": "23456789",
-    "firstLine": "10, THE FAKE AV",
+    "uprn": "23456789",
+    "firstLine": "10 THE FAKE AV",
     "secondLine": "FAKETON",
     "townOrCity": "FAKESVILLE",
     "county": "FAKESHIRE",
@@ -9,8 +9,8 @@
     "country": "Wales"
   },
   {
-    "reference": "234567891",
-    "firstLine": "12, THE FAKE AV",
+    "uprn": "234567891",
+    "firstLine": "12 THE FAKE AV",
     "secondLine": "FAKETON",
     "townOrCity": "FAKESVILLE",
     "county": "FAKESHIRE",

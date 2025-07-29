@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -14,7 +14,7 @@ class DocumentServiceUploadDocumentTest {
 
   @Test
   fun `generates a new document UUID each time it is called`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     documentService.uploadDocument(file = file)
@@ -25,14 +25,14 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient, times(3))
         .uploadDocument(documentUuid = capture(), documentType = anyOrNull(), file = anyOrNull(), metadata = anyOrNull())
 
-      assertEquals(3, allValues.size)
-      assertEquals(allValues.distinct(), allValues)
+      assertThat(allValues).hasSize(3)
+      assertThat(allValues).isEqualTo(allValues.distinct())
     }
   }
 
   @Test
   fun `returns the generated UUID when the upload is a success`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     val documentUuid = documentService.uploadDocument(file = file)
@@ -41,13 +41,13 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = capture(), documentType = anyOrNull(), file = anyOrNull(), metadata = anyOrNull())
 
-      assertEquals(firstValue, documentUuid)
+      assertThat(firstValue).isEqualTo(documentUuid)
     }
   }
 
   @Test
   fun `uploads the document as a EXCLUSION_ZONE_MAP document type`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     documentService.uploadDocument(file = file)
@@ -56,13 +56,13 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = anyOrNull(), documentType = capture(), file = anyOrNull(), metadata = anyOrNull())
 
-      assertEquals(DocumentType.EXCLUSION_ZONE_MAP, firstValue)
+      assertThat(firstValue).isEqualTo(DocumentType.EXCLUSION_ZONE_MAP)
     }
   }
 
   @Test
   fun `uploads the document with provided metadata`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
     val givenMetadata = mapOf("any" to "metadata", "will" to "be saved", "on" to "upload")
 
@@ -72,13 +72,13 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = anyOrNull(), documentType = anyOrNull(), file = anyOrNull(), metadata = capture())
 
-      assertEquals(givenMetadata, firstValue)
+      assertThat(firstValue).isEqualTo(givenMetadata)
     }
   }
 
   @Test
   fun `uploads the given file bytes to the remote document service`() {
-    val documentService = DocumentService(documentApiClient, true)
+    val documentService = DocumentService(documentApiClient)
     val file = byteArrayOf(1, 2, 3)
 
     documentService.uploadDocument(file = file)
@@ -87,22 +87,7 @@ class DocumentServiceUploadDocumentTest {
       verify(documentApiClient)
         .uploadDocument(documentUuid = anyOrNull(), documentType = anyOrNull(), file = capture(), metadata = anyOrNull())
 
-      assertEquals(file, firstValue)
+      assertThat(firstValue).isEqualTo(file)
     }
-  }
-
-  @Test
-  fun `does not attempt to upload the document when the service is disabled`() {
-    val documentService = DocumentService(documentApiClient, false)
-    val file = byteArrayOf(1, 2, 3)
-
-    val result = documentService.uploadDocument(file = file)
-
-    with(argumentCaptor<ByteArray>()) {
-      verify(documentApiClient, times(0))
-        .uploadDocument(documentUuid = anyOrNull(), documentType = anyOrNull(), file = anyOrNull(), metadata = anyOrNull())
-    }
-
-    assertEquals(null, result)
   }
 }

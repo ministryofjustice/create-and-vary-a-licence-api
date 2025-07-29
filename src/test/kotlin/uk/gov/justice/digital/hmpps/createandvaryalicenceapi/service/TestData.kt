@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalCondition
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CommunityOffenderManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HardStopLicence
@@ -42,8 +43,9 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.N
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.TeamDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AppointmentPersonType
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.AuditEventType
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.CaViewCasesTab
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -416,7 +418,7 @@ object TestData {
     kind = LicenceKinds.CRD,
     typeCode = SarLicenceType.AP,
     statusCode = SarLicenceStatus.IN_PROGRESS,
-    nomsId = "A1234AA",
+    prisonNumber = "A1234AA",
     bookingId = 54321,
     appointmentPerson = null,
     appointmentTime = null,
@@ -558,6 +560,7 @@ object TestData {
     comName = "John Doe",
     comAllocationDate = LocalDate.parse("2025-01-27"),
   )
+
   fun managedOffenderCrn() = ManagedOffenderCrn(
     crn = "X12348",
     staff = StaffDetail(name = Name(forename = "Joe", surname = "Bloggs"), code = "X1234"),
@@ -923,10 +926,20 @@ object TestData {
     licenceType = licenceType,
   )
 
-  fun aDeliusUser() = User(
+  fun aDeliusUser() = StaffNameResponse(
     id = 1,
     username = "joebloggs",
     code = "X1234",
     name = Name(forename = "Delius", surname = "User"),
+  )
+
+  fun anAuditEvent() = AuditEvent(
+    licenceId = 1L,
+    eventTime = LocalDateTime.now(),
+    username = "auditor",
+    fullName = "Auditor Name",
+    eventType = AuditEventType.SYSTEM_EVENT,
+    summary = "Licence created",
+    detail = "Details of creation",
   )
 }

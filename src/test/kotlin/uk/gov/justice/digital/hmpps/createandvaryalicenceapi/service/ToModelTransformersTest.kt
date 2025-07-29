@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.ElectronicMonitoringProvider as EntityElectronicMonitoringProvider
 
@@ -36,6 +38,34 @@ class ToModelTransformersTest {
     val status = determineElectronicMonitoringProviderStatus(provider)
     assertThat(status).isEqualTo(ElectronicMonitoringProviderStatus.COMPLETE)
   }
+
+  @Test
+  fun `additional condition upload summaries have the thumbnail images preloaded`() {
+    val (fileA, fileB) = Pair(byteArrayOf(1, 2, 3), byteArrayOf(4, 5, 6))
+
+    assertThat(
+      transform(additionalConditionUploadSummaryWith(thumbnailImage = fileA, preloadedThumbnailImage = fileB)),
+    ).hasFieldOrPropertyWithValue("thumbnailImage", fileB.toBase64())
+
+    assertThat(
+      transform(additionalConditionUploadSummaryWith(thumbnailImage = fileA, preloadedThumbnailImage = null)),
+    ).hasFieldOrPropertyWithValue("thumbnailImage", fileA.toBase64())
+
+    assertThat(
+      transform(additionalConditionUploadSummaryWith(thumbnailImage = null, preloadedThumbnailImage = fileB)),
+    ).hasFieldOrPropertyWithValue("thumbnailImage", fileB.toBase64())
+
+    assertThat(
+      transform(additionalConditionUploadSummaryWith(thumbnailImage = null, preloadedThumbnailImage = null)),
+    ).hasFieldOrPropertyWithValue("thumbnailImage", null)
+  }
+
+  private fun additionalConditionUploadSummaryWith(thumbnailImage: ByteArray? = null, preloadedThumbnailImage: ByteArray? = null): AdditionalConditionUploadSummary = AdditionalConditionUploadSummary(
+    id = 1L,
+    additionalCondition = mock(),
+    thumbnailImage = thumbnailImage,
+    uploadDetailId = 2L,
+  ).also { it.preloadedThumbnailImage = preloadedThumbnailImage }
 
   private companion object {
     val aLicenceEntity = TestData.createCrdLicence()

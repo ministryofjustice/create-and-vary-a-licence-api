@@ -34,15 +34,15 @@ abstract class Staff(
   var kind: StaffKind,
 
   @Column(unique = true)
-  override val username: String,
+  override var username: String,
 
-  val email: String?,
+  var email: String?,
 
-  override val firstName: String?,
+  override var firstName: String?,
 
-  override val lastName: String?,
+  override var lastName: String?,
 
-  val lastUpdatedTimestamp: LocalDateTime? = null,
+  var lastUpdatedTimestamp: LocalDateTime? = null,
 ) : Creator {
 
   val fullName

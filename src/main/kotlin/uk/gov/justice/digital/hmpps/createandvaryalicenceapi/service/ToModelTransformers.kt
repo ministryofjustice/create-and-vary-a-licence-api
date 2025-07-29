@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.Pris
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CaseloadResult
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.ElectronicMonitoringProviderStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
@@ -368,7 +369,11 @@ fun toPrrd(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
-  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
+    transformToModelElectronicMonitoringProvider(
+      it,
+    )
+  },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
@@ -458,7 +463,11 @@ fun toCrd(
   isDueForEarlyRelease = isDueForEarlyRelease,
   isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
   submittedByFullName = licence.getSubmittedByFullName(),
-  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
+    transformToModelElectronicMonitoringProvider(
+      it,
+    )
+  },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
@@ -552,7 +561,11 @@ fun toHdc(
   submittedByFullName = licence.getSubmittedByFullName(),
   curfewTimes = licence.curfewTimes.transformToModelCurfewTimes(),
   curfewAddress = licence.curfewAddress?.let { transformToModelHdcCurfewAddress(it) },
-  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let { transformToModelElectronicMonitoringProvider(it) },
+  electronicMonitoringProvider = licence.electronicMonitoringProvider?.let {
+    transformToModelElectronicMonitoringProvider(
+      it,
+    )
+  },
   electronicMonitoringProviderStatus = determineElectronicMonitoringProviderStatus(licence.electronicMonitoringProvider),
 )
 
@@ -705,7 +718,7 @@ fun transform(entity: EntityAdditionalConditionUploadSummary): ModelAdditionalCo
   fileSize = entity.fileSize,
   uploadedTime = entity.uploadedTime,
   description = entity.description,
-  thumbnailImage = entity.thumbnailImage?.toBase64(),
+  thumbnailImage = (entity.preloadedThumbnailImage ?: entity.thumbnailImage)?.toBase64(),
   uploadDetailId = entity.uploadDetailId,
 )
 
@@ -757,41 +770,32 @@ fun CaseloadResult.transformToModelFoundProbationRecord(
   isInHardStopPeriod: Boolean,
   isDueForEarlyRelease: Boolean,
   isDueToBeReleasedInTheNextTwoWorkingDays: Boolean,
-): ModelFoundProbationRecord {
-  val hdcad = if (licence.isHdcLicence()) licence.homeDetentionCurfewActualDate else null
-  return ModelFoundProbationRecord(
-    kind = licence.kind,
-    bookingId = licence.bookingId,
-    name = "${name.forename} ${name.surname}".convertToTitleCase(),
-    crn = licence.crn,
-    nomisId = licence.nomsId,
-    comName = staff.name?.fullName()?.convertToTitleCase(),
-    comStaffCode = staff.code,
-    teamName = team.description,
-    releaseDate = licence.licenceStartDate,
-    licenceId = licence.id,
-    versionOf = getVersionOf(licence),
-    licenceType = licence.typeCode,
-    licenceStatus = licence.statusCode,
-    isOnProbation = licence.statusCode.isOnProbation(),
-    hardStopDate = hardStopDate,
-    hardStopWarningDate = hardStopWarningDate,
-    isInHardStopPeriod = isInHardStopPeriod,
-    isDueForEarlyRelease = isDueForEarlyRelease,
-    isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
-    releaseDateLabel = when (licence.licenceStartDate) {
-      null -> LABEL_FOR_CRD_RELEASE_DATE
-      licence.actualReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-      licence.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
-      hdcad -> LABEL_FOR_HDC_RELEASE_DATE
-      else -> LABEL_FOR_CRD_RELEASE_DATE
-    },
-    isReviewNeeded = when (licence) {
-      is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
-      else -> false
-    },
-  )
-}
+): ModelFoundProbationRecord = ModelFoundProbationRecord(
+  kind = licence.kind,
+  bookingId = licence.bookingId,
+  name = "${name.forename} ${name.surname}".convertToTitleCase(),
+  crn = licence.crn,
+  nomisId = licence.nomsId,
+  comName = staff.name?.fullName()?.convertToTitleCase(),
+  comStaffCode = staff.code,
+  teamName = team.description,
+  releaseDate = licence.licenceStartDate,
+  licenceId = licence.id,
+  versionOf = getVersionOf(licence),
+  licenceType = licence.typeCode,
+  licenceStatus = licence.statusCode,
+  isOnProbation = licence.statusCode.isOnProbation(),
+  hardStopDate = hardStopDate,
+  hardStopWarningDate = hardStopWarningDate,
+  isInHardStopPeriod = isInHardStopPeriod,
+  isDueForEarlyRelease = isDueForEarlyRelease,
+  isDueToBeReleasedInTheNextTwoWorkingDays = isDueToBeReleasedInTheNextTwoWorkingDays,
+  releaseDateLabel = ReleaseDateLabelFactory.fromLicence(licence),
+  isReviewNeeded = when (licence) {
+    is HardStopLicence -> (licence.statusCode == LicenceStatus.ACTIVE && licence.reviewDate == null)
+    else -> false
+  },
+)
 
 fun CaseloadResult.transformToUnstartedRecord(
   bookingId: Long?,
@@ -1010,6 +1014,8 @@ fun PrisonApiPrisoner.toPrisonerSearchPrisoner() = PrisonerSearchPrisoner(
     ?: this.sentenceDetail.topupSupervisionExpiryDate,
   paroleEligibilityDate = this.sentenceDetail.paroleEligibilityOverrideDate
     ?: this.sentenceDetail.paroleEligibilityDate,
+  postRecallReleaseDate = this.sentenceDetail.postRecallReleaseOverrideDate
+    ?: this.sentenceDetail.postRecallReleaseDate,
 )
 
 fun transformToModelHdcCurfewAddress(entity: EntityHdcCurfewAddress): ModelHdcCurfewAddress = ModelHdcCurfewAddress(

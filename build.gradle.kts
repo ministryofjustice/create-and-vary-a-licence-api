@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.4"
   kotlin("plugin.spring") version "2.2.0"
   kotlin("plugin.jpa") version "2.2.0"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
@@ -20,7 +20,7 @@ dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   // hmpps-kotlin-lib
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.8")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:1.4.11")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -41,10 +41,10 @@ dependencies {
 
   implementation("com.google.code.gson:gson:2.13.1")
   implementation("io.arrow-kt:arrow-core:2.1.2")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.10.2")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.10.3")
 
   // SQS/SNS dependencies
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.7")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.10")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")

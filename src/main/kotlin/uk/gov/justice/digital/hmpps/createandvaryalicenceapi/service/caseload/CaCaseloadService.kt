@@ -4,10 +4,8 @@ import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CvlFields
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummary
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Prisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceQueryObject
@@ -15,10 +13,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadSer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.DeliusRecord
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.EligibilityService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.HdcService
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CONFIRMED_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_CRD_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_HDC_RELEASE_DATE
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LABEL_FOR_PRRD_RELEASE_DATE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.ManagedCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.caseload.ca.Tabs
@@ -26,12 +20,12 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.dates.ReleaseDateService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.PrisonerSearchPrisoner
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.prison.SentenceDateHolderAdapter.toSentenceDateHolder
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ManagedOffenderCrn
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisoner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ReleaseDateLabelFactory
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.ACTIVE
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.APPROVED
@@ -39,7 +33,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.NOT_STARTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.SUBMITTED
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus.TIMED_OUT
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceType
 import java.time.Clock
 import java.time.LocalDate
 
@@ -165,7 +158,7 @@ class CaCaseloadService(
         name = "${licence?.forename} ${licence?.surname}",
         prisonerNumber = licence?.nomisId!!,
         releaseDate = licence.licenceStartDate,
-        releaseDateLabel = getReleaseDateLabel(licence),
+        releaseDateLabel = ReleaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         lastWorkedOnBy = licence.updatedByFullName,
         isDueForEarlyRelease = licence.isDueForEarlyRelease,
@@ -305,7 +298,7 @@ class CaCaseloadService(
       name = case.nomisRecord.let { "${it?.firstName} ${it?.lastName}".convertToTitleCase() },
       prisonerNumber = case.nomisRecord?.prisonerNumber!!,
       releaseDate = releaseDate,
-      releaseDateLabel = getReleaseDateLabel(releaseDate, case.nomisRecord),
+      releaseDateLabel = ReleaseDateLabelFactory.fromPrisoner(releaseDate, case.nomisRecord),
       licenceStatus = licenceStatus,
       nomisLegalStatus = case.nomisRecord.legalStatus,
       isDueForEarlyRelease = case.cvlFields.isDueForEarlyRelease,
@@ -345,7 +338,7 @@ class CaCaseloadService(
         name = licence.let { "${it?.forename} ${it?.surname}" },
         prisonerNumber = licence?.nomisId!!,
         releaseDate = releaseDate,
-        releaseDateLabel = getReleaseDateLabel(licence),
+        releaseDateLabel = ReleaseDateLabelFactory.fromLicenceSummary(licence),
         licenceStatus = licence.licenceStatus,
         nomisLegalStatus = caseloadItem.prisoner.legalStatus,
         lastWorkedOnBy = licence.updatedByFullName,
@@ -362,27 +355,6 @@ class CaCaseloadService(
         prisonDescription = licence.prisonDescription,
       )
     }.filterNotNull()
-  }
-
-  private fun getReleaseDateLabel(
-    licence: LicenceSummary,
-  ): String = when (licence.licenceStartDate) {
-    null -> LABEL_FOR_CRD_RELEASE_DATE
-    licence.actualReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-    licence.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
-    licence.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
-    else -> LABEL_FOR_CRD_RELEASE_DATE
-  }
-
-  private fun getReleaseDateLabel(
-    releaseDate: LocalDate?,
-    nomisRecord: Prisoner,
-  ): String = when (releaseDate) {
-    null -> LABEL_FOR_CRD_RELEASE_DATE
-    nomisRecord.confirmedReleaseDate -> LABEL_FOR_CONFIRMED_RELEASE_DATE
-    nomisRecord.postRecallReleaseDate -> LABEL_FOR_PRRD_RELEASE_DATE
-    nomisRecord.homeDetentionCurfewActualDate -> LABEL_FOR_HDC_RELEASE_DATE
-    else -> LABEL_FOR_CRD_RELEASE_DATE
   }
 
   private fun getPrisonersApproachingRelease(
@@ -403,25 +375,6 @@ class CaCaseloadService(
     }
   }
 
-  private fun PrisonerSearchPrisoner.toCaseloadItem(licenceStartDate: LocalDate?): CaseloadItem {
-    val sentenceDateHolder = this.toSentenceDateHolder(licenceStartDate)
-    return CaseloadItem(
-      prisoner = this.toPrisoner(),
-      cvl = CvlFields(
-        licenceType = LicenceType.getLicenceType(this),
-        hardStopDate = releaseDateService.getHardStopDate(sentenceDateHolder),
-        hardStopWarningDate = releaseDateService.getHardStopWarningDate(sentenceDateHolder),
-        isInHardStopPeriod = releaseDateService.isInHardStopPeriod(sentenceDateHolder),
-        isEligibleForEarlyRelease = releaseDateService.isEligibleForEarlyRelease(sentenceDateHolder),
-        isDueForEarlyRelease = releaseDateService.isDueForEarlyRelease(sentenceDateHolder),
-        isDueToBeReleasedInTheNextTwoWorkingDays = releaseDateService.isDueToBeReleasedInTheNextTwoWorkingDays(
-          sentenceDateHolder,
-        ),
-        licenceStartDate = sentenceDateHolder.licenceStartDate,
-      ),
-    )
-  }
-
   private fun pairNomisRecordsWithDelius(
     prisoners: List<PrisonerSearchPrisoner>,
     licenceStartDates: Map<String, LocalDate?>,
@@ -438,7 +391,7 @@ class CaCaseloadService(
         if (com != null) {
           ManagedCase(
             nomisRecord = prisoner.toPrisoner(),
-            cvlFields = prisoner.toCaseloadItem(licenceStartDate).cvl,
+            cvlFields = caseloadService.prisonerToCaseloadItem(prisoner, licenceStartDate).cvl,
             deliusRecord = DeliusRecord(
               com.case,
               ManagedOffenderCrn(

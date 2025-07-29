@@ -40,7 +40,6 @@ generic-service:
     DB_SSL_ENABLED: "true"
     HMPPS_GOVUK_API_URL: "https://www.gov.uk"
     HMPPS_SQS_USE_WEB_TOKEN: true
-    HMPPS_DOCUMENT_API_ENABLED: false
     HARDSTOP_ENABLED: false
     POLICYV3_ENABLED: true
     FEATURE_TOGGLE_ELECTRONICMONITORINGRESPONSEHANDLING: true
@@ -130,4 +129,10 @@ jobs:
     enabled: true
     path: /notify-probation-of-unapproved-licences
     cron: "0 2 * * *" # 2am every day
+    allowRetry: false
+
+  - name: documents-migration-job
+    enabled: true
+    path: /migrate-exclusion-zone-maps?batchSize=25
+    cron: "*/1 * * * *" # every 1 minute
     allowRetry: false

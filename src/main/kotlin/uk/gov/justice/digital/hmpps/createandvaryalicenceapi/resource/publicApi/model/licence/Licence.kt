@@ -37,7 +37,10 @@ data class Licence(
   )
   val statusCode: LicenceStatus,
 
-  @Schema(description = "The prison identifier for the person on the licence. Also known as the NOMIS ID", example = "A1234AA")
+  @Schema(
+    description = "The prison identifier for the person on the licence. Also known as the NOMIS ID",
+    example = "A1234AA",
+  )
   val prisonNumber: String,
 
   @Schema(description = "The prison internal booking ID for the person on the licence", example = "989898")
@@ -63,9 +66,12 @@ data class Licence(
   @Schema(description = "The username of the person who created the licence", example = "X12333")
   val createdByUsername: String,
 
-  @Schema(description = "The date and time when the version/variation of the licence was created at", example = "2023-11-20T00:00:00Z")
+  @Schema(
+    description = "The date and time when the version/variation of the licence was created at",
+    example = "2023-11-20T00:00:00Z",
+  )
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-  val createdDateTime: LocalDateTime,
+  val createdDateTime: LocalDateTime?,
 
   @Schema(description = "The username of the person who last updated the licence", example = "X34433")
   val updatedByUsername: String?,
@@ -74,7 +80,10 @@ data class Licence(
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   val updatedDateTime: LocalDateTime?,
 
-  @Schema(description = "The date the licence is to become active. This may be incorrect for IS-91 cases and people on remand. Get in touch for details", example = "2022-08-24")
+  @Schema(
+    description = "The date the licence is to become active. This may be incorrect for IS-91 cases and people on remand. Get in touch for details",
+    example = "2022-08-24",
+  )
   @JsonFormat(pattern = "yyyy-MM-dd")
   val licenceStartDate: LocalDate?,
 

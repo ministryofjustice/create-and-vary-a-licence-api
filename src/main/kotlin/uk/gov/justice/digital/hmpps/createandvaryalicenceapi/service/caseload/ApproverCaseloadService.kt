@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonAppro
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
@@ -48,11 +48,11 @@ class ApproverCaseloadService(
       }
 
     val comUsernames = prisonerRecord.mapNotNull { (_, licenceSummary) -> licenceSummary?.comUsername }
-    val deliusStaffNames = deliusApiClient.getStaffDetailsByUsername(comUsernames)
+    val deliusStaff = deliusApiClient.getStaffDetailsByUsername(comUsernames)
 
     return prisonerRecord.map { (activeCom, licenceSummary) ->
       ApprovalCase(
-        probationPractitioner = findProbationPractitioner(licenceSummary?.comUsername, deliusStaffNames, activeCom),
+        probationPractitioner = findProbationPractitioner(licenceSummary?.comUsername, deliusStaff, activeCom),
         licenceId = licenceSummary?.licenceId,
         name = "${licenceSummary?.forename} ${licenceSummary?.surname}".convertToTitleCase(),
         prisonerNumber = licenceSummary?.nomisId,
@@ -86,23 +86,19 @@ class ApproverCaseloadService(
 
   fun findProbationPractitioner(
     comUsernameOnLicence: String?,
-    deliusStaffNames: List<User>,
+    deliusStaffNames: List<StaffNameResponse>,
     activeCom: CommunityManager,
   ): ProbationPractitioner? {
     val responsibleCom = deliusStaffNames.find { com -> com.username?.lowercase() == comUsernameOnLicence?.lowercase() }
-    return if (responsibleCom != null) {
-      ProbationPractitioner(
+    return when {
+      responsibleCom != null -> ProbationPractitioner(
         staffCode = responsibleCom.code,
-        name = responsibleCom.name?.fullName()?.convertToTitleCase(),
+        name = responsibleCom.name.fullName().convertToTitleCase(),
       )
-    } else {
-      if (activeCom.unallocated) {
-        return null
-      }
-      ProbationPractitioner(
-        staffCode = activeCom.code,
-        name = activeCom.name.fullName(),
-      )
+
+      activeCom.unallocated -> null
+
+      else -> ProbationPractitioner(staffCode = activeCom.code, name = activeCom.name.fullName())
     }
   }
 

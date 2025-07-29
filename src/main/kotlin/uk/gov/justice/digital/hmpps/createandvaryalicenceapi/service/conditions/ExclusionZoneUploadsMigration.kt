@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadDetail
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AdditionalConditionUploadSummary
@@ -16,6 +17,7 @@ class ExclusionZoneUploadsMigration(
   private val uploadSummaryRepository: AdditionalConditionUploadSummaryRepository,
 ) {
 
+  @Async
   fun perform(batchSize: Int = 100) {
     with(uploadDetailRepository) {
       log.info("Migrating {} of {} total AdditionalConditionUploadDetail record(s)", batchSize, totalToBeMigrated())
@@ -31,31 +33,23 @@ class ExclusionZoneUploadsMigration(
   }
 
   private fun migrate(uploadDetail: AdditionalConditionUploadDetail) {
-    val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
-    val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
-
-    if (originalDataUuid != null && fullSizeImageUuid != null) {
+    runCatching {
+      val originalDataUuid = documentService.uploadDocument(uploadDetail.originalData!!, metadata(uploadDetail, "pdf"))
+      val fullSizeImageUuid = documentService.uploadDocument(uploadDetail.fullSizeImage!!, metadata(uploadDetail, "fullSizeImage"))
       uploadDetailRepository.saveAndFlush(
         uploadDetail.copy(
           originalDataDsUuid = originalDataUuid.toString(),
           fullSizeImageDsUuid = fullSizeImageUuid.toString(),
         ),
       )
-    } else {
-      log.info("Unable to migrate AdditionalConditionUploadDetail id={} (originalDataUuid={}, fullSizeImageUuid={})", uploadDetail.id, originalDataUuid, fullSizeImageUuid)
-    }
+    }.onFailure { log.error("Unable to migrate AdditionalConditionUploadDetail id={}, {}", uploadDetail.id, it) }
   }
 
   private fun migrate(uploadSummary: AdditionalConditionUploadSummary) {
-    val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
-
-    if (thumbnailUuid != null) {
-      uploadSummaryRepository.saveAndFlush(
-        uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()),
-      )
-    } else {
-      log.info("Unable to migrate AdditionalConditionUploadSummary id={} (thumbnailUuid=null)", uploadSummary.id)
-    }
+    runCatching {
+      val thumbnailUuid = documentService.uploadDocument(uploadSummary.thumbnailImage!!, metadata(uploadSummary, "thumbnail"))
+      uploadSummaryRepository.saveAndFlush(uploadSummary.copy(thumbnailImageDsUuid = thumbnailUuid.toString()))
+    }.onFailure { log.error("Unable to migrate AdditionalConditionUploadSummary id={}, {}", uploadSummary.id, it) }
   }
 
   private fun metadata(uploadDetail: AdditionalConditionUploadDetail, kind: String) = mapOf(

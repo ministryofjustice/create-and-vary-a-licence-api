@@ -1,19 +1,13 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
 class DocumentService(
   private val apiClient: DocumentApiClient,
-  @Value("\${hmpps.document.api.enabled:false}")
-  private val documentServiceEnabled: Boolean = false,
 ) {
-
-  fun uploadDocument(file: ByteArray, metadata: Map<String, String> = mapOf()): UUID? {
-    if (!documentServiceEnabled) return null
-
+  fun uploadDocument(file: ByteArray, metadata: Map<String, String> = mapOf()): UUID {
     val documentUuid = UUID.randomUUID()
 
     apiClient.uploadDocument(
@@ -25,4 +19,8 @@ class DocumentService(
 
     return documentUuid
   }
+
+  fun downloadDocument(uuid: UUID): ByteArray = apiClient.downloadDocumentFile(uuid)
+
+  fun deleteDocument(uuid: UUID) = apiClient.deleteDocument(uuid)
 }

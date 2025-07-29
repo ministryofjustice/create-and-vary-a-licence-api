@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,37 +27,50 @@ OffenderService(
   @Value("\${notify.templates.urgentLicencePrompt}") private val urgentLicencePromptTemplateId: String,
 ) {
 
+  companion object {
+    private val log = LoggerFactory.getLogger(this::class.java)
+  }
+
   @Transactional
   fun updateOffenderWithResponsibleCom(crn: String, newCom: CommunityOffenderManager) {
-    val offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
+    log.info("Updating responsible COM for CRN={} to {} {} (email={})", crn, newCom.username, newCom.staffIdentifier, newCom.email)
 
-    // Update the in-flight licences for this person on probation
+    val offenderLicences = licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
+
     offenderLicences.forEach { it.responsibleCom = newCom }
-    this.licenceRepository.saveAllAndFlush(offenderLicences)
+    licenceRepository.saveAllAndFlush(offenderLicences)
 
-    val inprogressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }
+    val inProgressLicence = offenderLicences.find { it.kind != HARD_STOP && it.statusCode == IN_PROGRESS }
 
-    if (inprogressLicence != null) {
-      val releaseDate = inprogressLicence.licenceStartDate
+    if (inProgressLicence != null) {
+      log.info("Found in-progress licence (id={}) for CRN={} - checking for late allocation warning.", inProgressLicence.id, crn)
+
+      val releaseDate = inProgressLicence.licenceStartDate
       if (releaseDateService.isLateAllocationWarningRequired(releaseDate)) {
+        log.warn("Late allocation warning triggered for CRN={} licenceId={} with releaseDate={}", crn, inProgressLicence.id, releaseDate)
+
         val prisoner = listOf(
           Case(
-            "${inprogressLicence.forename} ${inprogressLicence.surname}",
-            inprogressLicence.crn!!,
+            "${inProgressLicence.forename} ${inProgressLicence.surname}",
+            inProgressLicence.crn!!,
             releaseDate!!,
           ),
         )
-        this.notifyService.sendLicenceCreateEmail(
+
+        notifyService.sendLicenceCreateEmail(
           urgentLicencePromptTemplateId,
           newCom.email!!,
           "${newCom.firstName} ${newCom.lastName}",
           prisoner,
         )
+
+        log.info("Late allocation email sent to {} for CRN={} and licenceId={}", newCom.email, crn, inProgressLicence.id)
       }
+    } else {
+      log.info("No in-progress licence found for CRN={}", crn)
     }
 
-    // Create an audit event for each of the licences updated
-    offenderLicences.map {
+    offenderLicences.forEach {
       auditEventRepository.saveAndFlush(
         AuditEvent(
           licenceId = it.id,
@@ -67,10 +81,13 @@ OffenderService(
         ),
       )
     }
+
+    log.info("Completed update of responsible COM for CRN={}", crn)
   }
 
   @Transactional
   fun updateProbationTeam(crn: String, request: UpdateProbationTeamRequest) {
+    log.debug("Request : {}", request)
     val offenderLicences = this.licenceRepository.findAllByCrnAndStatusCodeIn(crn, IN_FLIGHT_LICENCES)
 
     var probationTeamChanged = false
