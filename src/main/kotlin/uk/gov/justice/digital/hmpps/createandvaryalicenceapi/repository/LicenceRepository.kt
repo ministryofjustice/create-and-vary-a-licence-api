@@ -29,9 +29,9 @@ interface LicenceRepository :
   @Query(
     """
   SELECT l FROM Licence l
-    WHERE l.kind IN ('CRD')  
+    WHERE l.kind IN ('CRD', 'PRRD')  
       AND l.statusCode = 'IN_PROGRESS'
-      AND l.conditionalReleaseDate <= :cutoffDate
+      AND (l.conditionalReleaseDate <= :cutoffDate OR l.postRecallReleaseDate <= :cutoffDate) 
 """,
   )
   fun getAllLicencesToTimeOut(
