@@ -14,6 +14,7 @@ generic-service:
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
     HMPPS_AUTH_TOKEN_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/oauth/token"
     HMPPS_DELIUS_API_URL: "https://create-and-vary-a-licence-and-delius-preprod.hmpps.service.justice.gov.uk"
+    HMPPS_WORKLOAD_API_URL: "https://hmpps-workload-preprod.hmpps.service.justice.gov.uk"
     HMPPS_DOCUMENT_API_URL: "https://document-api-preprod.hmpps.service.justice.gov.uk/"
     HMPPS_HDC_API_URL: "https://hdc-api-preprod.hmpps.service.justice.gov.uk/"
     HMPPS_MANAGEUSERS_API_URL: "https://manage-users-api-preprod.hmpps.service.justice.gov.uk"

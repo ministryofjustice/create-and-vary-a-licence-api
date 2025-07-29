@@ -26,6 +26,9 @@ hmpps:
   delius:
     api:
       url: "https://cvl-probation-mock.hmpps.service.justice.gov.uk"
+  workload:
+      api:
+        url: "https://hmpps-workload-dev.hmpps.service.justice.gov.uk"
   manageusers:
     api:
       url: "https://manage-users-api-dev.hmpps.service.justice.gov.uk"
