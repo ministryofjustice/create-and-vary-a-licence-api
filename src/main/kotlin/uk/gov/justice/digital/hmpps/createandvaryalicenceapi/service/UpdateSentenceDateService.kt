@@ -172,7 +172,7 @@ class UpdateSentenceDateService(
     val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous)
     val nowInHardstop = releaseDateService.isInHardStopPeriod(new)
     val isCrdOrPrrdInProgress =
-      (new is CrdLicence && new.statusCode == IN_PROGRESS) || (new is PrrdLicence && new.statusCode == IN_PROGRESS)
+      (new is CrdLicence || new is PrrdLicence) && new.statusCode == IN_PROGRESS
     return when {
       isCrdOrPrrdInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP
       previouslyInHardstop && !nowInHardstop -> NO_LONGER_IN_HARDSTOP
