@@ -19,7 +19,6 @@ class DocumentApiClientDeleteTest {
 
   private lateinit var documentApiClient: DocumentApiClient
   private val uuid: UUID = UUID.fromString("425a4764-99fb-4874-bc3f-278fe5ac9f91")
-  private val documentFile = byteArrayOf(1, 2, 3, 4)
 
   private companion object {
     @RegisterExtension
