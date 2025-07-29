@@ -1,20 +1,16 @@
 #!/bin/bash
-namespace=create-and-vary-a-licence-api
+
 #
-# The scripts allow us to create and run q pod locally we can then run commands in pod to get various information
-# In CVL this was used to get DB upgrade data using aws commands e.g.
-# aws rds describe-db-instances --db-instance-identifier "$RDS_INSTANCE_IDENTIFIER" --query 'DBInstances[0].EngineVersion' --output text
-# aws rds describe-db-engine-versions --engine postgres --engine-version 15.7 --query "DBEngineVersions[*].ValidUpgradeTarget[*].{EngineVersion:EngineVersion}" --output text
+# This script creates a debug pod in a given CVL environment to run AWS or DB commands interactively.
 #
+
 usage() {
   echo
   echo "Usage:"
   echo
-  echo " command line parameters:"
+  echo "   -ns <namespace>  One of: 'dev', 'test1', 'test2', 'preprod', 'prod'"
   echo
-  echo "   -ns <namespace>  One of 'dev', 'preprod' or 'prod'. Selects the kubernetes namespace. "
-  echo
-  exit
+  exit 1
 }
 
 read_command_line() {
@@ -31,7 +27,7 @@ read_command_line() {
       echo
       echo "Unknown argument '$1'"
       echo
-      exit
+      exit 1
       ;;
     esac
     shift
@@ -41,63 +37,70 @@ read_command_line() {
 check_namespace() {
   case "$NS_KEY" in
   dev | preprod | prod)
-    namespace=${namespace}-${NS_KEY}
+    base=create-and-vary-a-licence-api
+    namespace=${base}-${NS_KEY}
+
+    ;;
+  test1 | test2)
+    base=create-and-vary-a-licence
+    namespace=${base}-${NS_KEY}
     ;;
   *)
-    echo "-ns must be 'dev', 'preprod' or 'prod'"
-    exit
+    echo "-ns must be one of: 'dev', 'test1', 'test2', 'preprod', 'prod'"
+    exit 1
     ;;
   esac
 }
-
 
 read_command_line "$@"
 check_namespace
 
 set -o history -o histexpand
 set -e
+
 exit_on_error() {
-    exit_code=$1
-    last_command=${@:2}
-    if [ $exit_code -ne 0 ]; then
-        >&2 echo "💥 Last command:"
-        >&2 echo "    \"${last_command}\""
-        >&2 echo "❌ Failed with exit code ${exit_code}."
-        >&2 echo "🟥 Aborting"
-        exit "$exit_code"
-    fi
+  exit_code=$1
+  last_command=${@:2}
+  if [ $exit_code -ne 0 ]; then
+    >&2 echo "💥 Last command:"
+    >&2 echo "    \"${last_command}\""
+    >&2 echo "❌ Failed with exit code ${exit_code}."
+    >&2 echo "🟥 Aborting"
+    exit "$exit_code"
+  fi
 }
 
 debug_pod_name=service-pod-$namespace
-echo "service pod name: $debug_pod_name"
+echo "🔍 Service pod name: $debug_pod_name"
 service_pod_exists="$(kubectl --namespace="$namespace" get pods "$debug_pod_name" || echo 'NotFound')"
 
 if [[ ! $service_pod_exists =~ 'NotFound' ]]; then
-  echo "$debug_pod_name exists signing into shell"
+  echo "$debug_pod_name exists, signing into shell..."
   kubectl exec -it -n "$namespace" "$debug_pod_name" -- sh
   exit 0
 fi
 
-# Get credentials such as RDS identifiers from namespace secrets
-echo "🔑 Getting RDS instance from secrets ... $namespace"
+# 🔐 Get credentials from secrets
+echo "🔑 Fetching RDS instance secrets from $namespace..."
 secret_json=$(cloud-platform decode-secret -s rds-instance-output -n "$namespace" --skip-version-check)
-echo "Secret for RDS instance $secret_json"
+echo "🔓 Secret for RDS instance: $secret_json"
 
 command=$(echo "$secret_json" | jq -r .data.rds_instance_address | sed s/[.].*//)
-echo "RDS_INSTANCE_IDENTIFIER $command, now set"
+echo "📡 RDS_INSTANCE_IDENTIFIER set to $command"
 export RDS_INSTANCE_IDENTIFIER=$command
-export DB_DATA=$(kubectl -n create-and-vary-a-licence-api-dev get secrets rds-instance-output -o json)
+
+export DB_DATA=$(kubectl -n "$namespace" get secrets rds-instance-output -o json)
 export DB_PASSWORD=$(echo $DB_DATA | jq -r '.data.database_password | @base64d')
 export DB_NAME=$(echo $DB_DATA | jq -r '.data.database_name | @base64d')
 export DB_USER=$(echo $DB_DATA | jq -r '.data.database_username | @base64d')
 export DB_SERVER=$(echo $DB_DATA | jq -r '.data.rds_instance_address | @base64d')
 
-kubectl --namespace=$namespace --request-timeout='120s' run \
-     --env "namespace=$namespace" \
-     --env "RDS_INSTANCE_IDENTIFIER=$RDS_INSTANCE_IDENTIFIER" \
-     --env "DB_SERVER=$DB_SERVER"  \
-     --env "DB_NAME=$DB_NAME"  \
-     --env "DB_USER=$DB_USER"  \
-     --env "DB_PASS=$DB_PASSWORD" \
-     -it --rm $debug_pod_name --image=quay.io/hmpps/hmpps-probation-in-court-utils:latest \
-     --restart=Never --overrides='{ "spec": { "serviceAccount": "create-and-vary-a-licence-api" } }'
+kubectl --namespace="$namespace" --request-timeout='120s' run \
+  --env "namespace=$namespace" \
+  --env "RDS_INSTANCE_IDENTIFIER=$RDS_INSTANCE_IDENTIFIER" \
+  --env "DB_SERVER=$DB_SERVER" \
+  --env "DB_NAME=$DB_NAME" \
+  --env "DB_USER=$DB_USER" \
+  --env "DB_PASS=$DB_PASSWORD" \
+  -it --rm "$debug_pod_name" --image=quay.io/hmpps/hmpps-probation-in-court-utils:latest \
+  --restart=Never --overrides='{ "spec": { "serviceAccount": "'${base}'" } }'
