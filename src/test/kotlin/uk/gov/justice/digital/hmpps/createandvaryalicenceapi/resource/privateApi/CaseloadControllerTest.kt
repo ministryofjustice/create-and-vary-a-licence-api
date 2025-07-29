@@ -25,7 +25,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ControllerAdvice
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.PrisonCaseAdminSearchResult
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.PrisonUserSearchRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.CaseloadService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData
@@ -163,5 +165,30 @@ class CaseloadControllerTest {
 
     assertThat(mapper.readValue(response, PrisonCaseAdminSearchResult::class.java)).isEqualTo(result)
     verify(caCaseloadService, times(1)).searchForOffenderOnPrisonCaseAdminCaseload(request)
+  }
+
+  @Test
+  fun `Search for offender on approver caseload`() {
+    val request = ApproverSearchRequest(
+      listOf("MDI"),
+      "ABC",
+    )
+
+    val result = ApproverSearchResponse(listOf(TestData.approvalCase().copy(prisonerNumber = "ABC")), emptyList())
+
+    whenever(approverCaseloadService.searchForOffenderOnApproverCaseload(request)).thenReturn(result)
+
+    val response = mvc.perform(
+      post("/caseload/prison-approver/case-search")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsBytes(request)),
+    )
+      .andExpect(status().isOk)
+      .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+      .andReturn().response.contentAsString
+
+    assertThat(mapper.readValue(response, ApproverSearchResponse::class.java)).isEqualTo(result)
+    verify(approverCaseloadService, times(1)).searchForOffenderOnApproverCaseload(request)
   }
 }
