@@ -145,7 +145,13 @@ class ExclusionZoneService(
   fun deleteDocumentsFor(licence: Licence) {
     log.info("Deleting documents for Licence id=${licence.id}")
 
-    val uploadSummaries = licence.additionalConditions.flatMap { it.additionalConditionUploadSummary }
+    deleteDocumentsFor(licence.additionalConditions)
+  }
+
+  fun deleteDocumentsFor(additionalConditions: List<AdditionalCondition>) {
+    log.info("Deleting documents for ${additionalConditions.size} additional conditions")
+
+    val uploadSummaries = additionalConditions.flatMap { it.additionalConditionUploadSummary }
     val uuidsToDelete = mutableListOf<String?>()
 
     // Remove AdditionalConditionUploadSummary documents
@@ -157,7 +163,7 @@ class ExclusionZoneService(
       .forEach { uuidsToDelete.addAll(listOf(it.fullSizeImageDsUuid, it.originalDataDsUuid)) }
 
     uuidsToDelete.filterNotNull()
-      .also { log.info("Found ${it.size} documents to delete for licenceId=${licence.id}") }
+      .also { log.info("Found ${it.size} documents to delete") }
       .forEach { documentService.deleteDocument(UUID.fromString(it)) }
   }
 
