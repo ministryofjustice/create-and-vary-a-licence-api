@@ -346,6 +346,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).findById(1L)
       verify(licenceRepository, times(0)).saveAndFlush(any())
+      verifyNoInteractions(exclusionZoneService)
       verifyNoInteractions(staffRepository)
     }
 
@@ -356,6 +357,8 @@ class LicenceConditionServiceTest {
      */
     @Test
     fun `update additional conditions`() {
+      val expectedToBeRemoved = additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP")
+
       whenever(licenceRepository.findById(1L))
         .thenReturn(
           Optional.of(
@@ -368,7 +371,7 @@ class LicenceConditionServiceTest {
                   conditionText = "oldText",
                   conditionType = "AP",
                 ),
-                additionalCondition(2).copy(conditionSequence = 6, conditionCode = "code2", conditionType = "AP"),
+                expectedToBeRemoved,
                 additionalCondition(3).copy(conditionSequence = 7, conditionCode = "code3", conditionType = "PSS"),
               ),
             ),
@@ -394,6 +397,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventUpdateAdditionalConditions(any(), any(), any(), any())
+      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(expectedToBeRemoved))
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1).copy(

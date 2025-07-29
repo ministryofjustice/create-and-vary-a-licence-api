@@ -173,6 +173,8 @@ class LicenceConditionService(
       }
     }
 
+    exclusionZoneService.deleteDocumentsFor(removedConditions)
+
     licenceRepository.saveAndFlush(licenceEntity)
 
     // If any removed additional conditions had a file upload associated then remove the detail row to prevent being orphaned
