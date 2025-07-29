@@ -660,7 +660,7 @@ object TestData {
     submittedByFullName = "John Smith",
     releaseDate = LocalDate.of(2021, 10, 22),
     urgentApproval = false,
-    approvedBy =  null,
+    approvedBy = null,
     approvedOn = null,
     isDueForEarlyRelease = false,
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
