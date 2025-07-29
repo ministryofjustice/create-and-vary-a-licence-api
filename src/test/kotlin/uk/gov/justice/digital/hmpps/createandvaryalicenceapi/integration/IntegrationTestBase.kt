@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.applicationinsights.TelemetryClient
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
@@ -71,6 +74,9 @@ abstract class IntegrationTestBase {
   @MockitoSpyBean
   lateinit var telemetryClient: TelemetryClient
 
+  @Autowired
+  protected lateinit var hmppsQueueService: HmppsQueueService
+
   protected val domainEventsTopic by lazy {
     hmppsQueueService.findByTopicId("domainevents") ?: throw MissingQueueException("HmppsTopic domainevents not found")
   }
@@ -94,9 +100,6 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var mapper: ObjectMapper
 
-  @Autowired
-  protected lateinit var hmppsQueueService: HmppsQueueService
-
   @MockitoSpyBean
   protected lateinit var hmppsSqsPropertiesSpy: HmppsSqsProperties
 
@@ -114,6 +117,7 @@ abstract class IntegrationTestBase {
   @BeforeEach
   fun `Clear queues`() {
     domainEventsQueue.sqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(domainEventsQueue.queueUrl).build())
+    await untilCallTo { domainEventsQueue.sqsClient.countMessagesOnQueue(domainEventsQueue.queueUrl).get() } matches { it == 0 }
     reset(telemetryClient)
   }
 

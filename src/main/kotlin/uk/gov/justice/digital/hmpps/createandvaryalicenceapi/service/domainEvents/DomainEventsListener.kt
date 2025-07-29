@@ -41,5 +41,10 @@ class DomainEventListener(
         log.warn("Ignoring message with type $eventType")
       }
     }
+    finishedEventProcessing(messageAttributes.eventType)
+  }
+
+  fun finishedEventProcessing(eventType: EventType) {
+    log.info("Processed event: $eventType")
   }
 }
