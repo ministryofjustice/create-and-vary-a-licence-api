@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.documents.D
 import java.util.Optional
 import java.util.UUID
 
-class ExclusionZoneServiceDeleteLicenceDocumentsTest {
+class ExclusionZoneServiceDeleteDocumentsTest {
   private val licence: Licence = mock()
 
   private val licenceRepository: LicenceRepository = mock()
@@ -64,24 +64,27 @@ class ExclusionZoneServiceDeleteLicenceDocumentsTest {
   }
 
   @Test
-  fun `deletes all documents referenced on an additionalConditionUploadSummary for the given licence`() {
+  fun `deletes all documents for the given licence`() {
     exclusionZoneService.deleteDocumentsFor(licence)
 
     listOf(
       "e4e21a90-9fc3-4ae6-96a4-ba2a7dcd2e39",
       "35a9401b-a13d-474b-aa49-3a4762f06acf",
       "0a917459-40ec-45c1-a860-a7dd24f1297f",
+      "382e2c38-bc62-42bf-ab16-0816f96b0599",
+      "21c0744f-24ea-4833-866f-4e623a373b22",
+      "24f9a61b-11e1-4978-8203-94a30939fcb5",
     ).forEach { verify(documentService).deleteDocument(UUID.fromString(it)) }
   }
 
   @Test
-  fun `deletes all documents referenced on an additionalConditionUploadDetail for the given licence`() {
-    exclusionZoneService.deleteDocumentsFor(licence)
+  fun `deletes all documents for a given set of additionalConditions`() {
+    exclusionZoneService.deleteDocumentsFor(licence.additionalConditions.subList(0, 1))
 
     listOf(
       "21c0744f-24ea-4833-866f-4e623a373b22",
-      "24f9a61b-11e1-4978-8203-94a30939fcb5",
-      "382e2c38-bc62-42bf-ab16-0816f96b0599",
+      "e4e21a90-9fc3-4ae6-96a4-ba2a7dcd2e39",
+      "35a9401b-a13d-474b-aa49-3a4762f06acf",
     ).forEach { verify(documentService).deleteDocument(UUID.fromString(it)) }
   }
 
