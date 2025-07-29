@@ -75,24 +75,6 @@ class ExclusionZoneServiceTest {
   }
 
   @Test
-  fun `service removes an upload exclusion zone`() {
-    whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
-    whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))
-    whenever(additionalConditionUploadDetailRepository.findById(1)).thenReturn(
-      Optional.of(
-        anAdditionalConditionUploadDetailEntity,
-      ),
-    )
-
-    service.removeExclusionZoneFile(1L, 1L)
-
-    verify(licenceRepository, times(1)).findById(1L)
-    verify(additionalConditionRepository, times(1)).findById(1L)
-    verify(additionalConditionUploadDetailRepository, times(1)).delete(any())
-    verify(additionalConditionRepository, times(1)).saveAndFlush(any())
-  }
-
-  @Test
   fun `service returns a full-sized exclusion zone image`() {
     whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aLicenceEntity))
     whenever(additionalConditionRepository.findById(1L)).thenReturn(Optional.of(anAdditionalConditionEntityWithUpload))

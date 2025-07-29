@@ -16,7 +16,6 @@ import org.springframework.web.reactive.function.BodyInserters
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.DocumentApiMockServer
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.integration.wiremock.GovUkMockServer
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AdditionalConditionUploadDetailRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.ExclusionZonePdfExtract
@@ -103,33 +102,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/seed-licence-id-2.sql",
-    "classpath:test_data/add-upload-to-licence-id-2.sql",
-  )
-  fun `remove an exclusion zone upload`() {
-    webTestClient.put()
-      .uri("/exclusion-zone/id/2/condition/id/1/remove-upload")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-
-    val result = webTestClient.get()
-      .uri("/licence/id/2")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_CVL_ADMIN")))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(Licence::class.java)
-      .returnResult().responseBody
-
-    val additionalCondition = result?.additionalLicenceConditions?.first()
-    assertThat(additionalCondition?.uploadSummary).isEmpty()
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-2.sql",
   )
   fun `exclusion zone upload is role-protected`() {
     val fileResource = ClassPathResource("Test_map_2021-12-06_112550.pdf")
@@ -148,23 +120,6 @@ class ExclusionZoneIntegrationTest : IntegrationTestBase() {
       .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
       .exchange()
       .expectStatus().isForbidden
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/seed-licence-id-2.sql",
-    "classpath:test_data/add-upload-to-licence-id-2.sql",
-  )
-  fun `remove exclusion zone upload is role-protected`() {
-    val result = webTestClient.put()
-      .uri("/exclusion-zone/id/2/condition/id/1/remove-upload")
-      .accept(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_WRONG")))
-      .exchange()
-      .expectStatus().isForbidden
-
-    val body = result.expectBody(ErrorResponse::class.java).returnResult()
-    assertThat(body.responseBody?.status).isEqualTo(HttpStatus.FORBIDDEN.value())
   }
 
   @Test
