@@ -23,7 +23,7 @@ class OffenderManagerMapperTest {
     val staffDetails = User(
       id = 123L,
       code = "S001",
-      username = "user1",
+      username = "user1 ",
       email = "user1@example.com",
       telephoneNumber = "012345",
       name = Name(
@@ -62,7 +62,7 @@ class OffenderManagerMapperTest {
       OffenderManager(
         staffIdentifier = 123L,
         code = "S001",
-        username = "user1",
+        username = "USER1",
         email = "user1@example.com",
         forename = "John",
         surname = "Smith",
@@ -142,7 +142,7 @@ class OffenderManagerMapperTest {
       case = ProbationCase(crn = "CRN456"),
       id = 456L,
       code = "CM01",
-      username = "commanager",
+      username = "commanager ",
       email = "commanager@example.com",
       telephoneNumber = "0123456789",
       name = Name(forename = "Alice", middleName = "B", surname = "Johnson"),
@@ -165,7 +165,7 @@ class OffenderManagerMapperTest {
       OffenderManager(
         staffIdentifier = 456L,
         code = "CM01",
-        username = "commanager",
+        username = "COMMANAGER",
         email = "commanager@example.com",
         forename = "Alice",
         surname = "Johnson",

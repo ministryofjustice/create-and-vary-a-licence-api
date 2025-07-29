@@ -37,31 +37,22 @@ class ComAllocatedHandler(
     }
 
     val crn = event.personReference.crn()
-    if (crn.isNullOrBlank()) {
-      log.warn("Event received without CRN — cannot process offender manager allocation")
-      return
-    }
 
     val offenderManager = getOffenderManager(crn, event)
     if (isValidOffenderManager(offenderManager, crn)) {
-      log.info("Found offender manager: username=${offenderManager!!.username}, code=${offenderManager.code} — proceeding with allocation for CRN $crn")
-      processComAllocation(offenderManager)
-      log.info("Successfully completed COM allocation for CRN $crn")
+      processComAllocation(offenderManager!!)
     }
   }
 
   fun processComAllocation(offenderManager: OffenderManager) {
     log.info("Processing COM allocation for CRN ${offenderManager.crn} code is ${offenderManager.code}")
 
-    val userName = offenderManager.username!!.trim()
-
-    // Assign the com role to the user if they do not have it already
-    deliusApiClient.assignDeliusRole(userName)
+    deliusApiClient.assignDeliusRole(offenderManager.username!!)
 
     val newCom = staffService.updateComDetails(
       UpdateComRequest(
         staffIdentifier = offenderManager.staffIdentifier,
-        staffUsername = userName,
+        staffUsername = offenderManager.username,
         staffEmail = offenderManager.email,
         firstName = offenderManager.forename,
         lastName = offenderManager.surname,
@@ -83,6 +74,7 @@ class ComAllocatedHandler(
         probationTeamDescription = offenderManager.teamDescription,
       ),
     )
+    log.info("Successfully completed COM allocation for CRN ${offenderManager.crn}")
   }
 
   fun isValidOffenderManager(offenderManager: OffenderManager?, crn: String): Boolean {
@@ -118,21 +110,12 @@ class ComAllocatedHandler(
     }
   }
 
-  private fun getOffenderManagerForApop(detailUrl: String): OffenderManager? {
+  private fun getOffenderManagerForApop(detailUrl: String): OffenderManager {
     val personUuid = getPersonUuid(detailUrl)
     log.info("Getting offender manager from CVL for personUuid: {}", personUuid)
 
-    val workLoadAllocationResponse = workLoadApiClient.getStaffDetails(personUuid)
-    if (workLoadAllocationResponse == null) {
-      log.warn("No staff codes for personUuid: {}", personUuid)
-      return null
-    }
-
-    val staffDetails = deliusApiClient.getStaffByCode(workLoadAllocationResponse.staffCode)
-    if (staffDetails == null) {
-      log.warn("No staff details for staffCode: {}", workLoadAllocationResponse.staffCode)
-      return null
-    }
+    val workLoadAllocationResponse = workLoadApiClient.getStaffDetails(personUuid)!!
+    val staffDetails = deliusApiClient.getStaffByCode(workLoadAllocationResponse.staffCode)!!
 
     log.debug("Staff details found for staffCode: {}", workLoadAllocationResponse.staffCode)
     return offenderManagerMapper.mapFrom(staffDetails, workLoadAllocationResponse)

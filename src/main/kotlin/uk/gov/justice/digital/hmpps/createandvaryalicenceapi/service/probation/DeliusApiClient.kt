@@ -2,16 +2,14 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.SearchQueryRequest
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.typeReference
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.util.ResponseUtils
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.Batching.batchRequests
 
 @Component
@@ -58,7 +56,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(User::class.java)
     .onErrorResume {
-      processErrors(it)
+      ResponseUtils.processErrors(it)
     }
     .block()
 
@@ -69,7 +67,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(User::class.java)
     .onErrorResume {
-      processErrors(it)
+      ResponseUtils.processErrors(it)
     }
     .block()
 
@@ -80,12 +78,7 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .bodyToMono(typeReference<CommunityManager>())
     .onErrorResume {
-      when {
-        it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
-          Mono.empty()
-        }
-        else -> Mono.error(it)
-      }
+      ResponseUtils.processErrors(it)
     }
     .block()
 
@@ -170,11 +163,4 @@ class DeliusApiClient(@Qualifier("oauthDeliusApiClient") val deliusApiWebClient:
     .retrieve()
     .toBodilessEntity()
     .block() ?: error("Unexpected response while assigning delius role for user: $username")
-
-  private fun <T> processErrors(it: Throwable): Mono<T> = when {
-    it is WebClientResponseException && it.statusCode == HttpStatus.NOT_FOUND -> {
-      Mono.empty()
-    }
-    else -> Mono.error(it)
-  }
 }

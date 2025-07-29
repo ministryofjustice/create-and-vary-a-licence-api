@@ -65,7 +65,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
   fun `An COM allocated event from Delius is processed`() {
     // Given
     val crn = "X666322"
-    val userName = "userName"
+    val userName = "username"
     val emailAddress = "emailAddress@Delius"
     val staffIdentifier = 123L
     val firstName = "forename"
@@ -79,7 +79,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
       firstName = firstName,
       lastName = lastName,
     )
-    deliusMockServer.stubAssignDeliusRole(userName = userName)
+    deliusMockServer.stubAssignDeliusRole(userName = userName.uppercase())
     val event = buildComAllocatedEventJson(crn = crn, personUuid = null)
     val message = mapper.writeValueAsString(event)
 
@@ -123,7 +123,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     // Given
     val staffCode = "STAFF01CODE"
     val crn = "X666322"
-    val userName = "userName"
+    val userName = "username"
     val emailAddress = "testUser@test.justice.gov.uk"
     val personUuid = "1d9ab4b2-7b80-4784-8104-f9a77fd93a31"
     val teamCode = "teamCode"
@@ -134,7 +134,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     val event = buildComAllocatedEventJson(crn = crn, personUuid = personUuid)
     workFlowMockServer.stubGetStaffDetails(personUuid, crn, staffCode, teamCode)
     deliusMockServer.stubGetStaffByCode(staffCode, userName, teamCode, firstName, lastName)
-    deliusMockServer.stubAssignDeliusRole(userName = userName)
+    deliusMockServer.stubAssignDeliusRole(userName = userName.uppercase())
     val message = mapper.writeValueAsString(event)
 
     // When
@@ -253,7 +253,7 @@ class DomainEventsListenerIntegrationTest : IntegrationTestBase() {
     verify(staffService).updateComDetails(
       UpdateComRequest(
         staffIdentifier = staffIdentifier,
-        staffUsername = userName,
+        staffUsername = userName.trim().uppercase(),
         staffEmail = email,
         firstName = firstName,
         lastName = lastName,

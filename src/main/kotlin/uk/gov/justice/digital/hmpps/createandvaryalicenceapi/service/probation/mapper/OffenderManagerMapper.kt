@@ -18,7 +18,7 @@ class OffenderManagerMapper {
     return OffenderManager(
       staffIdentifier = staff.id,
       code = staff.code,
-      username = staff.username,
+      username = staff.username?.trim()?.uppercase(),
       email = staff.email,
       forename = staff.name.forename,
       surname = staff.name.surname,
@@ -37,7 +37,7 @@ class OffenderManagerMapper {
   fun mapFrom(cm: CommunityManager): OffenderManager = OffenderManager(
     staffIdentifier = cm.id,
     code = cm.code,
-    username = cm.username,
+    username = cm.username?.trim()?.uppercase(),
     email = cm.email,
     forename = cm.name.forename,
     surname = cm.name.surname,

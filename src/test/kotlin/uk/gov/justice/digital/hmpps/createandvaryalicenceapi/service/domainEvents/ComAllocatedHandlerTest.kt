@@ -151,23 +151,6 @@ class ComAllocatedHandlerTest {
   }
 
   @Test
-  fun `handleEvent logs and exits when CRN missing`() {
-    // Given
-    val jsonMissingCrn = """{
-      "eventType": "com.allocated",
-      "version": 1,
-      "occurredAt": "2024-01-01T00:00:00Z",
-      "personReference": { "identifiers": [] }
-    }"""
-
-    // When
-    handler.handleEvent(jsonMissingCrn)
-
-    // Then
-    // No exception thrown, logs internally
-  }
-
-  @Test
   fun `getPersonUuid extracts correct substring`() {
     // Given
     val uuid = UUID.randomUUID().toString()
