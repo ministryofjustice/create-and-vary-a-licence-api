@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseBody
@@ -66,44 +65,6 @@ class ExclusionZoneController(private val exclusionZoneService: ExclusionZoneSer
     @PathVariable(value = "conditionId") conditionId: Long,
     @RequestPart("file") file: MultipartFile,
   ) = exclusionZoneService.uploadExclusionZoneFile(licenceId, conditionId, file)
-
-  @PutMapping(
-    value = ["/id/{licenceId}/condition/id/{conditionId}/remove-upload"],
-    produces = [MediaType.APPLICATION_JSON_VALUE],
-  )
-  @PreAuthorize("hasAnyRole('CVL_ADMIN')")
-  @Operation(
-    summary = "Removes a previously uploaded exclusion zone file from an additional condition.",
-    description = "Removes a previously uploaded exclusion zone file. Requires ROLE_CVL_ADMIN.",
-    security = [SecurityRequirement(name = "ROLE_CVL_ADMIN")],
-  )
-  @ApiResponses(
-    value = [
-      ApiResponse(
-        responseCode = "200",
-        description = "The exclusion zone file was removed",
-      ),
-      ApiResponse(
-        responseCode = "400",
-        description = "Bad request, request body must be valid",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "401",
-        description = "Unauthorised, requires a valid Oauth2 token",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-      ApiResponse(
-        responseCode = "403",
-        description = "Forbidden, requires an appropriate role",
-        content = [Content(mediaType = "application/json", schema = Schema(implementation = ErrorResponse::class))],
-      ),
-    ],
-  )
-  fun removeExclusionZoneFile(
-    @PathVariable(value = "licenceId") licenceId: Long,
-    @PathVariable(value = "conditionId") conditionId: Long,
-  ) = exclusionZoneService.removeExclusionZoneFile(licenceId, conditionId)
 
   @GetMapping(
     value = ["/id/{licenceId}/condition/id/{conditionId}/full-size-image"],
