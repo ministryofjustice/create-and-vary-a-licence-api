@@ -51,4 +51,20 @@ class DocumentApiClient(@Qualifier("oauthDocumentApiClient") val documentApiClie
     }
     .bodyToMono(Document::class.java)
     .block() ?: error("Error during uploading document (UUID=$documentUuid)")
+
+  // Swagger documentation: https://document-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html#/document-controller/deleteDocument
+  fun deleteDocument(documentUuid: UUID) {
+    documentApiClient.delete()
+      .uri("/documents/$documentUuid")
+      .header("Service-Name", "create-and-vary-a-licence-api")
+      .accept(MediaType.APPLICATION_PDF)
+      .retrieve()
+      .onStatus(HttpStatusCode::isError) { response ->
+        response.bodyToMono<String>().map { body ->
+          error("Error deleting document (UUID=$documentUuid, StatusCode=${response.statusCode().value()}, Response=$body)")
+        }
+      }
+      .bodyToMono(ByteArray::class.java)
+      .block()
+  }
 }

@@ -21,4 +21,6 @@ class DocumentService(
   }
 
   fun downloadDocument(uuid: UUID): ByteArray = apiClient.downloadDocumentFile(uuid)
+
+  fun deleteDocument(uuid: UUID) = apiClient.deleteDocument(uuid)
 }
