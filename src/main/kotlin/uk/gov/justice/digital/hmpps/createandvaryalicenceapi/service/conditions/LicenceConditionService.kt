@@ -41,6 +41,7 @@ class LicenceConditionService(
   private val auditService: AuditService,
   private val staffRepository: StaffRepository,
   private val electronicMonitoringProgrammeService: ElectronicMonitoringProgrammeService,
+  private val exclusionZoneService: ExclusionZoneService,
 ) {
 
   @Transactional
@@ -364,11 +365,15 @@ class LicenceConditionService(
       updatedBespokeConditions = revisedBespokeConditions,
       staffMember = staffMember,
     )
+
     if (licenceEntity is HasElectronicMonitoringResponseProvider) {
       removedAdditionalConditions.map { it.conditionCode }.toSet().takeIf { it.isNotEmpty() }?.let {
         electronicMonitoringProgrammeService.handleRemovedConditionsIfEnabled(licenceEntity, it)
       }
     }
+
+    exclusionZoneService.deleteDocumentsFor(removedAdditionalConditions)
+
     licenceRepository.saveAndFlush(licenceEntity)
 
     auditService.recordAuditEventDeleteAdditionalConditions(licenceEntity, removedAdditionalConditions, staffMember)

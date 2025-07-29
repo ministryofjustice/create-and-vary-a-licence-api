@@ -60,6 +60,7 @@ class LicenceConditionServiceTest {
   private val auditService = mock<AuditService>()
   private val staffRepository = mock<StaffRepository>()
   private val electronicMonitoringProgrammeService = mock<ElectronicMonitoringProgrammeService>()
+  private val exclusionZoneService = mock<ExclusionZoneService>()
 
   private val service = LicenceConditionService(
     licenceRepository,
@@ -71,6 +72,7 @@ class LicenceConditionServiceTest {
     auditService,
     staffRepository,
     electronicMonitoringProgrammeService,
+    exclusionZoneService,
   )
 
   @BeforeEach
@@ -90,6 +92,7 @@ class LicenceConditionServiceTest {
       bespokeConditionRepository,
       additionalConditionUploadDetailRepository,
       staffRepository,
+      exclusionZoneService,
     )
   }
 
@@ -177,6 +180,7 @@ class LicenceConditionServiceTest {
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
       verify(auditService, times(1)).recordAuditEventDeleteAdditionalConditions(any(), any(), any())
+      verify(exclusionZoneService, times(1)).deleteDocumentsFor(listOf(additionalCondition(2)))
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
@@ -216,6 +220,10 @@ class LicenceConditionServiceTest {
       val licenceCaptor = ArgumentCaptor.forClass(Licence::class.java)
 
       verify(licenceRepository, times(1)).saveAndFlush(licenceCaptor.capture())
+
+      verify(exclusionZoneService, times(1)).deleteDocumentsFor(
+        listOf(additionalCondition(2), additionalCondition(3)),
+      )
 
       assertThat(licenceCaptor.value.additionalConditions).containsExactly(
         additionalCondition(1),
