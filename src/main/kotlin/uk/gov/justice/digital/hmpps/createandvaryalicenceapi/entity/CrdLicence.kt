@@ -282,7 +282,7 @@ class CrdLicence(
   )
 
   override fun timeOut() {
-    this.statusCode = LicenceStatus.TIMED_OUT
+    statusCode = LicenceStatus.TIMED_OUT
     dateLastUpdated = LocalDateTime.now()
     updatedByUsername = "SYSTEM"
   }
