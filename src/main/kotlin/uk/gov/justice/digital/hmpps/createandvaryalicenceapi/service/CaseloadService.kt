@@ -21,7 +21,13 @@ class CaseloadService(
 
   fun getPrisonersByNumber(nomisIds: List<String>): List<CaseloadItem> {
     val prisoners = prisonerSearchApiClient.searchPrisonersByNomisIds(nomisIds)
-    val licenceStartDates = releaseDateService.getLicenceStartDates(prisoners)
+
+    val prisonersToLicenceKinds = prisoners.associate {
+      it.prisonerNumber to licenceCreationService.determineLicenceKind(it)
+    }
+    val licenceStartDates =
+      releaseDateService.getLicenceStartDates(prisoners, prisonersToLicenceKinds)
+
     return prisoners.map { prisonerToCaseloadItem(it, licenceStartDates[it.prisonerNumber]) }
   }
 
