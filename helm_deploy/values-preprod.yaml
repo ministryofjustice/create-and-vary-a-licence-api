@@ -35,6 +35,68 @@ generic-service:
     enabled: true
     businessHoursOnly: true
 
+
+  jobs:
+    - name: prompt-licence-creation-job
+      enabled: true
+      path: /prompt-licence-creation
+      cron: "05 9 * * 1" # 9:05am UTC, Monday
+      allowRetry: false
+
+    - name: deactivate-hdc-licences-job
+      enabled: true
+      path: /deactivate-hdc-licences
+      cron: "10 8 * * *" # 8:10am UTC every day
+      allowRetry: true
+
+    - name: activate-licences-job
+      enabled: true
+      path: /activate-licences
+      cron: "9,12,15,18 * * *" # 9am, 12pm, 3pm, and 6pm UTC every day
+      allowRetry: true
+
+    - name: deactivate-licences-past-release-date-job
+      enabled: true
+      path: /deactivate-licences-past-release-date
+      cron: "15 8 * * 1-5" # 8:15am UTC Monday - Friday
+      allowRetry: true
+
+    - name: expire-licences-job
+      enabled: true
+      path: /expire-licences
+      cron: "20 8 * * *" # 8:20am every day
+      allowRetry: true
+
+    - name: warn-hard-stop-review-overdue-job
+      enabled: true
+      path: /warn-hard-stop-review-overdue
+      cron: "5 9 * * 1-5" # 9:05am UTC Monday - Friday
+      allowRetry: false
+
+    - name: time-out-licences-job
+      enabled: true
+      path: /time-out-licences
+      cron: "45 8 * * 1-5" # 8:45am UTC Monday - Friday
+      allowRetry: true
+
+    - name: remove-expired-conditions-job
+      enabled: true
+      path: /remove-expired-conditions
+      cron: "30 8 * * 1-5" # 8:30am UTC Monday - Friday
+      allowRetry: true
+
+    - name: notify-probation-of-unapproved-licences-job
+      enabled: true
+      path: /notify-probation-of-unapproved-licences
+      cron: "40 9 * * *" # 9:40am every day
+      allowRetry: false
+
+    - name: documents-migration-job
+      enabled: true
+      path: /migrate-exclusion-zone-maps?batchSize=25
+      cron: "*/1 8-6 * * *" # every 1 minute between 8am-6pm UTC
+      allowRetry: false
+
 #CloudPlatform AlertManager receiver to route prometheus alerts to slack
 #See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
