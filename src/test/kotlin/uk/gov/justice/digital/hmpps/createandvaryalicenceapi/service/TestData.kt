@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.VariationLic
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.Address
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.address.AddressSource
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.AdditionalConditionData
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.BespokeCondition
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.CaseloadItem
@@ -653,6 +654,20 @@ object TestData {
     isInHardStopPeriod = false,
     tabType = CaViewCasesTab.FUTURE_RELEASES,
     probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
+  )
+
+  fun approvalCase() = ApprovalCase(
+    licenceId = 1,
+    name = "A Prisoner",
+    prisonerNumber = "A1234AA",
+    submittedByFullName = "John Smith",
+    releaseDate = LocalDate.of(2021, 10, 22),
+    urgentApproval = false,
+    approvedBy = null,
+    approvedOn = null,
+    isDueForEarlyRelease = false,
+    probationPractitioner = ProbationPractitioner(staffUsername = "COM"),
+    kind = LicenceKind.CRD,
   )
 
   fun hdcPrisonerStatus() = PrisonerHdcStatus(
