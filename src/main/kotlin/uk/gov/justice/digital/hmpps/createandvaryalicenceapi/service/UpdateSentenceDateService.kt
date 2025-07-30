@@ -6,11 +6,10 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.AuditEvent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.HdcLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.PrrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SentenceDateHolder
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.SupportsHardStop
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.StaffRepository
@@ -171,10 +170,9 @@ class UpdateSentenceDateService(
   private fun getHardstopChangeType(previous: SentenceDateHolder, new: Licence): HardstopChangeType {
     val previouslyInHardstop = releaseDateService.isInHardStopPeriod(previous)
     val nowInHardstop = releaseDateService.isInHardStopPeriod(new)
-    val isCrdOrPrrdInProgress =
-      (new is CrdLicence || new is PrrdLicence) && new.statusCode == IN_PROGRESS
+    val isPotentialHardStopInProgress = new is SupportsHardStop && new.statusCode == IN_PROGRESS
     return when {
-      isCrdOrPrrdInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP
+      isPotentialHardStopInProgress && !previouslyInHardstop && nowInHardstop -> NOW_IN_HARDSTOP
       previouslyInHardstop && !nowInHardstop -> NO_LONGER_IN_HARDSTOP
       else -> NO_CHANGE
     }

@@ -31,7 +31,7 @@ interface LicenceRepository :
   SELECT l FROM Licence l
     WHERE l.kind IN ('CRD', 'PRRD')  
       AND l.statusCode = 'IN_PROGRESS'
-      AND (l.conditionalReleaseDate <= :cutoffDate OR l.postRecallReleaseDate <= :cutoffDate) 
+      AND l.licenceStartDate <= :cutoffDate
 """,
   )
   fun getAllLicencesToTimeOut(
