@@ -11,6 +11,8 @@ class DocumentService(
   fun uploadDocument(file: ByteArray, metadata: Map<String, String> = mapOf()): UUID {
     val documentUuid = UUID.randomUUID()
 
+    log.info("Uploading document: uuid={}", documentUuid)
+
     apiClient.uploadDocument(
       documentUuid = documentUuid,
       documentType = DocumentType.EXCLUSION_ZONE_MAP,
@@ -21,10 +23,15 @@ class DocumentService(
     return documentUuid
   }
 
-  fun downloadDocument(uuid: UUID): ByteArray = apiClient.downloadDocumentFile(uuid)
+  fun downloadDocument(uuid: UUID): ByteArray {
+    log.info("Downloading document: uuid={}", uuid)
+
+    return apiClient.downloadDocumentFile(uuid)
+  }
 
   fun deleteDocument(uuid: UUID) {
-    log.info("Deleting document - uuid=$uuid")
+    log.info("Deleting document: uuid={}", uuid)
+
     apiClient.deleteDocument(uuid)
   }
 
