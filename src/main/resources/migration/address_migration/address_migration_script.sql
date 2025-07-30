@@ -1033,7 +1033,6 @@ WITH cleaned AS (
   -- Group by all non-aggregated fields
   GROUP BY t.id, t.appointment_address, t.county, t.urban_name, t.country, t.postcode
 )
--- Final SELECT to shape the output
 SELECT
 	id,
 	-- Original address before cleaning (optional: for comparison/debugging)
