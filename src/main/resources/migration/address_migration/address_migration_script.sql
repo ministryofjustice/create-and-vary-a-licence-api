@@ -1161,7 +1161,7 @@ INSERT INTO licence_appointment_address (licence_id, address_id)
 ALTER TABLE address ENABLE TRIGGER set_address_last_updated_timestamp;
 
 DROP TABLE IF EXISTS tmp_stage_8;
-
+*/
 --
 -- sql to allow us to check migrated data
 --
@@ -1204,4 +1204,8 @@ DROP TABLE IF EXISTS tmp_stage_8;
 --		(Select count(*) from licence l where l.appointment_address is not null) as licence_count_with_address,
 --		(Select count(*) from address) as address_count,
 --		(Select count(*) from licence_appointment_address laa ) as join_table_count;
-*/
+--
+-- SELECT a.first_line,a.second_line,a.town_or_city,a.county,a.postcode ,l.appointment_address
+-- 		FROM address a
+--		join licence l on l.id = a.id
+--
