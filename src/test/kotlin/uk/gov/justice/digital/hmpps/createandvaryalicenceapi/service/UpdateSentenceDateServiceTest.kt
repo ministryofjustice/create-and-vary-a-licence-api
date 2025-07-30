@@ -50,6 +50,7 @@ class UpdateSentenceDateServiceTest {
   private val licenceService = mock<LicenceService>()
 
   val aCrdLicenceEntity = TestData.createCrdLicence()
+  val aPrrdLicenceEntity = TestData.createPrrdLicence()
   val aHdcLicenceEntity = createHdcLicence()
   val aCom = TestData.com()
   val aPreviousUser = CommunityOffenderManager(
@@ -726,8 +727,32 @@ class UpdateSentenceDateServiceTest {
   @Nested
   inner class `Timing out licences` {
     @Test
-    fun `should time out if the licence is now in hard stop period but previously was not`() {
+    fun `should time out CRD licence if the licence is now in hard stop period but previously was not`() {
       whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aCrdLicenceEntity))
+      whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
+      whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
+      whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(
+        aPrisonApiPrisoner().copy(
+          sentenceDetail = SentenceDetail(
+            conditionalReleaseDate = LocalDate.now().plusDays(5),
+            confirmedReleaseDate = LocalDate.now().minusDays(2),
+            sentenceStartDate = LocalDate.parse("2018-10-22"),
+            sentenceExpiryDate = LocalDate.parse("2024-09-11"),
+            licenceExpiryDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionStartDate = LocalDate.parse("2024-09-11"),
+            topupSupervisionExpiryDate = null,
+          ),
+        ),
+      )
+
+      service.updateSentenceDates(1L)
+
+      verify(licenceService, times(1)).timeout(any(), any())
+    }
+
+    @Test
+    fun `should time out PRRD licence if the licence is now in hard stop period but previously was not`() {
+      whenever(licenceRepository.findById(1L)).thenReturn(Optional.of(aPrrdLicenceEntity))
       whenever(hdcService.isApprovedForHdc(any(), any())).thenReturn(false)
       whenever(releaseDateService.isInHardStopPeriod(any(), anyOrNull())).thenReturn(false, true)
       whenever(prisonApiClient.getPrisonerDetail(any())).thenReturn(

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.jobs
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.CrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.entity.Licence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
@@ -45,6 +44,6 @@ class TimeOutLicencesService(
   }
 
   private fun updateLicencesStatus(licences: List<Licence>) {
-    licences.map { licence -> licenceService.timeout(licence as CrdLicence, "due to reaching hard stop") }
+    licences.map { licence -> licenceService.timeout(licence, "due to reaching hard stop") }
   }
 }
