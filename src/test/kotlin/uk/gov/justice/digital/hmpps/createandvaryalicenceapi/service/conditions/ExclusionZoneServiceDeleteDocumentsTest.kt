@@ -78,6 +78,13 @@ class ExclusionZoneServiceDeleteDocumentsTest {
   }
 
   @Test
+  fun `deletes AdditionalConditionUploadDetail records for given licence`() {
+    exclusionZoneService.deleteDocumentsFor(licence)
+
+    verify(additionalConditionUploadDetailRepository).deleteAllByIdInBatch(listOf(1L, 2L, 3L))
+  }
+
+  @Test
   fun `deletes all documents for a given set of additionalConditions`() {
     exclusionZoneService.deleteDocumentsFor(licence.additionalConditions.subList(0, 1))
 
@@ -86,6 +93,13 @@ class ExclusionZoneServiceDeleteDocumentsTest {
       "e4e21a90-9fc3-4ae6-96a4-ba2a7dcd2e39",
       "35a9401b-a13d-474b-aa49-3a4762f06acf",
     ).forEach { verify(documentService).deleteDocument(UUID.fromString(it)) }
+  }
+
+  @Test
+  fun `deletes AdditionalConditionUploadDetail records for given additionalConditions`() {
+    exclusionZoneService.deleteDocumentsFor(licence.additionalConditions.subList(0, 1))
+
+    verify(additionalConditionUploadDetailRepository).deleteAllByIdInBatch(listOf(1L))
   }
 
   private fun additionalConditionWithSummary(id: Long, thumbnailUuid: String?, uploadDetailId: Long) = AdditionalCondition(
