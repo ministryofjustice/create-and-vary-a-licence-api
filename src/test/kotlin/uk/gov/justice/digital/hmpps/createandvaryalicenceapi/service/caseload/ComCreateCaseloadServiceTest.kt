@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.M
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.Name
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.ProbationCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.StaffDetail
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.toPrisonerSearchPrisoner
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceKind
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -398,11 +398,11 @@ class ComCreateCaseloadServiceTest {
     whenever(eligibilityService.isEligibleForCvl(any())).thenReturn(true)
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
@@ -534,11 +534,11 @@ class ComCreateCaseloadServiceTest {
 
     whenever(deliusApiClient.getStaffDetailsByUsername(any())).thenReturn(
       listOf(
-        User(
+        StaffNameResponse(
           username = "johndoe",
           code = "X54321",
           name = Name(forename = "John", surname = "Doe"),
-          teams = emptyList(),
+          id = Long.MIN_VALUE,
         ),
       ),
     )
