@@ -62,7 +62,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
     val isOnBankHolidayOrWeekEnd = workingDaysService.isNonWorkingDay(jobExecutionDate)
 
     if (!isOnBankHolidayOrWeekEnd) {
-      assertThat(timedOutLicences?.size).isEqualTo(4)
+      assertThat(timedOutLicences?.size).isEqualTo(5)
 
       assertThat(timedOutLicences)
         .extracting<Tuple> {
@@ -74,6 +74,7 @@ class TimeOutLicencesIntegrationTest : IntegrationTestBase() {
             tuple(2L, TIMED_OUT),
             tuple(4L, TIMED_OUT),
             tuple(9L, TIMED_OUT),
+            tuple(14L, TIMED_OUT),
           ),
         )
     }
