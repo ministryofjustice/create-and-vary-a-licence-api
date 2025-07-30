@@ -3493,6 +3493,13 @@ class LicenceServiceTest {
         approvedThenEditedLicence.id.toString(),
       )
     }
+
+    @Test
+    fun `should throw an exception when trying to timeout a licence that does not support hard stop`() {
+      assertThrows<IllegalStateException> {
+        service.timeout(createHdcLicence(), "shouldn't work!")
+      }
+    }
   }
 
   @Nested

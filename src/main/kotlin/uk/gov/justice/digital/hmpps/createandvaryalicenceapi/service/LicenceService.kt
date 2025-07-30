@@ -1070,10 +1070,7 @@ class LicenceService(
 
   @Transactional
   fun timeout(licence: EntityLicence, reason: String? = null) {
-    if (licence !is SupportsHardStop) {
-      log.warn("can only timeout licences that support hard stop")
-      return
-    }
+    check(licence is SupportsHardStop) { "Can only timeout licence kinds that support hard stop: ${licence.id}" }
 
     licence.timeOut()
     licenceRepository.saveAndFlush(licence)
