@@ -112,7 +112,7 @@ class ComAllocatedHandler(
 
   private fun getOffenderManagerForApop(detailUrl: String): OffenderManager {
     val personUuid = getPersonUuid(detailUrl)
-    log.info("Getting offender manager from CVL for personUuid: {}", personUuid)
+    log.info("Getting offender manager from APOP for personUuid: {}", personUuid)
 
     val workLoadAllocationResponse = workLoadApiClient.getStaffDetails(personUuid)!!
     val staffDetails = deliusApiClient.getStaffByCode(workLoadAllocationResponse.staffCode)!!
