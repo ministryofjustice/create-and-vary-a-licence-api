@@ -1035,18 +1035,12 @@ WITH cleaned AS (
 )
 SELECT
 	id,
-	-- Original address before cleaning (optional: for comparison/debugging)
 	appointment_address,
-	-- Count of remaining address parts after cleaning
 	cardinality(string_to_array(cleaned_appointment_address, ',')) AS address_part_length,
-	-- First address component
 	TRIM(SPLIT_PART(cleaned_appointment_address, ',', 1)) AS address_line_1,
-	-- Second address component (or NULL if not present)
 	NULLIF(TRIM(SPLIT_PART(cleaned_appointment_address, ',', 2)), '') AS address_line_2,
-	-- Postcode and its prefix
 	postcode,
 	LEFT(postcode, 2) AS postcode_prefix,
-	-- Known fields retained
 	county,
 	country,
 	urban_name
