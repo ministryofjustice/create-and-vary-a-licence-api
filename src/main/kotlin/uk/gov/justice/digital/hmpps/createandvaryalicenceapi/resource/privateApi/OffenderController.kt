@@ -77,7 +77,7 @@ class OffenderController(
     body: UpdateComRequest,
   ) {
     if (domainEventListenerEnabled) {
-      log.warn("Domain event listener to process COM allocation events enabled so ignoring this")
+      log.info("Domain event listener to process COM allocation events enabled so ignoring updateResponsibleCom Endpoint!")
     } else {
       val newCom = this.staffService.updateComDetails(body)
       this.offenderService.updateOffenderWithResponsibleCom(crn, newCom)
@@ -123,7 +123,7 @@ class OffenderController(
     body: UpdateProbationTeamRequest,
   ) {
     if (domainEventListenerEnabled) {
-      log.warn("Domain event listener to process COM allocation events enabled so ignoring this")
+      log.info("updateProbationTeam : Domain event listener to process COM allocation events enabled so ignoring updateProbationTeam Endpoint!")
     } else {
       this.offenderService.updateProbationTeam(crn, body)
     }
