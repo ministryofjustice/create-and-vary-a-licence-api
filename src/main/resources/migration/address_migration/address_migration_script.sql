@@ -1014,31 +1014,30 @@ WITH cleaned AS (
     t.urban_name,
     t.country,
     t.postcode,
-    -- Cleaned verson of the appointment_address:
-    -- Split the comma-delimited appointment_address string into individual elements,
-    -- remove any elements that match known fields (county, urban_name, country, postcode),
-    -- trim whitespace from each elemnt, and re-aggregate into a single string
-    STRING_AGG(TRIM(e.value), ', ') AS cleaned_appointment_address,
-    -- Keep the original appointment_address for reference
+    coalesce(STRING_AGG(TRIM(e.value), ', '),'') AS cleaned_appointment_address,
     t.appointment_address
   FROM tmp_stage_5 t,
-  -- Unnest the appointment_address string into rows using comma as delimiter
   LATERAL unnest(string_to_array(t.appointment_address, ',')) AS e(value)
-  -- Filter out parts that match any of the known fields
   WHERE
-    TRIM(e.value) IS DISTINCT FROM TRIM(t.county)
-    AND TRIM(e.value) IS DISTINCT FROM TRIM(t.urban_name)
-    AND TRIM(e.value) IS DISTINCT FROM TRIM(t.country)
-    AND TRIM(e.value) IS DISTINCT FROM TRIM(t.postcode)
-  -- Group by all non-aggregated fields
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.county)), '[^a-z0-9]', '', 'g') AND
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.urban_name)), '[^a-z0-9]', '', 'g') AND
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.country)), '[^a-z0-9]', '', 'g') AND
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.postcode)), '[^a-z0-9]', '', 'g')
   GROUP BY t.id, t.appointment_address, t.county, t.urban_name, t.country, t.postcode
 )
 SELECT
 	id,
 	appointment_address,
+	cleaned_appointment_address,
 	cardinality(string_to_array(cleaned_appointment_address, ',')) AS address_part_length,
+	-- First part of the address
 	TRIM(SPLIT_PART(cleaned_appointment_address, ',', 1)) AS address_line_1,
-	NULLIF(TRIM(SPLIT_PART(cleaned_appointment_address, ',', 2)), '') AS address_line_2,
+	-- Everything after the first comma, or NULL if none
+	CASE
+		WHEN cleaned_appointment_address IS NULL THEN NULL
+		WHEN POSITION(',' IN cleaned_appointment_address) = 0 THEN NULL
+		ELSE LTRIM(SUBSTRING(cleaned_appointment_address FROM POSITION(',' IN cleaned_appointment_address) + 1))
+		END AS address_line_2,
 	postcode,
 	LEFT(postcode, 2) AS postcode_prefix,
 	county,
@@ -1046,8 +1045,24 @@ SELECT
 	urban_name
 FROM cleaned;
 
--- check to see if the correct count
-select (select count(*) as processed from tmp_stage_6),(select count(*) as orgininal from licence where appointment_address is not null );
+DELETE
+	FROM tmp_stage_5 USING tmp_stage_6
+	WHERE tmp_stage_5.id = tmp_stage_6.id;
+
+-- Copy over remaining address where first line and seond line were blank
+INSERT INTO tmp_stage_6 (id,appointment_address,address_part_length,address_line_1,address_line_2,postcode,
+						 postcode_prefix,county,country,urban_name)
+SELECT id,
+	   appointment_address,
+	   address_part_length,
+	   '',
+	   NULL,
+	   postcode,
+	   postcode_prefix,
+	   county,
+	   country,
+	   urban_name
+FROM tmp_stage_5 l;
 
 -- tmp table to derived from above processing to create table of postcode, urban_name, postcode_prefix AS postcode_prefix, county, country
 CREATE
