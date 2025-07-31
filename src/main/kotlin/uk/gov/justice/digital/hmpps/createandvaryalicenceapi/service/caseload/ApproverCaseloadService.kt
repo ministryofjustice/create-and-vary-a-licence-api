@@ -4,12 +4,14 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ApprovalCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.LicenceSummaryApproverView
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.ProbationPractitioner
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.request.ApproverSearchRequest
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.model.response.ApproverSearchResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.PrisonApproverService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.conditions.convertToTitleCase
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.CommunityManager
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.DeliusApiClient
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.User
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.fullName
+import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.probation.model.response.StaffNameResponse
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
 
 @Service
@@ -65,6 +67,18 @@ class ApproverCaseloadService(
     }.sortedWith(compareBy(nullsFirst()) { it.releaseDate })
   }
 
+  private fun applySearch(cases: List<ApprovalCase>, searchString: String?): List<ApprovalCase> {
+    if (searchString == null) {
+      return cases
+    }
+    val term = searchString.lowercase()
+    return cases.filter {
+      it.name?.lowercase()?.contains(term) ?: false ||
+        it.prisonerNumber?.lowercase()?.contains(term) ?: false ||
+        it.probationPractitioner?.name?.lowercase()?.contains(term) ?: false
+    }
+  }
+
   private fun List<LicenceSummaryApproverView>.getLicenceSummary(nomisId: String): LicenceSummaryApproverView? {
     val licenceSummaries = this.filter { it.nomisId == nomisId }
     return if (licenceSummaries.size == 1) licenceSummaries.first() else licenceSummaries.find { it.licenceStatus != LicenceStatus.ACTIVE }
@@ -72,19 +86,26 @@ class ApproverCaseloadService(
 
   fun findProbationPractitioner(
     comUsernameOnLicence: String?,
-    deliusStaffNames: List<User>,
+    deliusStaffNames: List<StaffNameResponse>,
     activeCom: CommunityManager,
   ): ProbationPractitioner? {
     val responsibleCom = deliusStaffNames.find { com -> com.username?.lowercase() == comUsernameOnLicence?.lowercase() }
     return when {
       responsibleCom != null -> ProbationPractitioner(
         staffCode = responsibleCom.code,
-        name = responsibleCom.name?.fullName()?.convertToTitleCase(),
+        name = responsibleCom.name.fullName().convertToTitleCase(),
       )
 
       activeCom.unallocated -> null
 
       else -> ProbationPractitioner(staffCode = activeCom.code, name = activeCom.name.fullName())
     }
+  }
+
+  fun searchForOffenderOnApproverCaseload(body: ApproverSearchRequest): ApproverSearchResponse {
+    val approvalNeededResults = applySearch(getApprovalNeeded(body.prisonCaseloads), body.query)
+    val recentlyApprovedResults = applySearch(getRecentlyApproved(body.prisonCaseloads), body.query)
+
+    return ApproverSearchResponse(approvalNeededResults, recentlyApprovedResults)
   }
 }

@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.AuditEve
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceEventRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.repository.LicenceRepository
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.SarContent
-import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.resource.publicApi.model.subjectAccessRequest.transformToSarLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.LicenceService
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.service.TestData.createCrdLicence
 import uk.gov.justice.digital.hmpps.createandvaryalicenceapi.util.LicenceStatus
@@ -32,6 +31,7 @@ class SubjectAccessRequestServiceTest {
     licenceService,
     licenceRepository,
     auditEventRepository,
+    "https://somehost",
   )
 
   @BeforeEach
@@ -57,7 +57,8 @@ class SubjectAccessRequestServiceTest {
 
     assertThat(sarContent).isExactlyInstanceOf(SarContent::class.java)
 
-    assertThat(sarContent?.content?.licences?.first()).isEqualTo(transformToSarLicence(modelLicence))
+    val expectedSarResponse = SubjectAccessRequestResponseBuilder("").addLicence(modelLicence).build(emptyList())
+    assertThat(sarContent).isEqualTo(expectedSarResponse)
 
     verify(licenceRepository, times(1)).findAllByNomsId("A12345")
     verify(licenceService, times(1)).getLicenceById(1L)

@@ -4,66 +4,146 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
 
 class DeliusMockServer : WireMockServer(8093) {
 
-  fun stubGetTeamCodesForUser(staffIdentifier: Long = 1L) {
+  fun stubAssignDeliusRole(userName: String) {
     stubFor(
-      get(urlEqualTo("/staff/byid/$staffIdentifier")).willReturn(
+      put(urlEqualTo("/users/$userName/roles")).willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetStaffByCode(
+    staffCode: String,
+    userName: String = "userName",
+    teamCode: String = "teamCode",
+    firstName: String = "firstName",
+    lastName: String = "lastName",
+  ) {
+    stubFor(
+      get(urlEqualTo("/staff/bycode/$staffCode")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           """{
-                  "username": "Test User",
-                  "email": "testUser@test.justice.gov.uk",
-                  "code": "AB00001",
-                  "id": 123456,
-                  "name": {
-                    "forename": "Test",
-                    "surname": "User"
-                  },
-                  "teams": [
-                    {
-                      "code": "A01B02",
-                      "description": "description",
-                      "telephone": "0123456789",
-                      "emailAddress": "first.last@digital.justice.gov.uk",
-                      "localDeliveryUnit": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "teamType": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "district": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "borough": {
-                        "Code": "ABC123",
-                        "Description": "Some description"
-                      },
-                      "startDate": "2023-05-18",
-                      "endDate": "2023-05-18"
-                    }
-                  ]
-               }""",
+          "id": 123456,
+          "code": "AB00001",
+          "name": { "forename": "$firstName", "surname": "$lastName" },
+          "teams": [
+            {
+              "code": "$teamCode",
+              "description": "Team description",
+              "telephone": "0123456789",
+              "emailAddress": "first.last@digital.justice.gov.uk",
+              "localDeliveryUnit": {
+                "code": "LBC123",
+                "description": "local description"
+              },
+              "teamType": {
+                "code": "TT123",
+                "description": "Type description"
+              },
+              "district": {
+                "code": "DBC123",
+                "description": "District description"
+              },
+              "borough": {
+                "code": "BC123",
+                "description": "Borough description"
+              },
+              "startDate": "2023-05-18",
+              "endDate": "2023-05-18"
+            }
+          ],
+          "provider": {
+            "code": "PBC123",
+            "description": "Some Provider"
+          },
+          "username": "$userName",
+          "email": "testUser@test.justice.gov.uk",
+          "telephoneNumber": "0123456789",
+          "unallocated": false
+        }""",
         ).withStatus(200),
       ),
     )
   }
 
-  fun stubGetOffenderManager(crn: String = "X12345") {
+  fun stubGetTeamCodesForUser(
+    staffIdentifier: Long = 1L,
+    userName: String = "Test User",
+    firstName: String = "firstName",
+    lastName: String = "lastName",
+  ) {
+    stubFor(
+      get(urlEqualTo("/staff/byid/$staffIdentifier")).willReturn(
+        aResponse().withHeader("Content-Type", "application/json").withBody(
+          """{
+          "id": 123456,
+          "code": "AB00001",
+          "name": { "forename": "$firstName", "surname": "$lastName" },
+          "teams": [
+            {
+              "code": "A01B02",
+              "description": "Team description",
+              "telephone": "0123456789",
+              "emailAddress": "first.last@digital.justice.gov.uk",
+              "localDeliveryUnit": {
+                "code": "LBC123",
+                "description": "local description"
+              },
+              "teamType": {
+                "code": "TT123",
+                "description": "Type description"
+              },
+              "district": {
+                "code": "DBC123",
+                "description": "District description"
+              },
+              "borough": {
+                "code": "BC123",
+                "description": "Borough description"
+              },
+              "startDate": "2023-05-18",
+              "endDate": "2023-05-18"
+            }
+          ],
+          "provider": {
+            "code": "PBC123",
+            "description": "Some Provider"
+          },
+          "username": "$userName",
+          "email": "testUser@test.justice.gov.uk",
+          "telephoneNumber": "0123456789",
+          "unallocated": false
+        }""",
+        ).withStatus(200),
+      ),
+    )
+  }
+
+  fun stubGetOffenderManager(
+    crn: String = "X12345",
+    userName: String = "AZ12345",
+    emailAddress: String = "user@test.com",
+    staffIdentifier: Long = 125,
+    firstName: String = "firstName",
+    lastName: String = "lastName",
+  ) {
     stubFor(
       get(urlEqualTo("/probation-case/$crn/responsible-community-manager")).willReturn(
         aResponse().withHeader("Content-Type", "application/json").withBody(
           // language=json
           """{
             "code": "staff-code-1",
-            "id": 125,
+            "id": $staffIdentifier,
             "case": { "crn": "$crn" },
-            "name": { "forename": "Test", "surname": "Test" },
+            "name": { "forename": "$firstName", "surname": "$lastName" },
             "allocationDate": "2022-01-02",
             "team": {
               "code": "team-code-1",
@@ -75,7 +155,8 @@ class DeliusMockServer : WireMockServer(8093) {
               "code": "probationArea-code-1", 
               "description": "probationArea-description-1"
             },
-            "email": "user@test.com"
+            "email": "$emailAddress",
+            "username" : "$userName"
           }""",
         ).withStatus(200),
       ),
@@ -237,6 +318,149 @@ class DeliusMockServer : WireMockServer(8093) {
                 "provider": {
                   "code": "probationArea-code-2",
                   "description": "probationArea-description-2"
+                },
+                "unallocated": false
+              }
+            ]
+              """.trimMargin(),
+            ).withStatus(200),
+        ),
+    )
+  }
+
+  fun stubGetManagersForGetApprovalAndRecentlyApprovedCaseload() {
+    stubFor(
+      post(urlEqualTo("/probation-case/responsible-community-manager"))
+        .willReturn(
+          aResponse().withHeader("Content-Type", "application/json")
+            .withBody(
+              // language=json
+              """[
+                {
+                  "code": "staff-code-1",
+                  "case": {
+                    "crn": "A12345",
+                    "nomisId": "A1234AB"
+                  },
+                  "name": {
+                    "forename": "Test1",
+                    "surname": "Test1"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-1",
+                    "description": "staff-description-1",
+                    "borough": { "code": "borough-code-1", "description": "borough-description-1" },
+                    "district": { "code": "district-code-1", "description": "district-description-1" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-1", 
+                    "description": "probationArea-description-1"
+                  },
+                  "unallocated": false,
+                  "email": "user@test.com"
+                },
+                {
+                  "code": "staff-code-2",
+                  "case": {
+                    "crn": "B12345",
+                    "nomisId": "A1234BC"
+                  },
+                  "name": {
+                    "forename": "Test2",
+                    "surname": "Test2"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-2",
+                    "description": "staff-description-2",
+                    "borough": { "code": "borough-code-2", "description": "borough-description-2" },
+                    "district": { "code": "district-code-2", "description": "district-description-2" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-2", 
+                    "description": "probationArea-description-2"
+                  },
+                  "unallocated": false
+                },
+                {
+                  "code": "staff-code-3",
+                  "case": {
+                    "crn": "C12345",
+                    "nomisId": "B1234BC"
+                  },
+                  "name": {
+                    "forename": "Test3",
+                    "surname": "Test3"
+                  },
+                  "allocationDate": "2022-01-02",
+                  "team": {
+                    "code": "team-code-3",
+                    "description": "staff-description-3",
+                    "borough": { "code": "borough-code-3", "description": "borough-description-3" },
+                    "district": { "code": "district-code-3", "description": "district-description-3" }
+                  },
+                  "provider": { 
+                    "code": "probationArea-code-3", 
+                    "description": "probationArea-description-3"
+                  }
+                },
+              {
+                "code": "staff-code-4",
+                "case": {
+                  "crn": "A12345",
+                  "nomisId": "B1234BB"
+                },
+                "name": {
+                  "forename": "Test4",
+                  "surname": "Test4"
+                },
+                "allocationDate": "2022-01-02",
+                "team": {
+                  "code": "team-code-4",
+                  "description": "staff-description-4",
+                  "borough": {
+                    "code": "borough-code-4",
+                    "description": "borough-description-4"
+                  },
+                  "district": {
+                    "code": "district-code-4",
+                    "description": "district-description-4"
+                  }
+                },
+                "provider": {
+                  "code": "probationArea-code-4",
+                  "description": "probationArea-description-4"
+                },
+                "unallocated": false,
+                "email": "user@test.com"
+              },
+              {
+                "code": "staff-code-5",
+                "case": {
+                  "crn": "B12345",
+                  "nomisId": "F2504MG"
+                },
+                "name": {
+                  "forename": "Test5",
+                  "surname": "Test5"
+                },
+                "allocationDate": "2022-01-02",
+                "team": {
+                  "code": "team-code-5",
+                  "description": "staff-description-5",
+                  "borough": {
+                    "code": "borough-code-5",
+                    "description": "borough-description-5"
+                  },
+                  "district": {
+                    "code": "district-code-5",
+                    "description": "district-description-5"
+                  }
+                },
+                "provider": {
+                  "code": "probationArea-code-5",
+                  "description": "probationArea-description-5"
                 },
                 "unallocated": false
               }

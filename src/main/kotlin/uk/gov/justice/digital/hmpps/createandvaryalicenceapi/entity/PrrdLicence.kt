@@ -71,7 +71,6 @@ class PrrdLicence(
   dateCreated: LocalDateTime? = null,
   dateLastUpdated: LocalDateTime? = null,
   updatedByUsername: String? = null,
-  val versionOfId: Long? = null,
   licenceVersion: String? = "1.0",
   standardConditions: List<StandardCondition> = emptyList(),
   additionalConditions: List<AdditionalCondition> = emptyList(),
@@ -87,8 +86,15 @@ class PrrdLicence(
   @JoinColumn(name = "created_by_com_id", nullable = false)
   var createdBy: CommunityOffenderManager? = null,
 
-  @OneToOne(mappedBy = "licence", cascade = [CascadeType.ALL], fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+  @OneToOne(
+    mappedBy = "licence",
+    cascade = [CascadeType.ALL],
+    fetch = FetchType.EAGER,
+    optional = true,
+    orphanRemoval = true,
+  )
   override var electronicMonitoringProvider: ElectronicMonitoringProvider? = null,
+  override var versionOfId: Long? = null,
 ) : Licence(
   id = id,
   kind = LicenceKind.PRRD,
@@ -148,6 +154,7 @@ class PrrdLicence(
   responsibleCom = responsibleCom,
   updatedBy = updatedBy,
 ),
+  SupportsHardStop,
   HasElectronicMonitoringResponseProvider {
 
   fun copy(
@@ -274,11 +281,11 @@ class PrrdLicence(
     electronicMonitoringProvider = electronicMonitoringProvider,
   )
 
-  fun timeOut() = copy(
-    statusCode = LicenceStatus.TIMED_OUT,
-    dateLastUpdated = LocalDateTime.now(),
-    updatedByUsername = "SYSTEM",
-  )
+  override fun timeOut() {
+    statusCode = LicenceStatus.TIMED_OUT
+    dateLastUpdated = LocalDateTime.now()
+    updatedByUsername = "SYSTEM"
+  }
 
   fun submit(submittedBy: CommunityOffenderManager) = copy(
     statusCode = LicenceStatus.SUBMITTED,

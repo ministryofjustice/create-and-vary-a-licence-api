@@ -1006,86 +1006,63 @@ WHERE tmp_stage_4.id = tmp_stage_5.id;
 
 -- Stage 6 address_line_1 and address_line_2, the first line as only one element the second has all the remaining
 -- This takes a while 10 seconds +
-CREATE
-TEMP TABLE tmp_stage_6 AS
-SELECT id,
-	   appointment_address,
-	   address_part_length,
-	   TRIM(SPLIT_PART(cleaned.cleaned_appointment_address,',',1)) AS address_line_1,
-	   NULLIF(TRIM(SUBSTRING(cleaned.cleaned_appointment_address FROM
-							 POSITION(',' IN cleaned.cleaned_appointment_address) + 1)),'') AS address_line_2,
-	   l.postcode,
-	   l.postcode_prefix,
-	   l.county,
-	   l.country,
-	   l.urban_name
-FROM tmp_stage_5 l
-		 JOIN LATERAL ( SELECT string_to_array(l.appointment_address,',') AS address_array,
-							   array_length(string_to_array(l.appointment_address,','),1) AS a_len,
-							   LOWER(l.county) AS county,
-							   LOWER(l.urban_name) AS urban_name,
-							   LOWER(l.country) AS country,
-							   REPLACE(LOWER(l.postcode),' ','') AS postcode ) ref ON TRUE
-		 JOIN LATERAL ( SELECT LOWER(TRIM(ref.address_array[ref.a_len])) AS part1,
-							   LOWER(TRIM(ref.address_array[ref.a_len - 1])) AS part2,
-							   LOWER(TRIM(ref.address_array[ref.a_len - 2])) AS part3,
-							   LOWER(TRIM(ref.address_array[ref.a_len - 3])) AS part4 ) parts ON TRUE
-		 LEFT JOIN LATERAL ( SELECT CASE
-										WHEN REPLACE(parts.part1,' ','') = ref.postcode OR
-											 parts.part1 IN (ref.county,ref.urban_name,ref.country) THEN REGEXP_REPLACE(
-												l.appointment_address,CONCAT(' *,? *',ref.address_array[ref.a_len]),'',
-												'gi')
-										ELSE l.appointment_address END AS step1 ) s1 ON TRUE
-		 LEFT JOIN LATERAL ( SELECT CASE
-										WHEN REPLACE(parts.part2,' ','') = ref.postcode OR
-											 parts.part2 IN (ref.county,ref.urban_name,ref.country) THEN REGEXP_REPLACE(
-												s1.step1,CONCAT(' *,? *',ref.address_array[ref.a_len - 1]),'','gi')
-										ELSE s1.step1 END AS step2 ) s2 ON TRUE
-		 LEFT JOIN LATERAL ( SELECT CASE
-										WHEN REPLACE(parts.part3,' ','') = ref.postcode OR
-											 parts.part3 IN (ref.county,ref.urban_name,ref.country) THEN REGEXP_REPLACE(
-												s2.step2,CONCAT(' *,? *',ref.address_array[ref.a_len - 2]),'','gi')
-										ELSE s2.step2 END AS step3 ) s3 ON TRUE
-		 LEFT JOIN LATERAL ( SELECT CASE
-										WHEN REPLACE(parts.part4,' ','') = ref.postcode OR
-											 parts.part4 IN (ref.county,ref.urban_name,ref.country) THEN REGEXP_REPLACE(
-												s3.step3,CONCAT(' *,? *',ref.address_array[ref.a_len - 3]),'','gi')
-										ELSE s3.step3 END AS raw_address ) s4 ON TRUE
-		 LEFT JOIN LATERAL (
-	SELECT REGEXP_REPLACE(
-				   REGEXP_REPLACE(TRIM(s4.raw_address), '^,+\\s*', '', 'g'),  -- Remove leading commas // not sure this works
-				   ',+\\s*$', '', 'g'                                   -- Remove trailing commas
-		   ) AS cleaned_appointment_address
-		) cleaned ON TRUE
-WHERE l.complete IS false;
+CREATE TEMP TABLE tmp_stage_6 AS
+WITH cleaned AS (
+  SELECT
+    t.id,
+    t.county,
+    t.urban_name,
+    t.country,
+    t.postcode,
+    coalesce(STRING_AGG(TRIM(e.value), ', '),'') AS cleaned_appointment_address,
+    t.appointment_address
+  FROM tmp_stage_5 t,
+  LATERAL unnest(string_to_array(t.appointment_address, ',')) AS e(value)
+  WHERE
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.county)), '[^a-z0-9]', '', 'g') AND
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.urban_name)), '[^a-z0-9]', '', 'g') AND
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.country)), '[^a-z0-9]', '', 'g') AND
+    REGEXP_REPLACE(LOWER(TRIM(e.value)), '[^a-z0-9]', '', 'g') IS DISTINCT FROM REGEXP_REPLACE(LOWER(TRIM(t.postcode)), '[^a-z0-9]', '', 'g')
+  GROUP BY t.id, t.appointment_address, t.county, t.urban_name, t.country, t.postcode
+)
+SELECT
+	id,
+	appointment_address,
+	cleaned_appointment_address,
+	cardinality(string_to_array(cleaned_appointment_address, ',')) AS address_part_length,
+	-- First part of the address
+	TRIM(SPLIT_PART(cleaned_appointment_address, ',', 1)) AS address_line_1,
+	-- Everything after the first comma, or NULL if none
+	CASE
+		WHEN cleaned_appointment_address IS NULL THEN NULL
+		WHEN POSITION(',' IN cleaned_appointment_address) = 0 THEN NULL
+		ELSE LTRIM(SUBSTRING(cleaned_appointment_address FROM POSITION(',' IN cleaned_appointment_address) + 1))
+		END AS address_line_2,
+	postcode,
+	LEFT(postcode, 2) AS postcode_prefix,
+	county,
+	country,
+	urban_name
+FROM cleaned;
 
--- delete processed data from last source table
 DELETE
-FROM tmp_stage_5 USING tmp_stage_6
-WHERE tmp_stage_5.id = tmp_stage_6.id;
+	FROM tmp_stage_5 USING tmp_stage_6
+	WHERE tmp_stage_5.id = tmp_stage_6.id;
 
--- adds un processed data
+-- Copy over remaining address where first line and seond line were blank
 INSERT INTO tmp_stage_6 (id,appointment_address,address_part_length,address_line_1,address_line_2,postcode,
 						 postcode_prefix,county,country,urban_name)
 SELECT id,
 	   appointment_address,
 	   address_part_length,
-	   address_line_1,
-	   address_line_2,
+	   '',
+	   NULL,
 	   postcode,
 	   postcode_prefix,
 	   county,
 	   country,
 	   urban_name
 FROM tmp_stage_5 l;
-
-DELETE
-FROM tmp_stage_5 USING tmp_stage_6
-WHERE tmp_stage_5.id = tmp_stage_6.id;
-
-
--- check to see if the correct count
-select (select count(*) as processed from tmp_stage_6),(select count(*) as orgininal from licence where appointment_address is not null );
 
 -- tmp table to derived from above processing to create table of postcode, urban_name, postcode_prefix AS postcode_prefix, county, country
 CREATE
@@ -1199,7 +1176,7 @@ INSERT INTO licence_appointment_address (licence_id, address_id)
 ALTER TABLE address ENABLE TRIGGER set_address_last_updated_timestamp;
 
 DROP TABLE IF EXISTS tmp_stage_8;
-
+*/
 --
 -- sql to allow us to check migrated data
 --
@@ -1216,4 +1193,34 @@ DROP TABLE IF EXISTS tmp_stage_8;
 --			JOIN licence_appointment_address laa ON laa.licence_id = l.id
 --			JOIN address a ON laa.address_id = a.id;
 --
-*/
+--   This is also useful
+--   SELECT
+--  a.first_line,
+--  a.second_line,
+--  a.town_or_city,
+--  a.county,
+--  a.postcode,
+--  l.appointment_address,
+--  CONCAT_WS(', ',
+--    NULLIF(TRIM(a.first_line), ''),
+--    NULLIF(TRIM(a.second_line), ''),
+--    NULLIF(TRIM(a.town_or_city), ''),
+--    NULLIF(TRIM(a.county), ''),
+--    NULLIF(TRIM(a.postcode), '')
+--  ) AS full_address_migrated
+-- FROM licence l
+-- JOIN licence_appointment_address laa ON laa.licence_id = l.id
+-- JOIN address a ON laa.address_id = a.id
+-- ORDER BY LENGTH(l.appointment_address);
+--
+-- put DESC at the end to get the long addresses...
+--
+-- Select
+--		(Select count(*) from licence l where l.appointment_address is not null) as licence_count_with_address,
+--		(Select count(*) from address) as address_count,
+--		(Select count(*) from licence_appointment_address laa ) as join_table_count;
+--
+-- SELECT a.first_line,a.second_line,a.town_or_city,a.county,a.postcode ,l.appointment_address
+-- 		FROM address a
+--		join licence l on l.id = a.id
+--
